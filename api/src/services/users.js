@@ -517,7 +517,7 @@ module.exports = {
    * Updates the given user.
    *
    * If fullAccess is passed as false we should restrict them from updating
-   * anything that elevates or changes their priviledge (such as roles or
+   * anything that elevates or changes their privilege (such as roles or
    * permissions.)
    *
    * NB: once we have gotten to this point it is presumed that the user has
