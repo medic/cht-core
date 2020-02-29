@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const format = require('../modules/format');
 const phoneNumber = require('@medic/phone-number');
 

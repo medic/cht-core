@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
   selected: [],

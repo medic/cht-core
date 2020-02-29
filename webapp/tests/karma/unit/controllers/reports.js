@@ -9,7 +9,7 @@ describe('ReportsCtrl controller', () => {
   let report;
   let get;
   let post;
-  let auth;
+  let hasAuth;
   let modal;
   let LiveList;
   let MarkRead;
@@ -68,7 +68,7 @@ describe('ReportsCtrl controller', () => {
     scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = () => {};
 
-    auth = sinon.stub().resolves();
+    hasAuth = sinon.stub().resolves(true);
     modal = sinon.stub().resolves();
 
     MarkRead = () => {};
@@ -105,7 +105,9 @@ describe('ReportsCtrl controller', () => {
         '$scope': scope,
         '$translate': { instant: () => {} },
         AddReadStatus: () => {},
-        Auth: auth,
+        Auth: {
+          has: hasAuth,
+        },
         Changes: Changes,
         DeleteDocs: {},
         EditGroup: {},
@@ -152,8 +154,8 @@ describe('ReportsCtrl controller', () => {
 
     scenarios.forEach(scenario => {
       const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
-      it(`user ${canEdit ? 'can' : 'cannot'} edit, verified:${initial}->${setTo} yields ${expectVerified}`, () => {
-        auth = canEdit ? sinon.stub().resolves() : sinon.stub().rejects();
+      it(`user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`, () => {
+        hasAuth = canEdit ? hasAuth.resolves(true) : hasAuth.resolves(false);
         confirm ? modal.resolves() : modal.rejects();
         post.returns(Promise.resolve());
 

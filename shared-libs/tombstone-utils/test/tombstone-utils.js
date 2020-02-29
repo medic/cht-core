@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const lib = require('../src/tombstone-utils');
 const expect = require('chai').expect;
-const _ = require('underscore');
 let DB;
 
 describe('Tombstone Utils Lib', function() {
@@ -47,11 +46,11 @@ describe('Tombstone Utils Lib', function() {
       const healthCenter = { _id: 'healthCenterId', _rev: 'healthCenterRev', type: 'health_center' };
       const report = { _id: 'reportId', _rev: 'reportRev', type: 'data_record' };
 
-      DB.get.withArgs(person._id).resolves(_.extend({ _revisions: 'something' }, person));
-      DB.get.withArgs(clinic._id).resolves(_.extend({ _revisions: 'something' }, clinic));
-      DB.get.withArgs(districtHospital._id).resolves(_.extend({ _revisions: 'something' }, districtHospital));
-      DB.get.withArgs(healthCenter._id).resolves(_.extend({ _revisions: 'something' }, healthCenter));
-      DB.get.withArgs(report._id).resolves(_.extend({ _revisions: 'something' }, report));
+      DB.get.withArgs(person._id).resolves(Object.assign({ _revisions: 'something' }, person));
+      DB.get.withArgs(clinic._id).resolves(Object.assign({ _revisions: 'something' }, clinic));
+      DB.get.withArgs(districtHospital._id).resolves(Object.assign({ _revisions: 'something' }, districtHospital));
+      DB.get.withArgs(healthCenter._id).resolves(Object.assign({ _revisions: 'something' }, healthCenter));
+      DB.get.withArgs(report._id).resolves(Object.assign({ _revisions: 'something' }, report));
 
       DB.put.resolves();
       const personChange = { id: 'personId', deleted: true, changes: [{ rev: 'personRev' }] };
@@ -115,12 +114,12 @@ describe('Tombstone Utils Lib', function() {
       const tombstone = {_id: 'tombstone', _rev: 'tombstoneRev', type: 'tombstone'};
       const translation = {_id: 'translation', _rev: 'translationRev', type: 'translations'};
 
-      DB.get.withArgs(notype._id).resolves(_.extend({ _revisions: 'something' }, notype));
-      DB.get.withArgs(form._id).resolves(_.extend({ _revisions: 'something' }, form));
-      DB.get.withArgs(feedback._id).resolves(_.extend({ _revisions: 'something' }, feedback));
-      DB.get.withArgs(info._id).resolves(_.extend({ _revisions: 'something' }, info));
-      DB.get.withArgs(tombstone._id).resolves(_.extend({ _revisions: 'something' }, tombstone));
-      DB.get.withArgs(translation._id).resolves(_.extend({ _revisions: 'something' }, translation));
+      DB.get.withArgs(notype._id).resolves(Object.assign({ _revisions: 'something' }, notype));
+      DB.get.withArgs(form._id).resolves(Object.assign({ _revisions: 'something' }, form));
+      DB.get.withArgs(feedback._id).resolves(Object.assign({ _revisions: 'something' }, feedback));
+      DB.get.withArgs(info._id).resolves(Object.assign({ _revisions: 'something' }, info));
+      DB.get.withArgs(tombstone._id).resolves(Object.assign({ _revisions: 'something' }, tombstone));
+      DB.get.withArgs(translation._id).resolves(Object.assign({ _revisions: 'something' }, translation));
 
       DB.put.resolves();
       const notypeChange = {id: 'doc1', deleted: true, changes: [{rev: 'doc1Rev'}]};
@@ -250,7 +249,7 @@ describe('Tombstone Utils Lib', function() {
         DB.put.resolves();
         DB.get
           .withArgs('id', { rev: '5-rev', revs: true })
-          .resolves(_.extend({ _revisions: revisions }, doc[0]));
+          .resolves(Object.assign({ _revisions: revisions }, doc[0]));
         DB.get
           .withArgs('id', { rev: '4-prev' })
           .resolves(doc[1]);
@@ -298,7 +297,7 @@ describe('Tombstone Utils Lib', function() {
         DB.put.resolves();
         DB.get
           .withArgs('id', { rev: '5-rev', revs: true })
-          .resolves(_.extend({ _revisions: revisions }, doc[0]));
+          .resolves(Object.assign({ _revisions: revisions }, doc[0]));
         DB.get
           .withArgs('id', { rev: '4-prev' })
           .resolves(doc[1]);

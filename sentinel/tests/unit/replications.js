@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const later = require('later');
 const sinon = require('sinon');
 const assert = require('chai').assert;

@@ -13,8 +13,5 @@
     "mocha": "^6.2.1",
     "sinon": "^7.5.0"
   },
-  "dependencies": {
-    "moment": "^2.24.0",
-    "underscore": "^1.9.1"
-  }
+  "dependencies": {}
 }

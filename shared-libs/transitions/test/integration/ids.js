@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const ids = require('../../src/lib/ids');
 const assert = require('chai').assert;
 

@@ -1,4 +1,3 @@
-const _ = require('underscore');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const assert = require('chai').assert;
@@ -13,7 +12,7 @@ const getMessage = doc => {
   if (!doc || !doc.tasks) {
     return;
   }
-  return _.first(_.first(doc.tasks).messages).message;
+  return doc.tasks[0].messages[0].message;
 };
 
 describe('pregnancy registration', () => {

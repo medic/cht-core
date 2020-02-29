@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const moment = require('moment');
 const Search = require('@medic/search');
 
@@ -177,7 +177,7 @@ const Search = require('@medic/search');
                 });
 
                 if (relevantDataRecord) {
-                  _.extend(relevantDataRecord, dateResult.value);
+                  Object.assign(relevantDataRecord, dateResult.value);
                   relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
                 }
               });

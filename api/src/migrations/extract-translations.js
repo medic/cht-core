@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('../db');
 const settingsService = require('../services/settings');
 const DOC_TYPE = 'translations';
@@ -6,7 +6,7 @@ const DOC_TYPE = 'translations';
 const getDocs = () => {
   const options = { key: [ DOC_TYPE, true ], include_docs: true };
   return db.medic.query('medic-client/doc_by_type', options)
-    .then(response => _.pluck(response.rows, 'doc'));
+    .then(response => _.map(response.rows, 'doc'));
 };
 
 const mergeEnabled = (settings, docs) => {
@@ -15,7 +15,7 @@ const mergeEnabled = (settings, docs) => {
   }
   settings.forEach(function(locale) {
     if (locale.disabled) {
-      const doc = _.findWhere(docs, { code: locale.code });
+      const doc = _.find(docs, { code: locale.code });
       if (doc) {
         doc.enabled = false;
       }
@@ -31,7 +31,7 @@ const mergeTranslations = (settings, docs) => {
   }
   settings.forEach(setting => {
     setting.translations.forEach(translation => {
-      const doc = _.findWhere(docs, { code: translation.locale });
+      const doc = _.find(docs, { code: translation.locale });
       if (doc) {
         const prop = getTranslationsProp(doc);
         if (!doc[prop][setting.key] || translation.content !== translation.default) {

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('Contacts',
   function(
@@ -18,7 +18,7 @@ angular.module('inboxServices').factory('Contacts',
           get: function(callback) {
             DB().query('medic-client/contacts_by_type', { include_docs: true, key: [type.id] })
               .then(function(result) {
-                callback(null, _.pluck(result.rows, 'doc'));
+                callback(null, _.map(result.rows, 'doc'));
               })
               .catch(callback);
           },
@@ -51,7 +51,7 @@ angular.module('inboxServices').factory('Contacts',
           });
           return deferred.promise;
         });
-        return $q.all(relevantCaches).then(results => _.flatten(results));
+        return $q.all(relevantCaches).then(results => _.flattenDeep(results));
       });
 
     };

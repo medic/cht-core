@@ -24,7 +24,7 @@ module.exports = function(config) {
     files: [
       // used to query html
       'node_modules/jquery/dist/jquery.js',
-      'node_modules/underscore/underscore.js',
+      'node_modules/lodash/lodash.js',
 
       '../node_modules/q/q.js',
 
@@ -46,5 +46,5 @@ module.exports = function(config) {
       'src/**/*.html'
     ]
   });
-  
+
 };

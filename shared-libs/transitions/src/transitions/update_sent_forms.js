@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const moment = require('moment');
 const config = require('../config');
 const logger = require('../lib/logger');
@@ -28,7 +28,7 @@ module.exports = {
     );
   },
   _getConfig: function() {
-    return _.extend({}, config.get('reminders'));
+    return Object.assign({}, config.get('reminders'));
   },
   _hasConfig: function(doc) {
     const self = module.exports;

@@ -1,7 +1,7 @@
 // For `data_records`, moves form fields from `doc.my_field` to `doc.fields.my_field`.
 
 const async = require('async');
-const _ = require('underscore');
+const _ = require('lodash');
 const { promisify } = require('util');
 const db = require('../db');
 const logger = require('../logger');
@@ -62,7 +62,7 @@ const runBatch = function(batchSize, skip, callback) {
       return callback(err);
     }
     logger.info(`        Processing ${skip} to (${skip + batchSize}) docs of ${result.total_rows} total`);
-    const docs = _.uniq(_.pluck(result.rows, 'doc'));
+    const docs = _.uniq(_.map(result.rows, 'doc'));
 
     namespace(docs, function(err) {
       const keepGoing = result.total_rows > skip + batchSize;

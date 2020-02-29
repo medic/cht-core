@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const vm = require('vm');
 const db = require('../db');
 const moment = require('moment');

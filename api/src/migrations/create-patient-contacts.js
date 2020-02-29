@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const { promisify } = require('util');
 const db = require('../db');
 const logger = require('../logger');
@@ -22,7 +22,7 @@ const registrationIdsWithNoPatientContacts = function(batch, settings, callback)
       const existingContactShortcodes = results.rows.map(row => row.key[1]);
 
       const potentialRegistrationIdsToConsider = batch.filter(
-        row => !_.contains(existingContactShortcodes, row[0])
+        row => !_.includes(existingContactShortcodes, row[0])
       );
 
       db.medic.allDocs(
@@ -30,7 +30,7 @@ const registrationIdsWithNoPatientContacts = function(batch, settings, callback)
           include_docs: true,
           keys: _.chain(potentialRegistrationIdsToConsider)
             .map(row => row[1])
-            .flatten()
+            .flattenDeep()
             .value(),
         },
         function(err, results) {
@@ -78,7 +78,7 @@ const batchCreatePatientContacts = function(batch, settings, callback) {
         // have a patient contact created for them
         return registration.patient_id;
       })
-      .uniq(false, function(registration) {
+      .uniqBy(function(registration) {
         // And we only need one for each patient.
         return registration.patient_id;
       })
@@ -95,7 +95,7 @@ const batchCreatePatientContacts = function(batch, settings, callback) {
     );
 
     const contactPhoneNumbers = _.chain(uniqueValidRegistrations)
-      .pluck('from')
+      .map('from')
       .uniq()
       .value();
 
@@ -111,7 +111,7 @@ const batchCreatePatientContacts = function(batch, settings, callback) {
         }
 
         const contactForPhoneNumber = _.chain(results.rows)
-          .pluck('doc')
+          .map('doc')
           .uniq()
           .reduce(function(memo, doc) {
             memo[doc.phone] = doc;
@@ -189,7 +189,7 @@ module.exports = {
           return callback();
         }
 
-        const registrationsForPatientShortcode = _.pairs(
+        const registrationsForPatientShortcode = _.toPairs(
           _.reduce(
             results.rows,
             function(memo, row) {

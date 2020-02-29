@@ -1,7 +1,7 @@
 /**
  * @module transitions/validation
  */
-const _ = require('underscore');
+const _ = require('lodash');
 const async = require('async');
 const moment = require('moment');
 const pupil = require('./pupil/src/pupil');
@@ -18,7 +18,7 @@ const _parseDuration = function(duration) {
 const _getIntersection = responses => {
   let ids = responses.pop().rows.map(row => row.id);
   responses.forEach(response => {
-    ids = ids.filter(id => _.findWhere(response.rows, { id: id }));
+    ids = ids.filter(id => _.find(response.rows, { id: id }));
   });
   return ids;
 };
@@ -89,14 +89,14 @@ module.exports = {
   extractErrors: function(result, messages, ignores) {
     // wrap single item in array; defaults to empty array
     ignores = ignores || [];
-    if (!_.isArray(ignores)) {
+    if (!Array.isArray(ignores)) {
       ignores = [ignores];
     }
 
     return _.reduce(
       result,
       function(memo, valid, key) {
-        if (!valid && !_.contains(ignores, key)) {
+        if (!valid && !_.includes(ignores, key)) {
           memo.push({
             code: 'invalid_' + key,
             message: messages[key],
@@ -264,7 +264,7 @@ module.exports = {
     // the property value so pupil.validate() will still work and error
     // messages can be generated.
     const names = Object.keys(self.extra_validations);
-    _.each(validations, function(config, idx) {
+    _.forEach(validations, function(config, idx) {
       let entities;
       try {
         logger.debug(`validation rule ${config.rule}`);
@@ -273,10 +273,10 @@ module.exports = {
         logger.error('error parsing validation: %o', e);
         return errors.push('Error on pupil validations: ' + JSON.stringify(e));
       }
-      _.each(entities, function(entity) {
+      _.forEach(entities, function(entity) {
         logger.debug('validation rule entity: %o', entity);
         if (entity.sub && entity.sub.length > 0) {
-          _.each(entity.sub, function(e) {
+          _.forEach(entity.sub, function(e) {
             logger.debug(`validation rule entity sub ${e.funcName}`);
             if (names.indexOf(e.funcName) >= 0) {
               const v = validations[idx];
@@ -298,7 +298,7 @@ module.exports = {
       return callback(errors);
     }
 
-    const attributes = _.extend({}, doc, doc.fields);
+    const attributes = Object.assign({}, doc, doc.fields);
 
     try {
       result = pupil.validate(self.getRules(validations), attributes);

@@ -1,4 +1,6 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
+_.partial = require('lodash/partial');
+_.partial.placeholder = _;
 const moment = require('moment');
 const END_OF_ALPHABET = '\ufff0';
 

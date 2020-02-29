@@ -355,13 +355,13 @@ describe('Search service', function() {
         chai.expect(result).to.deep.equal({
           docIds: ['b', 'c', 'a', 'e', 'd', 'g', 'f'],
           queryResultsCache: [
-            { id: 'e', value: 1557755132000, sort: 'true false 1557755132000' },
+            { id: 'a', value: 1557755132006, sort: 'false false 1557755132006' },
             { id: 'b', value: 1557755132001, sort: 'false false 1557755132001' },
-            { id: 'g', value: 1557755132002, sort: 'true true 1557755132002' },
-            { id: 'f', value: 1557755132003, sort: 'true true 1557755132003' },
             { id: 'c', value: 1557755132004, sort: 'false false 1557755132004' },
             { id: 'd', value: 1557755132005, sort: 'true false 1557755132005' },
-            { id: 'a', value: 1557755132006, sort: 'false false 1557755132006' }
+            { id: 'e', value: 1557755132000, sort: 'true false 1557755132000' },
+            { id: 'f', value: 1557755132003, sort: 'true true 1557755132003' },
+            { id: 'g', value: 1557755132002, sort: 'true true 1557755132002' },
           ]
         });
         chai.expect(DB.query.callCount).to.equal(2);

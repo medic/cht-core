@@ -12,7 +12,7 @@ describe('DBSync service', () => {
   let isOnlineOnly;
   let userCtx;
   let sync;
-  let Auth;
+  let hasAuth;
   let recursiveOnTo;
   let recursiveOnFrom;
   let $interval;
@@ -49,7 +49,7 @@ describe('DBSync service', () => {
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
-    Auth = sinon.stub();
+    hasAuth = sinon.stub();
     setItem = sinon.stub();
     getItem = sinon.stub();
     dbSyncRetry = sinon.stub();
@@ -67,7 +67,7 @@ describe('DBSync service', () => {
         isOnlineOnly: isOnlineOnly,
         userCtx: userCtx
       } );
-      $provide.value('Auth', Auth);
+      $provide.value('Auth', { has: hasAuth });
       $provide.value('$window', { localStorage: { setItem, getItem } });
       $provide.value('DBSyncRetry', dbSyncRetry);
     });
@@ -90,11 +90,11 @@ describe('DBSync service', () => {
 
     it('starts bi-direction replication for non-admin', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       return service.sync().then(() => {
-        expect(Auth.callCount).to.equal(1);
-        expect(Auth.args[0][0]).to.equal('can_edit');
+        expect(hasAuth.callCount).to.equal(1);
+        expect(hasAuth.args[0][0]).to.equal('can_edit');
         expect(from.callCount).to.equal(1);
         expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
@@ -105,7 +105,7 @@ describe('DBSync service', () => {
 
     it('syncs automatically after interval', done => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       service.sync().then(() => {
         expect(from.callCount).to.equal(1);
@@ -119,7 +119,7 @@ describe('DBSync service', () => {
 
     it('does not attempt sync while offline', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       service.setOnlineStatus(false);
       return service.sync().then(() => {
@@ -129,7 +129,7 @@ describe('DBSync service', () => {
 
     it('multiple calls to sync yield one attempt', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       service.sync();
       return service.sync().then(() => {
@@ -139,7 +139,7 @@ describe('DBSync service', () => {
 
     it('force sync while offline still syncs', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       service.setOnlineStatus(false);
       return service.sync(true).then(() => {
@@ -149,7 +149,7 @@ describe('DBSync service', () => {
 
     it('error in replication with no docs to send results in "unknown" status', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       replicationResult = () => Q.reject('error');
       const onUpdate = sinon.stub();
@@ -166,7 +166,7 @@ describe('DBSync service', () => {
 
     it('error in replication results in "required" status', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       replicationResult = () => Q.reject('error');
       const onUpdate = sinon.stub();
@@ -181,7 +181,7 @@ describe('DBSync service', () => {
 
     it('completed replication results in "success" status', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       replicationResult = () => Q.resolve({ some: 'info' });
       const onUpdate = sinon.stub();
@@ -196,7 +196,7 @@ describe('DBSync service', () => {
 
     it('sync scenarios based on connectivity state', done => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
 
       // sync with default online status
       service.sync().then(() => {
@@ -235,13 +235,13 @@ describe('DBSync service', () => {
 
     it('does not sync to remote if user lacks "can_edit" permission', () => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.reject('unauthorized'));
+      hasAuth.resolves(false);
       const onUpdate = sinon.stub();
       service.addUpdateListener(onUpdate);
 
       return service.sync().then(() => {
-        expect(Auth.callCount).to.equal(1);
-        expect(Auth.args[0][0]).to.equal('can_edit');
+        expect(hasAuth.callCount).to.equal(1);
+        expect(hasAuth.args[0][0]).to.equal('can_edit');
         expect(from.callCount).to.equal(1);
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
         expect(to.callCount).to.equal(0);
@@ -271,7 +271,7 @@ describe('DBSync service', () => {
         count = 0;
 
         isOnlineOnly.returns(false);
-        Auth.resolves();
+        hasAuth.resolves(true);
 
         recursiveOnTo.callsFake(() => {
           const promise = replicationResultTo();
@@ -296,7 +296,7 @@ describe('DBSync service', () => {
       it('if request too large', () => {
         retries = 3;
         return service.sync().then(() => {
-          expect(Auth.callCount).to.equal(1);
+          expect(hasAuth.callCount).to.equal(1);
           expect(from.callCount).to.equal(1);
           expect(to.callCount).to.equal(3);
           expect(to.args[0][1].batch_size).to.equal(100);
@@ -326,7 +326,7 @@ describe('DBSync service', () => {
     describe('on denied', () => {
       it('should have "denied" handles for every direction', () => {
         isOnlineOnly.returns(false);
-        Auth.returns(Q.resolve());
+        hasAuth.resolves(true);
         return service.sync().then(() => {
           expect(to.events.denied).to.be.a('function');
           expect(from.events.denied).to.be.a('function');
@@ -335,7 +335,7 @@ describe('DBSync service', () => {
 
       it('"denied" from handle does nothing', () => {
         isOnlineOnly.returns(false);
-        Auth.returns(Q.resolve());
+        hasAuth.resolves(true);
         return service.sync().then(() => {
           from.events.denied();
           expect(dbSyncRetry.callCount).to.equal(0);
@@ -344,7 +344,7 @@ describe('DBSync service', () => {
 
       it('"denied" to handle calls DBSyncRetry', () => {
         isOnlineOnly.returns(false);
-        Auth.returns(Q.resolve());
+        hasAuth.resolves(true);
         return service.sync().then(() => {
           to.events.denied({ some: 'err' });
           expect(dbSyncRetry.callCount).to.equal(1);
@@ -362,7 +362,7 @@ describe('DBSync service', () => {
 
     beforeEach(() => {
       isOnlineOnly.returns(false);
-      Auth.returns(Q.resolve());
+      hasAuth.resolves(true);
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
       allDocs.returns(Q.resolve({ rows: [] }));
       info.returns(Q.resolve({update_seq: -99}));

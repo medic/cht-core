@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 const IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//;
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
@@ -73,7 +73,7 @@ angular.module('controllers').controller('UpgradeCtrl',
                 }
               });
 
-              return _.pluck(results.rows, 'value');
+              return _.map(results.rows, 'value');
             });
         };
 
@@ -122,8 +122,13 @@ angular.module('controllers').controller('UpgradeCtrl',
       }
 
       const currentVersion = Version.parse($scope.currentDeploy.base_version);
-      const releaseVersion = Version.parse(release.base_version || release.version);
+      if (!currentVersion) {
+        // Unable to parse the current version information so all releases are
+        // potentially incompatible
+        return true;
+      }
 
+      const releaseVersion = Version.parse(release.base_version || release.version);
       return Version.compare(currentVersion, releaseVersion) > 0;
     };
 

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 let scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
@@ -169,7 +169,7 @@ const PAGE_SIZE = 50;
             contacts.length >= options.limit;
 
           const mergedList = options.paginating ?
-            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id'))
+            _.uniqBy(contacts.concat(liveList.getList()), '_id')
             : contacts;
           liveList.set(mergedList, !!options.reuseExistingDom);
 
@@ -272,7 +272,7 @@ const PAGE_SIZE = 50;
         // disable UHC for DB admins
         return false;
       }
-      return Auth('can_view_last_visited_date').then(() => true).catch(() => false);
+      return Auth.has('can_view_last_visited_date');
     };
 
     const setupPromise = $q

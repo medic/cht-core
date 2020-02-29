@@ -1,9 +1,6 @@
 const chai = require('chai');
 const utils = require('../../../src/controllers/utils');
 const sinon = require('sinon');
-const _ = require('underscore');
-const uuid = require('uuid');
-const { performance } = require('perf_hooks');
 
 let clock;
 
@@ -57,68 +54,4 @@ describe('controller utils', () => {
       });
     });
   });
-
-  describe('difference', () => {
-    it('should compute correct result', () => {
-      chai.expect(utils.difference([1, 2, 3, 9], [4, 5, 6, 12, 15, 16])).to.deep.equal([1, 2, 3, 9]);
-      chai.expect(utils.difference([1, 2, 3, 9], [1, 2, 3, 9])).to.deep.equal([]);
-      chai.expect(utils.difference([1, 2, 3, 9], [1, 2, 3, 9, 11])).to.deep.equal([]);
-      chai.expect(utils.difference([9, 3, 2, 1], [11, 9, 2, 1, 3])).to.deep.equal([]);
-      chai.expect(utils.difference([9, 3, 2, 1, 17], [11, 9, 2, 1, 3])).to.deep.equal([17]);
-      chai.expect(utils.difference([9, 6, 3, 2, 1, 17, 17], [11, 9, 2, 1, 3])).to.deep.equal([17, 17, 6]);
-    });
-
-    it('should compute correct result and faster comparing with underscore', () => {
-      clock.restore();
-      const common = Array.from({ length: 5000 }, () => uuid());
-      const array1 = _.shuffle(Array.from({ length: 5000 }, () => uuid()).concat(common));
-      const array2 = _.shuffle(Array.from({ length: 5000 }, () => uuid()).concat(common));
-
-      let start = performance.now();
-      const differenceUnderscore = _.difference(array1, array2);
-      const durationUnderscore = performance.now() - start;
-
-      start = performance.now();
-      const differenceUtils = utils.difference(array1, array2);
-      const durationUtils = performance.now() - start;
-
-      chai.expect(differenceUnderscore.sort()).to.deep.equal(differenceUtils);
-      chai.expect(durationUnderscore).to.be.above(durationUtils);
-    });
-
-    it('should compute correct result faster then underscore when no common elements', () => {
-      clock.restore();
-      const array1 = Array.from({ length: 10000 }, () => uuid());
-      const array2 = Array.from({ length: 10000 }, () => uuid());
-
-      let start = performance.now();
-      const differenceUnderscore = _.difference(array1, array2);
-      const durationUnderscore = performance.now() - start;
-
-      start = performance.now();
-      const differenceUtils = utils.difference(array1, array2);
-      const durationUtils = performance.now() - start;
-
-      chai.expect(differenceUnderscore.sort()).to.deep.equal(differenceUtils);
-      chai.expect(durationUnderscore).to.be.above(durationUtils);
-    });
-
-    it('should compute correct result faster then underscore when all common elements', () => {
-      clock.restore();
-      const array1 = Array.from({ length: 10000 }, () => uuid());
-      const array2 = _.shuffle(array1);
-
-      let start = performance.now();
-      const differenceUnderscore = _.difference(array1, array2);
-      const durationUnderscore = performance.now() - start;
-
-      start = performance.now();
-      const differenceUtils = utils.difference(array1, array2);
-      const durationUtils = performance.now() - start;
-
-      chai.expect(differenceUnderscore.sort()).to.deep.equal(differenceUtils);
-      chai.expect(durationUnderscore).to.be.above(durationUtils);
-    });
-  });
-
 });

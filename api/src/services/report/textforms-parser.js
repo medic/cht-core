@@ -7,7 +7,7 @@
  *
  * @module textforms-parser
  */
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../../config');
 const embedRe = function(re) {
   return re.toString()
