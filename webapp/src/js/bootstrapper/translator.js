@@ -4,7 +4,8 @@ const eurodigit = require('eurodigit');
 
 const TRANSLATIONS = {
   en: {
-    FETCH_INFO: ({ total, percent, minutes }) => `Fetching info (${total} docs) ${percent}% complete, ${minutes}min remaining`;
+    FETCH_INFO: ({ total, percent, minutes }) => 
+      `Fetching info (${total} docs) ${percent}% complete, ${minutes}min remaining`,
     LOAD_APP: 'Loading app…',
     PURGE_INIT: 'Checking data…',
     PURGE_INFO: ({ count }) => `Cleaned ${count} documents…`,

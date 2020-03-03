@@ -102,6 +102,7 @@
     const dbSyncStartTime = Date.now();
     const dbSyncStartData = getDataUsage();
 
+    const maximumDocuments = remoteDocCount - localDocCount;
     const MAX_SAMPLES = 5; // cannot be less than two
     const FUDGE_FACTOR = 1.2; // 20% higher time estimates
     const dates = [];
@@ -136,7 +137,6 @@
             dates[idx] = Date.now();
             counts[idx] = docsRead;
 
-            let percentLeft;
             let minutes;
 
             const samples = dates.length;
@@ -163,7 +163,7 @@
               minutes = '<1';
             }
 
-            percentLeft = Math.floor((docsRead / maximumDocuments) * 100);
+            const percentLeft = Math.floor((docsRead / maximumDocuments) * 100);
 
             setUiStatus('FETCH_INFO', {
               percent: percentLeft || '?',
