@@ -17,7 +17,8 @@ angular.module('controllers').controller('MainCtrl',
       return dbFetch.apply(this, arguments)
         .then(function(response) {
           if (response.status === 401) {
-            Session.navigateToLogin();
+            $log.info('Redirect to login from admin:main.js');
+            //Session.navigateToLogin();
           }
           return response;
         });

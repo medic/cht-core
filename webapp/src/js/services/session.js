@@ -72,7 +72,8 @@ const _ = require('underscore');
           .catch(function(response) {
             if (response.status === 401) {
               // connected to the internet but no session on the server
-              navigateToLogin();
+              $log.info('checkCurrentSession:Logout');
+              //navigateToLogin();
             }
           });
       };
