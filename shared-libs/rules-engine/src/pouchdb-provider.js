@@ -44,7 +44,7 @@ const medicPouchProvider = db => {
 
     stateChangeCallback: docUpdateClosure(db),
 
-    commitTargetDoc: (assign, userContactDoc, userSettingsDoc, docTag) => {
+    commitTargetDoc: (calculateContent, userContactDoc, userSettingsDoc, docTag) => {
       const userContactId = userContactDoc && userContactDoc._id;
       const userSettingsId = userSettingsDoc && userSettingsDoc._id;
       const _id = `target~${docTag}~${userContactId}~${userSettingsId}`;
@@ -60,8 +60,8 @@ const medicPouchProvider = db => {
       return db.get(_id)
         .catch(createNew)
         .then(existingDoc => {
-          if (existingDoc.updated_date !== today) {
-            Object.assign(existingDoc, assign);
+          if (!existingDoc.isSealed && existingDoc.updated_date !== today) {
+            Object.assign(existingDoc, calculateContent());
             existingDoc.updated_date = today;
             return db.put(existingDoc);
           }

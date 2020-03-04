@@ -94,15 +94,39 @@ module.exports = {
     }
 
     const calculationTimestamp = Date.now();
-    const targetEmissionFilter = filterInterval && (emission => {
+    const createFilterFromInterval = interval => interval && (emission => {
+      if (!emission.date) {
+        return true;
+      }
+
       const emissionDate = moment(emission.date);
-      return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
+      return emissionDate.isAfter(interval.start) && emissionDate.isBefore(interval.end);
     });
 
     return refreshRulesEmissionForContacts(provider, calculationTimestamp)
       .then(() => {
+        if (filterInterval) {
+          const previousFilterInterval = {
+            start: moment(filterInterval.start).subtract(1, 'month').valueOf(),
+            end: filterInterval.start - 1,
+          };
+          const previousEmissionFilter = createFilterFromInterval(previousFilterInterval);
+          storeTargetsDoc(
+            provider,
+            () => rulesStateStore.aggregateStoredTargetEmissions(previousEmissionFilter),
+            previousFilterInterval,
+            true
+          );
+        }
+
+        const targetEmissionFilter = createFilterFromInterval(filterInterval);
         const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-        storeTargetsDoc(provider, targets, filterInterval);
+        storeTargetsDoc(
+          provider,
+          () => targets,
+          filterInterval,
+          false
+        );
         return targets;
       });
   },
@@ -179,15 +203,16 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
 };
 
-const storeTargetsDoc = (provider, targets, filterInterval) => {
+const storeTargetsDoc = (provider, calculateTargets, filterInterval, isSealed) => {
   const targetDocTag = filterInterval ? moment(filterInterval.end).format('YYYY-MM') : 'latest';
   const minifyTarget = target => ({ id: target.id, value: target.value });
-  const content = {
-    updated_date: Date.now(),
-    targets: targets.map(minifyTarget),
-  };
+  const calculateContent = () => ({
+    targets: calculateTargets().map(minifyTarget),
+    isSealed: !!isSealed,
+  });
+
   return provider.commitTargetDoc(
-    content,
+    calculateContent,
     rulesStateStore.currentUserContact(),
     rulesStateStore.currentUserSettings(),
     targetDocTag

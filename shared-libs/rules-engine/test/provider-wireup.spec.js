@@ -378,6 +378,7 @@ describe('provider-wireup integration tests', () => {
         updated_date: moment(NOW).startOf('day').valueOf(),
         owner: 'mock_user_id',
         user: 'org.couchdb.user:username',
+        isSealed: false,
         reporting_period: 'latest',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({
@@ -389,31 +390,174 @@ describe('provider-wireup integration tests', () => {
       });
     });
 
-    it('aggregate target doc is written (date)', async () => {
+    it('aggregate target doc is written and previous target doc is sealed (date)', async () => {
+      await db.put({
+        _id: 'dead-contact',
+        type: 'contact',
+        contact_type: 'person',
+        date_of_death: moment('2000-01-20').valueOf(),
+      });
+
       sinon.spy(provider, 'commitTargetDoc');
       await wireup.initialize(provider, chtRulesSettings(), {}, {});
-      const interval = { start: 1, end: 1000 };
+      const interval = {
+        start: moment('2000-01-05').valueOf(),
+        end: moment('2000-02-04').endOf('day').valueOf(),
+      };
       const actual = await wireup.fetchTargets(provider, interval);
       expect(actual.length).to.be.gt(1);
 
-      expect(provider.commitTargetDoc.callCount).to.eq(1);
-      await provider.commitTargetDoc.returnValues[0];
+      expect(provider.commitTargetDoc.callCount).to.eq(2);
+      await Promise.all(provider.commitTargetDoc.returnValues);
 
-      const expectedId = `target~${moment(1000).format('YYYY-MM')}~mock_user_id~org.couchdb.user:username`;
-      const writtenDoc = await db.get(expectedId);
-      expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
-        _id: expectedId,
+      const currentIntervalId = `target~2000-02~mock_user_id~org.couchdb.user:username`;
+      const currentDoc = await db.get(currentIntervalId);
+      expect(currentDoc).excluding(['targets', '_rev']).to.deep.eq({
+        _id: currentIntervalId,
         type: 'target',
         updated_date: moment(NOW).startOf('day').valueOf(),
         owner: 'mock_user_id',
+        isSealed: false,
         user: 'org.couchdb.user:username',
-        reporting_period: moment(1000).format('YYYY-MM'),
+        reporting_period: '2000-02',
       });
-      expect(writtenDoc.targets[0]).to.deep.eq({
+      expect(currentDoc.targets[0]).to.deep.eq({
+        id: 'deaths-this-month',
+        value: {
+          pass: 1,
+          total: 1,
+        },
+      });
+
+      const previousIntervalId = `target~2000-01~mock_user_id~org.couchdb.user:username`;
+      const previousDoc = await db.get(previousIntervalId);
+      expect(previousDoc).excluding(['targets', '_rev']).to.deep.eq({
+        _id: previousIntervalId,
+        type: 'target',
+        updated_date: moment(NOW).startOf('day').valueOf(),
+        owner: 'mock_user_id',
+        isSealed: true,
+        user: 'org.couchdb.user:username',
+        reporting_period: '2000-01',
+      });
+      expect(previousDoc.targets[0]).to.deep.eq({
         id: 'deaths-this-month',
         value: {
           pass: 0,
           total: 0,
+        },
+      });
+    });
+
+    it('previous target doc is not updated after it is sealed', async () => {
+      sinon.spy(provider, 'commitTargetDoc');
+      await wireup.initialize(provider, chtRulesSettings(), {}, {});
+      const initialInterval = {
+        start: moment('2000-01-05').valueOf(),
+        end: moment('2000-02-04').endOf('day').valueOf(),
+      };
+      
+      const fetchTargets = async interval => {
+        await wireup.fetchTargets(provider, interval);
+        await Promise.all(provider.commitTargetDoc.returnValues);
+      };
+      const expectWriteCount = async (...expectations) => {
+        for (const expectation of expectations) {
+          const doc = await db.get(`target~${expectation.interval}~mock_user_id~org.couchdb.user:username`);
+          expect(doc._rev).to.include(`${expectation.count}-`);
+        }
+      };
+      
+      await fetchTargets(initialInterval);
+      await expectWriteCount(
+        { interval: '2000-02', count: 1 },
+        { interval: '2000-01', count: 1 },
+      );
+      await fetchTargets(initialInterval);
+      await expectWriteCount(
+        { interval: '2000-02', count: 1 },
+        { interval: '2000-01', count: 1 },
+      );
+
+      sinon.useFakeTimers(moment(NOW).add(1, 'day').valueOf());
+      await fetchTargets(initialInterval);
+      await expectWriteCount(
+        { interval: '2000-02', count: 2 },
+        { interval: '2000-01', count: 1 },
+      );
+
+      const nextInterval = {
+        start: moment('2000-02-05').valueOf(),
+        end: moment('2000-03-04').endOf('day').valueOf(),
+      };
+      await fetchTargets(nextInterval);
+      await expectWriteCount(
+        { interval: '2000-03', count: 1 },
+        { interval: '2000-02', count: 2 },
+        { interval: '2000-01', count: 1 },
+      );
+
+      sinon.useFakeTimers(moment(NOW).add(2, 'day').valueOf());
+      await fetchTargets(nextInterval);
+      await expectWriteCount(
+        { interval: '2000-03', count: 2 },
+        { interval: '2000-02', count: 3 },
+        { interval: '2000-01', count: 1 },
+      );
+    });
+
+    it('target with date:now with target doc sealing', async () => {
+      sinon.useFakeTimers(moment('2000-02-03').valueOf());
+      await db.put({
+        _id: '123',
+        type: 'data_record',
+        form: 'pregnancy',
+        fields: { lmp_date_8601: '1999-10-09' },
+        patient_id: 'pregnant',
+        reported_date: moment('2000-02-03').valueOf(),
+      });
+
+      sinon.spy(provider, 'commitTargetDoc');
+      await wireup.initialize(provider, chtRulesSettings(), {}, {});
+      const firstInterval = {
+        start: moment('2000-01-05').valueOf(),
+        end: moment('2000-02-04').endOf('day').valueOf(),
+      };
+      await wireup.fetchTargets(provider, firstInterval);
+      await Promise.all(provider.commitTargetDoc.returnValues);
+      
+      const getActivePregnancy = targetDoc => targetDoc.targets.find(target => target.id === 'active-pregnancies');
+      const febTargetDocInFeb = await db.get(`target~2000-02~mock_user_id~org.couchdb.user:username`);
+      expect(getActivePregnancy(febTargetDocInFeb)).to.deep.eq({
+        id: 'active-pregnancies',
+        value: {
+          pass: 1,
+          total: 1,
+        },
+      });
+
+      const janTargetDocInFeb = await db.get(`target~2000-01~mock_user_id~org.couchdb.user:username`);
+      expect(getActivePregnancy(janTargetDocInFeb)).to.deep.eq({
+        id: 'active-pregnancies',
+        value: {
+          pass: 0,
+          total: 0,
+        },
+      });
+
+      sinon.useFakeTimers(moment('2000-02-13').valueOf());
+      const secondInterval = {
+        start: moment('2000-02-05').valueOf(),
+        end: moment('2000-03-04').endOf('day').valueOf(),
+      };
+      await wireup.fetchTargets(provider, secondInterval);
+      await Promise.all(provider.commitTargetDoc.returnValues);
+      const febTargetDocInMar = await db.get(`target~2000-02~mock_user_id~org.couchdb.user:username`);
+      expect(getActivePregnancy(febTargetDocInMar)).to.deep.eq({
+        id: 'active-pregnancies',
+        value: {
+          pass: 1,
+          total: 1,
         },
       });
     });
