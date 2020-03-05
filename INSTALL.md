@@ -31,7 +31,7 @@ To stop the Core Framework you can use `CTRL+C`.
 If, after docker-compose has started, you are unable to access the page, try stopping and restarting the service. If that doesn't work, you can delete the containers it generates and start again:
 
 ```sh
-docker containers rm -v medic-os haproxy
+docker container rm -v medic-os haproxy
 docker-compose up
 ```
 
