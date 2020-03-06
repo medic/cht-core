@@ -22,7 +22,18 @@ docker-compose up
 
 And hit enter. This will do a lot of stuff. Once it's settled down, you should then be able to navigate to [https://localhost](https://localhost), and log in with the username `medic` and the password `password`.
 
+You may encounter issues with your browser not trusting localhost. To solve this in Chrome, type `thisisunsafe` when presented with the warning. In Firefox you can click advanced and then bypass the warning.
+
 To stop the Core Framework you can use `CTRL+C`.
+
+## Any problems?
+
+If, after docker-compose has started, you are unable to access the page, try stopping and restarting the service. If that doesn't work, you can delete the containers it generates and start again:
+
+```sh
+docker container rm -v medic-os haproxy
+docker-compose up
+```
 
 ## Uploading test data
 
