@@ -38,7 +38,6 @@ describe('Modal service', function() {
     const options = {
       templateUrl: 'url',
       controller: 'controller',
-      singleton: true
     };
     const firstModal = { close: sinon.stub() };
     const secondModal = { close: sinon.stub() };

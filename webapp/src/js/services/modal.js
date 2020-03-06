@@ -5,10 +5,6 @@
  * - templateUrl    (String) The URL of the template to render
  * - controller     (String) The name of the controller to invoke
  * - model          (Object) (optional) The object to bind to the $scope
- * - singleton      (boolean) (optional) Pass true if only one of this type
- *                  of modal should be shown at a time. This will close the
- *                  previous modal so don't use it on modals that allow user
- *                  input. Defaults to false.
  *
  * In the modal template use the mm-modal directive to provide
  * the modal boilerplate.
@@ -66,14 +62,14 @@ angular.module('inboxServices').factory('Modal',
         return $q.reject('No controller speficied.');
       }
       options.scope = getScope(options.model);
-      const instance = $uibModal.open(options);
-      if (options.singleton) {
-        if (instanceCache[options.templateUrl]) {
-          instanceCache[options.templateUrl].close();
-        }
+
+      if (!instanceCache[options.templateUrl]) {
+        const instance = $uibModal.open(options);
+        instance.closed.then(() => delete instanceCache[options.templateUrl]);
         instanceCache[options.templateUrl] = instance;
       }
-      return instance.result;
+
+      return instanceCache[options.templateUrl].result;
     };
   }
 );

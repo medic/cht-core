@@ -52,6 +52,7 @@ const moment = require('moment');
     Session,
     SetLanguage,
     Settings,
+    Snackbar,
     Telemetry,
     Tour,
     TranslateFrom,
@@ -525,7 +526,6 @@ const moment = require('moment');
         templateUrl: 'templates/modals/database_closed.html',
         controller: 'ReloadingModalCtrl',
         controllerAs: 'reloadingModalCtrl',
-        singleton: true,
       });
       closeDropdowns();
     });
@@ -536,7 +536,6 @@ const moment = require('moment');
         templateUrl: 'templates/modals/version_update.html',
         controller: 'ReloadingModalCtrl',
         controllerAs: 'reloadingModalCtrl',
-        singleton: true,
       }).catch(function() {
         $log.debug('Delaying update');
         $timeout(function() {
@@ -567,6 +566,7 @@ const moment = require('moment');
         if (change.id === 'service-worker-meta') {
           UpdateServiceWorker(showUpdateReady);
         } else {
+          Snackbar(`${change.id} changed`, {dev:true});
           showUpdateReady();
         }
       },
