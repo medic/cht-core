@@ -10,7 +10,8 @@ const tasks = {
   reminders: require('./reminders'),
   replications: require('./replications'),
   outbound: require('./outbound'),
-  purging: require('./purging')
+  purging: require('./purging'),
+  readdocs: require('./readdocs')
 };
 
 function getTime(_hour, _minute) {
@@ -55,7 +56,8 @@ exports.checkSchedule = function() {
         tasks.replications.execute(cb);
       },
       tasks.outbound.execute,
-      tasks.purging.execute
+      tasks.purging.execute,
+      tasks.readdocs.execute
     ],
     err => {
       if (err) {

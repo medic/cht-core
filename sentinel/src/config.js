@@ -69,7 +69,6 @@ const initConfig = () => {
       );
       initTransitionLib();
       require('./transitions').loadTransitions();
-      require('./readdocs').deleteReadDocs();
     })
     .catch(err => {
       logger.error('%o', err);

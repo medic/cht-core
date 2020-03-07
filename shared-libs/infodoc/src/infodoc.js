@@ -168,7 +168,7 @@ const deleteInfoDocs = changes => {
     .allDocs({ keys: infoDocIds, include_docs: true })
     .then(results => {
       const docs = results.rows
-        .filter(row => Object.keys(row).includes('doc'))
+        .filter(row => row.doc)
         .map(row => {
           // console.log(`  infodoc: ${JSON.stringify(row, null, 2)}`);
           row.doc._deleted = true;
