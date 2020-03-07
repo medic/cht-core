@@ -6,7 +6,6 @@ const feed = require('./lib/feed');
 const db = require('./db');
 const logger = require('./lib/logger');
 const metadata = require('./lib/metadata');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const transitionsLib = require('./config').getTransitionsLib();
 const PROGRESS_REPORT_INTERVAL = 500; // items
 

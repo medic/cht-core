@@ -167,11 +167,13 @@ const deleteInfoDocs = changes => {
   return db.sentinel
     .allDocs({ keys: infoDocIds, include_docs: true })
     .then(results => {
-      const docs = results.rows.filter(row => Object.keys(row).includes('doc'))
-                               .map(row => {console.log(`  infodoc: ${JSON.stringify(row, null, 2)}`);
-                                 row.doc._deleted = true;
-                                 return row.doc;
-                               });
+      const docs = results.rows
+        .filter(row => Object.keys(row).includes('doc'))
+        .map(row => {
+          // console.log(`  infodoc: ${JSON.stringify(row, null, 2)}`);
+          row.doc._deleted = true;
+          return row.doc;
+        });
       return db.sentinel.bulkDocs(docs);
     })
     .catch(err => {

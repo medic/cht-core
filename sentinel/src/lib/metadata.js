@@ -73,7 +73,7 @@ const getReadDocsMetaData = () => {
         _id: READDOCS_METADATA_DOCUMENT,
         processed_seq: 0,
       };
-  });
+    });
 };
 
 const getSentinelProcessedSeq = () => {

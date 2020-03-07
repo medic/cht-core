@@ -23,7 +23,8 @@ const getProcessedSeq = () => {
 const updateMetadata = seq => metadata.updateReadDocsMetaData(seq);
 
 const deleteReadDocsFromUsersDb = changes => {
-  const possibleReadDocIds = Array.prototype.concat.apply([], changes.map(change => [`read:report:${change.id}`, `read:message:${change.id}`]));
+  const possibleReadDocIds = 
+    Array.prototype.concat.apply([], changes.map(change => [`read:report:${change.id}`, `read:message:${change.id}`]));
       
   return db.allDbs().then(dbs => {
     const userDbs = dbs.filter(dbName => dbName.indexOf(`${db.medicDbName}-user-`) === 0);
@@ -33,11 +34,12 @@ const deleteReadDocsFromUsersDb = changes => {
         return metaDb
           .allDocs({ keys: possibleReadDocIds, include_docs: true })
           .then(results => {
-            const docs = results.rows.filter(row => Object.keys(row).includes('doc'))
-                                     .map(row => {logger.info(`  readdocs: ${JSON.stringify(row, null, 2)}`);
-                                       row.doc._deleted = true;
-                                       return row.doc;
-                                     });
+            const docs = results.rows
+              .filter(row => Object.keys(row).includes('doc'))
+              .map(row => {logger.info(`  readdocs: ${JSON.stringify(row, null, 2)}`);
+                row.doc._deleted = true;
+                return row.doc;
+              });
 
             return metaDb.bulkDocs(docs).catch(err => {
               // ignore 404s or 409s - the docs were probably deleted client side already
