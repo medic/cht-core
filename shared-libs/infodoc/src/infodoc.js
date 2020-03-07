@@ -162,6 +162,25 @@ const deleteInfoDoc = change => {
     });
 };
 
+const deleteInfoDocs = changes => {
+  const infoDocIds = changes.map(change => getInfoDocId(change.id));
+  return db.sentinel
+    .allDocs({ keys: infoDocIds, include_docs: true })
+    .then(results => {
+      const docs = results.rows.filter(row => Object.keys(row).includes('doc'))
+                               .map(row => {console.log(`  infodoc: ${JSON.stringify(row, null, 2)}`);
+                                 row.doc._deleted = true;
+                                 return row.doc;
+                               });
+      return db.sentinel.bulkDocs(docs);
+    })
+    .catch(err => {
+      if (err.status !== 404) {
+        throw err;
+      }
+    });
+};
+
 const updateTransition = (change, transition, ok) => {
   const info = change.info;
   info.transitions = info.transitions || {};
@@ -293,6 +312,7 @@ module.exports = {
   // changes
   //
   bulkGet: changes => resolveInfoDocs(changes, false),
+  bulkDelete: changes => deleteInfoDocs(changes),
   bulkUpdate: bulkUpdate,
   saveTransitions: saveTransitions,
 

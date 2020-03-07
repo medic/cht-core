@@ -33,18 +33,7 @@ const changeQueue = async.queue((change, callback) => {
     );
   }
   if (change.deleted) {
-    // don't run transitions on deleted docs, but do clean up
-    return Promise
-      .all([
-        transitionsLib.infodoc.delete(change),
-        deleteReadDocs(change)
-      ])
-      .catch(err => {
-        logger.error('Error cleaning up deleted doc: %o', err);
-      })
-      .then(() => tombstoneUtils.processChange(Promise, db.medic, change, logger))
-      .then(() => updateMetadata(change, callback))
-      .catch(callback);
+    return callback();
   }
 
   transitionsLib.processChange(change, err => {

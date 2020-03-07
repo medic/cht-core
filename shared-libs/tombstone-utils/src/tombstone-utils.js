@@ -113,6 +113,18 @@ module.exports = {
       });
   },
 
+  processChanges: function (Promise, DB, changes, logger) {
+    if (!logger) {
+      logger = console;
+    }
+
+    return changes
+      .reduce((promise, change) => {
+        return promise
+          .then(() => module.exports.processChange(Promise, DB, change, logger));
+      }, Promise.resolve());
+  },
+
   // generates a copy of the deletion change of the original document
   generateChangeFromTombstone: function(tombstoneChange, includeDoc) {
     const stub = module.exports.extractStub(tombstoneChange.id);
