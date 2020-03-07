@@ -65,7 +65,6 @@ const batchDeletes = seq => {
       _deleted: true
     }
   }).then(changes => {
-    debugger;
     if (changes.results.length) {
       return Promise
         .all([
@@ -85,11 +84,11 @@ module.exports = {
     metadata.getReadDocsProcessedSeq()
       .then(seq => {
         logger.info(`readdocs: scheduled clean up starting from ${seq}`);
-        return batchDeletes(seq)
+        return batchDeletes(seq);
       })
       .then(seq => {
         logger.info(`readdocs: scheduled clean up finished at ${seq}`);        
-        return metadata.updateReadDocsMetaData(seq)
+        return metadata.updateReadDocsMetaData(seq);
       })
       .catch(err => {
         logger.error('Failed to exeute readdocs', err);
