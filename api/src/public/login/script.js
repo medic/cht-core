@@ -1,3 +1,5 @@
+let selectedLocale;
+
 const setState = function(className) {
   document.getElementById('form').className = className;
 };
@@ -35,7 +37,8 @@ const submit = function(e) {
   const url = document.getElementById('form').action;
   const payload = JSON.stringify({
     user: document.getElementById('user').value.toLowerCase().trim(),
-    password: document.getElementById('password').value
+    password: document.getElementById('password').value,
+    locale: selectedLocale
   });
   post(url, payload, handleResponse);
 };
@@ -53,6 +56,18 @@ const focusOnSubmit = function(e) {
   }
 };
 
+const selectLocale = function(e) {
+  if (e.target.tagName.toLowerCase() === 'a') {
+    e.preventDefault();
+    const locales = document.getElementsByClassName('locale');
+    for(let i = 0; i < locales.length; i++) {
+      locales[i].className = 'locale';
+    }
+    e.target.className += ' selected';
+    selectedLocale = e.target.name;
+  }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('login').addEventListener('click', submit, false);
 
@@ -62,6 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
   
+  document.getElementById('locale').addEventListener('click', selectLocale, false);
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js');
   }

@@ -14,10 +14,6 @@ const translationCache = {};
 let settings = {};
 let transitionsLib;
 
-_.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g,
-};
-
 const getMessage = (value, locale) => {
   const _findTranslation = (value, locale) => {
     if (value.translations) {
