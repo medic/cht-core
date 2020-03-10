@@ -3,6 +3,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesDetailCt
   $ngRedux,
   $scope,
   $stateParams,
+  $translate,
   GlobalActions,
   Selectors,
   TargetAggregates,
@@ -35,7 +36,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetAggregatesDetailCt
     ctrl.setShowContent(true);
     const aggregateDetails = TargetAggregates.getAggregateDetails($stateParams.id, ctrl.aggregates);
     if (aggregateDetails) {
-      ctrl.setTitle(aggregateDetails.heading);
+      ctrl.setTitle($translate.instant('analytics.target.aggregates'));
       ctrl.setSelectedTarget(aggregateDetails);
     } else {
       $log.error(`Error selecting target: target with id ${$stateParams.id} not found`);

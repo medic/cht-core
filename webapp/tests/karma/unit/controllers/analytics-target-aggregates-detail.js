@@ -6,6 +6,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
   let $rootScope;
   let scope;
   let stateParams;
+  let translateInstant;
 
   let getTitle;
   let getShowContent;
@@ -17,7 +18,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject(function(_$rootScope_, $controller, $ngRedux, Selectors, TargetAggregatesActions) {
+  beforeEach(inject(function(_$rootScope_, $controller, $ngRedux, $translate, Selectors, TargetAggregatesActions) {
     $rootScope = _$rootScope_;
     TargetAggregates = { getAggregateDetails: sinon.stub() };
     scope = $rootScope.$new();
@@ -25,6 +26,7 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
     getShowContent = () => Selectors.getShowContent($ngRedux.getState());
     setAggregates = (aggregates) => TargetAggregatesActions($ngRedux.dispatch).setTargetAggregates(aggregates);
     setError = (error) => TargetAggregatesActions($ngRedux.dispatch).setError(error);
+    translateInstant = sinon.stub($translate, 'instant');
 
     createController = function() {
       return $controller('AnalyticsTargetAggregatesDetailCtrl', {
@@ -72,15 +74,18 @@ describe('AnalyticsTargetAggregatesCtrl Controller', () => {
       translation_key: 'the_title',
       heading: 'the translated title'
     });
+    translateInstant.returns('target aggregate');
 
     const ctrl = createController();
     chai.expect(getShowContent()).to.equal(true);
     chai.expect(ctrl.error).to.equal(null);
-    chai.expect(getTitle()).to.equal('the translated title');
+    chai.expect(getTitle()).to.equal('target aggregate');
     chai.expect(ctrl.selected).to.deep.equal({
       an: 'aggregate',
       translation_key: 'the_title',
       heading: 'the translated title',
     });
+    chai.expect(translateInstant.callCount).to.equal(1);
+    chai.expect(translateInstant.args[0]).to.deep.equal(['analytics.target.aggregates']);
   });
 });
