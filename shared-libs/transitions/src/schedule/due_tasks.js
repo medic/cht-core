@@ -99,8 +99,9 @@ module.exports = {
 
         let promiseChain = Promise.resolve();
         Object.values(objs).forEach(obj => {
-          promiseChain = promiseChain.then(() => {
-            return lineage.hydrateDocs([obj.doc]).then(([doc]) => {
+          promiseChain = promiseChain
+            .then(() => lineage.hydrateDocs([obj.doc]))
+            .then(([doc]) => {
               return getTemplateContext(doc).then(context => {
                 const hasUpdatedTasks = updateScheduledTasks(doc, context, obj.dueDates);
                 if (!hasUpdatedTasks) {
@@ -111,7 +112,6 @@ module.exports = {
                 return db.medic.put(doc);
               });
             });
-          });
         });
 
         return promiseChain;
