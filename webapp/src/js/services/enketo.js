@@ -84,7 +84,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    const transformXml = function(form) {
+    const transformXml = function(form, language) {
       return $q.all([
         getAttachment(form._id, HTML_ATTACHMENT_NAME),
         getAttachment(form._id, MODEL_ATTACHMENT_NAME)
@@ -96,6 +96,28 @@ angular.module('inboxServices').service('Enketo',
             const $this = $(this);
             $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
           });
+
+          // TODO remove this when our enketo-core dependency is updated as the latest
+          //      version uses the language passed to the constructor
+          const languages = $html
+            .find('#form-languages option')
+            .map(function() {
+              return $(this).attr('value');
+            });
+          // TODO how do we detect a non-localized form?
+          if (languages.length > 1) {
+            // for localized forms, change the selected language
+            $html
+              .find('[lang]')
+              .removeClass('active')
+              .filter( '[lang="' + language + '"], [lang=""]' )
+              .filter( function() {
+                return !$(this).hasClass('or-form-short') ||
+                       ($(this).hasClass('or-form-short') && $(this).siblings( '.or-form-long' ).length === 0 );
+              } )
+              .addClass( 'active' );
+          }
+
           const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
           return {
             html: $html,
@@ -133,6 +155,7 @@ angular.module('inboxServices').service('Enketo',
           '~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)'
         );
         if($nextQuestion.length) {
+
           if($nextQuestion[0].tagName !== 'LABEL') {
             // The next question is something complicated, so we can't just
             // focus on it.  Next best thing is to blur the current selection
@@ -223,13 +246,11 @@ angular.module('inboxServices').service('Enketo',
       return $q.all([
         EnketoPrepopulationData(doc.model, instanceData),
         getContactSummary(doc, instanceData),
-        Language()
       ])
-        .then(([ instanceStr, contactSummary, language ]) => {
+        .then(([ instanceStr, contactSummary ]) => {
           const options = {
             modelStr: doc.model,
-            instanceStr: instanceStr,
-            language: language
+            instanceStr: instanceStr
           };
           if (contactSummary) {
             options.external = [ contactSummary ];
@@ -254,9 +275,6 @@ angular.module('inboxServices').service('Enketo',
         if (loadErrors && loadErrors.length) {
           return $q.reject(new Error(JSON.stringify(loadErrors)));
         }
-        // TODO remove this when our enketo-core dependency is updated as the latest
-        //      version uses the language passed to the constructor
-        currentForm.langs.setAll(options.language);
         // manually translate the title as enketo-core doesn't have any way to do this
         // https://github.com/enketo/enketo-core/issues/405
         const $title = wrapper.find('#form-title');
@@ -333,7 +351,7 @@ angular.module('inboxServices').service('Enketo',
 
     const renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
-        return transformXml(form)
+        return transformXml(form, language)
           .then(doc => {
             replaceJavarosaMediaWithLoaders(form, doc.html);
             return renderFromXmls(doc, selector, instanceData, language);
