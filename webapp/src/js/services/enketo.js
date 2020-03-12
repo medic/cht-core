@@ -99,22 +99,20 @@ angular.module('inboxServices').service('Enketo',
 
           // TODO remove this when our enketo-core dependency is updated as the latest
           //      version uses the language passed to the constructor
-          const languages = $html
-            .find('#form-languages option')
-            .map(function() {
-              return $(this).attr('value');
-            });
-          // TODO how do we detect a non-localized form?
-          if (languages.length > 1) {
-            // for localized forms, change the selected language
+          const languages = $html.find('#form-languages option');
+          if (languages.length > 1) { // TODO how do we detect a non-localized form?
+            // for localized forms, change language to user's language
             $html
               .find('[lang]')
               .removeClass('active')
-              .filter( '[lang="' + language + '"], [lang=""]' )
-              .filter( function() {
+              .filter('[lang="' + language + '"], [lang=""]')
+              .filter(function() {
+                // localized forms can support a short and long version for labels
+                // Enketo takes this into account when switching languages
+                // https://opendatakit.github.io/xforms-spec/#languages
                 return !$(this).hasClass('or-form-short') ||
                        ($(this).hasClass('or-form-short') && $(this).siblings( '.or-form-long' ).length === 0 );
-              } )
+              })
               .addClass( 'active' );
           }
 
