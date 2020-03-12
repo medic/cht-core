@@ -72,7 +72,10 @@ describe('DBSync service', () => {
     };
     localMetaDb = {
       sync,
-      bulkDocs: sinon.stub().resolves(),
+      info: sinon.stub().resolves({}),
+      get: sinon.stub().resolves({}),
+      changes: sinon.stub().resolves({}),
+      put: sinon.stub(),
     };
     remoteMetaDb = {};
     remoteMedicDb = {};
@@ -386,79 +389,31 @@ describe('DBSync service', () => {
 
       it('should sync meta dbs with the readOnlyFilter', () => {
         return service.sync().then(() => {
-          chai.expect(db.withArgs({ meta: true }).callCount).to.equal(1);
-          chai.expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(1);
-          chai.expect(localMetaDb.sync.callCount).to.equal(1);
-          chai.expect(localMetaDb.sync.args[0][0]).to.equal(remoteMetaDb);
-          chai.expect(localMetaDb.sync.args[0][1]).to.have.all.keys('filter');
+          expect(db.withArgs({ meta: true }).callCount).to.equal(1);
+          expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(1);
+          expect(localMetaDb.sync.callCount).to.equal(1);
+          expect(localMetaDb.sync.args[0][0]).to.equal(remoteMetaDb);
+          expect(localMetaDb.sync.args[0][1]).to.have.all.keys('filter');
           const filterFn = localMetaDb.sync.args[0][1].filter;
-          chai.expect(filterFn({ _id: 'feedback-', _rev: 'some', _deleted: true, purged: true })).to.equal(false);
-          chai.expect(filterFn({ _id: 'feedback-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
-          chai.expect(filterFn({ _id: 'telemetry-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
-          chai.expect(filterFn({ _id: 'read:report:id', _rev: 'aaaa' })).to.equal(true);
+          expect(filterFn({ _id: 'feedback-', _rev: 'some', _deleted: true, purged: true })).to.equal(false);
+          expect(filterFn({ _id: 'feedback-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
+          expect(filterFn({ _id: 'telemetry-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
+          expect(filterFn({ _id: 'read:report:id', _rev: 'aaaa' })).to.equal(true);
         });
       });
 
-      it('should delete feedback and telemetry docs after push batch', () => {
-        return service
-          .sync()
-          .then(() => {
-            const docs = [
-              { _id: 'read:report:something', _rev: 1 },
-              { _id: 'telemetry-2020-01-lalala', _rev: 2, some: 'data' },
-              { _id: 'feedback-2020-01-23-19-23-32-lalala', _rev: 3, other: 'thing' },
-              { _id: 'randomdoc', _rev: '3' },
-              { _id: 'randomdoc2', _rev: '3' },
-              { _id: 'telemetry-2020-02-lalala', _rev: 4, meta: 'info' },
-              { _id: 'feedback-2020-02-23-19-23-32-lalala', _rev: 9 },
-            ];
-
-            const onChange = sync.events['change'];
-            chai.expect(onChange).to.be.a('function');
-
-            return onChange({ direction: 'push', change: { docs } });
-          })
-          .then(() => {
-            chai.expect(localMetaDb.bulkDocs.callCount).to.equal(1);
-            chai.expect(localMetaDb.bulkDocs.args[0]).to.deep.equal([[
-              { _id: 'telemetry-2020-01-lalala', _rev: 2, _deleted: true, purged: true },
-              { _id: 'feedback-2020-01-23-19-23-32-lalala', _rev: 3, _deleted: true, purged: true },
-              { _id: 'telemetry-2020-02-lalala', _rev: 4, _deleted: true, purged: true },
-              { _id: 'feedback-2020-02-23-19-23-32-lalala', _rev: 9, _deleted: true, purged: true },
-            ]]);
-          });
-      });
-
-      it('should not crash when no changes', () => {
-        return service
-          .sync()
-          .then(() => {
-            const onChange = sync.events['change'];
-            return onChange({ direction: 'push', change: { } });
-          })
-          .then(() => {
-            chai.expect(localMetaDb.bulkDocs.callCount).to.equal(0);
-          });
-      });
-
-      it('should do nothing after pull batch', () => {
-        return service
-          .sync()
-          .then(() => {
-            const docs = [
-              { _id: 'read:report:something', _rev: 1 },
-              { _id: 'telemetry-2020-01-lalala', _rev: 2, some: 'data' },
-              { _id: 'feedback-2020-01-23-19-23-32-lalala', _rev: 3, other: 'thing' },
-            ];
-
-            const onChange = sync.events['change'];
-            chai.expect(onChange).to.be.a('function');
-
-            return onChange({ direction: 'pull', change: { docs } });
-          })
-          .then(() => {
-            chai.expect(localMetaDb.bulkDocs.callCount).to.equal(0);
-          });
+      it('should purge docs until the current seq after syncing', () => {
+        localMetaDb.info.resolves({ update_seq: 100 });
+        localMetaDb.get.withArgs('_local/purgelog').resolves({ _id: '_local/purgelog', last_purge_seq: 10 });
+        localMetaDb.changes.resolves({ results: [], last_seq: 110 });
+        return service.sync().then(() => {
+          expect(localMetaDb.info.callCount).to.equal(1);
+          expect(localMetaDb.get.callCount).to.equal(2);
+          expect(localMetaDb.changes.callCount).to.equal(1);
+          expect(localMetaDb.changes.args[0]).to.deep.equal([{ since: 10, limit: 100 }]);
+          expect(localMetaDb.put.callCount).to.equal(1);
+          expect(localMetaDb.put.args[0]).to.deep.equal([{ _id: '_local/purgelog', last_purge_seq: 100 }]);
+        });
       });
     });
   });

@@ -4,8 +4,8 @@ const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
-//const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
-const META_SYNC_INTERVAL = 30  * 1000; // 30 seconds
+const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const purger = require('../bootstrapper/purger');
 
 angular
   .module('inboxServices')
@@ -158,16 +158,12 @@ angular
     const syncMeta = function() {
       const remote = DB({ meta: true, remote: true });
       const local = DB({ meta: true });
+      let currentSeq;
       local
-        .sync(remote, { filter: readOnlyFilter })
-        .on('change', changes => {
-          if (changes.direction === 'push' && changes.change && changes.change.docs) {
-            const deletes = changes.change.docs
-              .filter(doc => doc._id.startsWith('telemetry-') || doc._id.startsWith('feedback-'))
-              .map(doc => ({ _id: doc._id, _rev: doc._rev, _deleted: true, purged: true }));
-            return local.bulkDocs(deletes);
-          }
-        });
+        .info()
+        .then(info => currentSeq = info.update_seq)
+        .then(() => local.sync(remote, { filter: readOnlyFilter }))
+        .then(() => purger.purgeMeta(local, currentSeq));
     };
 
     const sendUpdate = update => {
