@@ -153,7 +153,6 @@ angular.module('inboxServices').service('Enketo',
           '~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)'
         );
         if($nextQuestion.length) {
-
           if($nextQuestion[0].tagName !== 'LABEL') {
             // The next question is something complicated, so we can't just
             // focus on it.  Next best thing is to blur the current selection
@@ -244,11 +243,13 @@ angular.module('inboxServices').service('Enketo',
       return $q.all([
         EnketoPrepopulationData(doc.model, instanceData),
         getContactSummary(doc, instanceData),
+        Language()
       ])
-        .then(([ instanceStr, contactSummary ]) => {
+        .then(([ instanceStr, contactSummary, language ]) => {
           const options = {
             modelStr: doc.model,
-            instanceStr: instanceStr
+            instanceStr: instanceStr,
+            language: language
           };
           if (contactSummary) {
             options.external = [ contactSummary ];
