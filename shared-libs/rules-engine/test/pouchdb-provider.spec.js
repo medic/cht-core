@@ -68,10 +68,9 @@ describe('pouchdb provider', () => {
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev')
-      .to.have.deep.members([headlessTask, taskOwnedByChtContact, taskRequestedByChtContact]));
-
+      .to.deep.eq([taskRequestedByChtContact, headlessTask, taskOwnedByChtContact]));
     it('for requester', async () => expect(await pouchdbProvider(db).allTasks('requester')).excludingEvery('_rev')
-      .to.have.deep.members([headlessTask, taskRequestedByChtContact]));
+      .to.deep.eq([headlessTask, taskRequestedByChtContact]));
   });
 
   it('allTaskData', async () => {
