@@ -73,7 +73,7 @@ const baseConfig = {
         });
     });
 
-    return login(browser);
+    return login(browser).then(() => runAndLog('User setup', setupUser));
   }
 };
 
@@ -87,8 +87,7 @@ const runAndLog = (msg, func) => {
 const startApi = () =>
   listenForApi()
     .then(() => runAndLog('Settings setup', setupSettings))
-    .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc))
-    .then(() => runAndLog('User setup', setupUser));
+    .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
 
 const listenForApi = () => {
   console.log('Checking API');
