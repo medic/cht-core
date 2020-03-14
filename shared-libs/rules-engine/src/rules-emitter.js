@@ -5,6 +5,7 @@
  * Promisifies the execution of partner "rules" code
  * Ensures memory allocated by nools is freed after each run
  */
+const moment = require('moment');
 const nools = require('nools');
 const nootils = require('medic-nootils');
 const registrationUtils = require('@medic/registration-utils');
@@ -47,6 +48,7 @@ module.exports = {
         name: 'medic',
         scope: {
           Utils: nootilsInstance,
+          moment,
           user: settings.contact,
         },
       });

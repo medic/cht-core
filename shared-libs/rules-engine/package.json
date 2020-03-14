@@ -21,6 +21,7 @@
     "@medic/registration-utils": "file:../registration-utils",
     "md5": "^2.2.1",
     "medic-nootils": "^4.0.1",
+    "moment": "^2.24.0",
     "nools": "^0.4.4"
   },
   "devDependencies": {
@@ -28,7 +29,6 @@
     "chai": "^4.2.0",
     "chai-exclude": "^2.0.2",
     "mocha": "^6.2.2",
-    "moment": "^2.24.0",
     "pouchdb": "^7.1.1",
     "pouchdb-adapter-memory": "^7.1.1",
     "sinon": "^7.5.0"

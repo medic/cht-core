@@ -132,9 +132,11 @@ describe('rules-emitter', () => {
     });
   });
 
-  it('nootils and user objects are available', async () => {
+  it('nootils, moment, and user objects are available', async () => {
     const rules = noolsPartnerTemplate(
-      `emit('task', new Task({ data: user })); emit('target', new Target({ data: Utils }));`
+      `emit('task', new Task({ data: user }));
+      emit('target', new Target({ data: Utils }));
+      emit('target', new Target({ data: moment() }));`
     );
     const contactDoc = { _id: 'contact' };
     const settingsDoc = settingsWithRules(rules, contactDoc);
@@ -145,8 +147,9 @@ describe('rules-emitter', () => {
     const actual = await rulesEmitter.getEmissionsFor([{}], []);
     expect(actual.tasks).to.have.property('length', 1);
     expect(actual.tasks[0].data).to.deep.eq(contactDoc);
-    expect(actual.targets).to.have.property('length', 1);
+    expect(actual.targets).to.have.property('length', 2);
     expect(actual.targets[0].data).to.have.property('isTimely');
+    expect(actual.targets[1].data).to.have.property('year');
   });
 
   it('session is disposed when marshalDocsIntoNoolsFacts throws', async () => {
