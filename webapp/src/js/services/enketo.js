@@ -341,6 +341,7 @@ angular.module('inboxServices').service('Enketo',
           .then(function(form) {
             registerEditedListener(selector, editedListener);
             registerValuechangeListener(selector, valuechangeListener);
+            $window.debugFormModel = () => form.getModel().getStr();
             return form;
           });
       });
@@ -561,6 +562,7 @@ angular.module('inboxServices').service('Enketo',
       objUrls.forEach(function(url) {
         ($window.URL || $window.webkitURL).revokeObjectURL(url);
       });
+      delete $window.debugFormModel;
       objUrls.length = 0;
     };
 
