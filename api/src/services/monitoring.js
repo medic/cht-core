@@ -119,6 +119,15 @@ const getDbInfos = () => {
 
 const getResultCount = result => result.rows.length ? result.rows[0].value : 0;
 
+const getConflictCount = () => {
+  return db.medic.query('medic-conflicts/conflicts', { reduce: true })
+    .then(result => getResultCount(result))
+    .catch(err => {
+      logger.error('Error fetching conflict count: %o', err);
+      return -1;
+    });
+};
+
 const getOutboundPushQueueLength = () => {
   return db.sentinel.query('sentinel/outbound_push_tasks')
     .then(result => getResultCount(result))
@@ -169,7 +178,8 @@ const json = () => {
       getSentinelBacklog(),
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
-      getFeedbackCount()
+      getFeedbackCount(),
+      getConflictCount()
     ])
     .then(([
       appVersion,
@@ -178,7 +188,8 @@ const json = () => {
       sentinelBacklog,
       outboundPushBacklog,
       outgoingMessageStatus,
-      feedbackCount
+      feedbackCount,
+      conflictCount
     ]) => {
       return {
         version: {
@@ -204,6 +215,9 @@ const json = () => {
         },
         feedback: {
           count: feedbackCount
+        },
+        conflict: {
+          count: conflictCount
         }
       };
     });
@@ -273,13 +287,22 @@ feedback_doc ${info.feedback.count}
 `;
 };
 
+const getConflictOutput = info => {
+  return `
+# HELP conflicts Number of doc conflicts which need to be resolved manually
+# TYPE conflicts count
+conflicts ${info.conflict.count}
+`;
+};
+
 const convertToOpenMetrics = info => {
   return [
     getDbOutput(info),
     getMessagingOutput(info),
     getSentinelOutput(info),
     getOutboundPushOutput(info),
-    getFeedbackOutput(info)
+    getFeedbackOutput(info),
+    getConflictOutput(info)
   ].join('');
 };
 

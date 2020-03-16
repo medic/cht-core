@@ -69,11 +69,14 @@ const setUpMocks = () => {
     .resolves(dbInfos);
   sinon.stub(db.sentinel, 'get').withArgs('_local/sentinel-meta-data')
     .resolves({ processed_seq: '50-xyz' });
-  sinon.stub(db.medic, 'query')
+  const medicQuery = sinon.stub(db.medic, 'query');
+  medicQuery.withArgs('medic-admin/message_queue')
     .resolves({ rows: [
       { key: [ 'scheduled' ], value: 15 },
       { key: [ 'due' ], value: 3 },
     ] });
+  medicQuery.withArgs('medic-conflicts/conflicts')
+    .resolves({ rows: [ { value: 40 } ] });
   sinon.stub(db.sentinel, 'query')
     .resolves({ rows: [ { value: 3 } ] });
   sinon.stub(db.medicUsersMeta, 'query')
@@ -142,6 +145,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.sentinel).to.deep.equal({ backlog: 24 });
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: 3 });
       chai.expect(actual.feedback).to.deep.equal({ count: 2 });
+      chai.expect(actual.conflict).to.deep.equal({ count: 40 });
       chai.expect(actual.date.current).to.equal(0);
     });
   });
@@ -323,6 +327,10 @@ outbound_push_backlog 3
 # HELP feedback_doc Number of feedback docs being created indicative of client side errors
 # TYPE feedback_doc count
 feedback_doc 2
+
+# HELP conflicts Number of doc conflicts which need to be resolved manually
+# TYPE conflicts count
+conflicts 40
 `;
 
 });

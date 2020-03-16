@@ -1190,6 +1190,7 @@ couchdb_medic_doc_del_count 32
 | `messaging.outgoing.muted` | `messaging_outgoing{state="muted"}` | Number | The number of messages that are muted and therefore will not be sent. |
 | `outbound_push.backlog` | `outbound_push_backlog` | Number | Number of changes yet to be processed by Outbound Push. |
 | `feedback.count` | `feedback_doc` | Number | Number of feedback docs created usually indicative of client side errors. |
+| `conflict.count` | `conflicts` | Number | Number of doc conflicts which need to be resolved manually. |
 
 ### Errors
 
