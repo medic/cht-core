@@ -168,7 +168,7 @@ describe('login controller', () => {
       });
       const send = sinon.stub(res, 'send');
       const readFile = sinon.stub(fs, 'readFile')
-        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. <%= translations.login %>');
+        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations.login }}');
       const translate = sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
       const cookieGet = sinon.stub(cookie, 'get').returns('es');
       return controller.get(req, res).then(() => {
@@ -190,7 +190,7 @@ describe('login controller', () => {
       const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       sinon.stub(db, 'query').resolves({ rows: [] });
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. <%= translations.login %>');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations.login }}');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
       sinon.stub(cookie, 'get').returns('es');
       return controller.get(req, res).then(() => {
@@ -258,12 +258,11 @@ describe('login controller', () => {
       sinon.stub(db, 'query').resolves({ rows: [ { doc: { code: 'en', name: 'English' } } ] });
       sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile')
-        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. <%= locales.map(l => l.code).join(`,`) %>');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ locales.length }}');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
       sinon.stub(cookie, 'get').returns('en');
       return controller.get(req, res).then(() => {
-        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. ');
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. 0'); // one locale is dropped
       });
     });
 
