@@ -59,6 +59,7 @@ const deleteReadDocsFromUserDbs = async changes => {
 
 const batchDeletes = seq => {
   // TODO: run explain to make sure this is indexed
+  // TODO: this probably needs a limit so it won't go nuclear if a mass delete is performed
   return db.medic.changes({
     since: seq,
     selector: {
@@ -80,6 +81,9 @@ const batchDeletes = seq => {
 };
 
 module.exports = {
+  // TODO: consider having this just setup a periodic like purging does, instead of 
+  // blocking execution of other scheduled tasks
+  //  (or refactor scheduled tasks as noted in the TODO in the index file)
   execute: cb => {
     metadata.getReadDocsProcessedSeq()
       .then(seq => {

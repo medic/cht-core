@@ -40,6 +40,9 @@ exports.sendable = function(config, now) {
 exports.checkSchedule = function() {
   const now = moment(date.getDate());
 
+  // TODO: why are these series? Wouldn't it be better to basically fire them all off once every 5
+  // minutes, and then 5 minutes later if they *need* to be fired off fire them off again? That way
+  // none of them block each other
   async.series(
     [
       cb => {
