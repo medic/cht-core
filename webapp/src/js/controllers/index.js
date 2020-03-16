@@ -42,7 +42,6 @@
   require('./testing');
   require('./theme');
   require('./tour-select');
-  require('./user-language-modal');
   require('./verify-report-modal');
   require('./welcome-modal');
 
