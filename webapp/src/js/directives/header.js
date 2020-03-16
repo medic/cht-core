@@ -4,6 +4,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
     templateUrl: 'templates/directives/header.html',
     controller: function(
       $ngRedux,
+      $q,
       $scope,
       Auth,
       DBSync,
@@ -51,17 +52,25 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       };
 
       const tabs = [{name:'messages',state:'messages.detail',icon:'fa-envelope',translation:'Messages',
-        permissions:[['can_view_messages'],['can_view_messages_tab']],typeName:'message'},
+        permissions:['can_view_messages','can_view_messages_tab'],typeName:'message'},
       {name:'tasks',state:'tasks.detail',icon:'fa-flag',translation:'Tasks',
-        permissions:[['can_view_tasks'],['can_view_tasks_tab']]},
+        permissions:['can_view_tasks','can_view_tasks_tab']},
       {name:'reports',state:'reports.detail',icon:'fa-list-alt',translation:'Reports',
-        permissions:[['can_view_reports'],['can_view_reports_tab']],typeName:'report'},
+        permissions:['can_view_reports','can_view_reports_tab'],typeName:'report'},
       {name:'contacts',state:'contacts.detail',icon:'fa-user',translation:'Contacts',
-        permissions:[['can_view_contacts'],['can_view_contacts_tab']]},
+        permissions:['can_view_contacts','can_view_contacts_tab']},
       {name:'analytics',state:'analytics',icon:'fa-bar-chart-o',translation:'Analytics',
-        permissions:[['can_view_analytics'],['can_view_analytics_tab']]}];
+        permissions:['can_view_analytics','can_view_analytics_tab']}];
 
-      ctrl.permittedTabs = tabs.filter(tab => Auth.any(tab.permissions));
+      const hasAuthorization = permission => {
+        return Auth(permission)
+          .then(() => true)
+          .catch(() => false);
+      };
+
+      $q.all(tabs.map(tab => hasAuthorization(tab.permissions))).then(results => {
+        ctrl.permittedTabs = tabs.filter((tab,index) => results[index]);
+      });
 
       $scope.$on('$destroy', unsubscribe);
     },
