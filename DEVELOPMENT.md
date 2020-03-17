@@ -140,8 +140,8 @@ The app uses service workers which are only available over https which isn't ava
 
 The best option is to connect the phone to your computer and use port forwarding via USB.
 
-1. [Enable USB debugging](https://developer.android.com/studio/debug/dev-options) between your computer and phone.
-2. Go to [chrome://inspect/devices](chrome://inspect/devices)
+1. [Enable USB debugging](https://developer.android.com/studio/debug/dev-options) between your computer and phone
+2. In Chrome on your computer, go to: chrome://inspect/devices
 3. Click the "Port forwarding" button
 4. Add a new rule to forward the port API is running on to "localhost:5988". The API port is 443 if running via `Docker`, otherwise it will be 5988.
 5. Tick the "Enable port forwarding" checkbox
