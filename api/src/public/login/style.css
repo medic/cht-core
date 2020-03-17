@@ -15,11 +15,16 @@ body, input {
   margin: 0px auto;
   display: block;
 }
+form {
+  max-width: 800px;
+  margin: 1em auto;
+}
 label, input {
   display: block;
 }
 label {
-  margin-top: 1em;
+  margin: 0.5em auto;
+  width: 300px;
 }
 input {
   margin-bottom: 1em;
@@ -40,7 +45,6 @@ input {
   line-height: 1.42857;
   border-radius: 4px;
   display: block;
-  margin-top: 2em;
   font-size: 1em;
   width: 302px;
   padding: 6px 10px;
@@ -53,14 +57,9 @@ input {
 .center {
   padding-top: 2em;
 }
-form {
-  width: 300px;
-  margin: 0 auto;
-}
 .locale-wrapper {
-  max-width: 800px;
   text-align: center;
-  margin: 40px auto;
+  margin: 1em auto;
   padding: 0 20px;
 }
 .locale {
@@ -78,6 +77,7 @@ form {
 .error {
   color: #DA4548;
   display: none;
+  text-align: center;
 }
 .loading .loader,
 .loginoffline .error.offline,
@@ -122,5 +122,13 @@ form {
   100% {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
+  }
+}
+@media (max-width: 400px) {
+  .center {
+    padding-top: 0;
+  }
+  .locale {
+    display: block
   }
 }
