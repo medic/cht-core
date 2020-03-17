@@ -132,20 +132,36 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. Use either `serveo` or `ngrok` to make your developer build accessible from your Android device by giving it a trusted URL.
 
-1. Start the api. This can be via docker, grunt, debug, horti, etc.
-2. Follow the instructions below to start serveo (preferred) or ngrok
-3. This will output a generated URL which you can enter into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
+Start the api. This can be via docker, grunt, debug, horti, etc.
 
-### serveo
+The app uses service workers which are only available over https which isn't available during development. To get around this limitation use one of the following options.
 
-Proxying via serveo is generally more successful than ngrok so it is our preferred route. Sometimes it will be blocked by Chrome safe browsing however in which case you can try ngrok.
+### Port forwarding
+
+The best option is to connect the phone to your computer and use port forwarding via USB.
+
+1. [Enable USB debugging](https://developer.android.com/studio/debug/dev-options) between your computer and phone.
+2. Go to [chrome://inspect/devices](chrome://inspect/devices)
+3. Click the "Port forwarding" button
+4. Add a new rule to forward the port API is running on to "localhost:5988". The API port is 443 if running via `Docker`, otherwise it will be 5988.
+5. Tick the "Enable port forwarding" checkbox
+6. Click "Done"
+7. On your phone go to "localhost:5988"
+
+### Proxy services
+
+If USB debugging doesn't work, you can use remote proxy services, but these can fail in unpredictable ways. Also because the data is insecurely proxied to the 3rd party this method can expose PHI, passwords, or other private data.
+
+#### serveo
+
+serveo is generally more successful than ngrok so it is our preferred route. Sometimes it will be blocked by Chrome safe browsing however in which case you can try ngrok.
 
 * To connect to an API running via `grunt` or `horti`, execute `ssh -R 80:localhost:5988 serveo.net`
 * To connect to an API running via `Docker`, execute `ssh -R 80:localhost:443 serveo.net`
 
 This will echo a URL which you can connect to.
 
-### ngrok
+#### ngrok
 
 ngrok sometimes fails due to connection throttling which can cause the service worker cache preload to fail. It's included here as an alternative in case serveo doesn't work for some reason.
 
