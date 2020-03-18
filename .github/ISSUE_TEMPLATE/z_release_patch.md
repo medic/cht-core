@@ -35,3 +35,4 @@ Once all issues have passed acceptance testing and have been merged into `master
 
 This release fixes {{number of bugs}}. Read the release notes for full details: {{url}}
 ```
+- [ ] Mark this issue "done" and close the project.

@@ -53,3 +53,4 @@ Following our support policy, versions {{versions}} are no longer supported. Pro
 To see what's scheduled for the next releases have a read of the product roadmap: https://github.com/orgs/medic/projects?query=is%3Aopen+sort%3Aname-asc
 ```
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the Development category. You can use the previous message and omit `@channel`.
+- [ ] Mark this issue "done" and close the project.
