@@ -3,6 +3,8 @@ const http = require('http');
 const utils = require('../../../utils');
 const uuid = require('uuid');
 const querystring = require('querystring');
+const chai = require('chai');
+const sentinelUtils = require('../../sentinel/utils');
 
 const user = n => `org.couchdb.user:${n}`;
 
@@ -210,6 +212,70 @@ describe('Users API', () => {
           auth: { username, password }
         })
         .catch(() => fail('This should not result in an error')));
+
+    it('should work with enabled transitions', () => {
+      const parentPlace = {
+        _id: 'PARENT_PLACE',
+        name: 'Parent place',
+        type: 'district_hospital',
+        reported_date: new Date().getTime()
+      };
+      return utils
+        .updateSettings({ transitions: { generate_patient_id_on_people: true }})
+        .then(() => utils.saveDoc(parentPlace))
+        .then(() => {
+          const opts = {
+            path: '/api/v1/users',
+            method: 'POST',
+            body: {
+              username: 'philip',
+              password: password,
+              roles: ['district_admin'],
+              name: 'Philip',
+              contact: { name: 'Philip' },
+              place: { name: 'PhilipPlace', type: 'health_center', parent: 'PARENT_PLACE' },
+            },
+          };
+
+          return utils.request(opts);
+        })
+        .then(result => {
+          chai.expect(result).to.deep.nested.include({
+            'user.id': 'org.couchdb.user:philip',
+            'user-settings.id': 'org.couchdb.user:philip',
+          });
+          chai.expect(result.contact.id).to.not.be.undefined;
+        })
+        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => Promise.all([
+          utils.getDoc('org.couchdb.user:philip'),
+          utils.request('/_users/org.couchdb.user:philip')
+        ]))
+        .then(([userSettings, user]) => {
+          chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
+          chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
+          chai.expect(userSettings.facility_id).to.equal(user.facility_id);
+
+          return utils.getDocs([userSettings.contact_id, userSettings.facility_id]);
+        })
+        .then(([ contact, place ]) => {
+          chai.expect(contact.patient_id).to.not.be.undefined;
+          chai.expect(contact).to.deep.include({
+            name: 'Philip',
+            parent: { _id: place._id, parent: place.parent },
+            type: 'person',
+          });
+
+          chai.expect(place.place_id).to.not.be.undefined;
+          chai.expect(place).to.deep.include({
+            contact: { _id: contact._id, parent: contact.parent },
+            name: 'PhilipPlace',
+            parent: { _id: 'PARENT_PLACE' },
+            type: 'health_center',
+          });
+        });
+
+    });
 
   });
 
