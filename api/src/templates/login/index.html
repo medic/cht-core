@@ -11,27 +11,21 @@
       <form id="form" action="{{ action }}" method="POST">
         <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
         <input id="redirect" type="hidden" name="redirect" value="{{ redirect }}">
-        <label for="user">
-          {{ translations.username }}
-          <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-        </label>
-        <label for="password">
-          {{ translations.password }}
-          <input id="password" name="password" type="password"/>
-        </label>
-        <div id="locale" class="locale-wrapper">
-          <% locales.forEach(function(locale) { %>
-            <a href="#" name="{{ locale.key }}" class="locale {{ locale.key === defaultLocale ? 'selected' : '' }}">{{ locale.label }}</a>
-          <% }); %>
-        </div>
+        <label for="user">{{ translations.username }}</label>
+        <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+        <label for="password">{{ translations.password }}</label>
+        <input id="password" name="password" type="password"/>
         <p class="error offline">{{ translations.loginoffline }}</p>
         <p class="error incorrect">{{ translations.loginincorrect }}</p>
         <p class="error unknown">{{ translations.loginerror }}</p>
-        <label>
-          <button id="login" class="btn">{{ translations.login }}</button>
-        </label>
+        <button id="login" class="btn">{{ translations.login }}</button>
         <div class="loader"></div>
       </form>
+      <div id="locale" class="locale-wrapper">
+        <% locales.forEach(function(locale) { %>
+          <a href="#" name="{{ locale.key }}" class="locale {{ locale.key === defaultLocale ? 'selected' : '' }}">{{ locale.label }}</a>
+        <% }); %>
+      </div>
     </div>
     <script src="/login/script.js"></script>
   </body>
