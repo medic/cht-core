@@ -341,7 +341,7 @@ angular.module('inboxServices').service('Enketo',
           .then(function(form) {
             registerEditedListener(selector, editedListener);
             registerValuechangeListener(selector, valuechangeListener);
-            $window.debugFormModel = () => form.getModel().getStr();
+            $window.debugFormModel = () => form.model.getStr();
             return form;
           });
       });
