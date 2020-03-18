@@ -21,9 +21,10 @@ Node server to support the medic app.
 - [API Overview](#api-overview)
   - [Timestamps](#timestamps)
 - [Export](#export)
+  - [GET /api/v2/export/dhis](#get-apiv2dhis)
   - [GET /api/v2/export/reports](#get-apiv2exportreports)
   - [GET /api/v2/export/messages](#get-apiv2exportmessages)
-  - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
+  - [GET /api/v2/export/feedback](#get-apiv2exportfeedback)
   - [GET /api/v2/export/contacts](#get-apiv2exportcontacts)
 - [Forms](#forms)
   - [GET /api/v1/forms](#get-apiv1forms)
@@ -193,6 +194,28 @@ To set this parameter for a POST request submit this as the request body:
 }
 ```
 
+## GET /api/v2/export/dhis
+
+Exports target data formatted as a DHIS2 dataValueSet. The data can be filtered to a specific section of the contact hierarchy or for a given time interval.
+
+Parameter | Description
+-- | --
+dataSet | A DHIS2 dataSet GUID. Targets associated with this dataSet will have their data aggregated. (required)
+date.from | Filter the target data to be aggregated to be within the month of this timestamp. (required)
+orgUnit | Filter the target data to only that associated with contacts with attribute `{ dhis: { orgUnit } }`. (optional)
+
+```json
+{
+  "filters": {
+    "dataSet": "VMuFODsyWaO",
+    "date": {
+      "from": 949392000000,
+    },
+    "orgUnit": "KbY9DJ8mBkx"
+  }
+}
+```
+
 ## GET /api/v2/export/reports
 
 It uses the [search shared library](shared-libs/search) to ensure identical results in the export and the front-end. It also only supports exporting CSV so we can efficiently stream infinitely large exports.
@@ -250,10 +273,10 @@ Download messages.
 ### Examples
 
 ```
-/api/v1/export/messages
+/api/v2/export/messages
 ```
 
-## GET /api/v1/export/feedback
+## GET /api/v2/export/feedback
 
 Export a file containing the user feedback.
 

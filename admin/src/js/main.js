@@ -28,6 +28,7 @@ require('./controllers/edit-language');
 require('./controllers/edit-translation');
 require('./controllers/edit-user');
 require('./controllers/export-contacts');
+require('./controllers/export-dhis');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
 require('./controllers/export-reports');
@@ -236,6 +237,15 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'ExportContactsCtrl',
           templateUrl: 'templates/export_contacts.html'
+        }
+      }
+    })
+    .state('export.dhis', {
+      url: '/dhis',
+      views: {
+        tab: {
+          controller: 'ExportDhisCtrl',
+          templateUrl: 'templates/export_dhis.html'
         }
       }
     })
