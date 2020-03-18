@@ -60,7 +60,7 @@ form {
 .locale-wrapper {
   max-width: 800px;
   text-align: center;
-  margin: 40px auto;
+  margin: 1em auto;
   padding: 0 20px;
 }
 .locale {
@@ -122,5 +122,10 @@ form {
   100% {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
+  }
+}
+@media (max-width: 400px) {
+  .locale {
+    display: block
   }
 }
