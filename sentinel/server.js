@@ -48,7 +48,7 @@ serverChecks
     // api has booted
     const config = require('./src/config');
     return config.init().then(() => {
-      require('./src/schedule').checkSchedule();
+      require('./src/schedule').init();
       logger.info('startup complete.');
     });
   })

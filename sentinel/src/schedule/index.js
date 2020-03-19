@@ -11,6 +11,7 @@ const tasks = {
   outbound: require('./outbound'),
   purging: require('./purging')
 };
+const ongoingTasks = new Set();
 
 function getTime(hour, minute) {
   return moment(0)
@@ -54,12 +55,32 @@ exports.sendable = function() {
   return now >= after && now <= until;
 };
 
-exports.checkSchedule = function() {
-  tasks.reminders.execute()
-    .then(() => executeIfSendable(tasks.dueTasks))
-    .then(() => tasks.replications.execute())
-    .then(() => tasks.outbound.execute())
-    .then(() => tasks.purging.execute())
-    .catch(err => logger.error('Error running tasks: %o', err))
-    .then(() => reschedule());
+const init = () => {
+  Object.keys(tasks).forEach(taskName => {
+    if (ongoingTasks.has(taskName)) {
+      logger.debug(`Skipping Task ${taskName} as it's still running`);
+    } else {
+      ongoingTasks.add(taskName);
+
+      logger.info(`Task ${taskName} started`);
+      tasks[taskName].execute(function(err) {
+        ongoingTasks.delete(taskName);
+
+        if (err) {
+          logger.error(`Task ${taskName} completed with error: ${err}`);
+        } else {
+          logger.info(`Task ${taskName} completed`);
+        }
+      });
+    }
+  });
+};
+
+module.exports = {
+  init: () => {
+    logger.info('Scheduler initiated');
+    init();
+    setInterval(init, 1000 * 60 * 5);
+  },
+  _sendable: sendable
 };
