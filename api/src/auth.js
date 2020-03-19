@@ -65,7 +65,8 @@ module.exports = {
   isOffline: roles => {
     const configured = config.get('roles') || {};
     const configuredRole = roles.some(role => configured[role]);
-    return !configuredRole ||
+    return !isDbAdmin({ roles }) &&
+           !configuredRole ||
            roles.some(role => configured[role] && configured[role].offline);
   },
 
@@ -191,5 +192,7 @@ module.exports = {
         Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
         return medicUser;
       });
-  }
+  },
+
+  isDbAdmin: isDbAdmin,
 };
