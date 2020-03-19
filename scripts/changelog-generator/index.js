@@ -101,7 +101,7 @@ const filterIssues = issues => {
   return issues.filter(issue => {
     return issue.data.labels.every(label => {
       return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
-    })
+    });
   });
 };
 
