@@ -2,7 +2,7 @@
 name: Patch release
 about: Schedule a patch release
 title: 'Release x.y.z'
-labels: 'Type: Technical issue'
+labels: 'Type: Internal process'
 assignees: ''
 
 ---

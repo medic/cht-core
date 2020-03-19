@@ -2,7 +2,7 @@
 name: Major/minor release
 about: Schedule a major or minor release
 title: 'Release x.y.z'
-labels: 'Type: Technical issue'
+labels: 'Type: Internal process'
 assignees: ''
 
 ---

@@ -20,6 +20,8 @@ const TYPES = [
   { labels: ['bug', 'Type: Bug'], title: 'Bug fixes', issues: [] },
   { labels: ['Type: Technical issue'], title: 'Technical issues', issues: [] }
 ];
+const PREFIXES_TO_IGNORE = [ 'Type: Internal process', 'Won\'t fix:' ];
+
 const github = new GitHub({
   headers: { 'user-agent': 'changelog-generator' }
 });
@@ -95,6 +97,14 @@ const getIssues = cards => {
   );
 };
 
+const filterIssues = issues => {
+  return issues.filter(issue => {
+    return issue.data.labels.every(label => {
+      return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
+    })
+  });
+};
+
 const sort = issues => {
   const errors = [];
   issues.forEach(issue => {
@@ -144,6 +154,7 @@ Promise.resolve()
   .then(getProjectId)
   .then(getCards)
   .then(getIssues)
+  .then(filterIssues)
   .then(sort)
   .then(output)
   .catch(console.error);
