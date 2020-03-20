@@ -70,6 +70,7 @@ rule GenerateEvents {
       enableTargets: true,
       user: userSettingsDoc,
       contact: userContactDoc,
+      monthStartDate: 1,
     }, assign);
   },
 

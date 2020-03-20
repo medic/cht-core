@@ -83,6 +83,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       enableTargets,
       contact: userContactDoc,
       user: userSettingsDoc,
+      monthStartDate: UHCSettings.getMonthStartDate(settingsDoc),
     };
   };
 

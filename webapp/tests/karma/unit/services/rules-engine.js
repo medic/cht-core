@@ -14,6 +14,7 @@ describe(`RulesEngine service`, () => {
   let TranslateFrom;
   let UserContact;
   let UserSettings;
+  let UHCSettings;
 
   const settingsDoc = {
     _id: 'settings',
@@ -58,6 +59,7 @@ describe(`RulesEngine service`, () => {
     enableTargets: true,
     contact: userContactDoc,
     user: userSettingsDoc,
+    monthStartDate: 1,
   };
 
   beforeEach(async () => {
@@ -68,6 +70,7 @@ describe(`RulesEngine service`, () => {
     TranslateFrom = sinon.stub().returns('translated');
     UserContact = sinon.stub().resolves(userContactDoc);
     UserSettings = sinon.stub().resolves(userSettingsDoc);
+    UHCSettings = { getMonthStartDate: sinon.stub().returns(1) };
 
     RulesEngineCore = {
       initialize: sinon.stub().resolves(true),
@@ -93,6 +96,7 @@ describe(`RulesEngine service`, () => {
       $provide.value('TranslateFrom', TranslateFrom);
       $provide.value('UserContact', UserContact);
       $provide.value('UserSettings', UserSettings);
+      $provide.value('UHCSettings', UHCSettings);
     });
 
     inject(($injector, _$timeout_, _$translate_) => {

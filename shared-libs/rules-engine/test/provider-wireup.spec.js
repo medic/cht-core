@@ -16,6 +16,7 @@ chai.use(chaiExclude);
 
 const rulesStateStore = RestorableRulesStateStore();
 const NOW = 50000;
+const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
@@ -96,6 +97,7 @@ describe('provider-wireup integration tests', () => {
         _id: pouchdbProvider.RULES_STATE_DOCID,
         rulesStateStore: {
           contactState: {},
+          monthStartDate: 1,
         },
       }]);
 
@@ -109,9 +111,11 @@ describe('provider-wireup integration tests', () => {
           rulesStateStore: {
             contactState: {
               'abc': {
+                bestBefore: NOW + DEFAULT_EXPIRE,
                 calculatedAt: NOW,
               },
             },
+            monthStartDate: 1,
           },
         }]);
       expect(db.put.args[0][0].rulesStateStore.rulesConfigHash)

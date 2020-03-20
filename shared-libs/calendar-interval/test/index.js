@@ -1,19 +1,19 @@
-describe('service module', () => {
-  let clock;
-  let service;
+const sinon = require('sinon');
+const chai = require('chai');
+const moment = require('moment');
 
-  beforeEach(function() {
-    module('inboxApp');
-    inject(function($injector) {
-      service = $injector.get('CalendarInterval');
-    });
-  });
+const service = require('../src/index');
+
+describe('CalendarInterval', () => {
+  let clock;
 
   afterEach(() => {
     if (clock) {
       clock.restore();
     }
+    sinon.restore();
   });
+
 
   describe('getCurrent', () => {
     it('returns 1st of current month when month start is not set or incorrect', () => {
