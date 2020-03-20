@@ -20,14 +20,14 @@ const enqueue = change => changeQueue.push(change);
 const updateMetadata = (change, callback) => {
   processed++;
   metadata
-    .update(change.seq)
+    .setTransitionSeq(change.seq)
     .then(() => callback())
     .catch(callback);
 };
 
-const getProcessedSeq = () => {
+const getTransitionSeq = () => {
   return metadata
-    .getProcessedSeq()
+    .getTransitionSeq()
     .catch(err => {
       logger.error('transitions: error fetching processed seq: %o', err);
       return;
@@ -143,7 +143,7 @@ const listen = () => {
   changeQueue.resume();
   if (!request) {
     logger.info('transitions: processing enabled');
-    return getProcessedSeq().then(seq => registerFeed(seq));
+    return getTransitionSeq().then(seq => registerFeed(seq));
   }
 };
 

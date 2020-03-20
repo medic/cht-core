@@ -150,14 +150,19 @@ const matchDbs = (expected, actual) => {
   }
 };
 
-const realPouchDb = db.medic;
+const realMedicDb = db.medic;
+const realSentinelDb = db.sentinel;
 const switchToRealDbs = () => {
-  db.medic = realPouchDb;
+  db.medic = realMedicDb;
+  db.sentinel = realSentinelDb;
 };
 
 const switchToTestDbs = () => {
   db.medic = new PouchDB(
-    realPouchDb.name.replace(/medic$/, 'medic-test')
+    realMedicDb.name.replace(/medic$/, 'medic-test')
+  );
+  db.sentinel = new PouchDB(
+    realSentinelDb.name.replace(/medic-sentinel$/, 'medic-sentinel-test')
   );
 };
 
