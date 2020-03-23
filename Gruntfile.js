@@ -232,14 +232,7 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
-      },
-      general: {
-        options: {
-          replace: {
-            UNIT_TEST_ENV: '',
-          },
-        },
-      },
+      }
     },
     less: {
       webapp: {
@@ -1084,13 +1077,6 @@ module.exports = function(grunt) {
     'env:unit-test',
     'exec:shared-lib-unit',
     'mochaTest:unit',
-    'env:general',
-  ]);
-
-  grunt.registerTask('test', 'Run unit, integration, and e2e tests', [
-    'unit',
-    'test-api-integration',
-    'e2e',
   ]);
 
   // CI tasks
