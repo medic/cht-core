@@ -172,11 +172,10 @@ const moment = require('moment');
       return dbFetch.apply(this, arguments)
         .then(function(response) {
           if (response.status === 401) {
-            $log.info('dbFetch:Logout');
-            //showSessionExpired();
+            showSessionExpired();
             $timeout(() => {
               $log.info('Redirect to login after 1 minute of inactivity');
-              //Session.navigateToLogin();
+              Session.navigateToLogin();
             }, 60000);
           }
           return response;

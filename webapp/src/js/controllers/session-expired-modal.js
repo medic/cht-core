@@ -19,7 +19,7 @@ angular.module('inboxControllers').controller('SessionExpiredModalCtrl',
     ctrl.cancel = function() {
       $uibModalInstance.dismiss();
       $timeout(() => {
-        $log.debug('Display expired session ended dialog');
+        $log.debug('Display session expired dialog');
         ctrl.cancel();
       }, 300000);
     };
