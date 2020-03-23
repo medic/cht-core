@@ -32,7 +32,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         loadingContent: Selectors.getLoadingContent(state),
-        selectedTask: Selectors.getSelectedTask(state)
+        selectedTask: Selectors.getSelectedTask(state),
+        loadTasks: Selectors.getLoadTasks(state),
       };
     };
     const mapDispatchToTarget = function(dispatch) {
@@ -71,7 +72,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           LiveList.tasks.setSelected(hydratedTask._id);
           ctrl.setTitle(hydratedTask.title);
           ctrl.setShowContent(true);
-  
+
           if (hasOneActionAndNoFields(hydratedTask)) {
             ctrl.performAction(hydratedTask.actions[0], true);
           }
@@ -224,7 +225,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
     ctrl.form = null;
     ctrl.formId = null;
-    setSelected($state.params.id);
+    ctrl.loadTasks.then(() => setSelected($state.params.id));
 
     $scope.$on('$destroy', unsubscribe);
   }

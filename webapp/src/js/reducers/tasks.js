@@ -13,6 +13,8 @@ module.exports = function(state, action) {
     return Object.assign({}, state, { selected: null });
   case actionTypes.SET_SELECTED_TASK:
     return Object.assign({}, state, { selected: action.payload.selected });
+  case actionTypes.SET_TASKS_LOADED:
+    return Object.assign({}, state, { loaded: action.payload.loaded });
   default:
     return state;
   }
