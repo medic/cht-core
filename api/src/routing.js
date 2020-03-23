@@ -22,6 +22,7 @@ const proxyForChanges = require('http-proxy').createProxyServer({
 const login = require('./controllers/login');
 const smsGateway = require('./controllers/sms-gateway');
 const exportData = require('./controllers/export-data');
+const hydration = require('./controllers/hydration');
 const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
@@ -69,10 +70,10 @@ const handleJsonRequest = (method, path, callback) => {
     }
   });
 };
-app.deleteJson = (path, callback) =>
-  handleJsonRequest('delete', path, callback);
+app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
+app.getJson = (path, callback) => handleJsonRequest('get', path, callback);
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
@@ -371,6 +372,8 @@ app.postJson('/api/v1/places', function(req, res) {
     })
     .catch(err => serverUtils.error(err, req, res));
 });
+
+app.getJson('/api/v1/hydrate', hydration.hydrate);
 
 app.postJson('/api/v1/places/:id', function(req, res) {
   auth
