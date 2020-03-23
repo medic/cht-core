@@ -88,11 +88,11 @@ const self = {
     }
 
     const now = Date.now();
-    const { calculatedAt, bestBefore, isDirty } = state.contactState[contactId];
-    return !bestBefore ||
+    const { calculatedAt, expireAt, isDirty } = state.contactState[contactId];
+    return !expireAt ||
       isDirty ||
     /* user rewound their clock */ calculatedAt > now ||
-    /* isExpired */ bestBefore < now;
+    /* isExpired */ expireAt < now;
   },
 
   /**
@@ -142,7 +142,7 @@ const self = {
     for (const contactId of contactIds) {
       state.contactState[contactId] = {
         calculatedAt,
-        bestBefore: Math.min(reportingInterval.end, defaultExpiry),
+        expireAt: Math.min(reportingInterval.end, defaultExpiry),
       };
     }
 

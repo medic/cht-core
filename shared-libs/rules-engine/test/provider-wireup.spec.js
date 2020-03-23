@@ -111,7 +111,7 @@ describe('provider-wireup integration tests', () => {
           rulesStateStore: {
             contactState: {
               'abc': {
-                bestBefore: NOW + DEFAULT_EXPIRE,
+                expireAt: NOW + DEFAULT_EXPIRE,
                 calculatedAt: NOW,
               },
             },

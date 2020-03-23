@@ -48,7 +48,7 @@ describe('rules-state-store', () => {
   });
 
   it('load a fresh contact', async () => {
-    const state = mockState({ 'a': { calculatedAt: Date.now(), bestBefore: Date.now() + 1000 } });
+    const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     await rulesStateStore.load(state, {});
 
     const isDirty = rulesStateStore.isDirty('a');
@@ -56,7 +56,7 @@ describe('rules-state-store', () => {
   });
 
   it('fresh contact but dirty hash', async () => {
-    const state = mockState({ 'a': { calculatedAt: Date.now(), bestBefore: Date.now() + 1000 } });
+    const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     state.rulesConfigHash = 'hash';
     await rulesStateStore.load(state, {});
 
@@ -66,7 +66,7 @@ describe('rules-state-store', () => {
 
   it('scenario after loading state', async () => {
     const onStateChange = sinon.stub().resolves();
-    const state = mockState({ 'a': { calculatedAt: Date.now(), bestBefore: Date.now() + 1000 } });
+    const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     await rulesStateStore.load(state, {}, onStateChange);
 
     const isDirty = rulesStateStore.isDirty('a');
