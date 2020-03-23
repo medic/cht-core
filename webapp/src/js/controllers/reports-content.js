@@ -9,6 +9,7 @@ const _ = require('lodash/core');
       $log,
       $ngRedux,
       $scope,
+      $state,
       $stateParams,
       $timeout,
       Changes,
@@ -133,7 +134,12 @@ const _ = require('lodash/core');
         },
         callback: function(change) {
           if (change.deleted) {
-            ctrl.removeSelectedReport(change.id);
+            if (ctrl.selectMode) {
+              ctrl.removeSelectedReport(change.id);
+            } else {
+              ctrl.unsetSelected();
+              $state.go($state.current.name, { id: null });
+            }
           } else {
             const selectedReports = ctrl.selectedReports;
             ctrl.selectReport(change.id, { silent: true })
