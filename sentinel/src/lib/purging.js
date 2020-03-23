@@ -9,6 +9,7 @@ const db = require('../db');
 const moment = require('moment');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
+const TARGET_EXPIRATION_PERIOD = 7; // months
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -351,76 +352,104 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     .then(() => nextKey && batchedContactsPurge(roles, purgeFn, nextKey, nextKeyDocId));
 };
 
-const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
-  let nextKeyDocId;
-  const docs = [];
-  const docIds = [];
-  const rolesHashes = Object.keys(roles);
-
-  logger.debug(`Starting unallocated purge batch with id ${startKeyDocId}`);
-
-  const queryString = {
+const batchedUnallocatedPurge = (roles, purgeFn) => {
+  const type = 'unallocated';
+  const url = `${db.couchUrl}/_design/medic/_view/docs_by_replication_key`;
+  const getQueryParams = (startKeyDocId) => ({
     limit: BATCH_SIZE,
     key: JSON.stringify('_unassigned'),
     startkey_docid: startKeyDocId,
     include_docs: true
-  };
+  });
 
-  return request
-    .get(`${db.couchUrl}/_design/medic/_view/docs_by_replication_key`, { qs: queryString, json: true })
-    .then(result => {
-      result.rows.forEach(row => {
-        if (row.id === startKeyDocId) {
+  const purgeCallback = (rolesHashes, rows) => {
+    const toPurge = {};
+    rows.forEach(row => {
+      const doc = row.doc;
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        const purgeIds = doc.form ?
+          purgeFn({ roles: roles[hash] }, {}, [doc], []) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc]);
+
+        if (!validPurgeResults(purgeIds)) {
           return;
         }
-
-        nextKeyDocId = row.id;
-        docIds.push(row.id);
-        docs.push(row.doc);
+        toPurge[hash][doc._id] = purgeIds.includes(doc._id);
       });
+    });
 
-      return getAlreadyPurgedDocs(rolesHashes, docIds);
-    })
-    .then(alreadyPurged => {
-      const toPurge = {};
-      docs.forEach(doc => {
-        rolesHashes.forEach(hash => {
-          toPurge[hash] = toPurge[hash] || {};
-          const purgeIds = doc.form ?
-            purgeFn({ roles: roles[hash] }, {}, [doc], []) :
-            purgeFn({ roles: roles[hash] }, {}, [], [doc]);
+    return toPurge;
+  };
 
-          if (!validPurgeResults(purgeIds)) {
-            return;
-          }
-          toPurge[hash][doc._id] = purgeIds.includes(doc._id);
-        });
-      });
-
-      return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
-    })
-    .then(() => nextKeyDocId && batchedUnallocatedPurge(roles, purgeFn, nextKeyDocId));
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '');
 };
 
-const batchedTasksPurge = (roles, startKeyDocId = '') => {
+const batchedTasksPurge = (roles) => {
+  const type = 'tasks';
+  const url = `${db.couchUrl}/_design/medic/_view/tasks_by_state`;
+
+  const terminalStates = ['Cancelled', 'Completed', 'Failed'];
+  const getQueryParams = (startKeyDocId) => ({
+    limit: BATCH_SIZE,
+    keys: JSON.stringify(terminalStates),
+    startkey_docid: startKeyDocId,
+  });
+
+  const purgeCallback = (rolesHashes, rows) => {
+    const now = moment();
+    const toPurge = {};
+    rows.forEach(row => {
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        const daysSinceTaskEndDate = now.diff(row.value.endDate, 'days');
+        if (daysSinceTaskEndDate >= TASK_EXPIRATION_PERIOD) {
+          toPurge[hash][row.id] = row.id;
+        }
+      });
+    });
+    return toPurge;
+  };
+
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '');
+};
+
+const batchedTargetsPurge = (roles) => {
+  const type = 'targets';
+  const url = `${db.couchUrl}/_all_docs`;
+
+  const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
+  const getQueryParams = (startKeyDocId) => ({
+    limit: BATCH_SIZE,
+    start_key: 'target~',
+    end_key: `target~${lastAllowedReportingIntervalTag}~`,
+    startkey_docid: startKeyDocId,
+  });
+
+  const purgeCallback = (rolesHashes, rows) => {
+    const toPurge = {};
+    rows.forEach(row => {
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        toPurge[hash][row.id] = row.id;
+      });
+    });
+    return toPurge;
+  };
+
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '');
+};
+
+const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyDocId) => {
   let nextKeyDocId;
   const rows = [];
   const docIds = [];
   const rolesHashes = Object.keys(roles);
-  const now = moment();
 
-  logger.debug(`Starting tasks purge batch with id ${startKeyDocId}`);
-
-  const terminalStates = ['Cancelled', 'Completed', 'Failed'];
-
-  const queryString = {
-    limit: BATCH_SIZE,
-    keys: JSON.stringify(terminalStates),
-    startkey_docid: startKeyDocId,
-  };
+  logger.debug(`Starting ${type} purge batch with id ${startKeyDocId}`);
 
   return request
-    .get(`${db.couchUrl}/_design/medic/_view/targets_by_state`, { qs: queryString, json: true })
+    .get(uri, { qs: getQueryParams(startKeyDocId), json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -435,22 +464,11 @@ const batchedTasksPurge = (roles, startKeyDocId = '') => {
       return getAlreadyPurgedDocs(rolesHashes, docIds);
     })
     .then(alreadyPurged => {
-      const toPurge = {};
-      rows.forEach(row => {
-        rolesHashes.forEach(hash => {
-          toPurge[hash] = toPurge[hash] || {};
-          const daysSinceTaskEndDate = now.diff(row.value.endDate, 'days');
-          if (daysSinceTaskEndDate >= TASK_EXPIRATION_PERIOD) {
-            toPurge[hash][row.id] = row.id;
-          }
-        });
-      });
-
+      const toPurge = purgeCallback(rolesHashes, rows);
       return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
     })
-    .then(() => nextKeyDocId && batchedTasksPurge(roles, nextKeyDocId));
+    .then(() => nextKeyDocId && batchedPurge(type, uri, getQueryParams, purgeCallback, roles, nextKeyDocId));
 };
-
 
 const writePurgeLog = (roles, duration) => {
   const date = new Date();
@@ -510,6 +528,7 @@ const purge = () => {
         .then(() => batchedContactsPurge(roles, purgeFn))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
         .then(() => batchedTasksPurge(roles))
+        .then(() => batchedTargetsPurge(roles))
         .then(() => {
           const duration = (performance.now() - start);
           logger.info(`Server Side Purge completed successfully in ${duration / 1000 / 60} minutes`);
