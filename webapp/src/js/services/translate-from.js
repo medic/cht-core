@@ -16,7 +16,7 @@
  * var patient = { _id: 'abc', patient: { name: 'Estelle' } };
  * translateFrom([ { locale: 'en', content: 'Go visit {{patient.name}}' }], patient);  // 'Go visit Estelle'
  */
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
@@ -27,7 +27,7 @@ const _ = require('underscore');
 
     // first format: [ { content: 'Hello', locale: 'en' } ]
     if (_.isArray(labels)) {
-      const label = _.findWhere(labels, { locale: locale });
+      const label = _.find(labels, { locale: locale });
       if (label) {
         return label.content;
       }

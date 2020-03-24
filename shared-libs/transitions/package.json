@@ -27,9 +27,9 @@
     "bikram-sambat-bootstrap": "^1.5.0",
     "google-libphonenumber": "^3.2.5",
     "gsm": "^0.1.4",
+    "lodash": "^4.17.15",
     "moment": "^2.22.2",
     "mustache": "^3.1.0",
-    "object-path": "^0.11.4",
-    "underscore": "^1.9.1"
+    "object-path": "^0.11.4"
   }
 }

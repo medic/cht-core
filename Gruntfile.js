@@ -176,7 +176,11 @@ module.exports = function(grunt) {
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
             'bikram-sambat': './webapp/node_modules/bikram-sambat',
             'moment': './webapp/node_modules/moment',
-            'underscore': './webapp/node_modules/underscore'
+            'lodash/core': './webapp/node_modules/lodash/core',
+            'lodash/intersection': './webapp/node_modules/lodash/intersection',
+            'lodash/uniq': './webapp/node_modules/lodash/uniq',
+            'lodash/uniqBy': './webapp/node_modules/lodash/uniqBy',
+            'lodash/groupBy': './webapp/node_modules/lodash/groupBy',
           },
         },
       },
@@ -191,7 +195,8 @@ module.exports = function(grunt) {
             'gsm': './admin/node_modules/gsm',
             'object-path': './admin/node_modules/object-path',
             'bikram-sambat': './admin/node_modules/bikram-sambat',
-            '@medic/phone-number': './admin/node_modules/@medic/phone-number'
+            '@medic/phone-number': './admin/node_modules/@medic/phone-number',
+            'lodash/core': './admin/node_modules/lodash/core',
           },
         },
       },
@@ -227,14 +232,7 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
-      },
-      general: {
-        options: {
-          replace: {
-            UNIT_TEST_ENV: '',
-          },
-        },
-      },
+      }
     },
     less: {
       webapp: {
@@ -472,9 +470,6 @@ module.exports = function(grunt) {
       'setup-admin': {
         cmd:
           ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
-          ` && curl -X POST ${couchConfig.withPath('_users')} ` +
-          ' -H "Content-Type: application/json" ' +
-          ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
           ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
           ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
@@ -502,7 +497,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: 'cd api && npm ci',
+        cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
       },
       'npm-ci-shared-libs': {
         cmd: () => {
@@ -1082,13 +1077,6 @@ module.exports = function(grunt) {
     'env:unit-test',
     'exec:shared-lib-unit',
     'mochaTest:unit',
-    'env:general',
-  ]);
-
-  grunt.registerTask('test', 'Run unit, integration, and e2e tests', [
-    'unit',
-    'test-api-integration',
-    'e2e',
   ]);
 
   // CI tasks

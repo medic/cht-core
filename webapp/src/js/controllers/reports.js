@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const responsive = require('../modules/responsive');
 const scrollLoader = require('../modules/scroll-loader');
 
@@ -79,7 +79,7 @@ angular
     };
 
     const query = function(opts) {
-      const options = _.extend({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+      const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
       if (options.limit < PAGE_SIZE) {
         options.limit = PAGE_SIZE;
       }
@@ -207,7 +207,7 @@ angular
         const target = $(e.target).closest('li[data-record-id]');
         const reportId = target.attr('data-record-id');
         const checkbox = target.find('input[type="checkbox"]');
-        const alreadySelected = _.findWhere(ctrl.selectedReports, { _id: reportId });
+        const alreadySelected = _.find(ctrl.selectedReports, { _id: reportId });
         // timeout so if the user clicked the checkbox it has time to
         // register before we set it to the correct value.
         $timeout(function() {
@@ -224,7 +224,7 @@ angular
     const syncCheckboxes = function() {
       $('#reports-list li').each(function() {
         const id = $(this).attr('data-record-id');
-        const found = _.findWhere(ctrl.selectedReports, { _id: id });
+        const found = _.find(ctrl.selectedReports, { _id: id });
         $(this)
           .find('input[type="checkbox"]')
           .prop('checked', found);
@@ -235,7 +235,7 @@ angular
       ctrl.setLeftActionBar({
         hasResults: ctrl.hasReports,
         exportFn: function(e) {
-          const exportFilters = _.extendOwn({}, ctrl.filters);
+          const exportFilters = _.assignIn({}, ctrl.filters);
           ['forms', 'facilities'].forEach(function(type) {
             if (exportFilters[type]) {
               delete exportFilters[type].options;

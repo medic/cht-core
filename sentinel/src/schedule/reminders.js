@@ -1,5 +1,5 @@
 const { performance } = require('perf_hooks');
-const _ = require('underscore');
+const _ = require('lodash');
 const moment = require('moment');
 const request = require('request-promise-native');
 

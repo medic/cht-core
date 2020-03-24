@@ -1,4 +1,3 @@
-const _ = require('underscore');
 const  moment = require('moment');
 const sinon = require('sinon');
 const assert = require('chai').assert;
@@ -15,10 +14,10 @@ const getMessage = (doc, idx) => {
     return;
   }
   if (!idx) {
-    return _.first(_.first(doc.tasks).messages);
+    return doc.tasks[0].messages[0];
   }
   if (doc.tasks[idx]) {
-    return _.first(doc.tasks[idx].messages);
+    return doc.tasks[idx].messages[0];
   }
 };
 

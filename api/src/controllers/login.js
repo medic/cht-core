@@ -3,7 +3,7 @@ const { promisify } = require('util');
 const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
-const _ = require('underscore');
+const _ = require('lodash');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
@@ -13,12 +13,9 @@ const ONE_YEAR = 31536000000;
 const logger = require('../logger');
 const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
+const users = require('../services/users');
 
 let loginTemplate;
-
-_.templateSettings = {
-  escape: /\{\{(.+?)\}\}/g,
-};
 
 const safePath = requested => {
   const root = '/';
@@ -140,15 +137,23 @@ const setCookies = (req, res, sessionRes) => {
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
       res.clearCookie('login');
-      return auth.getUserSettings(userCtx).then(({ language }={}) => {
-        if (language) {
-          setLocaleCookie(res, language);
-        }
-        res.status(302).send(getRedirectUrl(userCtx));
-      });
+      return auth
+        .getUserSettings(userCtx)
+        .catch(err => {
+          if (err.status === 404 && auth.isDbAdmin(userCtx)) {
+            return users.createAdmin(userCtx).then(() => auth.getUserSettings(userCtx));
+          }
+          throw err;
+        })
+        .then(({ language }={}) => {
+          if (language) {
+            setLocaleCookie(res, language);
+          }
+          res.status(302).send(getRedirectUrl(userCtx));
+        });
     })
     .catch(err => {
-      logger.error(`Error getting authCtx ${err}`);
+      logger.error(`Error getting authCtx %o`, err);
       res.status(401).json({ error: 'Error getting authCtx' });
     });
 };

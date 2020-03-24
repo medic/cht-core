@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 (function() {
   'use strict';
@@ -19,7 +19,7 @@ const _ = require('underscore');
   const add = function(dataRecord, group) {
     let changed = false;
     const to = getTo(dataRecord, group);
-    _.each(group.rows, function(updatedTask) {
+    _.forEach(group.rows, function(updatedTask) {
       if (updatedTask.added) {
         changed = true;
         dataRecord.scheduled_tasks.push({
@@ -35,15 +35,15 @@ const _ = require('underscore');
 
   const update = function(dataRecord, group) {
     let changed = false;
-    const tasks = _.where(dataRecord.scheduled_tasks, {
+    const tasks = _.filter(dataRecord.scheduled_tasks, {
       group: group.number,
     });
-    _.each(group.rows, function(updatedTask, i) {
+    _.forEach(group.rows, function(updatedTask, i) {
       if (updatedTask.state === 'scheduled') {
         changed = true;
         tasks[i].due = updatedTask.due;
         if (!updatedTask.translation_key) {
-          _.each(updatedTask.messages, function(updatedMessage, j) {
+          _.forEach(updatedTask.messages, function(updatedMessage, j) {
             tasks[i].messages[j].message = updatedMessage.message;
           });
         }

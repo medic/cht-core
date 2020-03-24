@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const assert = require('chai').assert;
 
 const translator = require('../../../../src/js/enketo/translator');
@@ -20,7 +20,7 @@ describe('enketo translator', () => {
 
     _.forEach({
       'some.random.thing': 'enketo.some.random.thing',
-     
+
       // Months
       'date.month.1':  'Jan',
       'date.month.2':  'Feb',

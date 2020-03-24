@@ -66,11 +66,11 @@ describe('Export Data controller', () => {
       auth.check.resolves();
       auth.getUserCtx.returns(Promise.resolve({}));
       auth.isOnlineOnly.returns(true);
-      sinon.stub(service, 'export');
+      sinon.stub(service, 'exportStream');
 
       return controller.get(req, res).then(() => {
-        service.export.callCount.should.equal(1);
-        service.export.args[0].should.deep.equal([
+        service.exportStream.callCount.should.equal(1);
+        service.exportStream.args[0].should.deep.equal([
           'reports',
           {
             date: { from: 1525813200000, to: 1528232399999 },
@@ -87,7 +87,7 @@ describe('Export Data controller', () => {
     // NB: This is actually an integration test so we can test that
     // errors from the underlying mapper are handled correctly in
     // the controller.
-    it('catches error from service.export', done => {
+    it('catches error from service.exportStream', done => {
       const req = {
         params: {
           type: 'feedback'

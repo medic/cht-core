@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const responsive = require('../modules/responsive');
 const Tour = require('bootstrap-tour');
 
@@ -427,7 +427,7 @@ angular.module('inboxServices').service('Tour',
     };
 
     const getTour = function(name) {
-      return _.findWhere(tours, { name: name }) || tours[0];
+      return _.find(tours, { name: name }) || tours[0];
     };
 
     const getSettings = function(name) {
@@ -440,7 +440,7 @@ angular.module('inboxServices').service('Tour',
         settings.template = createTemplate();
 
         const mobile = responsive.isMobile();
-        _.each(settings.steps, function(step) {
+        _.forEach(settings.steps, function(step) {
           step.title = $translate.instant(step.title);
           step.content = $translate.instant(step.content);
           if (mobile) {
@@ -485,78 +485,71 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    const getMessagesTour = function() {
-      return Auth('can_view_messages_tab')
-        .then(function() {
-          return {
+    const getMessagesTour = () => {
+      return Auth.has('can_view_messages_tab')
+        .then(canView => {
+          return canView && {
             order: 0,
             id: 'messages',
             icon: 'fa-envelope',
             name: 'Messages'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getTasksTour = function() {
+    const getTasksTour = () => {
       if (Session.isOnlineOnly()) {
         return;
       }
-      return Auth('can_view_tasks_tab')
-        .then(function() {
-          return {
+      return Auth.has('can_view_tasks_tab')
+        .then(canView => {
+          return canView && {
             order: 1,
             id: 'tasks',
             icon: 'fa-flag',
             name: 'Tasks'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getReportsTour = function() {
-      return Auth('can_view_reports_tab')
-        .then(function() {
-          return {
+    const getReportsTour = () => {
+      return Auth.has('can_view_reports_tab')
+        .then(canView => {
+          return canView && {
             order: 2,
             id: 'reports',
             icon: 'fa-list-alt',
             name: 'Reports'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getContactsTour = function() {
-      return Auth('can_view_contacts_tab')
-        .then(function() {
-          return {
+    const getContactsTour = () => {
+      return Auth.has('can_view_contacts_tab')
+        .then(canView => {
+          return canView && {
             order: 3,
             id: 'contacts',
             icon: 'fa-user',
             name: 'Contacts'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    const getAnalyticsTour = function() {
+    const getAnalyticsTour = () => {
       return $q.all([
-        AnalyticsModules(),
-        Auth('can_view_analytics')
+        Auth.has('can_view_analytics'),
+        AnalyticsModules()
       ])
-        .then(function(results) {
-          if (results.length) {
-            return {
-              order: 4,
-    
-              id: 'analytics',
-              icon: 'fa-bar-chart-o',
-              name: 'Analytics'
-            };
-          }
-        })
-        .catch(function() {});
+        .then(([canView]) => {
+          return canView && {
+            order: 4,
+
+            id: 'analytics',
+            icon: 'fa-bar-chart-o',
+            name: 'Analytics'
+          };
+        });
     };
 
     const getTours = function() {
@@ -573,8 +566,8 @@ angular.module('inboxServices').service('Tour',
     };
 
     return {
-      getTours: getTours,
-      endCurrent: endCurrent,
+      getTours,
+      endCurrent,
       start: function(name) {
         endCurrent();
         if (!name) {
@@ -593,10 +586,10 @@ angular.module('inboxServices').service('Tour',
             if (route) {
               $state.go(route, { tour: name });
             } else {
-              const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
+              const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;
               Feedback.submit(message).catch(err => {
                 $log.error('Error saving feedback', err);
-              }); 
+              });
             }
           }
         });

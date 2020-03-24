@@ -798,20 +798,213 @@ describe('Users service', () => {
   describe('updatePlace', () => {
 
     it('updatePlace resolves place\'s contact in waterfall', () => {
+      userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'y', parent: 'parent' },
+        contact: { name: 'mickey' },
+        type: 'national-manager'
+      };
       sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
-      sinon.stub(service, '_setContactParent').resolves();
+      sinon.stub(places, 'getOrCreatePlace').resolves({
+        _id: 'place_id',
+        _rev: 1,
+        name: 'x',
+        parent: 'parent',
+      });
+      const place = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent' };
+      sinon.stub(places, 'getPlace').resolves(place);
       sinon.stub(people, 'getOrCreatePerson').resolves({
         _id: 'b',
         name: 'mickey'
       });
+      sinon.stub(db.medic, 'get').resolves(place);
       sinon.stub(db.medic, 'put').resolves();
       sinon.stub(service, '_createUser').resolves();
       sinon.stub(service, '_createUserSettings').resolves();
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
+        chai.expect(db.medic.get.callCount).to.equal(1);
+        chai.expect(db.medic.get.args[0]).to.deep.equal(['place_id']);
+        chai.expect(db.medic.put.callCount).to.equal(1);
+        chai.expect(db.medic.put.args[0]).to.deep.equal([{
+          _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+        }]);
       });
+    });
+
+    it('should catch conflicts', () => {
+      userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'y', parent: 'parent' },
+        contact: { name: 'mickey' },
+        type: 'national-manager'
+      };
+      sinon.stub(service, '_validateNewUsername').resolves();
+
+      const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
+      const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      sinon.stub(places, 'getOrCreatePlace').resolves(placeRev1);
+      sinon.stub(places, 'getPlace').resolves(placeRev1);
+      sinon.stub(people, 'getOrCreatePerson').resolves({
+        _id: 'b',
+        name: 'mickey'
+      });
+      sinon.stub(db.medic, 'get')
+        .onCall(0).resolves(placeRev1)
+        .onCall(1).resolves(placeRev2);
+      sinon.stub(db.medic, 'put')
+        .onCall(0).rejects({ status: 409, reason: 'conflict' })
+        .onCall(1).resolves();
+      sinon.stub(service, '_createUser').resolves();
+      sinon.stub(service, '_createUserSettings').resolves();
+      return service.createUser(userData).then(() => {
+        chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
+        chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
+        chai.expect(db.medic.get.callCount).to.equal(2);
+        chai.expect(db.medic.get.args).to.deep.equal([['place_id'], ['place_id']]);
+        chai.expect(db.medic.put.callCount).to.equal(2);
+        chai.expect(db.medic.put.args[0]).to.deep.equal([{
+          _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+        }]);
+        chai.expect(db.medic.put.args[1]).to.deep.equal([{
+          _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
+        }]);
+      });
+    });
+
+    it('should retry 3 times on conflicts', () => {
+      userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'y', parent: 'parent' },
+        contact: { name: 'mickey' },
+        type: 'national-manager'
+      };
+      sinon.stub(service, '_validateNewUsername').resolves();
+
+      const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
+      const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      const placeRev3 = { _id: 'place_id', _rev: 3, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      const placeRev4 = { _id: 'place_id', _rev: 4, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      sinon.stub(places, 'getOrCreatePlace').resolves(placeRev1);
+      sinon.stub(places, 'getPlace').resolves(placeRev1);
+      sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'b', name: 'mickey' });
+      sinon.stub(db.medic, 'get')
+        .onCall(0).resolves(placeRev1)
+        .onCall(1).resolves(placeRev2)
+        .onCall(2).resolves(placeRev3)
+        .onCall(3).resolves(placeRev4);
+      sinon.stub(db.medic, 'put')
+        .onCall(0).rejects({ status: 409, reason: 'conflict' })
+        .onCall(1).rejects({ status: 409, reason: 'conflict' })
+        .onCall(2).rejects({ status: 409, reason: 'conflict' })
+        .onCall(3).resolves();
+      sinon.stub(service, '_createUser').resolves();
+      sinon.stub(service, '_createUserSettings').resolves();
+      return service.createUser(userData).then(() => {
+        chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
+        chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
+        chai.expect(db.medic.get.callCount).to.equal(4);
+        chai.expect(db.medic.get.args).to.deep.equal([['place_id'], ['place_id'], ['place_id'], ['place_id']]);
+        chai.expect(db.medic.put.callCount).to.equal(4);
+        chai.expect(db.medic.put.args[0]).to.deep.equal([{
+          _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+        }]);
+        chai.expect(db.medic.put.args[1]).to.deep.equal([{
+          _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
+        }]);
+      });
+    });
+
+    it('should throw after 4 conflicts', () => {
+      userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'y', parent: 'parent' },
+        contact: { name: 'mickey' },
+        type: 'national-manager'
+      };
+      sinon.stub(service, '_validateNewUsername').resolves();
+
+      const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
+      const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      const placeRev3 = { _id: 'place_id', _rev: 3, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      const placeRev4 = { _id: 'place_id', _rev: 4, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      const placeRev5 = { _id: 'place_id', _rev: 5, name: 'x', parent: 'parent', place_id: 'aaaa' };
+      sinon.stub(places, 'getOrCreatePlace').resolves(placeRev1);
+      sinon.stub(places, 'getPlace').resolves(placeRev1);
+      sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'b', name: 'mickey' });
+      sinon.stub(db.medic, 'get')
+        .onCall(0).resolves(placeRev1)
+        .onCall(1).resolves(placeRev2)
+        .onCall(2).resolves(placeRev3)
+        .onCall(3).resolves(placeRev4)
+        .onCall(4).resolves(placeRev5);
+      const conflictErr = new Error('conflict');
+      conflictErr.status = 409;
+      sinon.stub(db.medic, 'put')
+        .onCall(0).rejects(conflictErr)
+        .onCall(1).rejects(conflictErr)
+        .onCall(2).rejects(conflictErr)
+        .onCall(3).rejects(conflictErr)
+        .onCall(4).resolves();
+      sinon.stub(service, '_createUser').resolves();
+      sinon.stub(service, '_createUserSettings').resolves();
+      return service
+        .createUser(userData)
+        .then(() => { throw 'should have thrown'; })
+        .catch(err => {
+          chai.expect(err).to.equal(conflictErr);
+          chai.expect(db.medic.get.callCount).to.equal(4);
+          chai.expect(db.medic.get.args).to.deep.equal([['place_id'], ['place_id'], ['place_id'], ['place_id']]);
+          chai.expect(db.medic.put.callCount).to.equal(4);
+          chai.expect(db.medic.put.args[0]).to.deep.equal([{
+            _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+          }]);
+          chai.expect(db.medic.put.args[1]).to.deep.equal([{
+            _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
+          }]);
+          chai.expect(service._createUser.callCount).to.equal(0);
+        });
+    });
+
+    it('should throw any other error than a conflict', () => {
+      userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'y', parent: 'parent' },
+        contact: { name: 'mickey' },
+        type: 'national-manager'
+      };
+      sinon.stub(service, '_validateNewUsername').resolves();
+
+      const place = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
+      sinon.stub(places, 'getOrCreatePlace').resolves(place);
+      sinon.stub(places, 'getPlace').resolves(place);
+      sinon.stub(people, 'getOrCreatePerson').resolves({
+        _id: 'b',
+        name: 'mickey'
+      });
+      sinon.stub(db.medic, 'get').resolves(place);
+      sinon.stub(db.medic, 'put').rejects({ status: 400, reason: 'not-a-conflict' });
+      sinon.stub(service, '_createUser').resolves();
+      sinon.stub(service, '_createUserSettings').resolves();
+      return service
+        .createUser(userData)
+        .then(() => { throw 'should have thrown'; })
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ status: 400, reason: 'not-a-conflict' });
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args).to.deep.equal([['place_id']]);
+          chai.expect(db.medic.put.callCount).to.equal(1);
+          chai.expect(db.medic.put.args[0]).to.deep.equal([{
+            _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
+          }]);
+          chai.expect(service._createUser.callCount).to.equal(0);
+        });
     });
 
   });
@@ -1204,6 +1397,80 @@ describe('Users service', () => {
       return service._validateNewUsername('georgi');
     });
 
+  });
+
+  describe('createAdmin', () => {
+    it('should throw if username already exists', () => {
+      sinon.stub(db.medic, 'get').resolves({});
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      return service
+        .createAdmin({ name: 'my_user' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.include({ code: 400 });
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
+          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
+        });
+    });
+
+    it('should throw if _users doc creation fails', () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+
+      sinon.stub(db.users, 'put').rejects({ some: 'err' });
+      return service
+        .createAdmin({ name: 'agatha' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err' });
+          chai.expect(db.users.put.callCount).to.equal(1);
+          chai.expect(db.users.put.args[0]).to.deep.equal([
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+          ]);
+        });
+    });
+
+    it('should throw if user-settings doc creation fails', () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+
+      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:agatha', rev: 1 });
+      sinon.stub(db.medic, 'put').rejects({ some: 'err' });
+      return service
+        .createAdmin({ name: 'agatha' })
+        .then(() => chai.expect().to.equal('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err' });
+          chai.expect(db.users.put.callCount).to.equal(1);
+          chai.expect(db.users.put.args[0]).to.deep.equal([
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+          ]);
+          chai.expect(db.medic.put.callCount).to.equal(1);
+          chai.expect(db.medic.put.args[0]).to.deep.equal([
+            { name: 'agatha', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+          ]);
+        });
+    });
+
+    it('should return new user-settings when successfull', () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+
+      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
+      sinon.stub(db.medic, 'put').resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
+      return service.createAdmin({ name: 'perseus' }).then(() => {
+        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(db.users.put.args[0]).to.deep.equal([
+          { name: 'perseus', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
+        ]);
+        chai.expect(db.medic.put.callCount).to.equal(1);
+        chai.expect(db.medic.put.args[0]).to.deep.equal([
+          { name: 'perseus', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
+        ]);
+      });
+    });
   });
 
 });

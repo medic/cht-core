@@ -26,7 +26,7 @@ describe('Contacts controller', () => {
   let contactSearchLiveList;
   let deadListFind;
   let settings;
-  let auth;
+  let hasAuth;
   let deadListContains;
   let deadList;
   let contactSummary;
@@ -115,7 +115,7 @@ describe('Contacts controller', () => {
     contactSummary.returns(Promise.resolve({ context: {} }));
 
     settings = sinon.stub().resolves({});
-    auth = sinon.stub().rejects();
+    hasAuth = sinon.stub().resolves(false);
     isDbAdmin = sinon.stub();
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
@@ -148,7 +148,9 @@ describe('Contacts controller', () => {
         $state: { includes: sinon.stub(), go: sinon.stub() },
         $timeout: work => work(),
         $translate: $translate,
-        Auth: auth,
+        Auth: {
+          has: hasAuth
+        },
         Changes: changes,
         ContactTypes: contactTypes,
         ContactSummary: contactSummary,
@@ -547,14 +549,14 @@ describe('Contacts controller', () => {
 
   describe('last visited date', function() {
     it('does not enable LastVisitedDate features not allowed', function() {
-      auth.rejects();
+      hasAuth.resolves(false);
 
       const ctrl = createController();
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
           assert.equal(ctrl.lastVisitedDateExtras, false);
           assert.deepEqual(ctrl.visitCountSettings, {});
           assert.equal(ctrl.sortDirection, 'alpha');
@@ -577,14 +579,14 @@ describe('Contacts controller', () => {
     });
 
     it('enables LastVisitedDate features when allowed', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
 
       const ctrl = createController();
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {});
           assert.equal(ctrl.sortDirection, 'alpha');
@@ -606,7 +608,7 @@ describe('Contacts controller', () => {
     });
 
     it('saves uhc home_visits settings and default sort when correct', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
       settings.resolves({
         uhc: {
           contacts_default_sort: false,
@@ -621,8 +623,8 @@ describe('Contacts controller', () => {
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {
@@ -647,7 +649,7 @@ describe('Contacts controller', () => {
     });
 
     it('always saves default sort', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
       settings.resolves({
         uhc: {
           contacts_default_sort: 'something',
@@ -662,8 +664,8 @@ describe('Contacts controller', () => {
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {
@@ -692,7 +694,7 @@ describe('Contacts controller', () => {
     });
 
     it('saves uhc default sorting', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
       settings.resolves({
         uhc: {
           contacts_default_sort: 'last_visited_date',
@@ -707,8 +709,8 @@ describe('Contacts controller', () => {
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {
@@ -739,7 +741,7 @@ describe('Contacts controller', () => {
     });
 
     it('changes listener filters relevant last visited reports when feature is enabled', () => {
-      auth.resolves();
+      hasAuth.resolves(true);
       const relevantReport = {
         type: 'data_record',
         form: 'home_visit',
@@ -789,7 +791,7 @@ describe('Contacts controller', () => {
     });
 
     it('changes listener filters deleted visit reports when sorting by last visited date', () => {
-      auth.resolves();
+      hasAuth.resolves(true);
       const deletedReport = {
         type: 'data_record',
         form: 'home_visit',
@@ -811,7 +813,7 @@ describe('Contacts controller', () => {
     });
 
     it('changes listener does not filter last visited reports when feature is disabled', () => {
-      auth.rejects();
+      hasAuth.resolves(false);
       const relevantReport = {
         type: 'data_record',
         form: 'home_visit',
@@ -874,7 +876,7 @@ describe('Contacts controller', () => {
 
       describe('uhc visits enabled', () => {
         beforeEach(() => {
-          auth.resolves();
+          hasAuth.resolves(true);
           deadListContains.withArgs(4).returns(true);
         });
         describe('alpha default sorting', () => {
@@ -1046,7 +1048,7 @@ describe('Contacts controller', () => {
 
       describe('uhc visits disabled', () => {
         beforeEach(() => {
-          auth.rejects();
+          hasAuth.resolves(false);
           deadListContains.withArgs(4).returns(true);
         });
 
@@ -1130,7 +1132,7 @@ describe('Contacts controller', () => {
           return createController()
             .getSetupPromiseForTesting()
             .then(() => {
-              assert.equal(auth.callCount, 0);
+              assert.equal(hasAuth.callCount, 0);
               assert.equal(searchService.callCount, 1);
               assert.deepEqual(searchService.args[0], [
                 'contacts',

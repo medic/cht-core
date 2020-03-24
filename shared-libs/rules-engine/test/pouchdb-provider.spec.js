@@ -30,7 +30,7 @@ const taskOwnedByChtContact = {
   owner: 'patient',
 };
 const taskRequestedByChtContact = {
-  _id: 'taskReqiestedBy',
+  _id: 'taskRequestedBy',
   type: 'task',
   requester: 'patient',
 };
@@ -68,7 +68,7 @@ describe('pouchdb provider', () => {
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev')
-      .to.deep.eq([headlessTask, taskOwnedByChtContact]));
+      .to.deep.eq([taskRequestedByChtContact, headlessTask, taskOwnedByChtContact]));
     it('for requester', async () => expect(await pouchdbProvider(db).allTasks('requester')).excludingEvery('_rev')
       .to.deep.eq([headlessTask, taskRequestedByChtContact]));
   });

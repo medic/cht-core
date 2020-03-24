@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('ContactsActions',
@@ -63,13 +63,17 @@ angular.module('inboxServices').factory('ContactsActions',
       };
 
       const registerTasksListener = selected => {
-        Auth('can_view_tasks')
-          .then(() => (
-            TasksForContact(selected)
+        Auth.has('can_view_tasks')
+          .then(canViewTasks => {
+            if (!canViewTasks) {
+              $log.debug('Not authorized to view tasks');
+              return;
+            }
+
+            return TasksForContact(selected)
               .then(taskDocs => updateSelectedContact({ tasks: taskDocs.map(doc => doc.emission) }))
-              .catch(err => $log.error('Failed to load tasks for contact', err))
-          ))
-          .catch(() => $log.debug('Not authorized to view tasks'));
+              .catch(err => $log.error('Failed to load tasks for contact', err));
+          });
       };
 
       const getChildTypes = selected => {

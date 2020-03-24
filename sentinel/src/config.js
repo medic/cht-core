@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('./db');
 const logger = require('./lib/logger');
 const translationUtils = require('@medic/translation-utils');

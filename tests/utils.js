@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-const _ = require('underscore');
+const _ = require('lodash');
 const auth = require('./auth')();
 const constants = require('./constants');
 const { spawn } = require('child_process');
@@ -224,7 +224,7 @@ const setUserContactDoc = () => {
     .catch(() => ({}))
     .then(existing => {
       const rev = _.pick(existing, '_rev');
-      return _.extend(defaultDoc, rev);
+      return Object.assign(defaultDoc, rev);
     })
     .then(newDoc => request({
       path: `/${dbName}/${docId}`,
@@ -504,7 +504,7 @@ module.exports = {
       .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
       .then(existingContactDoc => {
         if (userContactDoc) {
-          _.extend(existingContactDoc, userContactDoc);
+          Object.assign(existingContactDoc, userContactDoc);
           return module.exports.saveDoc(existingContactDoc);
         }
       })

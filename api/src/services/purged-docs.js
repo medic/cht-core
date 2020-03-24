@@ -4,7 +4,7 @@ const purgingUtils = require('@medic/purging-utils');
 const cacheService = require('./cache');
 const crypto = require('crypto');
 const logger = require('../logger');
-const utils = require('../controllers/utils');
+const _ = require('lodash');
 
 const CACHE_NAME = 'purged-docs';
 const DB_NOT_FOUND_ERROR = new Error('not_found');
@@ -80,7 +80,7 @@ const getPurgedIds = (roles, docIds) => {
 };
 
 const getUnPurgedIds = (roles, docIds) => {
-  return getPurgedIds(roles, docIds).then(purgedIds => utils.difference(docIds, purgedIds));
+  return getPurgedIds(roles, docIds).then(purgedIds => _.difference(docIds, purgedIds));
 };
 
 const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } = {}) => {

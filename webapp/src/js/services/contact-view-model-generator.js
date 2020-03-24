@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 const registrationUtils = require('@medic/registration-utils');
 
 /**
@@ -257,7 +257,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const addHeading = function(reports) {
-      const reportIds = _.pluck(reports, '_id');
+      const reportIds = _.map(reports, '_id');
       return GetDataRecords(reportIds).then(function(dataRecords) {
         dataRecords.forEach(function(dataRecord) {
           const report = reports.find(report => report._id === dataRecord._id);
@@ -274,7 +274,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       contactDocs.forEach(function(doc) {
         subjectIds.push(registrationUtils.getSubjectIds(doc));
       });
-      const searchOptions = { subjectIds: _.flatten(subjectIds) };
+      const searchOptions = { subjectIds: _.flattenDeep(subjectIds) };
       return Search('reports', searchOptions, { include_docs: true }).then(function(reports) {
         reports.forEach(function(report) {
           report.valid = !report.errors || !report.errors.length;
@@ -313,7 +313,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
           .then(function(results) {
             const types = results[0];
             const model = results[1];
-            
+
             setType(model, types);
             setPrimaryContact(model);
             setMutedState(model);

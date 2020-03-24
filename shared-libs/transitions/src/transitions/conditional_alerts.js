@@ -1,5 +1,5 @@
 const config = require('../config');
-const _ = require('underscore');
+const _ = require('lodash');
 const messages = require('../lib/messages');
 const utils = require('../lib/utils');
 const async = require('async');
@@ -44,7 +44,7 @@ const evaluateCondition = (doc, alert) => {
 
 module.exports = {
   _getConfig: function() {
-    return _.extend({}, config.get('alerts'));
+    return Object.assign({}, config.get('alerts'));
   },
   filter: function(doc, info={}) {
     return Boolean(

@@ -6,7 +6,7 @@ const db = require('../../../src/db');
 const environment = require('../../../src/environment');
 const cacheService = require('../../../src/services/cache');
 const purgingUtils = require('@medic/purging-utils');
-const _ = require('underscore');
+const _ = require('lodash');
 
 let service;
 let recursiveOn;

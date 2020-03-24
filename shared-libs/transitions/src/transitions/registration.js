@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const logger = require('../lib/logger');

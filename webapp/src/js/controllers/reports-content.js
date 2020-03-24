@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
@@ -9,6 +9,7 @@ const _ = require('underscore');
       $log,
       $ngRedux,
       $scope,
+      $state,
       $stateParams,
       $timeout,
       Changes,
@@ -133,7 +134,12 @@ const _ = require('underscore');
         },
         callback: function(change) {
           if (change.deleted) {
-            ctrl.removeSelectedReport(change.id);
+            if (ctrl.selectMode) {
+              ctrl.removeSelectedReport(change.id);
+            } else {
+              ctrl.unsetSelected();
+              $state.go($state.current.name, { id: null });
+            }
           } else {
             const selectedReports = ctrl.selectedReports;
             ctrl.selectReport(change.id, { silent: true })

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const phoneNumber = require('@medic/phone-number');
 const messageUtils = require('@medic/message-utils');
 const utils = require('./utils');
@@ -95,7 +95,7 @@ module.exports = {
     }
     // default to first item in messages array in case locale match fails
     const message =
-      _.findWhere(messages, { locale: locale || 'en' }) || messages[0];
+      _.find(messages, { locale: locale || 'en' }) || messages[0];
     return (message.content && message.content.trim()) || '';
   },
   /*

@@ -1,4 +1,3 @@
-const _ = require('underscore');
 const ExtendedXpathEvaluator = require('extended-xpath');
 const openrosaExtensions = require('openrosa-xpath-extensions');
 const medicExtensions = require('./medic-xpath-extensions');
@@ -15,8 +14,8 @@ module.exports = function() {
   };
   this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
     const extensions = openrosaExtensions(translator.t);
-    extensions.func = _.extend(extensions.func, medicExtensions.func);
-    extensions.process = _.extend(extensions.process, medicExtensions.process);
+    extensions.func = Object.assign(extensions.func, medicExtensions.func);
+    extensions.process = Object.assign(extensions.process, medicExtensions.process);
     const wrappedXpathEvaluator = function(v) {
       // Node requests (i.e. result types greater than 3 (BOOLEAN)
       // should be processed unaltered, as they are passed this

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../config');
 const transitionUtils = require('./utils');
 const utils = require('../lib/utils');
@@ -137,14 +137,14 @@ module.exports = {
       .then(() => true);
   },
   _addMsg: function(eventType, doc, contact) {
-    const msgConfig = _.findWhere(getConfig().messages, { event_type: eventType });
+    const msgConfig = _.find(getConfig().messages, { event_type: eventType });
     if (msgConfig) {
       messages.addMessage(doc, msgConfig, msgConfig.recipient, { patient: contact });
     }
   },
   _addErr: function(eventType, doc) {
     const locale = utils.getLocale(doc);
-    const evConf = _.findWhere(getConfig().messages, { event_type: eventType });
+    const evConf = _.find(getConfig().messages, { event_type: eventType });
 
     const msg = messages.getMessage(evConf, locale);
     if (msg) {

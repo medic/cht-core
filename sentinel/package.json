@@ -25,7 +25,6 @@
     "pouchdb-replication": "^7.1.1",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
-    "underscore": "^1.9.1",
     "url-join": "^4.0.0",
     "uuid": "^3.3.3",
     "winston": "^3.2.1"

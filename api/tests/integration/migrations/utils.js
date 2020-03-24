@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const {promisify} = require('util');
 const fs = require('fs');
 const path = require('path');
@@ -21,8 +21,8 @@ const byId = (a, b) => {
 };
 
 const matches = (expected, actual) => {
-  let i; let 
-    k;
+  let i;
+  let k;
 
   if (typeof expected === 'string') {
     return expected === actual;

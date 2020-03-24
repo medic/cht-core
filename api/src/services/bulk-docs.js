@@ -1,6 +1,6 @@
 const db = require('../db');
 const authorization = require('./authorization');
-const _ = require('underscore');
+const _ = require('lodash');
 const logger = require('../logger');
 
 const utils = require('@medic/bulk-docs-utils')({
@@ -150,7 +150,7 @@ const deleteDocs = (
 };
 
 const filterNewDocs = (allowedDocIds, docs) => {
-  let docIds = _.unique(_.compact(docs.map(doc => doc._id)));
+  let docIds = _.uniq(_.compact(docs.map(doc => doc._id)));
 
   if (!docIds.length) {
     // all docs are new
@@ -312,7 +312,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _filterRequestDocs: filterRequestDocs,
     _filterNewDocs: filterNewDocs,
     _filterAllowedDocs: filterAllowedDocs,

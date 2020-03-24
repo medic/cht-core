@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const people  = require('../controllers/people');
 const places = require('../controllers/places');
@@ -14,6 +14,8 @@ const DOC_IDS_WARN_LIMIT = 10000;
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+
+const MAX_CONFLICT_RETRY = 3;
 
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
@@ -62,7 +64,7 @@ const getType = user => {
   return 'unknown';
 };
 
-const getDoc = (id, docs) =>  _.findWhere(docs, { _id: id });
+const getDoc = (id, docs) =>  _.find(docs, { _id: id });
 
 const getDocID = doc => {
   if (_.isString(doc)) {
@@ -204,14 +206,28 @@ const createPlace = data => {
   });
 };
 
-const storeUpdatedPlace = data => {
+const storeUpdatedPlace = (data, retry = 0) => {
   if (!data.place) {
     return;
   }
 
   data.place.contact = lineage.minifyLineage(data.contact);
   data.place.parent = lineage.minifyLineage(data.place.parent);
-  return db.medic.put(data.place);
+
+  return db.medic
+    .get(data.place._id)
+    .then(place => {
+      place.contact = data.place.contact;
+      place.parent = data.place.parent;
+
+      return db.medic.put(place);
+    })
+    .catch(err => {
+      if (err.status === 409 && retry < MAX_CONFLICT_RETRY) {
+        return storeUpdatedPlace(data, retry + 1);
+      }
+      throw err;
+    });
 };
 
 const setContactParent = data => {
@@ -417,7 +433,7 @@ const missingFields = data => {
 const getUpdatedUserDoc = (username, data) => {
   const userID = createID(username);
   return module.exports._validateUser(userID).then(doc => {
-    const user = _.extend(doc, module.exports._getUserUpdates(username, data));
+    const user = Object.assign(doc, module.exports._getUserUpdates(username, data));
     user._id = userID;
     return user;
   });
@@ -426,7 +442,7 @@ const getUpdatedUserDoc = (username, data) => {
 const getUpdatedSettingsDoc = (username, data) => {
   const userID = createID(username);
   return module.exports._validateUserSettings(userID).then(doc => {
-    const settings = _.extend(doc, module.exports._getSettingsUpdates(username, data));
+    const settings = Object.assign(doc, module.exports._getSettingsUpdates(username, data));
     settings._id = userID;
     return settings;
   });
@@ -497,11 +513,22 @@ module.exports = {
       .then(() => response);
   },
 
+  /*
+  * Take the userCtx of an admin user and create the _user doc and user-settings doc
+  */
+  createAdmin: userCtx => {
+    const data = { username: userCtx.name, roles: ['admin'] };
+    return module.exports
+      ._validateNewUsername(userCtx.name)
+      .then(() => module.exports._createUser(data, {}))
+      .then(() => module.exports._createUserSettings(data, {}));
+  },
+
   /**
    * Updates the given user.
    *
    * If fullAccess is passed as false we should restrict them from updating
-   * anything that elevates or changes their priviledge (such as roles or
+   * anything that elevates or changes their privilege (such as roles or
    * permissions.)
    *
    * NB: once we have gotten to this point it is presumed that the user has

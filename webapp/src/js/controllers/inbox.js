@@ -1,4 +1,18 @@
-const _ = require('underscore');
+const _ = require('lodash/core');
+_.uniq = require('lodash/uniq');
+_.groupBy = require('lodash/groupBy');
+_.uniqBy = require('lodash/uniqBy');
+_.findIndex = require('lodash/findIndex');
+_.minBy = require('lodash/minBy');
+_.partial = require('lodash/partial');
+_.partial.placeholder = _;
+_.range = require('lodash/range');
+_.intersection = require('lodash/intersection');
+_.toPairs = require('lodash/toPairs');
+_.difference = require('lodash/difference');
+_.template = require('lodash/template');
+_.templateSettings = require('lodash/templateSettings');
+_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 const moment = require('moment');
 
 (function() {
@@ -270,11 +284,7 @@ const moment = require('moment');
 
     ctrl.canLogOut = false;
     if (ctrl.androidAppVersion) {
-      Auth('can_log_out_on_android')
-        .then(function() {
-          ctrl.canLogOut = true;
-        })
-        .catch(function() {}); // not permitted to log out
+      Auth.has('can_log_out_on_android').then(canLogout => ctrl.canLogOut = canLogout);
     } else {
       ctrl.canLogOut = true;
     }
@@ -604,10 +614,11 @@ const moment = require('moment');
       },
     });
 
-    Auth('can_write_wealth_quintiles')
-      .then(function() {
-        WealthQuintilesWatcher.start();
-      })
-      .catch(function() {});
+    Auth.has('can_write_wealth_quintiles')
+      .then(canWriteQuintiles => {
+        if (canWriteQuintiles) {
+          WealthQuintilesWatcher.start();
+        }
+      });
   });
 })();

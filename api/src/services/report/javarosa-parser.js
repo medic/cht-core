@@ -1,7 +1,7 @@
 /**
  * @module javarosa-parser
  */
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../../config');
 
 /**
@@ -40,7 +40,7 @@ exports.parse = (def, doc) => {
   // Loop through form definition fields and build object when tiny label
   // matches. Also in field values remove escape characters on escaped
   // delimiters.
-  _.each(def.fields, (field, key) => {
+  _.forEach(def.fields, (field, key) => {
     // ignore fields without tiny labels
     if (!field.labels || !field.labels.tiny) {
       return;

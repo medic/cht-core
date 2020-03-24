@@ -2,7 +2,7 @@ const db = require('../db');
 const { promisify } = require('util');
 const async = require('async');
 const logger = require('../logger');
-const _ = require('underscore');
+const _ = require('lodash');
 const environment = require('../environment');
 const DDOC_ID = '_design/medic';
 const BATCH_SIZE = 100;
@@ -66,7 +66,7 @@ const createNewDocs = function(auditDb, oldDocs, callback) {
       return row.doc;
     });
     found.forEach(function(row) {
-      const dupe = _.findWhere(merged, { record_id: getRecordId(row.doc) });
+      const dupe = _.find(merged, { record_id: getRecordId(row.doc) });
       dupe.history = mergeHistory([dupe, row.doc]).history;
       dupe.auditRev = row.doc._rev;
     });
