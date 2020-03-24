@@ -91,8 +91,8 @@ const self = {
     const { calculatedAt, expireAt, isDirty } = state.contactState[contactId];
     return !expireAt ||
       isDirty ||
-    /* user rewound their clock */ calculatedAt > now ||
-    /* isExpired */ expireAt < now;
+      calculatedAt > now || /* system clock changed */
+      expireAt < now; /* isExpired */
   },
 
   /**
