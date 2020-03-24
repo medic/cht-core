@@ -71,6 +71,29 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
+    const replaceMediaLoaders = function(selector, formDoc) {
+      const wrapper = $(selector);
+      const formContainer = wrapper.find('.container').first();
+      formContainer.find('[data-media-src]').each(function() {
+        const elem = $(this);
+        const src = elem.attr('data-media-src');
+        DB()
+          .getAttachment(formDoc._id, src)
+          .then(function(blob) {
+            const objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
+            objUrls.push(objUrl);
+            elem
+              .attr('src', objUrl)
+              .css('visibility', '')
+              .unwrap();
+          })
+          .catch(function(err) {
+            $log.error('Error fetching media file', formDoc._id, src, err);
+            elem.closest('.loader').hide();
+          });
+      });
+    };
+
     const transformXml = function(form, language) {
       return $q.all([
         getAttachment(form._id, HTML_ATTACHMENT_NAME),
@@ -243,29 +266,6 @@ angular.module('inboxServices').service('Enketo',
           }
           return options;
         });
-    };
-
-    const replaceMediaLoaders = function(selector, formDoc) {
-      const wrapper = $(selector);
-      const formContainer = wrapper.find('.container').first();
-      formContainer.find('[data-media-src]').each(function() {
-        const elem = $(this);
-        const src = elem.attr('data-media-src');
-        DB()
-          .getAttachment(formDoc._id, src)
-          .then(function(blob) {
-            const objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
-            objUrls.push(objUrl);
-            elem
-              .attr('src', objUrl)
-              .css('visibility', '')
-              .unwrap();
-          })
-          .catch(function(err) {
-            $log.error('Error fetching media file', formDoc._id, src, err);
-            elem.closest('.loader').hide();
-          });
-      });
     };
 
     const renderFromXmls = function(doc, selector, instanceData) {
