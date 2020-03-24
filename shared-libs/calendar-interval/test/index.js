@@ -8,9 +8,7 @@ describe('CalendarInterval', () => {
   let clock;
 
   afterEach(() => {
-    if (clock) {
-      clock.restore();
-    }
+    clock && clock.restore();
     sinon.restore();
   });
 
