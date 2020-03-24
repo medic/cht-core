@@ -14,7 +14,6 @@ const ONE_YEAR = 31536000000;
 const logger = require('../logger');
 const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
-const users = require('../services/users');
 
 let loginTemplate;
 

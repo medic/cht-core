@@ -10,7 +10,6 @@ const sinon = require('sinon');
 const config = require('../../../src/config');
 const request = require('request-promise-native');
 const fs = require('fs');
-const users = require('../../../src/services/users');
 const DB_NAME = 'lg';
 const DDOC_NAME = 'medic';
 
