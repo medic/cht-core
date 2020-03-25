@@ -55,27 +55,29 @@ const getLoginTemplate = () => {
   return loginTemplate;
 };
 
+const getTranslationsString = () => {
+  return encodeURIComponent(JSON.stringify(config.getTranslationValues([
+    'login',
+    'login.error',
+    'login.incorrect',
+    'online.action.message',
+    'User Name',
+    'Password'
+  ])));
+};
+
 const renderLogin = (req, redirect, branding) => {
-  const locale = cookie.get(req, 'locale') || config.get('locale');
   return Promise.all([
     getLoginTemplate(),
     getEnabledLocales()
   ])
     .then(([ template, locales ]) => {
       return template({
-        action: '/medic/login',
         redirect: redirect,
         branding: branding,
-        defaultLocale: locale,
+        defaultLocale: config.get('locale'),
         locales: locales,
-        translations: {
-          login: config.translate('login', locale),
-          loginerror: config.translate('login.error', locale),
-          loginincorrect: config.translate('login.incorrect', locale),
-          loginoffline: config.translate('online.action.message', locale),
-          username: config.translate('User Name', locale),
-          password: config.translate('Password', locale),
-        },
+        translations: getTranslationsString()
       });
     });
 };

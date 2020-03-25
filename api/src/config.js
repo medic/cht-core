@@ -132,6 +132,16 @@ module.exports = {
       return value;
     }
   },
+  getTranslationValues: keys => {
+    const result = {};
+    Object.keys(translationCache).forEach(locale => {
+      result[locale] = {};
+      keys.forEach(key => {
+        result[locale][key] = translationCache[locale][key];
+      });
+    });
+    return result;
+  },
   load: () => {
     loadViewMaps();
     return Promise.all([ loadTranslations(), loadSettings() ]).then(() => initTransitionLib());
@@ -164,7 +174,7 @@ module.exports = {
             .then(() => initTransitionLib());
         } else if (change.id.startsWith('messages-')) {
           logger.info('Detected translations change - reloading');
-          loadTranslations().then(() => initTransitionLib());
+          return loadTranslations().then(() => initTransitionLib());
         } else if (change.id.startsWith('form:')) {
           logger.info('Detected form change - generating attachments');
           generateXform.update(change.id).catch(err => {

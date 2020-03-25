@@ -167,19 +167,16 @@ describe('login controller', () => {
       });
       const send = sinon.stub(res, 'send');
       const readFile = sinon.stub(fs, 'readFile')
-        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations.login }}');
-      const translate = sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
-      const cookieGet = sinon.stub(cookie, 'get').returns('es');
+        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }}');
+      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
+        chai.expect(send.args[0][0])
+          .to.equal('LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D');
         chai.expect(readFile.callCount).to.equal(1);
-        chai.expect(translate.args[0][1]).to.equal('es');
-        chai.expect(cookieGet.callCount).to.equal(1);
-        chai.expect(cookieGet.args[0][1]).to.equal('locale');
         chai.expect(query.callCount).to.equal(1);
       });
     });
@@ -189,15 +186,14 @@ describe('login controller', () => {
       const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       sinon.stub(db, 'query').resolves({ rows: [] });
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations.login }}');
-      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
-      sinon.stub(cookie, 'get').returns('es');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE.');
+      sinon.stub(config, 'getTranslationValues').returns({});
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE.');
       });
     });
 
