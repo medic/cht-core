@@ -265,5 +265,5 @@ module.exports = {
         return res.send();
       });
   },
-  _reset: () => loginTemplate = null // exposed for testing
+  _reset: () => { loginTemplate = null; } // exposed for testing
 };
