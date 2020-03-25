@@ -74,7 +74,7 @@ describe('Session service', function() {
     done();
   });
 
-  it('displays prompt if session expires', function(done) {
+  it('no login page redirect if session expires', function(done) {
     ipCookie.returns({ name: 'bryan' });
     Location.dbName = 'DB_NAME';
     $httpBackend
