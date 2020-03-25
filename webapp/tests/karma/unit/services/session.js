@@ -74,7 +74,7 @@ describe('Session service', function() {
     done();
   });
 
-  it('no login page redirect if session expires', function(done) {
+  it('does not redirect to login page if session expires', function(done) {
     ipCookie.returns({ name: 'bryan' });
     Location.dbName = 'DB_NAME';
     $httpBackend
@@ -83,7 +83,7 @@ describe('Session service', function() {
     service.init();
     $httpBackend.flush();
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
-    done();
+    //done();
   });
 
   it('does not log out if server not found', function(done) {

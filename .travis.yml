@@ -24,8 +24,8 @@ env:
     - BUILDS_SERVER=_couch/builds_testing
     - STAGING_SERVER=_couch/builds
     # AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
-    - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
-    - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
+    - secure: Xpx2330cO0bn0vuotwwZaLOcnez63osHpbD3T4khUOsUxiSsJPc1eE3kY7MEyau0Pfd+M0rL8ens447BdgO2NlAXfs/Ge5AlDK0ATQJcwoBKnO8ex3wPXCelCfYjR8NWB/xN8eSHKxgW0Hv0JDFa+ruofnGkElgGVzJL7ib8iUo=
+    - secure: SZDBgH8YzCSTrbQuOFsa2VTVpFzuNTUIJmStFMVX/w304BDa2uwWnCnBTwFua7PoDQDJQt5sEbqldhHjTkkdxlLIeuDP8AGtqnFXPPpvrAyAK3VzEFfKn3W+CruG5aJ2+YqjY9lbVrXyw4LC5ywAyZzUgVqEru7usHcHxOkX7hE=
 
 before_install:
   # External contributors can't access the secured $UPLOAD_URL environment variable
