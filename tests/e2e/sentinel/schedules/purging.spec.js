@@ -221,6 +221,59 @@ const tasks = [
   },
 ];
 
+const latestTargetInterval = moment().subtract(7, 'months').format('YYYY-MM');
+const targets = [
+  {
+    _id: `target~${moment().subtract(8, 'months').format('YYYY-MM')}~org.couchdb.user:user2`,
+    type: 'target',
+    user: 'org.couchdb.user:user2',
+    owner: 'fixture:user:user2',
+    reporting_period: moment().subtract(8, 'months').format('YYYY-MM'),
+    targets: [],
+  },
+  {
+    _id: `target~${moment().subtract(9, 'months').format('YYYY-MM')}~org.couchdb.user:user2`,
+    type: 'target',
+    user: 'org.couchdb.user:user2',
+    owner: 'fixture:user:user2',
+    reporting_period: moment().subtract(9, 'months').format('YYYY-MM'),
+    targets: [],
+  },
+  {
+    _id: `target~${moment().subtract(6, 'months').format('YYYY-MM')}~org.couchdb.user:user2`,
+    type: 'target',
+    user: 'org.couchdb.user:user2',
+    owner: 'fixture:user:user2',
+    reporting_period: moment().subtract(6, 'months').format('YYYY-MM'),
+    targets: [],
+  },
+  {
+    _id: `target~${moment().subtract(7, 'months').subtract(2, 'days').format('YYYY-MM')}~org.couchdb.user:user2`,
+    type: 'target',
+    user: 'org.couchdb.user:user2',
+    owner: 'fixture:user:user2',
+    reporting_period: moment().subtract(7, 'months').subtract(2, 'days').format('YYYY-MM'),
+    targets: [],
+  },
+  {
+    _id: `target~${moment().subtract(3, 'months').format('YYYY-MM')}~org.couchdb.user:user2`,
+    type: 'target',
+    user: 'org.couchdb.user:user2',
+    owner: 'fixture:user:user2',
+    reporting_period: moment().subtract(3, 'months').format('YYYY-MM'),
+    targets: [],
+  },
+];
+
+const targetIdsToPurge = [];
+const targetIdsToKeep = [];
+targets.forEach(target => {
+  if (target.reporting_period > latestTargetInterval) {
+    targetIdsToKeep.push(target._id);
+  } else {
+    targetIdsToPurge.push(target._id);
+  }
+});
 const users = [
   {
     username: 'user1',
@@ -326,7 +379,7 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 describe('server side purge', () => {
   beforeAll(done => {
     return utils
-      .saveDocs([...docs, ...tasks])
+      .saveDocs([...docs, ...tasks, ...targets])
       .then(() => utils.createUsers(users))
       .then(() => done());
   });
@@ -377,6 +430,7 @@ describe('server side purge', () => {
             'report1', 'report3', 'report4',
             'message1', 'message3',
             'task1~user2', 'task2~user2', 'task3~user2',
+            ...targetIdsToKeep
           ]);
         chai.expect(user2ChangeIds)
           .to.not.include('report2')
@@ -385,13 +439,17 @@ describe('server side purge', () => {
           .and.not.include('message2')
           .and.not.include('message4')
           .and.not.include('task4~user2');
+
+        targetIdsToPurge.map(targetID => chai.expect(user2ChangeIds).not.to.include(targetID));
       })
       .then(() => Promise.all([ requestPurges('user1'), requestPurges('user2') ]))
       .then(([ purgedIdsUser1, purgedIdsUser2 ]) => {
-        chai.expect(purgedIdsUser1.purged_ids)
-          .to.have.members(['report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1']);
-        chai.expect(purgedIdsUser2.purged_ids)
-          .to.have.members(['report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2']);
+        chai.expect(purgedIdsUser1.purged_ids).to.have.members([
+          'report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
+        ]);
+        chai.expect(purgedIdsUser2.purged_ids).to.have.members([
+          'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
+        ]);
       })
       .then(() => utils.revertSettings())
       .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }))
@@ -599,7 +657,7 @@ describe('server side purge', () => {
       .then(() => requestPurges('user1'))
       .then(purgedDocs => {
         chai.expect(purgedDocs.purged_ids).to.have.members([
-          'report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1'
+          'report1', 'report3', 'report4', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
         ]);
       })
       .then(() => writePurgeCheckpoint('user1'))

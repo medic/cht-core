@@ -9,7 +9,7 @@ const db = require('../db');
 const moment = require('moment');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
-const TARGET_EXPIRATION_PERIOD = 7; // months
+const TARGET_EXPIRATION_PERIOD = 6; // months
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -205,6 +205,10 @@ const getRecordGroupInfo = (row, groups, subjectIds) => {
   }
 
   if (tombstoneUtils.isTombstoneId(row.id)) { // we don't purge tombstones
+    return;
+  }
+
+  if (row.doc.type !== 'data_record') {
     return;
   }
 
@@ -421,9 +425,8 @@ const batchedTargetsPurge = (roles) => {
   const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
   const getQueryParams = (startKeyDocId) => ({
     limit: BATCH_SIZE,
-    start_key: 'target~',
-    end_key: `target~${lastAllowedReportingIntervalTag}~`,
-    startkey_docid: startKeyDocId,
+    start_key: JSON.stringify(startKeyDocId),
+    end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
   });
 
   const purgeCallback = (rolesHashes, rows) => {
@@ -437,7 +440,7 @@ const batchedTargetsPurge = (roles) => {
     return toPurge;
   };
 
-  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '');
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, 'target~');
 };
 
 const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyDocId) => {
@@ -447,7 +450,6 @@ const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyD
   const rolesHashes = Object.keys(roles);
 
   logger.debug(`Starting ${type} purge batch with id ${startKeyDocId}`);
-
   return request
     .get(uri, { qs: getQueryParams(startKeyDocId), json: true })
     .then(result => {

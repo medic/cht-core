@@ -1274,6 +1274,80 @@ describe('ServerSidePurge', () => {
       });
     });
 
+    it('should skip any other types than data_records', () => {
+      sinon.stub(request, 'get');
+      request.get.onCall(0).resolves({ rows: [
+        { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: 'district_hospital' } },
+        { id: 'f1', key: 'clinic', doc: { _id: 'f1', type: 'clinic', place_id: 's1' } },
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
+      ]});
+
+      request.get.onCall(1).resolves({ rows: [
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
+      ]});
+
+      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+
+      sinon.stub(db.medic, 'query');
+      db.medic.query.onCall(0).resolves({ rows: [
+        { id: 'first', key: 'first', doc: { _id: 'first', type: 'district_hospital' } },
+        { id: 'f1', key: 'f1', doc: { _id: 'f1', type: 'clinic', place_id: 's1' } },
+        { id: 'target~one', key: 's1', doc: { _id: 'target~one', type: 'target', owner: 's1' } },
+        { id: 'random~two', key: 'f2', doc: { _id: 'random~two', type: 'random2', form: 'a', contact: 'other' } },
+        { id: 'f1-r1', key: 's1',
+          doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
+        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
+        { id: 'f2', key: 'f2', doc: { _id: 'f2', type: 'person' } },
+        { id: 'target~two', key: 'f2', doc: { _id: 'target~two', type: 'target', owner: 'f2' } },
+        { id: 'random~one', key: 'f2', doc: { _id: 'random~one', type: 'random', form: 'a', contact: { _id: 'f2' } } },
+
+      ] });
+      db.medic.query.onCall(1).resolves({ rows: [] });
+
+      return service.__get__('batchedContactsPurge')(roles, purgeFn).then(() => {
+        chai.expect(request.get.callCount).to.equal(2);
+        chai.expect(db.medic.query.callCount).to.equal(2);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([
+          'medic/docs_by_replication_key',
+          { keys: ['first', 'f1', 's1', 'f2'], include_docs: true }
+        ]);
+        chai.expect(purgeDbChanges.callCount).to.equal(2);
+        chai.expect(purgeDbChanges.args[0]).to.deep.equal([{
+          doc_ids: [
+            'purged:first',
+            'purged:f1', 'purged:f1-m1',  'purged:f1-r1',
+            'purged:f2',
+          ],
+          batch_size: 6,
+          seq_interval: 5
+        }]);
+
+        chai.expect(purgeFn.callCount).to.equal(6);
+        chai.expect(purgeFn.args[0]).to.deep.equal([
+          { roles: roles['a'] },
+          { _id: 'first', type: 'district_hospital' },
+          [],
+          []
+        ]);
+
+        chai.expect(purgeFn.args[2]).deep.to.equal([
+          { roles: roles['a'] },
+          { _id: 'f1', type: 'clinic', place_id: 's1' },
+          [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
+          [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
+        ]);
+
+        chai.expect(purgeFn.args[4]).deep.to.equal([
+          { roles: roles['a'] },
+          { _id: 'f2', type: 'person' },
+          [],
+          []
+        ]);
+      });
+    });
+
     it('should throw contacts_by_type errors', () => {
       sinon.stub(request, 'get').rejects({ some: 'err' });
       sinon.stub(db, 'get').resolves({});
@@ -1839,9 +1913,8 @@ describe('ServerSidePurge', () => {
           {
             qs: {
               limit: 1000,
-              start_key: 'target~',
-              end_key: 'target~2019-08~',
-              startkey_docid: '',
+              start_key: JSON.stringify('target~'),
+              end_key: JSON.stringify('target~2019-09~'),
             },
             json: true
           }
@@ -1881,9 +1954,8 @@ describe('ServerSidePurge', () => {
           {
             qs: {
               limit: 1000,
-              start_key: 'target~',
-              end_key: 'target~2019-07~',
-              startkey_docid: '',
+              start_key: JSON.stringify('target~'),
+              end_key: JSON.stringify('target~2019-08~'),
             },
             json: true,
           }]);
@@ -1893,9 +1965,8 @@ describe('ServerSidePurge', () => {
           {
             qs: {
               limit: 1000,
-              start_key: 'target~',
-              end_key: 'target~2019-07~',
-              startkey_docid: 'target~2019~05~three',
+              start_key: JSON.stringify('target~2019~05~three'),
+              end_key: JSON.stringify('target~2019-08~'),
             },
             json: true,
           }]);
@@ -1905,9 +1976,8 @@ describe('ServerSidePurge', () => {
           {
             qs: {
               limit: 1000,
-              start_key: 'target~',
-              end_key: 'target~2019-07~',
-              startkey_docid: 'target~2019~06~two',
+              start_key: JSON.stringify('target~2019~06~two'),
+              end_key: JSON.stringify('target~2019-08~'),
             },
             json: true,
           }]);
