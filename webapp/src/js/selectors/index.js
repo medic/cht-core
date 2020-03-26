@@ -68,6 +68,7 @@ const getLastChangedDoc = state => getServicesState(state).lastChangedDoc;
 // Tasks
 const getTasksState = state => state.tasks;
 const getSelectedTask = state => getTasksState(state).selected;
+const getLoadTasks = state => getTasksState(state).loaded;
 
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
@@ -116,5 +117,6 @@ angular.module('inboxServices').constant('Selectors', {
   getLastChangedDoc,
 
   getTasksState,
-  getSelectedTask
+  getSelectedTask,
+  getLoadTasks,
 });

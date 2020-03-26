@@ -31,6 +31,7 @@
       return {
         unsetSelected: globalActions.unsetSelected,
         setSelectedTask: tasksActions.setSelectedTask,
+        setTasksLoaded: tasksActions.setTasksLoaded,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -103,6 +104,6 @@
     });
 
     const debouncedReload = Debounce(refreshTasks, 1000, 10 * 1000);
-    refreshTasks();
+    ctrl.setTasksLoaded(refreshTasks());
   });
 }());
