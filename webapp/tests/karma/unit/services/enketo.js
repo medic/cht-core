@@ -228,7 +228,7 @@ describe('Enketo service', () => {
       });
     });
 
-    it('leaves img wrapped if failed to load', () => {
+    it('leaves img wrapped and hides loader if failed to load', () => {
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
@@ -244,7 +244,9 @@ describe('Enketo service', () => {
         expect(img.attr('src')).to.equal(undefined);
         expect(img.attr('data-media-src')).to.equal('myimg');
         expect(img.css('visibility')).to.equal('hidden');
-        expect(img.closest('div').hasClass('loader')).to.equal(true);
+        const loader = img.closest('div');
+        expect(loader.hasClass('loader')).to.equal(true);
+        expect(loader.is(':hidden')).to.equal(true);
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(0);
       });
