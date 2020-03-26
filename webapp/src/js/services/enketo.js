@@ -65,21 +65,31 @@ angular.module('inboxServices').service('Enketo',
 
     const replaceJavarosaMediaWithLoaders = function(formDoc, formHtml) {
       formHtml.find('[data-media-src]').each(function() {
+        $(this)
+          .css('visibility', 'hidden')
+          .wrap('<div class="loader">');
+      });
+    };
+
+    const replaceMediaLoaders = function(selector, formDoc) {
+      const wrapper = $(selector);
+      const formContainer = wrapper.find('.container').first();
+      formContainer.find('[data-media-src]').each(function() {
         const elem = $(this);
         const src = elem.attr('data-media-src');
-        elem.css('visibility', 'hidden');
-        elem.wrap('<div class="loader">');
         DB()
           .getAttachment(formDoc._id, src)
           .then(function(blob) {
             const objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
             objUrls.push(objUrl);
-            elem.attr('src', objUrl);
-            elem.css('visibility', '');
-            elem.unwrap();
+            elem
+              .attr('src', objUrl)
+              .css('visibility', '')
+              .unwrap();
           })
           .catch(function(err) {
             $log.error('Error fetching media file', formDoc._id, src, err);
+            elem.closest('.loader').hide();
           });
       });
     };
@@ -348,14 +358,15 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    const renderForm = function(selector, form, instanceData, editedListener, valuechangeListener) {
+    const renderForm = function(selector, formDoc, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
-        return transformXml(form, language)
+        return transformXml(formDoc, language)
           .then(doc => {
-            replaceJavarosaMediaWithLoaders(form, doc.html);
+            replaceJavarosaMediaWithLoaders(formDoc, doc.html);
             return renderFromXmls(doc, selector, instanceData, language);
           })
           .then(function(form) {
+            replaceMediaLoaders(selector, formDoc);
             registerEditedListener(selector, editedListener);
             registerValuechangeListener(selector, valuechangeListener);
             return form;
