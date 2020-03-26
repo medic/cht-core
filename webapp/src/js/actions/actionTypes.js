@@ -57,4 +57,5 @@ module.exports = {
 
   // Tasks
   SET_SELECTED_TASK: 'SET_SELECTED_TASK',
+  SET_TASKS_LOADED: 'SET_TASKS_LOADED',
 };

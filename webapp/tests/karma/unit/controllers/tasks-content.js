@@ -1,19 +1,27 @@
 describe('TasksContentCtrl', () => {
   const { expect } = chai;
 
-  let $scope,
-      tasksActions,
-      getEnketoEditedStatus,
-      task,
-      ctrl,
-      createController,
-      render,
-      get,
-      XmlForms;
+  let $scope;
+  let tasksActions;
+  let getEnketoEditedStatus;
+  let task;
+  let ctrl;
+  let createController;
+  let render;
+  let get;
+  let XmlForms;
+  let getList;
+  let tasksLoadedPromise;
 
   beforeEach(() => {
     module('inboxApp');
-    KarmaUtils.setupMockStore();
+    getList = sinon.stub();
+    tasksLoadedPromise = Promise.resolve().then(() => getList.returns([task]));
+    KarmaUtils.setupMockStore({
+      tasks: {
+        loaded: tasksLoadedPromise,
+      }
+    });
   });
 
   beforeEach(inject(($controller, $ngRedux, TasksActions, Selectors) => {
@@ -25,6 +33,7 @@ describe('TasksContentCtrl', () => {
       setSelected: () => tasksActions.setSelectedTask(task)
     };
     getEnketoEditedStatus = () => Selectors.getEnketoEditedStatus($ngRedux.getState());
+
     get = sinon.stub().resolves({ _id: 'contact' });
     render.resolves();
     createController = () => {
@@ -37,11 +46,11 @@ describe('TasksContentCtrl', () => {
         DB: () => ({ get }),
         XmlForms,
         Telemetry: { record: sinon.stub() },
-        LiveList: { 
+        LiveList: {
           tasks: {
             clearSelected: sinon.stub(),
             setSelected: sinon.stub(),
-            getList: sinon.stub().returns([ task ])
+            getList: getList,
           },
         }
       });
@@ -66,7 +75,7 @@ describe('TasksContentCtrl', () => {
     createController();
     setTimeout(() => {
       expect(ctrl.formId).to.equal('A');
-      
+
       expect(render.callCount).to.equal(1);
       expect(render.getCall(0).args.length).to.equal(4);
       expect(render.getCall(0).args[0]).to.equal('#task-report');
@@ -96,7 +105,7 @@ describe('TasksContentCtrl', () => {
     setTimeout(() => {
       expect(get.callCount).to.eq(1);
       expect(get.args).to.deep.eq([['contact']]);
-      
+
       expect(render.callCount).to.eq(1);
       expect(render.args[0][2]).to.deep.eq({
         contact: { _id: 'contact' },
@@ -123,7 +132,7 @@ describe('TasksContentCtrl', () => {
     setTimeout(() => {
       expect(get.callCount).to.eq(1);
       expect(get.args).to.deep.eq([['dne']]);
-      
+
       expect(render.callCount).to.eq(1);
       expect(render.args[0][2]).to.eq('nothing');
       done();
@@ -182,6 +191,36 @@ describe('TasksContentCtrl', () => {
     setTimeout(() => {
       expect(ctrl.loadingForm).to.equal(false);
       expect(ctrl.contentError).to.equal(true);
+      done();
+    });
+  });
+
+  it('should wait for the tasks to load before setting selected task', (done) => {
+    const notTask = {
+      _id: '123',
+      forId: 'contact',
+      actions: [{
+        type: 'report',
+        form: 'A',
+        content: {
+          something: 'other',
+        },
+      }]
+    };
+    const form = { _id: 'myform', title: 'My Form' };
+    XmlForms.get.resolves(form);
+    const someFn = sinon.stub();
+    tasksLoadedPromise = Promise.resolve().then(() => {
+      someFn();
+      getList.returns([notTask]);
+    });
+    createController();
+    setTimeout(() => {
+      expect(render.args[0][2]).to.deep.eq({
+        contact: { _id: 'contact' },
+        something: 'other',
+      });
+      expect(someFn.callCount).to.equal(1);
       done();
     });
   });
