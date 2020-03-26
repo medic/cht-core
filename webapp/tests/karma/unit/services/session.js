@@ -74,7 +74,7 @@ describe('Session service', function() {
     done();
   });
 
-  it('does not redirect to login page if session expires', function(done) {
+  it('cookie gets deleted when session expires', function(done) {
     ipCookie.returns({ name: 'bryan' });
     Location.dbName = 'DB_NAME';
     $httpBackend
