@@ -190,7 +190,7 @@ describe('Settings API', () => {
     });
 
     it('should validate custom roles', () => {
-      let settings = {
+      const settings = {
         roles: {
           e2e_test: {
             name: 'usertype.e2e_test'
