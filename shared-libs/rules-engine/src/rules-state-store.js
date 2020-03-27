@@ -5,7 +5,7 @@
  * 2. Target emissions @see target-state
  */
 const md5 = require('md5');
-
+const calendarInterval = require('@medic/calendar-interval');
 const targetState = require('./target-state');
 
 const EXPIRE_CALCULATION_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
@@ -48,6 +48,7 @@ const self = {
    * @param {Object} settings Settings for the behavior of the rules store
    * @param {Object} settings.contact User's hydrated contact document
    * @param {Object} settings.user User's user-settings document
+   * @param {Object} settings.monthStartDate reporting interval start date
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
    *    Receives the updated state as the only parameter.
    */
@@ -60,6 +61,7 @@ const self = {
       rulesConfigHash: hashRulesConfig(settings),
       contactState: {},
       targetState: targetState.createEmptyState(settings.targets),
+      monthStartDate: settings.monthStartDate,
     };
     currentUserContact = settings.contact;
     currentUserSettings = settings.user;
@@ -86,11 +88,11 @@ const self = {
     }
 
     const now = Date.now();
-    const { calculatedAt, isDirty } = state.contactState[contactId];
-    return !calculatedAt ||
+    const { calculatedAt, expireAt, isDirty } = state.contactState[contactId];
+    return !expireAt ||
       isDirty ||
-    /* user rewinded their clock */ calculatedAt > now ||
-    /* isExpired */ calculatedAt < now - EXPIRE_CALCULATION_AFTER_MS;
+      calculatedAt > now || /* system clock changed */
+      expireAt < now; /* isExpired */
   },
 
   /**
@@ -108,6 +110,7 @@ const self = {
         rulesConfigHash,
         contactState: {},
         targetState: targetState.createEmptyState(settings.targets),
+        monthStartDate: settings.monthStartDate,
       };
       currentUserContact = settings.contact;
       currentUserSettings = settings.user;
@@ -133,8 +136,14 @@ const self = {
       return;
     }
 
+    const reportingInterval = calendarInterval.getCurrent(state.monthStartDate);
+    const defaultExpiry = calculatedAt + EXPIRE_CALCULATION_AFTER_MS;
+
     for (const contactId of contactIds) {
-      state.contactState[contactId] = { calculatedAt };
+      state.contactState[contactId] = {
+        calculatedAt,
+        expireAt: Math.min(reportingInterval.end, defaultExpiry),
+      };
     }
 
     return onStateChange(state);
