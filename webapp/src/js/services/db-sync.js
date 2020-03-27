@@ -163,7 +163,7 @@ angular
         .info()
         .then(info => currentSeq = info.update_seq)
         .then(() => local.sync(remote, { filter: readOnlyFilter }))
-        .then(() => purger.purgeMeta(local, currentSeq));
+        .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
     };
 
     const sendUpdate = update => {

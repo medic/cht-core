@@ -48,6 +48,10 @@
     return dbInfo.name + '-user-' + username;
   };
 
+  const getLocalMetaDbName = (dbInfo, username) => {
+    return getLocalDbName(dbInfo, username) + '-meta';
+  };
+
   const docCountPoll = (localDb) => {
     setUiStatus('POLL_REPLICATION');
     const fetchOpts = {
@@ -211,6 +215,8 @@
     const localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
     const remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
 
+    const localMetaDb = window.PouchDB(getLocalMetaDbName(dbInfo, userCtx.name), POUCHDB_OPTIONS.local);
+
     const testReplicationNeeded = () => Promise
       .all([getDdoc(localDb), getSettingsDoc(localDb)])
       .then(() => false)
@@ -248,11 +254,25 @@
               .catch(err => console.error('Error attempting to purge', err));
           });
       })
+      .then(() => {
+        return purger
+          .shouldPurgeMeta(localMetaDb)
+          .then(shouldPurgeMeta => {
+            if (!shouldPurgeMeta) {
+              return;
+            }
+
+            setUiStatus('PURGE_META');
+            return purger.purgeMeta(localMetaDb);
+          })
+          .catch(err => console.error('Error attempting to purge meta', err));
+      })
       .then(() => setUiStatus('STARTING_APP'))
       .catch(err => err)
       .then(function(err) {
         localDb.close();
         remoteDb.close();
+        localMetaDb.close();
         if (err) {
           if (err.status === 401) {
             return redirectToLogin(dbInfo, err, callback);

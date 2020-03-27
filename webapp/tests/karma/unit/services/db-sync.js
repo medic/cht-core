@@ -74,7 +74,6 @@ describe('DBSync service', () => {
       sync,
       info: sinon.stub().resolves({}),
       get: sinon.stub().resolves({}),
-      changes: sinon.stub().resolves({}),
       put: sinon.stub(),
     };
     remoteMetaDb = {};
@@ -402,17 +401,16 @@ describe('DBSync service', () => {
         });
       });
 
-      it('should purge docs until the current seq after syncing', () => {
+      it('should write purge log with the current seq after syncing', () => {
         localMetaDb.info.resolves({ update_seq: 100 });
-        localMetaDb.get.withArgs('_local/purgelog').resolves({ _id: '_local/purgelog', last_purge_seq: 10 });
-        localMetaDb.changes.resolves({ results: [], last_seq: 110 });
+        localMetaDb.get
+          .withArgs('_local/purgelog')
+          .resolves({ _id: '_local/purgelog', synced_seq: 10, purged_seq: 10 });
         return service.sync().then(() => {
           expect(localMetaDb.info.callCount).to.equal(1);
-          expect(localMetaDb.get.callCount).to.equal(2);
-          expect(localMetaDb.changes.callCount).to.equal(1);
-          expect(localMetaDb.changes.args[0]).to.deep.equal([{ since: 10, limit: 100 }]);
+          expect(localMetaDb.get.callCount).to.equal(1);
           expect(localMetaDb.put.callCount).to.equal(1);
-          expect(localMetaDb.put.args[0]).to.deep.equal([{ _id: '_local/purgelog', last_purge_seq: 100 }]);
+          expect(localMetaDb.put.args[0]).to.deep.equal([{ _id: '_local/purgelog', synced_seq: 100, purged_seq: 10 }]);
         });
       });
     });

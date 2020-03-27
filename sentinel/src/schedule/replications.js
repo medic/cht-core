@@ -76,7 +76,7 @@ const getHasRunOneTimePurge = (sourceDb) => {
 
 const oneTimePurgeRan = (sourceDb) => {
   return sourceDb.put({ _id: ONE_TIME_PURGE_LOCAL_DOC_ID });
-}
+};
 
 const oneTimePurge = (sourceDb, replicationInfo) => {
   return getHasRunOneTimePurge(sourceDb)
