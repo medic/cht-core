@@ -1,9 +1,14 @@
 const { expect } = require('chai');
 const { RestorableRulesStateStore } = require('./mocks');
 const sinon = require('sinon');
+const moment = require('moment');
 
 const rulesStateStore = RestorableRulesStateStore();
 const hashRulesConfig = rulesStateStore.__get__('hashRulesConfig');
+
+const sevenDays = 7 * 24 * 60 * 60 * 1000 + 1000;
+
+let clock;
 
 const mockState = contactState => ({
   rulesConfigHash: hashRulesConfig({}),
@@ -12,6 +17,7 @@ const mockState = contactState => ({
 
 describe('rules-state-store', () => {
   afterEach(() => {
+    clock && clock.restore();
     sinon.restore();
     rulesStateStore.restore();
   });
@@ -42,7 +48,7 @@ describe('rules-state-store', () => {
   });
 
   it('load a fresh contact', async () => {
-    const state = mockState({ 'a': { calculatedAt: Date.now() } });
+    const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     await rulesStateStore.load(state, {});
 
     const isDirty = rulesStateStore.isDirty('a');
@@ -50,7 +56,7 @@ describe('rules-state-store', () => {
   });
 
   it('fresh contact but dirty hash', async () => {
-    const state = mockState({ 'a': { calculatedAt: Date.now() } });
+    const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     state.rulesConfigHash = 'hash';
     await rulesStateStore.load(state, {});
 
@@ -60,7 +66,7 @@ describe('rules-state-store', () => {
 
   it('scenario after loading state', async () => {
     const onStateChange = sinon.stub().resolves();
-    const state = mockState({ 'a': { calculatedAt: Date.now() } });
+    const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     await rulesStateStore.load(state, {}, onStateChange);
 
     const isDirty = rulesStateStore.isDirty('a');
@@ -138,10 +144,12 @@ describe('rules-state-store', () => {
   });
 
   it('contact marked fresh a month ago is not fresh', async () => {
+    const now = moment().valueOf();
+    const oneMonthFromNow = moment().add(1, 'month').valueOf();
     await rulesStateStore.build({});
-    await rulesStateStore.markFresh(Date.now(), 'a');
+    await rulesStateStore.markFresh(now, 'a');
     expect(rulesStateStore.isDirty('a')).to.be.false;
-    sinon.useFakeTimers(Date.now() + 7004800000);
+    clock = sinon.useFakeTimers(oneMonthFromNow);
     expect(rulesStateStore.isDirty('a')).to.be.true;
   });
 
@@ -172,6 +180,63 @@ describe('rules-state-store', () => {
         total: 1,
       },
     }]);
+  });
+
+  describe('marking contacts as dirty when switching reporting intervals', () => {
+    it('next interval exceeds expiration time', async () => {
+      const today = moment('2020-03-20').valueOf();
+      const nextInterval = moment('2020-04-07').valueOf();
+      clock = sinon.useFakeTimers(today);
+      await rulesStateStore.build({}); // default monthStartDate is 1
+      await rulesStateStore.markFresh(today, 'a');
+      expect(rulesStateStore.isDirty('a')).to.be.false;
+      clock.tick(nextInterval - today);
+      expect(rulesStateStore.isDirty('a')).to.be.true;
+    });
+
+    it('next interval does not exceed expiration time', async () => {
+      const today = moment('2020-03-30').valueOf();
+      const nextInterval = moment('2020-04-02').valueOf();
+      clock = sinon.useFakeTimers(today);
+      await rulesStateStore.build({}); // default monthStartDate is 1
+      await rulesStateStore.markFresh(today, 'a');
+      expect(rulesStateStore.isDirty('a')).to.be.false;
+      clock.tick(nextInterval - today);
+      expect(rulesStateStore.isDirty('a')).to.be.true;
+      await rulesStateStore.markFresh(nextInterval, 'a');
+      expect(rulesStateStore.isDirty('a')).to.be.false;
+
+    });
+
+    it('when monthStartDate is close in the past', async () => {
+      const today = moment('2020-03-30').valueOf();
+      const nextDate = moment('2020-04-02').valueOf();
+      const pastExpiration = moment('2020-04-08').valueOf();
+      clock = sinon.useFakeTimers(today);
+      await rulesStateStore.build({ monthStartDate: 25 });
+      await rulesStateStore.markFresh(today, 'a');
+      expect(rulesStateStore.isDirty('a')).to.be.false;
+      clock.tick(nextDate - today);
+      expect(rulesStateStore.isDirty('a')).to.be.false;
+      clock.tick(pastExpiration - today);
+      expect(rulesStateStore.isDirty('a')).to.be.true;
+    });
+
+    it('when monthStartDate is close in the future', async () => {
+      const today = moment('2020-03-24').valueOf();
+      const nextDate = moment('2020-03-28').valueOf();
+      clock = sinon.useFakeTimers(today);
+      await rulesStateStore.build({ monthStartDate: 25 });
+      await rulesStateStore.markFresh(today, 'a');
+      expect(rulesStateStore.isDirty('a')).to.be.false;
+      clock.tick(nextDate - today);
+      expect(rulesStateStore.isDirty('a')).to.be.true;
+      await rulesStateStore.markFresh(nextDate, 'a');
+      expect(rulesStateStore.isDirty('a')).to.be.false;
+      clock.tick(sevenDays);
+      expect(rulesStateStore.isDirty('a')).to.be.true;
+    });
+
   });
 
   describe('hashRulesConfig', () => {

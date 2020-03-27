@@ -16,6 +16,7 @@ chai.use(chaiExclude);
 
 const rulesStateStore = RestorableRulesStateStore();
 const NOW = 50000;
+const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
@@ -96,22 +97,29 @@ describe('provider-wireup integration tests', () => {
         _id: pouchdbProvider.RULES_STATE_DOCID,
         rulesStateStore: {
           contactState: {},
+          monthStartDate: 1,
         },
       }]);
 
       await wireup.fetchTasksFor(provider, ['abc']);
       await provider.stateChangeCallback.returnValues[0];
-      expect(db.put.args[db.put.callCount - 1]).excludingEvery(['rulesConfigHash', 'targetState']).excluding('_rev').to.deep.eq([{
-        _id: pouchdbProvider.RULES_STATE_DOCID,
-        rulesStateStore: {
-          contactState: {
-            'abc': {
-              calculatedAt: NOW,
+      expect(db.put.args[db.put.callCount - 1])
+        .excludingEvery(['rulesConfigHash', 'targetState'])
+        .excluding('_rev')
+        .to.deep.eq([{
+          _id: pouchdbProvider.RULES_STATE_DOCID,
+          rulesStateStore: {
+            contactState: {
+              'abc': {
+                expireAt: NOW + DEFAULT_EXPIRE,
+                calculatedAt: NOW,
+              },
             },
+            monthStartDate: 1,
           },
-        },
-      }]);
-      expect(db.put.args[0][0].rulesStateStore.rulesConfigHash).to.eq(db.put.args[db.put.callCount - 1][0].rulesStateStore.rulesConfigHash);
+        }]);
+      expect(db.put.args[0][0].rulesStateStore.rulesConfigHash)
+        .to.eq(db.put.args[db.put.callCount - 1][0].rulesStateStore.rulesConfigHash);
 
       // simulate restarting the app. the database is the same, but the taskFetcher is uninitialized
       rulesEmitter.shutdown();
@@ -164,7 +172,8 @@ describe('provider-wireup integration tests', () => {
     it('many', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       await wireup.updateEmissionsFor(provider, ['headless', 'patient', 'patient_id']);
-      expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]); // dupes don't matter here
+      // dupes don't matter here
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]);
     });
   });
 
