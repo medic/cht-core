@@ -1,5 +1,5 @@
-let config = {},
-    translations = {};
+let config = {};
+let translations = {};
 
 module.exports = {
   init: (sourceConfig, sourceTranslations) => {

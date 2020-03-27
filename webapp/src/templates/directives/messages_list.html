@@ -1,18 +1,18 @@
 <div id="message-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!messagesListCtrl.loading">
-    <li ng-repeat="message in messagesListCtrl.messages | orderBy:'-date'" data-record-id="{{message.key}}" data-record-type="{{message.type}}" class="content-row" ng-class="{ 'selected': message.key === messagesListCtrl.loadingContent || !messagesListCtrl.loadingContent && message.key === messagesListCtrl.selectedMessage.id, 'unread': !message.read }">
-      <a href="#messages/{{message.type}}:{{message.key}}">
+    <li ng-repeat="conversation in messagesListCtrl.conversations | orderBy:'-date'" data-record-id="{{conversation.key}}" data-record-type="{{conversation.type}}" class="content-row" ng-class="{ 'selected': conversation.key === messagesListCtrl.loadingContent || !messagesListCtrl.loadingContent && conversation.key === messagesListCtrl.selectedMessage.id, 'unread': !conversation.read }">
+      <a href="#messages/{{conversation.type}}:{{conversation.key}}">
         <div class="content">
           <div class="heading">
-            <h4>{{message.contact || message.from || ("messages.unknown.sender" | translate)}}</h4>
+            <h4>{{conversation.contact || conversation.from || ("messages.unknown.sender" | translate)}}</h4>
             <div class="date">
-              <span ng-bind-html="message.date | relativeDate"></span>
+              <span ng-bind-html="conversation.date | relativeDate"></span>
             </div>
           </div>
           <div class="summary">
-            <p>{{message.message}}</p>
+            <p>{{conversation.message}}</p>
           </div>
-          <div class="detail" ng-bind-html="message.lineage | lineage"></div>
+          <div class="detail" ng-bind-html="conversation.lineage | lineage"></div>
         </div>
       </a>
     </li>

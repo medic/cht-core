@@ -1,19 +1,21 @@
-const _ = require('underscore'),
-      passwordTester = require('simple-password-tester'),
-      people  = require('../controllers/people'),
-      places = require('../controllers/places'),
-      db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic),
-      getRoles = require('./types-and-roles');
+const _ = require('lodash');
+const passwordTester = require('simple-password-tester');
+const people  = require('../controllers/people');
+const places = require('../controllers/places');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const ONLINE_ROLE = 'mm-online';
 const DOC_IDS_WARN_LIMIT = 10000;
 
-const PASSWORD_MINIMUM_LENGTH = 8,
-      PASSWORD_MINIMUM_SCORE = 50,
-      USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+const PASSWORD_MINIMUM_LENGTH = 8;
+const PASSWORD_MINIMUM_SCORE = 50;
+const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+
+const MAX_CONFLICT_RETRY = 3;
 
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
@@ -51,7 +53,9 @@ const illegalDataModificationAttempts = data =>
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
-const error400 = (msg, key, params) => ({ code: 400, message: { message: msg, translationKey: key, translationParams: params }});
+const error400 = (msg, key, params) => ({
+  code: 400, message: { message: msg, translationKey: key, translationParams: params }
+});
 
 const getType = user => {
   if (user.roles && user.roles.length) {
@@ -60,7 +64,7 @@ const getType = user => {
   return 'unknown';
 };
 
-const getDoc = (id, docs) =>  _.findWhere(docs, { _id: id });
+const getDoc = (id, docs) =>  _.find(docs, { _id: id });
 
 const getDocID = doc => {
   if (_.isString(doc)) {
@@ -136,14 +140,21 @@ const validateNewUsernameForDb = (username, database) => {
     })
     .then(user => {
       if (user) {
-        return Promise.reject(error400('Username "'+ username +'" already taken.','username.taken',{ 'username': username }));
+        return Promise.reject(error400(
+          'Username "'+ username +'" already taken.',
+          'username.taken',
+          { 'username': username }
+        ));
       }
     });
 };
 
 const validateNewUsername = username => {
   if (!USERNAME_WHITELIST.test(username)) {
-    return Promise.reject(error400(`Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).`,'username.invalid'));
+    return Promise.reject(error400(
+      'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).',
+      'username.invalid'
+    ));
   }
   return Promise.all([
     validateNewUsernameForDb(username, db.users),
@@ -195,14 +206,28 @@ const createPlace = data => {
   });
 };
 
-const storeUpdatedPlace = data => {
+const storeUpdatedPlace = (data, retry = 0) => {
   if (!data.place) {
     return;
   }
 
   data.place.contact = lineage.minifyLineage(data.contact);
   data.place.parent = lineage.minifyLineage(data.place.parent);
-  return db.medic.put(data.place);
+
+  return db.medic
+    .get(data.place._id)
+    .then(place => {
+      place.contact = data.place.contact;
+      place.parent = data.place.parent;
+
+      return db.medic.put(place);
+    })
+    .catch(err => {
+      if (err.status === 409 && retry < MAX_CONFLICT_RETRY) {
+        return storeUpdatedPlace(data, retry + 1);
+      }
+      throw err;
+    });
 };
 
 const setContactParent = data => {
@@ -376,10 +401,17 @@ const deleteUser = id => {
 
 const validatePassword = password => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
-    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,'password.length.minimum',{'minimum': PASSWORD_MINIMUM_LENGTH});
+    return error400(
+      `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
+      'password.length.minimum',
+      { 'minimum': PASSWORD_MINIMUM_LENGTH }
+    );
   }
   if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-    return error400('The password is too easy to guess. Include a range of types of characters to increase the score.','password.weak');
+    return error400(
+      'The password is too easy to guess. Include a range of types of characters to increase the score.',
+      'password.weak'
+    );
   }
 };
 
@@ -401,7 +433,7 @@ const missingFields = data => {
 const getUpdatedUserDoc = (username, data) => {
   const userID = createID(username);
   return module.exports._validateUser(userID).then(doc => {
-    const user = _.extend(doc, module.exports._getUserUpdates(username, data));
+    const user = Object.assign(doc, module.exports._getUserUpdates(username, data));
     user._id = userID;
     return user;
   });
@@ -410,7 +442,7 @@ const getUpdatedUserDoc = (username, data) => {
 const getUpdatedSettingsDoc = (username, data) => {
   const userID = createID(username);
   return module.exports._validateUserSettings(userID).then(doc => {
-    const settings = _.extend(doc, module.exports._getSettingsUpdates(username, data));
+    const settings = Object.assign(doc, module.exports._getSettingsUpdates(username, data));
     settings._id = userID;
     return settings;
   });
@@ -460,7 +492,11 @@ module.exports = {
   createUser: data => {
     const missing = missingFields(data);
     if (missing.length > 0) {
-      return Promise.reject(error400('Missing required fields: ' + missing.join(', '),'fields.required', { 'fields': missing.join(', ')} ));
+      return Promise.reject(error400(
+        'Missing required fields: ' + missing.join(', '),
+        'fields.required',
+        { 'fields': missing.join(', ') }
+      ));
     }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -477,11 +513,22 @@ module.exports = {
       .then(() => response);
   },
 
+  /*
+  * Take the userCtx of an admin user and create the _user doc and user-settings doc
+  */
+  createAdmin: userCtx => {
+    const data = { username: userCtx.name, roles: ['admin'] };
+    return module.exports
+      ._validateNewUsername(userCtx.name)
+      .then(() => module.exports._createUser(data, {}))
+      .then(() => module.exports._createUserSettings(data, {}));
+  },
+
   /**
    * Updates the given user.
    *
    * If fullAccess is passed as false we should restrict them from updating
-   * anything that elevates or changes their priviledge (such as roles or
+   * anything that elevates or changes their privilege (such as roles or
    * permissions.)
    *
    * NB: once we have gotten to this point it is presumed that the user has
@@ -511,7 +558,11 @@ module.exports = {
         !_.isNull(data.contact) &&
         !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
-      return Promise.reject(error400('One of the following fields are required: ' + props.join(', '),'fields.one.required', { 'fields': props.join(', ')} ));
+      return Promise.reject(error400(
+        'One of the following fields are required: ' + props.join(', '),
+        'fields.one.required',
+        { 'fields': props.join(', ') }
+      ));
     }
     if (data.password) {
       const passwordError = validatePassword(data.password);
@@ -534,7 +585,11 @@ module.exports = {
               return places.getPlace(user.facility_id);
             } else if (_.isNull(data.place)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400('Place field is required for offline users','field is required',{'field': 'Place'}));
+                return Promise.reject(error400(
+                  'Place field is required for offline users',
+                  'field is required',
+                  {'field': 'Place'}
+                ));
               }
               user.facility_id = null;
               settings.facility_id = null;
@@ -545,7 +600,11 @@ module.exports = {
               return module.exports._validateContact(settings.contact_id, user.facility_id);
             } else if (_.isNull(data.contact)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400('Contact field is required for offline users','field is required',{'field': 'Contact'}));
+                return Promise.reject(error400(
+                  'Contact field is required for offline users',
+                  'field is required',
+                  {'field': 'Contact'}
+                ));
               }
               settings.contact_id = null;
             }

@@ -1,8 +1,8 @@
-const chai = require('chai'),
-  sinon = require('sinon'),
-  db = require('../../../src/db'),
-  controller = require('../../../src/controllers/forms'),
-  serverUtils = require('../../../src/server-utils');
+const chai = require('chai');
+const sinon = require('sinon');
+const db = require('../../../src/db');
+const controller = require('../../../src/controllers/forms');
+const serverUtils = require('../../../src/server-utils');
 
 const mockFormsInDb = (...docs) => {
   sinon.stub(db.medic, 'query').resolves({

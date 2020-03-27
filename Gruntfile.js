@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 const url = require('url');
 const packageJson = require('./package.json');
 const fs = require('fs');
@@ -165,16 +167,20 @@ module.exports = function(grunt) {
             './xpath-evaluator-binding': './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'translator': './webapp/src/js/enketo/translator', // translator for enketo's internal i18n
-            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
+            // translator for enketo's internal i18n
+            'translator': './webapp/src/js/enketo/translator',
+            // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream
+            // https://github.com/enketo/enketo-core/issues/454
+            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown',
             'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
-            'moment': './webapp/node_modules/moment/moment',
-            'google-libphonenumber': './webapp/node_modules/google-libphonenumber',
-            'gsm': './webapp/node_modules/gsm',
-            'object-path': './webapp/node_modules/object-path',
             'bikram-sambat': './webapp/node_modules/bikram-sambat',
-            '@medic/phone-number': './webapp/node_modules/@medic/phone-number'
+            'moment': './webapp/node_modules/moment',
+            'lodash/core': './webapp/node_modules/lodash/core',
+            'lodash/intersection': './webapp/node_modules/lodash/intersection',
+            'lodash/uniq': './webapp/node_modules/lodash/uniq',
+            'lodash/uniqBy': './webapp/node_modules/lodash/uniqBy',
+            'lodash/groupBy': './webapp/node_modules/lodash/groupBy',
           },
         },
       },
@@ -189,7 +195,8 @@ module.exports = function(grunt) {
             'gsm': './admin/node_modules/gsm',
             'object-path': './admin/node_modules/object-path',
             'bikram-sambat': './admin/node_modules/bikram-sambat',
-            '@medic/phone-number': './admin/node_modules/@medic/phone-number'
+            '@medic/phone-number': './admin/node_modules/@medic/phone-number',
+            'lodash/core': './admin/node_modules/lodash/core',
           },
         },
       },
@@ -208,7 +215,7 @@ module.exports = function(grunt) {
 
           // admin files
           'build/ddocs/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-admin/_attachments/js/main.js',
-          'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js',
+          'build/ddocs/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-admin/_attachments/js/templates.js'
         },
       },
       api: {
@@ -225,14 +232,7 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
-      },
-      general: {
-        options: {
-          replace: {
-            UNIT_TEST_ENV: '',
-          },
-        },
-      },
+      }
     },
     less: {
       webapp: {
@@ -379,6 +379,7 @@ module.exports = function(grunt) {
             'tests/**/*.js',
             'webapp/src/**/*.js',
             'webapp/tests/**/*.js',
+            'config/**/*.js',
             'scripts/**/*.js',
           ];
           const ignore = [
@@ -387,7 +388,6 @@ module.exports = function(grunt) {
             'api/build/**/*',
             '**/node_modules/**',
             'build/**',
-            'config/**',
             'shared-libs/transitions/src/lib/pupil/**',
           ];
 
@@ -424,7 +424,7 @@ module.exports = function(grunt) {
               pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
             }
             this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
-            console.log(`Updated 'bundledDependencies' for ${filePath}`);
+            console.log(`Updated 'bundledDependencies' for ${filePath}`); // eslint-disable-line no-console
           });
           return 'echo "Node module dependencies updated"';
         },
@@ -462,7 +462,7 @@ module.exports = function(grunt) {
       },
       'blank-link-check': {
         cmd: `echo "Checking for dangerous _blank links..." &&
-               ! (git grep -E  'target\\\\?="_blank"' -- webapp/src |
+               ! (git grep -E  'target\\\\?="_blank"' -- webapp/src admin/src |
                       grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
@@ -470,9 +470,6 @@ module.exports = function(grunt) {
       'setup-admin': {
         cmd:
           ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
-          ` && curl -X POST ${couchConfig.withPath('_users')} ` +
-          ' -H "Content-Type: application/json" ' +
-          ` -d '{"_id": "org.couchdb.user:${couchConfig.username}", "name": "${couchConfig.username}", "password":"${couchConfig.password}", "type":"user", "roles":[]}' ` +
           ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
           ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
@@ -500,7 +497,7 @@ module.exports = function(grunt) {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
       'setup-api-integration': {
-        cmd: 'cd api && npm ci',
+        cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
       },
       'npm-ci-shared-libs': {
         cmd: () => {
@@ -532,7 +529,7 @@ module.exports = function(grunt) {
       'check-version': `node scripts/travis/check-versions.js`,
       'undo-patches': {
         cmd: function() {
-          var modulesToPatch = [
+          const modulesToPatch = [
             'bootstrap-daterangepicker',
             'enketo-core',
             'font-awesome',
@@ -570,9 +567,16 @@ module.exports = function(grunt) {
           }).join(' && ');
         },
       },
-      'test-standard': {
+      'test-config-standard': {
         cmd: [
           'cd config/standard',
+          'npm ci',
+          'npm run travis'
+        ].join(' && ')
+      },
+      'test-config-default': {
+        cmd: [
+          'cd config/default',
           'npm ci',
           'npm run travis'
         ].join(' && ')
@@ -593,7 +597,7 @@ module.exports = function(grunt) {
       // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
       'apply-patches': {
         cmd: function() {
-          var patches = [
+          const patches = [
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
             'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
@@ -1073,13 +1077,6 @@ module.exports = function(grunt) {
     'env:unit-test',
     'exec:shared-lib-unit',
     'mochaTest:unit',
-    'env:general',
-  ]);
-
-  grunt.registerTask('test', 'Run unit, integration, and e2e tests', [
-    'unit',
-    'test-api-integration',
-    'e2e',
   ]);
 
   // CI tasks
@@ -1097,7 +1094,8 @@ module.exports = function(grunt) {
     'build',
     'mochaTest:api-integration',
     'unit',
-    'exec:test-standard'
+    'exec:test-config-default',
+    'exec:test-config-standard'
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
@@ -1119,7 +1117,6 @@ module.exports = function(grunt) {
   grunt.registerTask('static-analysis', 'Static analysis checks', [
     'exec:blank-link-check',
     'eslint',
-    // 'exec:audit-whitelist',
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', [

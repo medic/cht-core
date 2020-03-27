@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 /**
  * Gets data records by the given array of ids.
@@ -28,29 +28,30 @@ angular.module('inboxServices').factory('GetDataRecords',
     'use strict';
     'ngInject';
 
-    var getDocs = function(ids) {
+    const getDocs = function(ids) {
       return DB()
         .allDocs({ keys: ids, include_docs: true })
         .then(function(response) {
-          return _.pluck(response.rows, 'doc');
+          return _.map(response.rows, 'doc');
         });
     };
 
     const getSummaries = function(ids, options) {
       return GetSummaries(ids)
         .then(summaries => {
-          const promiseToSummary = options.hydrateContactNames ? HydrateContactNames(summaries) : Promise.resolve(summaries);
+          const promiseToSummary = options.hydrateContactNames ?
+            HydrateContactNames(summaries) : Promise.resolve(summaries);
           return promiseToSummary.then(GetSubjectSummaries);
         });
     };
 
     return function(ids, options) {
-      const opts = _.extend({ hydrateContactNames: false, include_docs: false }, options);
-      
+      const opts = Object.assign({ hydrateContactNames: false, include_docs: false }, options);
+
       if (!ids) {
         return $q.resolve([]);
       }
-      var arrayGiven = _.isArray(ids);
+      const arrayGiven = _.isArray(ids);
       if (!arrayGiven) {
         ids = [ ids ];
       }

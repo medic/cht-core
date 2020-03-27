@@ -1,10 +1,10 @@
-const controller = require('../../../src/controllers/people'),
-      chai = require('chai'),
-      places = require('../../../src/controllers/places'),
-      cutils = require('../../../src/controllers/utils'),
-      config = require('../../../src/config'),
-      db = require('../../../src/db'),
-      sinon = require('sinon');
+const controller = require('../../../src/controllers/people');
+const chai = require('chai');
+const places = require('../../../src/controllers/places');
+const cutils = require('../../../src/controllers/utils');
+const config = require('../../../src/config');
+const db = require('../../../src/db');
+const sinon = require('sinon');
 
 describe('people controller', () => {
 
@@ -96,12 +96,13 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: 'x'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       sinon.stub(cutils, 'isDateStrValid').returns(false);
       controller.createPerson(person).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message).to.equal('Reported date is invalid: x');
+        chai.expect(config.get.args[0]).to.deep.equal([]);
         done();
       });
     });
@@ -111,11 +112,12 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '123'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
         chai.expect(post.args[0][0].reported_date).to.equal(123);
+        chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });
 
@@ -124,11 +126,12 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '2011-10-10T14:48:00-0300'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       const post = sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
         chai.expect(post.args[0][0].reported_date).to.equal(new Date('2011-10-10T14:48:00-0300').valueOf());
+        chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });
 
@@ -152,7 +155,7 @@ describe('people controller', () => {
           _id: 'b'
         }
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
       sinon.stub(controller._lineage, 'minifyLineage').returns(minified);
       sinon.stub(db.medic, 'post').resolves();
@@ -164,6 +167,7 @@ describe('people controller', () => {
         chai.expect(places.getOrCreatePlace.args[0][0]).to.equal('a');
         chai.expect(controller._lineage.minifyLineage.callCount).to.equal(1);
         chai.expect(controller._lineage.minifyLineage.args[0][0]).to.deep.equal(place);
+        chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });
 
@@ -171,13 +175,14 @@ describe('people controller', () => {
       const person = {
         name: 'Test'
       };
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];
         // should be set to within 5 seconds of now
         chai.expect(doc.reported_date <= (new Date().valueOf())).to.equal(true);
         chai.expect(doc.reported_date > (new Date().valueOf() - 5000)).to.equal(true);
+        chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });
 

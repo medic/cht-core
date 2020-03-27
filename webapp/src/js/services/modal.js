@@ -30,10 +30,10 @@ angular.module('inboxServices').factory('Modal',
     'use strict';
     'ngInject';
 
-    var instanceCache = {};
+    const instanceCache = {};
 
-    var getScope = function(model) {
-      var scope = $rootScope.$new();
+    const getScope = function(model) {
+      const scope = $rootScope.$new();
       scope.model = model;
       scope.status = {
         processing: false,
@@ -66,7 +66,7 @@ angular.module('inboxServices').factory('Modal',
         return $q.reject('No controller speficied.');
       }
       options.scope = getScope(options.model);
-      var instance = $uibModal.open(options);
+      const instance = $uibModal.open(options);
       if (options.singleton) {
         if (instanceCache[options.templateUrl]) {
           instanceCache[options.templateUrl].close();

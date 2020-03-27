@@ -1,11 +1,11 @@
-var _ = require('underscore'),
-    moment = require('moment');
+const moment = require('moment');
+const responsive = require('../modules/responsive');
 
 (function () {
 
   'use strict';
 
-  var ENTER_KEY_CODE = 13;
+  const ENTER_KEY_CODE = 13;
 
   angular.module('inboxServices').factory('SearchFilters',
     function(
@@ -14,11 +14,11 @@ var _ = require('underscore'),
     ) {
       'ngInject';
 
-      var isEnter = function(e) {
+      const isEnter = function(e) {
         return e.which === ENTER_KEY_CODE;
       };
 
-      var initFreetext = function(callback) {
+      const initFreetext = function(callback) {
         $('#search').on('click', function(e) {
           e.preventDefault();
           callback();
@@ -30,7 +30,7 @@ var _ = require('underscore'),
           }
         });
 
-        var performMobileSearch = function(e) {
+        const performMobileSearch = function(e) {
           e.preventDefault();
           $(e.target).closest('.filter').removeClass('open');
           callback();
@@ -51,7 +51,7 @@ var _ = require('underscore'),
         });
       };
 
-      var getMultidropdownOptions = function() {
+      const getMultidropdownOptions = function() {
         return $translate.onReady().then(function() {
           return {
             label: function(state, callback) {
@@ -71,15 +71,15 @@ var _ = require('underscore'),
         });
       };
 
-      var getMultidropdownResult = function(input) {
-        var dropdown = input.multiDropdown();
+      const getMultidropdownResult = function(input) {
+        const dropdown = input.multiDropdown();
         return {
           selected: dropdown.val(),
           options: dropdown.options()
         };
       };
 
-      var initFormType = function(callback) {
+      const initFormType = function(callback) {
         getMultidropdownOptions().then(function(options) {
           $('#formTypeDropdown').multiDropdown(options);
           $('#formTypeDropdown').on('update', function() {
@@ -88,7 +88,7 @@ var _ = require('underscore'),
         });
       };
 
-      var initFacility = function(callback) {
+      const initFacility = function(callback) {
         getMultidropdownOptions().then(function(options) {
           $('#facilityDropdown').multiDropdown(options);
           $('#facilityDropdown').on('update', function() {
@@ -97,7 +97,7 @@ var _ = require('underscore'),
         });
       };
 
-      var getTernaryValue = function(positive, negative) {
+      const getTernaryValue = function(positive, negative) {
         if (positive && !negative) {
           return true;
         }
@@ -106,16 +106,16 @@ var _ = require('underscore'),
         }
       };
 
-      var initStatus = function(callback) {
+      const initStatus = function(callback) {
         $translate.onReady().then(function() {
           $('#statusDropdown').multiDropdown({
             label: function(state, callback) {
-              var values = {};
+              const values = {};
               state.selected.each(function() {
-                var elem = $(this);
+                const elem = $(this);
                 values[elem.data('value')] = elem.text();
               });
-              var parts = [];
+              let parts = [];
               if(values.unverified) {
                 parts.push(values.unverified);
               }
@@ -143,19 +143,19 @@ var _ = require('underscore'),
             clearLabel: $translate.instant('clear')
           });
           $('#statusDropdown').on('update', function() {
-            var values = $(this).multiDropdown().val();
-            var valid = getTernaryValue(
-              _.contains(values, 'valid'),
-              _.contains(values, 'invalid')
+            const values = $(this).multiDropdown().val();
+            const valid = getTernaryValue(
+              values.includes('valid'),
+              values.includes('invalid')
             );
-            var verified = [];
-            if(_.contains(values, 'verified')) {
+            const verified = [];
+            if(values.includes('verified')) {
               verified.push(true);
             }
-            if(_.contains(values, 'unverified')) {
+            if(values.includes('unverified')) {
               verified.push(undefined);
             }
-            if(_.contains(values, 'verifiedErrors')) {
+            if(values.includes('verifiedErrors')) {
               verified.push(false);
             }
 
@@ -167,11 +167,7 @@ var _ = require('underscore'),
         });
       };
 
-      var isMobile = function() {
-        return $('#mobile-detection').css('display') === 'inline';
-      };
-
-      var initDate = function(callback) {
+      const initDate = function(callback) {
         $('#date-filter').daterangepicker({
           startDate: moment().subtract(1, 'months'),
           endDate: moment(),
@@ -190,23 +186,23 @@ var _ = require('underscore'),
             to: end.valueOf()
           });
         })
-        .on('show.daterangepicker', function(e, picker) {
-          $timeout(function() {
-            if ($('#dateRangeDropdown').is('.disabled')) {
-              picker.hide();
+          .on('show.daterangepicker', function(e, picker) {
+            $timeout(function() {
+              if ($('#dateRangeDropdown').is('.disabled')) {
+                picker.hide();
+              }
+            });
+          })
+          .on('mm.dateSelected.daterangepicker', function(e, picker) {
+            if (responsive.isMobile()) {
+            // mobile version - only show one calendar at a time
+              if (picker.container.is('.show-from')) {
+                picker.container.removeClass('show-from').addClass('show-to');
+              } else {
+                picker.container.removeClass('show-to').addClass('show-from');
+              }
             }
           });
-        })
-        .on('mm.dateSelected.daterangepicker', function(e, picker) {
-          if (isMobile()) {
-            // mobile version - only show one calendar at a time
-            if (picker.container.is('.show-from')) {
-              picker.container.removeClass('show-from').addClass('show-to');
-            } else {
-              picker.container.removeClass('show-to').addClass('show-from');
-            }
-          }
-        });
         $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
       };
 

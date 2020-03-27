@@ -66,7 +66,7 @@ describe('Enketo service', () => {
     </model>`;
 
   let service;
-  let GlobalActions;
+  let ServicesActions;
 
   const enketoInit = sinon.stub();
   const dbGetAttachment = sinon.stub();
@@ -101,7 +101,7 @@ describe('Enketo service', () => {
       output: { update: () => {} },
     });
 
-    GlobalActions = { setLastChangedDoc: sinon.stub() };
+    ServicesActions = { setLastChangedDoc: sinon.stub() };
 
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -132,7 +132,7 @@ describe('Enketo service', () => {
       });
       $provide.value('ZScore', () => Promise.resolve(sinon.stub()));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('GlobalActions', () => GlobalActions);
+      $provide.value('ServicesActions', () => ServicesActions);
     });
     inject(_Enketo_ => service = _Enketo_ );
     Language.resolves('en');
@@ -140,7 +140,9 @@ describe('Enketo service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs, createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs,
+      createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr,
+      Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
     sinon.restore();
   });
 
@@ -154,7 +156,8 @@ describe('Enketo service', () => {
           done(new Error('Should throw error'));
         })
         .catch(actual => {
-          expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
+          expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access ' +
+            'to the associated contact. Talk to your administrator to correct this.');
           expect(actual.translationKey).to.equal('error.loading.form.no_contact');
           done();
         });
@@ -228,7 +231,7 @@ describe('Enketo service', () => {
       });
     });
 
-    it('leaves img wrapped if failed to load', () => {
+    it('leaves img wrapped and hides loader if failed to load', () => {
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
@@ -244,7 +247,9 @@ describe('Enketo service', () => {
         expect(img.attr('src')).to.equal(undefined);
         expect(img.attr('data-media-src')).to.equal('myimg');
         expect(img.css('visibility')).to.equal('hidden');
-        expect(img.closest('div').hasClass('loader')).to.equal(true);
+        const loader = img.closest('div');
+        expect(loader.hasClass('loader')).to.equal(true);
+        expect(loader.is(':hidden')).to.equal(true);
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(0);
       });
@@ -381,7 +386,9 @@ describe('Enketo service', () => {
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
-        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;characters&quot; &amp; \'words\'</notes></context>');
+        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
+          '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;' +
+          'characters&quot; &amp; \'words\'</notes></context>');
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });
@@ -525,8 +532,8 @@ describe('Enketo service', () => {
         expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
         expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
-        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -567,8 +574,8 @@ describe('Enketo service', () => {
         expect(AddAttachment.args[0][1]).to.equal('content');
         expect(AddAttachment.args[0][2]).to.equal(content);
         expect(AddAttachment.args[0][3]).to.equal('application/xml');
-        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -638,10 +645,10 @@ describe('Enketo service', () => {
         expect(actualThing2.reported_date).to.be.within(startTime, endTime);
         expect(actualThing2.some_property_2).to.equal('some_value_2');
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
 
-        expect(GlobalActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(GlobalActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
+        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
       });
     });
 
@@ -714,7 +721,7 @@ describe('Enketo service', () => {
 
         expect(actualThing2.geolocation).to.equal(true);
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
       });
     });
 
@@ -796,7 +803,7 @@ describe('Enketo service', () => {
         expect(actualThing2.my_parent_2).to.equal(reportId);
         expect(actualThing2.my_sibling_2).to.equal(doc1_id);
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
       });
     });
 
@@ -861,7 +868,7 @@ describe('Enketo service', () => {
           chai.expect(repeatDocN.some_property).to.equal('some_value_'+i);
         }
 
-        expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(4);
+        expect(_.uniq(_.map(actual, '_id')).length).to.equal(4);
       });
     });
 
@@ -889,11 +896,46 @@ describe('Enketo service', () => {
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       return service.save('my-form', form, true).then(() => {
         expect(AddAttachment.callCount).to.equal(2);
-        expect(AddAttachment.args[0][1]).to.equal('content');
 
-        expect(AddAttachment.args[1][1]).to.equal('user-file/my-form/my_file');
-        expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-        expect(AddAttachment.args[1][3]).to.equal('image');
+        expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+        expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+        expect(AddAttachment.args[0][3]).to.equal('image');
+
+        expect(AddAttachment.args[1][1]).to.equal('content');
+      });
+    });
+
+    it('removes binary data from content', () => {
+      form.validate.resolves(true);
+      const content =
+`<my-form>
+  <name>Mary</name>
+  <age>10</age>
+  <gender>f</gender>
+  <my_file type="binary">some image data</my_file>
+</my-form>`;
+
+      const expected =
+`<my-form>
+  <name>Mary</name>
+  <age>10</age>
+  <gender>f</gender>
+  <my_file type="binary"/>
+</my-form>`;
+
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: 'my-user', phone: '8989' });
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      return service.save('my-form', form, true).then(() => {
+        expect(AddAttachment.callCount).to.equal(2);
+
+        expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+        expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
+        expect(AddAttachment.args[0][3]).to.equal('image/png');
+
+        expect(AddAttachment.args[1][1]).to.equal('content');
+        expect(AddAttachment.args[1][2]).to.equal(expected);
       });
     });
 
@@ -928,16 +970,17 @@ describe('Enketo service', () => {
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       return service.save('my-form-internal-id', form, true).then(() => {
         expect(AddAttachment.callCount).to.equal(3);
-        expect(AddAttachment.args[0][1]).to.equal('content');
 
-        expect(AddAttachment.args[1][1]).to.equal('user-file/my-form-internal-id/my_file');
-        expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-        expect(AddAttachment.args[1][3]).to.equal('image');
+        expect(AddAttachment.args[0][1]).to.equal('user-file/my-form-internal-id/my_file');
+        expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
+        expect(AddAttachment.args[0][3]).to.equal('image');
 
-        expect(AddAttachment.args[2][1])
+        expect(AddAttachment.args[1][1])
           .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
-        expect(AddAttachment.args[2][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
-        expect(AddAttachment.args[2][3]).to.equal('mytype');
+        expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
+        expect(AddAttachment.args[1][3]).to.equal('mytype');
+
+        expect(AddAttachment.args[2][1]).to.equal('content');
       });
     });
   });

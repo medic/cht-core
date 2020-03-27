@@ -1,9 +1,9 @@
-const config = require('../config'),
-      later = require('later'),
-      db = require('../db'),
-      logger = require('../lib/logger');
+const config = require('../config');
+const later = require('later');
+const db = require('../db');
+const logger = require('../lib/logger');
 
-var timers = [];
+let timers = [];
 
 // set later to use local time
 later.date.localTime();
@@ -54,7 +54,11 @@ module.exports = {
 
     replications.reduce((p, replication) => {
       if (!isConfigValid(replication)) {
-        throw new Error(`Invalid replication config with fromSuffix = '${replication.fromSuffix}', toSuffix = '${replication.toSuffix}', text expression = '${replication.text_expression}' and cron = '${replication.cron}'`);
+        throw new Error(
+          `Invalid replication config with fromSuffix = '${replication.fromSuffix}', ` +
+          `toSuffix = '${replication.toSuffix}', text expression = '${replication.text_expression}' and ` +
+          `cron = '${replication.cron}'
+        `);
       }
 
       const sched = getSchedule(replication);
@@ -65,8 +69,8 @@ module.exports = {
         return Promise.resolve();
       });
     }, Promise.resolve())
-    .then(() => callback())
-    .catch(callback);
+      .then(() => callback())
+      .catch(callback);
   },
   runReplication: replication => {
     const srcRegex = new RegExp(`${db.medicDbName}-${replication.fromSuffix}`);
@@ -79,10 +83,15 @@ module.exports = {
   },
   replicateDbs: (fromDbs, toDb) => {
     const targetDb = db.get(toDb);
-    return fromDbs.reduce((p, fromDb) => {
-      logger.info(`Replicating docs from "${fromDb}" to "${toDb}"`);
-      const sourceDb = db.get(fromDb);
-      return p.then(() => replicateDb(sourceDb, targetDb));
-    }, Promise.resolve());
+    return fromDbs
+      .reduce((p, fromDb) => {
+        logger.info(`Replicating docs from "${fromDb}" to "${toDb}"`);
+        const sourceDb = db.get(fromDb);
+        return p
+          .then(() => replicateDb(sourceDb, targetDb))
+          .then(() => db.close(sourceDb));
+      }, Promise.resolve()
+      )
+      .then(() => db.close(targetDb));
   },
 };

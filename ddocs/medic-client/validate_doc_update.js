@@ -18,9 +18,9 @@ function(newDoc, oldDoc, userCtx) {
    * property.
    */
   var validateForm = function(newDoc) {
-    var id_parts = newDoc._id.split(':'),
-        prefix = id_parts[0],
-        form_id = id_parts.slice(1).join(':');
+    var id_parts = newDoc._id.split(':');
+    var prefix = id_parts[0];
+    var form_id = id_parts.slice(1).join(':');
     if (prefix !== 'form') {
       _err('_id property must be prefixed with "form:". e.g. "form:registration"');
     }
@@ -33,10 +33,10 @@ function(newDoc, oldDoc, userCtx) {
   };
 
   var validateUserSettings = function(newDoc) {
-    var id_parts = newDoc._id.split(':'),
-        prefix = id_parts[0],
-        username = id_parts.slice(1).join(':'),
-        idExample = ' e.g. "org.couchdb.user:sally"';
+    var id_parts = newDoc._id.split(':');
+    var prefix = id_parts[0];
+    var username = id_parts.slice(1).join(':');
+    var idExample = ' e.g. "org.couchdb.user:sally"';
     if (prefix !== 'org.couchdb.user') {
       _err('_id must be prefixed with "org.couchdb.user:".' + idExample);
     }
@@ -70,5 +70,8 @@ function(newDoc, oldDoc, userCtx) {
     validateUserSettings(newDoc);
   }
 
-  log('medic-client validate_doc_update passed for User "' + userCtx.name + '" changing document "' +  newDoc._id + '"');
+  log(
+    'medic-client validate_doc_update passed for User "' + userCtx.name +
+    '" changing document "' +  newDoc._id + '"'
+  );
 }

@@ -2,10 +2,10 @@ describe('relativeDay filter', function() {
 
   'use strict';
 
-  var compile,
-      scope,
-      date = sinon.stub(),
-      relative = sinon.stub();
+  let compile;
+  let scope;
+  const date = sinon.stub();
+  const relative = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
@@ -27,7 +27,7 @@ describe('relativeDay filter', function() {
 
   it('should render nothing when no date', function() {
     scope.date = undefined;
-    var element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
+    const element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('<span></span>');
   });
@@ -36,7 +36,7 @@ describe('relativeDay filter', function() {
     date.returns('1st Jan 2020');
     relative.returns('in 5 days');
     scope.date = moment().add(5, 'days').valueOf();
-    var element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
+    const element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
     scope.$digest();
     chai.expect(element.find('span').attr('title')).to.equal('1st Jan 2020');
     chai.expect(element.text()).to.equal('in 5 days');
@@ -46,7 +46,7 @@ describe('relativeDay filter', function() {
     date.returns('1st Jan 2020');
     relative.returns('today');
     scope.date = moment().valueOf();
-    var element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
+    const element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
     scope.$digest();
     chai.expect(element.find('span').attr('title')).to.equal('1st Jan 2020');
     chai.expect(element.text()).to.equal('today');

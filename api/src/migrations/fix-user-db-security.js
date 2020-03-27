@@ -1,6 +1,6 @@
-const db = require('../db'),
-      {promisify} = require('util'),
-      userDb = require('../services/user-db');
+const db = require('../db');
+const {promisify} = require('util');
+const userDb = require('../services/user-db');
 
 module.exports = {
   name: 'fix-user-db-security',

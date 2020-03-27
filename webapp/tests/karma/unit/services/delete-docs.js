@@ -2,11 +2,11 @@ describe('DeleteDocs service', function() {
 
   'use strict';
 
-  var service,
-      get,
-      bulkDocs,
-      isOnlineOnly,
-      server;
+  let service;
+  let get;
+  let bulkDocs;
+  let isOnlineOnly;
+  let server;
 
   beforeEach(function() {
     get = sinon.stub();
@@ -49,7 +49,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('throws if silent errors in bulkDocs', function(done) {
-    var clinic = {
+    const clinic = {
       _id: 'b',
       type: 'clinic',
       contact: {
@@ -57,7 +57,7 @@ describe('DeleteDocs service', function() {
         phone: '+555'
       }
     };
-    var person = {
+    const person = {
       _id: 'a',
       type: 'person',
       phone: '+555',
@@ -84,7 +84,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('does not allow deleting child and parent that will conflict', function(done) {
-    var clinic = {
+    const clinic = {
       _id: 'b',
       type: 'clinic',
       contact: {
@@ -92,7 +92,7 @@ describe('DeleteDocs service', function() {
         name: 'sally'
       }
     };
-    var person = {
+    const person = {
       _id: 'a',
       type: 'person',
       name: 'sally',
@@ -112,12 +112,12 @@ describe('DeleteDocs service', function() {
 
   it('marks the record deleted', function() {
     bulkDocs.returns(Promise.resolve([]));
-    var record = {
+    const record = {
       _id: 'xyz',
       _rev: '123',
       type: 'data_record'
     };
-    var expected = {
+    const expected = {
       _id: 'xyz',
       _rev: '123',
       type: 'data_record',
@@ -132,23 +132,23 @@ describe('DeleteDocs service', function() {
 
   it('marks multiple records deleted', function() {
     bulkDocs.returns(Promise.resolve([]));
-    var record1 = {
+    const record1 = {
       _id: 'xyz',
       _rev: '123',
       type: 'data_record'
     };
-    var record2 = {
+    const record2 = {
       _id: 'abc',
       _rev: '456',
       type: 'data_record'
     };
-    var expected1 = {
+    const expected1 = {
       _id: 'xyz',
       _rev: '123',
       type: 'data_record',
       _deleted: true
     };
-    var expected2 = {
+    const expected2 = {
       _id: 'abc',
       _rev: '456',
       type: 'data_record',
@@ -164,10 +164,10 @@ describe('DeleteDocs service', function() {
   });
 
   it('sends a direct request to the server when user is an admin', function() {
-    var record1 = { _id: 'xyz', _rev: '1' };
-    var record2 = { _id: 'abc', _rev: '1' };
-    var expected1 = { _id: 'xyz' };
-    var expected2 = { _id: 'abc' };
+    const record1 = { _id: 'xyz', _rev: '1' };
+    const record2 = { _id: 'abc', _rev: '1' };
+    const expected1 = { _id: 'xyz' };
+    const expected2 = { _id: 'abc' };
     server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
     isOnlineOnly.returns(true);
     return service([ record1, record2 ]).then(function() {
@@ -181,10 +181,10 @@ describe('DeleteDocs service', function() {
   });
 
   it('fires the progress event handler on progress events', function(done) {
-    var record1 = { _id: 'xyz' };
-    var record2 = { _id: 'abc' };
-    var onProgress = sinon.spy();
-    var response = '[[{"ok": true}, {"ok": true}],';
+    const record1 = { _id: 'xyz' };
+    const record2 = { _id: 'abc' };
+    const onProgress = sinon.spy();
+    const response = '[[{"ok": true}, {"ok": true}],';
     server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
     isOnlineOnly.returns(true);
     service([ record1, record2 ], { progress: onProgress })
@@ -195,11 +195,11 @@ describe('DeleteDocs service', function() {
         chai.expect(onProgress.callCount).to.equal(1);
         chai.expect(onProgress.getCall(0).args[0]).to.equal(2);
         done();
-    });
+      });
   });
 
   it('does not modify the given array - #2417', function() {
-    var clinic = {
+    const clinic = {
       _id: 'b',
       type: 'clinic',
       contact: {
@@ -207,7 +207,7 @@ describe('DeleteDocs service', function() {
         name: 'sally'
       }
     };
-    var person = {
+    const person = {
       _id: 'a',
       type: 'person',
       name: 'sally',
@@ -215,7 +215,7 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    var docs = [ person ];
+    const docs = [ person ];
     get.returns(Promise.resolve(clinic));
     bulkDocs.returns(Promise.resolve([]));
     return service(docs).then(function() {
@@ -225,14 +225,14 @@ describe('DeleteDocs service', function() {
   });
 
   it('minifies lineage for circular referenced report #4076', function() {
-    var clinic = {
+    const clinic = {
       _id: 'b',
       type: 'clinic',
       contact: {
         _id: 'a',
       }
     };
-    var person = {
+    const person = {
       _id: 'a',
       type: 'person',
       name: 'sally',
@@ -240,16 +240,16 @@ describe('DeleteDocs service', function() {
     };
     clinic.contact = person;
 
-    var report = {
+    const report = {
       _id: 'c',
       type: 'data_record',
       contact: person
     };
 
-    var docs = [ report ];
+    const docs = [ report ];
     bulkDocs.returns(Promise.resolve([]));
-    var isCircularBefore = false;
-    var isCircularAfter = false;
+    let isCircularBefore = false;
+    let isCircularAfter = false;
     try {
       JSON.stringify(report);
     } catch (e) {

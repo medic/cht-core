@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-    taskUtils = require('@medic/task-utils');
+const _ = require('lodash/core');
+const taskUtils = require('@medic/task-utils');
 
 (function () {
 
@@ -29,8 +29,8 @@ var _ = require('underscore'),
           return DB()
             .get(recordId)
             .then(function(doc) {
-              var changed = false;
-              _.each(doc.scheduled_tasks, function(task) {
+              let changed = false;
+              _.forEach(doc.scheduled_tasks, function(task) {
                 if (task.group === group && task.state === fromState) {
                   changed = true;
                   SetTaskState(task, toState);

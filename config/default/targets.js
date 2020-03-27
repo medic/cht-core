@@ -1,8 +1,5 @@
 const extras = require('./nools-extras');
-const FIVE_YEARS_IN_DAYS = 1826;
 const {
-  today,
-  addDays,
   isAlive,
   getSubsequentPregnancyFollowUps,
   getMostRecentLMPDateForPregnancy,
@@ -58,7 +55,10 @@ module.exports = [
     appliesIf: function (contact) {
       return !!contact;
     },
-    date: (contact) => contact.contact.date_of_birth
+    date: (contact) => contact.contact.date_of_birth,
+    dhis: {
+      dataElement: 'kB0ZBFisE0e',
+    }
   },
 
 
@@ -114,7 +114,12 @@ module.exports = [
       return getField(report, 'delivery_outcome.delivery_place') === 'health_facility';
     },
     date: 'now',
-    idType: 'contact'
+    idType: 'contact',
+    dhis: {
+      dataElement: 'e22tIwy1nKR',
+      categoryOptionCombo: 'HllvX50cXC0',
+      attributeOptionCombo: 'HllvX50cXC0',
+    }
   },
 
   {

@@ -6,14 +6,16 @@ const tombstoneUtils = require('@medic/tombstone-utils');
 const db = require('../../../src/db');
 const inherits = require('util').inherits;
 const EventEmitter = require('events');
-const _ = require('underscore');
+const _ = require('lodash');
 const config = require('../../../src/config');
 const serverChecks = require('@medic/server-checks');
 const environment = require('../../../src/environment');
 const logger = require('../../../src/logger');
 const purgedDocs = require('../../../src/services/purged-docs');
+const serverUtils = require('../../../src/server-utils');
 
 require('chai').should();
+
 let testReq;
 let testRes;
 let userCtx;
@@ -87,7 +89,7 @@ describe('Changes controller', () => {
       const self = this;
 
       let complete;
-      let completeEmitter = (err, resp) => {
+      const completeEmitter = (err, resp) => {
         if (err) {
           self.emit('error', err);
         } else {
@@ -207,6 +209,22 @@ describe('Changes controller', () => {
       changesSpy.callCount.should.equal(1);
     });
 
+    it('handles initialization errors', () => {
+      const error = sinon.stub(serverUtils, 'error');
+      db.medic.info.rejects({ error: 'timeout' });
+      return controller.request(testReq, testRes).then(() => {
+        error.callCount.should.equal(1);
+      });
+    });
+
+    it('handles feed initialization errors', () => {
+      const error = sinon.stub(serverUtils, 'error');
+      authorization.getAuthorizationContext.rejects({ error: 'timeout' });
+      return controller.request(testReq, testRes).then(() => {
+        error.callCount.should.equal(1);
+      });
+    });
+
     it('only initializes on first call', () => {
       controller.request(testReq, testRes);
       controller.request(testReq, testRes);
@@ -261,7 +279,7 @@ describe('Changes controller', () => {
           testRes.write.callCount.should.equal(0);
           testRes.end.callCount.should.equal(0);
           controller._getNormalFeeds().length.should.equal(1);
-      });
+        });
     });
 
     it('should initialize the feed with correct current_seq', () => {
@@ -300,9 +318,9 @@ describe('Changes controller', () => {
     });
 
     it('requests user authorization information with correct userCtx', () => {
-      const subjectIds = ['s1', 's2', 's3'],
-            allowedDocIds = ['d1', 'd2', 'd3'],
-            contactsByDepthKeys = [['facility_id']];
+      const subjectIds = ['s1', 's2', 's3'];
+      const allowedDocIds = ['d1', 'd2', 'd3'];
+      const contactsByDepthKeys = [['facility_id']];
       authorization.getAuthorizationContext.resolves({ subjectIds, contactsByDepthKeys, userCtx });
       authorization.getAllowedDocIds.resolves(allowedDocIds);
       controller.request(testReq, testRes);
@@ -385,12 +403,15 @@ describe('Changes controller', () => {
             batch_size: 4,
             doc_ids: ['d1', 'd2', 'd3'],
             return_docs: true,
+          });
         });
-      });
     });
 
     it('requests changes with correct query parameters', () => {
-      testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22', return_docs: false };
+      testReq.query = {
+        limit: 20, view: 'test', something: 'else', conflicts: true,
+        seq_interval: false, since: '22', return_docs: false
+      };
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       controller.request(testReq, testRes);
       return nextTick().then(() => {
@@ -406,7 +427,10 @@ describe('Changes controller', () => {
     });
 
     it('should limit changes requests when couchDB version allows it', () => {
-      testReq.query = { limit: 20, view: 'test', something: 'else', conflicts: true, seq_interval: false, since: '22', return_docs: false };
+      testReq.query = {
+        limit: 20, view: 'test', something: 'else', conflicts: true,
+        seq_interval: false, since: '22', return_docs: false
+      };
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       serverChecks.getCouchDbVersion.resolves('2.3.0');
       controller.request(testReq, testRes);
@@ -708,7 +732,8 @@ describe('Changes controller', () => {
           auth.getUserSettings.callCount.should.equal(1);
           authorization.getAuthorizationContext.callCount.should.equal(2);
           authorization.getAuthorizationContext.args[0][0].should.deep.equal(userCtx);
-          authorization.getAuthorizationContext.args[1][0].should.deep.equal({ name: 'user', facility_id: 'facility_id' });
+          authorization.getAuthorizationContext.args[1][0]
+            .should.deep.equal({ name: 'user', facility_id: 'facility_id' });
           authorization.getAllowedDocIds.callCount.should.equal(2);
           feeds[0].req.userCtx.should.deep.equal({ name: 'user', facility_id: 'facility_id' });
           initialFeed.ended.should.equal(true);
@@ -874,7 +899,7 @@ describe('Changes controller', () => {
         .then(() => {
           const emitter = controller._getContinuousFeed();
           const feed = controller._getLongpollFeeds()[0];
-          let feedTimeout = feed.timeout;
+          const feedTimeout = feed.timeout;
           feed.allowedDocIds.should.deep.equal([ 'a', 'b' ]);
           feed.results.length.should.equal(0);
           authorization.allowedDoc.returns(true);
@@ -1457,8 +1482,8 @@ describe('Changes controller', () => {
       authorization.allowedDoc.withArgs(4).returns(false);
 
       authorization.updateContext.withArgs(true)
-                   .onCall(0).returns(2)
-                   .onCall(1).returns(0);
+        .onCall(0).returns(2)
+        .onCall(1).returns(0);
 
       controller.request(testReq, testRes);
       return nextTick()
@@ -1656,8 +1681,8 @@ describe('Changes controller', () => {
 
   describe('appendChange', () => {
     it('appends unknown ID change to the list', () => {
-      const results = [{ id: 1 }, { id: 2 }],
-            changeObj = { change: { id: 3 } };
+      const results = [{ id: 1 }, { id: 2 }];
+      const changeObj = { change: { id: 3 } };
 
       controller._appendChange(results, changeObj);
       results.length.should.equal(3);
@@ -1702,8 +1727,8 @@ describe('Changes controller', () => {
     });
 
     it('deep clones the change object', () => {
-      const results = [],
-            changeObj = { change: { id: 1, changes: [{ rev: 1 }]}, viewResults: {}, id: 1 };
+      const results = [];
+      const changeObj = { change: { id: 1, changes: [{ rev: 1 }]}, viewResults: {}, id: 1 };
 
       controller._appendChange(results, changeObj);
       results[0].should.deep.equal(changeObj.change);
@@ -1749,7 +1774,10 @@ describe('Changes controller', () => {
         { change: { id: 1, changes: [{ rev: 1 }], doc: { _id: 1 }}, id: 1 },
         { change: { id: 2, changes: [{ rev: 2 }], doc: { _id: 2 }}, id: 2 },
         { change: { id: 3, changes: [{ rev: 2 }], doc: { _id: 3 }}, id: 3 },
-        { change: { id: 'org.couchdb.user:user', changes: [{ rev: 1 }], doc: { _id: 'org.couchdb.user:user' }}, id: 'org.couchdb.user:user'},
+        {
+          change: { id: 'org.couchdb.user:user', changes: [{ rev: 1 }], doc: { _id: 'org.couchdb.user:user' }},
+          id: 'org.couchdb.user:user'
+        },
         { change: { id: 5, changes: [{ rev: 1 }], doc: { _id: 5 }}, id: 5},
       ];
 
@@ -1892,9 +1920,15 @@ describe('Changes controller', () => {
       };
 
       const longpollFeeds = controller._getLongpollFeeds();
-      const testFeed1 = { id: 'feed1', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true };
-      const testFeed2 = { id: 'feed2', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true };
-      const testFeed3 = { id: 'feed3', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true };
+      const testFeed1 = {
+        id: 'feed1', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true
+      };
+      const testFeed2 = {
+        id: 'feed2', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true
+      };
+      const testFeed3 = {
+        id: 'feed3', lastSeq: 0, results: [], req: testReq, res: testRes, pendingChanges: [], reiterate_changes: true
+      };
       longpollFeeds.push(testFeed1, testFeed2, testFeed3);
       controller._processChange(change, 'seq');
       testFeed1.results[0].should.deep.equal(change);

@@ -18,7 +18,7 @@ const {
 } = extras;
 
 const generateEventForHomeVisit = (week, start, end) => ({
-  id: 'pregnancy-home-visit',
+  id: `pregnancy-home-visit-week${week}`,
   start,
   end,
   dueDate: function (event, contact, report) {
@@ -52,6 +52,7 @@ module.exports = [
 
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
   {
+    name: 'anc.pregnancy_home_visit.known_lmp',
     icon: 'icon-pregnancy',
     title: 'task.anc.pregnancy_home_visit.title',
     appliesTo: 'reports',
@@ -84,6 +85,7 @@ module.exports = [
 
   //ANC Home Visit: show every 2 weeks (Unknown LMP)
   {
+    name: 'anc.pregnancy_home_visit.unknown_lmp',
     icon: 'icon-pregnancy',
     title: 'task.anc.pregnancy_home_visit.title',
     appliesTo: 'reports',
@@ -106,8 +108,10 @@ module.exports = [
     //every two weeks from reported date until 42nd week, show before due date: 6 days, show after due date: 7 days
     events: [...Array(21).keys()].map(i => generateEventForHomeVisit((i + 1) * 2, 6, 7))
   },
+
   //ANC - Health Facility Visit Reminder
   {
+    name: 'anc.facility_reminder',
     icon: 'icon-pregnancy',
     title: 'task.anc.facility_reminder.title',
     appliesTo: 'reports',
@@ -144,7 +148,9 @@ module.exports = [
     }
     ]
   },
+
   {
+    name: 'anc.pregnancy_danger_sign_followup',
     icon: 'icon-pregnancy-danger',
     title: 'task.anc.pregnancy_danger_sign_followup.title',
     appliesTo: 'reports',
@@ -178,6 +184,7 @@ module.exports = [
   },
 
   {
+    name: 'anc.delivery',
     icon: 'icon-mother-child',
     title: 'task.anc.delivery.title',
     appliesTo: 'reports',
@@ -216,6 +223,7 @@ module.exports = [
   },
 
   {
+    name: 'pnc.danger_sign_followup_mother',
     icon: 'icon-follow-up',
     title: 'task.pnc.danger_sign_followup_mother.title',
     appliesTo: 'reports',
@@ -257,6 +265,7 @@ module.exports = [
   },
 
   {
+    name: 'pnc.danger_sign_followup_baby.from_contact',
     icon: 'icon-follow-up',
     title: 'task.pnc.danger_sign_followup_baby.title',
     appliesTo: 'contacts',
@@ -291,7 +300,9 @@ module.exports = [
       }
     ]
   },
+
   {
+    name: 'pnc.danger_sign_followup_baby.from_report',
     icon: 'icon-follow-up',
     title: 'task.pnc.danger_sign_followup_baby.title',
     appliesTo: 'reports',

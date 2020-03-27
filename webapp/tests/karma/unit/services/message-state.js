@@ -2,10 +2,10 @@ describe('MessageState service', function() {
 
   'use strict';
 
-  var service,
-      get,
-      put,
-      SetTaskState;
+  let service;
+  let get;
+  let put;
+  let SetTaskState;
 
   beforeEach(function() {
     put = sinon.stub();
@@ -26,7 +26,7 @@ describe('MessageState service', function() {
   });
 
   it('any returns true when some row in the group matches', function() {
-    var group = {
+    const group = {
       rows: [
         { state: 'sent' },
         { state: 'scheduled' },
@@ -37,7 +37,7 @@ describe('MessageState service', function() {
   });
 
   it('any returns false when no row in the group matches', function() {
-    var group = {
+    const group = {
       rows: [
         { state: 'sent' },
         { state: 'pending' },
@@ -48,7 +48,7 @@ describe('MessageState service', function() {
   });
 
   it('any returns false when no rows', function() {
-    var group = {
+    const group = {
       rows: []
     };
     chai.expect(service.any(group, 'scheduled')).to.equal(false);
@@ -63,7 +63,7 @@ describe('MessageState service', function() {
   });
 
   it('set does not save if nothing changed', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 1, state: 'scheduled' },
         { group: 2, state: 'muted' },
@@ -77,7 +77,7 @@ describe('MessageState service', function() {
   });
 
   it('set returns save errors', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 1, state: 'scheduled' },
         { group: 2, state: 'muted' },
@@ -93,7 +93,7 @@ describe('MessageState service', function() {
   });
 
   it('set saves if task changed', function(done) {
-    var doc = {
+    const doc = {
       scheduled_tasks: [
         { group: 1, state: 'scheduled' },
         { group: 2, state: 'sent' },
@@ -107,7 +107,7 @@ describe('MessageState service', function() {
 
     service.set('123', 2, 'muted', 'scheduled').then(function() {
       chai.expect(get.args[0][0]).to.equal('123');
-      var actual = put.args[0][0];
+      const actual = put.args[0][0];
       chai.expect(SetTaskState.callCount).to.equal(2);
       chai.expect(actual.scheduled_tasks.length).to.equal(5);
       chai.expect(SetTaskState.getCall(0).args[0]).to.deep.equal({

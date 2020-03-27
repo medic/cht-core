@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const path = require('path');
 
 const db = require('../db');
@@ -72,7 +72,7 @@ module.exports = {
         const original = JSON.stringify(doc.settings);
 
         if (overwrite) {
-            doc.settings = body;
+          doc.settings = body;
         } else if (replace) {
           doReplace(doc.settings, body);
         } else {

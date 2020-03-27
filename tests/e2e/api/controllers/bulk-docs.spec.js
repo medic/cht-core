@@ -1,7 +1,7 @@
-const _ = require('underscore'),
-  utils = require('../../../utils'),
-  sUtils = require('../../sentinel/utils'),
-  constants = require('../../../constants');
+const _ = require('lodash');
+const utils = require('../../../utils');
+const sUtils = require('../../sentinel/utils');
+const constants = require('../../../constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -42,9 +42,20 @@ const users = [
     },
     roles: ['national_admin'],
   },
+  {
+    username: 'supervisor',
+    password: password,
+    place: 'PARENT_PLACE',
+    contact: {
+      _id: 'fixture:user:supervisor',
+      name: 'Supervisor',
+    },
+    roles: ['district_admin'],
+  },
 ];
 
-let offlineRequestOptions, onlineRequestOptions;
+let offlineRequestOptions;
+let onlineRequestOptions;
 
 const DOCS_TO_KEEP = [
   'PARENT_PLACE',
@@ -271,9 +282,12 @@ describe('bulk-docs handler', () => {
             expect(result[1]).not.toBeDefined();
 
             // Unsuccessful writes to existing
-            expect(_.pick(result[2], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[2], '_id', 'latest_replication_date'));
-            expect(_.pick(result[3], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[3], '_id', 'latest_replication_date'));
-            expect(_.pick(result[4], '_id', 'latest_replication_date')).toEqual(_.pick(existentDocsInfodocs[0], '_id', 'latest_replication_date'));
+            expect(_.pick(result[2], '_id', 'latest_replication_date'))
+              .toEqual(_.pick(existentDocsInfodocs[2], '_id', 'latest_replication_date'));
+            expect(_.pick(result[3], '_id', 'latest_replication_date'))
+              .toEqual(_.pick(existentDocsInfodocs[3], '_id', 'latest_replication_date'));
+            expect(_.pick(result[4], '_id', 'latest_replication_date'))
+              .toEqual(_.pick(existentDocsInfodocs[0], '_id', 'latest_replication_date'));
 
             // Successful write to existing
             expect(result[5]._id).toEqual(existentDocsInfodocs[1]._id);
@@ -282,7 +296,68 @@ describe('bulk-docs handler', () => {
             // Successful completely new write
             expect(result[6]).toBeDefined();
           });
-    });
+      });
+  });
+
+  it('filters offline tasks and targets', () => {
+    const supervisorRequestOptions = {
+      path: '/_bulk_docs',
+      auth: { username: 'supervisor', password },
+      method: 'POST',
+    };
+
+    const docs = [
+      {
+        _id: 'allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:online',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        user: 'org.couchdb.user:offline',
+        owner: 'fixture:user:online',
+      },
+    ];
+
+    offlineRequestOptions.body = { docs };
+
+    return utils
+      .requestOnTestDb(offlineRequestOptions)
+      .then(result => {
+        expect(result.length).toEqual(4);
+        expect(_.pick(result[0], 'id', 'ok')).toEqual({ id: 'allowed_task', ok: true });
+        expect(_.pick(result[2], 'id', 'ok')).toEqual({ id: 'allowed_target', ok: true });
+        expect(_.pick(result[1], 'id', 'error')).toEqual({ id: 'denied_task', error: 'forbidden' });
+        expect(_.pick(result[3], 'id', 'error')).toEqual({ id: 'denied_target', error: 'forbidden' });
+
+        docs[0]._rev = result[0].rev;
+        docs[2]._rev = result[2].rev;
+
+        supervisorRequestOptions.body = { docs };
+        return utils.requestOnTestDb(supervisorRequestOptions);
+      })
+      .then(result => {
+        expect(result.length).toEqual(4);
+        expect(_.pick(result[0], 'id', 'error')).toEqual({ id: 'allowed_task', error: 'forbidden' });
+        expect(_.pick(result[1], 'id', 'error')).toEqual({ id: 'denied_task', error: 'forbidden' });
+        expect(_.pick(result[2], 'id', 'ok')).toEqual({ id: 'allowed_target', ok: true });
+        expect(_.pick(result[3], 'id', 'ok')).toEqual({ id: 'denied_target', ok: true });
+      });
+
   });
 
   it('reiterates over docs', () => {
@@ -540,14 +615,28 @@ describe('bulk-docs handler', () => {
   it('works with `new_edits`', () => {
     const docs = [
       {
-        _id: 'allowed',
+        _id: 'allowed1',
         _rev: '1-test',
         type: 'clinic',
         parent: { _id: 'fixture:offline' },
         name: 'allowed-1',
       },
       {
-        _id: 'denied',
+        _id: 'denied1',
+        _rev: '1-test',
+        type: 'clinic',
+        parent: { _id: 'fixture:online' },
+        name: 'denied-1',
+      },
+      {
+        _id: 'allowed2',
+        _rev: '1-test',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline' },
+        name: 'allowed-1',
+      },
+      {
+        _id: 'denied2',
         _rev: '1-test',
         type: 'clinic',
         parent: { _id: 'fixture:online' },
@@ -562,15 +651,19 @@ describe('bulk-docs handler', () => {
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
-        expect(result).toEqual([]);
+        expect(result).toEqual([{ id: 'denied1', error: 'forbidden' }, { id: 'denied2', error: 'forbidden' }]);
         return Promise.all([
-          utils.getDoc('allowed'),
-          utils.getDoc('denied').catch(err => err),
+          utils.getDoc('allowed1'),
+          utils.getDoc('denied1').catch(err => err),
+          utils.getDoc('allowed2'),
+          utils.getDoc('denied2').catch(err => err),
         ]);
       })
       .then(results => {
         expect(results[0]).toEqual(docs[0]);
         expect(results[1].statusCode).toEqual(404);
+        expect(results[2]).toEqual(docs[2]);
+        expect(results[3].statusCode).toEqual(404);
       });
   });
 

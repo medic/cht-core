@@ -2,9 +2,9 @@ describe('UserContact service', function() {
 
   'use strict';
 
-  var service,
-      UserSettings,
-      contact;
+  let service;
+  let UserSettings;
+  let contact;
 
   beforeEach(function() {
     contact = sinon.stub();
@@ -40,7 +40,7 @@ describe('UserContact service', function() {
 
   it('returns null when configured contact not in the database', function() {
     UserSettings.returns(Promise.resolve({ contact_id: 'not-found' }));
-    var err = new Error('not_found');
+    const err = new Error('not_found');
     err.reason = 'missing';
     err.message = 'missing';
     err.code = 404;
@@ -66,7 +66,7 @@ describe('UserContact service', function() {
   });
 
   it('returns contact', function() {
-    var expected = { _id: 'somebody', name: 'Some Body' };
+    const expected = { _id: 'somebody', name: 'Some Body' };
     UserSettings.returns(Promise.resolve({ contact_id: 'somebody' }));
     contact.returns(Promise.resolve({ doc: expected }));
     return service().then(function(actual) {

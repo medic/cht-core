@@ -795,6 +795,19 @@ describe('Lineage', function() {
         });
     });
 
+    it('should not recurse more than needed', () => {
+      const copy = (doc) => cloneDeep(doc);
+      return Promise
+        .all([
+          lineage.hydrateDocs([circular_report]),
+          lineage.hydrateDocs([copy(circular_report), copy(circular_report)])
+        ])
+        .then(results => {
+          expect(results[0][0]).to.deep.equal(results[1][0]);
+          expect(results[0][0]).to.deep.equal(results[1][1]);
+        });
+    });
+
     it('processing a doc with itself as a parent errors out', function() {
       const docs = [ cloneDeep(child_is_parent) ];
 

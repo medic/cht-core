@@ -1,21 +1,23 @@
-const _ = require('underscore'),
-  moment = require('moment'),
-  sinon = require('sinon'),
-  assert = require('chai').assert,
-  transition = require('../../src/transitions/registration'),
-  db = require('../../src/db'),
-  utils = require('../../src/lib/utils'),
-  transitionUtils = require('../../src/transitions/utils');
+const  moment = require('moment');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const rewire = require('rewire');
+const db = require('../../src/db');
+const utils = require('../../src/lib/utils');
+const transitionUtils = require('../../src/transitions/utils');
+const config = require('../../src/config');
+
+const transition = rewire('../../src/transitions/registration');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {
     return;
   }
   if (!idx) {
-    return _.first(_.first(doc.tasks).messages);
+    return doc.tasks[0].messages[0];
   }
   if (doc.tasks[idx]) {
-    return _.first(doc.tasks[idx].messages);
+    return doc.tasks[idx].messages[0];
   }
 };
 
@@ -23,7 +25,14 @@ describe('patient registration', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    sinon.stub(transition, 'getConfig').returns([
+    transition.getWeeksSinceLMP = transition.__get__('getWeeksSinceLMP');
+    transition.getYearsSinceDOB = transition.__get__('getYearsSinceDOB');
+    transition.getMonthsSinceDOB = transition.__get__('getMonthsSinceDOB');
+    transition.getWeeksSinceDOB = transition.__get__('getWeeksSinceDOB');
+    transition.getDaysSinceDOB = transition.__get__('getDaysSinceDOB');
+    transition.getDOB = transition.__get__('getDOB');
+
+    sinon.stub(config, 'get').returns([
       {
         form: 'PATR',
         events: [
@@ -195,70 +204,61 @@ describe('patient registration', () => {
   });
 
   it('getDOB uses weeks since dob if available', () => {
-    const reported_date = 1474942416907,
-      expected = moment(reported_date)
-        .startOf('day')
-        .subtract(5, 'weeks')
-        .valueOf();
-    sinon.stub(transition, 'getWeeksSinceDOB').returns('5');
+    const reported_date = 1474942416907;
+    const expected = moment(reported_date)
+      .startOf('day')
+      .subtract(5, 'weeks')
+      .valueOf();
+    transition.__set__('getWeeksSinceDOB', sinon.stub().returns('5'));
     assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
   });
 
   it('getDOB uses days since dob if available', () => {
-    const reported_date = 1474942416907,
-      expected = moment(reported_date)
-        .startOf('day')
-        .subtract(5, 'days')
-        .valueOf();
-    sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
-    sinon.stub(transition, 'getDaysSinceDOB').returns('5');
+    const reported_date = 1474942416907;
+    const expected = moment(reported_date)
+      .startOf('day')
+      .subtract(5, 'days')
+      .valueOf();
+    transition.__set__('getWeeksSinceDOB', sinon.stub().returns(undefined));
+    transition.__set__('getDaysSinceDOB', sinon.stub().returns('5'));
     assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
   });
 
   it('getDOB falls back to reported_date if necessary', () => {
-    const reported_date = 1474942416907,
-      expected = moment(reported_date)
-        .startOf('day')
-        .valueOf();
-    sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
-    sinon.stub(transition, 'getDaysSinceDOB').returns(undefined);
+    const reported_date = 1474942416907;
+    const expected = moment(reported_date)
+      .startOf('day')
+      .valueOf();
+    transition.__set__('getWeeksSinceDOB', sinon.stub().returns(undefined));
+    transition.__set__('getDaysSinceDOB', sinon.stub().returns(undefined));
     assert.equal(transition.getDOB({ fields: {}, reported_date: reported_date }).valueOf(), expected);
   });
 
   it('getDOB falls back to be relative to today if no reported date', () => {
     const expected = moment().startOf('day').subtract(4, 'days').valueOf();
-    sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
-    sinon.stub(transition, 'getDaysSinceDOB').returns('4');
+    transition.__set__('getWeeksSinceDOB', sinon.stub().returns(undefined));
+    transition.__set__('getDaysSinceDOB', sinon.stub().returns('4'));
     assert.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
   });
 
   it('valid form adds patient_id and patient document', () => {
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1);
-
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
-      doc.patient_id = 12345;
-      callback();
+    sinon.stub(utils, 'getContactUuid').resolves();
+    sinon.stub(transitionUtils, 'getUniqueId').resolves('12345');
+    sinon.stub(config, 'getAll').returns({
+      contact_types: [
+        { id: 'some_place' },
+        { id: 'person', parents: ['some_place'], person: true }
+      ]
     });
 
     const doc = {
       _id: 'docid',
       form: 'PATR',
       fields: { patient_name: 'abc' },
+      contact: { _id: 'the-contact', parent: { _id: 'the-parent', type: 'some_place' } },
       reported_date: 'now',
     };
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, {
-      rows: [
-        {
-          doc: {
-            _id: 'the-contact',
-            parent: {
-              _id: 'the-parent',
-            },
-          },
-        },
-      ],
-    });
-    const saveDoc = sinon.stub(db.medic, 'post').callsArg(1);
+    const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
     return transition.onMatch({ doc: doc }).then(changed => {
       assert.equal(changed, true);
@@ -280,14 +280,9 @@ describe('patient registration', () => {
   });
 
   it('registration sets up responses', () => {
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon
-      .stub(utils, 'getPatientContact')
-      .callsArgWith(1, null, { _id: 'uuid' });
-    sinon
-      .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(1, null, { _id: 'uuid' });
-    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    sinon.stub(utils, 'getContactUuid').resolves('uuid');
+    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
     const doc = {
       form: 'PATR',
@@ -342,14 +337,9 @@ describe('patient registration', () => {
   });
 
   it('registration responses support locale', () => {
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon
-      .stub(utils, 'getPatientContact')
-      .callsArgWith(1, null, { _id: 'uuid' });
-    sinon
-      .stub(utils, 'getPatientContactUuid')
-      .callsArgWith(1, null, { _id: 'uuid' });
-    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    sinon.stub(utils, 'getContactUuid').resolves('uuid');
+    sinon.stub(transitionUtils, 'getUniqueId').resolves(12345);
 
     const doc = {
       form: 'PATR',
@@ -442,7 +432,7 @@ describe('patient registration', () => {
 
   describe('when manually selecting patient_id', () => {
     beforeEach(() => {
-      transition.getConfig.returns([
+      config.get.returns([
         {
           form: 'WITH',
           events: [
@@ -492,34 +482,33 @@ describe('patient registration', () => {
           patient_name: 'Chris'
         },
         from: '+1234',
-        reported_date: 1234
+        reported_date: 1234,
+        contact: {
+          _id: 'julie', name: 'Julie', phone: '+1234',
+          parent: { _id: 'place', type: 'contact', contact_type: 'place' }
+        }
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContact');
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, false);
-      sinon.stub(transitionUtils, 'addUniqueId');
+      sinon.stub(utils, 'getContactUuid').resolves(false);
+      sinon.stub(transitionUtils, 'getUniqueId');
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] },
+        ]
+      });
 
-      sinon.stub(db.medic, 'query')
-        .withArgs('medic-client/contacts_by_phone')
-        .callsArgWith(2, null, {
-          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
-        });
-
-      sinon.stub(db.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').resolves();
 
       return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'no_provided_patient_id');
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContact.callCount, 0);
-        assert.equal(utils.getPatientContactUuid.callCount, 1);
-        assert.equal(transitionUtils.addUniqueId.callCount, 0);
+        assert.equal(utils.getContactUuid.callCount, 1);
+        assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_phone');
-        assert.deepEqual(db.medic.query.args[0][1], { key: '+1234', include_docs: true });
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {
           name: 'Chris',
@@ -542,44 +531,42 @@ describe('patient registration', () => {
           my_patient_id: 'not_unique'
         },
         from: '+1234',
-        reported_date: 1234
+        reported_date: 1234,
+        contact: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place', type: 'place' } }
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContact');
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, false);
-      sinon.stub(transitionUtils, 'addUniqueId');
+      sinon.stub(utils, 'getContactUuid').resolves(false);
+      sinon.stub(transitionUtils, 'getUniqueId');
 
       sinon.stub(db.medic, 'query');
-      db.medic.query
-        .withArgs('medic-client/contacts_by_phone')
-        .callsArgWith(2, null, {
-          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
-        });
+
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
 
       db.medic.query
         .withArgs('medic-client/contacts_by_reference')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: [{ key: ['shortcode', 'not_unique'], id: 'some_patient' }]
         });
 
-      sinon.stub(db.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').resolves();
 
       return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors.length, 1);
         assert.equal(doc.errors[0].code, 'provided_patient_id_not_unique');
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContact.callCount, 0);
-        assert.equal(utils.getPatientContactUuid.callCount, 1);
-        assert.equal(transitionUtils.addUniqueId.callCount, 0);
+        assert.equal(utils.getContactUuid.callCount, 1);
+        assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 2);
+        assert.equal(db.medic.query.callCount, 1);
         assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'not_unique'] });
-
-        assert.deepEqual(db.medic.query.args[1][0], 'medic-client/contacts_by_phone');
-        assert.deepEqual(db.medic.query.args[1][1], { key: '+1234', include_docs: true });
 
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {
@@ -603,43 +590,40 @@ describe('patient registration', () => {
           my_patient_id: 'unique'
         },
         from: '+1234',
-        reported_date: 1234
+        reported_date: 1234,
+        contact: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place', type: 'place' } },
       };
 
       sinon.stub(utils, 'getRegistrations');
-      sinon.stub(utils, 'getPatientContact');
-      sinon.stub(utils, 'getPatientContactUuid').callsArgWith(1, null, false);
-      sinon.stub(transitionUtils, 'addUniqueId');
+      sinon.stub(utils, 'getContactUuid').resolves(false);
+      sinon.stub(transitionUtils, 'getUniqueId');
+
+      sinon.stub(config, 'getAll').returns({
+        contact_types: [
+          { id: 'place' },
+          { id: 'person', person: true, parents: ['place'] }
+        ]
+      });
 
       sinon.stub(db.medic, 'query');
       db.medic.query
-        .withArgs('medic-client/contacts_by_phone')
-        .callsArgWith(2, null, {
-          rows: [{ key: '+1234', doc: { _id: 'julie', name: 'Julie', phone: '+1234', parent: { _id: 'place' } }}]
-        });
-
-      db.medic.query
         .withArgs('medic-client/contacts_by_reference')
-        .callsArgWith(2, null, {
+        .resolves({
           rows: []
         });
 
-      sinon.stub(db.medic, 'post').callsArgWith(1);
+      sinon.stub(db.medic, 'post').resolves();
 
       return transition.onMatch({ doc }).then(changed => {
         assert.equal(changed, true);
         assert.equal(doc.errors, undefined);
         assert.equal(utils.getRegistrations.callCount, 0);
-        assert.equal(utils.getPatientContact.callCount, 0);
-        assert.equal(utils.getPatientContactUuid.callCount, 1);
-        assert.equal(transitionUtils.addUniqueId.callCount, 0);
+        assert.equal(utils.getContactUuid.callCount, 1);
+        assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 2);
+        assert.equal(db.medic.query.callCount, 1);
         assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'unique'] });
-
-        assert.deepEqual(db.medic.query.args[1][0], 'medic-client/contacts_by_phone');
-        assert.deepEqual(db.medic.query.args[1][1], { key: '+1234', include_docs: true });
 
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {

@@ -2,10 +2,10 @@ describe('AndroidApi service', () => {
 
   'use strict';
 
-  let service,
-      $log,
-      identifyResponse,
-      registerResponse;
+  let service;
+  let $log;
+  let identifyResponse;
+  let registerResponse;
 
   beforeEach(() => {
     module('inboxApp');

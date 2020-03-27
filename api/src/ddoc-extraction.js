@@ -1,11 +1,11 @@
-const _ = require('underscore'),
-  db = require('./db'),
-  logger = require('./logger'),
-  DDOC_ATTACHMENT_ID = 'ddocs/compiled.json',
-  SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js',
-  SWMETA_DOC_ID = 'service-worker-meta',
-  SERVER_DDOC_ID = '_design/medic',
-  CLIENT_DDOC_ID = '_design/medic-client';
+const _ = require('lodash');
+const db = require('./db');
+const logger = require('./logger');
+const DDOC_ATTACHMENT_ID = 'ddocs/compiled.json';
+const SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js';
+const SWMETA_DOC_ID = 'service-worker-meta';
+const SERVER_DDOC_ID = '_design/medic';
+const CLIENT_DDOC_ID = '_design/medic-client';
 const environment = require('./environment');
 
 const getCompiledDdocs = () => db.medic
@@ -93,12 +93,12 @@ const extractFromCompiledDocs = deploy_info => {
     .then(updated => _.compact(updated));
 };
 
-/*
-We need client-side logic to trigger a service worker update when a cached resource changes.
-Since service-worker.js contains a hash of every cached resource, watching it for changes is sufficient to detect a required update.
-To this end, copy the hash of service-worker.js and store it in a new doc (SWMETA_DOC_ID) which replicates to clients.
-The intention is that when this doc changes, clients will refresh their cache.
-*/
+// We need client-side logic to trigger a service worker update when a cached resource changes.
+// Since service-worker.js contains a hash of every cached resource, watching it for changes is sufficient to detect a
+// required update.
+// To this end, copy the hash of service-worker.js and store it in a new doc (SWMETA_DOC_ID) which replicates to
+// clients.
+// The intention is that when this doc changes, clients will refresh their cache.
 const extractServiceWorkerMetaDoc = ddoc => {
   const attachment = ddoc._attachments && ddoc._attachments[SERVICEWORKER_ATTACHMENT_NAME];
   const attachmentDigest = attachment && attachment.digest;
@@ -136,7 +136,7 @@ module.exports = {
     .then(extractFromDdoc)
     .then(docs => {
       if (docs.length) {
-        logger.info(`Updating docs: ${_.pluck(docs, '_id').join(', ')}`);
+        logger.info(`Updating docs: ${_.map(docs, '_id').join(', ')}`);
         return db.medic.bulkDocs({ docs: docs });
       }
     }),

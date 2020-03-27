@@ -91,7 +91,7 @@ angular.module('inboxServices').factory('ResourceIcons',
     
     DOC_IDS.slice(1).forEach(doc => updateResources(doc));
 
-    var initResources = updateResources(DOC_IDS[0]);
+    const initResources = updateResources(DOC_IDS[0]);
 
     Changes({
       key: 'resource-icons',

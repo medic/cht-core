@@ -59,7 +59,10 @@ describe('Server utils', () => {
         code: 503,
         message: {
           message: 'connect ECONNREFUSED 127.0.0.1:5985',
-          stack: 'Error: connect ECONNREFUSED 127.0.0.1:5985\n    at Object.exports._errnoException (util.js:1016:11)\n    at exports._exceptionWithHostPort (util.js:1039:20)\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1138:14)',
+          stack:
+            'Error: connect ECONNREFUSED 127.0.0.1:5985\n    at Object.exports._errnoException ' +
+            '(util.js:1016:11)\n    at exports._exceptionWithHostPort (util.js:1039:20)\n    ' +
+            'at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1138:14)',
           code: 'ECONNREFUSED',
           errno: 'ECONNREFUSED',
           syscall: 'connect',
@@ -212,6 +215,21 @@ describe('Server utils', () => {
       chai.expect(json.callCount).to.equal(1);
       chai.expect(json.args[0][0].code).to.equal(500);
       chai.expect(json.args[0][0].error).to.equal('Server error');
+    });
+
+    it('handles uncaught payload size exceptions', () => {
+      const status = sinon.stub(res, 'status');
+      const json = sinon.stub(res, 'json');
+      const get = sinon.stub(req, 'get');
+      get.returns('application/json');
+      serverUtils.serverError({ foo: 'bar', type: 'entity.too.large' }, req, res);
+      chai.expect(get.callCount).to.equal(1);
+      chai.expect(get.args[0][0]).to.equal('Accept');
+      chai.expect(status.callCount).to.equal(1);
+      chai.expect(status.args[0][0]).to.equal(413);
+      chai.expect(json.callCount).to.equal(1);
+      chai.expect(json.args[0][0].code).to.equal(413);
+      chai.expect(json.args[0][0].error).to.equal('Payload Too Large');
     });
 
   });

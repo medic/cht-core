@@ -1,8 +1,8 @@
-const utils = require('../../utils'),
-      auth = require('../../auth')(),
-      request = require('request'),
-      constants = require('../../constants'),
-      _ = require('underscore');
+const utils = require('../../utils');
+const auth = require('../../auth')();
+const request = require('request');
+const constants = require('../../constants');
+const _ = require('lodash');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -26,7 +26,7 @@ describe('server', () => {
 
     const requestWrapper = (options) => {
       _.defaults(options, {
-        auth: _.extend({ sendImmediately: true }, auth),
+        auth: Object.assign({ sendImmediately: true }, auth),
         method: 'GET',
         baseUrl: 'http://' + constants.API_HOST + ':' + constants.API_PORT + '/' + constants.DB_NAME,
         uri: '/',

@@ -2,14 +2,18 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
   function (
     $log,
     $ngRedux,
+    $q,
     $scope,
     $state,
     $translate,
+    DB,
     Enketo,
     Geolocation,
     GlobalActions,
+    LiveList,
     Selectors,
     Snackbar,
+    TasksActions,
     Telemetry,
     TranslateFrom,
     XmlForms
@@ -28,30 +32,62 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         loadingContent: Selectors.getLoadingContent(state),
-        selectedTask: Selectors.getSelectedTask(state)
+        selectedTask: Selectors.getSelectedTask(state),
+        loadTasks: Selectors.getLoadTasks(state),
       };
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
+      const tasksActions = TasksActions(dispatch);
       return {
         clearCancelCallback: globalActions.clearCancelCallback,
+        navigationCancel: globalActions.navigationCancel,
+        unsetSelected: globalActions.unsetSelected,
         setCancelCallback: globalActions.setCancelCallback,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
         setEnketoSavingStatus: globalActions.setEnketoSavingStatus,
         setEnketoError: globalActions.setEnketoError,
-        setTitle: globalActions.setTitle
+        setTitle: globalActions.setTitle,
+        setSelectedTask: tasksActions.setSelectedTask,
+        selectAction: tasksActions.selectAction,
+        settingSelected: globalActions.settingSelected,
+        setShowContent: globalActions.setShowContent,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var geolocation;
+
+    const setSelected = function(id) {
+      if (!id) {
+        LiveList.tasks.clearSelected();
+        ctrl.unsetSelected();
+        return;
+      }
+      const task = LiveList.tasks.getList().find(task => task._id === id);
+      if (task) {
+        const refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
+        ctrl.settingSelected(refreshing);
+        hydrateTaskEmission(task).then(hydratedTask => {
+          ctrl.setSelectedTask(hydratedTask);
+          LiveList.tasks.setSelected(hydratedTask._id);
+          ctrl.setTitle(hydratedTask.title);
+          ctrl.setShowContent(true);
+
+          if (hasOneActionAndNoFields(hydratedTask)) {
+            ctrl.performAction(hydratedTask.actions[0], true);
+          }
+        });
+      }
+    };
+
+    let geolocation;
     Geolocation()
       .then(function(position) {
         geolocation = position;
       })
       .catch($log.warn);
 
-    var hasOneFormAndNoFields = function(task) {
+    const hasOneActionAndNoFields = function(task) {
       return Boolean(
         task &&
         task.actions &&
@@ -65,12 +101,39 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       );
     };
 
-    var markFormEdited = function() {
+    const hydrateTaskEmission = function(task) {
+      if (!Array.isArray(task.actions) || task.actions.length === 0 || !task.forId) {
+        return $q.resolve(task);
+      }
+
+      return DB().get(task.forId)
+        .then(contactDoc => {
+          for (const action of task.actions) {
+            if (!action.content) {
+              action.content = {};
+            }
+
+            if (!action.content.contact) {
+              action.content.contact = contactDoc;
+            }
+          }
+
+
+          return task;
+        })
+        .catch(err => {
+          $log.error('Failed to hydrate contact information in task action', err);
+          return task;
+        });
+    };
+
+    const markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
 
     ctrl.performAction = function(action, skipDetails) {
       ctrl.setCancelCallback(function() {
+        ctrl.setSelectedTask(null);
         if (skipDetails) {
           $state.go('tasks.detail', { id: null });
         } else {
@@ -140,7 +203,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
           ctrl.setEnketoSavingStatus(false);
           ctrl.setEnketoEditedStatus(false);
           Enketo.unload(ctrl.form);
-          $scope.clearSelected();
+          ctrl.unsetSelected();
           ctrl.clearCancelCallback();
           $state.go('tasks.detail', { id: null });
         })
@@ -160,25 +223,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         });
     };
 
-    // Wait for `selected` to be set during tasks generation and load the
-    // form if we have no other description or instructions in the task.
-    let loadingSelected = false;
-    $ngRedux.subscribe(() => {
-      if (!loadingSelected && ctrl.selectedTask) {
-        loadingSelected = true;
-        if (hasOneFormAndNoFields(ctrl.selectedTask)) {
-          ctrl.performAction(ctrl.selectedTask.actions[0], true);
-        }
-      }
-    });
-
     ctrl.form = null;
     ctrl.formId = null;
-    $scope.setSelected($state.params.id);
-
-    $scope.$on('ClearSelected', () => {
-      Enketo.unload(ctrl.form);
-    });
+    ctrl.loadTasks.then(() => setSelected($state.params.id));
 
     $scope.$on('$destroy', unsubscribe);
   }

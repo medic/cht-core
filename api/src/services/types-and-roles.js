@@ -7,7 +7,7 @@
  *  - By convention, the type is always the first role
  *  - Thus, you can get the original type (in theory) back out by getting the first role
  */
-var rolesMap = {
+const rolesMap = {
   'national-manager': ['kujua_user', 'data_entry', 'national_admin'],
   'district-manager': ['kujua_user', 'data_entry', 'district_admin'],
   'facility-manager': ['kujua_user', 'data_entry'],

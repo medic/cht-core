@@ -1,8 +1,8 @@
-const _ = require('underscore'),
-  db = require('./db'),
-  logger = require('./lib/logger'),
-  translationUtils = require('@medic/translation-utils'),
-  translations = {};
+const _ = require('lodash');
+const db = require('./db');
+const logger = require('./lib/logger');
+const translationUtils = require('@medic/translation-utils');
+const translations = {};
 
 const DEFAULT_CONFIG = {
   schedule_morning_hours: 0,
@@ -14,8 +14,8 @@ const DEFAULT_CONFIG = {
   loglevel: 'info',
 };
 
-let config = DEFAULT_CONFIG,
-    transitionsLib;
+let config = DEFAULT_CONFIG;
+let transitionsLib;
 
 const loadTranslations = () => {
   const options = {

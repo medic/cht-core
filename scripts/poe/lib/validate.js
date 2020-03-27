@@ -46,7 +46,9 @@ const validatePlaceHolders = (langs, dir) => {
       const foundAllPlaceholders = placeholder.placeholders.every(el => templatePlaceholder.placeholders.includes(el));
       if (!foundAllPlaceholders) {
         valid = false;
-        console.error(`\nFAILURE: messages-${lang}.properties: Translation key ${k} on line ${placeholder.index + 1} has placeholders that do not match those of messages-en.properties\nYou can use messages-ex.properties to add placeholders missing from the reference context.`);
+        console.error(`\nFAILURE: messages-${lang}.properties: Translation key ${k} on line ${placeholder.index + 1} ` +
+          'has placeholders that do not match those of messages-en.properties\nYou can use messages-ex.properties to ' +
+          'add placeholders missing from the reference context.');
       }
     });
   });

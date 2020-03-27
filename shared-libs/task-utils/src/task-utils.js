@@ -1,7 +1,7 @@
 /**
  * @module task-utils
  */
-var matchedLastHistory = function(task, state) {
+const matchedLastHistory = function(task, state) {
   if (!task.state_history.length) {
     return false;
   }
@@ -9,7 +9,7 @@ var matchedLastHistory = function(task, state) {
   return task.state_history[task.state_history.length - 1].state === state;
 };
 
-var setTaskState = function(task, state, details, gatewayRef) {
+const setTaskState = function(task, state, details, gatewayRef) {
   task.state_history = task.state_history || [];
 
   if (

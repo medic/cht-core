@@ -1,8 +1,8 @@
-const service = require('../../../src/services/records'),
-      chai = require('chai'),
-      definitions = require('../../form-definitions'),
-      config = require('../../../src/config'),
-      sinon = require('sinon');
+const service = require('../../../src/services/records');
+const chai = require('chai');
+const definitions = require('../../form-definitions');
+const config = require('../../../src/config');
+const sinon = require('sinon');
 
 describe('records', () => {
 

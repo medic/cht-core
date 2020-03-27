@@ -2,9 +2,9 @@ describe('state filter', () => {
 
   'use strict';
 
-  let compile,
-      scope,
-      $translate;
+  let compile;
+  let scope;
+  let $translate;
 
   beforeEach(() => {
     module('inboxApp');

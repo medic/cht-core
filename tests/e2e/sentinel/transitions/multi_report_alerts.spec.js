@@ -1,6 +1,6 @@
-const utils = require('../../../utils'),
-      sentinelUtils = require('../utils'),
-      uuid = require('uuid');
+const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
+const uuid = require('uuid');
 
 const contact = {
   _id: 'person',

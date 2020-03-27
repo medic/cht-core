@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 angular.module('controllers').controller('BackupCtrl',
   function (
@@ -17,7 +17,7 @@ angular.module('controllers').controller('BackupCtrl',
 
     $scope.status = { uploading: false };
 
-    var uploadFinished = function(err) {
+    const uploadFinished = function(err) {
       if (err) {
         $log.error('Upload failed', err);
       } else {
@@ -34,13 +34,13 @@ angular.module('controllers').controller('BackupCtrl',
       });
     };
 
-    var upload = function() {
+    const upload = function() {
       $scope.status = {
         uploading: true,
         error: false,
         success: false,
       };
-      var files = $('#settings-upload .uploader')[0].files;
+      const files = $('#settings-upload .uploader')[0].files;
       if (!files || files.length === 0) {
         uploadFinished(new Error('File not found'));
       }

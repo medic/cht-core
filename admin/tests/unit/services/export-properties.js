@@ -2,7 +2,7 @@ describe('ExportProperties service', function() {
 
   'use strict';
 
-  var service;
+  let service;
 
   beforeEach(function() {
     module('adminApp');
@@ -13,7 +13,7 @@ describe('ExportProperties service', function() {
 
   it('retrieves properties', function(done) {
 
-    var doc = {
+    const doc = {
       code: 'en',
       generic: {
         'Hello': 'Gidday',
@@ -22,11 +22,11 @@ describe('ExportProperties service', function() {
       }
     };
 
-    var expected = 'Hello = Gidday\n' +
+    const expected = 'Hello = Gidday\n' +
                    'Goodbye = See ya\n' +
                    'New\\ thing = New';
 
-    var actual = service(doc);
+    const actual = service(doc);
     chai.expect(actual).to.equal(expected);
     done();
 

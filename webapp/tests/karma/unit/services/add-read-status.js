@@ -2,8 +2,8 @@ describe('AddReadStatus service', () => {
 
   'use strict';
 
-  let service,
-      allDocs;
+  let service;
+  let allDocs;
 
   beforeEach(() => {
     module('inboxApp');

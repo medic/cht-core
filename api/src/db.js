@@ -1,6 +1,6 @@
-const PouchDB = require('pouchdb-core'),
-  logger = require('./logger'),
-  environment = require('./environment');
+const PouchDB = require('pouchdb-core');
+const logger = require('./logger');
+const environment = require('./environment');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -25,15 +25,20 @@ if (UNIT_TEST_ENV) {
     'getAttachment',
     'changes',
     'info',
+    'close'
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',
-    'exists'
+    'exists',
+    'close',
   ];
 
   const notStubbed = (first, second) => {
     const name = second ? `${first}.${second}` : first;
-    logger.error(new Error(`${name}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}.  Please stub PouchDB functions that will be interacted with in unit tests.`));
+    logger.error(new Error(
+      `${name}() not stubbed!  UNIT_TEST_ENV=${UNIT_TEST_ENV}. ` +
+      `Please stub PouchDB functions that will be interacted with in unit tests.`
+    ));
     process.exit(1);
   };
 
@@ -45,7 +50,7 @@ if (UNIT_TEST_ENV) {
   });
 
   GLOBAL_FUNCTIONS_TO_STUB.forEach(fn => {
-     module.exports[fn] = () => notStubbed(fn);
+    module.exports[fn] = () => notStubbed(fn);
   });
 } else {
   const DB = new PouchDB(environment.couchUrl, {
@@ -69,15 +74,26 @@ if (UNIT_TEST_ENV) {
 
   // Get the DB with the given name
   module.exports.get = name => new PouchDB(getDbUrl(name));
+  module.exports.close = db => {
+    if (!db || db._destroyed || db._closed) {
+      return;
+    }
 
-  // Resolves true if the DB with the given name exists
+    try {
+      db.close();
+    } catch (err) {
+      logger.error('Error when closing db: %o', err);
+    }
+  };
+
+  // Resolves with the PouchDB object if the DB with the given name exists
   module.exports.exists = name => {
     const db = new PouchDB(getDbUrl(name), { skip_setup: true });
     return db.info()
       .then(result => {
-        // In at least PouchDB 7.0.0, info() on a non-existant db doesn't throw,
+        // In at least PouchDB 7.0.0, info() on a non-existent db doesn't throw,
         // instead it returns the error structure
-        return  !result.error;
+        return  !result.error ? db : false;
       })
       .catch(() => false);
   };

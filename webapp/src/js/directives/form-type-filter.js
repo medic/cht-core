@@ -11,7 +11,8 @@ angular.module('inboxDirectives').directive('mmFormTypeFilter', function(SearchF
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
-          selectMode: Selectors.getSelectMode(state)
+          forms: Selectors.getForms(state),
+          selectMode: Selectors.getSelectMode(state),
         };
       };
       const mapDispatchToTarget = function(dispatch) {

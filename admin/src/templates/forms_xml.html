@@ -16,7 +16,7 @@
   <div class="form-actions">
     <a class="btn btn-primary upload" ng-disabled="status.uploading" ng-click="upload()">
       <i class="fa fa-arrow-up"></i>
-      <span translate>Import</span>
+      <span translate>upload</span>
     </a>
     <div class="error" ng-show="status.error" translate>Upload failed</div>
     <div class="loader" ng-show="status.uploading"></div>
@@ -26,13 +26,18 @@
 <div class="section">
   <fieldset>
     <legend translate>Installed Forms</legend>
+    <div class="row selection-heading">
+      <div class="col-sm-2" translate>icon</div>
+      <div class="col-sm-3" translate>unique.id</div>
+      <div class="col-sm-7" translate>title</div>
+    </div>
     <div class="container-fluid">
       <ul>
         <li ng-repeat="form in xForms | orderBy:'_id' track by form._id" class="row">
-          <div class="col-sm-1" ng-bind-html="form.icon | resourceIcon"></div>
-          <div class="col-sm-6">{{form._id}}</div>
-          <div class="col-sm-5" ng-if="form.translation_key" translate>{{form.translation_key}}</div>
-          <div class="col-sm-5" ng-if="!form.translation_key">{{form.title | translateFrom}}</div>
+          <div class="col-sm-2" ng-bind-html="form.icon | resourceIcon"></div>
+          <div class="col-sm-3">{{form._id}}</div>
+          <div class="col-sm-7" ng-if="form.translation_key" translate>{{form.translation_key}}</div>
+          <div class="col-sm-7" ng-if="!form.translation_key">{{form.title | translateFrom}}</div>
         </li>
       </ul>
     </div>

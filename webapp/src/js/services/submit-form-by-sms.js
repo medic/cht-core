@@ -21,7 +21,9 @@ angular.module('inboxServices').service('SubmitFormBySms',
       }
 
       if(!$window.medicmobile_android.sms_available()) {
-        $log.warn('Android wrapper does not have SMS enabled.  Check stacktrace to see why the SmsSender failed to initialise.');
+        $log.warn(
+          'Android wrapper does not have SMS enabled. Check stacktrace to see why the SmsSender failed to initialise.'
+        );
         return;
       }
 
@@ -37,7 +39,7 @@ angular.module('inboxServices').service('SubmitFormBySms',
 
               Settings()
                 .then(function(settings) {
-                  var gatewayPhoneNumber = settings.gateway_number;
+                  const gatewayPhoneNumber = settings.gateway_number;
                   if(gatewayPhoneNumber) {
                     $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
                   } else {

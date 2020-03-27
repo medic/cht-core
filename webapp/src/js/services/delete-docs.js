@@ -1,6 +1,6 @@
-var _ = require('underscore');
-var partialParse = require('partial-json-parser');
-var utilsFactory = require('@medic/bulk-docs-utils');
+const _ = require('lodash/core');
+const partialParse = require('partial-json-parser');
+const utilsFactory = require('@medic/bulk-docs-utils');
 
 (function () {
 
@@ -16,20 +16,20 @@ var utilsFactory = require('@medic/bulk-docs-utils');
       Session
     ) {
       'ngInject';
-      var utils = utilsFactory({
+      const utils = utilsFactory({
         Promise: $q,
         DB: DB()
       });
 
-      var checkForDuplicates = function (docs) {
-        var errors = utils.getDuplicateErrors(docs);
+      const checkForDuplicates = function (docs) {
+        const errors = utils.getDuplicateErrors(docs);
         if (errors.length > 0) {
           $log.error('Deletion errors', errors);
           throw new Error('Deletion error');
         }
       };
 
-      var minifyLineage = function (docs) {
+      const minifyLineage = function (docs) {
         docs.forEach(function (doc) {
           if (doc.type === 'data_record' && doc.contact) {
             doc.contact = ExtractLineage(doc.contact);
@@ -37,9 +37,9 @@ var utilsFactory = require('@medic/bulk-docs-utils');
         });
       };
 
-      var deleteAndUpdateDocs = function (docsToDelete, eventListeners) {
+      const deleteAndUpdateDocs = function (docsToDelete, eventListeners) {
         if (Session.isOnlineOnly()) {
-          var docIds = docsToDelete.map(function(doc) {
+          const docIds = docsToDelete.map(function(doc) {
             return { _id: doc._id };
           });
 
@@ -51,14 +51,14 @@ var utilsFactory = require('@medic/bulk-docs-utils');
           checkForDuplicates(docsToDelete);
           return utils.updateParentContacts(docsToDelete)
             .then(function(updatedParents) {
-              var allDocs = docsToDelete.concat(updatedParents.docs);
+              const allDocs = docsToDelete.concat(updatedParents.docs);
               minifyLineage(allDocs);
               return DB().bulkDocs(allDocs);
             });
         }
       };
 
-      var bulkDeleteRemoteDocs = function (docs, eventListeners) {
+      const bulkDeleteRemoteDocs = function (docs, eventListeners) {
         // TODO: we're temporarily (?) killing the changes feed here for performance
         // Having the changes feed watching and then disseminating changes to the whole
         // page causes massive performance issues while large deletes are occurring.
@@ -67,15 +67,15 @@ var utilsFactory = require('@medic/bulk-docs-utils');
         // https://github.com/medic/medic/issues/4327
         Changes.killWatchers();
 
-        var deferred = $q.defer();
-        var xhr = new XMLHttpRequest();
+        const deferred = $q.defer();
+        const xhr = new XMLHttpRequest();
         xhr.onprogress = function() {
           if (xhr.responseText) {
-            var currentResponse = partialParse(xhr.responseText);
-            var successfulDeletions = _.flatten(currentResponse).filter(function(doc) {
+            const currentResponse = partialParse(xhr.responseText);
+            const successfulDeletions = _.flattenDeep(currentResponse).filter(function(doc) {
               return !doc.error;
             });
-            var totalDocsDeleted = successfulDeletions.length;
+            const totalDocsDeleted = successfulDeletions.length;
             if (eventListeners.progress && Array.isArray(currentResponse)) {
               eventListeners.progress(totalDocsDeleted);
             }
@@ -84,7 +84,7 @@ var utilsFactory = require('@medic/bulk-docs-utils');
         xhr.onload = function() {
           if (this.status >= 200 && this.status < 300) {
             try {
-              deferred.resolve(_.flatten(JSON.parse(xhr.response)));
+              deferred.resolve(_.flattenDeep(JSON.parse(xhr.response)));
             } catch (err) {
               deferred.reject(err);
             }
@@ -122,7 +122,7 @@ var utilsFactory = require('@medic/bulk-docs-utils');
         return deleteAndUpdateDocs(docs, eventListeners)
           // No silent fails! Throw on error.
           .then(function(results) {
-            var errors = results.filter(function(result) {
+            const errors = results.filter(function(result) {
               return result.error;
             });
             if (errors.length) {

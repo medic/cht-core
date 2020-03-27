@@ -1,12 +1,12 @@
 describe('TargetsEditCtrl controller', () => {
   'use strict';
 
-  let dbGet,
-    mockTargetsUnique,
-    scope,
-    Settings,
-    translate,
-    UpdateSettings;
+  let dbGet;
+  let mockTargetsUnique;
+  let scope;
+  let Settings;
+  let translate;
+  let UpdateSettings;
 
   beforeEach(() => {
     module('adminApp');

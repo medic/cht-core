@@ -21,28 +21,29 @@ require('./controllers/authorization-permissions');
 require('./controllers/authorization-roles');
 require('./controllers/delete-doc-confirm');
 require('./controllers/delete-user');
+require('./controllers/display-date-time');
+require('./controllers/display-languages');
+require('./controllers/display-translations');
 require('./controllers/edit-language');
 require('./controllers/edit-translation');
 require('./controllers/edit-user');
 require('./controllers/export-contacts');
+require('./controllers/export-dhis');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
 require('./controllers/export-reports');
-require('./controllers/forms-json');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/images-branding');
 require('./controllers/images-partners');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
-require('./controllers/message-test');
-require('./controllers/settings-advanced');
-require('./controllers/settings-basic');
+require('./controllers/sms-forms');
+require('./controllers/sms-settings');
+require('./controllers/sms-test');
 require('./controllers/backup');
 require('./controllers/targets');
 require('./controllers/targets-edit');
-require('./controllers/translation-application');
-require('./controllers/translation-languages');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
@@ -167,25 +168,34 @@ angular.module('adminApp').config(function(
   $ngReduxProvider.createStoreWith(RootReducer, []);
 
   $stateProvider
-    .state('settings', {
-      url: '/settings',
-      templateUrl: 'templates/settings.html'
+    .state('display', {
+      url: '/display',
+      templateUrl: 'templates/display.html'
     })
-    .state('settings.basic', {
-      url: '/basic',
+    .state('display.date-time', {
+      url: '/date-time',
       views: {
         tab: {
-          controller: 'SettingsBasicCtrl',
-          templateUrl: 'templates/settings_basic.html'
+          controller: 'DisplayDateTimeCtrl',
+          templateUrl: 'templates/display_date_time.html'
         }
       }
     })
-    .state('settings.advanced', {
-      url: '/advanced',
+    .state('display.languages', {
+      url: '/languages',
       views: {
         tab: {
-          controller: 'SettingsAdvancedCtrl',
-          templateUrl: 'templates/settings_advanced.html'
+          controller: 'DisplayLanguagesCtrl',
+          templateUrl: 'templates/display_languages.html'
+        }
+      }
+    })
+    .state('display.translations', {
+      url: '/translations',
+      views: {
+        tab: {
+          controller: 'DisplayTranslationsCtrl',
+          templateUrl: 'templates/display_translations.html'
         }
       }
     })
@@ -230,6 +240,15 @@ angular.module('adminApp').config(function(
         }
       }
     })
+    .state('export.dhis', {
+      url: '/dhis',
+      views: {
+        tab: {
+          controller: 'ExportDhisCtrl',
+          templateUrl: 'templates/export_dhis.html'
+        }
+      }
+    })
     .state('export.feedback', {
       url: '/feedback',
       views: {
@@ -241,23 +260,37 @@ angular.module('adminApp').config(function(
     })
     .state('forms', {
       url: '/forms',
-      templateUrl: 'templates/forms.html'
+      controller: 'FormsXmlCtrl',
+      templateUrl: 'templates/forms_xml.html'
     })
-    .state('forms.json', {
-      url: '/json',
+    .state('sms', {
+      url: '/sms',
+      templateUrl: 'templates/sms.html'
+    })
+    .state('sms.settings', {
+      url: '/settings',
       views: {
         tab: {
-          controller: 'FormsJsonCtrl',
-          templateUrl: 'templates/forms_json.html'
+          controller: 'SmsSettingsCtrl',
+          templateUrl: 'templates/sms_settings.html'
         }
       }
     })
-    .state('forms.xml', {
-      url: '/xml',
+    .state('sms.forms', {
+      url: '/forms',
       views: {
         tab: {
-          controller: 'FormsXmlCtrl',
-          templateUrl: 'templates/forms_xml.html'
+          controller: 'SmsFormsCtrl',
+          templateUrl: 'templates/sms_forms.html'
+        }
+      }
+    })
+    .state('sms.test', {
+      url: '/test',
+      views: {
+        tab: {
+          controller: 'SmsTestCtrl',
+          templateUrl: 'templates/sms_test.html'
         }
       }
     })
@@ -327,37 +360,10 @@ angular.module('adminApp').config(function(
         id: null
       },
     })
-    .state('translation', {
-      url: '/translation',
-      templateUrl: 'templates/translation.html'
-    })
-    .state('translation.languages', {
-      url: '/languages',
-      views: {
-        tab: {
-          controller: 'TranslationLanguagesCtrl',
-          templateUrl: 'templates/translation_languages.html'
-        }
-      }
-    })
-    .state('translation.application', {
-      url: '/application',
-      views: {
-        tab: {
-          controller: 'TranslationApplicationCtrl',
-          templateUrl: 'templates/translation_application.html'
-        }
-      }
-    })
     .state('upgrade', {
       url: '/upgrade',
       controller: 'UpgradeCtrl',
       templateUrl: 'templates/upgrade.html'
-    })
-    .state('messagetest', {
-      url: '/message-test',
-      controller: 'MessageTestCtrl',
-      templateUrl: 'templates/message_test.html'
     })
     .state('message-queue', {
       url: '/message-queue',

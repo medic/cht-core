@@ -30,7 +30,7 @@ angular.module('inboxControllers').controller('BulkDeleteConfirm',
         return $window.location.reload();
       }
 
-      var docs = $scope.model.docs;
+      const docs = $scope.model.docs;
       ctrl.totalDocsSelected = docs.length;
       ctrl.totalDocsDeleted = 0;
       $scope.setProcessing();

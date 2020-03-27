@@ -1,10 +1,9 @@
-const _ = require('underscore'),
-      Ajv = require('ajv'),
-      auth = require('../auth'),
-      schema = require('./settings-schema'),
-      serverUtils = require('../server-utils'),
-      settingsService = require('../services/settings'),
-      objectPath = require('object-path');
+const auth = require('../auth');
+const Ajv = require('ajv');
+const schema = require('./settings-schema');
+const serverUtils = require('../server-utils');
+const settingsService = require('../services/settings');
+const objectPath = require('object-path');
 
 const ajv = new Ajv({ allErrors: true });
 const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());

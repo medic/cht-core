@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
@@ -20,8 +20,8 @@ var _ = require('underscore');
       'ngInject';
       return function() {
         return Settings().then(function(settings) {
-          var results = [];
-          _.each(_.pairs(settings.forms), function(pair) {
+          const results = [];
+          _.forEach(_.toPairs(settings.forms), function(pair) {
             if (_.some(settings['kujua-reporting'], function(report) {
               return report.code === pair[0];
             })) {

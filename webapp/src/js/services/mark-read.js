@@ -1,4 +1,4 @@
-var readDocs = require('../modules/read-docs');
+const readDocs = require('../modules/read-docs');
 
 angular.module('inboxServices').factory('MarkRead', function(
   $q,
@@ -12,7 +12,7 @@ angular.module('inboxServices').factory('MarkRead', function(
     if (!docs || !docs.length) {
       return $q.resolve();
     }
-    var metaDocs = docs.map(function(doc) {
+    const metaDocs = docs.map(function(doc) {
       return { _id: readDocs.id(doc) };
     });
     return DB({ meta: true }).bulkDocs(metaDocs);

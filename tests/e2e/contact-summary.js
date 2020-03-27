@@ -1,5 +1,5 @@
-const utils = require('../utils'),
-  helper = require('../helper');
+const utils = require('../utils');
+const helper = require('../helper');
 
 describe('Contact summary info', () => {
   const SCRIPT = `
@@ -120,9 +120,7 @@ describe('Contact summary info', () => {
   beforeEach(done => {
     utils
       .updateSettings({ contact_summary: SCRIPT })
-      .then(() => {
-        return protractor.promise.all(DOCS.map(utils.saveDoc));
-      })
+      .then(() => utils.saveDocs(DOCS))
       .then(done)
       .catch(done.fail);
   });

@@ -1,14 +1,14 @@
-var chai = require('chai'),
-    sinon = require('sinon'),
-    Search = require('../src/search'),
-    GenerateSearchRequests = require('../src/generate-search-requests');
+const chai = require('chai');
+const sinon = require('sinon');
+const Search = require('../src/search');
+const GenerateSearchRequests = require('../src/generate-search-requests');
 
 describe('Search service', function() {
 
   'use strict';
 
-  var service,
-      DB;
+  let service;
+  let DB;
 
   beforeEach(function() {
     GenerateSearchRequests.generate = sinon.stub();
@@ -84,7 +84,7 @@ describe('Search service', function() {
     });
 
     it('returns results when one filter', function() {
-      var expected = { docIds: [ 'a', 'b' ] };
+      const expected = { docIds: [ 'a', 'b' ] };
       GenerateSearchRequests.generate.returns([{
         view: 'get_stuff',
         params: { key: [ 'a' ] }
@@ -102,9 +102,11 @@ describe('Search service', function() {
     });
 
     it('removes duplicates before pagination', function() {
-      var expected = { docIds: [ 'a', 'b' ] };
+      const expected = { docIds: [ 'a', 'b' ] };
       GenerateSearchRequests.generate.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-      DB.query.returns(Promise.resolve({ rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'a', value: 1 } ] }));
+      DB.query.returns(Promise.resolve(
+        { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'a', value: 1 } ] }
+      ));
       return service('reports', {})
         .then(function(actual) {
           chai.expect(actual).to.deep.equal(expected);
@@ -116,8 +118,8 @@ describe('Search service', function() {
     });
 
     it('sorts and limits results', function() {
-      var viewResult = { rows: [] };
-      for (var i = 0; i < 15; i++) {
+      const viewResult = { rows: [] };
+      for (let i = 0; i < 15; i++) {
         viewResult.rows.push({ id: i, value: i });
       }
       GenerateSearchRequests.generate.returns([
@@ -134,8 +136,8 @@ describe('Search service', function() {
     });
 
     it('sorts and skips results', function() {
-      var viewResult = { rows: [] };
-      for (var i = 0; i < 15; i++) {
+      const viewResult = { rows: [] };
+      for (let i = 0; i < 15; i++) {
         viewResult.rows.push({ id: i, value: i });
       }
       GenerateSearchRequests.generate.returns([
@@ -151,8 +153,8 @@ describe('Search service', function() {
     });
 
     it('returns the last page correctly when reverse sorted - #2411', function() {
-      var viewResult = { rows: [] };
-      for (var i = 0; i < 15; i++) {
+      const viewResult = { rows: [] };
+      for (let i = 0; i < 15; i++) {
         viewResult.rows.push({ id: i, value: 15 - i });
       }
       GenerateSearchRequests.generate.returns([
@@ -168,13 +170,17 @@ describe('Search service', function() {
     });
 
     it('returns results when multiple filters', function() {
-      var expected = { docIds: [ 'a', 'b' ] };
+      const expected = { docIds: [ 'a', 'b' ] };
       GenerateSearchRequests.generate.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },
         { view: 'get_moar_stuff', params: { startkey: [ {} ] } }
       ]);
-      DB.query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }));
-      DB.query.onCall(1).returns(Promise.resolve({ rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'd', value: 4 } ] }));
+      DB.query.onCall(0).returns(Promise.resolve(
+        { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }
+      ));
+      DB.query.onCall(1).returns(Promise.resolve(
+        { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'd', value: 4 } ] }
+      ));
       return service('reports', {})
         .then(function(actual) {
           chai.expect(actual).to.deep.equal(expected);
@@ -192,7 +198,9 @@ describe('Search service', function() {
         { view: 'get_stuff', params: { key: [ 'a' ] } },
         { view: 'get_moar_stuff', params: { startkey: [ {} ] } }
       ]);
-      DB.query.onCall(0).returns(Promise.resolve({ rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }));
+      DB.query.onCall(0).returns(Promise.resolve(
+        { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }
+      ));
       DB.query.onCall(1).returns(Promise.reject('boom'));
       return service('reports', {})
         .then(function() {
@@ -206,7 +214,7 @@ describe('Search service', function() {
     });
 
     it('does not slice with negative end index when skip is greater than nbr of results #4610', function() {
-      var viewResult = { rows: Array.apply(null, Array(50)).map(function (val, i) { return { id: i, value: i };})};
+      const viewResult = { rows: Array.apply(null, Array(50)).map(function (val, i) { return { id: i, value: i };})};
 
       GenerateSearchRequests.generate.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },
@@ -226,12 +234,12 @@ describe('Search service', function() {
   describe('contacts', function() {
 
     it('sorts and limits contacts results', function() {
-      var viewResult = { rows: [] };
-      for (var i = 0; i < 15; i++) {
+      const viewResult = { rows: [] };
+      for (let i = 0; i < 15; i++) {
         viewResult.rows.push({ id: i, value: i });
       }
-      var expected = { docIds: [] };
-      for (var j = 0; j < 10; j++) {
+      const expected = { docIds: [] };
+      for (let j = 0; j < 10; j++) {
         expected.docIds.push(j);
       }
       GenerateSearchRequests.generate.returns([
@@ -247,12 +255,12 @@ describe('Search service', function() {
     });
 
     it('sorts and skips contacts results', function() {
-      var viewResult = { rows: [] };
-      for (var i = 0; i < 15; i++) {
+      const viewResult = { rows: [] };
+      for (let i = 0; i < 15; i++) {
         viewResult.rows.push({ id: i, value: i });
       }
-      var expected = { docIds: [] };
-      for (var j = 10; j < 15; j++) {
+      const expected = { docIds: [] };
+      for (let j = 10; j < 15; j++) {
         expected.docIds.push(j);
       }
       GenerateSearchRequests.generate.returns([
@@ -269,7 +277,7 @@ describe('Search service', function() {
 
     it('unions views when necessary - #2445', function() {
       // this tests a performance tweak for a specific use case
-      var expected = { docIds: ['a', 'b', 'c'] };
+      const expected = { docIds: ['a', 'b', 'c'] };
       GenerateSearchRequests.generate.returns([ {
         view: 'get_stuff',
         union: true,
@@ -313,10 +321,10 @@ describe('Search service', function() {
       GenerateSearchRequests.shouldSortByLastVisitedDate.returns(true);
       GenerateSearchRequests.generate.returns([
         { view: 'contacts_by_type', params: { key: 'clinic' }, map: row => {
-            const [muted, dead] = row.value.split(' ');
-            row.sort = muted + ' ' + dead;
-            return row;
-          }},
+          const [muted, dead] = row.value.split(' ');
+          row.sort = muted + ' ' + dead;
+          return row;
+        }},
         { view: 'contacts_by_last_visited', params: { reduce: true } }
       ]);
 
@@ -347,13 +355,13 @@ describe('Search service', function() {
         chai.expect(result).to.deep.equal({
           docIds: ['b', 'c', 'a', 'e', 'd', 'g', 'f'],
           queryResultsCache: [
-            { id: 'e', value: 1557755132000, sort: 'true false 1557755132000' },
+            { id: 'a', value: 1557755132006, sort: 'false false 1557755132006' },
             { id: 'b', value: 1557755132001, sort: 'false false 1557755132001' },
-            { id: 'g', value: 1557755132002, sort: 'true true 1557755132002' },
-            { id: 'f', value: 1557755132003, sort: 'true true 1557755132003' },
             { id: 'c', value: 1557755132004, sort: 'false false 1557755132004' },
             { id: 'd', value: 1557755132005, sort: 'true false 1557755132005' },
-            { id: 'a', value: 1557755132006, sort: 'false false 1557755132006' }
+            { id: 'e', value: 1557755132000, sort: 'true false 1557755132000' },
+            { id: 'f', value: 1557755132003, sort: 'true true 1557755132003' },
+            { id: 'g', value: 1557755132002, sort: 'true true 1557755132002' },
           ]
         });
         chai.expect(DB.query.callCount).to.equal(2);

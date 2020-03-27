@@ -1,6 +1,6 @@
-var _ = require('underscore'),
-    readDocs = require('../modules/read-docs'),
-    TYPES = [ 'report', 'message' ];
+const _ = require('lodash/core');
+const readDocs = require('../modules/read-docs');
+const TYPES = [ 'report', 'message' ];
 
 angular.module('inboxServices').factory('UnreadRecords', function(
   $q,
@@ -12,25 +12,25 @@ angular.module('inboxServices').factory('UnreadRecords', function(
   'use strict';
   'ngInject';
 
-  var getTotal = function() {
+  const getTotal = function() {
     return DB().query('medic-client/data_records_by_type', { group: true });
   };
 
-  var getRead = function() {
+  const getRead = function() {
     return DB({ meta: true }).query('medic-user/read', { group: true });
   };
 
-  var getRowValueForType = function(response, type) {
-    var result = _.findWhere(response.rows, { key: type });
+  const getRowValueForType = function(response, type) {
+    const result = _.find(response.rows, { key: type });
     return (result && result.value) || 0;
   };
 
-  var getCount = function(callback) {
+  const getCount = function(callback) {
     return $q.all([ getTotal(), getRead() ])
       .then(function(results) {
-        var total = results[0];
-        var read = results[1];
-        var result = {};
+        const total = results[0];
+        const read = results[1];
+        const result = {};
         TYPES.forEach(function(type) {
           result[type] = getRowValueForType(total, type) - getRowValueForType(read, type);
         });
@@ -39,13 +39,13 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       .catch(callback);
   };
 
-  var updateReadDocs = function(change) {
+  const updateReadDocs = function(change) {
     // update the meta db if a doc is deleted by a non-admin
     // admin dbs are updated by sentinel instead
     if (!change.deleted || Session.isOnlineOnly()) {
       return $q.resolve();
     }
-    var metaDb = DB({ meta: true });
+    const metaDb = DB({ meta: true });
     return metaDb
       .get(readDocs.id(change.doc))
       .then(function(doc) {
@@ -60,7 +60,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       });
   };
 
-  var changeHandler = function(change, callback) {
+  const changeHandler = function(change, callback) {
     return updateReadDocs(change)
       .then(function() {
         getCount(callback);

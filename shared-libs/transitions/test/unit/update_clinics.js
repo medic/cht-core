@@ -16,7 +16,7 @@ describe('update clinic', () => {
   afterEach(() => sinon.restore());
 
   it('filter includes docs with no clinic', () => {
-    var doc = {
+    const doc = {
       type: 'data_record',
       from: phone,
     };
@@ -24,7 +24,7 @@ describe('update clinic', () => {
   });
 
   it('filter out docs which already have a clinic', () => {
-    var doc = {
+    const doc = {
       from: phone,
       type: 'data_record',
       contact: {
@@ -35,12 +35,12 @@ describe('update clinic', () => {
   });
 
   it('should not update clinic by phone', () => {
-    var doc = {
+    const doc = {
       from: phone,
       type: 'data_record',
     };
 
-    var contact = {
+    const contact = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
       type: 'clinic',
@@ -84,7 +84,7 @@ describe('update clinic', () => {
   });
 
   it('should not update clinic with wrong phone', () => {
-    var doc = {
+    const doc = {
       type: 'data_record',
       from: 'WRONG',
       content_type: 'xml'
@@ -97,7 +97,7 @@ describe('update clinic', () => {
   });
 
   it('handles clinic ref id not found - medic/medic#2636', () => {
-    var doc = {
+    const doc = {
       type: 'data_record',
       from: '+12345',
       refid: '1000',
@@ -111,13 +111,13 @@ describe('update clinic', () => {
   });
 
   it('should update clinic by refid and fix number', () => {
-    var doc = {
+    const doc = {
       type: 'data_record',
       from: '+12345',
       refid: '1000',
     };
 
-    var contact = {
+    const contact = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
       type: 'clinic',
@@ -161,12 +161,12 @@ describe('update clinic', () => {
   });
 
   it('should update clinic by refid and get latest contact', () => {
-    var doc = {
+    const doc = {
       from: '+12345',
       refid: '1000',
       type: 'data_record',
     };
-    var clinic = {
+    const clinic = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
       type: 'clinic',
@@ -196,7 +196,7 @@ describe('update clinic', () => {
         },
       },
     };
-    var contact = {
+    const contact = {
       _id: 'z',
       _rev: '2',
       name: 'zenith',
@@ -218,7 +218,7 @@ describe('update clinic', () => {
    * always query with strings too.
    */
   it('refid field is cast to a string in view query', () => {
-    var change = {
+    const change = {
       doc: {
         refid: 123,
         type: 'data_record',
@@ -232,7 +232,7 @@ describe('update clinic', () => {
   });
 
   it('from field is cast to string in view query', () => {
-    var change = {
+    const change = {
       doc: {
         from: 123,
         type: 'data_record',
@@ -245,7 +245,7 @@ describe('update clinic', () => {
   });
 
   it('handles lineage rejection properly', () => {
-    var doc = {
+    const doc = {
       from: '123',
       type: 'data_record',
     };

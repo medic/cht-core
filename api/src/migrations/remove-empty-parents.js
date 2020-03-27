@@ -1,6 +1,6 @@
-var db = require('../db');
+const db = require('../db');
 
-var removeEmptyParents = docs => {
+const removeEmptyParents = docs => {
   docs.forEach(doc => {
     delete doc.parent;
   });
@@ -18,21 +18,21 @@ module.exports = {
           $in: ['district_hospital', 'health_center', 'clinic', 'person']
         },
         $or: [
-        {
-          parent: {
-            $eq: null
-          }
-        },
-        {
-          parent: {
-            $exists: true,
-            _id: {
-              $exists: false
+          {
+            parent: {
+              $eq: null
             }
-          }
-        }]
+          },
+          {
+            parent: {
+              $exists: true,
+              _id: {
+                $exists: false
+              }
+            }
+          }]
       }
     })
-    .then(result => removeEmptyParents(result.docs));
+      .then(result => removeEmptyParents(result.docs));
   }
 };

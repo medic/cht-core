@@ -1,17 +1,17 @@
-const _ = require('underscore'),
-      auth = require('../auth')(),
-      helper = require('../helper'),
-      utils = require('../utils'),
-      usersPage = require('../page-objects/users/users.po.js'),
-      commonElements = require('../page-objects/common/common.po.js'),
-      loginPage = require('../page-objects/login/login.po.js'),
-      addUserModal = require('../page-objects/users/add-user-modal.po.js'),
-      constants = require('../constants'),
-      dbName = constants.DB_NAME;
+const _ = require('lodash');
+const auth = require('../auth')();
+const helper = require('../helper');
+const utils = require('../utils');
+const usersPage = require('../page-objects/users/users.po.js');
+const commonElements = require('../page-objects/common/common.po.js');
+const loginPage = require('../page-objects/login/login.po.js');
+const addUserModal = require('../page-objects/users/add-user-modal.po.js');
+const constants = require('../constants');
+const dbName = constants.DB_NAME;
 
-const userName = 'fulltester' + new Date().getTime(),
-      fullName = 'Roger Milla',
-      password = 'StrongP@ssword1';
+const userName = 'fulltester' + new Date().getTime();
+const fullName = 'Roger Milla';
+const password = 'StrongP@ssword1';
 
 const options = {
   auth: { username: userName, password },
@@ -26,17 +26,17 @@ describe('Create user meta db : ', () => {
     loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${userName}`)
-      .then(doc => utils.request({
-        path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
-        method: 'DELETE'
-      })),
+        .then(doc => utils.request({
+          path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
+          method: 'DELETE'
+        })),
       utils.revertDb(),
       utils.request({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'
       })
     ])
-    .then(() => done()).catch(done.fail);
+      .then(() => done()).catch(done.fail);
   });
 
   beforeEach(utils.beforeEach);
@@ -67,7 +67,7 @@ describe('Create user meta db : ', () => {
         path: '/_changes'
       }, options)).then(response => {
         const changes = response.results;
-        const ids = _.pluck(changes, 'id').sort();
+        const ids = _.map(changes, 'id').sort();
         expect(ids[1]).toEqual(doc._id);
         return true;
       });

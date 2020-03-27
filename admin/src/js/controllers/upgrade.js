@@ -1,8 +1,8 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
-var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
-    BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds',
-    DEPLOY_DOC_ID = 'horti-upgrade';
+const IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//;
+const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+const DEPLOY_DOC_ID = 'horti-upgrade';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
@@ -26,18 +26,18 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
 
-    var getCurrentDeployment = function() {
+    const getCurrentDeployment = function() {
       return DB().get(DEPLOY_DOC_ID)
-      .then(function(deployDoc) {
-        $scope.deployDoc = deployDoc;
-      }).catch(function(err) {
-        if (err.status !== 404) {
-          throw err;
-        }
-      });
+        .then(function(deployDoc) {
+          $scope.deployDoc = deployDoc;
+        }).catch(function(err) {
+          if (err.status !== 404) {
+            throw err;
+          }
+        });
     };
 
-    var getExistingDeployment = function() {
+    const getExistingDeployment = function() {
       return DB().get('_design/medic')
         .then(function(ddoc) {
           $scope.currentDeploy = ddoc.deploy_info;
@@ -60,11 +60,11 @@ angular.module('controllers').controller('UpgradeCtrl',
 
         $scope.allowPrereleaseBuilds = !$window.location.href.match(IS_PROD_URL);
 
-        var buildsDb = pouchDB(BUILDS_DB);
+        const buildsDb = pouchDB(BUILDS_DB);
 
-        var minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
+        const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
 
-        var builds = function(options) {
+        const builds = function(options) {
           return buildsDb.query('builds/releases', options)
             .then(function(results) {
               results.rows.forEach(function(row) {
@@ -73,7 +73,7 @@ angular.module('controllers').controller('UpgradeCtrl',
                 }
               });
 
-              return _.pluck(results.rows, 'value');
+              return _.map(results.rows, 'value');
             });
         };
 
@@ -121,9 +121,14 @@ angular.module('controllers').controller('UpgradeCtrl',
         return true;
       }
 
-      var currentVersion = Version.parse($scope.currentDeploy.base_version);
-      var releaseVersion = Version.parse(release.base_version || release.version);
+      const currentVersion = Version.parse($scope.currentDeploy.base_version);
+      if (!currentVersion) {
+        // Unable to parse the current version information so all releases are
+        // potentially incompatible
+        return true;
+      }
 
+      const releaseVersion = Version.parse(release.base_version || release.version);
       return Version.compare(currentVersion, releaseVersion) > 0;
     };
 
@@ -143,10 +148,10 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    var upgrade = function(version, action) {
+    const upgrade = function(version, action) {
       $scope.error = false;
 
-      var url = action ?
+      const url = action ?
         '/api/v1/upgrade/' + action :
         '/api/v1/upgrade';
 

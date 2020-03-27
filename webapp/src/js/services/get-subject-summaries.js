@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
@@ -11,17 +11,17 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     'use strict';
     'ngInject';
 
-    var findSubjectId = function(response, id) {
-      var parent = _.find(response.rows, function(row) {
+    const findSubjectId = function(response, id) {
+      const parent = _.find(response.rows, function(row) {
         return id && row.key[1] === id.toString() || false;
       });
       return (parent && parent.id) || null;
     };
 
-    var replaceReferencesWithIds = function(summaries, response) {
+    const replaceReferencesWithIds = function(summaries, response) {
       summaries.forEach(function(summary) {
         if (summary.subject.type === 'reference' && summary.subject.value) {
-          var id = findSubjectId(response, summary.subject.value);
+          const id = findSubjectId(response, summary.subject.value);
           if (id) {
             summary.subject = {
               value: id,
@@ -37,15 +37,15 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return summaries;
     };
 
-    var findSubjectName = function(response, id) {
-      var parent = _.findWhere(response, { _id: id });
+    const findSubjectName = function(response, id) {
+      const parent = _.find(response, { _id: id });
       return (parent && parent.name) || null;
     };
 
-    var replaceIdsWithNames = function(summaries, response) {
+    const replaceIdsWithNames = function(summaries, response) {
       summaries.forEach(function(summary) {
         if (summary.subject && summary.subject.type === 'id' && summary.subject.value) {
-          var name = findSubjectName(response, summary.subject.value);
+          const name = findSubjectName(response, summary.subject.value);
           if (name) {
             summary.subject = {
               _id: summary.subject.value,
@@ -58,8 +58,8 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return summaries;
     };
 
-    var processContactIds = function(summaries) {
-      var ids = _.uniq(_.compact(summaries.map(function(summary) {
+    const processContactIds = function(summaries) {
+      const ids = _.uniq(_.compact(summaries.map(function(summary) {
         if (summary.subject && summary.subject.type === 'id') {
           return summary.subject.value;
         }
@@ -75,7 +75,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-    var validateSubjects = function(summaries) {
+    const validateSubjects = function(summaries) {
       summaries.forEach(function(summary) {
         if (!summary.subject) {
           return;
@@ -93,8 +93,8 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       return summaries;
     };
 
-    var processReferences = function(summaries) {
-      var references = _.uniq(_.compact(summaries.map(function(summary) {
+    const processReferences = function(summaries) {
+      const references = _.uniq(_.compact(summaries.map(function(summary) {
         if (summary.subject && summary.subject.type === 'reference') {
           return summary.subject.value;
         }
@@ -115,16 +115,16 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         });
     };
 
-    var hydrateSubjectLineages = function(summaries, response) {
-      return _.each(summaries, function(summary) {
+    const hydrateSubjectLineages = function(summaries, response) {
+      return _.forEach(summaries, function(summary) {
         if (summary.subject && summary.subject._id) {
-          _.extend(summary.subject, _.findWhere(response, {_id: summary.subject._id}));
+          Object.assign(summary.subject, _.find(response, {_id: summary.subject._id}));
         }
       });
     };
 
-    var compactSubjectLineage = function(summaries) {
-      return _.each(summaries, function(summary) {
+    const compactSubjectLineage = function(summaries) {
+      return _.forEach(summaries, function(summary) {
         if (summary.subject && summary.subject.lineage) {
           summary.subject.lineage = _.compact(_.map(summary.subject.lineage, function(parent) {
             return parent && parent.name;
@@ -133,8 +133,8 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       });
     };
 
-    var processSubjectLineage = function(summaries) {
-      var subjectIds = _.uniq(_.compact(summaries.map(function(summary) {
+    const processSubjectLineage = function(summaries) {
+      const subjectIds = _.uniq(_.compact(summaries.map(function(summary) {
         return summary.subject && summary.subject._id;
       })));
 
@@ -149,7 +149,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     return function(summaries, hydratedLineage) {
-      var containsReports = false;
+      let containsReports = false;
 
       if (!summaries) {
         return [];

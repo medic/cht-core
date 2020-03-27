@@ -7,24 +7,24 @@
  *
  * @module textforms-parser
  */
-const _ = require('underscore'),
-      config = require('../../config'),
-      embedRe = function(re) {
-        return re.toString()
-          .replace(new RegExp('^\\/'), '')
-          .replace(new RegExp('\\/$'), '');
-      },
-      reDecimal = new RegExp('\\.'),
-      reBoundary = new RegExp('\\s*#\\s*'),
-      reDate = new RegExp('[\\d]{4}[-/][\\d]{1,2}[-/][\\d]{1,2}'),
-      reNumeric = new RegExp('[1-9][0-9]*(?:\\.(?:\\d+)?)?'),
-      reNumericOnly = new RegExp(`^\\s*${embedRe(reNumeric)}\\s*$`),
-      reField = new RegExp(
-        '\\s*([A-Za-z_\\.\\*.]+)' +
-        `[\\s-!]*(${embedRe(reDate)})?` +
-        `[\\s-!]*(${embedRe(reNumeric)})?` +
-        '[\\s-!]*(.+?)?\\s*$'
-      );
+const _ = require('lodash');
+const config = require('../../config');
+const embedRe = function(re) {
+  return re.toString()
+    .replace(/^\//, '')
+    .replace(/\/$/, '');
+};
+const reDecimal = /\./;
+const reBoundary = /\s*#\s*/;
+const reDate = /[\d]{4}[-/][\d]{1,2}[-/][\d]{1,2}/;
+const reNumeric = /[1-9][0-9]*(?:\.(?:\d+)?)?/;
+const reNumericOnly = /^\s*${embedRe(reNumeric)}\s*$/;
+const reField = new RegExp(
+  '\\s*([A-Za-z_\\.\\*.]+)' +
+  `[\\s-!]*(${embedRe(reDate)})?` +
+  `[\\s-!]*(${embedRe(reNumeric)})?` +
+  '[\\s-!]*(.+?)?\\s*$'
+);
 
 const lower = str => str && str.toLowerCase ? str.toLowerCase() : str;
 
@@ -46,14 +46,14 @@ const typeOf = str => {
 // casts" `value` to the appropriate javascript type.
 const formatAs = (type, value) => {
   switch (type) {
-    case 'integer':
-      return parseInt(value, 10);
-    case 'numeric':
-      return parseFloat(value);
-    case 'date':
-      return new Date(value).valueOf();
-    default:
-      return value;
+  case 'integer':
+    return parseInt(value, 10);
+  case 'numeric':
+    return parseFloat(value);
+  case 'date':
+    return new Date(value).valueOf();
+  default:
+    return value;
   }
 };
 
@@ -252,7 +252,7 @@ exports.parseArray = doc => {
   const obj = exports.parse(doc);
 
   const arr = [];
-  for (let key of obj) {
+  for (const key of obj) {
     arr.push(obj[key]);
   }
 

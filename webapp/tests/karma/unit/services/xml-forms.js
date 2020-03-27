@@ -5,7 +5,7 @@ describe('XmlForms service', () => {
   let dbGet;
   let dbQuery;
   let Changes;
-  let Auth;
+  let hasAuth;
   let UserContact;
   let getContactType;
   let contextUtils;
@@ -30,7 +30,7 @@ describe('XmlForms service', () => {
     dbQuery = sinon.stub();
     dbGet = sinon.stub();
     Changes = sinon.stub();
-    Auth = sinon.stub();
+    hasAuth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
     error = sinon.stub();
@@ -41,7 +41,7 @@ describe('XmlForms service', () => {
         get: dbGet
       }));
       $provide.value('Changes', Changes);
-      $provide.value('Auth', Auth);
+      $provide.value('Auth', { has: hasAuth });
       $provide.value('UserContact', UserContact);
       $provide.value('XmlFormsContextUtils', contextUtils);
       $provide.value('ContactTypes', { get: getContactType });
@@ -54,7 +54,7 @@ describe('XmlForms service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(dbQuery, Changes, Auth, UserContact);
+    KarmaUtils.restore(dbQuery, Changes, hasAuth, UserContact);
   });
 
   describe('list', () => {
@@ -198,7 +198,7 @@ describe('XmlForms service', () => {
       getContactType.resolves({ person: true });
       return service.list({ doc: { type: 'person' } }).then(actual => {
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
+        chai.assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
           'two',
@@ -271,7 +271,7 @@ describe('XmlForms service', () => {
       const service = $injector.get('XmlForms');
       getContactType.resolves({ person: false });
       return service.list({ doc: { type: 'district_hospital' } }).then(actual => {
-        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
+        chai.assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
           'three',
@@ -501,14 +501,14 @@ describe('XmlForms service', () => {
 
       dbQuery.returns(Promise.resolve({ rows: given }));
       UserContact.returns(Promise.resolve());
-      Auth.withArgs([ 'national_admin', 'district_admin' ]).returns(Promise.reject('no auth'));
-      Auth.withArgs([ 'national_admin' ]).returns(Promise.resolve());
+      hasAuth.withArgs([ 'national_admin', 'district_admin' ]).resolves(false);
+      hasAuth.withArgs([ 'national_admin' ]).resolves(true);
       const service = $injector.get('XmlForms');
       return service.list().then(actual => {
         chai.expect(actual.length).to.equal(2);
         chai.expect(actual[0]).to.deep.equal(given[1].doc);
         chai.expect(actual[1]).to.deep.equal(given[2].doc);
-        chai.expect(Auth.callCount).to.equal(2);
+        chai.expect(hasAuth.callCount).to.equal(2);
       });
     });
 
@@ -552,7 +552,7 @@ describe('XmlForms service', () => {
       const service = $injector.get('XmlForms');
       return service.list({ ignoreContext: true }).then(actual => {
         chai.expect(actual.length).to.equal(3);
-        chai.expect(Auth.callCount).to.equal(0);
+        chai.expect(hasAuth.callCount).to.equal(0);
       });
     });
 
@@ -596,7 +596,7 @@ describe('XmlForms service', () => {
       const service = $injector.get('XmlForms');
       return service.list({ ignoreContext: true, contactForms: false }).then(actual => {
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.expect(Auth.callCount).to.equal(0);
+        chai.expect(hasAuth.callCount).to.equal(0);
       });
     });
 

@@ -6,7 +6,7 @@ async function createProject(projectName) {
     type: 'token',
     token: config.token
   });
-  var data = {
+  const data = {
     owner: config.owner,
     repo: config.repoName,
     name: projectName
@@ -19,7 +19,7 @@ async function createProject(projectName) {
 }
 
 async function addColumnsToProject(columnName, projectId) {
-  var data = {
+  const data = {
     project_id: projectId,
     name: columnName
   };
@@ -31,7 +31,7 @@ async function addColumnsToProject(columnName, projectId) {
 }
 
 function sortColumnData(columns) {
-  var sorted = columns.map((column, index) => {
+  const sorted = columns.map((column, index) => {
     sorted.push([index, column.order]);
   });
   sorted.sort((a, b) => a[1] - b[1]);
@@ -39,8 +39,8 @@ function sortColumnData(columns) {
 }
 
 function generateMoveBody(columns, sortedData) {
-  var data = [];
-  var i;
+  const data = [];
+  let i;
   for (i = 1; i < sortedData.length; i++) {
     data.push({
       headers: config.headers,
@@ -52,8 +52,8 @@ function generateMoveBody(columns, sortedData) {
 }
 
 async function reOrderColumns(columns) {
-  var sorted = sortColumnData(columns);
-  var data = generateMoveBody(columns, sorted);
+  const sorted = sortColumnData(columns);
+  const data = generateMoveBody(columns, sorted);
   for (let i = 0; i < data.length; i++) {
     await octokit.projects.moveProjectColumn(data[i]);
   }
@@ -61,7 +61,7 @@ async function reOrderColumns(columns) {
 
 function addIssuesToColumn(columnId, issueIds) {
   issueIds.forEach((issueId) => {
-    var data = {
+    const data = {
       column_id: columnId,
       content_id: issueId,
       content_type: 'Issue',

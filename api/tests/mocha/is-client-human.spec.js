@@ -1,5 +1,5 @@
-const chai = require('chai'),
-      isClientHuman = require('../../src/is-client-human');
+const chai = require('chai');
+const isClientHuman = require('../../src/is-client-human');
 
 describe('is client human', () => {
 
@@ -11,8 +11,11 @@ describe('is client human', () => {
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:52.0) Gecko/20100101 Firefox/52.0',
 
       // Android browser
-      'Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30',
-      'Mozilla/5.0 (Linux; Android 5.1.1; hi6210sft Build/LMY47X) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/39.0.0.0 Mobile Safari/537.36',
+      'Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) ' +
+      'Version/4.0 Mobile Safari/534.30',
+      
+      'Mozilla/5.0 (Linux; Android 5.1.1; hi6210sft Build/LMY47X) AppleWebKit/537.36 (KHTML, like Gecko) ' +
+      'Version/4.0 Chrome/39.0.0.0 Mobile Safari/537.36',
     ].forEach((humanUserAgent) => {
       // given
       const req = mockRequestForUa(humanUserAgent);
@@ -48,14 +51,22 @@ describe('is client human', () => {
 
   it('should return false for medic-collect UserAgent strings', () => {
     [
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android/SNAPSHOT',
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.amrefsenegal/1.2.3',
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.christianaidsr/4.5.6',
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.demo/SNAPSHOT',
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.intrahealthsenegal/SNAPSHOT',
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.ipasnigeria/SNAPSHOT',
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.queens/SNAPSHOT',
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.strongminds/SNAPSHOT',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android/SNAPSHOT',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android.amrefsenegal/1.2.3',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android.christianaidsr/4.5.6',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android.demo/SNAPSHOT',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android.intrahealthsenegal/SNAPSHOT',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android.ipasnigeria/SNAPSHOT',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android.queens/SNAPSHOT',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.medicmobile.collect.android.strongminds/SNAPSHOT',
     ].forEach((humanUserAgent) => {
       // given
       const req = mockRequestForUa(humanUserAgent);
@@ -67,7 +78,8 @@ describe('is client human', () => {
 
   it('should return false for ODK Collect UserAgent strings', () => {
     [
-      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.odk.collect.android/v1.5.1-10-ge20fa334-dirty',
+      'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X)' +
+        'org.odk.collect.android/v1.5.1-10-ge20fa334-dirty',
     ].forEach((humanUserAgent) => {
       // given
       const req = mockRequestForUa(humanUserAgent);

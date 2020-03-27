@@ -3,9 +3,9 @@ describe('Settings service', function() {
   'use strict';
 
   describe('as a Promise provider', function() {
-    var service,
-        $rootScope,
-        get;
+    let service;
+    let $rootScope;
+    let get;
 
     beforeEach(function() {
       get = sinon.stub();
@@ -30,7 +30,7 @@ describe('Settings service', function() {
     });
 
     it('triggers change events when cache updates', function(done) {
-      var expected = {
+      const expected = {
         isTrue: true,
         isString: 'hello'
       };
@@ -66,9 +66,9 @@ describe('Settings service', function() {
 
   describe('as an event emitter', function() {
 
-    var expect = chai.expect,
-        service,
-        cacheCallback;
+    const expect = chai.expect;
+    let service;
+    let cacheCallback;
 
     function triggerCacheChange(err, settings) {
       cacheCallback(err, settings);
@@ -97,8 +97,8 @@ describe('Settings service', function() {
     });
 
     it('triggers a change event each time cache updates', function(done) {
-      var changeCount = 0,
-          invocationIndexes = [];
+      let changeCount = 0;
+      const invocationIndexes = [];
 
       service()
         .on('change', function(settings) {
@@ -118,8 +118,8 @@ describe('Settings service', function() {
     });
 
     it('triggers error handler when an error occurs', function(done) {
-      var changeCount = 0,
-          errorCount = 0;
+      let changeCount = 0;
+      let errorCount = 0;
 
       service()
         .on('change', function() {

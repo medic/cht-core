@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').service('ContactMuted',
   function() {
@@ -16,14 +16,14 @@ angular.module('inboxServices').service('ContactMuted',
       }
 
       if (lineage) {
-        var mutedParent = _.find(lineage, function(parent) {
+        const mutedParent = _.find(lineage, function(parent) {
           return parent && parent.muted;
         });
 
         return !!mutedParent && mutedParent.muted;
       }
 
-      var parent = doc.parent;
+      let parent = doc.parent;
       while (parent) {
         if (parent.muted) {
           return parent.muted;

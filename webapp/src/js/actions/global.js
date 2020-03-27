@@ -2,8 +2,11 @@ const actionTypes = require('./actionTypes');
 
 angular.module('inboxServices').factory('GlobalActions',
   function(
+    $state,
     $timeout,
     ActionUtils,
+    LiveList,
+    Modal,
     Selectors
   ) {
     'use strict';
@@ -32,7 +35,9 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       function setAndroidAppVersion(androidAppVersion) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ANDROID_APP_VERSION, 'androidAppVersion', androidAppVersion));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.SET_ANDROID_APP_VERSION, 'androidAppVersion', androidAppVersion
+        ));
       }
 
       function createSetCancelCallbackAction(value) {
@@ -67,8 +72,8 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetEnketoStatusAction({ saving }));
       }
 
-      function setFacilities(facilities) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FACILITIES, 'facilities', facilities));
+      function setForms(forms) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FORMS, 'forms', forms));
       }
 
       function clearFilters() {
@@ -87,16 +92,14 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
       }
 
-      function setLastChangedDoc(value) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
-      }
-
       function setLoadingContent(loading) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_CONTENT, 'loadingContent', loading));
       }
 
       function setLoadingSubActionBar(loading) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading));
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
+        ));
       }
 
       function setSelectMode(selectMode) {
@@ -130,12 +133,15 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
       }
 
-      function setVersion(version) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_VERSION, 'version', version));
+      function updateReplicationStatus(replicationStatus) {
+        dispatch(ActionUtils.createSingleValueAction(
+          actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus
+        ));
       }
 
-      function updateReplicationStatus(replicationStatus) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_REPLICATION_STATUS, 'replicationStatus', replicationStatus));
+      function setLoadingShowContent(id) {
+        setLoadingContent(id);
+        setShowContent(true);
       }
 
       function settingSelected(refreshing) {
@@ -151,23 +157,119 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      /**
+       * Unset the selected item
+       */
+      function unsetSelected() {
+        setShowContent(false);
+        setLoadingContent(false);
+        setShowActionBar(false);
+        setTitle();
+        dispatch({ type: actionTypes.CLEAR_SELECTED });
+        LiveList['contacts'].clearSelected();
+        LiveList['contact-search'].clearSelected();
+        LiveList['reports'].clearSelected();
+        LiveList['report-search'].clearSelected();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+      }
+
+      // User wants to cancel current flow, or pressed back button, etc.
+      function navigationCancel(transition) {
+        return dispatch((dispatch, getState) => {
+          const state = getState();
+          if (Selectors.getEnketoSavingStatus(state)) {
+            // wait for save to finish
+            return;
+          }
+
+          if (!Selectors.getEnketoEditedStatus(state)) {
+            // form hasn't been modified - return immediately
+            const cb = Selectors.getCancelCallback(state);
+            if (cb) {
+              cb();
+            }
+            return;
+          }
+
+          // otherwise data will be discarded so confirm navigation
+          Modal({
+            templateUrl: 'templates/modals/navigation_confirm.html',
+            controller: 'NavigationConfirmCtrl',
+            controllerAs: 'navigationConfirmCtrl',
+            singleton: true,
+          }).then(() => {
+            setEnketoEditedStatus(false);
+            if (transition) {
+              return $state.go(transition.to, transition.params);
+            }
+            const cb = Selectors.getCancelCallback(getState());
+            if (cb) {
+              cb();
+            }
+          });
+        });
+      }
+
+      function openTourSelect() {
+        return Modal({
+          templateUrl: 'templates/modals/tour_select.html',
+          controller: 'TourSelectCtrl',
+          controllerAs: 'tourSelectCtrl',
+          singleton: true,
+        }).catch(() => {}); // modal dismissed is ok
+      }
+
+      function openGuidedSetup() {
+        return Modal({
+          templateUrl: 'templates/modals/guided_setup.html',
+          controller: 'GuidedSetupModalCtrl',
+          controllerAs: 'guidedSetupModalCtrl',
+          size: 'lg',
+        }).catch(() => {}); // modal dismissed is ok
+      }
+
+      function deleteDoc(doc) {
+        return dispatch((dispatch, getState) => {
+          return Modal({
+            templateUrl: 'templates/modals/delete_doc_confirm.html',
+            controller: 'DeleteDocConfirm',
+            controllerAs: 'deleteDocConfirmCtrl',
+            model: { doc },
+          })
+            .then(() => {
+              const selectMode = Selectors.getSelectMode(getState());
+              if (
+                !selectMode &&
+                ($state.includes('contacts') || $state.includes('reports'))
+              ) {
+                $state.go($state.current.name, { id: null });
+              }
+            })
+            .catch(() => {}); // modal dismissed is ok
+        });
+      }
+
       return {
         clearCancelCallback,
         clearFilters,
         clearRightActionBar,
+        deleteDoc,
+        navigationCancel,
+        openGuidedSetup,
+        openTourSelect,
         setAndroidAppVersion,
         setCancelCallback,
         setCurrentTab,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
-        setFacilities,
         setFilter,
         setFilters,
+        setForms,
         setIsAdmin,
         setLeftActionBar,
-        setLastChangedDoc,
         setLoadingContent,
+        setLoadingShowContent,
         setLoadingSubActionBar,
         setRightActionBar,
         setRightActionBarVerified,
@@ -176,10 +278,9 @@ angular.module('inboxServices').factory('GlobalActions',
         setShowContent,
         setTitle,
         setUnreadCount,
-        setVersion,
         updateReplicationStatus,
         updateUnreadCount,
-
+        unsetSelected,
         settingSelected
       };
     };

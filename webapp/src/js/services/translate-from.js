@@ -16,18 +16,18 @@
  * var patient = { _id: 'abc', patient: { name: 'Estelle' } };
  * translateFrom([ { locale: 'en', content: 'Go visit {{patient.name}}' }], patient);  // 'Go visit Estelle'
  */
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
   'use strict';
 
-  var getLabel = function(labels, locale) {
+  const getLabel = function(labels, locale) {
     locale = locale || 'en';
 
     // first format: [ { content: 'Hello', locale: 'en' } ]
     if (_.isArray(labels)) {
-      var label = _.findWhere(labels, { locale: locale });
+      const label = _.find(labels, { locale: locale });
       if (label) {
         return label.content;
       }
@@ -53,7 +53,7 @@ var _ = require('underscore');
         if (!labels) {
           return;
         }
-        var label = getLabel(labels, $translate.use());
+        const label = getLabel(labels, $translate.use());
         if (!scope || !label || label.indexOf('{{') === -1) {
           return label;
         }

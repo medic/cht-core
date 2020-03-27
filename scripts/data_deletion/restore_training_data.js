@@ -1,8 +1,8 @@
 'use strict';
 
-var PouchDB = require('pouchdb');
-var _ = require('underscore');
-var fs = require('fs');
+const PouchDB = require('pouchdb');
+const _ = require('underscore');
+const fs = require('fs');
 
 if (process.argv.length < 4) {
   console.log('Not enough arguments.');
@@ -11,13 +11,13 @@ if (process.argv.length < 4) {
   process.exit();
 }
 
-var dbUrl = process.argv[2];
-var logdir = process.argv[3];
+const dbUrl = process.argv[2];
+const logdir = process.argv[3];
 console.log('\nStarting restore process with\ndbUrl = ' + dbUrl + '\nlogdir = ' + logdir + '\n\n');
 
-var db = new PouchDB(dbUrl);
+const db = new PouchDB(dbUrl);
 
-var readDocsFromFile = function(filepath) {
+const readDocsFromFile = function(filepath) {
   return new Promise(function(resolve,reject){
     fs.readFile(filepath, 'utf8', function(err, data) {
       if(err) {
@@ -30,14 +30,14 @@ var readDocsFromFile = function(filepath) {
   });
 };
 
-var deleteRevs = function(docsList) {
+const deleteRevs = function(docsList) {
   _.each(docsList, function(doc) {
     delete doc._rev;
   });
   return docsList;
 };
 
-var insertDocs = function(docsList) {
+const insertDocs = function(docsList) {
   return db.bulkDocs(docsList)
     .then(function (result) {
       console.log('Inserted : ' + result.length + ':');
@@ -46,11 +46,11 @@ var insertDocs = function(docsList) {
     });
 };
 
-var getDoc = function(id) {
+const getDoc = function(id) {
   return db.get(id);
 };
 
-var getContactLinkFiles = function(dir) {
+const getContactLinkFiles = function(dir) {
   return new Promise(function(resolve,reject){
     fs.readdir(dir, function(err, files) {
       if(err) {
@@ -65,11 +65,11 @@ var getContactLinkFiles = function(dir) {
   });
 };
 
-var makeContactLinks = function(person, facilitiesList) {
-  var promiseList = [];
+const makeContactLinks = function(person, facilitiesList) {
+  const promiseList = [];
   _.each(facilitiesList, function(facility) {
     // Re-fetch the doc, it could have been deleted + restored since then.
-    var promise = getDoc(facility._id)
+    const promise = getDoc(facility._id)
       .then(function(newFacility) {
         newFacility.contact = person;
         return [newFacility];
@@ -80,11 +80,11 @@ var makeContactLinks = function(person, facilitiesList) {
   return Promise.all(promiseList);
 };
 
-var restoreContactLinks = function(files) {
-  var promiseList = [];
+const restoreContactLinks = function(files) {
+  const promiseList = [];
   _.each(files, function(file) {
-    var personId = file.replace('cleaned_facilities_', '').replace('.json', '');
-    var promise = Promise.all([getDoc(personId), readDocsFromFile(logdir + '/' + file)])
+    const personId = file.replace('cleaned_facilities_', '').replace('.json', '');
+    const promise = Promise.all([getDoc(personId), readDocsFromFile(logdir + '/' + file)])
       .then(makeContactLinks);
     promiseList.push(promise);
   });

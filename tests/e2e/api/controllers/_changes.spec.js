@@ -1,12 +1,12 @@
-const _ = require('underscore'),
-      utils = require('../../../utils'),
-      sentinelUtils = require('../../sentinel/utils'),
-      uuid = require('uuid'),
-      http = require('http'),
-      querystring = require('querystring'),
-      constants = require('../../../constants'),
-      auth = require('../../../auth')(),
-      semver = require('semver');
+const _ = require('lodash');
+const utils = require('../../../utils');
+const sentinelUtils = require('../../sentinel/utils');
+const uuid = require('uuid');
+const http = require('http');
+const querystring = require('querystring');
+const constants = require('../../../constants');
+const auth = require('../../../auth')();
+const semver = require('semver');
 const chai = require('chai');
 
 const DEFAULT_EXPECTED = [
@@ -294,7 +294,7 @@ describe('changes handler', () => {
         options.port = constants.API_PORT;
         options.auth = options.auth || `${auth.username}:${auth.password}`;
         options.path = options.path || '/';
-        options.query = _.extend({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
+        options.query = Object.assign({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
         options.path += '?' + querystring.stringify(options.query || {});
 
         const heartbeats = [];
@@ -485,7 +485,8 @@ describe('changes handler', () => {
         .then(changes => {
           if (shouldBatchChangesRequests) {
             // requests should be limited
-            const receivedIds = getIds(changes.results).filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
+            const receivedIds = getIds(changes.results)
+              .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
             chai.expect(bobsIds).to.include.members(receivedIds);
             // because we still process pending changes, it's not a given we will receive only 4 changes.
             chai.expect(bobsIds).to.not.have.members(receivedIds);
@@ -501,10 +502,10 @@ describe('changes handler', () => {
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
 
       return Promise.all([
-          consumeChanges('bob', [], currentSeq),
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
-        ])
+        consumeChanges('bob', [], currentSeq),
+        utils.saveDocs(allowedDocs),
+        utils.saveDocs(deniedDocs)
+      ])
         .then(([changes]) => {
           assertChangeIds(changes, ...getIds(allowedDocs));
         });
@@ -534,11 +535,11 @@ describe('changes handler', () => {
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
       return Promise.all([
-          consumeChanges('bob', [], currentSeq),
-          consumeChanges('steve', [], currentSeq),
-          utils.saveDocs(allowedBob),
-          utils.saveDocs(allowedSteve),
-        ])
+        consumeChanges('bob', [], currentSeq),
+        consumeChanges('steve', [], currentSeq),
+        utils.saveDocs(allowedBob),
+        utils.saveDocs(allowedSteve),
+      ])
         .then(([ bobsChanges, stevesChanges ]) => {
           assertChangeIds(bobsChanges, ...getIds(allowedBob));
           assertChangeIds(stevesChanges, ...getIds(allowedSteve));
@@ -656,7 +657,7 @@ describe('changes handler', () => {
             requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
             utils.saveDocs(allowedBob),
             utils.saveDocs(allowedSteve),
-            utils.saveDoc(_.extend(stevesUser, { facility_id: 'fixture:bobville' })),
+            utils.saveDoc(Object.assign(stevesUser, { facility_id: 'fixture:bobville' })),
           ]);
         })
         .then(([ changes ]) => {
@@ -678,11 +679,11 @@ describe('changes handler', () => {
           .request({
             path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
             method: 'PUT',
-            body: _.extend(user, { facility_id: 'fixture:bobville' })
+            body: Object.assign(user, { facility_id: 'fixture:bobville' })
           })
           .then(() => utils.saveDocs([
             // we "move" his medic user to a place that doesn't exist. He should still get bobville docs
-            _.extend(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] }),
+            Object.assign(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] }),
             ...allowedSteve,
             ...allowedBob,
           ]));
@@ -719,7 +720,7 @@ describe('changes handler', () => {
         .then(user => utils.request({
           path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
           method: 'PUT',
-          body: _.extend(user, { facility_id: 'fixture:steveville' })
+          body: Object.assign(user, { facility_id: 'fixture:steveville' })
         }));
     });
 
@@ -739,8 +740,8 @@ describe('changes handler', () => {
         })
         .then(() => Promise.all([
           consumeChanges('bob', [], currentSeq),
-          utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
-          utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true })))
+          utils.saveDocs(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
+          utils.saveDocs(allowedDocs.map(doc => Object.assign(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
           assertChangeIds(changes, ...getIds(allowedDocs));
@@ -769,14 +770,15 @@ describe('changes handler', () => {
         })
         .then(() => {
           return Promise.all([
-            utils.saveDocs(deniedDocs.map(doc => _.extend(doc, { _deleted: true }))),
-            utils.saveDocs(allowedDocs.map(doc => _.extend(doc, { _deleted: true }))),
+            utils.saveDocs(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocs(allowedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
           ]);
         })
         .then(() => sentinelUtils.waitForSentinel())
         .then(() => requestChanges('steve'))
         .then(changes => {
-          const changeIds = getIds(changes.results).filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
+          const changeIds = getIds(changes.results)
+            .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
           // can't use assertChangeIds here because it ignores deletes
           chai.expect(_.uniq(changeIds)).to.have.members([...stevesIds, ...allowedDocIds]);
         })
@@ -795,34 +797,34 @@ describe('changes handler', () => {
       let stevesSeq = 0;
 
       return Promise
-       .all([
-         utils.saveDocs(allowedBob),
-         utils.saveDocs(allowedSteve)
-       ])
-       .then(([ allowedBobResult, allowedSteveResult ]) => {
-         allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
-         allowedSteveResult.forEach((doc, idx) => allowedSteve[idx]._rev = doc.rev);
-         return Promise.all([
-           requestChanges('bob'),
-           requestChanges('steve')
-         ]);
-       })
-       .then(([ bobsChanges, stevesChanges ]) => {
-         bobsSeq = bobsChanges.last_seq;
-         stevesSeq = stevesChanges.last_seq;
-         return Promise.all([
-           utils.saveDocs(allowedBob.map(doc => _.extend(doc, { _deleted: true }))),
-           utils.saveDocs(allowedSteve.map(doc => _.extend(doc, { _deleted: true }))),
-         ]);
-       })
-       .then(() => Promise.all([
-         consumeChanges('bob', [], bobsSeq),
-         consumeChanges('steve', [], stevesSeq),
-       ]))
-       .then(([ bobsChanges, stevesChanges ]) => {
-         assertChangeIds(bobsChanges, ...getIds(allowedBob));
-         assertChangeIds(stevesChanges, ...getIds(allowedSteve));
-       });
+        .all([
+          utils.saveDocs(allowedBob),
+          utils.saveDocs(allowedSteve)
+        ])
+        .then(([ allowedBobResult, allowedSteveResult ]) => {
+          allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
+          allowedSteveResult.forEach((doc, idx) => allowedSteve[idx]._rev = doc.rev);
+          return Promise.all([
+            requestChanges('bob'),
+            requestChanges('steve')
+          ]);
+        })
+        .then(([ bobsChanges, stevesChanges ]) => {
+          bobsSeq = bobsChanges.last_seq;
+          stevesSeq = stevesChanges.last_seq;
+          return Promise.all([
+            utils.saveDocs(allowedBob.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocs(allowedSteve.map(doc => Object.assign(doc, { _deleted: true }))),
+          ]);
+        })
+        .then(() => Promise.all([
+          consumeChanges('bob', [], bobsSeq),
+          consumeChanges('steve', [], stevesSeq),
+        ]))
+        .then(([ bobsChanges, stevesChanges ]) => {
+          assertChangeIds(bobsChanges, ...getIds(allowedBob));
+          assertChangeIds(stevesChanges, ...getIds(allowedSteve));
+        });
     });
 
     it('should forward changes requests when db name is not medic', () => {
@@ -830,7 +832,7 @@ describe('changes handler', () => {
         .requestOnMedicDb({ path: '/_changes', auth: { username: 'bob', password } })
         .then(results => {
           return assertChangeIds(results, ...bobsIds);
-      });
+        });
     });
 
     it('filters calls with irregular urls which match couchdb endpoint', () => {
@@ -970,26 +972,26 @@ describe('changes handler', () => {
       .then(() => requestChanges('bob'))
       .then(changes =>
         assertChangeIds(changes,
-            'org.couchdb.user:bob',
-            'fixture:bobville',
-            'fixture:user:bob',
-            'very-relevant')));
+          'org.couchdb.user:bob',
+          'fixture:bobville',
+          'fixture:user:bob',
+          'very-relevant')));
 
   describe('reports with no associated contact', () => {
     describe('can_view_unallocated_data_records permission', () => {
 
-      it('should be supplied if user has this permission and district_admins_access_unallocated_messages is enabled', () =>
+      it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled', () =>
         utils.updateSettings({district_admins_access_unallocated_messages: true}, true)
           .then(() => utils.saveDoc({ _id:'unallocated_report', type:'data_record' }))
           .then(() => requestChanges('bob'))
           .then(changes =>
             assertChangeIds(changes,
-                'org.couchdb.user:bob',
-                'fixture:bobville',
-                'fixture:user:bob',
-                'unallocated_report')));
+              'org.couchdb.user:bob',
+              'fixture:bobville',
+              'fixture:user:bob',
+              'unallocated_report')));
 
-      it('should not be supplied if user has this permission but district_admins_access_unallocated_messages is disabled', () =>
+      it('should not be supplied if user has perm but district_admins_access_unallocated_messages is disabled', () =>
         utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
           .then(() => requestChanges('bob'))
           .then(changes  =>
@@ -1013,7 +1015,10 @@ describe('changes handler', () => {
     it('should show contacts to a user only if they are within the configured depth', () =>
       utils.updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
         .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
-        .then(() => utils.saveDoc({ _id:'should-be-hidden', reported_date: 1, type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } }))
+        .then(() => utils.saveDoc({
+          _id:'should-be-hidden', reported_date: 1, type:'person',
+          parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
+        }))
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
@@ -1025,12 +1030,15 @@ describe('changes handler', () => {
     it('should correspond to the largest number for any role the user has', () =>
       utils.updateSettings({
         replication_depth: [
-            { role:'district_admin', depth:1 },
-            { role:'analytics', depth:2 },
-          ]
+          { role:'district_admin', depth:1 },
+          { role:'analytics', depth:2 },
+        ]
       }, true)
         .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
-        .then(() => utils.saveDoc({ _id:'should-be-visible-too', reported_date: 1, type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } }))
+        .then(() => utils.saveDoc({
+          _id:'should-be-visible-too', reported_date: 1, type:'person',
+          parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
+        }))
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
@@ -1042,15 +1050,18 @@ describe('changes handler', () => {
 
     it('should have no effect if not configured', () =>
       utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } })
-        .then(() => utils.saveDoc({ _id:'should-also-be-visible', reported_date: 1, type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } }))
+        .then(() => utils.saveDoc({
+          _id:'should-also-be-visible', reported_date: 1, type:'person',
+          parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
+        }))
         .then(() => requestChanges('chw'))
         .then(changes =>
           assertChangeIds(changes,
-              'org.couchdb.user:chw',
-              'fixture:user:chw',
-              'fixture:chwville',
-              'should-be-visible',
-              'should-also-be-visible')));
+            'org.couchdb.user:chw',
+            'fixture:user:chw',
+            'fixture:chwville',
+            'should-be-visible',
+            'should-also-be-visible')));
 
     describe('Needs signoff', () => {
       beforeEach(done => {
@@ -1111,7 +1122,7 @@ describe('changes handler', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-           parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
           }
         };
 
@@ -1257,8 +1268,15 @@ describe('changes handler', () => {
   });
 
   it('should not return reports about your place by someone above you in the hierarchy', () =>
-    utils.saveDoc({ type:'data_record', _id:'chw-report', place_id:'fixture:chwville', contact:{ _id:'fixture:user:chw' }, form:'some-form' })
-      .then(() => utils.saveDoc({ type:'data_record', _id:'chw-boss-report', place_id:'fixture:chwville', contact:{ _id:'fixture:user:chw-boss' }, form:'some-form' }))
+    utils
+      .saveDoc({
+        type:'data_record', _id:'chw-report', place_id:'fixture:chwville',
+        contact:{ _id:'fixture:user:chw' }, form:'some-form'
+      })
+      .then(() => utils.saveDoc({
+        type:'data_record', _id:'chw-boss-report', place_id:'fixture:chwville',
+        contact:{ _id:'fixture:user:chw-boss' }, form:'some-form'
+      }))
       .then(() => requestChanges('chw'))
       .then(changes =>
         assertChangeIds(changes,

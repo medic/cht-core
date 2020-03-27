@@ -1,15 +1,17 @@
-var _ = require('underscore'),
-    moment = require('moment'),
-    END_OF_ALPHABET = '\ufff0';
+const _ = require('lodash/core');
+_.partial = require('lodash/partial');
+_.partial.placeholder = _;
+const moment = require('moment');
+const END_OF_ALPHABET = '\ufff0';
 
-var getKeysArray = function(keys) {
+const getKeysArray = function(keys) {
   return keys.map(function(t) {
     return [ t ];
   });
 };
 
 // filter = { selected: [...], options: [...]}
-var getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
+const getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
   if (!filter || !filter.selected) {
     return;
   }
@@ -22,7 +24,7 @@ var getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
   return getRequestWithMappedKeys(view, filter.selected, mapKeysFunc);
 };
 
-var getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
+const getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
   if (!keys || keys.length === 0) {
     return;
   }
@@ -34,7 +36,7 @@ var getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
   };
 };
 
-var getRequestForBooleanKey = function(view, key) {
+const getRequestForBooleanKey = function(view, key) {
   if (!_.isBoolean(key)) {
     return;
   }
@@ -46,13 +48,13 @@ var getRequestForBooleanKey = function(view, key) {
   };
 };
 
-var reportedDateRequest = function(filters) {
-  var dateRange = filters.date;
+const reportedDateRequest = function(filters) {
+  const dateRange = filters.date;
   if (!dateRange || (!dateRange.to && !dateRange.from)) {
     return;
   }
-  var to = moment(dateRange.to);
-  var from = moment(dateRange.from || 0);
+  const to = moment(dateRange.to);
+  const from = moment(dateRange.from || 0);
   return {
     view: 'medic-client/reports_by_date',
     params: {
@@ -62,8 +64,8 @@ var reportedDateRequest = function(filters) {
   };
 };
 
-var formRequest = function(filters) {
-  var req = getRequestForMultidropdown(
+const formRequest = function(filters) {
+  const req = getRequestForMultidropdown(
     'medic-client/reports_by_form',
     filters.forms,
     function(forms) {
@@ -79,23 +81,23 @@ var formRequest = function(filters) {
   return req;
 };
 
-var validityRequest = function(filters) {
+const validityRequest = function(filters) {
   return getRequestForBooleanKey('medic-client/reports_by_validity', filters.valid);
 };
 
-var verificationRequest = function(filters) {
+const verificationRequest = function(filters) {
   return getRequestWithMappedKeys('medic-client/reports_by_verification', filters.verified, getKeysArray);
 };
 
-var placeRequest = function(filters) {
+const placeRequest = function(filters) {
   return getRequestForMultidropdown('medic-client/reports_by_place', filters.facilities, getKeysArray);
 };
 
-var freetextRequest = function(filters, view) {
+const freetextRequest = function(filters, view) {
   if (filters.search) {
-    var words = filters.search.trim().toLowerCase().split(/\s+/);
+    const words = filters.search.trim().toLowerCase().split(/\s+/);
     return words.map(function(word) {
-      var params = {};
+      const params = {};
       if (word.indexOf(':') !== -1) {
         // use exact match
         params.key = [ word ];
@@ -112,16 +114,16 @@ var freetextRequest = function(filters, view) {
   }
 };
 
-var subjectRequest = function(filters) {
-  var subjectIds = filters.subjectIds;
+const subjectRequest = function(filters) {
+  const subjectIds = filters.subjectIds;
   return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds, getKeysArray);
 };
 
-var contactTypeRequest = function(filters, sortByLastVisitedDate) {
+const contactTypeRequest = function(filters, sortByLastVisitedDate) {
   if (!filters.types) {
     return;
   }
-  var view = 'medic-client/contacts_by_type';
+  const view = 'medic-client/contacts_by_type';
   let request;
   if (filters.types.selected && filters.types.options) {
     request = getRequestForMultidropdown(view, filters.types, getKeysArray);
@@ -141,11 +143,11 @@ var contactTypeRequest = function(filters, sortByLastVisitedDate) {
   return request;
 };
 
-var simprintsRequest = function(filters) {
+const simprintsRequest = function(filters) {
   if (!filters.simprintsIdentities) {
     return;
   }
-  var keys = filters.simprintsIdentities.map(function(identity) {
+  const keys = filters.simprintsIdentities.map(function(identity) {
     return [ 'simprints', identity.id ];
   });
   return {
@@ -154,7 +156,7 @@ var simprintsRequest = function(filters) {
   };
 };
 
-var defaultReportRequest = function() {
+const defaultReportRequest = function() {
   return {
     view: 'medic-client/reports_by_date',
     ordered: true,
@@ -162,14 +164,14 @@ var defaultReportRequest = function() {
   };
 };
 
-var defaultContactRequest = function() {
+const defaultContactRequest = function() {
   return {
     view: 'medic-client/contacts_by_type',
     ordered: true
   };
 };
 
-var sortByLastVisitedDate = function() {
+const sortByLastVisitedDate = function() {
   return {
     view: 'medic-client/contacts_by_last_visited',
     map: function(row) {
@@ -184,9 +186,9 @@ var sortByLastVisitedDate = function() {
   };
 };
 
-var requestBuilders = {
+const requestBuilders = {
   reports: function(filters) {
-    var requests = [
+    let requests = [
       reportedDateRequest(filters),
       formRequest(filters),
       validityRequest(filters),
@@ -203,24 +205,24 @@ var requestBuilders = {
     return requests;
   },
   contacts: function(filters, extensions) {
-    var simprints = simprintsRequest(filters);
+    const simprints = simprintsRequest(filters);
     if (simprints) {
       return [ simprints ];
     }
 
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
-    var typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
-    var hasTypeRequest = typeRequest && typeRequest.params.keys.length;
+    const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
+    const hasTypeRequest = typeRequest && typeRequest.params.keys.length;
 
-    var freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
-    var hasFreetextRequests = freetextRequests && freetextRequests.length;
+    const freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
+    const hasFreetextRequests = freetextRequests && freetextRequests.length;
 
     if (hasTypeRequest && hasFreetextRequests) {
 
-      var makeCombinedParams = function(freetextRequest, typeKey) {
-        var type = typeKey[0];
-        var params = {};
+      const makeCombinedParams = function(freetextRequest, typeKey) {
+        const type = typeKey[0];
+        const params = {};
         if (freetextRequest.key) {
           params.key = [ type, freetextRequest.params.key[0] ];
         } else {
@@ -230,8 +232,8 @@ var requestBuilders = {
         return params;
       };
 
-      var makeCombinedRequest = function(typeRequests, freetextRequest) {
-        var result = {
+      const makeCombinedRequest = function(typeRequests, freetextRequest) {
+        const result = {
           view: 'medic-client/contacts_by_type_freetext',
           union: typeRequests.params.keys.length > 1
         };
@@ -249,7 +251,7 @@ var requestBuilders = {
       return freetextRequests.map(_.partial(makeCombinedRequest, typeRequest, _));
     }
 
-    var requests = [ freetextRequests, typeRequest ];
+    let requests = [ freetextRequests, typeRequest ];
     requests = _.compact(_.flatten(requests));
 
     if (!requests.length) {
@@ -299,7 +301,7 @@ var requestBuilders = {
 // NB: options is not required: it is an optimisation shortcut
 module.exports = {
   generate: function(type, filters, extensions) {
-    var builder = requestBuilders[type];
+    const builder = requestBuilders[type];
     if (!builder) {
       throw new Error('Unknown type: ' + type);
     }

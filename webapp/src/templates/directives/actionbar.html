@@ -4,19 +4,19 @@
 
       <div class="col-sm-4 general-actions left-pane" ng-show="actionBarCtrl.currentTab === 'reports' && actionBarCtrl.selectMode">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" ng-click="emit('SelectAll')">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" ng-click="actionBarCtrl.selectAll()">
             <span class="fa fa-check-square-o"></span>
             <p translate>select.mode.select.all</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" ng-click="emit('DeselectAll')">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" ng-click="actionBarCtrl.deselectAll()">
             <span class="fa fa-square-o"></span>
             <p translate>select.mode.deselect.all</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="bulkDelete(actionBarCtrl.selectedReportsDocs)" ng-class="{'mm-icon-disabled': !actionBarCtrl.selectedReportsDocs.length}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="actionBarCtrl.bulkDelete(actionBarCtrl.selectedReportsDocs)" ng-class="{'mm-icon-disabled': !actionBarCtrl.selectedReportsDocs.length}">
             <span class="fa fa-trash-o"></span>
             <p translate>select.mode.delete.all</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" ng-click="setSelectMode(false)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" ng-click="actionBarCtrl.setSelect(false)">
             <span class="fa fa-times-circle"></span>
             <p translate>select.mode.stop</p>
           </a>
@@ -37,7 +37,7 @@
               </a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)" ng-class="{'mm-icon-disabled': !actionBarCtrl.actionBar.left.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="actionBarCtrl.setSelect(true)" ng-class="{'mm-icon-disabled': !actionBarCtrl.actionBar.left.hasResults}">
             <span class="fa fa-check-circle"></span>
             <p translate>select.mode.start</p>
           </a>
@@ -95,7 +95,7 @@
       <div class="col-sm-8 detail-actions right-pane" ng-show="actionBarCtrl.currentTab === 'reports'">
         <div ng-show="actionBarCtrl.selectMode">
           <div class="actions dropup" ng-show="actionBarCtrl.showActionBar && actionBarCtrl.selectedReportsDocs.length && (!actionBarCtrl.loadingContent) && 'reports.detail' | isState">
-            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="bulkDelete(actionBarCtrl.selectedReportsDocs)">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="actionBarCtrl.bulkDelete(actionBarCtrl.selectedReportsDocs)">
               <span class="fa fa-trash-o"></span>
               <p translate>select.mode.delete.all</p>
             </a>
@@ -116,16 +116,16 @@
               <div class="loader"></div>
             </div>
             <div class="dropdown-menu sub-actions" mm-auth mm-auth-any="[['can_verify_reports', 'can_edit_verification'], actionBarCtrl.selectedReportsDocs[0].verified === undefined && 'can_verify_reports']" ng-show="actionBarCtrl.actionBar.right.verifyingReport && !actionBarCtrl.loadingSubActionBar">
-              <a class="mm-icon mm-icon-caption verify-error" ng-class="{ active: actionBarCtrl.actionBar.right.verified === false }" ng-click="emit('VerifyReport', false)">
+              <a class="mm-icon mm-icon-caption verify-error" ng-class="{ active: actionBarCtrl.actionBar.right.verified === false }" ng-click="actionBarCtrl.verifyReport(false)">
                 <span class="verify-icon" ng-include="'templates/partials/svg-icons/report-verify-invalid-icon.html'"></span>
                 <span translate>reports.verify.invalid</span>
               </a>
-              <a class="mm-icon mm-icon-caption verify-valid" ng-class="{ active: actionBarCtrl.actionBar.right.verified }" ng-click="emit('VerifyReport', true)">
+              <a class="mm-icon mm-icon-caption verify-valid" ng-class="{ active: actionBarCtrl.actionBar.right.verified }" ng-click="actionBarCtrl.verifyReport(true)">
                 <span class="verify-icon" ng-include="'templates/partials/svg-icons/report-verify-valid-icon.html'"></span>
                 <span translate>reports.verify.valid</span>
               </a>
             </div>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{ active: actionBarCtrl.actionBar.right.verifyingReport }" mm-auth mm-auth-any="[['can_verify_reports', 'can_edit_verification'], actionBarCtrl.selectedReportsDocs[0].verified === undefined && 'can_verify_reports']" ng-click="emit('ToggleVerifyingReport')">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-class="{ active: actionBarCtrl.actionBar.right.verifyingReport }" mm-auth mm-auth-any="[['can_verify_reports', 'can_edit_verification'], actionBarCtrl.selectedReportsDocs[0].verified === undefined && 'can_verify_reports']" ng-click="actionBarCtrl.toggleVerifyingReport()">
               <span class="fa fa-check"></span>
               <p translate>reports.verify</p>
             </a>
@@ -133,11 +133,11 @@
               <span class="fa fa-pencil"></span>
               <p translate>Edit</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.actionBar.right.type !== 'xml'" ng-click="emit('EditReport')">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBarCtrl.actionBar.right.type !== 'xml'" ng-click="actionBarCtrl.launchEditFacilityDialog()">
               <span class="fa fa-pencil"></span>
               <p translate>Update Facility</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBarCtrl.selectedReportsDocs[0])" mm-auth="can_delete_reports">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="actionBarCtrl.deleteDoc(actionBarCtrl.selectedReportsDocs[0])" mm-auth="can_delete_reports">
               <span class="fa fa-trash-o"></span>
               <p translate>Delete</p>
             </a>
@@ -208,7 +208,7 @@
             <p translate>Edit</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBarCtrl.selectedContactDoc)" ng-class="{'mm-icon-disabled': !actionBarCtrl.actionBar.right.canDelete}" mm-auth="can_delete_contacts">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="actionBarCtrl.deleteDoc(actionBarCtrl.selectedContactDoc)" ng-class="{'mm-icon-disabled': !actionBarCtrl.actionBar.right.canDelete}" mm-auth="can_delete_contacts">
             <span class="fa fa-trash-o"></span>
             <p translate>Delete</p>
           </a>

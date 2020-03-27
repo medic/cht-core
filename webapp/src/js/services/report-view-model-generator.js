@@ -1,3 +1,5 @@
+const _ = require('lodash/core');
+
 /**
  * Hydrates the given contact by uuid and creates a model which
  * holds the doc and associated information for rendering. eg:
@@ -20,7 +22,8 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
     'ngInject';
     'use strict';
 
-    return function(id) {
+    return function(report) {
+      const id = _.isString(report) ? report : report._id;
       return LineageModelGenerator.report(id)
         .then(function(model) {
           if (!model.doc) {

@@ -2,7 +2,14 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/header.html',
-    controller: function($ngRedux, $scope, Selectors) {
+    controller: function(
+      $ngRedux,
+      $scope,
+      DBSync,
+      GlobalActions,
+      Modal,
+      Selectors
+    ) {
       'ngInject';
 
       const ctrl = this;
@@ -13,7 +20,35 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
           unreadCount: Selectors.getUnreadCount(state)
         };
       };
-      const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
+      const mapDispatchToTarget = function(dispatch) {
+        const globalActions = GlobalActions(dispatch);
+        return {
+          openGuidedSetup: globalActions.openGuidedSetup,
+          openTourSelect: globalActions.openTourSelect
+        };
+      };
+      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+      ctrl.logout = () => {
+        Modal({
+          templateUrl: 'templates/modals/logout_confirm.html',
+          controller: 'LogoutConfirmCtrl',
+          controllerAs: 'logoutConfirmCtrl',
+          singleton: true,
+        }).catch(() => {}); // modal dismissed is ok
+      };
+
+      ctrl.openFeedback = () => {
+        Modal({
+          templateUrl: 'templates/modals/feedback.html',
+          controller: 'FeedbackCtrl',
+          controllerAs: 'feedbackCtrl'
+        }).catch(() => {}); // modal dismissed is ok
+      };
+
+      ctrl.replicate = () => {
+        DBSync.sync(true);
+      };
 
       $scope.$on('$destroy', unsubscribe);
     },

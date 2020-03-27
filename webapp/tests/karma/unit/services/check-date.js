@@ -77,7 +77,7 @@ describe('CheckDate service', function() {
   });
 
   it('handles response with timestamp close enough', done => {
-    var responseDate = new Date();
+    const responseDate = new Date();
     responseDate.setMinutes(responseDate.getMinutes() - 5);
     $httpBackend
       .expect('HEAD', /\/api\/info\?seed=[0-9.]+/)
@@ -93,7 +93,7 @@ describe('CheckDate service', function() {
 
   it('shows modal when response date is way out, man', done => {
     clock = sinon.useFakeTimers();
-    var responseDate = new Date();
+    const responseDate = new Date();
     responseDate.setHours(responseDate.getHours() - 1);
     $httpBackend
       .expect('HEAD', /\/api\/info\?seed=[0-9.]+/)

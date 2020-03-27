@@ -1,10 +1,10 @@
-const sinon = require('sinon'),
-      config = require('../../../src/config'),
-      chai = require('chai'),
-      transitionUtils = require('../../../src/transitions/utils'),
-      mutingUtils = require('../../../src/lib/muting_utils'),
-      transition = require('../../../src/transitions/muting'),
-      utils = require('../../../src/lib/utils');
+const sinon = require('sinon');
+const config = require('../../../src/config');
+const chai = require('chai');
+const transitionUtils = require('../../../src/transitions/utils');
+const mutingUtils = require('../../../src/lib/muting_utils');
+const transition = require('../../../src/transitions/muting');
+const utils = require('../../../src/lib/utils');
 
 describe('Muting transition', () => {
   afterEach(() => sinon.restore());
@@ -94,12 +94,17 @@ describe('Muting transition', () => {
     });
 
     it('should return true for valid contacts', () => {
-      config.get.withArgs('contact_types').returns([{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]);
+      config.get.withArgs('contact_types')
+        .returns([{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]);
       mutingUtils.isMutedInLineage.returns(true);
-      chai.expect(transition.filter({ muted: false, type: 'person' }, {initial_replication_date: 1})).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'clinic' }, {initial_replication_date: 2})).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'district_hospital' }, {initial_replication_date: 3})).to.equal(true);
-      chai.expect(transition.filter({ muted: false, type: 'health_center' }, {initial_replication_date: 4})).to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'person' }, {initial_replication_date: 1}))
+        .to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'clinic' }, {initial_replication_date: 2}))
+        .to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'district_hospital' }, {initial_replication_date: 3}))
+        .to.equal(true);
+      chai.expect(transition.filter({ muted: false, type: 'health_center' }, {initial_replication_date: 4}))
+        .to.equal(true);
       chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(4);
       chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
         [{ muted: false, type: 'person' }, 1],
@@ -113,7 +118,8 @@ describe('Muting transition', () => {
       // Even though one of its parents have been muted
       mutingUtils.isMutedInLineage.returns(true);
       // because it's been muted before we want to ignore it
-      chai.expect(transition.filter({ muted: false, type: 'person' }, { muting_history: [{some: 'history'}]})).to.equal(false);
+      chai.expect(transition.filter({ muted: false, type: 'person' }, { muting_history: [{some: 'history'}]}))
+        .to.equal(false);
     });
   });
 
@@ -234,8 +240,8 @@ describe('Muting transition', () => {
       };
 
       it('should load the contact', () => {
-        const doc = { _id: 'report', type: 'data_record', patient_id: 'patient' },
-              contact = { _id: 'contact', patient_id: 'patient' };
+        const doc = { _id: 'report', type: 'data_record', patient_id: 'patient' };
+        const contact = { _id: 'contact', patient_id: 'patient' };
         mutingUtils.getContact.resolves(contact);
         config.get.returns(mutingConfig);
 
@@ -279,8 +285,8 @@ describe('Muting transition', () => {
       });
 
       it('should add message if contact is already unmuted', () => {
-        const doc = { _id: 'report', type: 'data_record', form: 'unmute' },
-              contact = { _id: 'contact' };
+        const doc = { _id: 'report', type: 'data_record', form: 'unmute' };
+        const contact = { _id: 'contact' };
         mutingUtils.getContact.resolves(contact);
         config.get.returns(mutingConfig);
 
@@ -295,8 +301,8 @@ describe('Muting transition', () => {
       });
 
       it('should add message if contact is already muted', () => {
-        const doc = { _id: 'report', type: 'data_record', form: 'mute' },
-              contact = { _id: 'contact', muted: 12345 };
+        const doc = { _id: 'report', type: 'data_record', form: 'mute' };
+        const contact = { _id: 'contact', muted: 12345 };
         mutingUtils.getContact.resolves(contact);
         config.get.returns(mutingConfig);
 
@@ -311,8 +317,8 @@ describe('Muting transition', () => {
       });
 
       it('should add message when muting', () => {
-        const doc = { _id: 'report', type: 'data_record', form: 'mute' },
-              contact = { _id: 'contact' };
+        const doc = { _id: 'report', type: 'data_record', form: 'mute' };
+        const contact = { _id: 'contact' };
 
         mutingUtils.getContact.resolves(contact);
         config.get.returns(mutingConfig);
@@ -330,8 +336,8 @@ describe('Muting transition', () => {
       });
 
       it('should add message when unmuting', () => {
-        const doc = { _id: 'report', type: 'data_record', form: 'unmute' },
-              contact = { _id: 'contact', muted: 1234 };
+        const doc = { _id: 'report', type: 'data_record', form: 'unmute' };
+        const contact = { _id: 'contact', muted: 1234 };
 
         mutingUtils.getContact.resolves(contact);
         config.get.returns(mutingConfig);
@@ -349,8 +355,8 @@ describe('Muting transition', () => {
       });
 
       it('should throw updateMuteState errors', () => {
-        const doc = { _id: 'report', type: 'data_record', form: 'unmute' },
-              contact = { _id: 'contact', muted: 1234 };
+        const doc = { _id: 'report', type: 'data_record', form: 'unmute' };
+        const contact = { _id: 'contact', muted: 1234 };
 
         mutingUtils.getContact.resolves(contact);
         config.get.returns(mutingConfig);
@@ -412,7 +418,7 @@ describe('Muting transition', () => {
           chai.expect(doc.tasks[0].messages[0].to).to.equal('x');
           chai.expect(mutingUtils.getContact.callCount).to.equal(0);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
-      });
+        });
     });
 
     it('success should continue execution', () => {

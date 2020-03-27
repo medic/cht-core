@@ -1,6 +1,6 @@
-const utils = require('../utils'),
-  commonElements = require('../page-objects/common/common.po.js'),
-  helper = require('../helper');
+const utils = require('../utils');
+const commonElements = require('../page-objects/common/common.po.js');
+const helper = require('../helper');
 
 const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
 const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
@@ -9,7 +9,8 @@ const messageTo1 = '+64275555556';
 const messageContent1 =
   'Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016';
 const messageContent2 =
-  'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!';
+  'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
+  'When she does let us know with "V 28551". Thanks!';
 const messageTo2 = '+64275555556';
 const report = {
   type: 'data_record',
@@ -98,7 +99,8 @@ const report = {
         {
           to: '+64275555556',
           message:
-            'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!',
+            'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
+            'When she does let us know with "V 28551". Thanks!',
           uuid: messageId3,
         },
       ],
@@ -331,19 +333,21 @@ describe('sms-gateway api', () => {
       //       they came from
       //  For reference, when running this locally with I got:
       // [
-      //     {
-      //         "content": "Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016",
-      //         "id": "00f237ab-dd34-44a8-9f17-caaa022be947",
-      //         "to": "+64275555556"
-      //     },
-      //     {
-      //         "content": "Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with \"V 28551\". Thanks!",
-      //         "id": "40cb5078-57da-427c-b3a9-b76ae581e5da",
-      //         "to": "+64275555556"
-      //     }
+      //   {
+      //     "content": "Thank you for registering Shannon.
+      //          Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016",
+      //     "id": "00f237ab-dd34-44a8-9f17-caaa022be947",
+      //     "to": "+64275555556"
+      //   },
+      //   {
+      //     "content": "Please remind Shannon (28551) to visit the health facility for ANC visit this week.
+      //          When she does let us know with \"V 28551\". Thanks!",
+      //     "id": "40cb5078-57da-427c-b3a9-b76ae581e5da",
+      //     "to": "+64275555556"
+      //   }
       // ]
-      console.log('Messages currently present');
-      console.log(JSON.stringify(response.messages));
+      console.log('Messages currently present'); // eslint-disable-line no-console
+      console.log(JSON.stringify(response.messages)); // eslint-disable-line no-console
 
       expect(response.messages.length).toBe(2);
       expect(response.messages[0].id).toBe(messageId1);

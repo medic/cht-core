@@ -1,16 +1,16 @@
-const sinon = require('sinon'),
-      moment = require('moment'),
-      expect = require('chai').expect,
-      should = require('chai').should(),
-      uuid = require('uuid');
+const sinon = require('sinon');
+const moment = require('moment');
+const expect = require('chai').expect;
+const should = require('chai').should();
+const uuid = require('uuid');
 const utils = require('../src/index');
 
 const MAX_GSM_LENGTH = 160;
 const MAX_UNICODE_LENGTH = 70;
 
-var generateMessage = function(length, unicode) {
-  var result = [];
-  for (var i = 0; i < length; i++) {
+const generateMessage = function(length, unicode) {
+  const result = [];
+  for (let i = 0; i < length; i++) {
     result[i] = unicode ? '☃' : 'o';
   }
   return result.join('');
@@ -32,13 +32,13 @@ describe('messageUtils', () => {
         .should.equal('foo');
     });
     describe('recipient variations', () => {
-      const fromPhone = 'fromPhone',
-            clinicPhone = 'clinicPhone',
-            parentPhone = 'parentPhone',
-            grandparentPhone = 'grandParentPhone',
-            fieldsPhone = 'fieldsPhone',
-            inlinePhone = 'inlinePhone',
-            complexInlinePhone = 'complexInlinePhone';
+      const fromPhone = 'fromPhone';
+      const clinicPhone = 'clinicPhone';
+      const parentPhone = 'parentPhone';
+      const grandparentPhone = 'grandParentPhone';
+      const fieldsPhone = 'fieldsPhone';
+      const inlinePhone = 'inlinePhone';
+      const complexInlinePhone = 'complexInlinePhone';
       const doc = {
         form: 'x',
         from: fromPhone,
@@ -199,39 +199,49 @@ describe('messageUtils', () => {
       const doc = { name: 'alice', fields: { name: 'bob' } };
       const patient = { name: 'charles' };
       const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations });
       actual.name.should.equal('charles');
     });
 
-    it('picks doc.fields properties second', () => {
+    it('should pick place data second', () => {
+      const doc = { name: 'alice', fields: { name: 'bob' } };
+      const place = { name: 'charles' };
+      const actual = utils._extendedTemplateContext(doc, { place });
+      actual.name.should.equal('charles');
+    });
+
+    it('picks doc.fields properties third', () => {
       const doc = { name: 'alice', fields: { name: 'bob' } };
       const patient = { };
+      const place = { };
       const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place });
       actual.name.should.equal('bob');
     });
 
-    it('picks doc properties third', () => {
+    it('picks doc properties fourth', () => {
       const doc = { name: 'alice' };
       const patient = { };
+      const place = { };
       const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place });
       actual.name.should.equal('alice');
-    });
-
-    it('picks registration[0].fields properties fourth', () => {
-      const doc = { };
-      const patient = { };
-      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
-      actual.name.should.equal('elisa');
     });
 
     it('picks registration[0].fields properties fifth', () => {
       const doc = { };
       const patient = { };
+      const place = { };
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place });
+      actual.name.should.equal('elisa');
+    });
+
+    it('picks registration[0].fields properties sixth', () => {
+      const doc = { };
+      const patient = { };
       const registrations = [{ name: 'doug' }];
-      const actual = utils._extendedTemplateContext(doc, { patient: patient, registrations: registrations });
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations });
       actual.name.should.equal('doug');
     });
 
@@ -461,12 +471,12 @@ describe('messageUtils', () => {
 
     describe('errors', () => {
       it('should add an error when registrations are provided without a patient', () => {
-        const config = {},
-              translate = null,
-              doc = {},
-              content = { message: 'sms' },
-              recipient = '1234',
-              context = { registrations: [{ _id: 'a' }] };
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { registrations: [{ _id: 'a' }] };
 
         const messages = utils.generate(config, translate, doc, content, recipient, context);
         expect(messages[0].message).to.equal('sms');
@@ -475,12 +485,12 @@ describe('messageUtils', () => {
       });
 
       it('should not add an error when no patient and no registrations are provided', () => {
-        const config = {},
-              translate = null,
-              doc = {},
-              content = { message: 'sms' },
-              recipient = '1234',
-              context = { registrations: false };
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { registrations: false };
 
         const messages = utils.generate(config, translate, doc, content, recipient, context);
         expect(messages[0].message).to.equal('sms');
@@ -489,12 +499,12 @@ describe('messageUtils', () => {
       });
 
       it('should not add an error when patient is provided', () => {
-        const config = {},
-              translate = null,
-              doc = {},
-              content = { message: 'sms' },
-              recipient = '1234',
-              context = { patient: { name: 'a' } };
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { patient: { name: 'a' } };
 
         const messages = utils.generate(config, translate, doc, content, recipient, context);
         expect(messages[0].message).to.equal('sms');

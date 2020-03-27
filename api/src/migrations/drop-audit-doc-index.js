@@ -1,14 +1,14 @@
-var db = require('../db'),
-  { promisify } = require('util'),
-  async = require('async'),
-  logger = require('../logger'),
-  _ = require('underscore'),
-  environment = require('../environment'),
-  DDOC_ID = '_design/medic',
-  BATCH_SIZE = 100,
-  AUDIT_ID_SUFFIX = '-audit';
+const db = require('../db');
+const { promisify } = require('util');
+const async = require('async');
+const logger = require('../logger');
+const _ = require('lodash');
+const environment = require('../environment');
+const DDOC_ID = '_design/medic';
+const BATCH_SIZE = 100;
+const AUDIT_ID_SUFFIX = '-audit';
 
-var dropView = function(auditDb, callback) {
+const dropView = function(auditDb, callback) {
   auditDb.get(DDOC_ID, function(err, ddoc) {
     if (err) {
       return callback(err);
@@ -18,22 +18,22 @@ var dropView = function(auditDb, callback) {
   });
 };
 
-var needsUpdate = function(row) {
+const needsUpdate = function(row) {
   return (
     row.doc.type === 'audit_record' && row.doc.record_id // is an audit doc, and
   ); // has old property
 };
 
-var getAuditId = function(doc) {
+const getAuditId = function(doc) {
   return doc.record_id + AUDIT_ID_SUFFIX;
 };
 
-var getRecordId = function(doc) {
+const getRecordId = function(doc) {
   return doc._id.slice(0, -AUDIT_ID_SUFFIX.length);
 };
 
-var mergeHistory = function(docs) {
-  var result;
+const mergeHistory = function(docs) {
+  let result;
   docs.forEach(function(doc) {
     if (!result) {
       result = doc;
@@ -45,8 +45,8 @@ var mergeHistory = function(docs) {
   return result;
 };
 
-var mergeDupes = function(oldDocs) {
-  var grouped = _.groupBy(oldDocs, 'record_id');
+const mergeDupes = function(oldDocs) {
+  const grouped = _.groupBy(oldDocs, 'record_id');
   return _.values(grouped).map(function(group) {
     if (group.length === 1) {
       return group[0];
@@ -55,22 +55,22 @@ var mergeDupes = function(oldDocs) {
   });
 };
 
-var createNewDocs = function(auditDb, oldDocs, callback) {
-  var merged = mergeDupes(oldDocs);
-  var ids = merged.map(getAuditId);
+const createNewDocs = function(auditDb, oldDocs, callback) {
+  const merged = mergeDupes(oldDocs);
+  const ids = merged.map(getAuditId);
   auditDb.allDocs({ keys: ids, include_docs: true }, function(err, results) {
     if (err) {
       return callback(err);
     }
-    var found = results.rows.filter(function(row) {
+    const found = results.rows.filter(function(row) {
       return row.doc;
     });
     found.forEach(function(row) {
-      var dupe = _.findWhere(merged, { record_id: getRecordId(row.doc) });
+      const dupe = _.find(merged, { record_id: getRecordId(row.doc) });
       dupe.history = mergeHistory([dupe, row.doc]).history;
       dupe.auditRev = row.doc._rev;
     });
-    var newDocs = merged.map(function(doc) {
+    const newDocs = merged.map(function(doc) {
       return {
         _id: getAuditId(doc),
         _rev: doc.auditRev,
@@ -82,15 +82,15 @@ var createNewDocs = function(auditDb, oldDocs, callback) {
   });
 };
 
-var deleteOldDocs = function(auditDb, oldDocs, callback) {
+const deleteOldDocs = function(auditDb, oldDocs, callback) {
   oldDocs.forEach(function(doc) {
     doc._deleted = true;
   });
   auditDb.bulkDocs(oldDocs, callback);
 };
 
-var changeDocIdsBatch = function(auditDb, skip, callback) {
-  var options = {
+const changeDocIdsBatch = function(auditDb, skip, callback) {
+  const options = {
     include_docs: true,
     limit: BATCH_SIZE,
     skip: skip,
@@ -104,7 +104,7 @@ var changeDocIdsBatch = function(auditDb, skip, callback) {
       return callback(null, null, false);
     }
     logger.info(`        Processing ${skip} to (${skip + BATCH_SIZE}) docs of ${result.total_rows} total`);
-    var oldDocs = result.rows.filter(needsUpdate).map(function(row) {
+    const oldDocs = result.rows.filter(needsUpdate).map(function(row) {
       return row.doc;
     });
     if (!oldDocs.length) {
@@ -125,16 +125,16 @@ var changeDocIdsBatch = function(auditDb, skip, callback) {
         // next query result. This means some docs will be processed
         // more than once but gaurantees every doc will be processed
         // at least once.
-        var newSkip = skip + BATCH_SIZE - oldDocs.length;
+        const newSkip = skip + BATCH_SIZE - oldDocs.length;
         callback(null, newSkip, true);
       });
     });
   });
 };
 
-var changeDocIds = function(auditDb, callback) {
-  var skip = 0;
-  var again = true;
+const changeDocIds = function(auditDb, callback) {
+  let skip = 0;
+  let again = true;
   async.doWhilst(
     function(callback) {
       changeDocIdsBatch(auditDb, skip, function(err, _skip, _again) {
@@ -158,11 +158,15 @@ module.exports = {
   created: new Date(2016, 11, 1),
   run: promisify(function(callback) {
     const auditDb = db.get(environment.db + '-audit');
+    const closeCallback = (err, result) => {
+      db.close(auditDb);
+      callback(err, result);
+    };
     dropView(auditDb, function(err) {
       if (err) {
-        return callback(err);
+        return closeCallback(err);
       }
-      changeDocIds(auditDb, callback);
+      changeDocIds(auditDb, closeCallback);
     });
   }),
 };

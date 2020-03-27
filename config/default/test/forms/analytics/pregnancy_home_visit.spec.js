@@ -30,7 +30,7 @@ describe('Pregnancy home visit form analytic field tests', () => {
     expect(pregnancy.errors).to.be.empty;
 
     clock = sinon.useFakeTimers(moment('1999-10-17').toDate());
-    let taskForHomeVisit = await harness.getTasks({ now: '1999-10-17', title: 'task.anc.pregnancy_home_visit.title' });
+    const taskForHomeVisit = await harness.getTasks({ now: '1999-10-17', title: 'task.anc.pregnancy_home_visit.title' });
     expect(taskForHomeVisit.length).to.equal(1);
 
     await harness.loadForm(taskForHomeVisit[0].actions[0].form);

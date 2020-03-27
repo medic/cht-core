@@ -1,30 +1,29 @@
-angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
-  function (
-    $log,
-    $timeout,
-    RulesEngine,
-    TargetGenerator
-  ) {
+angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
+  $log,
+  RulesEngine
+) {
 
-    'use strict';
-    'ngInject';
+  'use strict';
+  'ngInject';
 
-    const ctrl = this;
+  const ctrl = this;
 
-    ctrl.targets = [];
-    ctrl.targetsDisabled = !RulesEngine.enabled;
-    ctrl.loading = true;
+  ctrl.targets = [];
+  ctrl.loading = true;
+  ctrl.targetsDisabled = false;
 
-    TargetGenerator(function(err, targets) {
-      if (err) {
-        return $log.error('Error fetching targets', err);
-      }
-      // timeout to force digest
-      $timeout(function() {
-        ctrl.targets = targets;
-        ctrl.loading = false;
-      });
+  RulesEngine.isEnabled()
+    .then(isEnabled => {
+      ctrl.targetsDisabled = !isEnabled;
+      return isEnabled ? RulesEngine.fetchTargets() : [];
+    })
+    .catch(err => {
+      $log.error('Error getting targets', err);
+      return [];
+    })
+    .then(targets => {
+      ctrl.loading = false;
+      ctrl.targets = targets;
     });
-
-  }
+}
 );

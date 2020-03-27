@@ -2,8 +2,8 @@ describe('fullDate filter', function() {
 
   'use strict';
 
-  var compile,
-      scope;
+  let compile;
+  let scope;
 
   beforeEach(function() {
     module('inboxApp');
@@ -25,14 +25,14 @@ describe('fullDate filter', function() {
 
   it('should render nothing when no date', function() {
     scope.date = undefined;
-    var element = compile('<div ng-bind-html="date | fullDate"></div>')(scope);
+    const element = compile('<div ng-bind-html="date | fullDate"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('');
   });
 
   it('should render date', function() {
     scope.date = moment().valueOf();
-    var element = compile('<div ng-bind-html="date | fullDate"></div>')(scope);
+    const element = compile('<div ng-bind-html="date | fullDate"></div>')(scope);
     scope.$digest();
     chai.expect(element.find('.relative-date-content').text()).to.equal('sometime');
     chai.expect(element.find('.full-date').text()).to.equal('day 0');

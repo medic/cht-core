@@ -1,7 +1,7 @@
 describe('CleanETag service', function() {
   'use strict';
 
-  var service;
+  let service;
 
   beforeEach(function() {
     module('adminApp');
@@ -21,13 +21,13 @@ describe('CleanETag service', function() {
   });
 
   it('strips quotes off regular etag', function(done) {
-    var actual = service('"5-d7610cd8aa072a9a0d166f95232bcbfa"');
+    const actual = service('"5-d7610cd8aa072a9a0d166f95232bcbfa"');
     chai.expect(actual).to.equal('5-d7610cd8aa072a9a0d166f95232bcbfa');
     done();
   });
 
   it('strips prefix off gzipped etag', function(done) {
-    var actual = service('W/"3-18969d4f566e8c9dbea5c3289674edb0"');
+    const actual = service('W/"3-18969d4f566e8c9dbea5c3289674edb0"');
     chai.expect(actual).to.equal('3-18969d4f566e8c9dbea5c3289674edb0');
     done();
   });

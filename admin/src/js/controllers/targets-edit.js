@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('controllers').controller('TargetsEditCtrl',
   function (
@@ -29,10 +29,12 @@ angular.module('controllers').controller('TargetsEditCtrl',
       .then(function(settings) {
         $scope.locales = _.map(settings.locales, _.clone);
         if ($stateParams.id) {
-          $scope.target = _.findWhere(settings.tasks.targets.items, { id: $stateParams.id });
+          $scope.target = _.find(settings.tasks.targets.items, { id: $stateParams.id });
           if (typeof $scope.target.name === 'undefined') {
             $scope.names = $scope.locales.map(locale => {
-              const translation = $translate.instant($scope.target.translation_key, null, 'no-interpolation', locale.code, null);
+              const translation = $translate.instant(
+                $scope.target.translation_key, null, 'no-interpolation', locale.code, null
+              );
               const content  = translation === $scope.target.translation_key ? '' : translation;
               return {
                 locale,
@@ -66,9 +68,9 @@ angular.module('controllers').controller('TargetsEditCtrl',
         $log.error('Error fetching resources', err);
       });
 
-    var removeItem = function(settings) {
-      var items = settings.tasks.targets.items;
-      for (var i = 0; i < items.length; i++) {
+    const removeItem = function(settings) {
+      const items = settings.tasks.targets.items;
+      for (let i = 0; i < items.length; i++) {
         if (items[i].id === $scope.target.id) {
           items.splice(i, 1);
         }
@@ -106,12 +108,12 @@ angular.module('controllers').controller('TargetsEditCtrl',
       return exists;
     };
 
-    var updateItem = function(settings) {
-      var items = (settings.tasks && settings.tasks.targets &&
+    const updateItem = function(settings) {
+      const items = (settings.tasks && settings.tasks.targets &&
                    settings.tasks.targets.items) || [];
       if ($stateParams.id) {
         // updating
-        for (var i = 0; i < items.length; i++) {
+        for (let i = 0; i < items.length; i++) {
           if (items[i].id === $scope.target.id) {
             items[i] = $scope.target;
           }

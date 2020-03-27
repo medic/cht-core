@@ -64,7 +64,8 @@ describe('Bulk Docs Service', function () {
       allDocs.onCall(1).resolves({ rows: [{ doc: docC }] });
 
       const bulkDocs = sinon.stub(db.medic, 'bulkDocs');
-      bulkDocs.onCall(0).resolves([{ id: docA._id, ok: true }, { id: docB._id, ok: true }, { id: parent._id, ok: true }]);
+      bulkDocs.onCall(0)
+        .resolves([{ id: docA._id, ok: true }, { id: docB._id, ok: true }, { id: parent._id, ok: true }]);
       bulkDocs.onCall(1).resolves([{ id: docC._id, ok: true }]);
 
       sinon.stub(db.medic, 'get').resolves(parent);
@@ -79,7 +80,8 @@ describe('Bulk Docs Service', function () {
           bulkDocs.getCall(1).args[0].should.deep.equal([expectedC]);
           testRes.write.callCount.should.equal(4);
           testRes.write.getCall(0).args[0].should.equal('[');
-          testRes.write.getCall(1).args[0].should.equal('[{"id":"a","ok":true},{"id":"b","ok":true},{"id":"parent","ok":true}],');
+          testRes.write.getCall(1).args[0]
+            .should.equal('[{"id":"a","ok":true},{"id":"b","ok":true},{"id":"parent","ok":true}],');
           testRes.write.getCall(2).args[0].should.equal('[{"id":"c","ok":true}]');
           testRes.write.getCall(3).args[0].should.equal(']');
           testRes.end.callCount.should.equal(1);
@@ -148,7 +150,8 @@ describe('Bulk Docs Service', function () {
       allDocs.onCall(2).resolves({ rows: [{ doc: docC }] });
 
       const bulkDocs = sinon.stub(db.medic, 'bulkDocs');
-      bulkDocs.onCall(0).resolves([{ id: docA._id, error: true }, { id: docB._id, ok: true }, { id: parent._id, error: true }]);
+      bulkDocs.onCall(0)
+        .resolves([{ id: docA._id, error: true }, { id: docB._id, ok: true }, { id: parent._id, error: true }]);
       bulkDocs.onCall(1).resolves([{ id: docA._id, ok: true }, { id: parent._id, error: true }]);
       bulkDocs.onCall(2).resolves([{ id: parent._id, error: true }]);
       bulkDocs.onCall(3).resolves([{ id: parent._id, error: true }]);
@@ -171,7 +174,8 @@ describe('Bulk Docs Service', function () {
           bulkDocs.getCall(4).args[0].should.deep.equal([expectedC]);
           testRes.write.callCount.should.equal(4);
           testRes.write.getCall(0).args[0].should.equal('[');
-          testRes.write.getCall(1).args[0].should.equal('[{"id":"b","ok":true},{"id":"a","ok":true},{"id":"parent","error":true}],');
+          testRes.write.getCall(1).args[0]
+            .should.equal('[{"id":"b","ok":true},{"id":"a","ok":true},{"id":"parent","error":true}],');
           testRes.write.getCall(2).args[0].should.equal('[{"id":"c","ok":true}]');
           testRes.write.getCall(3).args[0].should.equal(']');
           testRes.end.callCount.should.equal(1);
@@ -186,8 +190,8 @@ describe('Bulk Docs Service', function () {
     });
 
     it('calls authorization.filterAllowedDocs with correct parameters, returns filtered list of docs', () => {
-      const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }],
-            authzContext = { userCtx: {} };
+      const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }];
+      const authzContext = { userCtx: {} };
       authorization.alwaysAllowCreate.withArgs({ _id: 2}).returns(true);
       authorization.alwaysAllowCreate.withArgs({ _id: 4}).returns(true);
       authorization.filterAllowedDocs.returns([
@@ -227,9 +231,9 @@ describe('Bulk Docs Service', function () {
         { otherData: 'bbb' },
       ];
       return service._filterNewDocs([], docs).then(result => {
-          result.length.should.equal(2);
-          result.should.deep.equal(docs);
-        });
+        result.length.should.equal(2);
+        result.should.deep.equal(docs);
+      });
     });
 
     it('returns empty array when all docs are allowed', () => {
@@ -247,12 +251,12 @@ describe('Bulk Docs Service', function () {
       db.medic.allDocs.resolves({ rows: dbDocs });
 
       return service._filterNewDocs([], docs).then(result => {
-          db.medic.allDocs.callCount.should.equal(1);
-          db.medic.allDocs.args[0][0].keys.should.deep.equal([ 'a', 'b', 'c', 'd', 'e' ]);
-          result.length.should.equal(2);
-          result[0].should.deep.equal({ _id: 'c' });
-          result[1].should.deep.equal({ _id: 'd' });
-        });
+        db.medic.allDocs.callCount.should.equal(1);
+        db.medic.allDocs.args[0][0].keys.should.deep.equal([ 'a', 'b', 'c', 'd', 'e' ]);
+        result.length.should.equal(2);
+        result[0].should.deep.equal({ _id: 'c' });
+        result[1].should.deep.equal({ _id: 'd' });
+      });
     });
 
     it('excludes known allowed ids from allDocs query', () => {
@@ -261,9 +265,9 @@ describe('Bulk Docs Service', function () {
       db.medic.allDocs.resolves({ rows: docs });
 
       return service._filterNewDocs(allowedDocIds, docs).then(() => {
-          db.medic.allDocs.callCount.should.equal(1);
-          db.medic.allDocs.args[0][0].keys.should.deep.equal([ 'a', 'd', 'e' ]);
-        });
+        db.medic.allDocs.callCount.should.equal(1);
+        db.medic.allDocs.args[0][0].keys.should.deep.equal([ 'a', 'd', 'e' ]);
+      });
     });
   });
 
@@ -306,12 +310,12 @@ describe('Bulk Docs Service', function () {
       const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }];
       authorization.filterAllowedDocs.callsFake((ctx, docs) => docs);
       db.medic.allDocs.resolves({ rows: [
-          { id: 'a', doc: { _id: 'a' } },
-          { id: 'b', doc: { _id: 'b' } },
-          { id: 'c', doc: { _id: 'c' } },
-          { id: 'd', doc: { _id: 'd' } },
-          { id: 'e', doc: { _id: 'e' } }
-        ]});
+        { id: 'a', doc: { _id: 'a' } },
+        { id: 'b', doc: { _id: 'b' } },
+        { id: 'c', doc: { _id: 'c' } },
+        { id: 'd', doc: { _id: 'd' } },
+        { id: 'e', doc: { _id: 'e' } }
+      ]});
       authorization.allowedDoc.returns(false)
         .withArgs('a').returns(true)
         .withArgs('c').returns(true)
@@ -348,10 +352,10 @@ describe('Bulk Docs Service', function () {
       ]);
 
       db.medic.allDocs.resolves({ rows: [
-          { id: 'a', doc: { _id: 'a' }},
-          { id: 'b', doc: { _id: 'b' }},
-          { id: 'd', doc: { _id: 'd' }}
-        ]});
+        { id: 'a', doc: { _id: 'a' }},
+        { id: 'b', doc: { _id: 'b' }},
+        { id: 'd', doc: { _id: 'd' }}
+      ]});
       authorization.allowedDoc.returns(false)
         .withArgs('a').returns(true)
         .withArgs('d').returns(true);
@@ -387,20 +391,20 @@ describe('Bulk Docs Service', function () {
       db.medic.allDocs
         .withArgs({ keys: ['a', 'b', 'd', 'e', 'f'], include_docs: true })
         .resolves({ rows: [
-            { id: 'a', doc: { _id: 'a' } },
-            { key: 'b', error: 'not_found' },
-            { id: 'd', doc: null, value: { deleted: true, rev: 'd-rev' } },
-            { id: 'e', doc: null, value: { deleted: true, rev: 'e-rev' } },
-            { id: 'f', doc: { _id: 'f' } },
-          ]});
+          { id: 'a', doc: { _id: 'a' } },
+          { key: 'b', error: 'not_found' },
+          { id: 'd', doc: null, value: { deleted: true, rev: 'd-rev' } },
+          { id: 'e', doc: null, value: { deleted: true, rev: 'e-rev' } },
+          { id: 'f', doc: { _id: 'f' } },
+        ]});
 
       sinon.stub(authorization, 'generateTombstoneId').callsFake(id => id + '-tombstone');
       db.medic.allDocs
         .withArgs({ keys: ['d-tombstone', 'e-tombstone'], include_docs: true })
         .resolves({ rows: [
-            { id: 'd-tombstone', doc: { _id: 'd-tombstone' } },
-            { id: 'e-tombstone', doc: { _id: 'e-tombstone' } },
-          ]});
+          { id: 'd-tombstone', doc: { _id: 'd-tombstone' } },
+          { id: 'e-tombstone', doc: { _id: 'e-tombstone' } },
+        ]});
 
       authorization.convertTombstoneId.withArgs('d-tombstone').returns('d');
       authorization.convertTombstoneId.withArgs('e-tombstone').returns('e');
@@ -423,26 +427,34 @@ describe('Bulk Docs Service', function () {
   });
 
   describe('Format results', () => {
-    it('passes unchanged response if `new_edits` param is false', () => {
-      service.formatResults(false, [], [], ['my response']).should.deep.equal(['my response']);
-    });
-
     it('passes unchanged response for malformed responses', () => {
       const requestDocs = [{ _id: 1 }, { _id: 2 }];
-      service.formatResults(undefined, requestDocs, [], { name: 'eddie' }).should.deep.equal({ name: 'eddie' });
+      service.formatResults(requestDocs, [], { name: 'eddie' }).should.deep.equal({ name: 'eddie' });
     });
 
     it('fills for forbidden docs with stubs and preserves correct order', () => {
-      const requestDocs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { something: 4 }, { _id: 5 }],
-            filteredDocs = [{ _id: 5 }, { _id: 2 }],
-            response = [{ id: 5, ok: true }, { id: 2, ok: true }];
+      const requestDocs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { something: 4 }, { _id: 5 }];
+      const filteredDocs = [{ _id: 5 }, { _id: 2 }];
+      const response = [{ id: 5, ok: true }, { id: 2, ok: true }];
 
-      service.formatResults(undefined, requestDocs, filteredDocs, response).should.deep.equal([
+      service.formatResults(requestDocs, filteredDocs, response).should.deep.equal([
         { id: 1, error: 'forbidden' },
         { id: 2, ok: true },
         { id: 3, error: 'forbidden' },
         { id: undefined, error: 'forbidden' },
         { id: 5, ok: true }
+      ]);
+    });
+
+    it('should fill for forbidden docs when db response is empty', () => {
+      const requestDocs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { something: 4 }, { _id: 5 }];
+      const filteredDocs = [{ _id: 5 }, { _id: 2 }];
+      const response = [];
+
+      service.formatResults(requestDocs, filteredDocs, response).should.deep.equal([
+        { id: 1, error: 'forbidden' },
+        { id: 3, error: 'forbidden' },
+        { id: undefined, error: 'forbidden' },
       ]);
     });
   });
@@ -464,7 +476,7 @@ describe('Bulk Docs Service', function () {
         .filterOfflineRequest(userCtx, docs)
         .catch(err => {
           err.message.should.equal('something');
-      });
+        });
     });
 
     it('replaces request body with filtered docs', () => {
@@ -475,7 +487,7 @@ describe('Bulk Docs Service', function () {
         .filterOfflineRequest(userCtx, docs)
         .then(result => {
           result.should.deep.equal([{ _id: 'a'}, { _id: 'b' }]);
-      });
+        });
     });
 
     it('updates allowed deleted docs', () => {
@@ -484,25 +496,25 @@ describe('Bulk Docs Service', function () {
         { doc: { _id: 'b' } },
         { doc: { _id: 'c' } },
         { doc: { _id: 'e' } }
-        ]);
+      ]);
       sinon.stub(authorization, 'generateTombstoneId').callsFake(id => id + '-tombstone');
       authorization.convertTombstoneId.callsFake(id => id.replace('-tombstone', ''));
 
       db.medic.allDocs
         .withArgs({ keys: ['a', 'b', 'c', 'e'], include_docs: true })
         .resolves({ rows: [
-            { id: 'a', doc: { _id: 'a' } },
-            { id: 'b', doc: null, value: { deleted: true, rev: 'b-rev' }},
-            { id: 'c', doc: null, value: { deleted: true, rev: 'c-rev' }},
-            { id: 'e', doc: null, value: { deleted: true, rev: 'e-rev' }}
-          ]});
+          { id: 'a', doc: { _id: 'a' } },
+          { id: 'b', doc: null, value: { deleted: true, rev: 'b-rev' }},
+          { id: 'c', doc: null, value: { deleted: true, rev: 'c-rev' }},
+          { id: 'e', doc: null, value: { deleted: true, rev: 'e-rev' }}
+        ]});
       db.medic.allDocs
         .withArgs({ keys: ['b-tombstone', 'c-tombstone', 'e-tombstone'], include_docs: true })
         .resolves({ rows: [
-            { id: 'b-tombstone', error: 'not_found' },
-            { id: 'c-tombstone', doc: { _id: 'c-tombstone' } },
-            { id: 'e-tombstone', doc: { _id: 'e-tombstone' } },
-          ]});
+          { id: 'b-tombstone', error: 'not_found' },
+          { id: 'c-tombstone', doc: { _id: 'c-tombstone' } },
+          { id: 'e-tombstone', doc: { _id: 'e-tombstone' } },
+        ]});
 
       authorization.allowedDoc.returns(false)
         .withArgs('c').returns(true);
@@ -516,7 +528,7 @@ describe('Bulk Docs Service', function () {
           authorization.allowedDoc.calledWith('c').should.equal(true);
           authorization.allowedDoc.calledWith('e').should.equal(true);
 
-      });
+        });
     });
 
     it('filters request', () => {
@@ -546,13 +558,13 @@ describe('Bulk Docs Service', function () {
       db.medic.allDocs
         .withArgs({ keys: ['b', 'c', 'g', 'deleted', 'fb1', 'fb2'], include_docs: true })
         .resolves({ rows: [
-            { id: 'b', doc: { _id: 'b' } },
-            { id: 'c', doc: { _id: 'c' } },
-            { id: 'g', doc: { _id: 'g' } },
-            { id: 'deleted', doc: null, value: { deleted: true, rev: 'rev' }},
-            { key: 'fb1', error: 'not_found' },
-            { id: 'fb2', doc: { _id: 'fb2' } }
-          ]});
+          { id: 'b', doc: { _id: 'b' } },
+          { id: 'c', doc: { _id: 'c' } },
+          { id: 'g', doc: { _id: 'g' } },
+          { id: 'deleted', doc: null, value: { deleted: true, rev: 'rev' }},
+          { key: 'fb1', error: 'not_found' },
+          { id: 'fb2', doc: { _id: 'fb2' } }
+        ]});
 
       db.medic.allDocs
         .withArgs({ keys: ['deleted-tombstone'], include_docs: true })
@@ -574,7 +586,7 @@ describe('Bulk Docs Service', function () {
             { _id: 'deleted' },
             { _id: 'fb1'}
           ]);
-      });
+        });
     });
   });
 });

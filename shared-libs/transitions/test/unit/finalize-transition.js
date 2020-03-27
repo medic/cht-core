@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-  assert = require('chai').assert,
-  db = require('../../src/db'),
-  transitions = require('../../src/transitions/index'),
-  infodoc = require('@medic/infodoc');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const db = require('../../src/db');
+const transitions = require('../../src/transitions/index');
+const infodoc = require('@medic/infodoc');
 
 describe('finalize transition', () => {
   afterEach(() => sinon.restore());
@@ -98,7 +98,7 @@ describe('finalize transition', () => {
 
   it('applyTransition adds errors to doc but does not return errors', done => {
     const doc = { _rev: '1' };
-    var transition = {
+    const transition = {
       onMatch: () => Promise.reject({ changed: false, message: 'oops' }),
       filter: () => true
     };

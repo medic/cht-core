@@ -14,7 +14,7 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     const ctrl = this;
 
     ctrl.submit = function() {
-      var doc = $scope.model.doc;
+      const doc = $scope.model.doc;
 
       doc._deleted = true;
       if (doc.type === 'data_record' && doc.contact) {

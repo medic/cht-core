@@ -1,6 +1,6 @@
-const db = require('../db'),
-      userDb = require('../services/user-db'),
-      batch = require('../db-batch');
+const db = require('../db');
+const userDb = require('../services/user-db');
+const batch = require('../db-batch');
 
 const createReadStatusDoc = record => {
   const type = record.form ? 'report' : 'message';
@@ -11,7 +11,11 @@ const createReadStatusDoc = record => {
 const saveReadStatusDocs = (username, docs) => {
   const userDbName = userDb.getDbName(username);
   return userDb.create(userDbName).then(() => {
-    return db.get(userDbName).bulkDocs(docs);
+    const userDb = db.get(userDbName);
+    return userDb.bulkDocs(docs).then(result => {
+      db.close(userDb);
+      return result;
+    });
   });
 };
 

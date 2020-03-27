@@ -1,8 +1,8 @@
-const familyForm = require('../../page-objects/forms/add-family-form.po'),
-  genericForm = require('../../page-objects/forms/generic-form.po'),
-  common = require('../../page-objects/common/common.po.js'),
-  utils = require('../../utils'),
-  userData = require('../../page-objects/forms/data/user.po.data');
+const familyForm = require('../../page-objects/forms/add-family-form.po');
+const genericForm = require('../../page-objects/forms/generic-form.po');
+const common = require('../../page-objects/common/common.po.js');
+const utils = require('../../utils');
+const userData = require('../../page-objects/forms/data/user.po.data');
 
 describe('Family form', () => {
   const contactId = userData.contactId;

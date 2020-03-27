@@ -1,7 +1,6 @@
 /**
  * @module user-db
  */
-
 const request = require('request-promise-native');
 const url = require('url');
 const db = require('../db');
@@ -15,12 +14,14 @@ const DB_NAME_BLACKLIST = /[^a-z0-9_$()+/-]/g;
 // Space added after function to make Function.toString() output consistent
 // across node versions: https://github.com/nodejs/node/issues/20355
 // We are currently testing the exact content of the map function in tests/unit/lib/user-db.js
+/* eslint-disable no-var */
 const readMapFunction = function (doc) {
   var parts = doc._id.split(':');
   if (parts[0] === 'read') {
     emit(parts[1]);
   }
 };
+/* eslint-enable no-var */
 
 const ddoc = {
   _id: '_design/medic-user',
@@ -44,7 +45,7 @@ module.exports = {
    * @returns {String} The name of the user db
    */
   getDbName: username => `${environment.db}-user-${escapeUsername(username)}-meta`,
-  
+
   /**
    * @param {String} dbName
    * @param {String} username
@@ -76,14 +77,25 @@ module.exports = {
    */
   create: username => {
     const dbName = module.exports.getDbName(username);
-    return db.exists(dbName).then(found => {
-      if (!found) {
-        const database = db.get(dbName);
-        return database.put(ddoc)
-          .then(() => {
-            return module.exports.setSecurity(dbName, username);
-          });
-      }
-    });
-  }
+    let database;
+    return db
+      .exists(dbName)
+      .then(result => {
+        if (result) {
+          database = result;
+          return;
+        }
+
+        database = db.get(dbName);
+        return database.put(ddoc).then(() => module.exports.setSecurity(dbName, username));
+      })
+      .then(result => {
+        db.close(database);
+        return result;
+      })
+      .catch(err => {
+        db.close(database);
+        throw err;
+      });
+  },
 };

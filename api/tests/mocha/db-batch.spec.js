@@ -1,9 +1,9 @@
-const lib = require('../../src/db-batch'),
-      chai = require('chai'),
-      request = require('request-promise-native'),
-      sinon = require('sinon'),
-      viewName = 'myddoc/myview',
-      viewKey = 'mykey';
+const lib = require('../../src/db-batch');
+const chai = require('chai');
+const request = require('request-promise-native');
+const sinon = require('sinon');
+const viewName = 'myddoc/myview';
+const viewKey = 'mykey';
 
 let iteratee;
 

@@ -1,10 +1,14 @@
-const _ = require('underscore'),
-  auth = require('./auth')(),
-  constants = require('./constants'),
-  { spawn } = require('child_process'),
-  rpn = require('request-promise-native'),
-  htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
+/* eslint-disable no-console */
+
+const _ = require('lodash');
+const auth = require('./auth')();
+const constants = require('./constants');
+const { spawn } = require('child_process');
+const rpn = require('request-promise-native');
+const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
+const fs = require('fs');
+const path = require('path');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -161,16 +165,16 @@ const deleteAll = (except = []) => {
       const infoIds = ids.map(id => `${id}-info`);
       return Promise.all([
         module.exports
-        .requestOnTestDb({
-          path: '/_bulk_docs',
-          method: 'POST',
-          body: { docs: toDelete },
-        })
-        .then(response => {
-          if (e2eDebug) {
-            console.log(`Deleted docs: ${JSON.stringify(response)}`);
-          }
-        }),
+          .requestOnTestDb({
+            path: '/_bulk_docs',
+            method: 'POST',
+            body: { docs: toDelete },
+          })
+          .then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted docs: ${JSON.stringify(response)}`);
+            }
+          }),
         module.exports.sentinelDb.allDocs({keys: infoIds})
           .then(results => {
             const deletes = results.rows
@@ -183,10 +187,10 @@ const deleteAll = (except = []) => {
 
             return module.exports.sentinelDb.bulkDocs(deletes);
           }).then(response => {
-          if (e2eDebug) {
-            console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
-          }
-        })
+            if (e2eDebug) {
+              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+            }
+          })
       ]);
     });
 };
@@ -220,16 +224,16 @@ const refreshToGetNewSettings = () => {
 
 const setUserContactDoc = () => {
   const {
-          DB_NAME: dbName,
-          USER_CONTACT_ID: docId,
-          DEFAULT_USER_CONTACT_DOC: defaultDoc
-        } = constants;
+    DB_NAME: dbName,
+    USER_CONTACT_ID: docId,
+    DEFAULT_USER_CONTACT_DOC: defaultDoc
+  } = constants;
 
   return module.exports.getDoc(docId)
     .catch(() => ({}))
     .then(existing => {
       const rev = _.pick(existing, '_rev');
-      return _.extend(defaultDoc, rev);
+      return Object.assign(defaultDoc, rev);
     })
     .then(newDoc => request({
       path: `/${dbName}/${docId}`,
@@ -270,7 +274,7 @@ const deleteUsers = async (users, meta = false) => {
     return;
   }
 
-  for (let user of users) {
+  for (const user of users) {
     await request({ path: `/medic-user-${user.username}-meta`,  method: 'DELETE' });
   }
 };
@@ -282,7 +286,7 @@ const createUsers = async (users, meta = false) => {
     headers: { 'Content-Type': 'application/json' }
   };
 
-  for (let user of users) {
+  for (const user of users) {
     await request(Object.assign({ body: user }, createUserOpts));
   }
 
@@ -290,7 +294,7 @@ const createUsers = async (users, meta = false) => {
     return;
   }
 
-  for (let user of users) {
+  for (const user of users) {
     await request({ path: `/medic-user-${user.username}-meta`,  method: 'PUT' });
   }
 };
@@ -324,6 +328,11 @@ const waitForDocRev = (ids) => {
     }
     return module.exports.delayPromise(() => waitForDocRev(ids), 100);
   });
+};
+
+const getDefaultSettings = () => {
+  const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
+  return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
 module.exports = {
@@ -504,7 +513,7 @@ module.exports = {
       .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
       .then(existingContactDoc => {
         if (userContactDoc) {
-          _.extend(existingContactDoc, userContactDoc);
+          Object.assign(existingContactDoc, userContactDoc);
           return module.exports.saveDoc(existingContactDoc);
         }
       })
@@ -612,7 +621,10 @@ module.exports = {
   startSentinel: () => {
     if (process.env.TRAVIS) {
       return new Promise(res => {
-        const pid = spawn('horti-svc-start', [`${require('os').homedir()}/.horticulturalist/deployments`, 'medic-sentinel']);
+        const pid = spawn('horti-svc-start', [
+          `${require('os').homedir()}/.horticulturalist/deployments`,
+          'medic-sentinel'
+        ]);
 
         pid.on('exit', res);
       });
@@ -640,4 +652,6 @@ module.exports = {
   refreshToGetNewSettings: refreshToGetNewSettings,
 
   waitForDocRev: waitForDocRev,
+
+  getDefaultSettings: getDefaultSettings,
 };

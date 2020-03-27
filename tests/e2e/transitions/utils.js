@@ -2,8 +2,8 @@ const utils = require('../../utils');
 
 const getApiSmsChanges = (messages) => {
   const expectedMessages = messages.map(message => message.message);
-  const changes = [],
-        ids = [];
+  const changes = [];
+  const ids = [];
   const listener = utils.db.changes({
     live: true,
     include_docs: true,

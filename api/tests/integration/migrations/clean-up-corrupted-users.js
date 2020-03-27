@@ -1,4 +1,4 @@
-var utils = require('./utils');
+const utils = require('./utils');
 
 describe('clean-up-corrupted-users migration', function() {
   afterEach(function() {
@@ -31,39 +31,39 @@ describe('clean-up-corrupted-users migration', function() {
         phone: '123456789'
       }
     ])
-    .then(function() {
+      .then(function() {
 
-      // when
-      return utils.runMigration('clean-up-corrupted-users');
+        // when
+        return utils.runMigration('clean-up-corrupted-users');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        {
-          _id: 'org.couchdb.user:corrupted',
-          name: 'corrupted',
-          type: 'user-settings',
-          known: true,
-          language: 'en',
-          roles: [],
-          fullname: 'corrupted',
-          phone: '123456789'
-        },
-        {
-          _id: 'org.couchdb.user:perfect',
-          name: 'perfect',
-          type: 'user-settings',
-          known: true,
-          language: 'en',
-          roles: [],
-          fullname: 'perfect',
-          phone: '123456789'
-        }
-      ]);
+        // expect
+        return utils.assertDb([
+          {
+            _id: 'org.couchdb.user:corrupted',
+            name: 'corrupted',
+            type: 'user-settings',
+            known: true,
+            language: 'en',
+            roles: [],
+            fullname: 'corrupted',
+            phone: '123456789'
+          },
+          {
+            _id: 'org.couchdb.user:perfect',
+            name: 'perfect',
+            type: 'user-settings',
+            known: true,
+            language: 'en',
+            roles: [],
+            fullname: 'perfect',
+            phone: '123456789'
+          }
+        ]);
 
-    });
+      });
   });
 
 });

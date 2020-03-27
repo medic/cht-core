@@ -1,5 +1,6 @@
-var _ = require('underscore'),
-    Tour = require('bootstrap-tour');
+const _ = require('lodash/core');
+const responsive = require('../modules/responsive');
+const Tour = require('bootstrap-tour');
 
 $.fn.tooltip.Constructor.DEFAULTS.whiteList.button = ['data-role'];
 
@@ -19,7 +20,7 @@ angular.module('inboxServices').service('Tour',
     'use strict';
     'ngInject';
 
-    var mmScroll = function(container, elem) {
+    const mmScroll = function(container, elem) {
       container = $(container);
       if (container.length) {
         elem = container.find(elem);
@@ -29,62 +30,58 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    var isMobile = function() {
-      return $('#mobile-detection').css('display') === 'inline';
-    };
-
-    var mmShowMessageList = function() {
+    const mmShowMessageList = function() {
       mmShow('#message-list', false);
     };
 
-    var mmShowMessageContent = function() {
+    const mmShowMessageContent = function() {
       mmShow('#message-list', true);
     };
 
-    var mmShowTaskList = function() {
+    const mmShowTaskList = function() {
       mmShow('#tasks-list', false);
     };
 
-    var mmShowTaskContent = function() {
+    const mmShowTaskContent = function() {
       mmShow('#tasks-list', true);
     };
 
-    var mmShowReportList = function() {
+    const mmShowReportList = function() {
       mmShow('#reports-list', false);
     };
 
-    var mmShowReportContent = function() {
+    const mmShowReportContent = function() {
       mmShow('#reports-list', true);
     };
 
-    var mmShowContactList = function() {
+    const mmShowContactList = function() {
       mmShow('#contacts-list', false);
     };
 
-    var mmShowContactContent = function() {
+    const mmShowContactContent = function() {
       mmShow('#contacts-list', true);
     };
 
-    var mmShow = function(list, showContent) {
-      var showingContent = $('body').is('.show-content');
+    const mmShow = function(list, showContent) {
+      const showingContent = $('body').is('.show-content');
       if (showContent !== showingContent) {
         if (showContent) {
           $(list).find('li').filter(':first').find('a').trigger('click');
-        } else if (isMobile()) {
+        } else if (responsive.isMobile()) {
           $('.navigation .filter-bar-back a').trigger('click');
         }
       }
     };
 
-    var mmOpenDropdown = function(elem) {
-      if (!isMobile()) {
+    const mmOpenDropdown = function(elem) {
+      if (!responsive.isMobile()) {
         $timeout(function() {
           $(elem).addClass('open');
         }, 1);
       }
     };
 
-    var tours = [
+    const tours = [
       {
         name: 'messages',
         route: 'messages.detail',
@@ -254,7 +251,7 @@ angular.module('inboxServices').service('Tour',
             content: 'tour.reports.date-filter.description',
             onShow: mmShowReportList,
             onShown: function() {
-              if (!isMobile()) {
+              if (!responsive.isMobile()) {
                 $('#date-filter').trigger('click');
               }
             },
@@ -406,9 +403,9 @@ angular.module('inboxServices').service('Tour',
       }
     ];
 
-    var current;
+    let current;
 
-    var createTemplate = function() {
+    const createTemplate = function() {
       return  '<div class="popover tour">' +
                 '<div class="arrow"></div>' +
                 '<h3 class="popover-title"></h3>' +
@@ -429,21 +426,21 @@ angular.module('inboxServices').service('Tour',
               '</div>';
     };
 
-    var getTour = function(name) {
-      return _.findWhere(tours, { name: name }) || tours[0];
+    const getTour = function(name) {
+      return _.find(tours, { name: name }) || tours[0];
     };
 
-    var getSettings = function(name) {
+    const getSettings = function(name) {
 
-      var settings = getTour(name);
+      const settings = getTour(name);
       settings.autoscroll = false;
 
       if (!settings.transmogrified) {
 
         settings.template = createTemplate();
 
-        var mobile = isMobile();
-        _.each(settings.steps, function(step) {
+        const mobile = responsive.isMobile();
+        _.forEach(settings.steps, function(step) {
           step.title = $translate.instant(step.title);
           step.content = $translate.instant(step.content);
           if (mobile) {
@@ -468,9 +465,9 @@ angular.module('inboxServices').service('Tour',
       return settings;
     };
 
-    var createTour = function(name) {
-      var settings = getSettings(name);
-      var tour = new Tour(settings);
+    const createTour = function(name) {
+      const settings = getSettings(name);
+      const tour = new Tour(settings);
       tour.init();
       tour.restart();
       current = {
@@ -479,7 +476,7 @@ angular.module('inboxServices').service('Tour',
       };
     };
 
-    var endCurrent = function() {
+    const endCurrent = function() {
       if (current && current.tour) {
         current.tour.end();
         // remove any popovers that have become disassociated
@@ -488,81 +485,74 @@ angular.module('inboxServices').service('Tour',
       }
     };
 
-    var getMessagesTour = function() {
-      return Auth('can_view_messages_tab')
-        .then(function() {
-          return {
+    const getMessagesTour = () => {
+      return Auth.has('can_view_messages_tab')
+        .then(canView => {
+          return canView && {
             order: 0,
             id: 'messages',
             icon: 'fa-envelope',
             name: 'Messages'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    var getTasksTour = function() {
+    const getTasksTour = () => {
       if (Session.isOnlineOnly()) {
         return;
       }
-      return Auth('can_view_tasks_tab')
-        .then(function() {
-          return {
+      return Auth.has('can_view_tasks_tab')
+        .then(canView => {
+          return canView && {
             order: 1,
             id: 'tasks',
             icon: 'fa-flag',
             name: 'Tasks'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    var getReportsTour = function() {
-      return Auth('can_view_reports_tab')
-        .then(function() {
-          return {
+    const getReportsTour = () => {
+      return Auth.has('can_view_reports_tab')
+        .then(canView => {
+          return canView && {
             order: 2,
             id: 'reports',
             icon: 'fa-list-alt',
             name: 'Reports'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    var getContactsTour = function() {
-      return Auth('can_view_contacts_tab')
-        .then(function() {
-          return {
+    const getContactsTour = () => {
+      return Auth.has('can_view_contacts_tab')
+        .then(canView => {
+          return canView && {
             order: 3,
             id: 'contacts',
             icon: 'fa-user',
-            name: 'People'
+            name: 'Contacts'
           };
-        })
-        .catch(function() {});
+        });
     };
 
-    var getAnalyticsTour = function() {
+    const getAnalyticsTour = () => {
       return $q.all([
-        AnalyticsModules(),
-        Auth('can_view_analytics')
+        Auth.has('can_view_analytics'),
+        AnalyticsModules()
       ])
-        .then(function(results) {
-          if (results.length) {
-            return {
-              order: 4,
-    
-              id: 'analytics',
-              icon: 'fa-bar-chart-o',
-              name: 'Analytics'
-            };
-          }
-        })
-        .catch(function() {});
+        .then(([canView]) => {
+          return canView && {
+            order: 4,
+
+            id: 'analytics',
+            icon: 'fa-bar-chart-o',
+            name: 'Analytics'
+          };
+        });
     };
 
-    var getTours = function() {
+    const getTours = function() {
       return $q.all([
         getMessagesTour(),
         getTasksTour(),
@@ -576,15 +566,15 @@ angular.module('inboxServices').service('Tour',
     };
 
     return {
-      getTours: getTours,
-      endCurrent: endCurrent,
+      getTours,
+      endCurrent,
       start: function(name) {
         endCurrent();
         if (!name) {
           return;
         }
-        var tour = getTour(name);
-        var route = tour && tour.route;
+        const tour = getTour(name);
+        const route = tour && tour.route;
         $timeout(function() {
           if ($state.is(route)) {
             // already on required page - show tour
@@ -596,12 +586,10 @@ angular.module('inboxServices').service('Tour',
             if (route) {
               $state.go(route, { tour: name });
             } else {
-              var message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;  
-              Feedback.submit(message, false, function(err) {
-                if (err) {
-                  $log.error('Error saving feedback', err);
-                }
-              }); 
+              const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;
+              Feedback.submit(message).catch(err => {
+                $log.error('Error saving feedback', err);
+              });
             }
           }
         });

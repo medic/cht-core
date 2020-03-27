@@ -55,10 +55,8 @@ require('./enketo/main');
 
 const bootstrapper = require('./bootstrapper');
 const router = require('./router');
-const _ = require('underscore');
-_.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g,
-};
+
+const KARMA_UNIT_TEST_PORT = '9876';
 
 const minifySelected = selected => {
   const pathsToMinify = ['doc', 'formatted'];
@@ -146,21 +144,24 @@ const createReduxLoggerConfig = Selectors => ({
     $compileProvider.aHrefSanitizationWhitelist(
       /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
     );
-    var isDevelopment = window.location.hostname === 'localhost';
+
+    const isDevelopment = window.location.hostname === 'localhost' && window.location.port !== KARMA_UNIT_TEST_PORT;
     $compileProvider.debugInfoEnabled(isDevelopment);
 
-    var middlewares = [reduxThunk];
+    const middlewares = [reduxThunk];
     if (isDevelopment) {
-      var reduxLogger = require('redux-logger');
+      const reduxLogger = require('redux-logger');
       middlewares.push(reduxLogger.createLogger(createReduxLoggerConfig(Selectors)));
     }
     $ngReduxProvider.createStoreWith(RootReducer, middlewares);
   });
 
-  angular.module('inboxApp').constant('APP_CONFIG', {
-    name: '@@APP_CONFIG.name',
-    version: '@@APP_CONFIG.version',
-  });
+  // 32 million characters is guaranteed to be rejected by the API JSON
+  // parser limit of 32MB so don't even bother POSTing. If there are many
+  // 2 byte characters then a smaller body may also fail. Detecting the
+  // exact byte length of a string is too expensive so we let the request
+  // go and if it's still too long then API will respond with a 413.
+  const BODY_LENGTH_LIMIT = 32000000; // 32 million
   const POUCHDB_OPTIONS = {
     local: { auto_compaction: true },
     remote: {
@@ -170,6 +171,12 @@ const createReduxLoggerConfig = Selectors => ({
         if (parsedUrl.pathname === '/') {
           parsedUrl.pathname = '/dbinfo';
           url = parsedUrl.toString();
+        }
+        if (opts.body && opts.body.length > BODY_LENGTH_LIMIT) {
+          return Promise.reject({
+            message: 'Payload Too Large',
+            code: 413
+          });
         }
         Object.keys(POUCHDB_OPTIONS.remote_headers).forEach(header => {
           opts.headers.set(header, POUCHDB_OPTIONS.remote_headers[header]);
@@ -189,7 +196,7 @@ const createReduxLoggerConfig = Selectors => ({
     return;
   }
 
-  var ROUTE_PERMISSIONS = {
+  const ROUTE_PERMISSIONS = {
     tasks: 'can_view_tasks',
     messages: 'can_view_messages',
     contacts: 'can_view_contacts',
@@ -198,7 +205,7 @@ const createReduxLoggerConfig = Selectors => ({
     'reports.edit': ['can_update_reports', 'can_view_reports']
   };
 
-  var getRequiredPermissions = function(route) {
+  const getRequiredPermissions = function(route) {
     return ROUTE_PERMISSIONS[route] || ROUTE_PERMISSIONS[route.split('.')[0]];
   };
 
@@ -208,8 +215,10 @@ const createReduxLoggerConfig = Selectors => ({
       if (trans.to().name.indexOf('error') === -1) {
         const permissions = getRequiredPermissions(trans.to().name);
         if (permissions && permissions.length) {
-          return Auth(permissions).catch(function() {
-            return $state.target('error', { code: 403 });
+          return Auth.has(permissions).then(hasPermission => {
+            if (!hasPermission) {
+              $state.target('error', { code: 403 });
+            }
           });
         }
       }

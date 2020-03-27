@@ -1,14 +1,14 @@
-const chai = require('chai'),
-  path = require('path'),
-  sinon = require('sinon'),
-  config = require('../../src/config'),
-  db = require('../../src/db'),
-  environment = require('../../src/environment'),
-  ddocExtraction = require('../../src/ddoc-extraction'),
-  resourceExtraction = require('../../src/resource-extraction'),
-  settingsService = require('../../src/services/settings'),
-  translations = require('../../src/translations'),
-  viewMapUtils = require('@medic/view-map-utils');
+const chai = require('chai');
+const path = require('path');
+const sinon = require('sinon');
+const config = require('../../src/config');
+const db = require('../../src/db');
+const environment = require('../../src/environment');
+const ddocExtraction = require('../../src/ddoc-extraction');
+const resourceExtraction = require('../../src/resource-extraction');
+const settingsService = require('../../src/services/settings');
+const translations = require('../../src/translations');
+const viewMapUtils = require('@medic/view-map-utils');
 
 let on;
 
@@ -26,7 +26,8 @@ describe('Config', () => {
     sinon.stub(translations, 'run').resolves();
     sinon.stub(settingsService, 'get').resolves();
     sinon.stub(settingsService, 'update').resolves();
-    sinon.stub(environment, 'getExtractedResourcesPath').returns(path.resolve(__dirname, './../../../build/ddocs/medic/_attachments'));
+    sinon.stub(environment, 'getExtractedResourcesPath')
+      .returns(path.resolve(__dirname, './../../../build/ddocs/medic/_attachments'));
   });
 
   afterEach(() => {
@@ -48,10 +49,10 @@ describe('Config', () => {
         chai
           .expect(viewMapUtils.loadViewMaps.args[0])
           .to.deep.equal([
-          { _id: '_design/medic' },
-          'docs_by_replication_key',
-          'contacts_by_depth',
-        ]);
+            { _id: '_design/medic' },
+            'docs_by_replication_key',
+            'contacts_by_depth',
+          ]);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai
           .expect(
@@ -94,7 +95,7 @@ describe('Config', () => {
         .then(() => chai.expect(true).to.equal('should have crashed'))
         .catch((err) => {
           chai.expect(err).to.be.an.instanceof(TypeError);
-      });
+        });
     });
   });
 

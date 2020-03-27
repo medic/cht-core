@@ -85,7 +85,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
         </translation>
       </itext>
       <instance>
-        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-10-17 04:59:19">
+        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-11-04 13:12:55">
           <inputs>
             <meta>
               <location>
@@ -120,8 +120,8 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
           <patient_uuid tag="hidden"/>
           <patient_id tag="hidden"/>
           <patient_name tag="hidden"/>
-          <patient_short_name/>
-          <patient_display_name/>
+          <patient_short_name tag="hidden"/>
+          <patient_display_name tag="hidden"/>
           <death_details>
             <date_of_death/>
             <place_of_death/>
@@ -173,7 +173,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
       <bind calculate="difference-in-months(  /death_report/inputs/contact/date_of_birth , today() )" nodeset="/death_report/patient_age_in_months" type="string"/>
       <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /death_report/inputs/contact/date_of_birth ) )" nodeset="/death_report/patient_age_in_days" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/death_report/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/death_report/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/death_report/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/death_report/patient_name" type="string"/>
       <bind calculate="../inputs/contact/short_name" nodeset="/death_report/patient_short_name" type="string"/>
       <bind calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))" nodeset="/death_report/patient_display_name" type="string"/>

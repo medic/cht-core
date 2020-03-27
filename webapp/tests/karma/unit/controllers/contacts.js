@@ -1,48 +1,46 @@
 describe('Contacts controller', () => {
   'use strict';
 
-  let assert = chai.assert,
-    contactsLiveList,
-    childType,
-    contactTypes,
-    createController,
-    district,
-    forms,
-    icon,
-    isAdmin = false,
-    person,
-    scope,
-    userSettings,
-    searchResults,
-    searchService,
-    getDataRecords,
-    typeLabel,
-    xmlForms,
-    $rootScope,
-    scrollLoaderStub,
-    scrollLoaderCallback,
-    changes,
-    changesCallback,
-    changesFilter,
-    contactSearchLiveList,
-    deadListFind,
-    settings,
-    auth,
-    deadListContains,
-    deadList,
-    contactSummary,
-    isDbAdmin,
-    liveListInit,
-    liveListReset,
-    getSelectedContact,
-    tasksForContact;
+  const assert = chai.assert;
+
+  let contactsLiveList;
+  let childType;
+  let contactTypes;
+  let createController;
+  let district;
+  let forms;
+  let icon;
+  let isAdmin = false;
+  let scope;
+  let userSettings;
+  let searchResults;
+  let searchService;
+  let getDataRecords;
+  let xmlForms;
+  let $rootScope;
+  let scrollLoaderStub;
+  let scrollLoaderCallback;
+  let changes;
+  let changesCallback;
+  let changesFilter;
+  let contactSearchLiveList;
+  let deadListFind;
+  let settings;
+  let hasAuth;
+  let deadListContains;
+  let deadList;
+  let contactSummary;
+  let isDbAdmin;
+  let liveListInit;
+  let liveListReset;
+  let tasksForContact;
 
   beforeEach(() => {
     module('inboxApp');
     KarmaUtils.setupMockStore();
   });
 
-  beforeEach(inject((_$rootScope_, $controller, $ngRedux, ContactsActions, GlobalActions, Selectors) => {
+  beforeEach(inject((_$rootScope_, $controller, $ngRedux, GlobalActions) => {
     deadListFind = sinon.stub();
     deadListContains = sinon.stub();
     deadList = () => {
@@ -75,10 +73,8 @@ describe('Contacts controller', () => {
     };
 
     district = { _id: 'abcde', name: 'My District', type: 'district_hospital' };
-    person = { _id: 'lkasdfh', name: 'Alon', type: 'person' };
     childType = 'childType';
     icon = 'fa-la-la-la-la';
-    typeLabel = 'District';
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.clearSelection = sinon.stub();
@@ -101,7 +97,7 @@ describe('Contacts controller', () => {
     contactSearchLiveList = deadList();
     getDataRecords = KarmaUtils.promiseService(null, district);
     searchResults = [];
-    var $translate = key => Promise.resolve(key + 'translated');
+    const $translate = key => Promise.resolve(key + 'translated');
     $translate.instant = key => key + 'translated';
     scrollLoaderStub = {
       init: callback => {
@@ -119,7 +115,7 @@ describe('Contacts controller', () => {
     contactSummary.returns(Promise.resolve({ context: {} }));
 
     settings = sinon.stub().resolves({});
-    auth = sinon.stub().rejects();
+    hasAuth = sinon.stub().resolves(false);
     isDbAdmin = sinon.stub();
     liveListInit = sinon.stub();
     liveListReset = sinon.stub();
@@ -131,12 +127,12 @@ describe('Contacts controller', () => {
       setRightActionBar: sinon.stub(),
       setTitle: sinon.stub()
     };
-    const contactsActions = ContactsActions($ngRedux.dispatch);
     const stubbedContactsActions = {
       loadSelectedContactChildren: sinon.stub().returns(Promise.resolve()),
-      loadSelectedContactReports: sinon.stub().returns(Promise.resolve())
+      loadSelectedContactReports: sinon.stub().returns(Promise.resolve()),
+      setSelectedContact: sinon.stub().returns(Promise.resolve()),
+      clearSelection: sinon.stub()
     };
-    getSelectedContact = () => Selectors.getSelectedContact($ngRedux.getState());
 
     tasksForContact = sinon.stub();
 
@@ -152,11 +148,13 @@ describe('Contacts controller', () => {
         $state: { includes: sinon.stub(), go: sinon.stub() },
         $timeout: work => work(),
         $translate: $translate,
-        Auth: auth,
+        Auth: {
+          has: hasAuth
+        },
         Changes: changes,
         ContactTypes: contactTypes,
         ContactSummary: contactSummary,
-        ContactsActions: () => Object.assign({}, contactsActions, stubbedContactsActions),
+        ContactsActions: () => stubbedContactsActions,
         Export: () => {},
         GetDataRecords: getDataRecords,
         GlobalActions: () => Object.assign({}, globalActions, stubbedGlobalActions),
@@ -185,334 +183,6 @@ describe('Contacts controller', () => {
     };
   }));
 
-  it('sets title', () => {
-    const selected = {
-      doc: district,
-      type: { id: 'place', name_key: typeLabel }
-    };
-    const ctrl = createController();
-    return ctrl
-      .getSetupPromiseForTesting()
-      .then(() => scope.setSelected(selected))
-      .then(() => {
-        assert(ctrl.setTitle.called, 'title should be set');
-        assert.equal(
-          ctrl.setTitle.getCall(0).args[0],
-          typeLabel + 'translated'
-        );
-        assert(liveListInit.called);
-        assert.deepEqual(liveListInit.args[0], [scope, 'contacts', 'contact-search']);
-      });
-  });
-
-  describe('selecting contacts', () => {
-    let ctrl;
-    const testContactSelection = selected => {
-      ctrl = createController();
-      return ctrl
-        .getSetupPromiseForTesting()
-        .then(() => scope.setSelected(selected));
-    };
-
-    it('set selected contact', () => {
-      return testContactSelection({ doc: district, type: { id: 'place' } }).then(() => {
-        assert.checkDeepProperties(getSelectedContact().doc, district);
-        assert(ctrl.setRightActionBar.called);
-      });
-    });
-
-    it('throws an error, sets a scope variable and resets the action bar when contact cannot be selected', () => {
-      contactSummary.returns(Promise.reject());
-      return testContactSelection({ doc: district, type: { id: 'place' } })
-        .then(() => {
-          throw new Error('Expected error to be thrown');
-        })
-        .catch(() => {
-          assert.checkDeepProperties(getSelectedContact(), { doc: district, error: true });
-          assert.equal(ctrl.setRightActionBar.callCount, 1);
-          assert.equal(ctrl.clearRightActionBar.callCount, 1);
-        });
-    });
-
-    it('should not get tasks when not allowed', () => {
-      auth.withArgs('can_view_tasks').rejects();
-      return testContactSelection({ doc: district }).then(() => {
-        assert.checkDeepProperties(getSelectedContact().doc, district);
-        assert(ctrl.setRightActionBar.called);
-        assert(auth.withArgs('can_view_tasks').called);
-        assert(!tasksForContact.called);
-      });
-    });
-
-    it('should get tasks when allowed', () => {
-      auth.withArgs('can_view_tasks').resolves();
-      return testContactSelection({ doc: district }).then(() => {
-        assert.checkDeepProperties(getSelectedContact().doc, district);
-        assert(ctrl.setRightActionBar.called);
-        assert(auth.withArgs('can_view_tasks').called);
-        assert.equal(tasksForContact.callCount, 1);
-        assert.deepEqual(tasksForContact.args[0][0].doc, getSelectedContact().doc);
-        assert.equal(tasksForContact.args[0][1], 'ContactsCtrl');
-      });
-    });
-
-    it('should store tasks in redux store and count tasks by contact', () => {
-      auth.withArgs('can_view_tasks').resolves();
-      let receiveTasksCallback;
-      tasksForContact.callsFake((selected, listenerName, callback) => {
-        receiveTasksCallback = callback;
-      });
-      const tasks = [
-        { doc: { contact: { _id: 'contact1' } } },
-        { other: 4  },
-        { doc: { other: 3 } },
-        { doc: { contact: { _id: 'contact1' } } },
-        { doc: { contact: { _id: 'contact2' } } },
-        { doc: { contact: { _id: 'contact1' } } },
-      ];
-
-      return testContactSelection({ doc: district }).then(() => {
-        assert(auth.withArgs('can_view_tasks').called);
-        assert.equal(tasksForContact.callCount, 1);
-        receiveTasksCallback(tasks);
-        assert.deepEqual(getSelectedContact().tasks, tasks);
-        assert.deepEqual(getSelectedContact().tasksByContact, { 'contact1': 3, 'contact2': 1 });
-      });
-    });
-  });
-
-  describe('sets right actionBar', () => {
-    const testRightActionBar = (selected, person, assertions) => {
-      selected.reportLoader = Promise.resolve();
-      selected.type = person ? { id: 'person', person: true } : { id: 'place' };
-      const ctrl = createController();
-      return ctrl
-        .getSetupPromiseForTesting()
-        .then(() => scope.setSelected(selected))
-        .then(() => {
-          assert(ctrl.setRightActionBar.called, 'right actionBar should be set');
-          assertions(ctrl.setRightActionBar.getCall(1).args[0]);
-        });
-    };
-
-    it('for the New Place button', () => {
-      return testRightActionBar({ doc: district }, true, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.childTypes, [{
-          menu_icon: 'fa-building',
-          menu_key: 'Add place',
-          permission: 'can_create_places',
-          types: [ { id: childType, icon: icon } ]
-        }]);
-      });
-    });
-
-    it('no New Place button if no child type', () => {
-      contactTypes.getChildren.resolves([]);
-      return testRightActionBar({ doc: person }, true, actionBarArgs => {
-        assert.deepEqual(actionBarArgs.childTypes, []);
-        // But the other buttons are there!
-        assert.equal(actionBarArgs.relevantForms.length, 1);
-        assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
-        assert.deepEqual(actionBarArgs.sendTo, person);
-      });
-    });
-
-    it('for the Message and Call buttons', () => {
-      return testRightActionBar({ doc: person }, true, actionBarArgs => {
-        assert.checkDeepProperties(actionBarArgs.sendTo, person);
-      });
-    });
-
-    it('no Message and Call buttons if doc is not person', () => {
-      return testRightActionBar({ doc: district }, false, actionBarArgs => {
-        assert.equal(actionBarArgs.sendTo, '');
-      });
-    });
-
-    it('for the New Action button', () => {
-      return testRightActionBar({ doc: person }, true, actionBarArgs => {
-        assert.equal(actionBarArgs.relevantForms.length, 1);
-        assert.equal(actionBarArgs.relevantForms[0].code, 'a-form');
-      });
-    });
-
-    it(`sets the actionbar partially if it couldn't get forms`, () => {
-      xmlForms.callsArgWith(2, { error: 'no forms brew' }); // call the callback
-      return testRightActionBar({ doc: person }, true, actionBarArgs => {
-        assert.equal(actionBarArgs.relevantForms, undefined);
-        assert.checkDeepProperties(actionBarArgs.sendTo, person);
-        assert.deepEqual(actionBarArgs.childTypes, [{
-          menu_icon: 'fa-building',
-          menu_key: 'Add place',
-          permission: 'can_create_places',
-          types: [ { id: childType, icon: icon } ]
-        }]);
-      });
-    });
-
-    it('disables editing for own place', () => {
-      return testRightActionBar({ doc: district }, true, actionBarArgs => {
-        assert.equal(actionBarArgs.canEdit, false);
-      });
-    });
-
-    it('enables editing for not own place', () => {
-      return testRightActionBar({ doc: person }, true, actionBarArgs => {
-        assert.equal(actionBarArgs.canEdit, true);
-      });
-    });
-
-    it('disables deleting for places with children', () => {
-      return testRightActionBar(
-        { doc: district, children: [ { contacts: [ district ] } ] },
-        true,
-        actionBarArgs => {
-          assert.equal(actionBarArgs.canDelete, false);
-        }
-      );
-    });
-
-    it('enables deleting for leaf nodes', () => {
-      return testRightActionBar(
-        { doc: district, children: [] },
-        true,
-        actionBarArgs => {
-          assert.equal(actionBarArgs.canDelete, true);
-        }
-      );
-    });
-
-    it('enables deleting for nodes with no children', () => {
-      return testRightActionBar(
-        { doc: district, children: [ { contacts: [] } ] },
-        true,
-        actionBarArgs => {
-          assert.equal(actionBarArgs.canDelete, true);
-        }
-      );
-    });
-
-    describe('translates form titles', () => {
-      const testTranslation = (form, expectedTitle) => {
-        xmlForms.callsArgWith(2, null, [form]);
-        const selected = {
-          type: { id: 'childType' },
-          doc: district,
-          reportLoader: Promise.resolve()
-        };
-        const ctrl = createController();
-        return ctrl
-          .getSetupPromiseForTesting()
-          .then(() => scope.setSelected(selected))
-          .then(() => {
-            assert(
-              ctrl.setRightActionBar.called,
-              'right actionBar should be set'
-            );
-            const actionBarArgs = ctrl.setRightActionBar.getCall(1).args[0];
-            assert.deepEqual(actionBarArgs.relevantForms.length, 1);
-            assert.equal(actionBarArgs.relevantForms[0].title, expectedTitle);
-          });
-      };
-
-      it('uses the translation_key', () => {
-        const form = {
-          internalId: 'a',
-          icon: 'a-icon',
-          translation_key: 'a.form.key',
-        };
-        return testTranslation(form, 'a.form.keytranslated');
-      });
-
-      it('uses the title', () => {
-        const form = { internalId: 'a', icon: 'a-icon', title: 'My Form' };
-        return testTranslation(form, 'TranslateFrom:My Form');
-      });
-
-      it('uses the translation_key in preference to the title', () => {
-        const form = {
-          internalId: 'a',
-          icon: 'a-icon',
-          translation_key: 'a.form.key',
-          title: 'My Form',
-        };
-        return testTranslation(form, 'a.form.keytranslated');
-      });
-    });
-
-    describe('muted contacts modal', () => {
-      it('should set all forms to not display muted modal when contact is not muted', () => {
-        const forms = [
-          { internalId: 'unmute', icon: 'icon', translation_key: 'form.unmute', title: 'unmute'},
-          { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
-          { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
-        ];
-        xmlForms.callsArgWith(2, null, forms);
-        settings.resolves({
-          muting: {
-            unmute_forms: ['unmute']
-          }
-        });
-
-        const selected = {
-          type: { id: 'childType' },
-          doc: { _id: 'my-contact', muted: false },
-          reportLoader: Promise.resolve()
-        };
-
-        const ctrl = createController();
-        return ctrl
-          .getSetupPromiseForTesting()
-          .then(() => scope.setSelected(selected))
-          .then(() => {
-            assert(
-              ctrl.setRightActionBar.called,
-              'right actionBar should be set'
-            );
-            assert.deepEqual(ctrl.setRightActionBar.args[1][0].relevantForms, [
-              { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
-              { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: false},
-              { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: false}
-            ]);
-          });
-      });
-
-      it('should set non-unmute forms ti display modal when contact is muted', () => {
-        const forms = [
-          { internalId: 'unmute', icon: 'icon', translation_key: 'form.unmute', title: 'unmute'},
-          { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
-          { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
-        ];
-        xmlForms.callsArgWith(2, null, forms);
-        settings.resolves({
-          muting: {
-            unmute_forms: ['unmute']
-          }
-        });
-        const selected = {
-          type: { id: 'childType' },
-          doc: { _id: 'my-contact', muted: true },
-          reportLoader: Promise.resolve()
-        };
-
-        const ctrl = createController();
-        return ctrl
-          .getSetupPromiseForTesting()
-          .then(() => scope.setSelected(selected))
-          .then(() => {
-            assert(
-              ctrl.setRightActionBar.called,
-              'right actionBar should be set'
-            );
-            assert.deepEqual(ctrl.setRightActionBar.args[1][0].relevantForms, [
-              { code: 'unmute', icon: 'icon', title: 'form.unmutetranslated', showUnmuteModal: false},
-              { code: 'mute', icon: 'icon', title: 'form.mutetranslated', showUnmuteModal: true},
-              { code: 'visit', icon: 'icon', title: 'form.visittranslated', showUnmuteModal: true}
-            ]);
-          });
-      });
-    });
-  });
 
   describe('sets left actionBar', () => {
     it('when user has facility_id', () => {
@@ -839,7 +509,8 @@ describe('Contacts controller', () => {
         .then(() => {
           changesCallback({ doc: { _id: '123' } });
           assert.equal(searchService.callCount, 2);
-          assert.equal(searchService.args[1][2].limit, 50); // 50 is the minimum size just in case it's a new contact at the end of the list
+          // 50 is the minimum size just in case it's a new contact at the end of the list
+          assert.equal(searchService.args[1][2].limit, 50);
         });
     });
 
@@ -878,14 +549,14 @@ describe('Contacts controller', () => {
 
   describe('last visited date', function() {
     it('does not enable LastVisitedDate features not allowed', function() {
-      auth.rejects();
+      hasAuth.resolves(false);
 
       const ctrl = createController();
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
           assert.equal(ctrl.lastVisitedDateExtras, false);
           assert.deepEqual(ctrl.visitCountSettings, {});
           assert.equal(ctrl.sortDirection, 'alpha');
@@ -908,14 +579,14 @@ describe('Contacts controller', () => {
     });
 
     it('enables LastVisitedDate features when allowed', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
 
       const ctrl = createController();
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {});
           assert.equal(ctrl.sortDirection, 'alpha');
@@ -937,7 +608,7 @@ describe('Contacts controller', () => {
     });
 
     it('saves uhc home_visits settings and default sort when correct', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
       settings.resolves({
         uhc: {
           contacts_default_sort: false,
@@ -952,8 +623,8 @@ describe('Contacts controller', () => {
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {
@@ -978,7 +649,7 @@ describe('Contacts controller', () => {
     });
 
     it('always saves default sort', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
       settings.resolves({
         uhc: {
           contacts_default_sort: 'something',
@@ -993,8 +664,8 @@ describe('Contacts controller', () => {
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {
@@ -1023,7 +694,7 @@ describe('Contacts controller', () => {
     });
 
     it('saves uhc default sorting', function() {
-      auth.resolves();
+      hasAuth.resolves(true);
       settings.resolves({
         uhc: {
           contacts_default_sort: 'last_visited_date',
@@ -1038,8 +709,8 @@ describe('Contacts controller', () => {
       return ctrl
         .getSetupPromiseForTesting()
         .then(() => {
-          assert.equal(auth.callCount, 1);
-          assert.deepEqual(auth.args[0], ['can_view_last_visited_date']);
+          assert.equal(hasAuth.callCount, 1);
+          assert.deepEqual(hasAuth.args[0], ['can_view_last_visited_date']);
 
           assert.equal(ctrl.lastVisitedDateExtras, true);
           assert.deepEqual(ctrl.visitCountSettings, {
@@ -1070,7 +741,7 @@ describe('Contacts controller', () => {
     });
 
     it('changes listener filters relevant last visited reports when feature is enabled', () => {
-      auth.resolves();
+      hasAuth.resolves(true);
       const relevantReport = {
         type: 'data_record',
         form: 'home_visit',
@@ -1120,7 +791,7 @@ describe('Contacts controller', () => {
     });
 
     it('changes listener filters deleted visit reports when sorting by last visited date', () => {
-      auth.resolves();
+      hasAuth.resolves(true);
       const deletedReport = {
         type: 'data_record',
         form: 'home_visit',
@@ -1142,7 +813,7 @@ describe('Contacts controller', () => {
     });
 
     it('changes listener does not filter last visited reports when feature is disabled', () => {
-      auth.rejects();
+      hasAuth.resolves(false);
       const relevantReport = {
         type: 'data_record',
         form: 'home_visit',
@@ -1181,31 +852,31 @@ describe('Contacts controller', () => {
 
     describe('fully refreshing LHS list', () => {
       const relevantVisitReport = {
-          type: 'data_record',
-          form: 'home_visit',
-          fields: { visited_contact_uuid: 4 },
-        },
-        irrelevantReport = {
-          type: 'data_record',
-          form: 'somethibg',
-          fields: {},
-        },
-        irrelevantVisitReport = {
-          type: 'data_record',
-          form: 'home_visit',
-          fields: { visited_contact_uuid: 122 },
-        },
-        deletedVisitReport = {
-          type: 'data_record',
-          form: 'home_visit',
-          fields: { visited_contact_uuid: 122 },
-          _deleted: true,
-        },
-        someContact = { type: 'person', _id: 1 };
+        type: 'data_record',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 4 },
+      };
+      const irrelevantReport = {
+        type: 'data_record',
+        form: 'somethibg',
+        fields: {},
+      };
+      const irrelevantVisitReport = {
+        type: 'data_record',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 122 },
+      };
+      const deletedVisitReport = {
+        type: 'data_record',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 122 },
+        _deleted: true,
+      };
+      const someContact = { type: 'person', _id: 1 };
 
       describe('uhc visits enabled', () => {
         beforeEach(() => {
-          auth.resolves();
+          hasAuth.resolves(true);
           deadListContains.withArgs(4).returns(true);
         });
         describe('alpha default sorting', () => {
@@ -1377,7 +1048,7 @@ describe('Contacts controller', () => {
 
       describe('uhc visits disabled', () => {
         beforeEach(() => {
-          auth.rejects();
+          hasAuth.resolves(false);
           deadListContains.withArgs(4).returns(true);
         });
 
@@ -1461,7 +1132,7 @@ describe('Contacts controller', () => {
           return createController()
             .getSetupPromiseForTesting()
             .then(() => {
-              assert.equal(auth.callCount, 0);
+              assert.equal(hasAuth.callCount, 0);
               assert.equal(searchService.callCount, 1);
               assert.deepEqual(searchService.args[0], [
                 'contacts',

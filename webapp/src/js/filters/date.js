@@ -1,18 +1,18 @@
-var _ = require('underscore'),
-    moment = require('moment');
+const _ = require('lodash/core');
+const moment = require('moment');
 
 (function () {
 
   'use strict';
 
-  var getAbsoluteDateString = function(date, options) {
+  const getAbsoluteDateString = function(date, options) {
     if (options.withoutTime) {
       return options.FormatDate.date(date);
     }
     return options.FormatDate.datetime(date);
   };
 
-  var getRelativeDateString = function(date, options) {
+  const getRelativeDateString = function(date, options) {
     if (options.age) {
       return options.FormatDate.age(date, options);
     } else if (!options.withoutTime && moment(date).isSame(moment(), 'day')) {
@@ -22,7 +22,7 @@ var _ = require('underscore'),
     }
   };
 
-  var getRelativeDate = function(date, options) {
+  const getRelativeDate = function(date, options) {
     options = options || {};
     _.defaults(options, { prefix: '', suffix: '' });
 
@@ -34,17 +34,17 @@ var _ = require('underscore'),
       }
     }
 
-    var momentDate = moment(date);
-    var relative = getRelativeDateString(momentDate, options);
+    const momentDate = moment(date);
+    const relative = getRelativeDateString(momentDate, options);
 
     if (options.raw) {
       return relative;
     }
 
-    var classes = ['relative-date'];
-    var absolute = getAbsoluteDateString(momentDate, options);
+    const classes = ['relative-date'];
+    const absolute = getAbsoluteDateString(momentDate, options);
 
-    var now = moment();
+    let now = moment();
 
     if (options.withoutTime) {
       now = now.startOf('day');
@@ -72,8 +72,8 @@ var _ = require('underscore'),
            options.suffix;
   };
 
-  var getTaskDate = function(task) {
-    var current = task.state_history &&
+  const getTaskDate = function(task) {
+    const current = task.state_history &&
                   task.state_history.length &&
                   task.state_history[task.state_history.length - 1];
     if (current) {
@@ -85,8 +85,8 @@ var _ = require('underscore'),
     return task.due || task.reported_date;
   };
 
-  var getState = function(state, $translate) {
-    var label = $translate.instant('state.' + state);
+  const getState = function(state, $translate) {
+    const label = $translate.instant('state.' + state);
     return '<span class="state ' + state + '">' + label + '</span>';
   };
 
@@ -101,7 +101,7 @@ var _ = require('underscore'),
       if (!task || !task.state) {
         return '';
       }
-      var content = getState(task.state, $translate) + '&nbsp;' +
+      const content = getState(task.state, $translate) + '&nbsp;' +
         '<span class="autoreply" title="' + task.messages[0].message + '">' +
           '<span class="autoreply-content">' + $translate.instant('autoreply') + '</span>' +
         '</span>&nbsp';
@@ -113,10 +113,10 @@ var _ = require('underscore'),
     };
   });
 
-  var getRecipient = function(task, $translate) {
-    var recipient = task && task.messages && task.messages.length && task.messages[0].to;
+  const getRecipient = function(task, $translate) {
+    const recipient = task && task.messages && task.messages.length && task.messages[0].to;
     if (recipient) {
-      var label = $translate.instant('to recipient', { recipient: recipient });
+      const label = $translate.instant('to recipient', { recipient: recipient });
       return '<span class="recipient">&nbsp;' + label + '</span>';
     }
     return '';
@@ -156,6 +156,7 @@ var _ = require('underscore'),
       return $sce.trustAsHtml(getRelativeDate(dod, {
         FormatDate: FormatDate,
         RelativeDate: RelativeDate,
+        withoutTime: true,
         prefix: $translate.instant('contact.deceased.date.prefix') + '&nbsp;'
       }));
     };
@@ -192,7 +193,7 @@ var _ = require('underscore'),
   ) {
     'ngInject';
     return function (date, raw) {
-      var options = {
+      const options = {
         FormatDate: FormatDate,
         RelativeDate: RelativeDate
       };
@@ -213,7 +214,7 @@ var _ = require('underscore'),
   ) {
     'ngInject';
     return function (date, raw) {
-      var options = {
+      const options = {
         FormatDate: FormatDate,
         RelativeDate: RelativeDate,
         withoutTime: true
@@ -249,7 +250,7 @@ var _ = require('underscore'),
       if (!date) {
         return '';
       }
-      var result = '<div ' +
+      const result = '<div ' +
                       'class="relative-date-content '+ RelativeDate.getCssSelector() +'" ' +
                       RelativeDate.generateDataset(date) +
                    '>' +
@@ -266,14 +267,14 @@ var _ = require('underscore'),
       if (!weeks || !weeks.number) {
         return '';
       }
-      var classes = [];
+      const classes = [];
       if (weeks.number >= 37) {
         classes.push('upcoming-edd');
       }
       if (weeks.approximate) {
         classes.push('approximate');
       }
-      var attr = classes.length ? ' class="weeks-pregnant ' + classes.join(' ') + '"' : '';
+      const attr = classes.length ? ' class="weeks-pregnant ' + classes.join(' ') + '"' : '';
       return '<span' + attr + '>' + weeks.number + '</span>';
     };
   });

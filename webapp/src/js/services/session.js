@@ -1,6 +1,6 @@
-var COOKIE_NAME = 'userCtx',
-    ONLINE_ROLE = 'mm-online',
-    _ = require('underscore');
+const COOKIE_NAME = 'userCtx';
+const ONLINE_ROLE = 'mm-online';
+const _ = require('lodash/core');
 
 (function () {
 
@@ -18,7 +18,7 @@ var COOKIE_NAME = 'userCtx',
       'ngInject';
 
       let userCtxCookieValue;
-      var getUserCtx = function() {
+      const getUserCtx = function() {
         if (!userCtxCookieValue) {
           userCtxCookieValue = ipCookie(COOKIE_NAME);
         }
@@ -26,14 +26,14 @@ var COOKIE_NAME = 'userCtx',
         return userCtxCookieValue;
       };
 
-      var navigateToLogin = function() {
+      const navigateToLogin = function() {
         $log.warn('User must reauthenticate');
         ipCookie.remove(COOKIE_NAME, { path: '/' });
         userCtxCookieValue = undefined;
         $window.location.href = `/${Location.dbName}/login?redirect=${encodeURIComponent($window.location.href)}`;
       };
 
-      var logout = function() {
+      const logout = function() {
         return $http.delete('/_session')
           .catch(function() {
             // Set cookie to force login before using app
@@ -42,7 +42,7 @@ var COOKIE_NAME = 'userCtx',
           .then(navigateToLogin);
       };
 
-      var refreshUserCtx = function() {
+      const refreshUserCtx = function() {
         return $http
           .get('/' + Location.dbName + '/login/identity')
           .catch(function() {
@@ -50,14 +50,14 @@ var COOKIE_NAME = 'userCtx',
           });
       };
 
-      var checkCurrentSession = function() {
-        var userCtx = getUserCtx();
+      const checkCurrentSession = function() {
+        const userCtx = getUserCtx();
         if (!userCtx || !userCtx.name) {
           return logout();
         }
         return $http.get('/_session')
           .then(function(response) {
-            var name = response.data &&
+            const name = response.data &&
                        response.data.userCtx &&
                        response.data.userCtx.name;
             if (name !== userCtx.name) {
@@ -78,17 +78,17 @@ var COOKIE_NAME = 'userCtx',
       };
 
       // TODO Use a shared library for this duplicated code #4021
-      var hasRole = function(userCtx, role) {
-        return _.contains(userCtx && userCtx.roles, role);
+      const hasRole = function(userCtx, role) {
+        return !!(userCtx && userCtx.roles && userCtx.roles.includes(role));
       };
 
-      var isAdmin = function(userCtx) {
+      const isAdmin = function(userCtx) {
         userCtx = userCtx || getUserCtx();
         return hasRole(userCtx, '_admin') ||
                hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
       };
 
-      var isDbAdmin = function(userCtx) {
+      const isDbAdmin = function(userCtx) {
         userCtx = userCtx || getUserCtx();
         return hasRole(userCtx, '_admin');
       };

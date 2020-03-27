@@ -64,7 +64,8 @@ body {
       background-color: @admin-color;
     }
   }
-  &.about {
+  &.about,
+  &.testing {
     .header .tabs .selected,
     .filters {
       background-color: @help-color;
@@ -79,7 +80,8 @@ body {
       margin-top: 100px;
     }
   }
-  &.error {
+  &.error,
+  &.testing {
     .header .tabs .selected,
     .filters {
       background-color: @error-color;
@@ -999,7 +1001,8 @@ a.fa:hover {
 .reporting,
 .about,
 .configuration,
-.theme {
+.theme,
+.testing {
   background-color: #ffffff;
   border: 1px solid @separator-color;
   border-width: 0 1px;
@@ -1522,7 +1525,10 @@ a.fa:hover {
   .desktop-only {
     display: none;
   }
-  body.about .page {
-    top: 55px;
+  body.about,
+  body.testing {
+    .page {
+      top: 55px;
+    }
   }
 }

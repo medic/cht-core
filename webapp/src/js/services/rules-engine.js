@@ -1,256 +1,193 @@
-var nools = require('nools'),
-    _ = require('underscore'),
-    nootils = require('medic-nootils'),
-    FIRST_RUN_COMPLETE_TYPE = '_complete',
-    // number of weeks before reported date to assume for start of pregnancy
-    KNOWN_TYPES = [ FIRST_RUN_COMPLETE_TYPE, 'task', 'target' ],
-    registrationUtils = require('@medic/registration-utils');
+'use strict';
 
-(function () {
+const registrationUtils = require('@medic/registration-utils');
+const rulesEngineCore = require('@medic/rules-engine');
 
-  'use strict';
+const MAX_LINEAGE_DEPTH = 50;
+const ENSURE_FRESHNESS_SECS = 120;
 
-  angular.module('inboxServices').factory('RulesEngine',
-    function(
-      $q,
-      Changes,
-      ContactTypes,
-      Search,
-      Session,
-      Settings,
-      UserContact
-    ) {
+angular.module('inboxServices').factory('RulesEngine', function(
+  $parse,
+  $translate,
+  Auth,
+  CalendarInterval,
+  Changes,
+  ContactTypes,
+  Debounce,
+  RulesEngineCore,
+  Session,
+  Settings,
+  TranslateFrom,
+  UHCSettings,
+  UserContact,
+  UserSettings
+) {
+  'ngInject';
 
-      'ngInject';
+  let uhcMonthStartDate;
+  let ensureTaskFreshness;
+  let ensureTargetFreshness;
 
-      if (Session.isOnlineOnly()) {
-        // No-op all rules engine work for admins for now
-        return {
-          enabled: false,
-          init: $q.resolve(),
-          complete: $q.resolve(),
-          listen: function() {}
-        };
-      }
-
-      var complete = $q.defer();
-      var callbacks = {};
-      callbacks[FIRST_RUN_COMPLETE_TYPE] = {
-        rulesengine: function() {
-          complete.resolve();
+  const initialize = () => (
+    Promise.all([Auth.has('can_view_tasks'), Auth.has('can_view_analytics')])
+      .then(([canViewTasks, canViewTargets]) => {
+        const hasPermission = canViewTargets || canViewTasks;
+        if (!hasPermission || Session.isOnlineOnly()) {
+          return false;
         }
-      };
-      var emissions = {};
-      var facts = [];
-      var session;
-      var err;
-      var flow;
-      var Contact;
 
-      var getContactId = function(doc) {
-        // get the associated patient or place id to group reports by
-        return registrationUtils.getPatientId(doc);
-      };
+        return Promise.all([ Settings(), UserContact(), UserSettings() ])
+          .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
+            const rulesSettings = getRulesSettings(
+              settingsDoc,
+              userContactDoc,
+              userSettingsDoc,
+              canViewTasks,
+              canViewTargets
+            );
+            return RulesEngineCore.initialize(rulesSettings)
+              .then(() => {
+                const isEnabled = RulesEngineCore.isEnabled();
+                if (isEnabled) {
+                  assignMonthStartDate(settingsDoc);
+                  monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
 
-      var contactHasId = function(contact, id) {
-        return registrationUtils.getSubjectIds(contact).includes(id);
-      };
+                  ensureTaskFreshness = Debounce(self.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTaskFreshness();
 
-      const deriveFacts = function(dataRecords, contacts) {
-        const facts = _.map(contacts, function(contact) {
-          return new Contact({ contact: contact, reports: [] });
-        });
-        dataRecords.forEach(function(report) {
-          const factId = getContactId(report);
-          let fact = _.find(facts, fact => contactHasId(fact.contact, factId));
-          if (!fact) {
-            const contact = factId ? { _id: factId } : undefined;
-            fact = new Contact({ contact, reports: [] });
-            facts.push(fact);
-          }
-          fact.reports.push(report);
-        });
-        return facts;
-      };
-
-      var notifyError = function(_err) {
-        err = _err;
-        _.values(callbacks).forEach(function(cbs) {
-          _.values(cbs).forEach(function(callback) {
-            callback(err);
-          });
-        });
-      };
-
-      var notifyCallbacks = function(fact, type) {
-        if (!emissions[type]) {
-          emissions[type] = {};
-        }
-        emissions[type][fact._id] = fact;
-        _.values(callbacks[type]).forEach(function(callback) {
-          callback(null, [ fact ]);
-        });
-      };
-
-      var assertFacts = function() {
-        KNOWN_TYPES.forEach(function(type) {
-          session.on(type, function(fact) {
-            notifyCallbacks(fact, type);
-          });
-        });
-        facts.forEach(function(fact) {
-          session.assert(fact);
-        });
-        session.matchUntilHalt().then(
-          // halt
-          function() {
-            notifyError(new Error('Unexpected halt in fact assertion.'));
-          },
-          // error
-          notifyError
-        );
-      };
-
-      var findFact = function(id) {
-        return _.find(facts, function(fact) {
-          return contactHasId(fact.contact, id) ||
-                 _.findWhere(fact.reports, { _id: id });
-        });
-      };
-
-      var updateReport = function(doc) {
-        for (var j = 0; j < facts.length; j++) {
-          var fact = facts[j];
-          for (var i = 0; i < fact.reports.length; i++) {
-            if (fact.reports[i]._id === doc._id) {
-              fact.reports[i] = doc;
-              return fact;
-            }
-          }
-        }
-      };
-
-      var updateFacts = function(change) {
-        var fact;
-        if (change.deleted) {
-          fact = findFact(change.id);
-          if (fact) {
-            if (fact.contact && fact.contact._id === change.id) {
-              // deleted contact
-              fact.contact.deleted = true;
-            } else {
-              // deleted report
-              _.each(fact.reports, function(report) {
-                if (report._id === change.id) {
-                  report.deleted = true;
+                  ensureTargetFreshness = Debounce(self.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
+                  ensureTargetFreshness();
                 }
               });
-            }
-            session.modify(fact);
-          }
-        } else if (change.doc.form) {
-          fact = updateReport(change.doc);
-          if (fact) {
-            // updated report
-            session.modify(fact);
-          } else {
-            fact = findFact(getContactId(change.doc));
-            if (fact) {
-              // new report for known contact
-              fact.reports.push(change.doc);
-              session.modify(fact);
-            } else {
-              // new report for unknown contact
-              fact = new Contact({ reports: [ change.doc ] });
-              facts.push(fact);
-              session.assert(fact);
-            }
-          }
-        } else {
-          fact = findFact(change.id);
-          if (fact) {
-            // updated contact
-            fact.contact = change.doc;
-            session.modify(fact);
-          } else {
-            // new contact
-            fact = new Contact({ contact: change.doc, reports: [] });
-            facts.push(fact);
-            session.assert(fact);
-          }
-        }
-      };
-
-      var registerListener = function() {
-        Changes({
-          key: 'rules-engine',
-          callback: updateFacts,
-          filter: function(change) {
-            return change.doc.form || ContactTypes.includes(change.doc);
-          }
-        });
-      };
-
-      var initNools = function(settings, user) {
-        flow = nools.getFlow('medic');
-        if (!flow) {
-          flow = nools.compile(settings.tasks.rules, {
-            name: 'medic',
-            scope: { Utils: nootils(settings), user: user }
           });
-        }
-        Contact = flow.getDefined('contact');
-        session = flow.getSession();
-      };
-
-      var init = $q.all([ Settings(), UserContact() ])
-        .then(function(results) {
-          var settings = results[0];
-          var user = results[1];
-          if (!settings.tasks || !settings.tasks.rules) {
-            // no rules configured
-            complete.resolve();
-            return $q.resolve();
-          }
-          if (!flow) {
-            initNools(settings, user);
-          }
-          registerListener();
-          var options = {
-            limit: 99999999,
-            force: true,
-            include_docs: true
-          };
-          return $q.all([
-            Search('reports', { valid: true }, options),
-            Search('contacts', {}, options)
-          ])
-            .then(function(results) {
-              facts = deriveFacts(results[0], results[1]);
-              assertFacts();
-            });
-        });
-
-      return {
-        enabled: true,
-        init: init,
-        complete: complete.promise,
-        listen: function(name, type, callback) {
-          if (!callbacks[type]) {
-            callbacks[type] = {};
-          }
-          callbacks[type][name] = callback;
-          init
-            .then(function() {
-              // wait for init to complete
-              callback(err, _.values(emissions[type]));
-            })
-            .catch(callback);
-        },
-        _nools: nools, // exposed for testing
-        _getSession: () => session,
-      };
-    }
+      })
   );
+  const initialized = initialize();
 
-}());
+  const cancelDebounce = debounce => {
+    if (debounce) {
+      debounce.cancel();
+    }
+  };
+
+  const getRulesSettings = (settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) => {
+    const settingsTasks = settingsDoc && settingsDoc.tasks || {};
+    const filterTargetByContext = target => target.context ? !!$parse(target.context)({ user: userContactDoc }) : true;
+    const targets = settingsTasks.targets && settingsTasks.targets.items || [];
+
+    return {
+      rules: settingsTasks.rules,
+      taskSchedules: settingsTasks.schedules,
+      targets: targets.filter(filterTargetByContext),
+      enableTasks,
+      enableTargets,
+      contact: userContactDoc,
+      user: userSettingsDoc,
+      monthStartDate: UHCSettings.getMonthStartDate(settingsDoc),
+    };
+  };
+
+  const monitorChanges = (settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) => {
+    const isReport = doc => doc.type === 'data_record' && !!doc.form;
+    Changes({
+      key: 'mark-contacts-dirty',
+      filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc)),
+      callback: change => {
+        const subjectId = isReport(change.doc) ? registrationUtils.getSubjectId(change.doc) : change.id;
+        RulesEngineCore.updateEmissionsFor(subjectId);
+      },
+    });
+
+    const userLineage = [];
+    for (let current = userContactDoc; !!current && userLineage.length < MAX_LINEAGE_DEPTH; current = current.parent) {
+      userLineage.push(current._id);
+    }
+
+    const rulesConfigChange = () => {
+      const rulesSettings = getRulesSettings(
+        settingsDoc,
+        userContactDoc,
+        userSettingsDoc,
+        canViewTasks,
+        canViewTargets
+      );
+      RulesEngineCore.rulesConfigChange(rulesSettings);
+      assignMonthStartDate(settingsDoc);
+    };
+
+    Changes({
+      key: 'rules-config-update',
+      filter: change => change.id === 'settings' || userLineage.includes(change.id),
+      callback: change => {
+        if (change.id !== 'settings') {
+          return UserContact()
+            .then(updatedUser => {
+              userContactDoc = updatedUser;
+              rulesConfigChange();
+            });
+        }
+
+        settingsDoc = change.doc.settings;
+        rulesConfigChange();
+      },
+    });
+  };
+
+  const translateTaskDocs = taskDocs => {
+    const translateProperty = (property, task) => {
+      if (typeof property === 'string') {
+        // new translation key style
+        return $translate.instant(property, task);
+      }
+      // old message array style
+      return TranslateFrom(property, task);
+    };
+
+    for (const taskDoc of taskDocs) {
+      const { emission } = taskDoc;
+      if (emission) {
+        emission.title = translateProperty(emission.title, emission);
+        emission.priorityLabel = translateProperty(emission.priorityLabel, emission);
+      }
+    }
+
+    return taskDocs;
+  };
+
+  const assignMonthStartDate = settingsDoc => {
+    uhcMonthStartDate = UHCSettings.getMonthStartDate(settingsDoc);
+  };
+
+  const self = {
+    isEnabled: () => initialized.then(RulesEngineCore.isEnabled),
+
+    fetchTaskDocsForAllContacts: () => (
+      initialized
+        .then(() => {
+          cancelDebounce(ensureTaskFreshness);
+          return RulesEngineCore.fetchTasksFor();
+        })
+        .then(translateTaskDocs)
+    ),
+
+    fetchTaskDocsFor: contactIds => (
+      initialized
+        .then(() => RulesEngineCore.fetchTasksFor(contactIds))
+        .then(translateTaskDocs)
+    ),
+
+    fetchTargets: () => (
+      initialized
+        .then(() => {
+          cancelDebounce(ensureTargetFreshness);
+          const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
+          return RulesEngineCore.fetchTargets(relevantInterval);
+        })
+    ),
+  };
+
+  return self;
+});
+
+// RulesEngineCore allows for karma to test using a mock shared-lib
+angular.module('inboxServices').factory('RulesEngineCore', function(DB) { return rulesEngineCore(DB()); });

@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('HydrateContactNames',
   function(
@@ -9,17 +9,17 @@ angular.module('inboxServices').factory('HydrateContactNames',
     'use strict';
     'ngInject';
 
-    var findContactName = function(contactSummaries, id) {
-      var cs = _.findWhere(contactSummaries, { _id: id });
+    const findContactName = function(contactSummaries, id) {
+      const cs = _.find(contactSummaries, { _id: id });
       return (cs && cs.name) || null;
     };
 
-    var findMutedState = function(contactSummaries, id) {
-      var cs = _.findWhere(contactSummaries, { _id: id });
+    const findMutedState = function(contactSummaries, id) {
+      const cs = _.find(contactSummaries, { _id: id });
       return (cs && cs.muted) || false;
     };
 
-    var replaceContactIdsWithNames = function(summaries, contactSummaries) {
+    const replaceContactIdsWithNames = function(summaries, contactSummaries) {
       summaries.forEach(function(summary) {
         if (summary.contact) {
           summary.contact = findContactName(contactSummaries, summary.contact);
@@ -33,7 +33,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
       return summaries;
     };
 
-    var getMutedState = function(summaries, contactSummaries) {
+    const getMutedState = function(summaries, contactSummaries) {
       summaries.forEach(function(summary) {
         if (summary.muted || !summary.lineage || !summary.lineage.length) {
           return;
@@ -47,7 +47,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
       return summaries;
     };
 
-    var relevantIdsFromSummary = function(summary) {
+    const relevantIdsFromSummary = function(summary) {
       // Pull lineages as well so we can pull their names out of the summaries
       return [summary.contact].concat(summary.lineage);
     };
@@ -56,13 +56,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
      * Replace contact ids with their names for ids
      */
     return function(summaries) {
-      var ids =  _.chain(summaries)
-                  .map(relevantIdsFromSummary)
-                  .flatten()
-                  .compact()
-                  .uniq()
-                  .value();
-
+      const ids = _.uniq(_.compact(_.flattenDeep(summaries.map(relevantIdsFromSummary))));
       if (!ids.length) {
         return $q.resolve(summaries);
       }

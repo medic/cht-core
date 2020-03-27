@@ -65,7 +65,7 @@ describe('places controller', () => {
       name: 'St. Paul',
       parent: 'x'
     };
-    sinon.stub(config, 'get').returns(contactTypes);
+    sinon.stub(config, 'get').returns({ contact_types: contactTypes });
   });
 
   afterEach(() => {
@@ -155,7 +155,8 @@ describe('places controller', () => {
         }
       };
       controller._validatePlace(data).catch(err => {
-        chai.expect(err.message).to.equal('health_center "xyz" should have one of the following parent types: "district_hospital".');
+        chai.expect(err.message)
+          .to.equal('health_center "xyz" should have one of the following parent types: "district_hospital".');
         done();
       });
     });
@@ -167,7 +168,8 @@ describe('places controller', () => {
         type: 'district_hospital'
       };
       controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('clinic "xyz" should have one of the following parent types: "health_center".');
+        chai.expect(err.message)
+          .to.equal('clinic "xyz" should have one of the following parent types: "health_center".');
         done();
       });
     });

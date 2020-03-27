@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 // In this context $stateParams.id (the id in the url) can be:
 //  - the _id of the contact who is sending these messages
@@ -15,10 +15,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
-    Changes,
     GlobalActions,
     LineageModelGenerator,
-    MarkRead,
     MessageContacts,
     MessagesActions,
     Modal,
@@ -43,11 +41,16 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       const messagesActions = MessagesActions(dispatch);
       return {
         addSelectedMessage: messagesActions.addSelectedMessage,
+        deleteDoc: globalActions.deleteDoc,
+        markSelectedConversationRead: messagesActions.markSelectedConversationRead,
+        unsetSelected: globalActions.unsetSelected,
         removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
+        setLoadingShowContent: globalActions.setLoadingShowContent,
         setMessagesError: messagesActions.setMessagesError,
-        updateSelectedMessage: messagesActions.updateSelectedMessage,
-        setTitle: globalActions.setTitle
+        setSelected: messagesActions.setSelected,
+        setTitle: globalActions.setTitle,
+        updateSelectedMessage: messagesActions.updateSelectedMessage
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -59,16 +62,16 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
 
     const userCtx = Session.userCtx();
 
-    var checkScroll = function() {
+    const checkScroll = function() {
       if (this.scrollTop === 0 && !ctrl.allLoaded) {
         updateConversation({ skip: true });
       }
     };
 
-    var scrollToUnread = function() {
-      var content = $('.message-content-wrapper');
-      var markers = content.find('.marker');
-      var scrollTo;
+    const scrollToUnread = function() {
+      const content = $('.message-content-wrapper');
+      const markers = content.find('.marker');
+      let scrollTo;
       if (markers.length) {
         scrollTo = markers[0].offsetTop - 50;
       } else {
@@ -78,49 +81,43 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       $('.message-content-wrapper').on('scroll', checkScroll);
     };
 
-    var markAllRead = function() {
-      var docs = _.pluck(ctrl.selectedMessage.messages, 'doc');
-      if (docs.length) {
-        $scope.markConversationRead(docs);
-        MarkRead(docs)
-          .catch(function(err) {
-            return $log.error('Error marking all as read', err);
-          });
-      }
-    };
-
     // See $stateParams.id note at top of file
-    var getContactable = function(id, type) {
+    const getContactable = function(id, type) {
       if (type === 'contact') {
-        return LineageModelGenerator.contact(id)
-                                    .catch(err => {
-                                      if (err.code === 404) {
-                                        return Promise.resolve();
-                                      }
+        return LineageModelGenerator.contact(id).catch(err => {
+          if (err.code === 404) {
+            return;
+          }
+          throw err;
+        });
+      }
+      if (type === 'phone') {
+        return { name: id };
+      }
+      return {};
+    };
 
-                                      throw err;
-                                    });
-      } else if (type === 'phone') {
-        return {name: id};
-      } else {
-        return {};
+    const markConversationReadIfNeeded = () => {
+      const hasUnreadDoc = ctrl.selectedMessage.messages.some(message => {
+        return !message.read && message.doc;
+      });
+      if (hasUnreadDoc) {
+        ctrl.markSelectedConversationRead();
       }
     };
 
-    var selectContact = function(id, type, options) {
-      options = options || {};
+    const selectContact = function(id, type) {
       if (!id) {
         ctrl.setMessagesError(false);
         ctrl.setLoadingContent(false);
-        $scope.clearSelected();
+        ctrl.unsetSelected();
         return;
       }
       $('.message-content-wrapper').off('scroll', checkScroll);
-      $scope.setSelected({ id: id, messages: [] });
-      if (!options.silent) {
-        $scope.setLoadingContent(id);
-      }
-      $q.all([
+      ctrl.setSelected({ id: id, messages: [] });
+      ctrl.setLoadingShowContent(id);
+
+      return $q.all([
         getContactable(id, type),
         MessageContacts.conversation(id)
       ])
@@ -128,13 +125,13 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           let contactModel = results[0];
           const conversation = results[1];
           if (!contactModel) {
-            const firstTaskWithContact = conversation[0].doc.tasks.find( 
+            const firstTaskWithContact = conversation[0].doc.tasks.find(
               function(task) {
                 const message = task.messages && task.messages[0];
                 return message && message.contact && message.contact._id === id;
               }
             );
-            const firstMessageWithContact = firstTaskWithContact.messages.find( 
+            const firstMessageWithContact = firstTaskWithContact.messages.find(
               function(message) {
                 return message.contact._id === id;
               }
@@ -151,17 +148,13 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
             return;
           }
 
-          $scope.setLoadingContent(false);
+          ctrl.setLoadingShowContent(false);
           ctrl.setMessagesError(false);
-          var unread = _.filter(conversation, function(message) {
-            return !message.read;
-          });
-          ctrl.firstUnread = _.min(unread, function(message) {
-            return message.doc.reported_date;
-          });
+          const unread = conversation.filter(message => !message.read);
+          ctrl.firstUnread = _.minBy(unread, message => message.doc.reported_date);
           ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
           ctrl.setTitle((contactModel.doc && contactModel.doc.name) || id);
-          markAllRead();
+          markConversationReadIfNeeded();
           $timeout(scrollToUnread);
         })
         .catch(function(err) {
@@ -171,10 +164,10 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         });
     };
 
-    var updateConversation = function(options) {
-      var selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
+    const updateConversation = (options={}) => {
+      const selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
       if (selectedId) {
-        var skip = options.skip && ctrl.selectedMessage.messages.length;
+        const skip = options.skip && ctrl.selectedMessage.messages.length;
         if (skip) {
           $timeout(function() {
             ctrl.loadingMoreContent = true;
@@ -184,11 +177,11 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         MessageContacts.conversation(selectedId, skip)
           .then(function(conversation) {
             ctrl.loadingMoreContent = false;
-            var contentElem = $('.message-content-wrapper');
-            var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
-            var first = $('.item-content .body > ul > li').filter(':first');
+            const contentElem = $('.message-content-wrapper');
+            let scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
+            const first = $('.item-content .body > ul > li').filter(':first');
             conversation.forEach(function(updated) {
-              var match = _.findWhere(ctrl.selectedMessage.messages, { id: updated.id });
+              const match = _.find(ctrl.selectedMessage.messages, { id: updated.id });
               if (match) {
                 angular.extend(match, updated);
               } else {
@@ -198,15 +191,15 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
                 }
               }
             });
-            ctrl.allLoaded = conversation.length < 50;
             if (options.skip) {
+              ctrl.allLoaded = conversation.length < 50;
               delete ctrl.firstUnread;
             }
-            markAllRead();
+            markConversationReadIfNeeded();
             $timeout(function() {
-              var scroll = false;
+              let scroll = false;
               if (options.skip) {
-                var spinnerHeight = 102;
+                const spinnerHeight = 102;
                 scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
               } else if (first.length && scrollToBottom) {
                 scroll = $('.message-content-wrapper')[0].scrollHeight;
@@ -216,9 +209,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
               }
             });
           })
-          .catch(function(err) {
-            $log.error('Error fetching contact conversation', err);
-          });
+          .catch(err => $log.error('Error fetching contact conversation', err));
       }
     };
 
@@ -255,25 +246,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       ctrl.send.message = '';
     };
 
-    var changeListener = Changes({
-      key: 'messages-content',
-      callback: function(change) {
-        if (change.deleted) {
-          ctrl.removeSelectedMessage(change.id);
-        } else {
-          updateConversation({ changes: true });
-        }
-      },
-      filter: function(change) {
-        return ctrl.currentTab === 'messages' &&
-          ctrl.selectedMessage &&
-          _.findWhere(ctrl.selectedMessage.messages, { id: change.id });
-      }
-    });
-
     $scope.$on('$destroy', function() {
       unsubscribe();
-      changeListener.unsubscribe();
       if (!$state.includes('messages.detail')) {
         $('body').off('focus', '#message-footer textarea');
         $('body').off('blur', '#message-footer textarea');
@@ -283,10 +257,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $('.tooltip').remove();
 
     // See $stateParams.id note at top of file
-    selectContact($stateParams.id, $stateParams.type);
-    $scope.$on('UpdateContactConversation', function(e, options) {
-      selectContact($stateParams.id, $stateParams.type, options);
-    });
+    // Promise exposed solely for testing purposes
+    ctrl._testSelect = selectContact($stateParams.id, $stateParams.type);
 
     $('body')
       .on('focus', '#message-footer textarea', function() {

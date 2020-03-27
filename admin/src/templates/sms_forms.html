@@ -1,0 +1,42 @@
+<form id="forms-upload-json">
+  <p translate>configuration.sms.forms.title</p>
+  <legend translate>upload.sms.forms</legend>
+
+  <div class="form-actions">
+    <a class="btn btn-primary choose" ng-disabled="status.uploading">
+      <i class="fa fa-arrow-up"></i>
+      <span translate>upload</span>
+    </a>
+    <div class="error" ng-show="status.error" translate>Upload failed</div>
+    <div class="loader" ng-show="status.uploading"></div>
+    <span class="help-block" translate>upload.json.forms.help</span>
+    <div class="hide">
+      <input class="uploader" type="file" accept="application/json">
+    </div>
+  </div>
+</form>
+
+<div class="section">
+  <fieldset>
+    <legend translate>Installed Forms</legend>
+    <a class="btn btn-primary" ng-attr-download="{{download.name}}" ng-href="{{download.url}}">
+      <i class="fa fa-arrow-down"></i>
+      <span translate>Download</span>
+    </a>
+    <div class="row selection-heading">
+      <div class="col-sm-2" translate>icon</div>
+      <div class="col-sm-5" translate>unique.id</div>
+      <div class="col-sm-5" translate>title</div>
+    </div>
+    <div>
+      <ul>
+        <li ng-repeat="form in forms" class="row">
+          <div class="col-sm-2" ng-bind-html="form.meta.icon | resourceIcon"></div>
+          <div class="col-sm-5">{{form.meta.code}}</div>
+          <div class="col-sm-5" ng-if="form.meta.translation_key" translate>{{form.meta.translation_key}}</div>
+          <div class="col-sm-5" ng-if="!form.meta.translation_key">{{form.meta.label | translateFrom}}</div>
+        </li>
+      </ul>
+    </div>
+  </fieldset>
+</div>

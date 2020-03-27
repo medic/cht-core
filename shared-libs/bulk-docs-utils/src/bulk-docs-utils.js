@@ -1,7 +1,7 @@
 module.exports = function(dependencies) {
   dependencies = dependencies || {};
-  var Promise = dependencies.Promise;
-  var DB = dependencies.DB;
+  const Promise = dependencies.Promise;
+  const DB = dependencies.DB;
 
   function getParent(doc) {
     const parentId = doc.parent && doc.parent._id;
@@ -19,20 +19,21 @@ module.exports = function(dependencies) {
 
   return {
     updateParentContacts: function(docs) {
-      var documentByParentId = {};
+      const documentByParentId = {};
       return Promise.all(docs.map(function(doc) {
         return getParent(doc)
           .then(function(parent) {
-            var shouldUpdateParentContact = parent && parent.contact && parent.contact._id && parent.contact._id === doc._id;
+            const shouldUpdateParentContact = parent && parent.contact &&
+              parent.contact._id && parent.contact._id === doc._id;
             if (shouldUpdateParentContact) {
               parent.contact = null;
               documentByParentId[parent._id] = doc;
               return parent;
             }
           });
-        }))
+      }))
         .then(function(parents) {
-          var docs = parents.filter(function(parent) {
+          const docs = parents.filter(function(parent) {
             return parent;
           });
           return {
@@ -43,8 +44,8 @@ module.exports = function(dependencies) {
     },
 
     getDuplicateErrors: function(docs) {
-      var errors = [];
-      var dedup = [];
+      const errors = [];
+      const dedup = [];
       docs.forEach(function(doc) {
         if (dedup.indexOf(doc._id) !== -1) {
           errors.push({

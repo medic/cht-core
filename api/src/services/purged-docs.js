@@ -4,23 +4,24 @@ const purgingUtils = require('@medic/purging-utils');
 const cacheService = require('./cache');
 const crypto = require('crypto');
 const logger = require('../logger');
-const utils = require('../controllers/utils');
+const _ = require('lodash');
 
 const CACHE_NAME = 'purged-docs';
 const DB_NOT_FOUND_ERROR = new Error('not_found');
 const getPurgeDb = (roles) => {
   const hash = purgingUtils.getRoleHash(roles);
   const dbName = purgingUtils.getPurgeDbName(environment.db, hash);
-  return db.exists(dbName).then(exists => {
-    if (!exists) {
+  return db.exists(dbName).then(purgeDb => {
+    if (!purgeDb) {
       throw DB_NOT_FOUND_ERROR;
     }
-    return db.get(dbName, { skip_setup: true });
+    return purgeDb;
   });
 };
 
-const catchDbNotFoundError = (err) => {
+const catchDbNotFoundError = (err, purgeDb) => {
   if (err !== DB_NOT_FOUND_ERROR) {
+    db.close(purgeDb);
     throw err;
   }
 };
@@ -64,19 +65,22 @@ const getPurgedIds = (roles, docIds) => {
     return Promise.resolve(cached);
   }
   const ids = docIds.map(purgingUtils.getPurgedId);
+  let purgeDb;
   // requesting _changes instead of _all_docs because it's roughly twice faster
   return getPurgeDb(roles)
-    .then(purgeDb => purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length }))
+    .then(tempDb => purgeDb = tempDb)
+    .then(() => purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length }))
     .then(result => {
       purgeIds = getPurgedIdsFromChanges(result);
       cache.set(cacheKey, purgeIds);
+      db.close(purgeDb);
     })
-    .catch(catchDbNotFoundError)
+    .catch(err => catchDbNotFoundError(err, purgeDb))
     .then(() => purgeIds);
 };
 
 const getUnPurgedIds = (roles, docIds) => {
-  return getPurgedIds(roles, docIds).then(purgedIds => utils.difference(docIds, purgedIds));
+  return getPurgedIds(roles, docIds).then(purgedIds => _.difference(docIds, purgedIds));
 };
 
 const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } = {}) => {
@@ -89,7 +93,7 @@ const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } =
   const ids = docIds.map(purgingUtils.getPurgedId);
 
   return getPurgeDb(roles)
-    .then(db => purgeDb = db)
+    .then(tempDb => purgeDb = tempDb)
     .then(() => getCheckPointer(purgeDb, checkPointerId))
     .then(checkPointer => {
       const opts = {
@@ -105,8 +109,9 @@ const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } =
     .then(result => {
       const purgedDocIds = getPurgedIdsFromChanges(result);
       purgeIds = { purgedDocIds,  lastSeq: result.last_seq };
+      db.close(purgeDb);
     })
-    .catch(catchDbNotFoundError)
+    .catch(err => catchDbNotFoundError(err, purgeDb))
     .then(() => purgeIds);
 };
 
@@ -120,7 +125,7 @@ const getCheckPointer = (db, checkPointerId) => db
 const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
   let purgeDb;
   return getPurgeDb(roles)
-    .then(db => purgeDb = db)
+    .then(tempDb => purgeDb = tempDb)
     .then(() => Promise.all([
       getCheckPointer(purgeDb, checkPointerId),
       purgeDb.info()
@@ -129,13 +134,24 @@ const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
       checkPointer.last_seq = seq === 'now' ? info.update_seq : seq;
       return purgeDb.put(checkPointer);
     })
-    .catch(catchDbNotFoundError);
+    .then(result => {
+      db.close(purgeDb);
+      return result;
+    })
+    .catch(err => catchDbNotFoundError(err, purgeDb));
 };
 
 const info = (roles) => {
+  let purgeDb;
   return getPurgeDb(roles)
-    .catch(catchDbNotFoundError)
-    .then(purgeDb => !!purgeDb && purgeDb.info());
+    .then(tempDb => purgeDb = tempDb)
+    .then(() => purgeDb.info())
+    .catch(err => catchDbNotFoundError(err, purgeDb))
+    // finally would be nice but it doesn't work in node 8 :(
+    .then(info => {
+      db.close(purgeDb);
+      return info || false; // fetch needs valid JSON.
+    });
 };
 
 const listen = (seq = 'now') => {

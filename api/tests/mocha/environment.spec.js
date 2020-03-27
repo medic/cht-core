@@ -14,7 +14,9 @@ describe('environment', () => {
     it('default', () => testScenario({}, '/__dirname/extracted-resources'));
     it('explicit via env', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo' }, '/foo'));
     it('default in production', () => testScenario({ NODE_ENV: 'production' }, '/tmp/extracted-resources'));
-    it('explit and production', () => testScenario({ MEDIC_API_RESOURCE_PATH: '/foo', NODE_ENV: 'production' }, '/foo'));
+    it('explit and production', () => testScenario(
+      { MEDIC_API_RESOURCE_PATH: '/foo', NODE_ENV: 'production' }, '/foo')
+    );
   });
 
   it('should set, get and update deploy info correctly', () => {

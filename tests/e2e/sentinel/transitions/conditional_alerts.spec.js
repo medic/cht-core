@@ -1,6 +1,6 @@
-const utils = require('../../../utils'),
-      sentinelUtils = require('../utils'),
-      uuid = require('uuid');
+const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
+const uuid = require('uuid');
 
 const contacts = [
   {
@@ -21,7 +21,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'person',
+      parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -59,7 +62,10 @@ describe('conditional_alerts', () => {
       type: 'data_record',
       reported_date: new Date().getTime(),
       from: '+444999',
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -90,7 +96,10 @@ describe('conditional_alerts', () => {
       type: 'data_record',
       reported_date: new Date().getTime(),
       from: '+444999',
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -121,7 +130,13 @@ describe('conditional_alerts', () => {
       type: 'data_record',
       reported_date: new Date().getTime(),
       from: '+444999',
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: {
+        _id: 'person',
+        parent:  {
+          _id: 'clinic',
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        }
+      },
       somefield: 99
     };
 
@@ -153,7 +168,10 @@ describe('conditional_alerts', () => {
       type: 'data_record',
       reported_date: new Date().getTime(),
       from: '+444999',
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      },
       somefield: 120
     };
 
@@ -182,7 +200,8 @@ describe('conditional_alerts', () => {
       transitions: { conditional_alerts: true },
       alerts: [{
         form: 'FORM',
-        condition: 'FORM(1) && FORM(0).temp > FORM(1).temp && 1000 < FORM(0).reported_date - FORM(1).reported_date < 10000',
+        condition: 'FORM(1) && FORM(0).temp > FORM(1).temp && ' +
+                   '1000 < FORM(0).reported_date - FORM(1).reported_date < 10000',
         message: 'Fever increased since the last measurement',
         recipient: 'reporting_unit'
       }, {
@@ -200,7 +219,10 @@ describe('conditional_alerts', () => {
       type: 'data_record',
       reported_date: new Date().getTime() - 1200,
       from: '+444999',
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      },
       temp: 38
     };
 
@@ -210,7 +232,10 @@ describe('conditional_alerts', () => {
       type: 'data_record',
       reported_date: new Date().getTime(),
       from: '+444999',
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      },
       temp: 39
     };
 

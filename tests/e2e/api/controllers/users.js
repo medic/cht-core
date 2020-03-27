@@ -3,6 +3,8 @@ const http = require('http');
 const utils = require('../../../utils');
 const uuid = require('uuid');
 const querystring = require('querystring');
+const chai = require('chai');
+const sentinelUtils = require('../../sentinel/utils');
 
 const user = n => `org.couchdb.user:${n}`;
 
@@ -55,46 +57,46 @@ describe('Users API', () => {
         },
         body: _usersUser
       })
-      .then(() => utils.saveDocs(medicData))
-      .then(() => {
-        const deferred = protractor.promise.defer();
+        .then(() => utils.saveDocs(medicData))
+        .then(() => {
+          const deferred = protractor.promise.defer();
 
-        const options = {
-          hostname: constants.API_HOST,
-          port: constants.API_PORT,
-          path: '/_session',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          auth: `${username}:${password}`
-        };
+          const options = {
+            hostname: constants.API_HOST,
+            port: constants.API_PORT,
+            path: '/_session',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            auth: `${username}:${password}`
+          };
 
-        // Use http service to extract cookie
-        const req = http.request(options, res => {
-          if (res.statusCode !== 200) {
-            return deferred.reject('Expected 200 from _session authing');
-          }
+          // Use http service to extract cookie
+          const req = http.request(options, res => {
+            if (res.statusCode !== 200) {
+              return deferred.reject('Expected 200 from _session authing');
+            }
 
-          // Example header:
-          // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
-          try {
-            cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
-          } catch (err) {
-            return deferred.reject(err);
-          }
+            // Example header:
+            // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
+            try {
+              cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
+            } catch (err) {
+              return deferred.reject(err);
+            }
 
-          deferred.fulfill(cookie);
-        });
+            deferred.fulfill(cookie);
+          });
 
-        req.write(JSON.stringify({
+          req.write(JSON.stringify({
             name: username,
             password: password
-        }));
-        req.end();
+          }));
+          req.end();
 
-        return deferred.promise;
-      }));
+          return deferred.promise;
+        }));
 
     afterAll(() =>
       utils.request(`/_users/${user(username)}`)
@@ -117,10 +119,10 @@ describe('Users API', () => {
           place: newPlaceId
         }
       })
-      .then(() => utils.getDoc(user(username)))
-      .then(doc => {
-        expect(doc.facility_id).toBe(newPlaceId);
-      }));
+        .then(() => utils.getDoc(user(username)))
+        .then(doc => {
+          expect(doc.facility_id).toBe(newPlaceId);
+        }));
 
     it('401s if a user without the right permissions attempts to modify someone else', () =>
       utils.request({
@@ -131,10 +133,10 @@ describe('Users API', () => {
         },
         auth: { username, password },
       })
-      .then(() => fail('You should get a 401 in this situation'))
-      .catch(err => {
-        expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
-      }));
+        .then(() => fail('You should get a 401 in this situation'))
+        .catch(err => {
+          expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
+        }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
       utils.request({
@@ -145,10 +147,10 @@ describe('Users API', () => {
         },
         auth: { username, password },
       })
-      .then(() => fail('You should get an error in this situation'))
-      .catch(err => {
-        expect(err.responseBody.error).toBe('unauthorized');
-      }));
+        .then(() => fail('You should get an error in this situation'))
+        .catch(err => {
+          expect(err.responseBody.error).toBe('unauthorized');
+        }));
 
     it('Allows for users to modify themselves with a cookie', () =>
       utils.request({
@@ -162,54 +164,118 @@ describe('Users API', () => {
         },
         auth: { username, password},
       })
-      .then(() => utils.getDoc(user(username)))
-      .then(doc => {
-        expect(doc.fullname).toBe('Awesome Guy');
-      }));
+        .then(() => utils.getDoc(user(username)))
+        .then(doc => {
+          expect(doc.fullname).toBe('Awesome Guy');
+        }));
 
     it('Does not allow users to update their password with only a cookie', () =>
-        utils.request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          headers: {
-            'Cookie': cookie
-          },
-          body: {
-            password: 'swizzlesticks'
-          },
-          noAuth: true
-        })
+      utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        headers: {
+          'Cookie': cookie
+        },
+        body: {
+          password: 'swizzlesticks'
+        },
+        noAuth: true
+      })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
           expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
-        utils.request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          headers: {
-            'Cookie': cookie
-          },
-          body: {
-            password: password // keeping it the same, but the security check will be equivilent,
-                               // our code can't know it's the same!
-          },
-          auth: { username, password }
-        })
+      utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        headers: {
+          'Cookie': cookie
+        },
+        body: {
+          password: password // keeping it the same, but the security check will be equivilent,
+          // our code can't know it's the same!
+        },
+        auth: { username, password }
+      })
         .catch(() => fail('This should not result in an error')));
 
     it('Does allow users to update their password with just basic auth', () =>
-        utils.request({
-          path: `/api/v1/users/${username}`,
-          method: 'POST',
-          body: {
-            password: password // keeping it the same, but the security check will be equivilent,
-                               // our code can't know it's the same!
-          },
-          auth: { username, password }
-        })
+      utils.request({
+        path: `/api/v1/users/${username}`,
+        method: 'POST',
+        body: {
+          password: password // keeping it the same, but the security check will be equivilent,
+          // our code can't know it's the same!
+        },
+        auth: { username, password }
+      })
         .catch(() => fail('This should not result in an error')));
+
+    it('should work with enabled transitions', () => {
+      const parentPlace = {
+        _id: 'PARENT_PLACE',
+        name: 'Parent place',
+        type: 'district_hospital',
+        reported_date: new Date().getTime()
+      };
+      return utils
+        .updateSettings({ transitions: { generate_patient_id_on_people: true }})
+        .then(() => utils.saveDoc(parentPlace))
+        .then(() => {
+          const opts = {
+            path: '/api/v1/users',
+            method: 'POST',
+            body: {
+              username: 'philip',
+              password: password,
+              roles: ['district_admin'],
+              name: 'Philip',
+              contact: { name: 'Philip' },
+              place: { name: 'PhilipPlace', type: 'health_center', parent: 'PARENT_PLACE' },
+            },
+          };
+
+          return utils.request(opts);
+        })
+        .then(result => {
+          chai.expect(result).to.deep.nested.include({
+            'user.id': 'org.couchdb.user:philip',
+            'user-settings.id': 'org.couchdb.user:philip',
+          });
+          chai.expect(result.contact.id).to.not.be.undefined;
+        })
+        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => Promise.all([
+          utils.getDoc('org.couchdb.user:philip'),
+          utils.request('/_users/org.couchdb.user:philip')
+        ]))
+        .then(([userSettings, user]) => {
+          chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
+          chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
+          chai.expect(userSettings.facility_id).to.equal(user.facility_id);
+
+          return utils.getDocs([userSettings.contact_id, userSettings.facility_id]);
+        })
+        .then(([ contact, place ]) => {
+          chai.expect(contact.patient_id).to.not.be.undefined;
+          chai.expect(contact).to.deep.include({
+            name: 'Philip',
+            parent: { _id: place._id, parent: place.parent },
+            type: 'person',
+          });
+
+          chai.expect(place.place_id).to.not.be.undefined;
+          chai.expect(place).to.deep.include({
+            contact: { _id: contact._id, parent: contact.parent },
+            name: 'PhilipPlace',
+            parent: { _id: 'PARENT_PLACE' },
+            type: 'health_center',
+          });
+        });
+
+    });
 
   });
 
@@ -259,7 +325,8 @@ describe('Users API', () => {
     let offlineRequestOptions;
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
-    let expectedNbrDocs = nbrOfflineDocs + 4; // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+    // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+    let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
 
     beforeAll(done => {

@@ -1,7 +1,7 @@
 const auth = require('../auth');
-const bulkDocs = require('../services/bulk-docs'),
-      _ = require('underscore'),
-      serverUtils = require('../server-utils');
+const bulkDocs = require('../services/bulk-docs');
+const _ = require('lodash');
+const serverUtils = require('../server-utils');
 
 const requestError = reason => ({
   error: 'bad_request',
@@ -27,7 +27,7 @@ const invalidRequest = req => {
 
 const interceptResponse = (requestDocs, req, res, response) => {
   response = JSON.parse(response);
-  const formattedResults = bulkDocs.formatResults(req.body.new_edits, requestDocs, req.body.docs, response);
+  const formattedResults = bulkDocs.formatResults(requestDocs, req.body.docs, response);
   res.json(formattedResults);
 };
 
@@ -68,7 +68,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _invalidRequest: invalidRequest,
     _interceptResponse: interceptResponse
   });

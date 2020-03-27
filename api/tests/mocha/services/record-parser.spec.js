@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      definitions = require('../../form-definitions'),
-      config = require('../../../src/config'),
-      records = require('../../../src/services/records');
+const sinon = require('sinon');
+const chai = require('chai');
+const definitions = require('../../form-definitions');
+const config = require('../../../src/config');
+const records = require('../../../src/services/records');
 
 describe('record parser', () => {
 

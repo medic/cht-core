@@ -2,18 +2,18 @@
  * Delete data for a group of CHPs within the branch.
  */
 
- /* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars */
 
 'use strict';
 
-var PouchDB = require('pouchdb');
-var _ = require('underscore');
-var fs = require('fs');
-var url = require('url');
-var utils = require('./delete_training_data_utils.js');
+const PouchDB = require('pouchdb');
+const _ = require('underscore');
+const fs = require('fs');
+const url = require('url');
+const utils = require('./delete_training_data_utils.js');
 
-var getUsernames = function(groupFile) {
-  var group = [];
+const getUsernames = function(groupFile) {
+  let group = [];
   try {
     group = fs.readFileSync(groupFile, 'utf8');
   } catch (err) {
@@ -21,7 +21,7 @@ var getUsernames = function(groupFile) {
     process.exit();
   }
 
-  var lines = group.split('\n');
+  let lines = group.split('\n');
   lines = _.filter(lines, function(line) { return line !== ''; });
   lines = _.map(lines, function(line) { return line.trim(); });
   if (lines.length === 0) {
@@ -31,9 +31,9 @@ var getUsernames = function(groupFile) {
   return Promise.resolve(lines);
 };
 
-var getUserObjects = function(db, group) {
+const getUserObjects = function(db, group) {
   console.log('Getting users from db');
-  var userSettingsNames = _.map(group, function(user) {
+  const userSettingsNames = _.map(group, function(user) {
     return 'org.couchdb.user:' + user;
   });
   return db.allDocs({keys: userSettingsNames, include_docs: true})
@@ -60,12 +60,12 @@ var getUserObjects = function(db, group) {
 };
 
 // input : [{ _id: user._id, facility_id: user.facility_id }]
-var checkUsersAreInBranch = function(db, users, branchId) {
+const checkUsersAreInBranch = function(db, users, branchId) {
   console.log('Checking users are in branch ' + branchId + '\n');
-  var facilities = _.map(users, function(user) {
+  const facilities = _.map(users, function(user) {
     return user.facility_id;
   });
-  var findBranch = function(doc) {
+  const findBranch = function(doc) {
     if (!doc) {
       return;
     }
@@ -77,7 +77,7 @@ var checkUsersAreInBranch = function(db, users, branchId) {
   return db.allDocs({keys: facilities, include_docs: true})
     .then(function(result) {
       _.each(result.rows, function(row) {
-        var userBranch = findBranch(row.doc);
+        const userBranch = findBranch(row.doc);
         if (!userBranch) {
           console.log('No branch found for ' + row.doc.name + ' (' + row.doc._id + ')');
           console.log('Aborting.');
@@ -95,7 +95,7 @@ var checkUsersAreInBranch = function(db, users, branchId) {
 };
 
 // users is like [{ _id: user._id, facility_id: user.facility_id, contact_id: user.contact_id }]
-var deleteReports = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
+const deleteReports = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
   return utils.queryInBatches(
     function(skip) {
       console.log('Deleting reports');
@@ -115,8 +115,8 @@ var deleteReports = function(db, dryrun, branchId, users, startTimestamp, endTim
     });
 };
 
-var filterReportsForGroup = function(dataRecords, users) {
-  var filtered = _.filter(dataRecords, function(record) {
+const filterReportsForGroup = function(dataRecords, users) {
+  const filtered = _.filter(dataRecords, function(record) {
     return !!_.find(users, function(user) {
       return record.contact._id === user.contact_id;
     });
@@ -126,8 +126,8 @@ var filterReportsForGroup = function(dataRecords, users) {
 };
 
 // look at parent, if health_center then check, if not parent etc.
-var filterPersonsForGroup = function(persons, users) {
-  var filtered = _.filter(persons, function(person) {
+const filterPersonsForGroup = function(persons, users) {
+  const filtered = _.filter(persons, function(person) {
     if (!person.parent || !person.parent.parent || !person.parent.parent._id) {
       console.log('no chp found for person ' + person.name + ' (' + person._id + ')');
       return false;
@@ -136,7 +136,7 @@ var filterPersonsForGroup = function(persons, users) {
       console.log('grandparent is not a chp - for person ' + person.name + ' (' + person._id + ')');
       return false;
     }
-    var found = !!_.find(users, function(user) {
+    const found = !!_.find(users, function(user) {
       return person.parent.parent._id === user.facility_id;
     });
     return found;
@@ -145,7 +145,7 @@ var filterPersonsForGroup = function(persons, users) {
   return filtered;
 };
 
-var deletePersons = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
+const deletePersons = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
   return utils.queryInBatches(
     function(skip) {
       console.log('Deleting persons');
@@ -169,9 +169,9 @@ var deletePersons = function(db, dryrun, branchId, users, startTimestamp, endTim
     });
 };
 
-var filterClinicsForGroup = function(clinics, users) {
-  var filtered = _.filter(clinics, function(clinic) {
-    var index = _.find(users, function(user) {
+const filterClinicsForGroup = function(clinics, users) {
+  const filtered = _.filter(clinics, function(clinic) {
+    const index = _.find(users, function(user) {
       return clinic.parent._id === user.facility_id;
     });
     return !!index;
@@ -180,9 +180,9 @@ var filterClinicsForGroup = function(clinics, users) {
   return filtered;
 };
 
-var filterHealthCenterForGroup = function(healthCenters, users) {
-  var filtered = _.filter(healthCenters, function(healthCenters) {
-    var index = _.find(users, function(user) {
+const filterHealthCenterForGroup = function(healthCenters, users) {
+  const filtered = _.filter(healthCenters, function(healthCenters) {
+    const index = _.find(users, function(user) {
       if (healthCenters._id === user.facility_id) {
         console.log('FOUND : health center ' + healthCenters._id + ' matched to user ' + user._id);
       }
@@ -194,7 +194,7 @@ var filterHealthCenterForGroup = function(healthCenters, users) {
   return filtered;
 };
 
-var deleteClinics = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
+const deleteClinics = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
   return utils.queryInBatches(
     function(skip) {
       console.log('Deleting clinics');
@@ -217,7 +217,7 @@ var deleteClinics = function(db, dryrun, branchId, users, startTimestamp, endTim
     });
 };
 
-var deleteHealthCenters = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
+const deleteHealthCenters = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
   return Promise.resolve()
     .then(function() {
       console.log('Deleting health centers');
@@ -249,38 +249,42 @@ if (process.argv.length < 8) {
   console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
     'from a given branch (\'district_hospital\' type) for a group of users, that was created ' +
     'between the two timestamps.');
-  console.log('The usernames (i.e. the user\'s login, e.g. "admin") of the CHWs should be listed, one per line, in a text file (groupFile).');
+  console.log('The usernames (i.e. the user\'s login, e.g. "admin") of the CHWs should be listed, one per line, in a ' +
+    'text file (groupFile).');
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
-  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
-  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data_for_group.js 52857bf2cef066525b2feb82805fb373 ./group1.txt "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 5000 dryrun');
+  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the ' +
+    'deletions.\n');
+  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; ' +
+    'node delete_training_data_for_group.js 52857bf2cef066525b2feb82805fb373 ./group1.txt ' +
+    '"2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 5000 dryrun');
   process.exit();
 }
 
-var now = new Date();
-var dbUrl = process.env.COUCH_URL;
-var branchId = process.argv[2];
-var groupFile = process.argv[3];
-var start = new Date(process.argv[4]);
-var end = new Date(process.argv[5]);
-var logdir = process.argv[6] + '/' + now.getTime();
-var batchSize = parseInt(process.argv[7]);
-var dryrun = process.argv[8];
+const now = new Date();
+const dbUrl = process.env.COUCH_URL;
+const branchId = process.argv[2];
+const groupFile = process.argv[3];
+const start = new Date(process.argv[4]);
+const end = new Date(process.argv[5]);
+const logdir = process.argv[6] + '/' + now.getTime();
+const batchSize = parseInt(process.argv[7]);
+let dryrun = process.argv[8];
 dryrun = (dryrun === 'dryrun');
 
-var logfile = 'debug.log';
+const logfile = 'debug.log';
 utils.setupLogging(logdir, logfile);
 
 console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')\n');
 
-var db = new PouchDB(dbUrl);
-var startTimestamp = start.getTime();
-var endTimestamp = end.getTime();
-var parsedUrl = url.parse(dbUrl);
+const db = new PouchDB(dbUrl);
+const startTimestamp = start.getTime();
+const endTimestamp = end.getTime();
+const parsedUrl = url.parse(dbUrl);
 
 utils.fetchBranchInfo(db, branchId)
   .then(function(branchInfo) {
-    var message = '\nStarting deletion process with' +
+    const message = '\nStarting deletion process with' +
       '\ndbUrl = ' + parsedUrl.host + parsedUrl.pathname +
       '\nbranch = ' + JSON.stringify(branchInfo) +
       '\ngroupFile = ' + groupFile +

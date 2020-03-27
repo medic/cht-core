@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 
 const db = require('./db');
 const ddocExtraction = require('./ddoc-extraction');
@@ -14,10 +14,14 @@ const translationCache = {};
 let settings = {};
 let transitionsLib;
 
+_.templateSettings = {
+  interpolate: /\{\{(.+?)\}\}/g,
+};
+
 const getMessage = (value, locale) => {
   const _findTranslation = (value, locale) => {
     if (value.translations) {
-      const translation = _.findWhere(value.translations, { locale: locale });
+      const translation = _.find(value.translations, { locale: locale });
       return translation && translation.content;
     } else {
       // fallback to old translation definition to support
@@ -122,7 +126,7 @@ module.exports = {
       (translationCache[locale] && translationCache[locale][key]) ||
       (translationCache.en && translationCache.en[key]) ||
       key;
-    // underscore templates will return ReferenceError if all variables in
+    // lodash templates will return ReferenceError if all variables in
     // template are not defined.
     try {
       return _.template(value)(ctx || {});

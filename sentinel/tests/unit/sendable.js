@@ -1,9 +1,9 @@
-var moment = require('moment'),
-  assert = require('chai').assert,
-  unit = require('../../src/schedule/index'),
-  settings;
+const moment = require('moment');
+const assert = require('chai').assert;
+const unit = require('../../src/schedule/index');
+let settings;
 
-var config = {
+const config = {
   get: function(property) {
     return settings[property];
   }

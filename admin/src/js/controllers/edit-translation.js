@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('controllers').controller('EditTranslationCtrl',
   function (
@@ -12,7 +12,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
     'ngInject';
 
     $scope.editing = !!$scope.model.key;
-    $scope.model.locales = _.pluck($scope.model.locales, 'doc');
+    $scope.model.locales = _.map($scope.model.locales, 'doc');
     $scope.model.values = {};
     $scope.errors = {};
     $scope.isCustom = false;
@@ -20,12 +20,12 @@ angular.module('controllers').controller('EditTranslationCtrl',
     $scope.model.locales.forEach(function(locale) {
       const custom = locale.custom || {};
       const generic = locale.generic || {};
-      var value = $scope.model.key ? custom[$scope.model.key] || generic[$scope.model.key] : null;
+      const value = $scope.model.key ? custom[$scope.model.key] || generic[$scope.model.key] : null;
       $scope.model.values[locale.code] = value;
       $scope.isCustom = $scope.isCustom || _.has(custom, $scope.model.key);
     });
 
-    var getUpdatedLocales = function() {
+    const getUpdatedLocales = function() {
       return _.filter($scope.model.locales, function(locale) {
         const newValue = $scope.model.values[locale.code];
         const custom = locale.custom && locale.custom[$scope.model.key];
@@ -47,7 +47,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
       });
     };
 
-    var deleteKeyFromLocales = function() {
+    const deleteKeyFromLocales = function() {
       return _.filter($scope.model.locales, function(locale) {
         const custom = locale.custom || {};
         if (
@@ -70,7 +70,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
         return;
       }
       $scope.setProcessing();
-      var updated = getUpdatedLocales();
+      const updated = getUpdatedLocales();
       if (!updated.length) {
         $scope.setFinished();
         $uibModalInstance.close();
@@ -92,7 +92,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
 
     $scope.delete = function() {
       $scope.setProcessing();
-      var updated = deleteKeyFromLocales();
+      const updated = deleteKeyFromLocales();
       if (!updated.length) {
         $scope.setFinished();
         $uibModalInstance.close();

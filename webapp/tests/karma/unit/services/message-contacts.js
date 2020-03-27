@@ -2,11 +2,11 @@ describe('MessageContacts service', () => {
 
   'use strict';
 
-  let service,
-      query,
-      getDataRecords,
-      hydrateMessages,
-      addReadStatus;
+  let service;
+  let query;
+  let getDataRecords;
+  let hydrateMessages;
+  let addReadStatus;
 
   beforeEach(() => {
     query = sinon.stub();

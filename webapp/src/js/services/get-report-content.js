@@ -8,7 +8,7 @@ angular
     'use strict';
     'ngInject';
 
-    var REPORT_ATTACHMENT_NAME = 'content';
+    const REPORT_ATTACHMENT_NAME = 'content';
     getReportContent.REPORT_ATTACHMENT_NAME = REPORT_ATTACHMENT_NAME;
     return getReportContent;
 

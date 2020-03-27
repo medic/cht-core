@@ -14,7 +14,7 @@ const doc = {
   transitions: {
     maintain_info_document: {
       last_rev: 2,
-      seq: '241-g1AAAACbeJzLYWBgYMpgTmEQTM4vTc5ISXLIyU9OzMnILy7JAUklMiTV____PyuDOdE1FyjAnpRikZxsaYpNAx5j8liAJEMDkPoPNW0N2LQ0S_PkNNM0bPqyAMhOMjM',
+      seq: '241-g1AAAACbeJzLYWBgYMpgTmEQTM4vTc5ISXLIyU9OzMnILy7JAUklMiTV____',
       ok: true
     }
   }

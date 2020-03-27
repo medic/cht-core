@@ -1,4 +1,5 @@
 const moment = require('moment');
+const responsive = require('../modules/responsive');
 
 angular.module('inboxControllers').controller('ContactsContentCtrl',
   function(
@@ -10,7 +11,6 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $translate,
     Changes,
     ContactChangeFilter,
-    ContactViewModelGenerator,
     ContactsActions,
     Debounce,
     GlobalActions,
@@ -25,6 +25,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     const ctrl = this;
     const mapStateToTarget = function(state) {
       return {
+        forms: Selectors.getForms(state),
         selectedContact: Selectors.getSelectedContact(state),
         loadingContent: Selectors.getLoadingContent(state),
         loadingSelectedContactChildren: Selectors.getLoadingSelectedContactChildren(state),
@@ -36,18 +37,19 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       const contactsActions = ContactsActions(dispatch);
       const globalActions = GlobalActions(dispatch);
       return {
-        settingSelected: globalActions.settingSelected,
-        updateSelectedContact: contactsActions.updateSelectedContact
+        unsetSelected: globalActions.unsetSelected,
+        setLoadingShowContent: globalActions.setLoadingShowContent,
+        setSelectedContact: contactsActions.setSelectedContact,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var taskEndDate,
-        reportStartDate,
-        usersHomePlaceId;
+    let taskEndDate;
+    let reportStartDate;
+    let usersHomePlaceId;
 
     ctrl.filterTasks = function(task) {
-      return !taskEndDate || taskEndDate.isAfter(task.date);
+      return !taskEndDate || task.dueDate <= taskEndDate;
     };
     ctrl.filterReports = function(report) {
       return !reportStartDate || reportStartDate.isBefore(report.reported_date);
@@ -60,13 +62,13 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
 
     ctrl.setTasksTimeWindowWeeks = function(weeks) {
       ctrl.tasksTimeWindowWeeks = weeks;
-      taskEndDate = weeks ? moment().add(weeks, 'weeks') : null;
+      taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
     };
 
     ctrl.setTasksTimeWindowWeeks(1);
     ctrl.setReportsTimeWindowMonths(3);
 
-    var getHomePlaceId = function() {
+    const getHomePlaceId = function() {
       return UserSettings()
         .then(function(user) {
           return user && user.facility_id;
@@ -76,25 +78,19 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
-    var selectContact = function(id, silent) {
+    const selectContact = function(id, silent) {
       if (!silent) {
-        $scope.setLoadingContent(id);
+        ctrl.setLoadingShowContent(id);
       }
 
-      var options = { getChildPlaces: !usersHomePlaceId || usersHomePlaceId !== id };
-      return ContactViewModelGenerator.getContact(id, options)
-        .then(function(model) {
-          var refreshing = (ctrl.selectedContact && ctrl.selectedContact.doc._id) === id;
-          $scope.setSelected(model, options);
-          ctrl.settingSelected(refreshing);
-        })
-        .catch(function(err) {
-          if (err.code === 404 && !silent) {
-            $translate('error.404.title').then(Snackbar);
-          }
-          $scope.clearSelected();
-          $log.error('Error generating contact view model', err, err.message);
-        });
+      const getChildPlaces = !usersHomePlaceId || usersHomePlaceId !== id;
+      ctrl.setSelectedContact(id, { getChildPlaces }).catch(err => {
+        if (err.code === 404 && !silent) {
+          $translate('error.404.title').then(Snackbar);
+        }
+        ctrl.unsetSelected();
+        $log.error('Error selecting contact', err);
+      });
     };
 
     // exposed solely for testing purposes
@@ -104,8 +100,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       if ($stateParams.id) {
         return selectContact($stateParams.id);
       }
-      $scope.clearSelected();
-      if ($scope.isMobile()) {
+      ctrl.unsetSelected();
+      if (responsive.isMobile()) {
         return;
       }
       if (id) {
@@ -113,9 +109,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       }
     });
 
-    var debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);
+    const debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);
 
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'contacts-content',
       filter: function(change) {
         return ContactChangeFilter.matchContact(change, ctrl.selectedContact) ||
@@ -125,14 +121,8 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       callback: function(change) {
         if (ContactChangeFilter.matchContact(change, ctrl.selectedContact) && ContactChangeFilter.isDeleted(change)) {
           debouncedReloadContact.cancel();
-          var parentId = ctrl.selectedContact.doc.parent && ctrl.selectedContact.doc.parent._id;
-          if (parentId) {
-            // redirect to the parent
-            return $state.go($state.current.name, {id: parentId});
-          } else {
-            // top level contact deleted - clear selection
-            return $scope.clearSelected();
-          }
+          const parentId = ctrl.selectedContact.doc.parent && ctrl.selectedContact.doc.parent._id;
+          return $state.go('contacts.detail', { id: parentId || null });
         }
         return debouncedReloadContact(ctrl.selectedContact.doc._id, true);
       }

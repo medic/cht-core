@@ -1,54 +1,54 @@
-const _ = require('underscore'),
-  bodyParser = require('body-parser'),
-  express = require('express'),
-  morgan = require('morgan'),
-  helmet = require('helmet'),
-  environment = require('./environment'),
-  db = require('./db'),
-  path = require('path'),
-  auth = require('./auth'),
-  logger = require('./logger'),
-  isClientHuman = require('./is-client-human'),
-  target = 'http://' + environment.host + ':' + environment.port,
-  proxy = require('http-proxy').createProxyServer({ target: target }),
-  proxyForAuth = require('http-proxy').createProxyServer({
-    target: target,
-    selfHandleResponse: true,
-  }),
-  proxyForChanges = require('http-proxy').createProxyServer({
-    target: target,
-    selfHandleResponse: true,
-  }),
-  login = require('./controllers/login'),
-  smsGateway = require('./controllers/sms-gateway'),
-  exportData = require('./controllers/export-data'),
-  records = require('./controllers/records'),
-  forms = require('./controllers/forms'),
-  users = require('./controllers/users'),
-  places = require('./controllers/places'),
-  people = require('./controllers/people'),
-  upgrade = require('./controllers/upgrade'),
-  settings = require('./controllers/settings'),
-  bulkDocs = require('./controllers/bulk-docs'),
-  africasTalking = require('./controllers/africas-talking'),
-  infodoc = require('./controllers/infodoc'),
-  authorization = require('./middleware/authorization'),
-  createUserDb = require('./controllers/create-user-db'),
-  purgedDocsController = require('./controllers/purged-docs'),
-  staticResources = /\/(templates|static)\//,
-  // CouchDB is very relaxed in matching routes
-  routePrefix = '/+' + environment.db + '/+',
-  pathPrefix = '/' + environment.db + '/',
-  appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/',
-  adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/',
-  serverUtils = require('./server-utils'),
-  uuid = require('uuid'),
-  compression = require('compression'),
-  BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/', // jshint ignore:line
-  app = express();
+const _ = require('lodash');
+const bodyParser = require('body-parser');
+const express = require('express');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const environment = require('./environment');
+const db = require('./db');
+const path = require('path');
+const auth = require('./auth');
+const logger = require('./logger');
+const isClientHuman = require('./is-client-human');
+const target = 'http://' + environment.host + ':' + environment.port;
+const proxy = require('http-proxy').createProxyServer({ target: target });
+const proxyForAuth = require('http-proxy').createProxyServer({
+  target: target,
+  selfHandleResponse: true,
+});
+const proxyForChanges = require('http-proxy').createProxyServer({
+  target: target,
+  selfHandleResponse: true,
+});
+const login = require('./controllers/login');
+const smsGateway = require('./controllers/sms-gateway');
+const exportData = require('./controllers/export-data');
+const records = require('./controllers/records');
+const forms = require('./controllers/forms');
+const users = require('./controllers/users');
+const places = require('./controllers/places');
+const people = require('./controllers/people');
+const upgrade = require('./controllers/upgrade');
+const settings = require('./controllers/settings');
+const bulkDocs = require('./controllers/bulk-docs');
+const africasTalking = require('./controllers/africas-talking');
+const infodoc = require('./controllers/infodoc');
+const authorization = require('./middleware/authorization');
+const createUserDb = require('./controllers/create-user-db');
+const purgedDocsController = require('./controllers/purged-docs');
+const staticResources = /\/(templates|static)\//;
+// CouchDB is very relaxed in matching routes
+const routePrefix = '/+' + environment.db + '/+';
+const pathPrefix = '/' + environment.db + '/';
+const appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/';
+const adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/';
+const serverUtils = require('./server-utils');
+const uuid = require('uuid');
+const compression = require('compression');
+const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
+const app = express();
 
 // requires content-type application/json header
-var jsonParser = bodyParser.json({ limit: '32mb' });
+const jsonParser = bodyParser.json({ limit: '32mb' });
 const jsonQueryParser = require('./middleware/query-parser').json;
 const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
@@ -75,7 +75,7 @@ app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
 // requires content-type application/x-www-form-urlencoded header
-var formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
+const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
 
 app.set('strict routing', true);
 app.set('trust proxy', true);
@@ -143,8 +143,10 @@ app.use(
         ],
         scriptSrc: [
           `'self'`,
-          `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`, // Explicitly allow the telemetry script setting startupTimes
-          `'unsafe-eval'` // AngularJS and several dependencies require this
+          // Explicitly allow the telemetry script setting startupTimes
+          `'sha256-6i0jYw/zxQO6q9fIxqI++wftTrPWB3yxt4tQqy6By6k='`,
+          // AngularJS and several dependencies require this
+          `'unsafe-eval'`
         ],
         styleSrc: [
           `'self'`,
@@ -189,7 +191,10 @@ app.get('/dbinfo', (req, res) => {
   proxy.web(req, res);
 });
 
-app.get([`/medic/_design/medic/_rewrite/`, appPrefix], (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html')));
+app.get(
+  [`/medic/_design/medic/_rewrite/`, appPrefix],
+  (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html'))
+);
 
 app.all('/+medic(/*)?', (req, res, next) => {
   if (environment.db !== 'medic') {
@@ -247,7 +252,7 @@ ONLINE_ONLY_ENDPOINTS.forEach(url =>
   app.all(routePrefix + url, authorization.offlineUserFirewall)
 );
 
-var UNAUDITED_ENDPOINTS = [
+const UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
   // Replication machinery we don't care to audit
@@ -277,7 +282,7 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
 });
 
 app.get('/setup/poll', function(req, res) {
-  var p = require('../package.json');
+  const p = require('../package.json');
   res.json({
     ready: true,
     handler: 'medic-api',
@@ -299,7 +304,7 @@ app.all('/setup/finish', function(req, res) {
 });
 
 app.get('/api/info', function(req, res) {
-  var p = require('../package.json');
+  const p = require('../package.json');
   res.json({ version: p.version });
 });
 
@@ -407,15 +412,15 @@ app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsCo
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
-const onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy),
-  onlineUserChangesProxy = _.partial(
-    authorization.onlineUserProxy,
-    proxyForChanges
-  );
+const onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy);
+const onlineUserChangesProxy = _.partial(
+  authorization.onlineUserProxy,
+  proxyForChanges
+);
 
 // DB replication endpoint
-const changesHandler = require('./controllers/changes').request,
-  changesPath = routePrefix + '_changes(/*)?';
+const changesHandler = require('./controllers/changes').request;
+const changesPath = routePrefix + '_changes(/*)?';
 
 app.get(
   changesPath,
@@ -430,8 +435,8 @@ app.post(
 );
 
 // filter _all_docs requests for offline users
-const allDocsHandler = require('./controllers/all-docs').request,
-  allDocsPath = routePrefix + '_all_docs(/*)?';
+const allDocsHandler = require('./controllers/all-docs').request;
+const allDocsPath = routePrefix + '_all_docs(/*)?';
 
 app.get(allDocsPath, onlineUserProxy, jsonQueryParser, allDocsHandler);
 app.post(
@@ -466,10 +471,10 @@ app.post(
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
-const dbDocHandler = require('./controllers/db-doc'),
-  docPath = routePrefix + ':docId/{0,}',
-  attachmentPath = routePrefix + ':docId/+:attachmentId*',
-  ddocPath = routePrefix + '_design/+:ddocId*';
+const dbDocHandler = require('./controllers/db-doc');
+const docPath = routePrefix + ':docId/{0,}';
+const attachmentPath = routePrefix + ':docId/+:attachmentId*';
+const ddocPath = routePrefix + '_design/+:ddocId*';
 
 app.get(
   ddocPath,
@@ -537,8 +542,7 @@ app.put(metaPathPrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(metaPathPrefix + '*', authorization.setAuthorized);
 
-
-var writeHeaders = function(req, res, headers, redirectHumans) {
+const writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
   res.writeHead = function(_statusCode, _headers) {
     // hardcode this so we do not show the basic auth prompt by default
@@ -569,7 +573,7 @@ var writeHeaders = function(req, res, headers, redirectHumans) {
 // allow POST requests which have been body-parsed to be correctly proxied
 const writeParsedBody = (proxyReq, req) => {
   if (req.body) {
-    let bodyData = JSON.stringify(req.body);
+    const bodyData = JSON.stringify(req.body);
     proxyReq.setHeader('Content-Type', 'application/json');
     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
     proxyReq.write(bodyData);
@@ -641,7 +645,7 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
  * correct slashed endpoint to avoid weird bugs
  */
 [appPrefix, pathPrefix].forEach(function(url) {
-  var urlSansTrailingSlash = url.slice(0, -1);
+  const urlSansTrailingSlash = url.slice(0, -1);
   app.get(urlSansTrailingSlash, function(req, res) {
     res.redirect(url);
   });
@@ -655,7 +659,7 @@ app.all(appPrefix + '*', authorization.setAuthorized);
 // unauthenticated requests will be redirected to login or given a meaningful error
 app.use(authorization.offlineUserFirewall);
 
-var canEdit = function(req, res) {
+const canEdit = function(req, res) {
   auth
     .check(req, 'can_edit')
     .then(ctx => {
@@ -670,7 +674,7 @@ var canEdit = function(req, res) {
     });
 };
 
-var editPath = routePrefix + '*';
+const editPath = routePrefix + '*';
 app.put(editPath, canEdit);
 app.post(editPath, canEdit);
 app.delete(editPath, canEdit);

@@ -1,9 +1,9 @@
-var setState = function(className) {
+const setState = function(className) {
   document.getElementById('form').className = className;
 };
 
-var post = function(url, payload, callback) {
-  var xmlhttp = new XMLHttpRequest();
+const post = function(url, payload, callback) {
+  const xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
       callback(xmlhttp);
@@ -14,7 +14,7 @@ var post = function(url, payload, callback) {
   xmlhttp.send(payload);
 };
 
-var handleResponse = function(xmlhttp) {
+const handleResponse = function(xmlhttp) {
   if (xmlhttp.status === 302) {
     window.location = xmlhttp.response;
   } else if (xmlhttp.status === 401) {
@@ -25,29 +25,29 @@ var handleResponse = function(xmlhttp) {
   }
 };
 
-var submit = function(e) {
+const submit = function(e) {
   e.preventDefault();
   if (document.getElementById('form').className === 'loading') {
     // debounce double clicks
     return;
   }
   setState('loading');
-  var url = document.getElementById('form').action;
-  var payload = JSON.stringify({
+  const url = document.getElementById('form').action;
+  const payload = JSON.stringify({
     user: document.getElementById('user').value.toLowerCase().trim(),
     password: document.getElementById('password').value
   });
   post(url, payload, handleResponse);
 };
 
-var focusOnPassword = function(e) {
+const focusOnPassword = function(e) {
   if (e.keyCode === 13) {
     e.preventDefault();
     document.getElementById('password').focus();
   }
 };
 
-var focusOnSubmit = function(e) {
+const focusOnSubmit = function(e) {
   if (e.keyCode === 13) {
     document.getElementById('login').focus();
   }
@@ -56,7 +56,7 @@ var focusOnSubmit = function(e) {
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('login').addEventListener('click', submit, false);
 
-  var user = document.getElementById('user');
+  const user = document.getElementById('user');
   user.addEventListener('keydown', focusOnPassword, false);
   user.focus();
 

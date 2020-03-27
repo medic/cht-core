@@ -33,7 +33,6 @@
     "gsm": "^0.1.4",
     "jquery": "3.2.x",
     "lodash": "^4.17.15",
-    "medic-nootils": "^2.0.0",
     "messageformat": "^2.3.0",
     "moment": "^2.24.0",
     "mustache": "^3.1.0",
@@ -51,7 +50,6 @@
     "reselect": "^4.0.0",
     "select2": "4.0.3",
     "simple-password-tester": "^1.0.0",
-    "underscore": "^1.9.1",
     "uuid": "^3.3.3"
   },
   "resolutions": {

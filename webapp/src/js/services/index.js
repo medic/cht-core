@@ -24,6 +24,7 @@
   require('./database-connection-monitor');
   require('./db');
   require('./db-sync');
+  require('./db-sync-retry');
   require('./debounce');
   require('./debug');
   require('./delete-docs');
@@ -78,7 +79,6 @@
   require('./simprints');
   require('./snackbar');
   require('./submit-form-by-sms');
-  require('./target-generator');
   require('./tasks-for-contact');
   require('./telemetry');
   require('./tour');
@@ -95,6 +95,7 @@
   require('./update-user');
   require('./user');
   require('./user-contact');
+  require('./version');
   require('./wealth-quintiles-watcher');
   require('./xml-forms');
   require('./xml-forms-context-utils');

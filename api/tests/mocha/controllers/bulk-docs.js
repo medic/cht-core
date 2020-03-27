@@ -2,12 +2,12 @@ const sinon = require('sinon');
 const auth = require('../../../src/auth');
 require('chai').should();
 const controller = require('../../../src/controllers/bulk-docs');
-const service = require('../../../src/services/bulk-docs'),
-      serverUtils = require('../../../src/server-utils');
+const service = require('../../../src/services/bulk-docs');
+const serverUtils = require('../../../src/server-utils');
 
-let testReq,
-    testRes,
-    next;
+let testReq;
+let testRes;
+let next;
 
 describe('Bulk Docs controller', () => {
   beforeEach(() => {
@@ -78,7 +78,6 @@ describe('Bulk Docs controller', () => {
         controller._interceptResponse(['requestDocs'], testReq, testRes, JSON.stringify(['results']));
         service.formatResults.callCount.should.equal(1);
         service.formatResults.args[0].should.deep.equal([
-          'something',
           ['requestDocs'],
           ['filteredDocs'],
           ['results']
@@ -153,7 +152,8 @@ describe('Bulk Docs controller', () => {
         .request(testReq, testRes, next)
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.args[0].should.deep.equal([ testReq.userCtx, ['some', 'longer', 'doc', 'list'] ]);
+          service.filterOfflineRequest.args[0]
+            .should.deep.equal([ testReq.userCtx, ['some', 'longer', 'doc', 'list'] ]);
           testRes.interceptResponse.should.be.a('function');
           testReq.body.docs.should.deep.equal(['some', 'doc', 'list']);
           next.callCount.should.equal(1);

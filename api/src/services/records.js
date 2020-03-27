@@ -1,10 +1,10 @@
-const moment = require('moment'),
-      phoneNumber = require('@medic/phone-number'),
-      config = require('../config'),
-      smsparser = require('./report/smsparser'),
-      validate = require('./report/validate'),
-      PublicError = require('../public-error'),
-      DATE_NUMBER_STRING = /(\d{13,})/;
+const moment = require('moment');
+const phoneNumber = require('@medic/phone-number');
+const config = require('../config');
+const smsparser = require('./report/smsparser');
+const validate = require('./report/validate');
+const PublicError = require('../public-error');
+const DATE_NUMBER_STRING = /(\d{13,})/;
 
 const empty = val => {
   return val === '' ||
@@ -96,8 +96,8 @@ const getRefID = (form, form_data) => {
 // @returns {Object} - data record
 const getDataRecord = (formData, options) => {
 
-  const form = options.form,
-        def = getForm(options.form);
+  const form = options.form;
+  const def = getForm(options.form);
 
   const record = {
     type: 'data_record',
@@ -121,11 +121,11 @@ const getDataRecord = (formData, options) => {
       record.refid = getRefID(form, formData);
     }
 
-    for (let k of Object.keys(def.fields)) {
+    for (const k of Object.keys(def.fields)) {
       smsparser.merge(form, k.split('.'), record.fields, formData);
     }
 
-    var errors = validate.validate(def, formData);
+    const errors = validate.validate(def, formData);
     errors.forEach(function(err) {
       addError(record, err);
     });
@@ -192,7 +192,7 @@ const createRecordByJSON = data => {
     throw new PublicError('Missing _meta property.');
   }
 
-  for (let k of required) {
+  for (const k of required) {
     if (empty(data._meta[k])) {
       throw new PublicError('Missing required field: ' + k);
     }

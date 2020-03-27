@@ -1,70 +1,21 @@
 {
-  "env": {
-    "es6": true
-  },
-  "extends": "eslint:recommended",
+  "extends": "@medic",
   "parserOptions": {
     "ecmaVersion": 6
   },
-  "rules": {
-    "curly": "error",
-    "eqeqeq": "error",
-    "guard-for-in": "error",
-    "no-bitwise": "error",
-    "no-buffer-constructor": "error",
-    "no-caller": "error",
-    "no-console": "off",
-    "semi": [
-      "error",
-      "always"
-    ],
-    "quotes": [
-      "error",
-      "single",
-      {
-        "allowTemplateLiterals": true
-      }
-    ]
-  },
   "overrides": [
-    {
-      "files": [
-        "**/tests/**",
-        "**/test/**"
-      ],
-      "globals": {
-        "_": true,
-        "after": true,
-        "afterAll": true,
-        "afterEach": true,
-        "assert": true,
-        "before": true,
-        "beforeAll": true,
-        "beforeEach": true,
-        "browser": true,
-        "by": true,
-        "chai": true,
-        "describe": true,
-        "element": true,
-        "emit": true,
-        "expect": true,
-        "inject": true,
-        "it": true,
-        "KarmaUtils": true,
-        "moment": true,
-        "Promise": true,
-        "protractor": true,
-        "Q": true,
-        "sinon": true
-      },
-      "rules": {
-        "no-global-assign": "off"
-      }
-    },
     {
       "files": [ "Gruntfile.js", "grunt/service-worker.js" ],
       "env": {
         "node": true
+      }
+    },
+    {
+      "files": [ "build/ddocs/medic/_attachments/js/service-worker.js" ],
+      "rules": {
+        "max-len": "off",
+        "no-console": "off",
+        "no-var": "off"
       }
     }
   ]

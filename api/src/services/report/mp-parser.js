@@ -1,7 +1,7 @@
 /**
  * @module mp-parser
  */
-const _ = require('underscore');
+const _ = require('lodash');
 
 const zip = (a, b) => {
   const zipped = [];
@@ -19,9 +19,9 @@ const zip = (a, b) => {
  * object if parsing fails.
  */
 exports.parse = (def, doc) => {
-  const parts = doc.message.split('#'),
-        header = parts[0].split('!'),
-        vals = parts.slice(1);
+  const parts = doc.message.split('#');
+  const header = parts[0].split('!');
+  const vals = parts.slice(1);
 
   let n = 3;
   while (n < header.length) {
@@ -46,8 +46,8 @@ exports.parse = (def, doc) => {
   );
 
   return pairs.reduce((obj, v) => {
-    const field = v[0],
-          val = v[1];
+    const field = v[0];
+    const val = v[1];
 
     if (!field) {
       // ignore extra form data that has no matching field definition.

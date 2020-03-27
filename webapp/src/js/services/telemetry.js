@@ -4,8 +4,8 @@
  * @description Records, aggregates, and submits telemetry data
  * @memberof inboxServices
  */
-var moment = require('moment'),
-  uuid = require('uuid/v4');
+const moment = require('moment');
+const uuid = require('uuid/v4');
 
 angular
   .module('inboxServices')
@@ -19,24 +19,24 @@ angular
     'use strict';
     'ngInject';
 
-    var queue = $q.resolve();
+    let queue = $q.resolve();
 
     // Intentionally scoped to the whole browser (for this domain). We can then
     // tell if multiple users use the same device
-    var DEVICE_ID_KEY = 'medic-telemetry-device-id';
+    const DEVICE_ID_KEY = 'medic-telemetry-device-id';
 
     // Intentionally scoped to the specific user, as they may perform a
     // different role (online vs. offline being being the most obvious) with
     // different performance implications
-    var DB_ID_KEY = ['medic', Session.userCtx().name, 'telemetry-db'].join('-');
-    var LAST_AGGREGATED_DATE_KEY = [
+    const DB_ID_KEY = ['medic', Session.userCtx().name, 'telemetry-db'].join('-');
+    const LAST_AGGREGATED_DATE_KEY = [
       'medic',
       Session.userCtx().name,
       'telemetry-date',
     ].join('-');
 
-    var getDb = function() {
-      var dbName = $window.localStorage.getItem(DB_ID_KEY);
+    const getDb = function() {
+      let dbName = $window.localStorage.getItem(DB_ID_KEY);
       if (!dbName) {
         // We're adding a UUID onto the end of the DB name to make it unique. In
         // the past we've had trouble with PouchDB being able to delete a DB and
@@ -47,8 +47,8 @@ angular
       return $window.PouchDB(dbName); // avoid angular-pouch as digest isn't necessary here
     };
 
-    var getUniqueDeviceId = function() {
-      var uniqueDeviceId = $window.localStorage.getItem(DEVICE_ID_KEY);
+    const getUniqueDeviceId = function() {
+      let uniqueDeviceId = $window.localStorage.getItem(DEVICE_ID_KEY);
       if (!uniqueDeviceId) {
         uniqueDeviceId = uuid();
         $window.localStorage.setItem(DEVICE_ID_KEY, uniqueDeviceId);
@@ -57,8 +57,8 @@ angular
       return uniqueDeviceId;
     };
 
-    var getLastAggregatedDate = function() {
-      var date = parseInt(
+    const getLastAggregatedDate = function() {
+      let date = parseInt(
         $window.localStorage.getItem(LAST_AGGREGATED_DATE_KEY)
       );
       if (!date) {
@@ -68,7 +68,7 @@ angular
       return date;
     };
 
-    var storeIt = function(db, key, value) {
+    const storeIt = function(db, key, value) {
       return db.post({
         key: key,
         value: value,
@@ -76,9 +76,9 @@ angular
       });
     };
 
-    var submitIfNeeded = function(db) {
-      var monthStart = moment().startOf('month');
-      var dbDate = moment(getLastAggregatedDate());
+    const submitIfNeeded = function(db) {
+      const monthStart = moment().startOf('month');
+      const dbDate = moment(getLastAggregatedDate());
       if (dbDate.isBefore(monthStart)) {
         return aggregate(db).then(function() {
           return reset(db);
@@ -86,8 +86,8 @@ angular
       }
     };
 
-    var convertReduceToKeyValues = function(reduce) {
-      var kv = {};
+    const convertReduceToKeyValues = function(reduce) {
+      const kv = {};
       reduce.rows.forEach(function(row) {
         kv[row.key] = row.value;
       });
@@ -95,7 +95,7 @@ angular
       return kv;
     };
 
-    var generateAggregateDocId = function(metadata) {
+    const generateAggregateDocId = function(metadata) {
       return [
         'telemetry',
         metadata.year,
@@ -105,10 +105,10 @@ angular
       ].join('-');
     };
 
-    var generateMetadataSection = function() {
+    const generateMetadataSection = function() {
       return $q.all([
-          DB().get('_design/medic-client'),
-          DB().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
+        DB().get('_design/medic-client'),
+        DB().query('medic-client/doc_by_type', { key: ['form'], include_docs: true })
       ]).then(([ddoc, formResults]) => {
         const date = moment(getLastAggregatedDate());
         const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
@@ -131,7 +131,12 @@ angular
       });
     };
 
-    var generateDeviceStats = function() {
+    const generateDeviceStats = function() {
+      let deviceInfo = {};
+      if ($window.medicmobile_android && typeof $window.medicmobile_android.getDeviceInfo === 'function') {
+        deviceInfo = JSON.parse($window.medicmobile_android.getDeviceInfo());
+      }
+
       return {
         userAgent: $window.navigator.userAgent,
         hardwareConcurrency: $window.navigator.hardwareConcurrency,
@@ -139,22 +144,19 @@ angular
           width: $window.screen.availWidth,
           height: $window.screen.availHeight,
         },
-        // TODO: expose some device information in the medic-android wrapper
-        // and pull it in here. Device memory, phone type, stuff like that
-        //
-        // https://github.com/medic/medic/issues/4882
+        deviceInfo
       };
     };
 
     // This should never happen (famous last words..), because we should only
     // generate a new document for every month, which is part of the _id.
-    var storeConflictedAggregate = function(aggregateDoc) {
+    const storeConflictedAggregate = function(aggregateDoc) {
       aggregateDoc.metadata.conflicted = true;
       aggregateDoc._id = [aggregateDoc._id, 'conflicted', Date.now()].join('-');
       return DB({meta: true}).put(aggregateDoc);
     };
 
-    var aggregate = function(db) {
+    const aggregate = function(db) {
       return $q
         .all([
           db.query(
@@ -172,11 +174,11 @@ angular
           generateMetadataSection()
         ])
         .then(function(qAll) {
-          var reduceResult = qAll[0];
-          var infoResult = qAll[1];
-          var metadata = qAll[2];
+          const reduceResult = qAll[0];
+          const infoResult = qAll[1];
+          const metadata = qAll[2];
 
-          var aggregateDoc = {
+          const aggregateDoc = {
             type: 'telemetry',
           };
 
@@ -198,7 +200,7 @@ angular
         });
     };
 
-    var reset = function(db) {
+    const reset = function(db) {
       $window.localStorage.removeItem(DB_ID_KEY);
       $window.localStorage.removeItem(LAST_AGGREGATED_DATE_KEY);
       return db.destroy();
@@ -244,7 +246,7 @@ angular
           value = 1;
         }
 
-        var db;
+        let db;
         queue = queue
           .then(function() {
             db = getDb();
@@ -257,6 +259,18 @@ angular
           })
           .catch(function(err) {
             $log.error('Error in telemetry service', err);
+          })
+          .finally(() => {
+            if (!db || db._destroyed || db._closed) {
+              return;
+            }
+
+            try {
+              db.close();
+            } catch (err) {
+              $log.error('Error closing telemetry DB', err);
+            }
+
           });
 
         return queue;

@@ -1,6 +1,6 @@
-const chai = require('chai'),
-      sinon = require('sinon'),
-      utilsFactory = require('../src/bulk-docs-utils');
+const chai = require('chai');
+const sinon = require('sinon');
+const utilsFactory = require('../src/bulk-docs-utils');
 
 describe('Bulk Docs utils', () => {
   let get;
@@ -46,7 +46,7 @@ describe('Bulk Docs utils', () => {
     });
 
     it('does not update clinic when id does not match', () => {
-      var clinic = {
+      const clinic = {
         _id: 'b',
         type: 'clinic',
         contact: {
@@ -54,7 +54,7 @@ describe('Bulk Docs utils', () => {
           name: 'sally'
         }
       };
-      var person = {
+      const person = {
         _id: 'a',
         type: 'person',
         name: 'sally',
@@ -94,11 +94,11 @@ describe('Bulk Docs utils', () => {
     });
 
     it('handles the parents contact being undefined - #2416', () => {
-      var clinic = {
+      const clinic = {
         _id: 'b',
         type: 'clinic'
       };
-      var person = {
+      const person = {
         _id: 'a',
         type: 'person',
         name: 'sally',

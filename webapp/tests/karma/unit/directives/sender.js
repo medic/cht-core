@@ -2,8 +2,8 @@ describe('sender directive', function() {
 
   'use strict';
 
-  var compile,
-      scope;
+  let compile;
+  let scope;
 
   beforeEach(function() {
     module('inboxApp');
@@ -15,9 +15,9 @@ describe('sender directive', function() {
   });
 
   it('should render nothing when no message', function() {
-    var element = compile('<mm-sender message="message"></mm-sender>')(scope);
+    const element = compile('<mm-sender message="message"></mm-sender>')(scope);
     scope.$digest();
-    chai.expect(element.html().trim()).to.equal('<!-- ngIf: message -->');
+    chai.expect(element.html().trim()).to.equal('<!---->');
   });
 
   it('should render sender when message has from', function() {
@@ -26,7 +26,7 @@ describe('sender directive', function() {
       from: '+123'
     };
 
-    var element = compile('<mm-sender message="message"/>')(scope);
+    const element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
     chai.expect(element.find('div .name').text()).to.equal('+123');
   });
@@ -36,7 +36,7 @@ describe('sender directive', function() {
       sent_by: '+789'
     };
 
-    var element = compile('<mm-sender message="message"/>')(scope);
+    const element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
     chai.expect(element.find('div .name').text()).to.equal('+789');
   });
@@ -60,7 +60,7 @@ describe('sender directive', function() {
       }
     };
 
-    var element = compile('<mm-sender message="message"/>')(scope);
+    const element = compile('<mm-sender message="message"/>')(scope);
     scope.$digest();
     chai.expect(element.find('div .name').text()).to.equal('Clark');
     chai.expect(element.find('div .phone').text()).to.equal('+123');

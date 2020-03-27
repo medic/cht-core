@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
@@ -9,11 +9,13 @@ var _ = require('underscore');
       $log,
       $ngRedux,
       $scope,
+      $state,
       $stateParams,
       $timeout,
       Changes,
       GlobalActions,
       MessageState,
+      Modal,
       ReportsActions,
       Selectors
     ) {
@@ -23,6 +25,7 @@ var _ = require('underscore');
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
+          forms: Selectors.getForms(state),
           loadingContent: Selectors.getLoadingContent(state),
           selectMode: Selectors.getSelectMode(state),
           selectedReports: Selectors.getSelectedReports(state),
@@ -34,7 +37,10 @@ var _ = require('underscore');
         const globalActions = GlobalActions(dispatch);
         const reportsActions = ReportsActions(dispatch);
         return {
+          unsetSelected: globalActions.unsetSelected,
           clearCancelCallback: globalActions.clearCancelCallback,
+          removeSelectedReport: reportsActions.removeSelectedReport,
+          selectReport: reportsActions.selectReport,
           setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
           setSelectedReports: reportsActions.setSelectedReports,
           setRightActionBarVerified: globalActions.setRightActionBarVerified,
@@ -43,22 +49,26 @@ var _ = require('underscore');
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-      $scope.selectReport($stateParams.id);
-      ctrl.clearCancelCallback();
-      $('.tooltip').remove();
+      if ($stateParams.id) {
+        ctrl.selectReport($stateParams.id);
+        ctrl.clearCancelCallback();
+        $('.tooltip').remove();
+      } else {
+        ctrl.unsetSelected();
+      }
 
       ctrl.canMute = function(group) {
         return MessageState.any(group, 'scheduled');
       };
 
       ctrl.canSchedule = function(group) {
-       return MessageState.any(group, 'muted');
+        return MessageState.any(group, 'muted');
       };
 
-      var setMessageState = function(report, group, from, to) {
+      const setMessageState = function(report, group, from, to) {
         group.loading = true;
-        var id = report._id;
-        var groupNumber = group.rows[0].group;
+        const id = report._id;
+        const groupNumber = group.rows[0].group;
         MessageState.set(id, groupNumber, from, to).catch(function(err) {
           group.loading = false;
           $log.error('Error setting message state', err);
@@ -78,12 +88,12 @@ var _ = require('underscore');
           return;
         }
 
-        var id = selection._id;
+        const id = selection._id;
         if (selection.report || selection.expanded) {
           ctrl.updateSelectedReportItem(id, { expanded: !selection.expanded });
         } else {
           ctrl.updateSelectedReportItem(id, { loading: true });
-          $scope.refreshReportSilently(id)
+          ctrl.selectReport(id, { silent: true })
             .then(function() {
               ctrl.updateSelectedReportItem(id, { loading: false, expanded: true });
             })
@@ -97,11 +107,23 @@ var _ = require('underscore');
       ctrl.deselect = function(report, $event) {
         if (ctrl.selectMode) {
           $event.stopPropagation();
-          $scope.deselectReport(report);
+          ctrl.removeSelectedReport(report._id);
         }
       };
 
-      var changeListener = Changes({
+      ctrl.edit = (report, group) => {
+        Modal({
+          templateUrl: 'templates/modals/edit_message_group.html',
+          controller: 'EditMessageGroupCtrl',
+          controllerAs: 'editMessageGroupCtrl',
+          model: {
+            report: report,
+            group: angular.copy(group),
+          },
+        }).catch(() => {}); // dismissed
+      };
+
+      const changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
           return ctrl.selectedReports &&
@@ -112,12 +134,15 @@ var _ = require('underscore');
         },
         callback: function(change) {
           if (change.deleted) {
-            $scope.$apply(function() {
-              $scope.deselectReport(change.id);
-            });
+            if (ctrl.selectMode) {
+              ctrl.removeSelectedReport(change.id);
+            } else {
+              ctrl.unsetSelected();
+              $state.go($state.current.name, { id: null });
+            }
           } else {
-            var selectedReports = ctrl.selectedReports;
-            $scope.refreshReportSilently(change.id)
+            const selectedReports = ctrl.selectedReports;
+            ctrl.selectReport(change.id, { silent: true })
               .then(function() {
                 if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
                    (change.doc && ('oldVerified' in selectedReports[0].formatted &&
@@ -135,15 +160,6 @@ var _ = require('underscore');
       $scope.$on('$destroy', function() {
         unsubscribe();
         changeListener.unsubscribe();
-      });
-
-      $scope.$on('VerifiedReport', function(e, valid) {
-        var oldVerified = ctrl.selectedReports[0].formatted.verified;
-        var newVerified = oldVerified === valid ? undefined : valid;
-
-        ctrl.setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
-
-        ctrl.setRightActionBarVerified(newVerified);
       });
     }
   );

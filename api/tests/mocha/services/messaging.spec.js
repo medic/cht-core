@@ -99,8 +99,10 @@ describe('messaging service', () => {
         }
       ]).then(() => {
         chai.expect(setTaskState.callCount).to.equal(2);
-        chai.expect(setTaskState.getCall(0).args).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'testState1', undefined, undefined]);
-        chai.expect(setTaskState.getCall(1).args).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'testState2', 'Just because.', '55997']);
+        chai.expect(setTaskState.getCall(0).args)
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'testState1', undefined, undefined]);
+        chai.expect(setTaskState.getCall(1).args)
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'testState2', 'Just because.', '55997']);
 
         const doc = bulk.args[0][0][0];
         chai.expect(doc._id).to.equal('testDoc');
@@ -113,7 +115,8 @@ describe('messaging service', () => {
       const messageId1 = 'testMessageId1';
       const messageId2 = 'testMessageId2';
       sinon.stub(db.medic, 'query')
-        .onCall(0).resolves({ rows: [{ key: gatewayRef1, value: messageId1 }, { key: gatewayRef2, value: messageId2 }] })
+        .onCall(0)
+        .resolves({ rows: [{ key: gatewayRef1, value: messageId1 }, { key: gatewayRef2, value: messageId2 }] })
         .onCall(1).resolves({ rows: [{ id: messageId1 }, { id: messageId2 }]});
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [
         {
@@ -133,8 +136,12 @@ describe('messaging service', () => {
         { gatewayRef: gatewayRef2, state: 'testState2', details: 'Just because.', }
       ]).then(() => {
         chai.expect(setTaskState.callCount).to.equal(2);
-        chai.expect(setTaskState.getCall(0).args).to.deep.equal([{ messages: [{ uuid: messageId1, gateway_ref: gatewayRef1 }]}, 'testState1', undefined, gatewayRef1 ]);
-        chai.expect(setTaskState.getCall(1).args).to.deep.equal([{ messages: [{ uuid: messageId2, gateway_ref: gatewayRef2 }]}, 'testState2', 'Just because.', gatewayRef2 ]);
+        chai.expect(setTaskState.getCall(0).args).to.deep.equal(
+          [{ messages: [{ uuid: messageId1, gateway_ref: gatewayRef1 }]}, 'testState1', undefined, gatewayRef1 ]
+        );
+        chai.expect(setTaskState.getCall(1).args).to.deep.equal(
+          [{ messages: [{ uuid: messageId2, gateway_ref: gatewayRef2 }]}, 'testState2', 'Just because.', gatewayRef2 ]
+        );
 
         const doc = bulk.args[0][0][0];
         chai.expect(doc._id).to.equal('testDoc');
@@ -179,48 +186,48 @@ describe('messaging service', () => {
 
     it('re-applies changes if it errored', () => {
       const view = sinon.stub(db.medic, 'query')
-      .onFirstCall().resolves({rows: [
-        {id: 'testMessageId1'},
-        {id: 'testMessageId2'}]})
-      .onSecondCall().resolves({rows: [
-        {id: 'testMessageId2'}]});
+        .onFirstCall().resolves({rows: [
+          {id: 'testMessageId1'},
+          {id: 'testMessageId2'}]})
+        .onSecondCall().resolves({rows: [
+          {id: 'testMessageId2'}]});
 
       sinon.stub(db.medic, 'allDocs')
-      .onFirstCall().resolves({rows: [
-        {doc: {
-          _id: 'testDoc',
-          tasks: [{
-            messages: [{
-              uuid: 'testMessageId1'
+        .onFirstCall().resolves({rows: [
+          {doc: {
+            _id: 'testDoc',
+            tasks: [{
+              messages: [{
+                uuid: 'testMessageId1'
+              }]
             }]
-          }]
-        }},
-        {doc: {
-          _id: 'testDoc2',
-          tasks: [{
-            messages: [{
-              uuid: 'testMessageId2'
+          }},
+          {doc: {
+            _id: 'testDoc2',
+            tasks: [{
+              messages: [{
+                uuid: 'testMessageId2'
+              }]
             }]
-          }]
-        }}
-      ]})
-      .onSecondCall().resolves({rows: [
-        {doc: {
-          _id: 'testDoc2',
-          tasks: [{
-            messages: [{
-              uuid: 'testMessageId2'
+          }}
+        ]})
+        .onSecondCall().resolves({rows: [
+          {doc: {
+            _id: 'testDoc2',
+            tasks: [{
+              messages: [{
+                uuid: 'testMessageId2'
+              }]
             }]
-          }]
-        }}
-      ]});
+          }}
+        ]});
 
       const bulk = sinon.stub(db.medic, 'bulkDocs')
-      .onFirstCall().resolves([
-        {id: 'testDoc', ok: true},
-        {id: 'testDoc2', error: 'oh no!'}])
-      .onSecondCall().resolves([
-        {id: 'testDoc2', ok: true}]);
+        .onFirstCall().resolves([
+          {id: 'testDoc', ok: true},
+          {id: 'testDoc2', error: 'oh no!'}])
+        .onSecondCall().resolves([
+          {id: 'testDoc2', ok: true}]);
 
       return service.updateMessageTaskStates([
         {
@@ -323,12 +330,18 @@ describe('messaging service', () => {
         { messageId: 'testMessageId6', state: 'state' }
       ]).then(actual => {
         chai.expect(setTaskState.callCount).to.equal(6);
-        chai.expect(setTaskState.args[0]).to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'state', undefined, undefined]);
-        chai.expect(setTaskState.args[1]).to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'state', undefined, undefined]);
-        chai.expect(setTaskState.args[2]).to.deep.equal([{ messages: [{uuid: 'testMessageId3'}]}, 'state', undefined, undefined]);
-        chai.expect(setTaskState.args[3]).to.deep.equal([{ messages: [{uuid: 'testMessageId4'}]}, 'state', undefined, undefined]);
-        chai.expect(setTaskState.args[4]).to.deep.equal([{ messages: [{uuid: 'testMessageId5'}]}, 'state', undefined, undefined]);
-        chai.expect(setTaskState.args[5]).to.deep.equal([{ messages: [{uuid: 'testMessageId6'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[0])
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId1'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[1])
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId2'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[2])
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId3'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[3])
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId4'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[4])
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId5'}]}, 'state', undefined, undefined]);
+        chai.expect(setTaskState.args[5])
+          .to.deep.equal([{ messages: [{uuid: 'testMessageId6'}]}, 'state', undefined, undefined]);
 
         chai.expect(bulk.args[0][0].length).to.equal(2);
         chai.expect(bulk.args[0][0][0]._id).to.equal('testDoc');
@@ -442,6 +455,15 @@ describe('messaging service', () => {
 
     it('does nothing if no outgoing message service configured', () => {
       sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'none' });
+      sinon.stub(service, 'getOutgoingMessages');
+      return service._checkDbForMessagesToSend().then(() => {
+        chai.expect(config.get.callCount).to.equal(1);
+        chai.expect(service.getOutgoingMessages.callCount).to.equal(0);
+      });
+    });
+
+    it('does nothing with default settings (medic-gateway)', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns();
       sinon.stub(service, 'getOutgoingMessages');
       return service._checkDbForMessagesToSend().then(() => {
         chai.expect(config.get.callCount).to.equal(1);
@@ -566,6 +588,25 @@ describe('messaging service', () => {
         ]]);
         chai.expect(actual).to.deep.equal({ saved: 3 });
       });
+    });
+
+  });
+
+  describe('isMedicGatewayEnabled', () => {
+
+    it('returns false when not configured', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'none' });
+      chai.expect(service.isMedicGatewayEnabled()).to.equal(false);
+    });
+
+    it('returns true when configured', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns({ outgoing_service: 'medic-gateway' });
+      chai.expect(service.isMedicGatewayEnabled()).to.equal(true);
+    });
+
+    it('defaults to true', () => {
+      sinon.stub(config, 'get').withArgs('sms').returns();
+      chai.expect(service.isMedicGatewayEnabled()).to.equal(true);
     });
 
   });

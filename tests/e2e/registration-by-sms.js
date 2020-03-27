@@ -1,11 +1,12 @@
-const utils = require('../utils'),
-      sUtils = require('./sentinel/utils'),
-      commonElements = require('../page-objects/common/common.po.js'),
-      helper = require('../helper'),
-      moment = require('moment');
+const utils = require('../utils');
+const sUtils = require('./sentinel/utils');
+const commonElements = require('../page-objects/common/common.po.js');
+const helper = require('../helper');
+const moment = require('moment');
 
 const computeExpectedDate = () => {
-  const reportedDate = element(by.css('#reports-content .item-summary .relative-date-content')).getAttribute('data-record-id');
+  const reportedDate = element(by.css('#reports-content .item-summary .relative-date-content'))
+    .getAttribute('data-record-id');
   const start = moment(reportedDate.date).startOf('day').subtract(12, 'weeks');
   const expectedDate = start.add(40, 'weeks');
 
@@ -145,7 +146,10 @@ describe('registration transition', () => {
           property: 'patient_name',
           rule: 'lenMin(1) && lenMax(30)',
           message: [{
-            content: '{{#patient_name}}The registration format is incorrect, ensure the message starts with R followed by space and the mother name (maximum of 30 characters).{{/patient_name}}{{^patient_name}}The registration format is incorrect. ensure the message starts with R followed by space and the mothers name.{{/patient_name}}.',
+            content: '{{#patient_name}}The registration format is incorrect, ensure the message starts with R ' +
+              'followed by space and the mother name (maximum of 30 characters).{{/patient_name}}{{^patient_name}}' +
+              'The registration format is incorrect. ensure the message starts with R followed by space and the ' +
+              'mothers name.{{/patient_name}}.',
             locale: 'en'
           }]
         }]
@@ -157,13 +161,13 @@ describe('registration transition', () => {
         }],
         recipient: 'reporting_unit'
       },
-        {
-          message: [{
-            content: 'LMP {{#date}}{{expected_date}}{{/date}}',
-            locale: 'en'
-          }],
-          recipient: 'reporting_unit'
-        }]
+      {
+        message: [{
+          content: 'LMP {{#date}}{{expected_date}}{{/date}}',
+          locale: 'en'
+        }],
+        recipient: 'reporting_unit'
+      }]
     }],
     schedules: [{
       name: 'ANC Reminders LMP',
@@ -259,17 +263,27 @@ describe('registration transition', () => {
 
     const checkAutoResponse = (expectedDate) => {
       const taskElement = element(by.css('#reports-content .details > ul'));
-      expect(taskElement.element(by.css('.task-list > li:nth-child(1) > ul > li')).getText()).toBe('Thank you '+ CAROL.name +' for registering Siobhan');
-      expect(taskElement.element(by.css('.task-list > li:nth-child(1) .task-state .state.forwarded-to-gateway')).isDisplayed()).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list > li:nth-child(1) .task-state .recipient')).getText()).toBe(' to +64271234567');
+      expect(taskElement.element(by.css('.task-list > li:nth-child(1) > ul > li')).getText())
+        .toBe('Thank you '+ CAROL.name +' for registering Siobhan');
+      expect(taskElement.element(
+        by.css('.task-list > li:nth-child(1) .task-state .state.forwarded-to-gateway')).isDisplayed()
+      ).toBeTruthy();
+      expect(taskElement.element(by.css('.task-list > li:nth-child(1) .task-state .recipient')).getText())
+        .toBe(' to +64271234567');
 
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) > ul > li')).getText()).toBe('LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) .task-state .state.forwarded-to-gateway')).isDisplayed()).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) .task-state .recipient')).getText()).toBe(' to +64271234567');
+      expect(taskElement.element(by.css('.task-list > li:nth-child(2) > ul > li')).getText())
+        .toBe('LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
+      expect(taskElement.element(
+        by.css('.task-list > li:nth-child(2) .task-state .state.forwarded-to-gateway')).isDisplayed()
+      ).toBeTruthy();
+      expect(taskElement.element(by.css('.task-list > li:nth-child(2) .task-state .recipient')).getText())
+        .toBe(' to +64271234567');
     };
 
     const checkScheduledTask = (childIndex, title, message) => {
-      const taskElement = element(by.css('#reports-content .details .scheduled-tasks > ul > li:nth-child(' + childIndex + ')'));
+      const taskElement = element(by.css(
+        '#reports-content .details .scheduled-tasks > ul > li:nth-child(' + childIndex + ')'
+      ));
       expect(taskElement.element(by.css('h3')).getText()).toContain(title);
       expect(taskElement.element(by.css('.task-list li > ul > li')).getText()).toBe(message);
       expect(taskElement.element(by.css('.task-list li .task-state .state.scheduled')).isDisplayed()).toBeTruthy();
@@ -279,11 +293,15 @@ describe('registration transition', () => {
     it('shows content', async () => {
       commonElements.goToReports(true);
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
-      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')).isPresent(), 10000);
+      browser.wait(() => element(
+        by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')
+      ).isPresent(), 10000);
       helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
 
       // wait for content to load
-      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)).isPresent(), 30000);
+      browser.wait(() => element(
+        by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)
+      ).isPresent(), 30000);
 
       const expectedDate = computeExpectedDate();
 

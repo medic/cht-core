@@ -2,10 +2,10 @@ describe('BrandingImages service', function() {
 
   'use strict';
 
-  var get,
-    Changes,
-    injector,
-    attr;
+  let get;
+  let Changes;
+  let injector;
+  let attr;
 
   beforeEach(function() {
     get = sinon.stub();
@@ -31,22 +31,22 @@ describe('BrandingImages service', function() {
 
     it('returns empty string when given no name', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('ResourceIcons');
-      var actual = service.getImg();
+      const service = injector.get('ResourceIcons');
+      const actual = service.getImg();
       chai.expect(actual).to.equal('');
       done();
     });
 
     it('returns empty string when no doc yet', function(done) {
       get.returns(Promise.resolve());
-      var service = injector.get('ResourceIcons');
-      var actual = service.getImg('logo', 'branding');
+      const service = injector.get('ResourceIcons');
+      const actual = service.getImg('logo', 'branding');
       chai.expect(actual).to.equal('<span class="header-logo" data-title="logo">&nbsp</span>');
       done();
     });
 
     it('returns img when logo doc already cached', function(done) {
-      var resources = {
+      const resources = {
         resources: {
           logo: 'medic-logo-light-full.svg'
         },
@@ -58,10 +58,10 @@ describe('BrandingImages service', function() {
         }
       };
       get.returns(Promise.resolve(resources));
-      var service = injector.get('ResourceIcons');
+      const service = injector.get('ResourceIcons');
       setTimeout(function() {
-        var actual = service.getImg('logo', 'branding');
-        var expected =
+        const actual = service.getImg('logo', 'branding');
+        const expected =
           '<span class="header-logo" data-title="logo">' +
             '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
           '</span>';

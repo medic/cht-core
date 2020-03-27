@@ -1,19 +1,19 @@
-var _ = require('underscore'),
-  config = require('../config'),
-  utils = require('../lib/utils'),
-  messages = require('../lib/messages'),
-  validation = require('../lib/validation'),
-  transitionUtils = require('./utils'),
-  NAME = 'update_notifications',
-  mutingUtils = require('../lib/muting_utils'),
-  logger = require('../lib/logger');
+const _ = require('lodash');
+const config = require('../config');
+const utils = require('../lib/utils');
+const messages = require('../lib/messages');
+const validation = require('../lib/validation');
+const transitionUtils = require('./utils');
+const NAME = 'update_notifications';
+const mutingUtils = require('../lib/muting_utils');
+const logger = require('../lib/logger');
 
-var getEventType = function(config, doc) {
+const getEventType = function(config, doc) {
   if (!config.on_form && !config.off_form) {
     // no configured on or off forms
     return false;
   }
-  var mute;
+  let mute;
   if (utils.isFormCodeSame(config.on_form, doc.form)) {
     mute = false;
   } else if (utils.isFormCodeSame(config.off_form, doc.form)) {
@@ -34,24 +34,17 @@ module.exports = {
   },
 
   _addErr: function(event_type, config, doc) {
-    var locale = utils.getLocale(doc),
-      evConf = _.findWhere(config.messages, {
-        event_type: event_type,
-      });
-    var msg = messages.getMessage(evConf, locale);
+    const locale = utils.getLocale(doc);
+    const evConf = _.find(config.messages, { event_type: event_type });
+    const msg = messages.getMessage(evConf, locale);
     if (msg) {
       messages.addError(doc, msg);
     } else {
-      messages.addError(
-        doc,
-        `Failed to complete notification request, event type "${event_type}" misconfigured.`
-      );
+      messages.addError(doc, `Failed to complete notification request, event type "${event_type}" misconfigured.`);
     }
   },
   _addMsg: function(event_type, config, doc, registrations, patient) {
-    const msgConfig = _.findWhere(config.messages, {
-      event_type: event_type,
-    });
+    const msgConfig = _.find(config.messages, { event_type: event_type });
     if (msgConfig) {
       const templateContext = {
         registrations: registrations,
@@ -72,19 +65,19 @@ module.exports = {
     );
   },
   getConfig: function() {
-    return _.extend({}, config.get('notifications'));
+    return Object.assign({}, config.get('notifications'));
   },
   validate: function(config, doc, callback) {
-    var validations = config.validations && config.validations.list;
+    const validations = config.validations && config.validations.list;
     return validation.validate(doc, validations, callback);
   },
   onMatch: change => {
     return new Promise((resolve, reject) => {
-      var self = module.exports,
-        doc = change.doc,
-        config = module.exports.getConfig(),
-        eventType = getEventType(config, doc),
-        patient;
+      const self = module.exports;
+      const doc = change.doc;
+      const config = module.exports.getConfig();
+      const eventType = getEventType(config, doc);
+      let patient;
 
       if (!eventType) {
         return resolve();

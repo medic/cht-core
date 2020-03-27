@@ -1,10 +1,10 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 (function() {
   'use strict';
 
-  var getTo = function(dataRecord, group) {
-    var to;
+  const getTo = function(dataRecord, group) {
+    let to;
     if (
       group.rows &&
       group.rows.length &&
@@ -16,10 +16,10 @@ var _ = require('underscore');
     return to || dataRecord.from;
   };
 
-  var add = function(dataRecord, group) {
-    var changed = false;
-    var to = getTo(dataRecord, group);
-    _.each(group.rows, function(updatedTask) {
+  const add = function(dataRecord, group) {
+    let changed = false;
+    const to = getTo(dataRecord, group);
+    _.forEach(group.rows, function(updatedTask) {
       if (updatedTask.added) {
         changed = true;
         dataRecord.scheduled_tasks.push({
@@ -33,17 +33,17 @@ var _ = require('underscore');
     return changed;
   };
 
-  var update = function(dataRecord, group) {
-    var changed = false;
-    var tasks = _.where(dataRecord.scheduled_tasks, {
+  const update = function(dataRecord, group) {
+    let changed = false;
+    const tasks = _.filter(dataRecord.scheduled_tasks, {
       group: group.number,
     });
-    _.each(group.rows, function(updatedTask, i) {
+    _.forEach(group.rows, function(updatedTask, i) {
       if (updatedTask.state === 'scheduled') {
         changed = true;
         tasks[i].due = updatedTask.due;
         if (!updatedTask.translation_key) {
-          _.each(updatedTask.messages, function(updatedMessage, j) {
+          _.forEach(updatedTask.messages, function(updatedMessage, j) {
             tasks[i].messages[j].message = updatedMessage.message;
           });
         }
@@ -52,10 +52,10 @@ var _ = require('underscore');
     return changed;
   };
 
-  var remove = function(dataRecord, group) {
-    var changed = false;
-    var groupIndex = group.rows.length - 1;
-    for (var i = dataRecord.scheduled_tasks.length - 1; i >= 0; i--) {
+  const remove = function(dataRecord, group) {
+    let changed = false;
+    let groupIndex = group.rows.length - 1;
+    for (let i = dataRecord.scheduled_tasks.length - 1; i >= 0; i--) {
       if (dataRecord.scheduled_tasks[i].group === group.number) {
         if (group.rows[groupIndex].deleted) {
           changed = true;
@@ -74,9 +74,9 @@ var _ = require('underscore');
         return DB()
           .get(recordId)
           .then(function(dataRecord) {
-            var additions = add(dataRecord, group);
-            var mutations = update(dataRecord, group);
-            var deletions = remove(dataRecord, group);
+            const additions = add(dataRecord, group);
+            const mutations = update(dataRecord, group);
+            const deletions = remove(dataRecord, group);
             if (additions || mutations || deletions) {
               return DB()
                 .put(dataRecord)

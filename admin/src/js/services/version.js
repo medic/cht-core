@@ -3,8 +3,8 @@ angular.module('services').factory('Version',
 
     'use strict';
 
-    var minimumNextRelease = function(version) {
-      var minVersion = versionInformation(version) || {};
+    const minimumNextRelease = function(version) {
+      const minVersion = versionInformation(version) || {};
 
       if (minVersion.beta !== undefined) {
         ++minVersion.beta;
@@ -15,12 +15,12 @@ angular.module('services').factory('Version',
       return minVersion;
     };
 
-    var versionInformation = function(versionString) {
-      var versionMatch = versionString &&
+    const versionInformation = function(versionString) {
+      const versionMatch = versionString &&
           versionString.match(/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta\.([0-9]+))?$/);
 
       if (versionMatch) {
-        var version = {
+        const version = {
           major: parseInt(versionMatch[1]),
           minor: parseInt(versionMatch[2]),
           patch: parseInt(versionMatch[3])
@@ -34,10 +34,10 @@ angular.module('services').factory('Version',
       }
     };
 
-    var compare = function(version1, version2) {
-      var parts = ['major', 'minor', 'patch'];
-      for (var i = 0; i < parts.length; i++) {
-        var part = parts[i];
+    const compare = function(version1, version2) {
+      const parts = ['major', 'minor', 'patch'];
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
 
         if (version1[part] !== version2[part]) {
           return version1[part] - version2[part];

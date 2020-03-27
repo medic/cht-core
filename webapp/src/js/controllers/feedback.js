@@ -16,7 +16,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     ctrl.model = {};
     ctrl.error = {};
 
-    var validateMessage = function(message) {
+    const validateMessage = function(message) {
       if (message) {
         ctrl.error.message = false;
         return $q.resolve();
@@ -35,7 +35,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
     ctrl.submit = function() {
       $scope.setProcessing();
 
-      var message = ctrl.model.message && ctrl.model.message.trim();
+      const message = ctrl.model.message && ctrl.model.message.trim();
       return validateMessage(message)
         .then(function() {
           if (ctrl.error.message) {
@@ -43,14 +43,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
             return $q.resolve();
           }
 
-          return $q((resolve, reject) => {
-            Feedback.submit(message, true, function(err) {
-              if (err) {
-                return reject(err);
-              }
-              return resolve();
-            });
-          })
+          return Feedback.submit(message, true)
             .then(() => {
               $scope.setFinished();
               $uibModalInstance.close();
@@ -58,10 +51,7 @@ angular.module('inboxControllers').controller('FeedbackCtrl',
                 .catch(() => 'feedback.submitted') // translation not found
                 .then(Snackbar);
             })
-            .catch(err => {
-              $scope.setError(err, 'Error saving feedback');
-              throw err;
-            });
+            .catch(err => $scope.setError(err, 'Error saving feedback'));
         });
     };
 

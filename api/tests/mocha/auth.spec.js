@@ -1,11 +1,11 @@
-const request = require('request-promise-native'),
-      url = require('url'),
-      chai = require('chai'),
-      sinon = require('sinon'),
-      auth = require('../../src/auth'),
-      config = require('../../src/config'),
-      db = require('../../src/db'),
-      environment = require('../../src/environment');
+const request = require('request-promise-native');
+const url = require('url');
+const chai = require('chai');
+const sinon = require('sinon');
+const auth = require('../../src/auth');
+const config = require('../../src/config');
+const db = require('../../src/db');
+const environment = require('../../src/environment');
 
 let originalServerUrl;
 

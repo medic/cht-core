@@ -67,7 +67,7 @@
         }
     },
     "birth_date": "2018-05-26T00:00:00.000Z",
-    "patient_id": "14357",
+    "patient_id": "contact-1",
     "scheduled_tasks": [
         {
             "due": "2018-06-25T09:00:00.000Z",

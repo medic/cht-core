@@ -1,6 +1,19 @@
-var _ = require('underscore'),
-  bootstrapTranslator = require('./../bootstrapper/translator'),
-  moment = require('moment');
+const _ = require('lodash/core');
+_.uniq = require('lodash/uniq');
+_.groupBy = require('lodash/groupBy');
+_.uniqBy = require('lodash/uniqBy');
+_.findIndex = require('lodash/findIndex');
+_.minBy = require('lodash/minBy');
+_.partial = require('lodash/partial');
+_.partial.placeholder = _;
+_.range = require('lodash/range');
+_.intersection = require('lodash/intersection');
+_.toPairs = require('lodash/toPairs');
+_.difference = require('lodash/difference');
+_.template = require('lodash/template');
+_.templateSettings = require('lodash/templateSettings');
+_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
+const moment = require('moment');
 
 (function() {
   'use strict';
@@ -14,12 +27,10 @@ var _ = require('underscore'),
     $rootScope,
     $scope,
     $state,
-    $stateParams,
     $timeout,
     $transitions,
     $translate,
     $window,
-    APP_CONFIG,
     Auth,
     Changes,
     CheckDate,
@@ -63,18 +74,23 @@ var _ = require('underscore'),
         currentTab: Selectors.getCurrentTab(state),
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        forms: Selectors.getForms(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state),
-        version: Selectors.getVersion(state)
+        showContent: Selectors.getShowContent(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       return {
+        navigateBack: globalActions.navigateBack,
+        navigationCancel: globalActions.navigationCancel,
+        openGuidedSetup: globalActions.openGuidedSetup,
+        openTourSelect: globalActions.openTourSelect,
         setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
+        setForms: globalActions.setForms,
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
@@ -83,7 +99,7 @@ var _ = require('underscore'),
         setShowContent: globalActions.setShowContent,
         setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
-        setVersion: globalActions.setVersion,
+        unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus
       };
     };
@@ -106,7 +122,7 @@ var _ = require('underscore'),
         className: 'required'
       },
       unknown: {
-        icon: 'fa-question-circle',
+        icon: 'fa-info-circle',
         key: 'sync.status.unknown'
       }
     };
@@ -114,7 +130,7 @@ var _ = require('underscore'),
     ctrl.updateReplicationStatus({
       disabled: false,
       lastTrigger: undefined,
-      current: SYNC_STATUS.unknown,
+      lastSuccessTo: parseInt($window.localStorage.getItem('medic-last-replicated-date'))
     });
 
     DBSync.addUpdateListener(({ state, to, from }) => {
@@ -130,24 +146,28 @@ var _ = require('underscore'),
       const lastTrigger = ctrl.replicationStatus.lastTrigger;
       const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
       if (state === 'inProgress') {
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.inProgress });
-        ctrl.updateReplicationStatus({ lastTrigger: now });
-        $log.info(`Replication started after ${delay} seconds since previous attempt`);
+        ctrl.updateReplicationStatus({
+          current: SYNC_STATUS.inProgress,
+          lastTrigger: now
+        });
+        $log.info(`Replication started after ${Math.round(delay)} seconds since previous attempt`);
         return;
       }
+      const statusUpdates = {};
       if (to === 'success') {
-        ctrl.updateReplicationStatus({ lastSuccessTo: now });
+        statusUpdates.lastSuccessTo = now;
       }
       if (from === 'success') {
-        ctrl.updateReplicationStatus({ lastSuccessFrom: now });
+        statusUpdates.lastSuccessFrom = now;
       }
       if (to === 'success' && from === 'success') {
         $log.info(`Replication succeeded after ${delay} seconds`);
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.success });
+        statusUpdates.current = SYNC_STATUS.success;
       } else {
         $log.info(`Replication failed after ${delay} seconds`);
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
+        statusUpdates.current = SYNC_STATUS.required;
       }
+      ctrl.updateReplicationStatus(statusUpdates);
     });
 
     // Set this first because if there are any bugs in configuration
@@ -185,6 +205,8 @@ var _ = require('underscore'),
       'boot_time:3:to_angular_bootstrap',
       $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
     );
+    Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
+    delete $window.startupTimes;
 
     if ($window.location.href.indexOf('localhost') !== -1) {
       Debug.set(Debug.get()); // Initialize with cookie
@@ -196,7 +218,7 @@ var _ = require('underscore'),
     const setAppTitle = () => {
       ResourceIcons.getAppTitle().then(title => {
         document.title = title;
-        $('.header-logo').attr('title', `${title} | ${APP_CONFIG.version}`);
+        $('.header-logo').attr('title', `${title}`);
       });
     };
     setAppTitle();
@@ -218,40 +240,23 @@ var _ = require('underscore'),
       },
     });
 
-    // BootstrapTranslator is used because $translator.onReady has not fired
-    $('.bootstrap-layer .status').html(bootstrapTranslator.translate('LOAD_RULES'));
-
-    RulesEngine.init
-      .catch(function(err) {
-        $log.error('RuleEngine failed to Initialize', err);
-      })
-      .then(function() {
-        ctrl.dbWarmedUp = true;
-
-        const dbWarmed = performance.now();
-        Telemetry.record('boot_time:4:to_db_warmed', dbWarmed - $window.startupTimes.bootstrapped);
-        Telemetry.record('boot_time', dbWarmed - $window.startupTimes.start);
-
-        delete $window.startupTimes;
-        lazyLoadTasks();
-      });
+    ctrl.dbWarmedUp = true;
 
     // initialisation tasks that can occur after the UI has been rendered
-    const lazyLoadTasks = () => {
-      Session.init()
-        .then(() => initForms())
-        .then(() => initTours())
-        .then(() => initUnreadCount())
-        .then(() => CheckDate());
-    };
+    Session.init()
+      .then(() => initRulesEngine())
+      .then(() => initForms())
+      .then(() => initTours())
+      .then(() => initUnreadCount())
+      .then(() => CheckDate())
+      .then(() => startRecurringProcesses());
 
     Feedback.init();
 
-    LiveListConfig($scope);
+    LiveListConfig();
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    ctrl.setVersion(APP_CONFIG.version);
     ctrl.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
@@ -263,42 +268,26 @@ var _ = require('underscore'),
       ctrl.setAndroidAppVersion($window.medicmobile_android.getAppVersion());
     }
 
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(granted => {
+        if (granted) {
+          $log.info('Persistent storage granted: storage will not be cleared except by explicit user action');
+        } else {
+          $log.info('Persistent storage denied: storage may be cleared by the UA under storage pressure.');
+        }
+      });
+    }
+
     ctrl.canLogOut = false;
     if (ctrl.androidAppVersion) {
-      Auth('can_log_out_on_android')
-        .then(function() {
-          ctrl.canLogOut = true;
-        })
-        .catch(function() {}); // not permitted to log out
+      Auth.has('can_log_out_on_android').then(canLogout => ctrl.canLogOut = canLogout);
     } else {
       ctrl.canLogOut = true;
     }
-    $scope.logout = function() {
-      Modal({
-        templateUrl: 'templates/modals/logout_confirm.html',
-        controller: 'LogoutConfirmCtrl',
-        controllerAs: 'logoutConfirmCtrl',
-        singleton: true,
-      });
-    };
-
-    $scope.isMobile = function() {
-      return $('#mobile-detection').css('display') === 'inline';
-    };
-
-    $scope.$on('HideContent', function() {
-      $timeout(function() {
-        if (ctrl.cancelCallback) {
-          $scope.navigationCancel();
-        } else {
-          $scope.clearSelected();
-        }
-      });
-    });
 
     $transitions.onBefore({}, (trans) => {
       if (ctrl.enketoEdited && ctrl.cancelCallback) {
-        $scope.navigationCancel({ to: trans.to(), params: trans.params() });
+        ctrl.navigationCancel({ to: trans.to(), params: trans.params() });
         return false;
       }
     });
@@ -308,68 +297,9 @@ var _ = require('underscore'),
       const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
       // unset selected when states have different base state and only when source state has selected property
       if (parentState && !trans.to().name.startsWith(parentState)) {
-        $scope.unsetSelected();
+        ctrl.unsetSelected();
       }
     });
-
-    // User wants to cancel current flow, or pressed back button, etc.
-    $scope.navigationCancel = function(trans) {
-      if (ctrl.enketoSaving) {
-        // wait for save to finish
-        return;
-      }
-      if (!ctrl.enketoEdited) {
-        // form hasn't been modified - return immediately
-        if (ctrl.cancelCallback) {
-          ctrl.cancelCallback();
-        }
-        return;
-      }
-      // otherwise data will be discarded so confirm navigation
-      Modal({
-        templateUrl: 'templates/modals/navigation_confirm.html',
-        controller: 'NavigationConfirmCtrl',
-        controllerAs: 'navigationConfirmCtrl',
-        singleton: true,
-      }).then(function() {
-        ctrl.setEnketoEditedStatus(false);
-        if (trans) {
-          return $state.go(trans.to, trans.params);
-        }
-        if (ctrl.cancelCallback) {
-          ctrl.cancelCallback();
-        }
-      });
-    };
-
-    /**
-     * Unset the selected item without navigation
-     */
-    $scope.unsetSelected = function() {
-      ctrl.setShowContent(false);
-      ctrl.setLoadingContent(false);
-      ctrl.setShowActionBar(false);
-      ctrl.setTitle();
-      $scope.$broadcast('ClearSelected');
-    };
-
-    /**
-     * Clear the selected item - may update the URL
-     */
-    $scope.clearSelected = function() {
-      if ($state.current.name === 'contacts.deceased') {
-        $state.go('contacts.detail', { id: $stateParams.id });
-      } else if ($stateParams.id) {
-        $state.go($state.current.name, { id: null });
-      } else {
-        $scope.unsetSelected();
-      }
-    };
-
-    $scope.setLoadingContent = function(id) {
-      ctrl.setLoadingContent(id);
-      ctrl.setShowContent(true);
-    };
 
     $transitions.onSuccess({}, function(trans) {
       ctrl.setCurrentTab(trans.to().name.split('.')[0]);
@@ -384,7 +314,7 @@ var _ = require('underscore'),
         if (err) {
           return $log.error('Error fetching read status', err);
         }
-        ctrl.unreadCount = data;
+        ctrl.setUnreadCount(data);
       });
     };
 
@@ -392,16 +322,20 @@ var _ = require('underscore'),
      * Translates using the key if truthy using the old style label
      * array as a fallback.
      */
-    var translateTitle = function(key, label) {
+    const translateTitle = function(key, label) {
       return key ? $translate.instant(key) : TranslateFrom(label);
     };
+
+    const initRulesEngine = () => RulesEngine.isEnabled()
+      .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
+      .catch(err => $log.error('RuleEngine failed to initialize', err));
 
     // get the forms for the forms filter
     const initForms = () => {
       return $translate.onReady()
         .then(() => JsonForms())
         .then(function(jsonForms) {
-          var jsonFormSummaries = jsonForms.map(function(jsonForm) {
+          const jsonFormSummaries = jsonForms.map(function(jsonForm) {
             return {
               code: jsonForm.code,
               title: translateTitle(jsonForm.translation_key, jsonForm.name),
@@ -415,15 +349,15 @@ var _ = require('underscore'),
               if (err) {
                 return $log.error('Error fetching form definitions', err);
               }
-              var xFormSummaries = xForms.map(function(xForm) {
+              const xFormSummaries = xForms.map(function(xForm) {
                 return {
                   code: xForm.internalId,
                   title: translateTitle(xForm.translation_key, xForm.title),
                   icon: xForm.icon,
                 };
               });
-              $scope.forms = xFormSummaries.concat(jsonFormSummaries);
-              $rootScope.$broadcast('formLoadingComplete');
+              const forms = xFormSummaries.concat(jsonFormSummaries);
+              ctrl.setForms(forms);
             }
           );
           // get the forms for the Add Report menu
@@ -440,10 +374,7 @@ var _ = require('underscore'),
             });
           });
         })
-        .catch(function(err) {
-          $rootScope.$broadcast('formLoadingComplete');
-          $log.error('Failed to retrieve forms', err);
-        });
+        .catch(err => $log.error('Failed to retrieve forms', err));
     };
 
     const initTours = () => {
@@ -452,92 +383,56 @@ var _ = require('underscore'),
       });
     };
 
-    $scope.openTourSelect = function() {
-      return Modal({
-        templateUrl: 'templates/modals/tour_select.html',
-        controller: 'TourSelectCtrl',
-        controllerAs: 'tourSelectCtrl',
-        singleton: true,
-      }).catch(function() {}); // modal dismissed is ok
-    };
-
-    $scope.openGuidedSetup = function() {
-      return Modal({
-        templateUrl: 'templates/modals/guided_setup.html',
-        controller: 'GuidedSetupModalCtrl',
-        controllerAs: 'guidedSetupModalCtrl',
-        size: 'lg',
-      }).catch(function() {}); // modal dismissed is ok
-    };
-
-    var startupModals = [
+    const startupModals = [
       // select language
       {
-        required: function(settings, user) {
-          return !user.language;
-        },
-        render: function() {
+        required: (settings, user) => !user.language,
+        render: () => {
           return Modal({
             templateUrl: 'templates/modals/user_language.html',
             controller: 'UserLanguageModalCtrl',
             controllerAs: 'userLanguageModalCtrl'
-          }).catch(function() {});
+          }).catch(() => {});
         },
       },
       // welcome screen
       {
-        required: function(settings) {
-          return !settings.setup_complete;
-        },
-        render: function() {
+        required: settings => !settings.setup_complete,
+        render: () => {
           return Modal({
             templateUrl: 'templates/modals/welcome.html',
             controller: 'WelcomeModalCtrl',
             controllerAs: 'welcomeModalCtrl',
             size: 'lg',
-          }).catch(function() {});
+          }).catch(() => {});
         },
       },
       // guided setup
       {
-        required: function(settings) {
-          return !settings.setup_complete;
-        },
-        render: function() {
-          return $scope
-            .openGuidedSetup()
-            .then(function() {
-              return UpdateSettings({ setup_complete: true });
-            })
-            .catch(function(err) {
-              $log.error('Error marking setup_complete', err);
-            });
+        required: settings => !settings.setup_complete,
+        render: () => {
+          return ctrl.openGuidedSetup()
+            .then(() => UpdateSettings({ setup_complete: true }))
+            .catch(err => $log.error('Error marking setup_complete', err));
         },
       },
       // tour
       {
-        required: function(settings, user) {
-          return !user.known;
-        },
-        render: function() {
-          return $scope
-            .openTourSelect()
-            .then(function() {
-              return UpdateUser(Session.userCtx().name, { known: true });
-            })
-            .catch(function(err) {
-              $log.error('Error updating user', err);
-            });
+        required: (settings, user) => !user.known,
+        render: () => {
+          return ctrl.openTourSelect()
+            .then(() => UpdateUser(Session.userCtx().name, { known: true }))
+            .catch(err => $log.error('Error updating user', err));
         },
       },
     ];
 
     $q.all([Settings(), UserSettings()])
       .then(function(results) {
-        var filteredModals = _.filter(startupModals, function(modal) {
+        const filteredModals = _.filter(startupModals, function(modal) {
           return modal.required(results[0], results[1]);
         });
-        var showModals = function() {
+        const showModals = function() {
           if (filteredModals && filteredModals.length) {
             // render the first modal and recursively show the rest
             filteredModals
@@ -563,7 +458,7 @@ var _ = require('underscore'),
       });
 
     $('body').on('click', '.send-message', function(event) {
-      var target = $(event.target).closest('.send-message');
+      const target = $(event.target).closest('.send-message');
       if (target.hasClass('mm-icon-disabled')) {
         return;
       }
@@ -577,49 +472,6 @@ var _ = require('underscore'),
         },
       });
     });
-
-    $scope.emit = function() {
-      $rootScope.$broadcast.apply($rootScope, arguments);
-    };
-
-    $scope.deleteDoc = function(doc) {
-      Modal({
-        templateUrl: 'templates/modals/delete_doc_confirm.html',
-        controller: 'DeleteDocConfirm',
-        controllerAs: 'deleteDocConfirmCtrl',
-        model: { doc: doc },
-      }).then(function() {
-        if (
-          !ctrl.selectMode &&
-          ($state.includes('contacts') || $state.includes('reports'))
-        ) {
-          $state.go($state.current.name, { id: null });
-        }
-      });
-    };
-
-    $scope.bulkDelete = function(docs) {
-      if (!docs) {
-        $log.warn('Trying to delete empty object', docs);
-        return;
-      }
-      if (!docs.length) {
-        $log.warn('Trying to delete empty array', docs);
-        return;
-      }
-      Modal({
-        templateUrl: 'templates/modals/bulk_delete_confirm.html',
-        controller: 'BulkDeleteConfirm',
-        controllerAs: 'bulkDeleteConfirmCtrl',
-        model: { docs: docs },
-      });
-    };
-
-    $scope.setSelectMode = function(value) {
-      ctrl.setSelectMode(value);
-      $scope.clearSelected();
-      $state.go('reports.detail', { id: null });
-    };
 
     $('body').on('mouseenter', '.relative-date, .autoreply', function() {
       if ($(this).data('tooltipLoaded') !== true) {
@@ -642,29 +494,17 @@ var _ = require('underscore'),
     });
 
     $('body').on('click', '#message-content .message-body', function(e) {
-      var elem = $(e.target).closest('.message-body');
+      const elem = $(e.target).closest('.message-body');
       if (!elem.is('.selected')) {
         $('#message-content .selected').removeClass('selected');
         elem.addClass('selected');
       }
     });
 
-    $scope.openFeedback = function() {
-      Modal({
-        templateUrl: 'templates/modals/feedback.html',
-        controller: 'FeedbackCtrl',
-        controllerAs: 'feedbackCtrl'
-      });
-    };
-
-    $scope.replicate = function() {
-      DBSync.sync(true);
-    };
-
     CountMessages.init();
 
     // close select2 dropdowns in the background
-    var closeDropdowns = function() {
+    const closeDropdowns = function() {
       $('select.select2-hidden-accessible').each(function() {
         // prevent errors being thrown if selectors have not been
         // initialised yet
@@ -691,7 +531,7 @@ var _ = require('underscore'),
     });
     DatabaseConnectionMonitor.listenForDatabaseClosed();
 
-    var showUpdateReady = function() {
+    const showUpdateReady = function() {
       Modal({
         templateUrl: 'templates/modals/version_update.html',
         controller: 'ReloadingModalCtrl',
@@ -732,10 +572,13 @@ var _ = require('underscore'),
       },
     });
 
-    RecurringProcessManager.startUpdateRelativeDate();
-    if (Session.isOnlineOnly()) {
-      RecurringProcessManager.startUpdateReadDocsCount();
-    }
+    const startRecurringProcesses = () => {
+      RecurringProcessManager.startUpdateRelativeDate();
+      if (Session.isOnlineOnly()) {
+        RecurringProcessManager.startUpdateReadDocsCount();
+      }
+    };
+
     $scope.$on('$destroy', function() {
       unsubscribe();
       dbClosedDeregister();
@@ -743,7 +586,7 @@ var _ = require('underscore'),
       RecurringProcessManager.stopUpdateReadDocsCount();
     });
 
-    var userCtx = Session.userCtx();
+    const userCtx = Session.userCtx();
     Changes({
       key: 'inbox-user-context',
       filter: function(change) {
@@ -758,10 +601,11 @@ var _ = require('underscore'),
       },
     });
 
-    Auth('can_write_wealth_quintiles')
-      .then(function() {
-        WealthQuintilesWatcher.start();
-      })
-      .catch(function() {});
+    Auth.has('can_write_wealth_quintiles')
+      .then(canWriteQuintiles => {
+        if (canWriteQuintiles) {
+          WealthQuintilesWatcher.start();
+        }
+      });
   });
 })();

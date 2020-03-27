@@ -1,5 +1,5 @@
-var utils = require('./utils'),
-    DDOC_ID = '_design/medic';
+const utils = require('./utils');
+const DDOC_ID = '_design/medic';
 
 describe('convert-translation-messages-fix migration', function() {
   afterEach(function() {
@@ -18,32 +18,32 @@ describe('convert-translation-messages-fix migration', function() {
         values: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
       }
     ])
-    .then(function() {
-      return utils.getDdoc(DDOC_ID);
-    })
-    .then(function(ddoc) {
-      const attachment = {
-        content_type: 'application/octet-stream',
-        content: 'Contact = Contact\nFrom = From',
-        key: 'translations/messages-en.properties'
-      };
-      return utils.insertAttachment(ddoc, attachment);
-    })
-    .then(function() {
-      return utils.runMigration('convert-translation-messages-fix');
-    })
-    .then(function() {
-      return utils.assertDb([
-        {
-          _id: 'messages-en',
-          code: 'en',
-          type: 'translations',
-          enabled: true,
-          generic: { Contact: 'Contact', From: 'From' },
-          custom: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' },
-        }
-      ]);
-    });
+      .then(function() {
+        return utils.getDdoc(DDOC_ID);
+      })
+      .then(function(ddoc) {
+        const attachment = {
+          content_type: 'application/octet-stream',
+          content: 'Contact = Contact\nFrom = From',
+          key: 'translations/messages-en.properties'
+        };
+        return utils.insertAttachment(ddoc, attachment);
+      })
+      .then(function() {
+        return utils.runMigration('convert-translation-messages-fix');
+      })
+      .then(function() {
+        return utils.assertDb([
+          {
+            _id: 'messages-en',
+            code: 'en',
+            type: 'translations',
+            enabled: true,
+            generic: { Contact: 'Contact', From: 'From' },
+            custom: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' },
+          }
+        ]);
+      });
 
   });
 
@@ -60,33 +60,33 @@ describe('convert-translation-messages-fix migration', function() {
         values: { hello: 'Bonjour', bye: 'Goodbye CUSTOMISED' }
       }
     ])
-    .then(function() {
-      return utils.getDdoc(DDOC_ID);
-    })
-    .then(function(ddoc) {
-      const attachment = {
-        content_type: 'application/octet-stream',
-        content: 'Contact = Contact\nFrom = From',
-        key: 'translations/messages-en.properties'
-      };
+      .then(function() {
+        return utils.getDdoc(DDOC_ID);
+      })
+      .then(function(ddoc) {
+        const attachment = {
+          content_type: 'application/octet-stream',
+          content: 'Contact = Contact\nFrom = From',
+          key: 'translations/messages-en.properties'
+        };
 
-      return utils.insertAttachment(ddoc, attachment);
-    })
-    .then(function() {
-      return utils.runMigration('convert-translation-messages-fix');
-    })
-    .then(function() {
-      return utils.assertDb([
-        {
-          _id: 'messages-en',
-          code: 'en',
-          type: 'translations',
-          enabled: true,
-          generic: { Contact: 'Contact', From: 'From', hello: 'Hi' },
-          custom: { hello: 'Bonjour', bye: 'Goodbye CUSTOMISED' },
-        }
-      ]);
-    });
+        return utils.insertAttachment(ddoc, attachment);
+      })
+      .then(function() {
+        return utils.runMigration('convert-translation-messages-fix');
+      })
+      .then(function() {
+        return utils.assertDb([
+          {
+            _id: 'messages-en',
+            code: 'en',
+            type: 'translations',
+            enabled: true,
+            generic: { Contact: 'Contact', From: 'From', hello: 'Hi' },
+            custom: { hello: 'Bonjour', bye: 'Goodbye CUSTOMISED' },
+          }
+        ]);
+      });
 
   });
 
@@ -102,31 +102,31 @@ describe('convert-translation-messages-fix migration', function() {
         generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
       }
     ])
-    .then(function() {
-      return utils.getDdoc(DDOC_ID);
-    })
-    .then(function(ddoc) {
-      const attachment = {
-        content_type: 'application/octet-stream',
-        content: 'Contact = Contact\nFrom = From',
-        key: 'translations/messages-en.properties'
-      };
-      return utils.insertAttachment(ddoc, attachment);
-    })
-    .then(function() {
-      return utils.runMigration('convert-translation-messages-fix');
-    })
-    .then(function() {
-      return utils.assertDb([
-        {
-          _id: 'messages-en',
-          code: 'en',
-          type: 'translations',
-          enabled: true,
-          generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
-        }
-      ]);
-    });
+      .then(function() {
+        return utils.getDdoc(DDOC_ID);
+      })
+      .then(function(ddoc) {
+        const attachment = {
+          content_type: 'application/octet-stream',
+          content: 'Contact = Contact\nFrom = From',
+          key: 'translations/messages-en.properties'
+        };
+        return utils.insertAttachment(ddoc, attachment);
+      })
+      .then(function() {
+        return utils.runMigration('convert-translation-messages-fix');
+      })
+      .then(function() {
+        return utils.assertDb([
+          {
+            _id: 'messages-en',
+            code: 'en',
+            type: 'translations',
+            enabled: true,
+            generic: { Contact: 'Contact', From: 'From', hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+          }
+        ]);
+      });
 
   });
 

@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const {promisify} = require('util');
 const fs = require('fs');
 const path = require('path');
@@ -21,7 +21,8 @@ const byId = (a, b) => {
 };
 
 const matches = (expected, actual) => {
-  var i, k;
+  let i;
+  let k;
 
   if (typeof expected === 'string') {
     return expected === actual;
@@ -66,7 +67,7 @@ const matches = (expected, actual) => {
 const assertDb = expected => {
   return db.get('medic-test').allDocs({ include_docs: true })
     .then(results => {
-      var actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
+      let actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
       expected.sort(byId);
       actual.sort(byId);
 
@@ -84,19 +85,19 @@ const assertDb = expected => {
 };
 
 const matchDbs = (expected, actual) => {
-  var errors = [];
+  const errors = [];
 
   // split expected data into docs with an ID and those without
-  var withId = expected.filter(function(doc) {
+  const withId = expected.filter(function(doc) {
     return doc._id;
   });
-  var withoutId = expected.filter(function(doc) {
+  const withoutId = expected.filter(function(doc) {
     return !doc._id;
   });
 
   // check for docs with a specific ID
   withId.forEach(function(expectedDoc) {
-    var actualDoc = actual.find(function(actualDoc) {
+    const actualDoc = actual.find(function(actualDoc) {
       return actualDoc._id === expectedDoc._id;
     });
     if (!actualDoc) {
@@ -120,7 +121,7 @@ const matchDbs = (expected, actual) => {
 
   // check for docs with an unspecified ID
   withoutId.forEach(function(expectedDoc) {
-    var found = actual.find(function(actualDoc) {
+    const found = actual.find(function(actualDoc) {
       actualDoc = JSON.parse(JSON.stringify(actualDoc));
       delete actualDoc._id;
       return matches(expectedDoc, actualDoc);
@@ -212,7 +213,7 @@ const tearDown = () => {
 };
 
 const runMigration = migration => {
-  var migrationPath = '../../../src/migrations/' + migration;
+  const migrationPath = '../../../src/migrations/' + migration;
   migration = require(migrationPath);
   return migration.run();
 };

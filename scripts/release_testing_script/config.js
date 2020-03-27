@@ -1,6 +1,6 @@
-var fs = require('fs');
+const fs = require('fs');
 
-var columnData = {
+const columnData = {
   toDo: {
     name: 'To Do',
     order: 0

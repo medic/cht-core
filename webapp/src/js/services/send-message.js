@@ -1,7 +1,7 @@
-var _ = require('underscore'),
-  uuid = require('uuid/v4'),
-  taskUtils = require('@medic/task-utils'),
-  phoneNumber = require('@medic/phone-number');
+const _ = require('lodash/core');
+const uuid = require('uuid/v4');
+const taskUtils = require('@medic/task-utils');
+const phoneNumber = require('@medic/phone-number');
 
 angular
   .module('inboxServices')
@@ -10,7 +10,8 @@ angular
     $q,
     DB,
     ExtractLineage,
-    GlobalActions,
+    MarkRead,
+    ServicesActions,
     Settings,
     UserSettings
   ) {
@@ -19,18 +20,18 @@ angular
 
     const self = this;
     const mapDispatchToTarget = (dispatch) => {
-      const globalActions = GlobalActions(dispatch);
+      const servicesActions = ServicesActions(dispatch);
       return {
-        setLastChangedDoc: globalActions.setLastChangedDoc
+        setLastChangedDoc: servicesActions.setLastChangedDoc
       };
     };
     $ngRedux.connect(null, mapDispatchToTarget)(self);
 
-    var identity = function(i) {
+    const identity = function(i) {
       return !!i;
     };
 
-    var createMessageDoc = function(user) {
+    const createMessageDoc = function(user) {
       return {
         errors: [],
         form: null,
@@ -44,9 +45,9 @@ angular
       };
     };
 
-    var mapRecipient = function(contact, phone) {
+    const mapRecipient = function(contact, phone) {
       if (phone) {
-        var res = { phone: phone };
+        const res = { phone: phone };
         if (contact) {
           res.contact = contact;
         }
@@ -54,16 +55,16 @@ angular
       }
     };
 
-    var mapDescendants = function(results) {
+    const mapDescendants = function(results) {
       return results.rows.map(function(row) {
-        var doc = row.doc;
-        var phone = doc.phone || (doc.contact && doc.contact.phone);
+        const doc = row.doc;
+        const phone = doc.phone || (doc.contact && doc.contact.phone);
         return mapRecipient(doc, phone);
       });
     };
 
     // Returns contacts and primary contacts for descendant hierarchies
-    var descendants = function(recipient) {
+    const descendants = function(recipient) {
       return DB()
         .query('medic-client/contacts_by_parent', {
           include_docs: true,
@@ -71,15 +72,15 @@ angular
           endkey: [recipient.doc._id, {}]
         })
         .then(function(contacts) {
-          var primaryContacts = _.filter(contacts.rows, function(row) {
-            var contact = row.doc.contact;
+          const primaryContacts = _.filter(contacts.rows, function(row) {
+            const contact = row.doc.contact;
             return contact && contact._id && !contact.phone;
           }).map(function(row) {
             return { doc: { _id: row.doc.contact._id } };
           });
           if (primaryContacts) {
             return hydrate(primaryContacts).then(function(primaries) {
-              return _.flatten([mapDescendants(contacts), primaries]);
+              return _.flattenDeep([mapDescendants(contacts), primaries]);
             });
           } else {
             return mapDescendants(contacts);
@@ -87,8 +88,8 @@ angular
         });
     };
 
-    var hydrate = function(recipients) {
-      var ids = recipients.map(function(recipient) {
+    const hydrate = function(recipients) {
+      const ids = recipients.map(function(recipient) {
         return recipient.doc._id;
       });
       return DB()
@@ -96,12 +97,12 @@ angular
         .then(mapDescendants);
     };
 
-    var resolvePhoneNumbers = function(recipients) {
+    const resolvePhoneNumbers = function(recipients) {
       //TODO: do we want to attempt to resolve phone numbers into existing contacts?
       // users will have already got that suggestion in the send-message UI if
       // it exists in the DB
       return recipients.map(function(recipient) {
-        var phone =
+        const phone =
           recipient.text || // from select2
           recipient.doc.phone ||
           recipient.doc.contact.phone; // from LHS message bar
@@ -109,8 +110,8 @@ angular
       });
     };
 
-    var formatRecipients = function(recipients) {
-      var splitRecipients = _.groupBy(recipients, function(recipient) {
+    const formatRecipients = function(recipients) {
+      const splitRecipients = _.groupBy(recipients, function(recipient) {
         if (recipient.everyoneAt) {
           return 'explode';
         } else if (recipient.doc && recipient.doc._id) {
@@ -124,7 +125,7 @@ angular
       splitRecipients.hydrate = splitRecipients.hydrate || [];
       splitRecipients.resolve = splitRecipients.resolve || [];
 
-      var promises = _.flatten([
+      const promises = _.flattenDeep([
         splitRecipients.explode.map(descendants),
         hydrate(splitRecipients.hydrate),
         resolvePhoneNumbers(splitRecipients.resolve),
@@ -132,19 +133,19 @@ angular
 
       return $q.all(promises).then(function(recipients) {
         // hydrate() and resolvePhoneNumbers() are promises with multiple values
-        recipients = _.flatten(recipients);
+        recipients = _.flattenDeep(recipients);
 
         // removes any undefined values caused by bad data
-        var validRecipients = recipients.filter(identity);
+        const validRecipients = recipients.filter(identity);
 
-        return _.uniq(validRecipients, false, function(recipient) {
+        return _.uniqBy(validRecipients, function(recipient) {
           return recipient.phone;
         });
       });
     };
 
-    var createTask = function(settings, recipient, message, user) {
-      var task = {
+    const createTask = function(settings, recipient, message, user) {
+      const task = {
         messages: [
           {
             from: user && user.phone,
@@ -162,25 +163,25 @@ angular
       return task;
     };
 
-    return function(recipients, message) {
-      if (!_.isArray(recipients)) {
+    return (recipients, message) => {
+      if (!Array.isArray(recipients)) {
         recipients = [recipients];
       }
       return $q
         .all([UserSettings(), Settings(), formatRecipients(recipients)])
-        .then(function(results) {
-          var user = results[0];
-          var settings = results[1];
-          var explodedRecipients = results[2];
-          var doc = createMessageDoc(user);
-          doc.tasks = explodedRecipients.map(function(recipient) {
+        .then(([ user, settings, explodedRecipients ]) => {
+          const doc = createMessageDoc(user);
+          doc.tasks = explodedRecipients.map(recipient => {
             return createTask(settings, recipient, message, user);
           });
           self.setLastChangedDoc(doc);
           return doc;
         })
-        .then(function(doc) {
-          return DB().post(doc);
+        .then(doc => {
+          return $q.all([
+            DB().post(doc),
+            MarkRead([ doc ])
+          ]);
         });
     };
   });

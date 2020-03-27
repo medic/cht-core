@@ -2,8 +2,8 @@ describe('title filter', function() {
 
   'use strict';
 
-  var compile,
-      scope;
+  let compile;
+  let scope;
 
   beforeEach(function() {
     module('inboxApp');
@@ -21,7 +21,7 @@ describe('title filter', function() {
     ];
     scope.message = undefined;
 
-    var element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
+    const element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('');
   });
@@ -34,7 +34,7 @@ describe('title filter', function() {
     ];
     scope.message = {};
 
-    var element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
+    const element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('sms_message.message');
   });
@@ -49,7 +49,7 @@ describe('title filter', function() {
       kujua_message: true
     };
 
-    var element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
+    const element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('Outgoing Message');
   });
@@ -64,7 +64,7 @@ describe('title filter', function() {
       form: 'B'
     };
 
-    var element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
+    const element = compile('<div ng-bind-html="message | title:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('bee');
   });

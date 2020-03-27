@@ -150,7 +150,8 @@ describe('db-doc service', () => {
         .__get__('getStoredDoc')(params, method, query)
         .then(result => {
           db.medic.get.callCount.should.equal(1);
-          db.medic.get.args[0].should.deep.equal(['id', { rev: '1-rev', revs: true, open_revs: true, revs_info: true }]);
+          db.medic.get.args[0]
+            .should.deep.equal(['id', { rev: '1-rev', revs: true, open_revs: true, revs_info: true }]);
           result.should.deep.equal({ _id: 'id', _rev: '1-rev' });
         });
     });
@@ -212,8 +213,8 @@ describe('db-doc service', () => {
     });
 
     it('calls authorization.allowedDoc with correct params for PUT requests', () => {
-      const dbDoc = { _id: 'id', _rev: '1-rev' },
-            requestDoc = { _id: 'id', _rev: '1-rev', some: 'data' };
+      const dbDoc = { _id: 'id', _rev: '1-rev' };
+      const requestDoc = { _id: 'id', _rev: '1-rev', some: 'data' };
       method = 'PUT';
       body = requestDoc;
       db.medic.get.resolves(dbDoc);
@@ -229,8 +230,10 @@ describe('db-doc service', () => {
           authorization.getViewResults.args[1].should.deep.equal([requestDoc]);
 
           authorization.allowedDoc.callCount.should.equal(2);
-          authorization.allowedDoc.args[0].should.deep.equal(['id', { subjectIds: ['id'], userCtx }, { view: dbDoc } ]);
-          authorization.allowedDoc.args[1].should.deep.equal(['id', { subjectIds: ['id'], userCtx }, { view: requestDoc } ]);
+          authorization.allowedDoc.args[0]
+            .should.deep.equal(['id', { subjectIds: ['id'], userCtx }, { view: dbDoc } ]);
+          authorization.allowedDoc.args[1]
+            .should.deep.equal(['id', { subjectIds: ['id'], userCtx }, { view: requestDoc } ]);
         });
     });
 
@@ -466,7 +469,8 @@ describe('db-doc service', () => {
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
-            authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: [] }, { view: { _id: 'id', some: 'data' }} ]);
+            authorization.allowedDoc.args[0]
+              .should.deep.equal([ 'id', { userCtx, subjectIds: [] }, { view: { _id: 'id', some: 'data' }} ]);
             db.medic.get.callCount.should.equal(0);
             authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
@@ -502,7 +506,8 @@ describe('db-doc service', () => {
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
-            authorization.allowedDoc.args[0].should.deep.equal([ body._id, { userCtx, subjectIds: [ body._id ] }, { view: body } ]);
+            authorization.allowedDoc.args[0]
+              .should.deep.equal([ body._id, { userCtx, subjectIds: [ body._id ] }, { view: body } ]);
             db.medic.get.callCount.should.equal(0);
             result.should.equal(true);
           });
@@ -539,7 +544,8 @@ describe('db-doc service', () => {
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
-            authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: [body._id] }, { view: body } ]);
+            authorization.allowedDoc.args[0]
+              .should.deep.equal([ 'id', { userCtx, subjectIds: [body._id] }, { view: body } ]);
             db.medic.get.callCount.should.equal(1);
             result.should.equal(true);
           });
@@ -608,8 +614,10 @@ describe('db-doc service', () => {
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(2);
-            authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: ['id'] }, { view: doc } ]);
-            authorization.allowedDoc.args[1].should.deep.equal([ 'id', { userCtx, subjectIds: ['id'] }, { view: body } ]);
+            authorization.allowedDoc.args[0]
+              .should.deep.equal([ 'id', { userCtx, subjectIds: ['id'] }, { view: doc } ]);
+            authorization.allowedDoc.args[1]
+              .should.deep.equal([ 'id', { userCtx, subjectIds: ['id'] }, { view: body } ]);
             db.medic.get.callCount.should.equal(1);
             result.should.equal(true);
           });

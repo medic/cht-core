@@ -2,14 +2,14 @@ describe('Changes service', function() {
 
   'use strict';
 
-  var service,
-      changesCalls,
-      log,
-      dispatch,
-      getLastChangedDoc,
-      session;
+  let service;
+  let changesCalls;
+  let log;
+  let dispatch;
+  let getLastChangedDoc;
+  let session;
 
-  var onProvider = function(db) {
+  const onProvider = function(db) {
     return {
       on: function(type, callback) {
         db.callbacks[type] = callback;
@@ -40,7 +40,7 @@ describe('Changes service', function() {
         return function(dbOptions) {
           return {
             changes: function(changesOptions) {
-              var db = changesCalls[dbOptions.meta ? 'meta' : 'medic'];
+              const db = changesCalls[dbOptions.meta ? 'meta' : 'medic'];
               db.callOptions = changesOptions;
               db.callCount++;
               return onProvider(db);
@@ -59,9 +59,9 @@ describe('Changes service', function() {
       });
       $provide.value('$log', log);
     });
-    inject(function(_Changes_, $ngRedux, GlobalActions, Selectors) {
+    inject(function(_Changes_, $ngRedux, ServicesActions, Selectors) {
       service = _Changes_;
-      dispatch = GlobalActions($ngRedux.dispatch);
+      dispatch = ServicesActions($ngRedux.dispatch);
       getLastChangedDoc = () => Selectors.getLastChangedDoc($ngRedux.getState());
       service().then(done);
     });
@@ -69,7 +69,7 @@ describe('Changes service', function() {
 
   it('calls the callback', function(done) {
 
-    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+    const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
     service({
       key: 'test',
@@ -89,7 +89,7 @@ describe('Changes service', function() {
 
   it('calls the callback for the meta db too', function(done) {
 
-    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+    const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
     service({
       key: 'test',
@@ -110,7 +110,7 @@ describe('Changes service', function() {
 
   it('calls the most recent callback only', function(done) {
 
-    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+    const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
     service({
       key: 'test',
@@ -140,8 +140,8 @@ describe('Changes service', function() {
 
   it('calls all registered callbacks', function(done) {
 
-    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
-    var results = { key1: [], key2: [] };
+    const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+    const results = { key1: [], key2: [] };
 
     service({
       key: 'key1',
@@ -176,8 +176,8 @@ describe('Changes service', function() {
   });
 
   it('calls the callback if filter passes', function(done) {
-    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
-    var results = { key1: [], key2: [] };
+    const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+    const results = { key1: [], key2: [] };
 
     service({
       key: 'key1',
@@ -212,7 +212,7 @@ describe('Changes service', function() {
 
   it('removes the listener when unsubscribe called', function(done) {
     // register callback
-    var listener = service({
+    const listener = service({
       key: 'yek',
       callback: function() {
         throw new Error('Callback should have been deregistered');
@@ -232,10 +232,10 @@ describe('Changes service', function() {
   });
 
   it('reregisters the callback next time', function(done) {
-    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+    const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
     // register callback
-    var listener = service({
+    const listener = service({
       key: 'yek',
       callback: function() {
         throw new Error('Callback should have been deregistered');
@@ -260,8 +260,8 @@ describe('Changes service', function() {
   });
 
   it('re-attaches where it left off if it loses connection', function(done) {
-    var first = { seq: '2-XYZ', id: 'x', changes: [ { rev: '2-abc' } ] };
-    var second = { seq: '3-ZYX', id: 'y', changes: [ { rev: '1-abc' } ] };
+    const first = { seq: '2-XYZ', id: 'x', changes: [ { rev: '2-abc' } ] };
+    const second = { seq: '3-ZYX', id: 'y', changes: [ { rev: '1-abc' } ] };
 
     service({
       key: 'test',
@@ -300,30 +300,30 @@ describe('Changes service', function() {
       callback: change => {
         calls++;
         switch (change.id) {
-          case '1':
-            chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getLastChangedDoc()._id).to.equal('2');
-            break;
-          case '2':
-            chai.expect(change.doc._id).to.equal('2');
-            chai.expect(change.doc.data).to.equal(1);
-            chai.expect(getLastChangedDoc()).to.equal(false);
-            break;
-          case '3':
-            chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getLastChangedDoc()).to.equal(false);
-            break;
-          case '4':
-            chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getLastChangedDoc()._id).to.equal('5');
-            break;
-          case '5':
-            chai.expect(change.doc._id).to.equal('5');
-            chai.expect(change.doc.data).to.equal(2);
-            chai.expect(getLastChangedDoc()).to.equal(false);
-            break;
-          default:
-            done('Received invalid change');
+        case '1':
+          chai.expect(change.doc).to.equal(undefined);
+          chai.expect(getLastChangedDoc()._id).to.equal('2');
+          break;
+        case '2':
+          chai.expect(change.doc._id).to.equal('2');
+          chai.expect(change.doc.data).to.equal(1);
+          chai.expect(getLastChangedDoc()).to.equal(false);
+          break;
+        case '3':
+          chai.expect(change.doc).to.equal(undefined);
+          chai.expect(getLastChangedDoc()).to.equal(false);
+          break;
+        case '4':
+          chai.expect(change.doc).to.equal(undefined);
+          chai.expect(getLastChangedDoc()._id).to.equal('5');
+          break;
+        case '5':
+          chai.expect(change.doc._id).to.equal('5');
+          chai.expect(change.doc.data).to.equal(2);
+          chai.expect(getLastChangedDoc()).to.equal(false);
+          break;
+        default:
+          done('Received invalid change');
         }
 
         if (calls === 5) {
@@ -357,30 +357,30 @@ describe('Changes service', function() {
       callback: change => {
         calls++;
         switch (change.id) {
-          case '1':
-            chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getLastChangedDoc()._id).to.equal('2');
-            break;
-          case '2':
-            chai.expect(change.doc._id).to.equal('2');
-            chai.expect(change.doc.data).to.equal(0);
-            chai.expect(getLastChangedDoc()).to.equal(false);
-            break;
-          case '3':
-            chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getLastChangedDoc()).to.equal(false);
-            break;
-          case '4':
-            chai.expect(change.doc).to.equal(undefined);
-            chai.expect(getLastChangedDoc()._id).to.equal('5');
-            break;
-          case '5':
-            chai.expect(change.doc._id).to.equal('5');
-            chai.expect(change.doc.data).to.equal(0);
-            chai.expect(getLastChangedDoc()).to.equal(false);
-            break;
-          default:
-            done('Received invalid change');
+        case '1':
+          chai.expect(change.doc).to.equal(undefined);
+          chai.expect(getLastChangedDoc()._id).to.equal('2');
+          break;
+        case '2':
+          chai.expect(change.doc._id).to.equal('2');
+          chai.expect(change.doc.data).to.equal(0);
+          chai.expect(getLastChangedDoc()).to.equal(false);
+          break;
+        case '3':
+          chai.expect(change.doc).to.equal(undefined);
+          chai.expect(getLastChangedDoc()).to.equal(false);
+          break;
+        case '4':
+          chai.expect(change.doc).to.equal(undefined);
+          chai.expect(getLastChangedDoc()._id).to.equal('5');
+          break;
+        case '5':
+          chai.expect(change.doc._id).to.equal('5');
+          chai.expect(change.doc.data).to.equal(0);
+          chai.expect(getLastChangedDoc()).to.equal(false);
+          break;
+        default:
+          done('Received invalid change');
         }
 
         if (calls === 5) {

@@ -1,6 +1,7 @@
-const sentinelUtils = require('../sentinel/utils'),
-      utils = require('../../utils'),
-      apiUtils = require('./utils');
+const sentinelUtils = require('../sentinel/utils');
+const utils = require('../../utils');
+const apiUtils = require('./utils');
+const chai = require('chai');
 
 const contacts = [
   {
@@ -21,7 +22,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw1', parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -53,7 +57,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw2', parent:  { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw2',
+      parent:  { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -296,11 +303,11 @@ const getDocByPatientId = patientId => {
 };
 
 const expectTransitions = (infodoc, ...transitions) => {
-  expect(infodoc.transitions).toBeDefined();
-  expect(Object.keys(infodoc.transitions).length).toEqual(transitions.length);
+  chai.expect(infodoc.transitions).to.be.an('object');
+  chai.expect(Object.keys(infodoc.transitions).length).to.equal(transitions.length);
   transitions.forEach(transition => {
-    expect(infodoc.transitions[transition]).toBeDefined();
-    expect(infodoc.transitions[transition].ok).toEqual(true);
+    chai.expect(infodoc.transitions[transition]).to.be.an('object');
+    chai.expect(infodoc.transitions[transition].ok).to.equal(true);
   });
 };
 
@@ -333,8 +340,8 @@ describe('transitions', () => {
     };
     Object.assign(settings, transitionsConfig);
 
-    let docs,
-        ids;
+    let docs;
+    let ids;
 
     return utils
       .updateSettings(settings)
@@ -350,118 +357,136 @@ describe('transitions', () => {
 
         //temp_unknown_patient
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_patient');
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message).toEqual('Patient not found');
-        expect(doc.tasks[0].messages[0].to).toEqual('phone1');
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.errors[0].code).toEqual('registration_not_found');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw1');
+        chai.expect(doc.tasks.length).to.equal(1);
+        chai.expect(doc.tasks[0].messages[0]).to.include({
+          message: 'Patient not found',
+          to: 'phone1'
+        });
+        chai.expect(doc.errors.length).to.equal(1);
+        chai.expect(doc.errors[0].code).to.equal('registration_not_found');
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw1');
 
         //temp_invalid
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_invalid');
-        expect(doc.tasks.length).toEqual(2);
-        expect(doc.tasks[0].messages[0].message).toEqual('Temperature seems incorrect');
-        expect(doc.tasks[0].messages[0].to).toEqual('phone1');
-        expect(doc.tasks[1].messages[0].message).toEqual('Patient temperature high');
-        expect(doc.tasks[1].messages[0].to).toEqual('phone1');
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.errors[0].code).toEqual('invalid_temp');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw1');
+        chai.expect(doc.tasks.length).to.equal(2);
+        chai.expect(doc.tasks[0].messages[0]).to.include({
+          message: 'Temperature seems incorrect',
+          to: 'phone1'
+        });
+        chai.expect(doc.tasks[1].messages[0]).to.include({
+          message: 'Patient temperature high',
+          to: 'phone1'
+        });
+        chai.expect(doc.errors.length).to.equal(1);
+        chai.expect(doc.errors[0].code).to.equal('invalid_temp');
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw1');
 
         //temp_successful
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_successful');
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message).toEqual('Temperature registered');
-        expect(doc.tasks[0].messages[0].to).toEqual('phone1');
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw1');
+        chai.expect(doc.tasks.length).to.equal(1);
+        chai.expect(doc.tasks[0].messages[0]).to.include({
+          message: 'Temperature registered',
+          to: 'phone1'
+        });
+        chai.expect(doc.errors.length).to.equal(0);
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw1');
 
         //temp_high
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_high');
-        expect(doc.tasks.length).toEqual(2);
-        expect(doc.tasks[0].messages[0].message).toEqual('Temperature registered');
-        expect(doc.tasks[0].messages[0].to).toEqual('phone2');
-        expect(doc.tasks[1].messages[0].message).toEqual('Patient temperature high');
-        expect(doc.tasks[1].messages[0].to).toEqual('phone2');
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw2');
+        chai.expect(doc.tasks.length).to.equal(2);
+        chai.expect(doc.tasks[0].messages[0]).to.include({
+          message: 'Temperature registered',
+          to: 'phone2'
+        });
+        chai.expect(doc.tasks[1].messages[0]).to.include({
+          message: 'Patient temperature high',
+          to: 'phone2'
+        });
+        chai.expect(doc.errors.length).to.equal(0);
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw2');
 
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message.startsWith('SMS message received')).toEqual(true);
-        expect(doc.tasks[0].messages[0].to).toEqual('+501234656887');
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.errors[0].code).toEqual('sys.facility_not_found');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).not.toBeDefined();
+        chai.expect(doc.tasks.length).to.equal(1);
+        chai.expect(doc.tasks[0].messages[0].message.startsWith('SMS message received')).to.equal(true);
+        chai.expect(doc.tasks[0].messages[0].to).to.equal('+501234656887');
+        chai.expect(doc.errors.length).to.equal(1);
+        chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.equal(undefined);
 
         //form_not_found
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'form_not_found');
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message.startsWith('SMS message received')).toEqual(true);
-        expect(doc.tasks[0].messages[0].to).toEqual('phone2');
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw2');
+        chai.expect(doc.tasks.length).to.equal(1);
+        chai.expect(doc.tasks[0].messages[0].message.startsWith('SMS message received')).to.equal(true);
+        chai.expect(doc.tasks[0].messages[0].to).to.equal('phone2');
+        chai.expect(doc.errors.length).to.equal(0);
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw2');
 
         //new_child
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child');
-        expect(doc.tasks.length).toEqual(1);
-        expect(doc.tasks[0].messages[0].message).toEqual('Patient child1 created');
-        expect(doc.tasks[0].messages[0].to).toEqual('phone2');
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw2');
-        expect(doc.scheduled_tasks).toBeDefined();
-        expect(doc.scheduled_tasks.length).toEqual(2);
-        expect(doc.scheduled_tasks[0].messages[0].message).toEqual('Revisit patient child1');
-        expect(doc.scheduled_tasks[0].messages[0].to).toEqual('phone2');
-        expect(doc.scheduled_tasks[0].state).toEqual('scheduled');
-        expect(doc.scheduled_tasks[1].messages[0].message).toEqual('First visit');
-        expect(doc.scheduled_tasks[1].messages[0].to).toEqual('phone2');
-        expect(doc.scheduled_tasks[1].state).toEqual('scheduled');
+        chai.expect(doc.tasks.length).to.equal(1);
+        chai.expect(doc.tasks[0].messages[0]).to.include({
+          message: 'Patient child1 created',
+          to: 'phone2'
+        });
+        chai.expect(doc.errors.length).to.equal(0);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw2');
+        chai.expect(doc.scheduled_tasks).to.be.an('array');
+        chai.expect(doc.scheduled_tasks.length).to.equal(2);
+        chai.expect(doc.scheduled_tasks[0].messages[0]).to.include({
+          message: 'Revisit patient child1',
+          to: 'phone2'
+        });
+        chai.expect(doc.scheduled_tasks[0].state).to.equal('scheduled');
+        chai.expect(doc.scheduled_tasks[1].messages[0]).to.include({
+          message: 'First visit',
+          to: 'phone2'
+        });
+        chai.expect(doc.scheduled_tasks[1].state).to.equal('scheduled');
 
         //new_child_unknown
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'new_child_unknown');
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.errors.length).toEqual(1);
-        expect(doc.errors[0].code).toEqual('sys.facility_not_found');
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).not.toBeDefined();
-        expect(doc.patient_id).not.toBeDefined();
+        chai.expect(doc.tasks.length).to.equal(0);
+        chai.expect(doc.errors.length).to.equal(1);
+        chai.expect(doc.errors[0].code).to.equal('sys.facility_not_found');
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.equal(undefined);
+        chai.expect(doc.patient_id).to.equal(undefined);
 
         //dead
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'dead');
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw1');
+        chai.expect(doc.tasks.length).to.equal(0);
+        chai.expect(doc.errors.length).to.equal(0);
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw1');
 
         //mute
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
-        expect(doc.tasks.length).toEqual(0);
-        expect(doc.errors.length).toEqual(0);
-        expect(doc.scheduled_tasks).not.toBeDefined();
-        expect(doc.contact).toBeDefined();
-        expect(doc.contact._id).toEqual('chw1');
+        chai.expect(doc.tasks.length).to.equal(0);
+        chai.expect(doc.errors.length).to.equal(0);
+        chai.expect(doc.scheduled_tasks).to.equal(undefined);
+        chai.expect(doc.contact).to.be.an('object');
+        chai.expect(doc.contact._id).to.equal('chw1');
 
-        expect(messages.messages.length).toEqual(9);
-        expect(messages.messages.length).toEqual(docs.reduce((sum, doc) => sum + doc.tasks.length, 0));
+        chai.expect(messages.messages.length).to.equal(9);
+        chai.expect(messages.messages.length).to.equal(docs.reduce((sum, doc) => sum + doc.tasks.length, 0));
         docs.forEach(doc => {
           doc.tasks.forEach(task => {
             task.messages.forEach(message => {
-              expect(messages.messages.find(m => m.id === message.uuid)).toBeDefined();
+              chai.expect(messages.messages.find(m => m.id === message.uuid)).to.be.ok;
             });
           });
         });
@@ -473,8 +498,8 @@ describe('transitions', () => {
         utils.getDoc('person4')
       ]))
       .then(([infos, child1, person3, person4]) => {
-        let doc,
-            infodoc;
+        let doc;
+        let infodoc;
 
         //temp_unknown_patient
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_patient');
@@ -484,7 +509,9 @@ describe('transitions', () => {
         //temp_invalid
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_invalid');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //temp_successful
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_successful');
@@ -494,7 +521,9 @@ describe('transitions', () => {
         //temp_high
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_high');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
@@ -525,15 +554,15 @@ describe('transitions', () => {
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
         infodoc = infos.find(info => info.doc_id === doc._id);
         expectTransitions(infodoc, 'default_responses', 'update_clinics');
-        expect(infodoc.transitions.muting).not.toBeDefined();
+        chai.expect(infodoc.transitions.muting).to.equal(undefined);
 
-        expect(child1.length).toEqual(1);
-        expect(child1[0].doc.patient_id).toEqual('child1');
-        expect(child1[0].doc.parent._id).toEqual('clinic2');
-        expect(child1[0].doc.name).toEqual('Child name');
+        chai.expect(child1.length).to.equal(1);
+        chai.expect(child1[0].doc.patient_id).to.equal('child1');
+        chai.expect(child1[0].doc.parent._id).to.equal('clinic2');
+        chai.expect(child1[0].doc.name).to.equal('Child name');
 
-        expect(person3.date_of_death).toBeDefined();
-        expect(person4.muted).not.toBeDefined();
+        chai.expect(person3.date_of_death).to.be.ok;
+        chai.expect(person4.muted).to.equal(undefined);
       })
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => Promise.all([
@@ -543,9 +572,8 @@ describe('transitions', () => {
         utils.getDoc('person4')
       ]))
       .then(([infos, updated, person3, person4]) => {
-        let doc,
-            infodoc,
-            updatedDoc;
+        let doc;
+        let infodoc;
 
         //temp_unknown_patient
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_unknown_patient');
@@ -555,7 +583,9 @@ describe('transitions', () => {
         //temp_invalid
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_invalid');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //temp_successful
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_successful');
@@ -565,7 +595,9 @@ describe('transitions', () => {
         //temp_high
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_high');
         infodoc = infos.find(info => info.doc_id === doc._id);
-        expectTransitions(infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts');
+        expectTransitions(
+          infodoc, 'default_responses', 'update_clinics', 'accept_patient_reports', 'conditional_alerts'
+        );
 
         //unformatted
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'unformatted');
@@ -596,14 +628,14 @@ describe('transitions', () => {
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'mute');
         infodoc = infos.find(info => info.doc_id === doc._id);
         expectTransitions(infodoc, 'default_responses', 'update_clinics', 'muting');
-        updatedDoc = updated.find(u => u._id === doc._id);
-        expect(updatedDoc._rev).not.toEqual(doc._rev);
-        expect(updatedDoc.tasks.length).toEqual(1);
-        expect(updatedDoc.tasks[0].messages[0].message).toEqual('Patient patient4 muted');
-        expect(updatedDoc.tasks[0].state).toEqual('pending');
+        const updatedDoc = updated.find(u => u._id === doc._id);
+        chai.expect(updatedDoc._rev).not.to.equal(doc._rev);
+        chai.expect(updatedDoc.tasks.length).to.equal(1);
+        chai.expect(updatedDoc.tasks[0].messages[0].message).to.equal('Patient patient4 muted');
+        chai.expect(updatedDoc.tasks[0].state).to.equal('pending');
 
-        expect(person3.date_of_death).toBeDefined();
-        expect(person4.muted).toBeDefined();
+        chai.expect(person3.date_of_death).to.be.ok;
+        chai.expect(person4.muted).to.be.ok;
       });
   });
 
@@ -637,8 +669,8 @@ describe('transitions', () => {
         utils.request(getPostOpts('/api/sms', { messages: messages })),
       ]))
       .then(([changes, messages]) => {
-        expect(messages.messages.length).toEqual(0);
-        expect(changes.every(change => isUntransitionedDoc(change.doc))).toEqual(true);
+        chai.expect(messages.messages.length).to.equal(0);
+        chai.expect(changes.every(change => isUntransitionedDoc(change.doc))).to.equal(true);
         ids = changes.map(change => change.id);
       })
       // Sentinel won't process these, so we can't wait for a metadata update, but let's give it 5 seconds just in case
@@ -649,16 +681,16 @@ describe('transitions', () => {
       ]))
       .then(([infos, updatedDocs]) => {
         infos.forEach(info => expect(!info));
-        expect(updatedDocs.every(isUntransitionedDoc)).toEqual(true);
+        chai.expect(updatedDocs.every(isUntransitionedDoc)).to.equal(true);
       })
       .then(() => getDocByPatientId('child1'))
       .then(rows => {
-        expect(rows.length).toEqual(0);
+        chai.expect(rows.length).to.equal(0);
       })
       .then(() => utils.getDocs(['person4', 'person3']))
       .then(([ person4, person3 ]) => {
-        expect(person4.date_of_death).not.toBeDefined();
-        expect(person3.muted).not.toBeDefined();
+        chai.expect(person4.date_of_death).to.equal(undefined);
+        chai.expect(person3.muted).to.equal(undefined);
       });
   });
 
@@ -754,7 +786,7 @@ describe('transitions', () => {
       ]))
       .then(([changes, messages]) => {
         ids = changes.map(change => change.id);
-        expect(messages.messages).toEqual([]);
+        chai.expect(messages.messages).to.deep.equal([]);
       })
       .then(() => Promise.all([
         sentinelUtils.getInfoDocs(ids),
@@ -763,23 +795,23 @@ describe('transitions', () => {
       .then(([ infos, docs ]) => {
         const immPatient2 = docs.filter(doc => doc.fields.patient_id === 'patient2');
         immPatient2.forEach(doc => {
-          expect(doc.contact).toBeDefined();
-          expect(doc.scheduled_tasks.length).toEqual(2);
-          expect(doc.scheduled_tasks[0].messages[0].message).toEqual('Immunize patient2 for disease A');
-          expect(doc.scheduled_tasks[1].messages[0].message).toEqual('Immunize patient2 for disease B');
+          chai.expect(doc.contact).to.be.an('object');
+          chai.expect(doc.scheduled_tasks.length).to.equal(2);
+          chai.expect(doc.scheduled_tasks[0].messages[0].message).to.equal('Immunize patient2 for disease A');
+          chai.expect(doc.scheduled_tasks[1].messages[0].message).to.equal('Immunize patient2 for disease B');
         });
         const scheduled = immPatient2.filter(doc => doc.scheduled_tasks.every(task => task.state === 'scheduled'));
         const cleared = immPatient2.filter(doc => doc.scheduled_tasks.every(task => task.state === 'cleared'));
         // only one doc has scheduled tasks!
-        expect(scheduled.length).toEqual(1);
-        expect(cleared.length).toEqual(3);
+        chai.expect(scheduled.length).to.equal(1);
+        chai.expect(cleared.length).to.equal(3);
 
         const imm5 = docs.find(doc => doc.fields.patient_id === 'patient1');
-        expect(imm5.scheduled_tasks.length).toEqual(2);
-        expect(imm5.scheduled_tasks[0].messages[0].message).toEqual('Immunize patient1 for disease A');
-        expect(imm5.scheduled_tasks[0].state).toEqual('scheduled');
-        expect(imm5.scheduled_tasks[1].messages[0].message).toEqual('Immunize patient1 for disease B');
-        expect(imm5.scheduled_tasks[1].state).toEqual('scheduled');
+        chai.expect(imm5.scheduled_tasks.length).to.equal(2);
+        chai.expect(imm5.scheduled_tasks[0].messages[0].message).to.equal('Immunize patient1 for disease A');
+        chai.expect(imm5.scheduled_tasks[0].state).to.equal('scheduled');
+        chai.expect(imm5.scheduled_tasks[1].messages[0].message).to.equal('Immunize patient1 for disease B');
+        chai.expect(imm5.scheduled_tasks[1].state).to.equal('scheduled');
 
         infos.forEach(info => {
           expectTransitions(info, 'update_clinics', 'registration');
@@ -859,11 +891,139 @@ describe('transitions', () => {
         sentinelUtils.getInfoDoc(docId)
       ]))
       .then(([doc, info]) => {
-        expect(doc.tasks.length).toEqual(2);
-        expect(doc.tasks[0].messages[0].message).toEqual('patient_reports msg');
-        expect(doc.tasks[1].messages[0].message).toEqual('multi_report_alerts msg');
+        chai.expect(doc.tasks.length).to.equal(2);
+        chai.expect(doc.tasks[0].messages[0].message).to.equal('patient_reports msg');
+        chai.expect(doc.tasks[1].messages[0].message).to.equal('multi_report_alerts msg');
 
         expectTransitions(info, 'update_clinics', 'accept_patient_reports', 'multi_report_alerts');
+      });
+  });
+
+  it('should creating a patient that is already dead', () => {
+    const settings = {
+      transitions: { death_reporting: true, registration: true, update_clinics: true },
+      death_reporting: {
+        mark_deceased_forms: ['DEAD'],
+        date_field: 'fields.time_of_death'
+      },
+      registrations: [{
+        form: 'DEAD',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '',
+          bool_expr: ''
+        }],
+        messages: [],
+      }],
+      forms: {
+        DEAD: {
+          meta: { label: { en: 'Dead' }, code: 'DEAD'},
+          fields: {
+            time_of_death: {
+              labels: { short: { translation_key: 'time_of_death' }},
+              position: 0,
+              type: 'string',
+              length: [2, 10],
+              required: true
+            },
+            patient_name: {
+              labels: { short: { translation_key: 'patient_name' }},
+              position: 1,
+              type: 'string',
+              length: [2, 10],
+              required: true
+            },
+          },
+        },
+      },
+    };
+
+    const messages = [{
+      id: 'DEAD',
+      from: 'phone1',
+      content: 'DEAD 123456789 Veronica'
+    }];
+
+    let docId;
+
+    return utils
+      .updateSettings(settings)
+      .then(() => Promise.all([
+        apiUtils.getApiSmsChanges(messages),
+        utils.request(getPostOpts('/api/sms', { messages: messages })),
+      ]))
+      .then(([changes]) => {
+        docId = changes[0].id;
+      })
+      .then(() => sentinelUtils.waitForSentinel(docId))
+      .then(() => sentinelUtils.getInfoDoc(docId))
+      .then(info => {
+        expectTransitions(info, 'update_clinics', 'registration', 'death_reporting');
+        chai.expect(info.transitions.death_reporting.seq).not.to.equal(info.transitions.registration.seq);
+        chai.expect(info.transitions.update_clinics.seq).to.equal(info.transitions.registration.seq);
+        chai.expect(info.transitions.update_clinics.seq).to.equal(null);
+      })
+      .then(() => utils.getDoc(docId))
+      .then(updated => {
+        chai.expect(updated.patient_id).to.be.ok;
+
+        const opts = {
+          qs: {
+            key: JSON.stringify(['shortcode', updated.patient_id]),
+            include_docs: true,
+          },
+          path: '/_design/medic-client/_view/contacts_by_reference',
+        };
+        return utils.requestOnTestDb(opts);
+      })
+      .then(result => {
+        chai.expect(result.rows.length).to.equal(1);
+        chai.expect(result.rows[0].doc).to.deep.include({
+          parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+          date_of_death: '123456789',
+          name: 'Veronica',
+        });
+      });
+  });
+
+  it('should only run one shortcode generating transition', () => {
+    const settings = {
+      transitions: {
+        generate_patient_id_on_people: true,
+        generate_shortcode_on_contacts: true,
+      },
+    };
+
+    const place = {
+      _id: 'my_favorite_place',
+      name: 'My Favorite Place',
+      type: 'health_center',
+      reported_date: new Date().getTime(),
+      parent: { _id: 'district_hospital' },
+    };
+
+    const person = {
+      _id: 'my_favorite_person',
+      name: 'My Favorite Person',
+      type: 'person',
+      reported_date: new Date().getTime(),
+      parent: { _id: 'my_favorite_place', parent: { _id: 'district_hospital' } },
+    };
+
+    return utils
+      .updateSettings(settings, false)
+      .then(() => utils.saveDocs([place, person]))
+      .then(() => sentinelUtils.waitForSentinel([ place._id, person._id ]))
+      .then(() => sentinelUtils.getInfoDocs([ place._id, person._id ]))
+      .then(([ placeInfo, personInfo ]) => {
+        expectTransitions(placeInfo, 'generate_shortcode_on_contacts');
+        expectTransitions(personInfo, 'generate_shortcode_on_contacts');
+      })
+      .then(() => utils.getDocs([ place._id, person._id ]))
+      .then(([ updatedPlace, updatedPerson ]) => {
+        chai.expect(updatedPlace.place_id).to.be.ok;
+        chai.expect(updatedPerson.patient_id).to.be.ok;
       });
   });
 });

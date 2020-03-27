@@ -91,11 +91,11 @@ function getNextANCVisitDate(allReports, report) {
 
 
 function getDangerSignCodes(report) {
-  let dangerSignCodes = [];
+  const dangerSignCodes = [];
   if (getField(report, 't_danger_signs_referral_follow_up') === 'yes') {
     const dangerSignsObj = getField(report, 'danger_signs');
     if (dangerSignsObj) {
-      for (let dangerSign in dangerSignsObj) {
+      for (const dangerSign in dangerSignsObj) {
         if (dangerSignsObj[dangerSign] === 'yes' && dangerSign !== 'r_danger_sign_present') {
           dangerSignCodes.push(dangerSign);
         }
@@ -130,7 +130,7 @@ function getLatestDangerSignsForPregnancy(allReports, pregnancy) {
 
 
 function getRiskFactorsFromPregnancy(report) {
-  let riskFactors = [];
+  const riskFactors = [];
   if (!isPregnancyForm(report)) { return []; }
   if (getField(report, 'risk_factors.r_risk_factor_present') === 'yes') {
     if (getField(report, 'risk_factors.risk_factors_history.first_pregnancy') === 'yes') {
@@ -152,7 +152,7 @@ function getRiskFactorsFromPregnancy(report) {
 }
 
 function getNewRiskFactorsFromFollowUps(report) {
-  let riskFactors = [];
+  const riskFactors = [];
   if (!isPregnancyFollowUpForm(report)) { return []; }
   if (getField(report, 'anc_visits_hf.risk_factors.r_risk_factor_present') === 'yes') {
     const newRiskFactors = getField(report, 'anc_visits_hf.risk_factors.new_risks');
@@ -365,7 +365,7 @@ function countANCFacilityVisits(allReports, pregnancyReport) {
     if (isNaN(pastANCHFVisits.visited_hf_count)) { return sum; }
     return sum += pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count);
   },
-    0);
+  0);
   return ancHFVisits;
 }
 

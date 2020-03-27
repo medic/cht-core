@@ -2,8 +2,8 @@ describe('Modal service', function() {
 
   'use strict';
 
-  var service,
-      uibModalOpen;
+  let service;
+  let uibModalOpen;
 
   beforeEach(function() {
     module('inboxApp');
@@ -19,7 +19,7 @@ describe('Modal service', function() {
   });
 
   it('passed args to uibModal', function() {
-    var options = {
+    const options = {
       templateUrl: 'url',
       controller: 'controller',
       model: 123
@@ -28,20 +28,20 @@ describe('Modal service', function() {
     service(options);
 
     chai.expect(uibModalOpen.called).to.equal(true);
-    var actual = uibModalOpen.getCall(0).args[0];
+    const actual = uibModalOpen.getCall(0).args[0];
     chai.expect(actual.templateUrl).to.equal(options.templateUrl);
     chai.expect(actual.controller).to.equal(options.controller);
     chai.expect(actual.scope.model).to.equal(123);
   });
 
   it('closes previous modal if singleton is set', function() {
-    var options = {
+    const options = {
       templateUrl: 'url',
       controller: 'controller',
       singleton: true
     };
-    var firstModal = { close: sinon.stub() };
-    var secondModal = { close: sinon.stub() };
+    const firstModal = { close: sinon.stub() };
+    const secondModal = { close: sinon.stub() };
     uibModalOpen.onCall(0).returns(firstModal);
     uibModalOpen.onCall(1).returns(secondModal);
 

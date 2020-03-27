@@ -1,11 +1,11 @@
-const _ = require('underscore'),
-  vm = require('vm'),
-  db = require('../db'),
-  moment = require('moment'),
-  config = require('../config'),
-  taskUtils = require('@medic/task-utils'),
-  registrationUtils = require('@medic/registration-utils'),
-  logger = require('./logger');
+const _ = require('lodash');
+const vm = require('vm');
+const db = require('../db');
+const moment = require('moment');
+const config = require('../config');
+const taskUtils = require('@medic/task-utils');
+const registrationUtils = require('@medic/registration-utils');
+const logger = require('./logger');
 
 /*
  * Get desired locale
@@ -112,12 +112,12 @@ const getReportsWithinTimeWindow = (
     .then(data => data.rows.map(row => row.doc));
 };
 
-const getPatient = (patientShortcodeId, includeDocs) => {
-  if (!patientShortcodeId) {
+const getContact = (shortCodeId, includeDocs) => {
+  if (!shortCodeId) {
     return Promise.resolve();
   }
   const viewOpts = {
-    key: ['shortcode', patientShortcodeId],
+    key: ['shortcode', shortCodeId],
     include_docs: includeDocs,
   };
   return db.medic.query('medic-client/contacts_by_reference', viewOpts).then(results => {
@@ -126,13 +126,11 @@ const getPatient = (patientShortcodeId, includeDocs) => {
     }
 
     if (results.rows.length > 1) {
-      logger.warn(
-        `More than one patient person document for shortcode ${patientShortcodeId}`
-      );
+      logger.warn(`More than one contact document for shortcode ${shortCodeId}`);
     }
 
-    const patient = results.rows[0];
-    return includeDocs ? patient.doc : patient.id;
+    const contact = results.rows[0];
+    return includeDocs ? contact.doc : contact.id;
   });
 };
 
@@ -149,7 +147,7 @@ module.exports = {
   * NB: Not all ids have registration documents against them, and so this
   *     is not a valid way of determining if the patient with that id exists
   */
-  getRegistrations: (options, callback) => {
+  getRegistrations: (options) => {
     const viewOptions = {
       include_docs: true,
     };
@@ -158,20 +156,15 @@ module.exports = {
     } else if (options.ids) {
       viewOptions.keys = options.ids;
     } else {
-      return callback(null, []);
+      return Promise.resolve([]);
     }
-    db.medic.query('medic-client/registered_patients', viewOptions)
+    return db.medic
+      .query('medic-client/registered_patients', viewOptions)
       .then(data => {
-        callback(
-          null,
-          data.rows
-            .map(row => row.doc)
-            .filter(doc =>
-              registrationUtils.isValidRegistration(doc, config.getAll())
-            )
-        );
-      })
-      .catch(callback);
+        return data.rows
+          .map(row => row.doc)
+          .filter(doc => registrationUtils.isValidRegistration(doc, config.getAll()));
+      });
   },
   getForm: formCode => {
     const forms = config.get('forms');
@@ -224,22 +217,17 @@ module.exports = {
     return msg && msg.trim();
   },
   /*
-   * Given a patient "shortcode" (as used in SMS reports), return the _id
-   * of the patient's person contact to the caller
+   * Given a contact "shortcode" (as used in SMS reports), return the _id
+   * of the contact to the caller
    */
-  getPatientContactUuid: (patientShortcodeId, callback) => {
-    getPatient(patientShortcodeId, false)
-      .then(results => callback(null, results))
-      .catch(callback);
+  getContactUuid: (shortCodeId) => {
+    return getContact(shortCodeId, false);
   },
   /*
-   * Given a patient "shortcode" (as used in SMS reports), return the
-   * patient's person record
+   * Given a contact "shortcode" (as used in SMS reports), return the contact record
    */
-  getPatientContact: (patientShortcodeId, callback) => {
-    getPatient(patientShortcodeId, true)
-      .then(results => callback(null, results))
-      .catch(callback);
+  getContact: (shortCodeId) => {
+    return getContact(shortCodeId, true);
   },
   isNonEmptyString: expr => typeof expr === 'string' && expr.trim() !== '',
   evalExpression: (expr, context) => vm.runInNewContext(expr, context),

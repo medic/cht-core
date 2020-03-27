@@ -23,7 +23,7 @@ angular
           if(form.xml2sms) {
             return $parse(form.xml2sms)({ doc:doc.fields, concat, spaced, match });
           } else {
-            $log.debug('No xml2sms property defined on form doc.  Checking for standard odk tags in form submission...');
+            $log.debug('No xml2sms property defined on form doc. Checking for standard odk tags in form submission...');
 
             return GetReportContent(doc)
               .then(odkForm2sms);

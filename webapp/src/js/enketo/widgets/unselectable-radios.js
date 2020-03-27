@@ -1,7 +1,7 @@
 if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
+  var define = function( factory ) { // eslint-disable-line
+    factory( require, exports, module );
+  };
 }
 /**
  * @preserve Copyright 2012 Martijn van de Rijdt & Modilabs
@@ -20,14 +20,14 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
  */
 
 define( function( require, exports, module ) {
-    'use strict';
-    var Widget = require( 'enketo-core/src/js/Widget' );
-    var $ = require( 'jquery' );
-    require( 'enketo-core/src/js/plugins' );
+  'use strict';
+  const Widget = require( 'enketo-core/src/js/Widget' );
+  const $ = require( 'jquery' );
+  require( 'enketo-core/src/js/plugins' );
 
-    var pluginName = 'unselectableradios';
+  const pluginName = 'unselectableradios';
 
-    /**
+  /**
      * Prevent required radio buttons from being unchecked.
      *
      * @constructor
@@ -36,47 +36,47 @@ define( function( require, exports, module ) {
      * @param {*=} e     event
      */
 
-    function Unselectableradios( element, options ) {
-        this.namespace = pluginName;
-        Widget.call( this, element, options );
-        this._init();
-    }
+  function Unselectableradios( element, options ) {
+    this.namespace = pluginName;
+    Widget.call( this, element, options );
+    this._init();
+  }
 
-    //copy the prototype functions from the Widget super class
-    Unselectableradios.prototype = Object.create( Widget.prototype );
+  //copy the prototype functions from the Widget super class
+  Unselectableradios.prototype = Object.create( Widget.prototype );
 
-    //ensure the constructor is the new one
-    Unselectableradios.prototype.constructor = Unselectableradios;
+  //ensure the constructor is the new one
+  Unselectableradios.prototype.constructor = Unselectableradios;
 
-    Unselectableradios.prototype._init = function() {
-        $( this.element ).addClass( 'no-unselect' );
-    };
+  Unselectableradios.prototype._init = function() {
+    $( this.element ).addClass( 'no-unselect' );
+  };
 
-    Unselectableradios.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
+  Unselectableradios.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
-    $.fn[ pluginName ] = function( options, event ) {
-        return this.each( function() {
-            var $this = $( this ),
-                data = $this.data( pluginName );
+  $.fn[ pluginName ] = function( options, event ) {
+    return this.each( function() {
+      const $this = $( this );
+      let data = $this.data( pluginName );
 
-            options = options || {};
+      options = options || {};
 
-            if ( !data && typeof options === 'object' ) {
-                $this.data( pluginName, ( data = new Unselectableradios( this, options, event ) ) );
-            } else if ( data && typeof options === 'string' ) {
-                data[ options ]( this );
-            }
-        } );
-    };
+      if ( !data && typeof options === 'object' ) {
+        $this.data( pluginName, ( data = new Unselectableradios( this, options, event ) ) );
+      } else if ( data && typeof options === 'string' ) {
+        data[ options ]( this );
+      }
+    } );
+  };
 
-    module.exports = {
-        'name': pluginName,
-        // Enketo currently uses `data-required` instead of `required` to denote
-        // a required field.
-        //
-        // This code assumes that we never have dynamicly calculated required
-        // flags.  See https://github.com/enketo/enketo-core/issues/362 for more
-        // discussion.
-        'selector': 'input[type=radio][data-required="true()"]'
-    };
+  module.exports = {
+    'name': pluginName,
+    // Enketo currently uses `data-required` instead of `required` to denote
+    // a required field.
+    //
+    // This code assumes that we never have dynamicly calculated required
+    // flags.  See https://github.com/enketo/enketo-core/issues/362 for more
+    // discussion.
+    'selector': 'input[type=radio][data-required="true()"]'
+  };
 } );

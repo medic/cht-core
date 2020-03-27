@@ -10,8 +10,10 @@ const messageGatewayRef3 = 'f21a9fe4-2da0-49c1-a0cf-13f2554d7430';
 const messageTo1 = '+64275555556';
 const messageTo2 = '+64275555557';
 const messageTo3 = '+64275555558';
-const messageContent1 = 'Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016';
-const messageContent2 = 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!';
+const messageContent1 = 'Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is ' +
+  'Sun, Dec 18th, 2016';
+const messageContent2 = 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
+  'When she does let us know with "V 28551". Thanks!';
 
 const INCOMING_KEY = 'yabbadabbadoo';
 
@@ -102,7 +104,8 @@ const report = {
       messages: [
         {
           to: messageTo3,
-          message: 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!',
+          message: 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. ' +
+            'When she does let us know with "V 28551". Thanks!',
           uuid: 'c',
         },
       ],
@@ -217,7 +220,8 @@ describe('africas talking api', () => {
           return Promise.all([
             submitDeliveryReport({ id: messageGatewayRef1, status: 'Submitted', phoneNumber: messageTo1 }),
             submitDeliveryReport({ id: messageGatewayRef2, status: 'Success', phoneNumber: messageTo2 }),
-            submitDeliveryReport({ id: messageGatewayRef3, status: 'Failed', failureReason: 'InsufficientCredit', phoneNumber: messageTo3 }),
+            submitDeliveryReport({ id: messageGatewayRef3, status: 'Failed',
+              failureReason: 'InsufficientCredit', phoneNumber: messageTo3 }),
           ]);
         })
         .then(done)
@@ -239,9 +243,15 @@ describe('africas talking api', () => {
 
       // tasks
       const sentTaskState = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
-      const deliveredTaskState = element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'));
-      const scheduledTaskState = element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state'));
-      const failedTaskState = element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state'));
+      const deliveredTaskState = element(by.css(
+        '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')
+      );
+      const scheduledTaskState = element(by.css(
+        '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')
+      );
+      const failedTaskState = element(by.css(
+        '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')
+      );
 
       expect(helper.getTextFromElement(sentTaskState)).toBe('sent');
       expect(helper.getTextFromElement(deliveredTaskState)).toBe('delivered');

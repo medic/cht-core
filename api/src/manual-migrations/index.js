@@ -13,19 +13,19 @@
  *
  * @module manual-migrations
  */
-const db = require('../db').medic,
-  logger = require('../logger');
+const db = require('../db').medic;
+const logger = require('../logger');
 
-const PAGE_LIMIT = 100,
-  ALL_MIGRATIONS = {
-    // compatible with 2.10+
-    'xml-attachments': require('./extract-data-record-content'),
+const PAGE_LIMIT = 100;
+const ALL_MIGRATIONS = {
+  // compatible with 2.10+
+  'xml-attachments': require('./extract-data-record-content'),
 
-    // compatible with 2.13+
-    'read-status': require('./remove-read-status'),
-    'linked-contacts': require('./minify-contacts'),
-  },
-  [, , migrationNames, skip = 0] = process.argv;
+  // compatible with 2.13+
+  'read-status': require('./remove-read-status'),
+  'linked-contacts': require('./minify-contacts'),
+};
+const [, , migrationNames, skip = 0] = process.argv;
 
 if (!migrationNames) {
   throw new Error('No version supplied. Usage: "node index <migrations>".');

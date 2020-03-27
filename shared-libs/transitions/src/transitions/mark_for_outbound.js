@@ -1,8 +1,8 @@
 const vm = require('vm');
 
-const config = require('../config'),
-      db = require('../db'),
-      logger = require('../lib/logger');
+const config = require('../config');
+const db = require('../db');
+const logger = require('../lib/logger');
 
 const CONFIGURED_PUSHES = 'outbound';
 

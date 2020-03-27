@@ -6,7 +6,7 @@ angular.module('inboxDirectives').directive('mmEnter', function($document) {
   return {
     restrict: 'A',
     link: function(scope, elem, attrs) {
-      var keydownEvent = function(event) {
+      const keydownEvent = function(event) {
         if (event.which === 13) {
           scope.$eval(attrs.mmEnter);
           event.preventDefault();

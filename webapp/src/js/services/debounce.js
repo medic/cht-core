@@ -3,13 +3,13 @@ angular.module('inboxServices').factory('Debounce',
     'use strict';
 
     return function(func, wait, maxDelay, immediate, invokeApply) {
-      var timeout,
-          result,
-          args,
-          context,
-          timeoutDelayed;
+      let timeout;
+      let result;
+      let args;
+      let context;
+      let timeoutDelayed;
 
-      var later = function() {
+      const later = function() {
         $timeout.cancel(timeoutDelayed);
         timeoutDelayed = null;
         timeout = null;
@@ -18,14 +18,14 @@ angular.module('inboxServices').factory('Debounce',
         }
       };
 
-      var delayed = function() {
+      const delayed = function() {
         timeoutDelayed = null;
         if (!immediate) {
           result = func.apply(context, args);
         }
       };
 
-      var debounced = function() {
+      const debounced = function() {
         context = this;
         args = arguments;
 
@@ -33,8 +33,8 @@ angular.module('inboxServices').factory('Debounce',
           $timeout.cancel(timeout);
         }
 
-        var callImmediately = immediate && !timeout;
-        var callDelayed = !immediate && !timeoutDelayed && maxDelay && maxDelay > wait;
+        const callImmediately = immediate && !timeout;
+        const callDelayed = !immediate && !timeoutDelayed && maxDelay && maxDelay > wait;
 
         timeout = $timeout(later, wait, invokeApply);
         if (callDelayed) {

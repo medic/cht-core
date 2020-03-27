@@ -1,7 +1,7 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      db = require('../../../src/db'),
-      migration = require('../../../src/migrations/extract-user-settings');
+const sinon = require('sinon');
+const chai = require('chai');
+const db = require('../../../src/db');
+const migration = require('../../../src/migrations/extract-user-settings');
 
 const ddoc = { id: '_design/_auth', key: '_design/_auth' };
 const userA = {

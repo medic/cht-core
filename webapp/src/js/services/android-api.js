@@ -7,8 +7,8 @@
 angular.module('inboxServices').factory('AndroidApi',
   function(
     $log,
-    $rootScope,
     $state,
+    $stateParams,
     $window,
     Feedback,
     MRDT,
@@ -23,14 +23,14 @@ angular.module('inboxServices').factory('AndroidApi',
      * Close all select2 dropdowns
      * @return {boolean} `true` if any select2s were closed.
      */
-    var closeSelect2 = function($container) {
+    const closeSelect2 = function($container) {
       // If there are any select2 dropdowns open, close them.  The select
       // boxes are closed while they are checked - this saves us having to
       // iterate over them twice
-      var closed = false;
+      let closed = false;
       $container.find('select.select2-hidden-accessible')
         .each(function() {
-          var elem = $(this);
+          const elem = $(this);
           if (elem.select2('isOpen')) {
             elem.select2('close');
             closed = true;
@@ -43,13 +43,13 @@ angular.module('inboxServices').factory('AndroidApi',
      * Close the highest-priority dropdown within a particular container.
      * @return {boolean} `true` if a dropdown was closed; `false` otherwise.
      */
-    var closeDropdownsIn = function($container) {
+    const closeDropdownsIn = function($container) {
       if (closeSelect2($container)) {
         return true;
       }
 
       // If there is a dropdown menu open, close it
-      var $dropdown = $container.find('.filter.dropdown.open:visible');
+      const $dropdown = $container.find('.filter.dropdown.open:visible');
       if ($dropdown.length) {
         $dropdown.removeClass('open');
         return true;
@@ -67,10 +67,10 @@ angular.module('inboxServices').factory('AndroidApi',
     /*
      * Find the modal with highest z-index, and ignore the rest
      */
-    var closeTopModal = function($modals) {
-      var $topModal;
+    const closeTopModal = function($modals) {
+      let $topModal;
       $modals.each(function() {
-        var $modal = $(this);
+        const $modal = $(this);
         if (!$topModal) {
           $topModal = $modal;
           return;
@@ -106,21 +106,21 @@ angular.module('inboxServices').factory('AndroidApi',
         back: function() {
           // If there's a modal open, close any dropdowns inside it, or try to
           // close the modal itself.
-          var $modals = $('.modal:visible');
+          const $modals = $('.modal:visible');
           if ($modals.length) {
             closeTopModal($modals);
             return true;
           }
 
           // If the hotdog hamburger options menu is open, close it
-          var $optionsMenu = $('.dropdown.options.open');
+          const $optionsMenu = $('.dropdown.options.open');
           if($optionsMenu.length) {
             $optionsMenu.removeClass('open');
             return true;
           }
 
           // If there is an actionbar drop-up menu open, close it
-          var $dropup = $('.actions.dropup.open:visible');
+          const $dropup = $('.actions.dropup.open:visible');
           if ($dropup.length) {
             $dropup.removeClass('open');
             return true;
@@ -130,29 +130,28 @@ angular.module('inboxServices').factory('AndroidApi',
             return true;
           }
 
-          // If viewing RHS content, do as the filter-bar X/< button does
-          if ($('body').is('.show-content')) {
-            $rootScope.$broadcast('HideContent');
+          if ($state.current.name === 'contacts.deceased') {
+            $state.go('contacts.detail', { id: $stateParams.id });
+            return true;
+          }
+
+          if ($stateParams.id) {
+            $state.go($state.current.name, { id: null }, { reload: true });
             return true;
           }
 
           // If we're viewing a tab, but not the primary tab, go to primary tab
-          var primaryTab = $('.header .tabs').find('> a:visible:first');
+          const primaryTab = $('.header .tabs').find('> a:visible:first');
           if (!primaryTab.is('.selected')) {
-            var uiSref = primaryTab.attr('ui-sref');
+            const uiSref = primaryTab.attr('ui-sref');
             if (uiSref) {
               $state.go(uiSref);
               return true;
             } else {
-              var message = 'Attempt to back to an undefined state [AndroidApi.back()]';  
-              return Feedback.submit(message, false, function(err) {
-                if (err) {
-                  $log.error('Error saving feedback', err);
-                  return false;
-                }
-
-                return false;
-              });             
+              const message = 'Attempt to back to an undefined state [AndroidApi.back()]';  
+              Feedback.submit(message).catch(err => {
+                $log.error('Error saving feedback', err);
+              });
             }
           }
 
@@ -167,7 +166,9 @@ angular.module('inboxServices').factory('AndroidApi',
           try {
             MRDT.respond(JSON.parse(response));
           } catch(e) {
-            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '", error message: "' + e.message + '"'));
+            return $log.error(
+              new Error(`Unable to parse JSON response from android app: "${response}", error message: "${e.message}"`)
+            );
           }
         },
 
@@ -179,7 +180,9 @@ angular.module('inboxServices').factory('AndroidApi',
           try {
             MRDT.respondTimeTaken(JSON.parse(response));
           } catch(e) {
-            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '", error message: "' + e.message + '"'));
+            return $log.error(
+              new Error(`Unable to parse JSON response from android app: "${response}", error message: "${e.message}"`)
+            );
           }
         },
 
@@ -191,7 +194,7 @@ angular.module('inboxServices').factory('AndroidApi',
          * @param response The stringified JSON response from the simprints device.
          */
         simprintsResponse: function(requestType, requestIdString, response) {
-          var requestId = parseInt(requestIdString, 10);
+          const requestId = parseInt(requestIdString, 10);
           if (isNaN(requestId)) {
             return $log.error(new Error('Unable to parse requestId: "' + requestIdString + '"'));
           }

@@ -2,8 +2,8 @@ describe('summary filter', function() {
 
   'use strict';
 
-  var compile,
-      scope;
+  let compile;
+  let scope;
 
   beforeEach(function() {
     module('inboxApp');
@@ -21,7 +21,7 @@ describe('summary filter', function() {
     ];
     scope.message = undefined;
 
-    var element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
+    const element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('');
   });
@@ -34,7 +34,7 @@ describe('summary filter', function() {
     ];
     scope.message = {};
 
-    var element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
+    const element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('tasks.0.messages.0.message');
   });
@@ -49,7 +49,7 @@ describe('summary filter', function() {
       form: 'B'
     };
 
-    var element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
+    const element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('bee');
   });

@@ -1,6 +1,6 @@
-var lineageFactory = require('@medic/lineage'),
-    messageUtils = require('@medic/message-utils'),
-    registrationUtils = require('@medic/registration-utils');
+const lineageFactory = require('@medic/lineage');
+const messageUtils = require('@medic/message-utils');
+const registrationUtils = require('@medic/registration-utils');
 
 angular.module('services').factory('MessageQueueUtils',
   function(
@@ -32,27 +32,27 @@ angular.module('services').factory('MessageQueue',
     'use strict';
     'ngInject';
 
-    var findSummary = function(summaries, message) {
+    const findSummary = function(summaries, message) {
       if (!message.sms || !message.sms.to) {
         return;
       }
 
-      var summary = summaries.rows.find(function(summary) {
+      const summary = summaries.rows.find(function(summary) {
         return summary.value && summary.value.phone === message.sms.to;
       });
 
       return summary && summary.value;
     };
 
-    var findPatientUuid = function(contactsByReference, message) {
-      var patient = contactsByReference.rows.find(function(row) {
+    const findPatientUuid = function(contactsByReference, message) {
+      const patient = contactsByReference.rows.find(function(row) {
         return row.key[1] === message.context.patient_id;
       });
 
       return patient && patient.id || message.context.patient_uuid;
     };
 
-    var findRegistrations = function(registrations, message) {
+    const findRegistrations = function(registrations, message) {
       return registrations
         .filter(function(row) {
           return row.key === message.context.patient_id;
@@ -62,28 +62,28 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    var findContactById = function(hydratedContacts, contactId) {
-      var contact = hydratedContacts.find(function(hydratedContact) {
+    const findContactById = function(hydratedContacts, contactId) {
+      const contact = hydratedContacts.find(function(hydratedContact) {
         return hydratedContact.id === contactId;
       });
 
       return contact && contact.doc;
     };
 
-    var getValidRegistrations = function(registrations, settings) {
+    const getValidRegistrations = function(registrations, settings) {
       return registrations.rows.filter(function(row) {
         return MessageQueueUtils.registrations.isValidRegistration(row.doc, settings);
       });
     };
 
-    var compactUnique = function(array) {
+    const compactUnique = function(array) {
       return array.filter(function(item, idx, self) {
         return item && self.indexOf(item) === idx;
       });
     };
 
-    var getRecipients = function(messages) {
-      var phoneNumbers = compactUnique(messages.map(function(row) {
+    const getRecipients = function(messages) {
+      const phoneNumbers = compactUnique(messages.map(function(row) {
         return row.sms && row.sms.to;
       }));
 
@@ -94,7 +94,7 @@ angular.module('services').factory('MessageQueue',
       return DB({ remote: true })
         .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
         .then(function(contactsByPhone) {
-          var ids = contactsByPhone.rows.map(function(row) {
+          const ids = contactsByPhone.rows.map(function(row) {
             return row.id;
           });
 
@@ -109,8 +109,8 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    var getPatientsAndRegistrations = function(messages, settings) {
-      var patientIds = compactUnique(messages.map(function(message) {
+    const getPatientsAndRegistrations = function(messages, settings) {
+      const patientIds = compactUnique(messages.map(function(message) {
         // don't process items which already have generated messages
         return !message.sms && message.context.patient_id;
       }));
@@ -119,7 +119,7 @@ angular.module('services').factory('MessageQueue',
         return Promise.resolve(messages);
       }
 
-      var referenceKeys = patientIds.map(function(patientId) {
+      const referenceKeys = patientIds.map(function(patientId) {
         return [ 'shortcode', patientId ];
       });
 
@@ -129,8 +129,8 @@ angular.module('services').factory('MessageQueue',
           DB({ remote: true }).query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
         ])
         .then(function(results) {
-          var contactsByReference = results[0];
-          var registrations = getValidRegistrations(results[1], settings);
+          const contactsByReference = results[0];
+          const registrations = getValidRegistrations(results[1], settings);
 
           messages.forEach(function(message) {
             message.context.patient_uuid = findPatientUuid(contactsByReference, message);
@@ -141,8 +141,8 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    var hydrateContacts = function(messages) {
-      var contactIds = [];
+    const hydrateContacts = function(messages) {
+      let contactIds = [];
       messages.forEach(function(message) {
         if (!message.sms) {
           contactIds.push(message.context.patient_uuid, message.doc.contact && message.doc.contact._id);
@@ -156,8 +156,8 @@ angular.module('services').factory('MessageQueue',
       return MessageQueueUtils.lineage
         .fetchLineageByIds(contactIds)
         .then(function(docList) {
-          var hydratedDocs = docList.map(function(docs) {
-            var doc = docs.shift();
+          const hydratedDocs = docList.map(function(docs) {
+            const doc = docs.shift();
             return {
               id: doc._id,
               doc: MessageQueueUtils.lineage.fillParentsInDocs(doc, docs)
@@ -173,8 +173,8 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    var generateScheduledMessages = function(messages, settings) {
-      var translate = function(key, locale) {
+    const generateScheduledMessages = function(messages, settings) {
+      const translate = function(key, locale) {
         return $translate.instant(key, null, 'no-interpolation', locale, null);
       };
 
@@ -183,7 +183,7 @@ angular.module('services').factory('MessageQueue',
           return;
         }
 
-        var content = {
+        const content = {
           translationKey: message.scheduled_sms.translation_key,
           message: message.scheduled_sms.content
         };
@@ -201,7 +201,7 @@ angular.module('services').factory('MessageQueue',
       return messages;
     };
 
-    var getTaskDisplayName = function(task) {
+    const getTaskDisplayName = function(task) {
       if (task.translation_key) {
         return $translate.instant(task.translation_key, { group: task.group });
       }
@@ -209,7 +209,7 @@ angular.module('services').factory('MessageQueue',
       return task.type && task.type + (task.group ? ':' + task.group : '' ) || false;
     };
 
-    var formatMessages = function(messages) {
+    const formatMessages = function(messages) {
       return messages.map(function(message) {
         return {
           record: {
@@ -228,50 +228,50 @@ angular.module('services').factory('MessageQueue',
       });
     };
 
-    var getParams = function(tab, skip, limit, descending) {
-      var list = {
+    const getParams = function(tab, skip, limit, descending) {
+      const list = {
         limit: limit || 25,
         skip: skip || 0,
         reduce: false,
         include_docs: true
       };
 
-      var count = {
+      const count = {
         reduce: true,
         group_level: 1
       };
 
-      var paging;
+      let paging;
       switch (tab) {
-        case 'scheduled':
+      case 'scheduled':
+        paging = {
+          start_key: [tab, 0],
+          end_key: [tab, {}]
+        };
+        break;
+      case 'due':
+        paging = {
+          start_key: [tab, {}],
+          end_key: [tab, 0],
+          descending: true
+        };
+        break;
+      case 'muted':
+        if (descending) {
+          // get all past muted messages, descending from most recent
           paging = {
-            start_key: [tab, 0],
-            end_key: [tab, {}]
-          };
-          break;
-        case 'due':
-          paging = {
-            start_key: [tab, {}],
-            end_key: [tab, 0],
+            start_key: [ tab, new Date().getTime() ],
+            end_key: [ tab, 0 ],
             descending: true
           };
-          break;
-        case 'muted':
-          if (descending) {
-            // get all past muted messages, descending from most recent
-            paging = {
-              start_key: [ tab, new Date().getTime() ],
-              end_key: [ tab, 0 ],
-              descending: true
-            };
-          } else {
-            paging = {
-              // get all future muted messages
-              start_key: [ tab, new Date().getTime() ],
-              end_key: [ tab, {} ]
-            };
-          }
-          break;
+        } else {
+          paging = {
+            // get all future muted messages
+            start_key: [ tab, new Date().getTime() ],
+            end_key: [ tab, {} ]
+          };
+        }
+        break;
       }
 
       return {
@@ -298,7 +298,7 @@ angular.module('services').factory('MessageQueue',
       },
 
       query: function(tab, skip, limit, descending) {
-        var params = getParams(tab, skip, limit, descending);
+        const params = getParams(tab, skip, limit, descending);
         return $q
           .all([
             Settings(),
@@ -306,9 +306,9 @@ angular.module('services').factory('MessageQueue',
             DB({ remote: true }).query('medic-admin/message_queue', params.count)
           ])
           .then(function(results) {
-            var settings = results[0];
-            var messages = results[1].rows.map(function(row) {
-              var extras = {
+            const settings = results[0];
+            const messages = results[1].rows.map(function(row) {
+              const extras = {
                 doc: row.doc,
                 context: {
                   patient_id: row.doc.patient_id || (row.doc.fields && row.doc.fields.patient_id),

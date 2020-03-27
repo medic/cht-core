@@ -1,5 +1,5 @@
 // Override chai.assert.equal to pretty print.
-var equal = chai.assert.equal;
+const equal = chai.assert.equal;
 chai.assert.equal = function() {
   try {
     equal.apply(this, arguments);
@@ -14,8 +14,8 @@ chai.assert.checkDeepProperties = chai.assert.shallowDeepEqual;
 
 window.KarmaUtils = {
   restore: function() {
-    for (var i = 0; i < arguments.length; i++) {
-      var arg = arguments[i];
+    for (let i = 0; i < arguments.length; i++) {
+      const arg = arguments[i];
       if (typeof arg !== 'undefined' && arg) {
         if (arg.restore) {
           arg.restore();
@@ -32,28 +32,38 @@ window.KarmaUtils = {
   },
   promise: (err, payload) => err ? Promise.reject(err) : Promise.resolve(payload),
   // a promise than never resolves or rejects
-  nullPromise: function() {
-    return function() {
-      return Q.defer().promise;
-    };
-  },
-  mockDB: function(db) {
-    return function() {
-      return function() {
-        return db;
-      };
-    };
-  },
-  setupMockStore: function(initialState) {
+  nullPromise: () => () => Q.defer().promise,
+  mockDB: db => () => () => db,
+  setupMockStore: function(initialState, mocks = {}) {
     angular.module('inboxApp').config(function($ngReduxProvider, RootReducer) {
       'ngInject';
-      $ngReduxProvider.createStoreWith(RootReducer, [ReduxThunk.default], [], initialState); // eslint-disable-line no-undef
+      $ngReduxProvider.createStoreWith(
+        RootReducer,
+        [ReduxThunk.default], [], initialState // eslint-disable-line no-undef
+      );
     });
-    // If actual DB is run it causes a full page refresh which causes karma to error
+
+    const DB = () => ({
+      get: () => Promise.resolve(),
+      post: () => Promise.resolve(),
+      info: () => Promise.resolve()
+    });
+    const mockDB = mocks.DB || DB;
+    const liveListStub = { clearSelected: () => {} };
+    const mockLiveList = _.merge({
+      contacts: liveListStub,
+      'contact-search': liveListStub,
+      reports: liveListStub,
+      'report-search': liveListStub
+    }, mocks.LiveList);
+
     module(function ($provide) {
       'ngInject';
-      $provide.value('DB', function() {});
-      $provide.value('ContactViewModelGenerator', function() {});
+      // If actual DB is run it causes a full page refresh which causes karma to error
+      $provide.value('DB', mockDB);
+      $provide.value('ContactViewModelGenerator', () => {});
+      $provide.value('ReportViewModelGenerator', () => {});
+      $provide.value('LiveList', mockLiveList);
       $provide.value('Session', {
         userCtx: () => { return {}; }
       });
@@ -61,8 +71,8 @@ window.KarmaUtils = {
   }
 };
 
-var sortedJson = function(o) {
-  var s;
+const sortedJson = function(o) {
+  let s;
   if(typeof o !== 'object') {
     return JSON.stringify(o);
   }
@@ -73,17 +83,17 @@ var sortedJson = function(o) {
     });
     return s + ']';
   }
-  var keys = Object.keys(o).sort();
+  const keys = Object.keys(o).sort();
   s = '{ ';
-  for(var i=0; i<keys.length; ++i) {
-    var k = keys[i];
+  for(let i=0; i<keys.length; ++i) {
+    const k = keys[i];
     s += '"' + k + '":' + sortedJson(o[k]) + ', ';
   }
   // N.B. not valid JSON, as an extra comma will appear
   return s + '}';
 };
 
-var _originalDeepEqual = chai.assert.deepEqual;
+const _originalDeepEqual = chai.assert.deepEqual;
 chai.assert.deepEqual = function() {
   try {
     _originalDeepEqual.apply(this, arguments);
@@ -95,5 +105,3 @@ chai.assert.deepEqual = function() {
     );
   }
 };
-
-window._medicMobileTesting = true;

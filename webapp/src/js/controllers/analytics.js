@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxControllers').controller('AnalyticsCtrl',
   function (
@@ -9,6 +9,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     $timeout,
     AnalyticsActions,
     AnalyticsModules,
+    GlobalActions,
     Tour
   ) {
     'use strict';
@@ -17,7 +18,9 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     const ctrl = this;
     const mapDispatchToTarget = function(dispatch) {
       const analyticsActions = AnalyticsActions(dispatch);
+      const globalActions = GlobalActions(dispatch);
       return {
+        unsetSelected: globalActions.unsetSelected,
         setSelectedAnalytics: analyticsActions.setSelectedAnalytics
       };
     };
@@ -28,7 +31,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
     ctrl.loading = true;
 
     ctrl.setSelectedAnalytics(null);
-    $scope.clearSelected();
+    ctrl.unsetSelected();
 
     AnalyticsModules().then(function(modules) {
       if ($state.is('analytics')) {
@@ -40,7 +43,7 @@ angular.module('inboxControllers').controller('AnalyticsCtrl',
           return;
         }
       } else {
-        ctrl.setSelectedAnalytics(_.findWhere(modules, {
+        ctrl.setSelectedAnalytics(_.find(modules, {
           state: $state.current.name
         }));
       }

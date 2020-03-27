@@ -1,23 +1,23 @@
-const vm = require('vm'),
-  _ = require('underscore'),
-  config = require('../config'),
-  db = require('../db'),
-  lineage = require('@medic/lineage')(Promise, db.medic),
-  logger = require('../lib/logger'),
-  messages = require('../lib/messages'),
-  utils = require('../lib/utils'),
-  transitionUtils = require('./utils'),
-  MAX_NUM_REPORTS_THRESHOLD = 100,
-  TRANSITION_NAME = 'multi_report_alerts',
-  BATCH_SIZE = 100,
-  requiredFields = [
-    'is_report_counted',
-    'name',
-    'num_reports_threshold',
-    'message',
-    'recipients',
-    'time_window_in_days',
-  ];
+const vm = require('vm');
+const _ = require('lodash');
+const config = require('../config');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const logger = require('../lib/logger');
+const messages = require('../lib/messages');
+const utils = require('../lib/utils');
+const transitionUtils = require('./utils');
+const MAX_NUM_REPORTS_THRESHOLD = 100;
+const TRANSITION_NAME = 'multi_report_alerts';
+const BATCH_SIZE = 100;
+const requiredFields = [
+  'is_report_counted',
+  'name',
+  'num_reports_threshold',
+  'message',
+  'recipients',
+  'time_window_in_days',
+];
 
 const getAlertConfig = () => config.get(TRANSITION_NAME);
 
@@ -118,7 +118,7 @@ const getPhonesOneReport = (recipients, report) => {
 
   let phones;
   if (_.isArray(recipients)) {
-    phones = _.flatten(
+    phones = _.flattenDeep(
       recipients.map(
         _.partial(getPhonesOneReportOneRecipientWithDuplicates, _, report)
       )
@@ -151,9 +151,7 @@ const getPhonesOneReportOneRecipientWithDuplicates = (recipient, newReport) => {
           return {
             error:
               `${TRANSITION_NAME} : one of the phone numbers for "${recipient}"` +
-              ` is not a string. Message will not be sent. Found : ${JSON.stringify(
-                shouldBeAString
-              )}`,
+              ` is not a string. Message will not be sent. Found : ${JSON.stringify(shouldBeAString)}`,
           };
         }
         return shouldBeAString;
@@ -162,9 +160,7 @@ const getPhonesOneReportOneRecipientWithDuplicates = (recipient, newReport) => {
     return {
       error:
         `${TRANSITION_NAME} : phone number for "${recipient}"` +
-        ` is not a string or array of strings. Message will not be sent. Found: "${JSON.stringify(
-          evaled
-        )}"`,
+        ` is not a string or array of strings. Message will not be sent. Found: "${JSON.stringify(evaled)}"`,
     };
   } catch (err) {
     return {
@@ -189,41 +185,32 @@ const validateConfig = () => {
     alert.time_window_in_days = parseInt(alert.time_window_in_days);
     if (isNaN(alert.time_window_in_days)) {
       errors.push(
-        `Alert "${
-          alert.name
-        }", expecting "time_window_in_days" to be an integer, eg: "time_window_in_days": "3"`
+        `Alert "${alert.name}", expecting "time_window_in_days" to be an integer, eg: "time_window_in_days": "3"`
       );
     }
     alert.num_reports_threshold = parseInt(alert.num_reports_threshold);
     if (isNaN(alert.num_reports_threshold)) {
       errors.push(
-        `Alert "${
-          alert.name
-        }", expecting "num_reports_threshold" to be an integer, eg: "num_reports_threshold": "3"`
+        `Alert "${alert.name}", expecting "num_reports_threshold" to be an integer, eg: "num_reports_threshold": "3"`
       );
     }
     if (alert.num_reports_threshold > MAX_NUM_REPORTS_THRESHOLD) {
       errors.push(
-        `Alert "${
-          alert.name
-        }", "num_reports_threshold" should be less than ${MAX_NUM_REPORTS_THRESHOLD}. Found ${
-          alert.num_reports_threshold
-        }`
+        `Alert "${alert.name}", "num_reports_threshold" should be less than ${MAX_NUM_REPORTS_THRESHOLD}. ` +
+        `Found ${alert.num_reports_threshold}`
       );
     }
     if (!_.isArray(alert.recipients)) {
       errors.push(
-        `Alert "${
-          alert.name
-        }", expecting "recipients" to be an array of strings, eg: "recipients": ["+9779841452277", "countedReports[0].contact.phone"]`
+        `Alert "${alert.name}", expecting "recipients" to be an array of strings, ` +
+        `eg: "recipients": ["+9779841452277", "countedReports[0].contact.phone"]`
       );
     }
     if (alert.forms && !_.isArray(alert.forms)) {
       alert.forms = null;
       logger.warn(
-        `Bad config for ${TRANSITION_NAME}, alert "${
-          alert.name
-        }". Expecting "forms" to be an array of form codes. Continuing without "forms", since it's optional.`
+        `Bad config for ${TRANSITION_NAME}, alert "${alert.name}". ` +
+        `Expecting "forms" to be an array of form codes. Continuing without "forms", since it's optional.`
       );
     }
   });
@@ -307,7 +294,7 @@ const getCountedReportsBatch = (script, latestReport, alert, skip) => {
     options
   ).then(fetched => {
     const countedReports = countReports(fetched, latestReport, script);
-    const oldReportIds = _.flatten(
+    const oldReportIds = _.flattenDeep(
       countedReports.map(report => {
         if (report.tasks) {
           const tasks = report.tasks.filter(

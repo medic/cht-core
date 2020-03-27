@@ -12,8 +12,9 @@
   let remoteDocCount;
   let localDocCount;
 
-  var getUserCtx = function() {
-    var userCtx, locale;
+  const getUserCtx = function() {
+    let userCtx;
+    let locale;
     document.cookie.split(';').forEach(function(c) {
       c = c.trim().split('=', 2);
       if (c[0] === 'userCtx') {
@@ -27,7 +28,7 @@
       return;
     }
     try {
-      var parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
+      const parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
       parsedCtx.locale = locale;
       return parsedCtx;
     } catch (e) {
@@ -43,7 +44,7 @@
     };
   };
 
-  var getLocalDbName = function(dbInfo, username) {
+  const getLocalDbName = function(dbInfo, username) {
     return dbInfo.name + '-user-' + username;
   };
 
@@ -59,6 +60,9 @@
         fetch(`${utils.getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
       ])
       .then(([ local, remote ]) => {
+        if (remote && remote.code && remote.code !== 200) {
+          console.warn('Error fetching users-info - ignoring', remote);
+        }
         localDocCount = local.total_rows;
         remoteDocCount = remote.total_docs;
 
@@ -67,10 +71,16 @@
             const errorMessage = translator.translate('TOO_MANY_DOCS', { count: remoteDocCount, limit: remote.limit });
             const continueBtn = translator.translate('CONTINUE');
             const abort = translator.translate('ABORT');
+            const content = `
+            <div>
+              <p class="alert alert-warning">${errorMessage}</p>
+              <a id="btn-continue" class="btn btn-primary pull-left" href="#">${continueBtn}</a>
+              <a id="btn-abort" class="btn btn-danger pull-right" href="#">${abort}</a>
+            </div>`;
 
             $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
             $('.bootstrap-layer .error').show();
-            $('.bootstrap-layer .error').html('<div><p class="alert alert-warning">' + errorMessage + '</p><a id="btn-continue" class="btn btn-primary pull-left" href="#">' + continueBtn + '</a><a id="btn-abort" class="btn btn-danger pull-right" href="#">' + abort + '</a></div>');
+            $('.bootstrap-layer .error').html(content);
             $('#btn-continue').click(() => resolve());
             $('#btn-abort').click(() => {
               document.cookie = 'login=force;path=/';
@@ -87,10 +97,10 @@
     });
   };
 
-  var initialReplication = function(localDb, remoteDb) {
+  const initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
-    var dbSyncStartTime = Date.now();
-    var dbSyncStartData = getDataUsage();
+    const dbSyncStartTime = Date.now();
+    const dbSyncStartData = getDataUsage();
 
     return purger
       .info()
@@ -123,23 +133,23 @@
       });
   };
 
-  var getDataUsage = function() {
+  const getDataUsage = function() {
     if (window.medicmobile_android && typeof window.medicmobile_android.getDataUsage === 'function') {
       return JSON.parse(window.medicmobile_android.getDataUsage());
     }
   };
 
-  var redirectToLogin = function(dbInfo, err, callback) {
+  const redirectToLogin = function(dbInfo, err, callback) {
     console.warn('User must reauthenticate');
-    var currentUrl = encodeURIComponent(window.location.href);
+    const currentUrl = encodeURIComponent(window.location.href);
     err.redirect = '/' + dbInfo.name + '/login?redirect=' + currentUrl;
     return callback(err);
   };
 
   // TODO Use a shared library for this duplicated code #4021
-  var hasRole = function(userCtx, role) {
+  const hasRole = function(userCtx, role) {
     if (userCtx.roles) {
-      for (var i = 0; i < userCtx.roles.length; i++) {
+      for (let i = 0; i < userCtx.roles.length; i++) {
         if (userCtx.roles[i] === role) {
           return true;
         }
@@ -148,7 +158,7 @@
     return false;
   };
 
-  var hasFullDataAccess = function(userCtx) {
+  const hasFullDataAccess = function(userCtx) {
     return hasRole(userCtx, '_admin') ||
            hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
            hasRole(userCtx, ONLINE_ROLE);
@@ -164,7 +174,12 @@
   const setUiError = err => {
     const errorMessage = translator.translate(err && err.key || 'ERROR_MESSAGE');
     const tryAgain = translator.translate('TRY_AGAIN');
-    $('.bootstrap-layer .error').html('<div><p>' + errorMessage + '</p><a id="btn-reload" class="btn btn-primary" href="#">' + tryAgain + '</a></div>');
+    const content = `
+    <div>
+      <p>${errorMessage}</p>
+      <a id="btn-reload" class="btn btn-primary" href="#">${tryAgain}</a>
+    </div>`;
+    $('.bootstrap-layer .error').html(content);
     $('#btn-reload').click(() => window.location.reload(false));
     $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
     $('.bootstrap-layer .error').show();
@@ -174,11 +189,11 @@
   const getSettingsDoc = localDb => localDb.get('settings');
 
   module.exports = function(POUCHDB_OPTIONS, callback) {
-    var dbInfo = getDbInfo();
-    var userCtx = getUserCtx();
+    const dbInfo = getDbInfo();
+    const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
     if (!userCtx || hasForceLoginCookie) {
-      var err = new Error('User must reauthenticate');
+      const err = new Error('User must reauthenticate');
       err.status = 401;
       return redirectToLogin(dbInfo, err, callback);
     }

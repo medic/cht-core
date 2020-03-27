@@ -11,11 +11,11 @@ angular.module('directives').directive('mmPagination', function() {
   return {
     templateUrl: 'templates/pagination.html',
     link: function(scope) {
-      var paginate = function() {
-        var maxPageLinks = 11,
-            nbrPageLinks = Math.min(maxPageLinks, scope.pagination.pages);
+      const paginate = function() {
+        const maxPageLinks = 11;
+        const nbrPageLinks = Math.min(maxPageLinks, scope.pagination.pages);
 
-        var firstPage = Math.min(
+        const firstPage = Math.min(
           Math.max(0, scope.pagination.page - Math.ceil(nbrPageLinks / 2)),
           scope.pagination.pages - nbrPageLinks
         );

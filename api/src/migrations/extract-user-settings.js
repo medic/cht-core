@@ -1,18 +1,18 @@
-var async = require('async'),
-    {promisify} = require('util'),
-    _ = require('underscore'),
-    db = require('../db');
+const async = require('async');
+const {promisify} = require('util');
+const _ = require('lodash');
+const db = require('../db');
 
-var fieldsToIncludeInBoth = [ '_id', 'name', 'facility_id', 'roles' ];
-var fieldsToOmitFromSettings = [ '_rev', 'salt', 'derived_key', 'password_scheme', 'iterations', 'type' ];
-var fieldsToIncludeInUser = fieldsToOmitFromSettings.concat(fieldsToIncludeInBoth);
+const fieldsToIncludeInBoth = [ '_id', 'name', 'facility_id', 'roles' ];
+const fieldsToOmitFromSettings = [ '_rev', 'salt', 'derived_key', 'password_scheme', 'iterations', 'type' ];
+const fieldsToIncludeInUser = fieldsToOmitFromSettings.concat(fieldsToIncludeInBoth);
 
-var updateUser = function(row, callback) {
-  var user = _.pick(row.doc, fieldsToIncludeInUser);
+const updateUser = function(row, callback) {
+  const user = _.pick(row.doc, fieldsToIncludeInUser);
   db.users.put(user, callback);
 };
 
-var migrateUser = function(row, callback) {
+const migrateUser = function(row, callback) {
   db.medic.get(row.doc._id, function(err) {
     if (!err) {
       // Doc already exists, no need to migrate.
@@ -22,13 +22,13 @@ var migrateUser = function(row, callback) {
       return splitUser(row, callback);
     }
     // Uppercase in the login! Change it to lowercase.
-    var lowercaseId = row.doc._id.toLowerCase();
+    const lowercaseId = row.doc._id.toLowerCase();
     db.users.get(lowercaseId, function(err) {
       if (!err || err.error !== 'not_found') {
         // Existing user called lowercase. Conflict!
         return callback(new Error('Cannot create lowercase username ' + lowercaseId + ', user already exists.'));
       }
-      var uppercaseUser = _.pick(row.doc, fieldsToIncludeInUser);
+      const uppercaseUser = _.pick(row.doc, fieldsToIncludeInUser);
       row.doc._id = lowercaseId;
       row.doc.name = row.doc.name.toLowerCase();
       delete row.doc._rev;
@@ -43,8 +43,8 @@ var migrateUser = function(row, callback) {
   });
 };
 
-var splitUser = function(row, callback) {
-  var settings = _.omit(row.doc, fieldsToOmitFromSettings);
+const splitUser = function(row, callback) {
+  const settings = _.omit(row.doc, fieldsToOmitFromSettings);
   settings.type = 'user-settings';
   // Convert string value to boolean value, otherwise validate_doc_update will reject.
   if (settings.known === 'true') {
@@ -58,7 +58,7 @@ var splitUser = function(row, callback) {
   });
 };
 
-var filterResults = function(rows) {
+const filterResults = function(rows) {
   return _.filter(rows, function(row) {
     return row.id.indexOf('org.couchdb.user:') === 0;
   });

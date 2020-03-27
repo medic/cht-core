@@ -1,10 +1,10 @@
-const _ = require('underscore'),
-      db = require('../../db'),
-      config = require('../../config'),
-      dateFormat = require('./date-format'),
-      messageUtils = require('@medic/message-utils'),
-      registrationUtils = require('@medic/registration-utils'),
-      lineage = require('@medic/lineage')(Promise, db.medic);
+const _ = require('lodash');
+const db = require('../../db');
+const config = require('../../config');
+const dateFormat = require('./date-format');
+const messageUtils = require('@medic/message-utils');
+const registrationUtils = require('@medic/registration-utils');
+const lineage = require('@medic/lineage')(Promise, db.medic);
 
 const normalizeResponse = doc => {
   return {

@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-  assert = require('chai').assert,
-  transition = require('../../../src/transitions/update_notifications'),
-  utils = require('../../../src/lib/utils'),
-  mutingUtils = require('../../../src/lib/muting_utils');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const transition = require('../../../src/transitions/update_notifications');
+const utils = require('../../../src/lib/utils');
+const mutingUtils = require('../../../src/lib/muting_utils');
 
 describe('update_notifications', () => {
   afterEach(done => {
@@ -266,7 +266,8 @@ describe('update_notifications', () => {
             message: [
               {
                 content:
-                  'Thank you {{contact.name}}, no further notifications regarding {{patient_name}} will be sent until you submit START {{patient_id}}.',
+                  'Thank you {{contact.name}}, no further notifications regarding {{patient_name}} ' +
+                  'will be sent until you submit START {{patient_id}}.',
                 locale: 'en',
               },
             ],
@@ -287,7 +288,10 @@ describe('update_notifications', () => {
         assert.equal(changed, true);
         assert.equal((doc.errors || []).length, 0);
         assert.equal(doc.tasks.length, 1);
-        assert.equal(doc.tasks[0].messages[0].message, 'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.');
+        assert.equal(
+          doc.tasks[0].messages[0].message,
+          'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.'
+        );
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
@@ -348,7 +352,8 @@ describe('update_notifications', () => {
         messages: [{
           event_type: 'on_unmute',
           message: [{
-            content: 'Thank you {{contact.name}}, notifications for {{patient_name}} {{patient_id}} have been reactivated.',
+            content:
+              'Thank you {{contact.name}}, notifications for {{patient_name}} {{patient_id}} have been reactivated.',
             locale: 'en'
           }]
         }],
@@ -367,7 +372,10 @@ describe('update_notifications', () => {
         assert.equal(changed, true);
         assert.equal((doc.errors || []).length, 0);
         assert.equal(doc.tasks.length, 1);
-        assert.equal(doc.tasks[0].messages[0].message, 'Thank you woot, notifications for Agatha 123 have been reactivated.');
+        assert.equal(
+          doc.tasks[0].messages[0].message,
+          'Thank you woot, notifications for Agatha 123 have been reactivated.'
+        );
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 1);
@@ -390,7 +398,8 @@ describe('update_notifications', () => {
         messages: [{
           event_type: 'on_mute',
           message: [{
-            content: 'Thank you {{contact.name}}, no further notifications regarding {{patient_name}} will be sent until you submit START {{patient_id}}.',
+            content: 'Thank you {{contact.name}}, no further notifications regarding {{patient_name}} will be sent ' +
+              'until you submit START {{patient_id}}.',
             locale: 'en'
           }]
         }],
@@ -404,7 +413,10 @@ describe('update_notifications', () => {
         assert.equal(changed, true);
         assert.equal((doc.errors || []).length, 0);
         assert.equal(doc.tasks.length, 1);
-        assert.equal(doc.tasks[0].messages[0].message, 'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.');
+        assert.equal(
+          doc.tasks[0].messages[0].message,
+          'Thank you woot, no further notifications regarding Agatha will be sent until you submit START 123.'
+        );
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 0);
@@ -426,7 +438,8 @@ describe('update_notifications', () => {
         messages: [{
           event_type: 'on_unmute',
           message: [{
-            content: 'Thank you {{contact.name}}, notifications for {{patient_name}} {{patient_id}} have been reactivated.',
+            content:
+              'Thank you {{contact.name}}, notifications for {{patient_name}} {{patient_id}} have been reactivated.',
             locale: 'en'
           }]
         }],
@@ -440,7 +453,10 @@ describe('update_notifications', () => {
         assert.equal(changed, true);
         assert.equal((doc.errors || []).length, 0);
         assert.equal(doc.tasks.length, 1);
-        assert.equal(doc.tasks[0].messages[0].message, 'Thank you woot, notifications for Agatha 123 have been reactivated.');
+        assert.equal(
+          doc.tasks[0].messages[0].message,
+          'Thank you woot, notifications for Agatha 123 have been reactivated.'
+        );
         assert.equal(mutingUtils.getContact.callCount, 1);
         assert.deepEqual(mutingUtils.getContact.args[0], [doc]);
         assert.equal(mutingUtils.updateMuteState.callCount, 0);

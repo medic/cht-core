@@ -45,6 +45,7 @@ function minify(doc) {
   }
   if (doc.type === 'data_record') {
     delete doc.patient;
+    delete doc.place;
   }
 }
 

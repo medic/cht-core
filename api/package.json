@@ -45,7 +45,6 @@
     "request-promise-native": "^1.0.7",
     "semver": "^6.3.0",
     "simple-password-tester": "^1.0.0",
-    "underscore": "^1.9.1",
     "url": "^0.11.0",
     "uuid": "^3.3.3",
     "winston": "^3.2.1",
@@ -90,6 +89,7 @@
   ],
   "sharedLibs": [
     "bulk-docs-utils",
+    "contact-types-utils",
     "infodoc",
     "lineage",
     "message-utils",

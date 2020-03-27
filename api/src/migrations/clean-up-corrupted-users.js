@@ -1,9 +1,9 @@
-var doWhilst = require('async/doWhilst'),
-    {promisify} = require('util'),
-    db = require('../db'),
-    BATCH_SIZE = 100;
+const doWhilst = require('async/doWhilst');
+const {promisify} = require('util');
+const db = require('../db');
+const BATCH_SIZE = 100;
 
-var update = function(docs, callback) {
+const update = function(docs, callback) {
   docs.forEach(function(doc) {
     delete doc.$promise;
     delete doc.$resolved;
@@ -11,13 +11,13 @@ var update = function(docs, callback) {
   db.medic.bulkDocs(docs, callback);
 };
 
-var needsUpdate = function(row) {
+const needsUpdate = function(row) {
   return Object.prototype.hasOwnProperty.call(row.doc, '$promise') ||
          Object.prototype.hasOwnProperty.call(row.doc, '$resolved');
 };
 
-var fixUsers = function(skip, callback) {
-  var options = {
+const fixUsers = function(skip, callback) {
+  const options = {
     include_docs: true,
     limit: BATCH_SIZE,
     skip: skip,
@@ -31,7 +31,7 @@ var fixUsers = function(skip, callback) {
       // we've reached the end of the results
       return callback(null, null, false);
     }
-    var corrupted = result.rows.filter(needsUpdate).map(function(row) {
+    const corrupted = result.rows.filter(needsUpdate).map(function(row) {
       return row.doc;
     });
     if (!corrupted.length) {
@@ -48,8 +48,8 @@ module.exports = {
   name: 'clean-up-corrupted-users',
   created: new Date(2016, 12, 5, 22, 0, 0, 0),
   run: promisify(function(callback) {
-    var skip = 0;
-    var again = true;
+    let skip = 0;
+    let again = true;
     doWhilst(
       function(callback) {
         fixUsers(skip, function(err, _skip, _again) {

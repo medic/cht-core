@@ -1,14 +1,14 @@
-var _ = require('underscore'),
-  async = require('async'),
-  config = require('../config'),
-  messages = require('../lib/messages'),
-  moment = require('moment'),
-  validation = require('../lib/validation'),
-  utils = require('../lib/utils'),
-  transitionUtils = require('./utils'),
-  date = require('../date'),
-  db = require('../db'),
-  NAME = 'accept_patient_reports';
+const _ = require('lodash');
+const async = require('async');
+const config = require('../config');
+const messages = require('../lib/messages');
+const moment = require('moment');
+const validation = require('../lib/validation');
+const utils = require('../lib/utils');
+const transitionUtils = require('./utils');
+const date = require('../date');
+const db = require('../db');
+const NAME = 'accept_patient_reports';
 
 const _hasConfig = doc => {
   return Boolean(getConfig(doc.form));
@@ -86,11 +86,11 @@ const findToClear = (registration, reported_date, config) => {
 
 const getConfig = function(form) {
   const fullConfig = config.get('patient_reports') || [];
-  return _.findWhere(fullConfig, { form: form });
+  return _.find(fullConfig, { form: form });
 };
 
 const _silenceReminders = (registration, report, config, callback) => {
-  var toClear = module.exports._findToClear(
+  const toClear = module.exports._findToClear(
     registration,
     report.reported_date,
     config
@@ -115,7 +115,7 @@ const _silenceReminders = (registration, report, config, callback) => {
 
 const addRegistrationToDoc = (doc, registrations) => {
   if (registrations.length) {
-    const latest = _.max(registrations, registration =>
+    const latest = _.maxBy(registrations, registration =>
       moment(registration.reported_date)
     );
     doc.registration_id = latest._id;
@@ -125,67 +125,67 @@ const addRegistrationToDoc = (doc, registrations) => {
 // This function implements the logic documented in
 // https://github.com/medic/medic/issues/4694#issuecomment-459460521
 const findValidRegistration = (doc, config, registrations) => {
-    const visitReportedDate = moment(doc.reported_date);
+  const visitReportedDate = moment(doc.reported_date);
 
-    const silenceFor = date.getDuration(config.silence_for);
+  const silenceFor = date.getDuration(config.silence_for);
 
-    for (var i = 0; i < registrations.length; i++) {
-      var registration = registrations[i];
-      if (registration.scheduled_tasks && registration.scheduled_tasks.length) {
-        var scheduledTasks = _.sortBy(registration.scheduled_tasks, 'due');
-        // if the visit was reported prior to the the most recent scheduled task
-        // we move to the next registration because the visit does not get
-        // associated to anything: no reminder messages have been sent yet OR
-        // visit is not responding to a reminder (in this case, existing functionality
-        // will set the cleared_by)
-        if (visitReportedDate < moment(scheduledTasks[0].due)) {
-          continue;
-        }
-        // Then we start with the oldest task (based on due date) and loop through
-        // the scheduled tasks
-        for (var j = scheduledTasks.length - 1; j >= 0; j--) {
-          var task = scheduledTasks[j];
-          var prevTask = scheduledTasks[j - 1]; // will be undefined when j === 0
+  for (let i = 0; i < registrations.length; i++) {
+    const registration = registrations[i];
+    if (registration.scheduled_tasks && registration.scheduled_tasks.length) {
+      const scheduledTasks = _.sortBy(registration.scheduled_tasks, 'due');
+      // if the visit was reported prior to the the most recent scheduled task
+      // we move to the next registration because the visit does not get
+      // associated to anything: no reminder messages have been sent yet OR
+      // visit is not responding to a reminder (in this case, existing functionality
+      // will set the cleared_by)
+      if (visitReportedDate < moment(scheduledTasks[0].due)) {
+        continue;
+      }
+      // Then we start with the oldest task (based on due date) and loop through
+      // the scheduled tasks
+      for (let j = scheduledTasks.length - 1; j >= 0; j--) {
+        const task = scheduledTasks[j];
+        const prevTask = scheduledTasks[j - 1]; // will be undefined when j === 0
 
-          var silenceStart = moment(task.due);
-          silenceStart.subtract(silenceFor);
-          // If the visit falls within the silence_for range of a reminder that
-          // has been cleared, we move to the next registration because we assume
-          // that this visit is not responding to the reminder. This happens only when
-          // we are transtioning from one group to another one. Note that existing
-          // functionality will set the cleared_by on the reminders of the task group
-          if (silenceStart < visitReportedDate &&
+        const silenceStart = moment(task.due);
+        silenceStart.subtract(silenceFor);
+        // If the visit falls within the silence_for range of a reminder that
+        // has been cleared, we move to the next registration because we assume
+        // that this visit is not responding to the reminder. This happens only when
+        // we are transtioning from one group to another one. Note that existing
+        // functionality will set the cleared_by on the reminders of the task group
+        if (silenceStart < visitReportedDate &&
             task.state === 'cleared' &&
             prevTask &&
             prevTask.group !== task.group) {
-            break;
-          }
+          break;
+        }
 
-          // We loop through until we find a task that has been "deliverd" or "sent" and
-          // that is older than the visit reported date
-          if (moment(task.due) < visitReportedDate &&
+        // We loop through until we find a task that has been "deliverd" or "sent" and
+        // that is older than the visit reported date
+        if (moment(task.due) < visitReportedDate &&
               ['delivered', 'sent'].includes(task.state)) {
-            if (!task.responded_to_by) {
-              task.responded_to_by = [];
-            }
-            task.responded_to_by.push(doc._id);
-
-            return registration;
+          if (!task.responded_to_by) {
+            task.responded_to_by = [];
           }
+          task.responded_to_by.push(doc._id);
+
+          return registration;
         }
       }
     }
+  }
 
-    return false;
+  return false;
 };
 
 const addReportUUIDToRegistration = (doc, config, registrations, callback) => {
-    const validRegistration = registrations.length && findValidRegistration(doc, config, registrations);
-    if (validRegistration) {
-      return db.medic.put(validRegistration, callback);
-    }
+  const validRegistration = registrations.length && findValidRegistration(doc, config, registrations);
+  if (validRegistration) {
+    return db.medic.put(validRegistration, callback);
+  }
 
-    callback(null, true);
+  callback(null, true);
 };
 
 const silenceRegistrations = (config, doc, registrations, callback) => {
@@ -208,7 +208,7 @@ const silenceRegistrations = (config, doc, registrations, callback) => {
 };
 
 const validate = (config, doc, callback) => {
-  var validations = config.validations && config.validations.list;
+  const validations = config.validations && config.validations.list;
   return validation.validate(doc, validations, callback);
 };
 

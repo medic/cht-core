@@ -14,7 +14,7 @@ angular.module('inboxServices').service('Geolocation',
         });
       }
 
-      var options = {
+      const options = {
         enableHighAccuracy: true,
         timeout: 300000, // 5 mins
         maximumAge: 1200000, // 20 mins
@@ -23,18 +23,18 @@ angular.module('inboxServices').service('Geolocation',
       return $q(function(resolve, reject) {
         navigator.geolocation.getCurrentPosition(resolve, reject, options);
       })
-      .then(function(position) {
-        var coordinates = position.coords;
-        return {
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-          altitude: coordinates.altitude,
-          accuracy: coordinates.accuracy,
-          altitudeAccuracy: coordinates.altitudeAccuracy,
-          heading: coordinates.heading,
-          speed: coordinates.speed
-        };
-      });
+        .then(function(position) {
+          const coordinates = position.coords;
+          return {
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+            altitude: coordinates.altitude,
+            accuracy: coordinates.accuracy,
+            altitudeAccuracy: coordinates.altitudeAccuracy,
+            heading: coordinates.heading,
+            speed: coordinates.speed
+          };
+        });
 
     };
 

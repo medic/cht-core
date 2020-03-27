@@ -2,6 +2,7 @@ const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
+const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
@@ -14,6 +15,7 @@ angular
     $window,
     Auth,
     DB,
+    DBSyncRetry,
     Session
   ) {
     'use strict';
@@ -50,46 +52,60 @@ angular
       {
         name: 'to',
         options: {
+          filter: readOnlyFilter,
           checkpoint: 'source',
-          filter: readOnlyFilter
         },
-        allowed: () => Auth('can_edit').then(() => true).catch(() => false)
+        allowed: () => Auth.has('can_edit'),
+        onDenied: DBSyncRetry,
       },
       {
         name: 'from',
-        options: {},
+        options: {
+          heartbeat: 10000, // 10 seconds
+          timeout: 1000 * 60 * 10, // 10 minutes
+        },
         allowed: () => $q.resolve(true)
       }
     ];
 
-    const replicate = function(direction) {
-      return direction.allowed()
-        .then(allowed => {
-          if (!allowed) {
-            // not authorized to replicate - that's ok, skip silently
-            return;
+    const replicate = (direction, { batchSize=100 }={}) => {
+      const remote = DB({ remote: true });
+      const options = Object.assign({}, direction.options, { batch_size: batchSize });
+      return DB()
+        .replicate[direction.name](remote, options)
+        .on('denied', function(err) {
+          $log.error(`Denied replicating ${direction.name} remote server`, err);
+          if (direction.onDenied) {
+            direction.onDenied(err);
           }
-          const remote = DB({ remote: true });
-          return DB()
-            .replicate[direction.name](remote, direction.options)
-            .on('denied', function(err) {
-              // In theory this could be caused by 401s
-              // TODO: work out what `err` looks like and navigate to login
-              // when we detect it's a 401
-              $log.error(`Denied replicating ${direction.name} remote server`, err);
-            })
-            .on('error', function(err) {
-              $log.error(`Error replicating ${direction.name} remote server`, err);
-            })
-            .then(info => {
-              $log.debug(`Replication ${direction.name} successful`, info);
-              return;
-            })
-            .catch(err => {
-              $log.error(`Error replicating ${direction.name} remote server`, err);
-              return direction.name;
-            });
+        })
+        .on('error', function(err) {
+          $log.error(`Error replicating ${direction.name} remote server`, err);
+        })
+        .then(info => {
+          $log.debug(`Replication ${direction.name} successful`, info);
+          return;
+        })
+        .catch(err => {
+          if (err.code === 413 && direction.name === 'to' && batchSize > 1) {
+            batchSize = parseInt(batchSize / 2);
+            $log.warn('Error attempting to replicate too much data to the server. ' +
+              `Trying again with batch size of ${batchSize}`);
+            return replicate(direction, { batchSize });
+          }
+          $log.error(`Error replicating ${direction.name} remote server`, err);
+          return direction.name;
         });
+    };
+
+    const replicateIfAllowed = direction => {
+      return direction.allowed().then(allowed => {
+        if (!allowed) {
+          // not authorized to replicate - that's ok, skip silently
+          return;
+        }
+        return replicate(direction);
+      });
     };
 
     const getCurrentSeq = () => DB().info().then(info => info.update_seq + '');
@@ -105,7 +121,7 @@ angular
 
       if (!inProgressSync) {
         inProgressSync = $q
-          .all(DIRECTIONS.map(direction => replicate(direction)))
+          .all(DIRECTIONS.map(direction => replicateIfAllowed(direction)))
           .then(errs => {
             return getCurrentSeq().then(currentSeq => {
               errs = errs.filter(err => err);
@@ -122,6 +138,9 @@ angular
                 errs.forEach(err => {
                   update[err] = 'required';
                 });
+              }
+              if (update.to === 'success') {
+                $window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now());
               }
               sendUpdate(update);
             });

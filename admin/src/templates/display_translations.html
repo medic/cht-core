@@ -1,0 +1,31 @@
+<div>
+  <p translate>display.translation.description</p>
+  <a class="btn btn-primary" ng-click="editTranslation()">
+    <i class="fa fa-plus"></i>
+    <span translate>translation.add</span>
+  </a>
+</div>
+<div class="section translations">
+  <div class="container-fluid">
+    <div class="row selection-heading">
+      <div class="col-xs-6">
+        <select class="form-control small" ng-model="localeModel.lhs" ng-options="translation.doc.code as translation.doc.name for translation in translationOptions"></select>
+      </div>
+      <div class="col-xs-6">
+        <select class="form-control small" ng-model="localeModel.rhs" ng-options="translation.doc.code as translation.doc.name for translation in translations"></select>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row translation selection" ng-repeat="translation in translationModels track by translation.key" ng-click="editTranslation(translation.key)">
+      <div class="col-xs-6">
+        <span ng-if="translation.lhs">{{translation.lhs}}</span>
+        <span ng-if="!translation.lhs" class="missing-term">{{translation.key}}</span>
+      </div>
+      <div class="col-xs-6">
+        <span ng-if="translation.rhs">{{translation.rhs}}</span>
+        <span ng-if="!translation.rhs" class="missing-term">{{translation.key}}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,7 @@
-const chai = require('chai'),
-      sinon = require('sinon'),
-      db = require('../../../src/db'),
-      service = require('../../../src/services/upgrade');
+const chai = require('chai');
+const sinon = require('sinon');
+const db = require('../../../src/db');
+const service = require('../../../src/services/upgrade');
 
 describe('Upgrade service', () => {
   const buildInfo = {

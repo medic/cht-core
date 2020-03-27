@@ -9,9 +9,11 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
-    case actionTypes.SET_SELECTED_ANALYTICS:
-      return Object.assign({}, state, { selected: action.payload.selected });
-    default:
-      return state;
+  case actionTypes.CLEAR_SELECTED:
+    return Object.assign({}, state, { selected: null });
+  case actionTypes.SET_SELECTED_ANALYTICS:
+    return Object.assign({}, state, { selected: action.payload.selected });
+  default:
+    return state;
   }
 };

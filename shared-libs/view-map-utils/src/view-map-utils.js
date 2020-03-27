@@ -1,12 +1,12 @@
 'use strict';
 
-var viewMapStrings = {},
-    viewMapFns = {};
+let viewMapStrings = {};
+let viewMapFns = {};
 
 //ensure V8 optimization
-var argumentsToArray = function () {
-  var args = [];
-  for (var i = this && this.skip || 0; i < arguments.length; i++) {
+const argumentsToArray = function () {
+  const args = [];
+  for (let i = this && this.skip || 0; i < arguments.length; i++) {
     args.push(arguments[i]);
   }
   return args;
@@ -25,24 +25,24 @@ module.exports = {
   },
 
   loadViewMaps: function (ddoc) {
-    var ddocId = ddoc._id && ddoc._id.replace('_design/', '');
+    const ddocId = ddoc._id && ddoc._id.replace('_design/', '');
     module.exports.reset(ddocId);
-    var viewNames = argumentsToArray.apply({ skip: 1 }, arguments);
+    const viewNames = argumentsToArray.apply({ skip: 1 }, arguments);
     viewNames.forEach(function(view) {
       viewMapStrings[ddocId][view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
     });
   },
 
   getViewMapFn: function (ddocId, viewName) {
-    var COMMENT_REGEX = /\/\/.*/g,
-        SIGNATURE_REGEX = /emit\(/g,
-        NEW_LINE_REGEX = /\\n/g;
+    const COMMENT_REGEX = /\/\/.*/g;
+    const SIGNATURE_REGEX = /emit\(/g;
+    const NEW_LINE_REGEX = /\\n/g;
 
     if (viewMapFns[ddocId] && viewMapFns[ddocId][viewName]) {
       return viewMapFns[ddocId][viewName];
     }
 
-    var fnString = module.exports.getViewMapString(ddocId, viewName);
+    let fnString = module.exports.getViewMapString(ddocId, viewName);
     if (!fnString) {
       throw new Error('Requested view '+ ddocId + '/' + viewName + ' was not found');
     }
@@ -53,12 +53,12 @@ module.exports = {
       .replace(SIGNATURE_REGEX, 'this.emit(')
       .trim();
 
-    var fn = new Function('return ' + fnString)(); // jshint ignore:line
+    const fn = new Function('return ' + fnString)(); // jshint ignore:line
 
     //support multiple `emit`s
-    var viewMapFn = function() {
-      var emitted = [];
-      var emit = function() {
+    const viewMapFn = function() {
+      const emitted = [];
+      const emit = function() {
         return emitted.push(argumentsToArray.apply(null, arguments));
       };
       fn.apply({ emit: emit }, arguments);

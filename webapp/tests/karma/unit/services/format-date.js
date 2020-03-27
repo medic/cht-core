@@ -2,12 +2,12 @@ describe('FormatDate service', function() {
 
   'use strict';
 
-  var service,
-      translateInstant,
-      relativeTime,
-      pastFuture;
+  let service;
+  let translateInstant;
+  let relativeTime;
+  let pastFuture;
 
-  var LONG_DATE_FORMAT = 'h:mm A';
+  const LONG_DATE_FORMAT = 'h:mm A';
 
   beforeEach(function() {
     module('inboxApp');
@@ -35,7 +35,7 @@ describe('FormatDate service', function() {
 
     it('returns diff without suffix', function(done) {
       relativeTime.returns('5 years old');
-      var actual = service.age(moment().subtract(5, 'years'));
+      const actual = service.age(moment().subtract(5, 'years'));
       chai.expect(actual).to.equal('5 years old');
       chai.expect(relativeTime.args[0][0]).to.equal(5);     // quantity
       chai.expect(relativeTime.args[0][1]).to.equal(true);  // without suffix
@@ -45,8 +45,8 @@ describe('FormatDate service', function() {
 
     it('rounds down', function(done) {
       relativeTime.returns('5 years old');
-      var dob = moment().subtract(5, 'years').subtract(11, 'months').subtract(25, 'days');
-      var actual = service.age(dob);
+      const dob = moment().subtract(5, 'years').subtract(11, 'months').subtract(25, 'days');
+      const actual = service.age(dob);
       chai.expect(actual).to.equal('5 years old');
       chai.expect(relativeTime.args[0][0]).to.equal(5);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -56,8 +56,8 @@ describe('FormatDate service', function() {
 
     it('shows months when less than 2 years old', function(done) {
       relativeTime.returns('16 months');
-      var dob = moment().subtract(16, 'months').subtract(25, 'days');
-      var actual = service.age(dob);
+      const dob = moment().subtract(16, 'months').subtract(25, 'days');
+      const actual = service.age(dob);
       chai.expect(actual).to.equal('16 months');
       chai.expect(relativeTime.args[0][0]).to.equal(16);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -67,8 +67,8 @@ describe('FormatDate service', function() {
 
     it('shows days when less than 2 months old', function(done) {
       relativeTime.returns('50 days');
-      var dob = moment().subtract(50, 'days');
-      var actual = service.age(dob);
+      const dob = moment().subtract(50, 'days');
+      const actual = service.age(dob);
       chai.expect(actual).to.equal('50 days');
       chai.expect(relativeTime.args[0][0]).to.equal(50);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -78,8 +78,8 @@ describe('FormatDate service', function() {
 
     it('shows singular when one day old', function(done) {
       relativeTime.returns('1 day');
-      var dob = moment().subtract(1, 'days');
-      var actual = service.age(dob);
+      const dob = moment().subtract(1, 'days');
+      const actual = service.age(dob);
       chai.expect(actual).to.equal('1 day');
       chai.expect(relativeTime.args[0][0]).to.equal(1);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -89,8 +89,8 @@ describe('FormatDate service', function() {
 
     it('shows zero days old when just born', function(done) {
       relativeTime.returns('0 days');
-      var dob = moment();
-      var actual = service.age(dob);
+      const dob = moment();
+      const actual = service.age(dob);
       chai.expect(actual).to.equal('0 days');
       chai.expect(relativeTime.args[0][0]).to.equal(0);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -100,9 +100,9 @@ describe('FormatDate service', function() {
 
     it('calculates age at death if known', function(done) {
       relativeTime.returns('100 years');
-      var dob = moment().subtract(120, 'years');
-      var dod = moment().subtract(20, 'years');
-      var actual = service.age(dob, { end: dod });
+      const dob = moment().subtract(120, 'years');
+      const dod = moment().subtract(20, 'years');
+      const actual = service.age(dob, { end: dod });
       chai.expect(actual).to.equal('100 years');
       chai.expect(relativeTime.args[0][0]).to.equal(100);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -116,7 +116,7 @@ describe('FormatDate service', function() {
 
     it('returns "today" when between now and tomorrow', function(done) {
       translateInstant.returns('pretty soon');
-      var actual = service.relative(moment(), { withoutTime: true });
+      const actual = service.relative(moment(), { withoutTime: true });
       chai.expect(actual).to.equal('pretty soon');
       chai.expect(translateInstant.args[0][0]).to.equal('today');
       done();
@@ -124,7 +124,7 @@ describe('FormatDate service', function() {
 
     it('returns "today" when between midnigh and now', function(done) {
       translateInstant.returns('pretty soon');
-      var actual = service.relative(moment().startOf('day'), { withoutTime: true });
+      const actual = service.relative(moment().startOf('day'), { withoutTime: true });
       chai.expect(actual).to.equal('pretty soon');
       chai.expect(translateInstant.args[0][0]).to.equal('today');
       done();
@@ -138,8 +138,8 @@ describe('FormatDate service', function() {
     it('returns "in 2 days" when two sleeps away', function(done) {
       relativeTime.returns('2 days');
       pastFuture.returns('in 2 days');
-      var date = moment().add(2, 'days').startOf('day').add(1, 'hours');
-      var actual = service.relative(date, { withoutTime: true });
+      const date = moment().add(2, 'days').startOf('day').add(1, 'hours');
+      const actual = service.relative(date, { withoutTime: true });
       chai.expect(actual).to.equal('in 2 days');
       chai.expect(relativeTime.args[0][0]).to.equal(2);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -152,8 +152,8 @@ describe('FormatDate service', function() {
     it('returns "2 days ago" when two sleeps have passed', function(done) {
       relativeTime.returns('2 days');
       pastFuture.returns('2 days ago');
-      var date = moment().subtract(2, 'days').startOf('day').add(1, 'hours');
-      var actual = service.relative(date, { withoutTime: true });
+      const date = moment().subtract(2, 'days').startOf('day').add(1, 'hours');
+      const actual = service.relative(date, { withoutTime: true });
       chai.expect(actual).to.equal('2 days ago');
       chai.expect(relativeTime.args[0][0]).to.equal(2);
       chai.expect(relativeTime.args[0][1]).to.equal(true);
@@ -165,7 +165,7 @@ describe('FormatDate service', function() {
 
     it('returns "yesterday" when 1 day ago', function(done) {
       translateInstant.returns('yesterday');
-      var actual = service.relative(moment().subtract(1, 'days'), { withoutTime: true });
+      const actual = service.relative(moment().subtract(1, 'days'), { withoutTime: true });
       chai.expect(actual).to.equal('yesterday');
       chai.expect(translateInstant.args[0][0]).to.equal('yesterday');
       done();
@@ -173,7 +173,7 @@ describe('FormatDate service', function() {
 
     it('returns "tomorrow" when in 1 day', function(done) {
       translateInstant.returns('tomorrow');
-      var actual = service.relative(moment().add(1, 'days'), { withoutTime: true });
+      const actual = service.relative(moment().add(1, 'days'), { withoutTime: true });
       chai.expect(actual).to.equal('tomorrow');
       chai.expect(translateInstant.args[0][0]).to.equal('tomorrow');
       done();
@@ -184,7 +184,7 @@ describe('FormatDate service', function() {
   describe('relative with time', function() {
 
     it('falls through to moment fromNow', function(done) {
-      var actual = service.relative(moment().add(5, 'hours'));
+      const actual = service.relative(moment().add(5, 'hours'));
       chai.expect(actual).to.equal('in 5 hours');
       done();
     });
@@ -195,7 +195,7 @@ describe('FormatDate service', function() {
     it('returns just the time of a given date', done => {
       const now = moment();
       const time = now.format(LONG_DATE_FORMAT);
-      var actual = service.time(now);
+      const actual = service.time(now);
       chai.expect(actual).to.equal(time);
       done();
     });

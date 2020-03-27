@@ -14,7 +14,7 @@ angular.module('controllers').controller('ImportTranslationCtrl',
 
     $scope.submit = function() {
       $scope.validationError = null;
-      var file = $('#import-translation [name="translations"]').prop('files')[0];
+      const file = $('#import-translation [name="translations"]').prop('files')[0];
       if (!file) {
         Translate.fieldIsRequired('Translation file')
           .then(function(message) {

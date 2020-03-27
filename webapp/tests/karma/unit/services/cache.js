@@ -2,8 +2,8 @@ describe('Cache service', function() {
 
   'use strict';
 
-  var service,
-      changesCallback;
+  let service;
+  let changesCallback;
 
   beforeEach(function() {
     module('inboxApp');
@@ -27,7 +27,7 @@ describe('Cache service', function() {
   });
 
   it('returns results from get', function(done) {
-    var docs = [ { _id: 1 } ];
+    const docs = [ { _id: 1 } ];
     service({ get: function(callback) {
       callback(null, docs);
     }})(function(err, results) {
@@ -38,13 +38,13 @@ describe('Cache service', function() {
   });
 
   it('calls multiple callbacks', function(done) {
-    var docs = [ { _id: 1 } ];
-    var callback;
-    var count = 0;
-    var cache = service({ get: function(_callback) {
+    const docs = [ { _id: 1 } ];
+    let callback;
+    let count = 0;
+    const cache = service({ get: function(_callback) {
       callback = _callback;
     }});
-    var ass = function(err, results) {
+    const ass = function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(docs);
       count++;
@@ -58,13 +58,13 @@ describe('Cache service', function() {
   });
 
   it('caches the result', function(done) {
-    var docs = [ { _id: 1 } ];
-    var callback;
-    var count = 0;
-    var cache = service({ get: function(_callback) {
+    const docs = [ { _id: 1 } ];
+    let callback;
+    let count = 0;
+    const cache = service({ get: function(_callback) {
       callback = _callback;
     }});
-    var ass = function(err, results) {
+    const ass = function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(docs);
       count++;
@@ -79,10 +79,10 @@ describe('Cache service', function() {
   });
 
   it('invalidates the cache on doc update', function(done) {
-    var initial = [ { _id: 1, name: 'gareth' } ];
-    var updated = [ { _id: 1, name: 'alex' } ];
-    var count = 0;
-    var cache = service({
+    const initial = [ { _id: 1, name: 'gareth' } ];
+    const updated = [ { _id: 1, name: 'alex' } ];
+    let count = 0;
+    const cache = service({
       get: function(callback) {
         if (count === 0) {
           callback(null, initial);
@@ -110,11 +110,11 @@ describe('Cache service', function() {
   });
 
   it('invalidates the cache on new doc', function(done) {
-    var newDoc = { _id: 2, name: 'alex' };
-    var initial = [ { _id: 1, name: 'gareth' } ];
-    var updated = [ { _id: 1, name: 'gareth' }, newDoc ];
-    var count = 0;
-    var cache = service({
+    const newDoc = { _id: 2, name: 'alex' };
+    const initial = [ { _id: 1, name: 'gareth' } ];
+    const updated = [ { _id: 1, name: 'gareth' }, newDoc ];
+    let count = 0;
+    const cache = service({
       get: function(callback) {
         if (count === 0) {
           callback(null, initial);
@@ -144,10 +144,10 @@ describe('Cache service', function() {
   });
 
   it('does not invalidate the cache when filter fails', function(done) {
-    var newDoc = { _id: 2, name: 'alex' };
-    var initial = [ { _id: 1, name: 'gareth' } ];
-    var count = 0;
-    var cache = service({
+    const newDoc = { _id: 2, name: 'alex' };
+    const initial = [ { _id: 1, name: 'gareth' } ];
+    let count = 0;
+    const cache = service({
       get: function(callback) {
         if (count === 0) {
           callback(null, initial);

@@ -1,6 +1,6 @@
-const sentinelUtils = require('../sentinel/utils'),
-      utils = require('../../utils'),
-      apiUtils = require('./utils');
+const sentinelUtils = require('../sentinel/utils');
+const utils = require('../../utils');
+const apiUtils = require('./utils');
 
 const contacts = [
   {
@@ -21,7 +21,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw1', parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -264,8 +267,8 @@ describe('Transitions public_form', () => {
         utils.getDoc('person2')
       ]))
       .then(([ docs, infos, patient1, patient2 ]) => {
-        let doc,
-            info;
+        let doc;
+        let info;
 
         // temp_known_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
@@ -354,8 +357,8 @@ describe('Transitions public_form', () => {
         utils.getDoc('person2')
       ]))
       .then(([ docs, infos, patient1, patient2 ]) => {
-        let doc,
-            info;
+        let doc;
+        let info;
 
         // temp_known_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');
@@ -447,8 +450,8 @@ describe('Transitions public_form', () => {
         utils.getDoc('person2')
       ]))
       .then(([ docs, infos, patient1, patient2 ]) => {
-        let doc,
-            info;
+        let doc;
+        let info;
 
         // temp_known_contact
         doc = docs.find(doc => doc.sms_message.gateway_ref === 'temp_known_contact');

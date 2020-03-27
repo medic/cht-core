@@ -5,6 +5,7 @@
  *  1) Make sure all the issues in the release are assigned to the project
  *  2) Each issue should have one and only one Type label - the script will tell you which ones don't
  *  3) Make sure you have generated a GH token and created a token.json file, eg: { "githubApiToken": "..." }
+ *     This token needs at least `read:org` permissions
  *  4) Execute the command: node index.js <project_name> > <output_file>
  *      eg: node index.js 3.0.0 > tmp.md
  *  5) Insert the contents of the output file into the appropriate location in Changes.md
@@ -19,6 +20,8 @@ const TYPES = [
   { labels: ['bug', 'Type: Bug'], title: 'Bug fixes', issues: [] },
   { labels: ['Type: Technical issue'], title: 'Technical issues', issues: [] }
 ];
+const PREFIXES_TO_IGNORE = [ 'Type: Internal process', 'Won\'t fix:' ];
+
 const github = new GitHub({
   headers: { 'user-agent': 'changelog-generator' }
 });
@@ -94,6 +97,14 @@ const getIssues = cards => {
   );
 };
 
+const filterIssues = issues => {
+  return issues.filter(issue => {
+    return issue.data.labels.every(label => {
+      return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
+    });
+  });
+};
+
 const sort = issues => {
   const errors = [];
   issues.forEach(issue => {
@@ -131,7 +142,9 @@ const output = groups => {
     if (group.issues.length) {
       console.log(`### ${group.title}`);
       console.log('');
-      group.issues.forEach(issue => console.log(`- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`));
+      group.issues.forEach(issue => {
+        console.log(`- [${getRepo(issue)}#${issue.data.number}](${issue.data.html_url}): ${issue.data.title}`);
+      });
       console.log('');
     }
   });
@@ -141,6 +154,7 @@ Promise.resolve()
   .then(getProjectId)
   .then(getCards)
   .then(getIssues)
+  .then(filterIssues)
   .then(sort)
   .then(output)
   .catch(console.error);

@@ -27,9 +27,9 @@
        * @param      {String}  basicAuthPass  Optional password for Basic Auth
        */
       return function(username, updates, basicAuthUser, basicAuthPass) {
-        var url = '/api/v1/users/' + username;
+        const url = '/api/v1/users/' + username;
 
-        var headers = {
+        const headers = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         };
@@ -47,6 +47,6 @@
           headers: headers
         });
       };
-  });
+    });
 
 }());

@@ -1,7 +1,7 @@
-const utils = require('../utils'),
-  helper = require('../helper'),
-  constants = require('../constants'),
-  commonElements = require('../page-objects/common/common.po.js');
+const utils = require('../utils');
+const helper = require('../helper');
+const constants = require('../constants');
+const commonElements = require('../page-objects/common/common.po.js');
 
 describe('Submit Enketo form', () => {
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -138,7 +138,7 @@ describe('Submit Enketo form', () => {
         expect(name).toBe('Jones');
       },
       err => {
-        console.log(err);
+        console.log(err); // eslint-disable-line no-console
       }
     );
   });

@@ -10,18 +10,18 @@ if (process.env.COUCH_URL) {
   console.log('Please set COUCH_URL as an enviromental variable. E.g. https://admin:secret@project.medicmobile.org');
 }
 
-var users_db = instance_url + '/_users';
-var all_users_url = users_db + '/_all_docs';
+const users_db = instance_url + '/_users';
+const all_users_url = users_db + '/_all_docs';
 
 https.get(all_users_url, (res) => {
-  var medic_users_res = '';
+  let medic_users_res = '';
 
   res.on('data', (d) => {
     medic_users_res += d;
-    });
+  });
 
   res.on('end', function(){
-    var medic_users = JSON.parse(medic_users_res).rows;
+    const medic_users = JSON.parse(medic_users_res).rows;
 
     medic_users.forEach(function(medic_user){
 
@@ -33,27 +33,27 @@ https.get(all_users_url, (res) => {
       } else {
         console.log(user_id);
         console.log('Deleting...');
-        var del_url = users_db + '/' + user_id + '?rev=' + rev_value;
-        var options = url.parse(del_url);
+        const del_url = users_db + '/' + user_id + '?rev=' + rev_value;
+        const options = url.parse(del_url);
 
         const del_options = _.extend(options, {method: 'DELETE'});
 
-        var del_req = https.request(del_options, function (resp) {
-            resp.setEncoding('utf-8');
+        const del_req = https.request(del_options, function (resp) {
+          resp.setEncoding('utf-8');
 
-            resp.on('data', function (resp) {
-                console.log(resp);
-            });
+          resp.on('data', function (resp) {
+            console.log(resp);
+          });
         });
 
         del_req.on('error', function (e) {
-            if (e) {
-                console.log(e.message);
-            }
+          if (e) {
+            console.log(e.message);
+          }
         });
         del_req.end();
       }
-  });
+    });
   });
 
 }).on('error', (e) => {

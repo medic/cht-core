@@ -1,6 +1,6 @@
-const utils = require('../../utils'),
-      querystring = require('querystring'),
-      constants = require('../../constants');
+const utils = require('../../utils');
+const querystring = require('querystring');
+const constants = require('../../constants');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 

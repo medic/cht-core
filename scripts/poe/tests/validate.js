@@ -43,7 +43,11 @@ describe('validate', () => {
     const nonMatchingPlaceholderDir = path.resolve(__dirname, 'translations', 'non-matching-placeholders');
     path.join = jest.fn().mockReturnValue(path.join(nonMatchingPlaceholderDir, 'messages-ex.properties'));
     validatePlaceHolders(['en', 'sw'], nonMatchingPlaceholderDir);
-    expect(console.error).toHaveBeenCalledWith('\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that do not match those of messages-en.properties\nYou can use messages-ex.properties to add placeholders missing from the reference context.');
+    expect(console.error).toHaveBeenCalledWith(
+      '\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that ' +
+      'do not match those of messages-en.properties\nYou can use messages-ex.properties to add placeholders missing ' +
+      'from the reference context.'
+    );
   });
 
 });

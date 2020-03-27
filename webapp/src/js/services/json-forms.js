@@ -4,12 +4,12 @@ angular.module('inboxServices').factory('JsonForms',
     'ngInject';
     'use strict';
 
-    var formatResults = function(forms) {
+    const formatResults = function(forms) {
       if (!forms) {
         return [];
       }
       return Object.keys(forms).map(function(key) {
-        var form = forms[key];
+        const form = forms[key];
         return {
           code: form.meta.code,
           name: form.meta.label,

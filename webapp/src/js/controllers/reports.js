@@ -1,6 +1,6 @@
-const _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader'),
-  lineageFactory = require('@medic/lineage');
+const _ = require('lodash/core');
+const responsive = require('../modules/responsive');
+const scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
 
@@ -13,22 +13,16 @@ angular
     $state,
     $stateParams,
     $timeout,
-    $translate,
     AddReadStatus,
-    Auth,
     Changes,
-    DB,
     Export,
     GlobalActions,
     LiveList,
-    MarkRead,
-    Modal,
-    PlaceHierarchy,
-    ReportViewModelGenerator,
     ReportsActions,
     Search,
     SearchFilters,
     Selectors,
+    ServicesActions,
     Tour
   ) {
     'use strict';
@@ -38,60 +32,21 @@ angular
     const mapStateToTarget = state => ({
       enketoEdited: Selectors.getEnketoEditedStatus(state),
       filters: Selectors.getFilters(state),
+      forms: Selectors.getForms(state),
       selectMode: Selectors.getSelectMode(state),
       selectedReports: Selectors.getSelectedReports(state),
       selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
       showContent: Selectors.getShowContent(state),
-      unreadCount: Selectors.getUnreadCount(state)
+      unreadCount: Selectors.getUnreadCount(state),
+      verifyingReport: Selectors.getVerifyingReport(state)
     });
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       const reportsActions = ReportsActions(dispatch);
-      return {
-        addSelectedReport: reportsActions.addSelectedReport,
-        clearFilters: globalActions.clearFilters,
-        removeSelectedReport: reportsActions.removeSelectedReport,
-        setFacilities: globalActions.setFacilities,
-        setFilters: globalActions.setFilters,
-        setFirstSelectedReportDocProperty: reportsActions.setFirstSelectedReportDocProperty,
-        setLastChangedDoc: globalActions.setLastChangedDoc,
-        setLeftActionBar: globalActions.setLeftActionBar,
-        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setRightActionBar: globalActions.setRightActionBar,
-        setSelectedReports: reportsActions.setSelectedReports,
-        setTitle: globalActions.setTitle,
-        settingSelected: globalActions.settingSelected,
-        updateUnreadCount: globalActions.updateUnreadCount
-      };
+      const servicesActions = ServicesActions(dispatch);
+      return Object.assign({}, globalActions, servicesActions, reportsActions);
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-    var lineage = lineageFactory();
-
-    // Render the facilities hierarchy as the user is scrolling through the list
-    // Initially, don't load/render any
-    $scope.totalFacilitiesDisplayed = 0;
-    ctrl.setFacilities([]);
-
-    // Load the facilities hierarchy and render one district hospital
-    // when the user clicks on the filter dropdown
-    $scope.monitorFacilityDropdown = () => {
-      PlaceHierarchy()
-        .then(function(hierarchy) {
-          ctrl.setFacilities(hierarchy);
-          $scope.totalFacilitiesDisplayed += 1;
-        })
-        .catch(function(err) {
-          $log.error('Error loading facilities', err);
-        });
-
-      $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
-        // visible height + pixel scrolled >= total height - 100
-        if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
-          $timeout(() => $scope.totalFacilitiesDisplayed += 1);
-        }
-      });
-    };
 
     // selected objects have the form
     //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
@@ -106,10 +61,9 @@ angular
     });
     ctrl.verifyingReport = false;
 
-    var liveList = LiveList.reports;
-    LiveList.$init($scope, 'reports', 'report-search');
+    let liveList = LiveList.reports;
 
-    var updateLiveList = function(updated) {
+    const updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {
         updated.forEach(function(report) {
           liveList.update(report);
@@ -124,145 +78,8 @@ angular
       });
     };
 
-    var setSelected = function(model) {
-      $scope.setSelected(model);
-      if (ctrl.selectMode) {
-        return;
-      }
-      var listModel = _.findWhere(liveList.getList(), { _id: model._id });
-      if (listModel && !listModel.read) {
-        ctrl.updateUnreadCount({ report: ctrl.unreadCount.report - 1 });
-        listModel.read = true;
-        LiveList.reports.update(listModel);
-        LiveList['report-search'].update(listModel);
-      }
-      MarkRead([model.doc])
-        .catch(function(err) {
-          $log.error('Error marking read', err);
-        });
-    };
-
-    var setTitle = function(model) {
-      var formInternalId = model.formInternalId || model.form;
-      var form = _.findWhere($scope.forms, { code: formInternalId });
-      var name = (form && form.name) || (form && form.title) || model.form;
-      ctrl.setTitle(name);
-    };
-
-    var setRightActionBar = function() {
-      const model = {};
-      const doc =
-        !ctrl.selectMode &&
-        ctrl.selectedReportsDocs &&
-        ctrl.selectedReportsDocs.length === 1 &&
-        ctrl.selectedReportsDocs[0];
-      if (!doc) {
-        return ctrl.setRightActionBar(model);
-      }
-      model.verified = doc.verified;
-      model.type = doc.content_type;
-      model.verifyingReport = ctrl.verifyingReport;
-      if (!doc.contact || !doc.contact._id) {
-        return ctrl.setRightActionBar(model);
-      }
-
-      DB()
-        .get(doc.contact._id)
-        .then(function(contact) {
-          model.sendTo = contact;
-          ctrl.setRightActionBar(model);
-        })
-        .catch(function(err) {
-          ctrl.setRightActionBar(model);
-          throw err;
-        });
-    };
-
-    $scope.setSelected = function(model) {
-      var refreshing = true;
-      if (ctrl.selectMode) {
-        var existing = _.findWhere(ctrl.selectedReports, { _id: model.doc._id });
-        if (existing) {
-          _.extend(existing, model);
-        } else {
-          model.expanded = false;
-          ctrl.addSelectedReport(model);
-        }
-      } else {
-        if (liveList.initialised()) {
-          liveList.setSelected(model.doc && model.doc._id);
-        }
-        refreshing =
-          model.doc &&
-          ctrl.selectedReports.length &&
-          ctrl.selectedReports[0]._id === model.doc._id;
-        if (!refreshing) {
-          ctrl.verifyingReport = false;
-        }
-
-        model.expanded = true;
-        ctrl.setSelectedReports([model]);
-        setTitle(model);
-      }
-      setRightActionBar();
-      ctrl.settingSelected(refreshing);
-    };
-
-    var fetchFormattedReport = function(report) {
-      var id = _.isString(report) ? report : report._id;
-      return ReportViewModelGenerator(id);
-    };
-
-    $scope.refreshReportSilently = function(report) {
-      return fetchFormattedReport(report)
-        .then(function(model) {
-          setSelected(model);
-        })
-        .catch(function(err) {
-          $log.error('Error fetching formatted report', err);
-        });
-    };
-
-    var removeSelectedReport = function(id) {
-      ctrl.removeSelectedReport(id);
-      var index = _.findIndex(ctrl.selectedReports, function(s) {
-        return s._id === id;
-      });
-      if (index !== -1) {
-        setRightActionBar();
-      }
-    };
-
-    $scope.deselectReport = function(report) {
-      const reportId = report._id || report;
-      removeSelectedReport(reportId);
-      $(`#reports-list li[data-record-id="${reportId}"] input[type="checkbox"]`).prop('checked', false);
-      ctrl.settingSelected(true);
-    };
-
-    $scope.selectReport = function(report) {
-      if (!report) {
-        $scope.clearSelected();
-        return;
-      }
-      $scope.setLoadingContent(report);
-      fetchFormattedReport(report)
-        .then(function(model) {
-          if (model) {
-            $timeout(function() {
-              setSelected(model);
-              initScroll();
-            });
-          }
-        })
-        .catch(function(err) {
-          $scope.clearSelected();
-          $log.error('Error selecting report', err);
-        });
-    };
-
-    var query = function(opts) {
-      const options = _.extend({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+    const query = function(opts) {
+      const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
       if (options.limit < PAGE_SIZE) {
         options.limit = PAGE_SIZE;
       }
@@ -270,8 +87,8 @@ angular
         ctrl.error = false;
         ctrl.errorSyntax = false;
         ctrl.loading = true;
-        if (ctrl.selectedReports.length && $scope.isMobile()) {
-          $scope.selectReport();
+        if (ctrl.selectedReports.length && responsive.isMobile()) {
+          ctrl.unsetSelected();
         }
       }
       if (options.skip) {
@@ -291,13 +108,13 @@ angular
           ctrl.errorSyntax = false;
           if (
             !$state.params.id &&
-            !$scope.isMobile() &&
+            !responsive.isMobile() &&
             !ctrl.selectedReports &&
             !ctrl.selectMode &&
             $state.is('reports.detail')
           ) {
             $timeout(function() {
-              var id = $('.inbox-items li')
+              const id = $('.inbox-items li')
                 .first()
                 .attr('data-record-id');
               $state.go('reports.detail', { id: id }, { location: 'replace' });
@@ -326,9 +143,9 @@ angular
       // does not clear selection when someone is editing a form
       if((ctrl.filters.search || Object.keys(ctrl.filters).length > 1) && !ctrl.enketoEdited) {
         $state.go('reports.detail', { id: null }, { notify: false });
-        clearSelection();
+        ctrl.clearSelection();
       }
-      if ($scope.isMobile() && ctrl.showContent) {
+      if (responsive.isMobile() && ctrl.showContent) {
         // leave content shown
         return;
       }
@@ -355,120 +172,7 @@ angular
       query();
     };
 
-    $scope.$on('ToggleVerifyingReport', function() {
-      ctrl.verifyingReport = !ctrl.verifyingReport;
-      setRightActionBar();
-    });
-
-    const clearSelection = () => {
-      ctrl.setSelectedReports([]);
-      LiveList.reports.clearSelected();
-      LiveList['report-search'].clearSelected();
-      $('#reports-list input[type="checkbox"]').prop('checked', false);
-      ctrl.verifyingReport = false;
-    };
-
-    $scope.$on('ClearSelected', function() {
-      clearSelection();
-    });
-
-    $scope.$on('EditReport', function() {
-      Modal({
-        templateUrl: 'templates/modals/edit_report.html',
-        controller: 'EditReportCtrl',
-        controllerAs: 'editReportCtrl',
-        model: { report: ctrl.selectedReports[0].doc },
-      });
-    });
-
-    $scope.$on('VerifyReport', function(e, reportIsValid) {
-      if (!ctrl.selectedReports[0].doc.form) {
-        return;
-      }
-
-      ctrl.setLoadingSubActionBar(true);
-
-      const promptUserToConfirmVerification = () => {
-        const verificationTranslationKey = reportIsValid ? 'reports.verify.valid' : 'reports.verify.invalid';
-        return Modal({
-          templateUrl: 'templates/modals/verify_confirm.html',
-          controller: 'VerifyReportModalCtrl',
-          model: {
-            proposedVerificationState: $translate.instant(verificationTranslationKey),
-          },
-        })
-        .then(() => true)
-        .catch(() => false);
-      };
-
-      const shouldReportBeVerified = function (canUserEdit) {
-        // verify if user verifications are allowed
-        if (canUserEdit) {
-          return true;
-        }
-
-        // don't verify if user can't edit and this is an edit
-        const docHasExistingResult = ctrl.selectedReports[0].doc.verified !== undefined;
-        if (docHasExistingResult) {
-          return false;
-        }
-
-        // verify if this is not an edit and the user accepts  prompt
-        return promptUserToConfirmVerification();
-      };
-
-      const writeVerificationToDoc = function() {
-        if (ctrl.selectedReports[0].doc.contact) {
-          const minifiedContact = lineage.minifyLineage(ctrl.selectedReports[0].doc.contact);
-          ctrl.setFirstSelectedReportDocProperty({ contact: minifiedContact });
-        }
-
-        const clearVerification = ctrl.selectedReports[0].doc.verified === reportIsValid;
-        if (clearVerification) {
-          ctrl.setFirstSelectedReportDocProperty({
-            verified: undefined,
-            verified_date: undefined,
-          });
-        } else {
-          ctrl.setFirstSelectedReportDocProperty({
-            verified: reportIsValid,
-            verified_date: Date.now(),
-          });
-        }
-        ctrl.setLastChangedDoc(ctrl.selectedReports[0].doc);
-
-        return DB()
-          .get(ctrl.selectedReports[0].doc._id)
-          .then(function(existingRecord) {
-            ctrl.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
-            return DB().post(ctrl.selectedReports[0].doc);
-          })
-          .catch(function(err) {
-            $log.error('Error verifying message', err);
-          })
-          .finally(function () {
-            $scope.$broadcast('VerifiedReport', reportIsValid);
-            ctrl.setLoadingSubActionBar(false);
-          });
-      };
-
-      ctrl.setLoadingSubActionBar(true);
-      Auth('can_edit_verification')
-        .then(() => true)
-        .catch(() => false)
-        .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
-        .then(function(shouldVerify) {
-          if (!shouldVerify) {
-            return;
-          }
-
-          return writeVerificationToDoc();
-        })
-        .catch(err => $log.error(`Error verifying message: ${err}`))
-        .finally(() => ctrl.setLoadingSubActionBar(false));
-    });
-
-    var initScroll = function() {
+    const initScroll = function() {
       scrollLoader.init(function() {
         if (!ctrl.loading && ctrl.moreItems) {
           query({ skip: true });
@@ -477,24 +181,12 @@ angular
     };
 
     if (!$state.params.id) {
-      $scope.selectReport();
+      ctrl.unsetSelected();
     }
 
     if ($stateParams.tour) {
       Tour.start($stateParams.tour);
     }
-
-    $scope.edit = function(report, group) {
-      Modal({
-        templateUrl: 'templates/modals/edit_message_group.html',
-        controller: 'EditMessageGroupCtrl',
-        controllerAs: 'editMessageGroupCtrl',
-        model: {
-          report: report,
-          group: angular.copy(group),
-        },
-      });
-    };
 
     ctrl.resetFilterModel = function() {
       if (ctrl.selectMode && ctrl.selectedReports && ctrl.selectedReports.length) {
@@ -506,93 +198,50 @@ angular
       ctrl.search();
     };
 
-    if ($scope.forms) {
-      // if forms are already loaded
-      ctrl.search();
-    } else {
-      // otherwise wait for loading to complete
-      ctrl.loading = true;
-      $scope.$on('formLoadingComplete', function() {
-        ctrl.search();
-        var doc =
-          ctrl.selectedReports && ctrl.selectedReports[0] && ctrl.selectedReports[0].doc;
-        if (doc) {
-          setTitle(doc);
-        }
-      });
-    }
+    ctrl.search();
 
     $('.inbox').on('click', '#reports-list .content-row', function(e) {
       if (ctrl.selectMode) {
         e.preventDefault();
         e.stopPropagation();
-        var target = $(e.target).closest('li[data-record-id]');
-        var reportId = target.attr('data-record-id');
-        var checkbox = target.find('input[type="checkbox"]');
-        var alreadySelected = _.findWhere(ctrl.selectedReports, { _id: reportId });
+        const target = $(e.target).closest('li[data-record-id]');
+        const reportId = target.attr('data-record-id');
+        const checkbox = target.find('input[type="checkbox"]');
+        const alreadySelected = _.find(ctrl.selectedReports, { _id: reportId });
         // timeout so if the user clicked the checkbox it has time to
         // register before we set it to the correct value.
         $timeout(function() {
           checkbox.prop('checked', !alreadySelected);
           if (!alreadySelected) {
-            $scope.selectReport(reportId);
+            ctrl.selectReport(reportId);
           } else {
-            removeSelectedReport(reportId);
+            ctrl.removeSelectedReport(reportId);
           }
         });
       }
     });
 
-    var syncCheckboxes = function() {
+    const syncCheckboxes = function() {
       $('#reports-list li').each(function() {
-        var id = $(this).attr('data-record-id');
-        var found = _.findWhere(ctrl.selectedReports, { _id: id });
+        const id = $(this).attr('data-record-id');
+        const found = _.find(ctrl.selectedReports, { _id: id });
         $(this)
           .find('input[type="checkbox"]')
           .prop('checked', found);
       });
     };
 
-    $scope.$on('SelectAll', function() {
-      $scope.setLoadingContent(true);
-      Search('reports', ctrl.filters, { limit: 500, hydrateContactNames: true })
-        .then(function(summaries) {
-          var selected = summaries.map(function(summary) {
-            return {
-              _id: summary._id,
-              summary: summary,
-              expanded: false,
-              lineage: summary.lineage,
-              contact: summary.contact,
-            };
-          });
-          ctrl.setSelectedReports(selected);
-          ctrl.settingSelected(true);
-          setRightActionBar();
-          $('#reports-list input[type="checkbox"]').prop('checked', true);
-        })
-        .catch(function(err) {
-          $log.error('Error selecting all', err);
-        });
-    });
-
-    var deselectAll = function() {
-      ctrl.setSelectedReports([]);
-      setRightActionBar();
-      $('#reports-list input[type="checkbox"]').prop('checked', false);
-    };
-
-    var setActionBarData = function() {
+    const setActionBarData = function() {
       ctrl.setLeftActionBar({
         hasResults: ctrl.hasReports,
         exportFn: function(e) {
-          var exportFilters = _.extendOwn({}, ctrl.filters);
+          const exportFilters = _.assignIn({}, ctrl.filters);
           ['forms', 'facilities'].forEach(function(type) {
             if (exportFilters[type]) {
               delete exportFilters[type].options;
             }
           });
-          var $link = $(e.target).closest('a');
+          const $link = $(e.target).closest('a');
           $link.addClass('mm-icon-disabled');
           $timeout(function() {
             $link.removeClass('mm-icon-disabled');
@@ -605,9 +254,7 @@ angular
 
     setActionBarData();
 
-    $scope.$on('DeselectAll', deselectAll);
-
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'reports-list',
       callback: function(change) {
         if (change.deleted) {

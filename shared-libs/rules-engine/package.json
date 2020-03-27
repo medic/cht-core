@@ -1,0 +1,37 @@
+{
+  "name": "@medic/rules-engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha test/*.spec.js test/**/*.spec.js",
+    "tz": "TZ=Canada/Pacific npm test && TZ=Africa/Monrovia npm test && TZ=Pacific/Auckland npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/medic/medic.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/medic/medic/issues"
+  },
+  "homepage": "https://github.com/medic/medic/tree/master/shared-libs/rules-engine#readme",
+  "dependencies": {
+    "@medic/calendar-interval": "file:../calendar-interval",
+    "@medic/registration-utils": "file:../registration-utils",
+    "md5": "^2.2.1",
+    "medic-nootils": "^4.0.1",
+    "nools": "^0.4.4"
+  },
+  "devDependencies": {
+    "@medic/memdown": "file:../memdown",
+    "chai": "^4.2.0",
+    "chai-exclude": "^2.0.2",
+    "mocha": "^6.2.2",
+    "moment": "^2.24.0",
+    "pouchdb": "^7.1.1",
+    "pouchdb-adapter-memory": "^7.1.1",
+    "sinon": "^7.5.0"
+  }
+}

@@ -23,7 +23,7 @@ if (UNIT_TEST_ENV) {
     ddoc: 'medic',
   };
   if (parsedUrl.auth) {
-    var index = parsedUrl.auth.indexOf(':');
+    const index = parsedUrl.auth.indexOf(':');
     module.exports.username = parsedUrl.auth.substring(0, index);
     module.exports.password = parsedUrl.auth.substring(index + 1);
   }

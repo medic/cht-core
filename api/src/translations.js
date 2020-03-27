@@ -1,9 +1,9 @@
-const _ = require('underscore'),
-      properties = require('properties'),
-      db = require('./db'),
-      DDOC_ID = '_design/medic',
-      TRANSLATION_FILE_NAME_REGEX = /translations\/messages-([a-z]*)\.properties/,
-      DOC_TYPE = 'translations';
+const _ = require('lodash');
+const properties = require('properties');
+const db = require('./db');
+const DDOC_ID = '_design/medic';
+const TRANSLATION_FILE_NAME_REGEX = /translations\/messages-([a-z]*)\.properties/;
+const DOC_TYPE = 'translations';
 
 const LOCAL_NAME_MAP = {
   bm: 'Bamanankan (Bambara)',
@@ -36,7 +36,7 @@ const createDoc = attachment => {
 
 const overwrite = (attachments, docs) => {
   const updatedDocs = [];
-  const english = _.findWhere(attachments, { code: 'en' });
+  const english = _.find(attachments, { code: 'en' });
   const knownKeys = english ? Object.keys(english.generic) : [];
   attachments.forEach(attachment => {
     const code = attachment.code;
@@ -51,7 +51,7 @@ const overwrite = (attachments, docs) => {
         attachment.generic[knownKey] = String(value);
       }
     });
-    const doc = _.findWhere(docs, { code: code });
+    const doc = _.find(docs, { code: code });
     if (doc) {
       if (!_.isEqual(doc.generic, attachment.generic)) {
         // backup the modified attachment
@@ -98,7 +98,7 @@ const getAttachments = () => {
 const getDocs = options => {
   return db.medic.query('medic-client/doc_by_type', options)
     .then(response => {
-      return _.pluck(response.rows, 'doc');
+      return _.map(response.rows, 'doc');
     });
 };
 

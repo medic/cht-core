@@ -9,6 +9,7 @@ const sUtils = require('./sentinel/utils');
 // means there is no way to know it's run: it just so happens to run faster than sentinel takes to
 // process.
 //
+/* eslint-disable no-console */
 const delayedInfoDocsOf = ids => sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
 
 describe('infodocs', () => {
@@ -313,7 +314,7 @@ describe('infodocs', () => {
                 some: 'transition info'
               });
               assert.equal(infodoc.some, 'legacy data');
-          });
+            });
         }).catch(err => {
           console.log('OH NOOOOO', err);
           console.log(err);

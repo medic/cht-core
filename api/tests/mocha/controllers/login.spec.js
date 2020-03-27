@@ -1,19 +1,20 @@
-const controller = require('../../../src/controllers/login'),
-      chai = require('chai'),
-      environment = require('../../../src/environment'),
-      auth = require('../../../src/auth'),
-      cookie = require('../../../src/services/cookie'),
-      db = require('../../../src/db').medic,
-      sinon = require('sinon'),
-      config = require('../../../src/config'),
-      request = require('request-promise-native'),
-      fs = require('fs'),
-      DB_NAME = 'lg',
-      DDOC_NAME = 'medic';
+const controller = require('../../../src/controllers/login');
+const chai = require('chai');
+const environment = require('../../../src/environment');
+const auth = require('../../../src/auth');
+const cookie = require('../../../src/services/cookie');
+const db = require('../../../src/db').medic;
+const sinon = require('sinon');
+const config = require('../../../src/config');
+const request = require('request-promise-native');
+const fs = require('fs');
+const users = require('../../../src/services/users');
+const DB_NAME = 'lg';
+const DDOC_NAME = 'medic';
 
-let req,
-    res,
-    originalEnvironment;
+let req;
+let res;
+let originalEnvironment;
 
 describe('login controller', () => {
 
@@ -372,6 +373,42 @@ describe('login controller', () => {
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(send.args[0][0]).to.equal('/admin/');
+      });
+    });
+
+    it('should not return a 401 when an admin without user-settings logs in', () => {
+      req.body = { user: 'shazza', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      sinon.stub(request, 'post').resolves(postResponse);
+      sinon.stub(res, 'send');
+      sinon.stub(res, 'status').returns(res);
+      sinon.stub(users, 'createAdmin').resolves();
+      const userCtx = { name: 'shazza', roles: [ '_admin' ] };
+      sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      sinon.stub(auth, 'isOnlineOnly').returns(true);
+      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'hasAllPermissions').returns(true);
+      sinon.stub(auth, 'getUserSettings')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({ });
+      return controller.post(req, res).then(() => {
+        chai.expect(request.post.callCount).to.equal(1);
+        chai.expect(auth.getUserCtx.callCount).to.equal(1);
+        chai.expect(auth.getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+        chai.expect(auth.hasAllPermissions.callCount).to.equal(1);
+        chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
+        chai.expect(auth.isDbAdmin.callCount).to.equal(1);
+        chai.expect(auth.isDbAdmin.args[0]).to.deep.equal([userCtx]);
+        chai.expect(users.createAdmin.callCount).to.equal(1);
+        chai.expect(users.createAdmin.args[0]).to.deep.equal([userCtx]);
+        chai.expect(auth.getUserSettings.callCount).to.equal(2);
+        chai.expect(auth.getUserSettings.args).to.deep.equal([[userCtx], [userCtx]]);
+        chai.expect(res.status.callCount).to.equal(1);
+        chai.expect(res.status.args[0][0]).to.equal(302);
+        chai.expect(res.send.args[0][0]).to.equal('/admin/');
       });
     });
   });

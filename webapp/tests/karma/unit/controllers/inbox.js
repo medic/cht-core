@@ -1,20 +1,17 @@
 describe('InboxCtrl controller', () => {
   'use strict';
 
-  let createController,
-    scope,
-    snackbar,
-    spyState,
-    stubModal,
-    dummyId = 'dummydummy',
-    RecurringProcessManager,
-    changes,
-    changesListener = {},
-    session;
+  let createController;
+  let scope;
+  let RecurringProcessManager;
+  let changes;
+  const changesListener = {};
+  let session;
+  let rulesEnginePromise;
 
   beforeEach(() => {
-    snackbar = sinon.stub();
     module('inboxApp');
+    window.startupTimes = {};
 
     RecurringProcessManager = {
       startUpdateRelativeDate: sinon.stub(),
@@ -34,9 +31,14 @@ describe('InboxCtrl controller', () => {
       isOnlineOnly: sinon.stub()
     };
 
+
+    rulesEnginePromise = Q.defer();
+
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
-      $provide.value('Auth', () => Promise.resolve({}));
+      $provide.value('Auth', {
+        has: () => Promise.resolve(true),
+      });
       $provide.value('Location', () => {
         return { path: 'localhost' };
       });
@@ -57,6 +59,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('Contact', sinon.stub());
       $provide.value('CountMessages', { init: sinon.stub() });
       $provide.value('DeleteDocs', KarmaUtils.nullPromise());
+      $provide.value('Debug', { set: sinon.stub() });
       $provide.value('XmlForms', sinon.stub());
       $provide.value('Contacts', sinon.stub());
       $provide.value('PlaceHierarchy', () => Promise.resolve());
@@ -64,37 +67,18 @@ describe('InboxCtrl controller', () => {
       $provide.value('Language', () => Promise.resolve({}));
       $provide.value('LiveListConfig', sinon.stub());
       $provide.value('ResourceIcons', { getAppTitle: () => Promise.resolve({}) });
-      $provide.factory('Modal', () => {
-        stubModal = sinon.stub();
-        // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDocs
-        // altogether. The calling of the processingFunction is tested in
-        // modal.js, not here.
-        stubModal.returns(Promise.resolve());
-        return stubModal;
-      });
       $provide.value('ReadMessages', sinon.stub());
       $provide.value('SendMessage', sinon.stub());
       $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
-      $provide.value('Settings', () => KarmaUtils.nullPromise());
-      $provide.value('Snackbar', () => snackbar);
-      $provide.factory('$state', () => {
-        spyState = {
-          go: sinon.spy(),
-          current: { name: 'my.state.is.great' },
-          includes: () => {
-            return true;
-          },
-        };
-        return spyState;
-      });
+      $provide.value('Settings', () => Promise.resolve());
       $provide.value('$timeout', sinon.stub());
       $provide.value('UpdateUser', sinon.stub());
       $provide.value('UpdateSettings', sinon.stub());
       $provide.value('UserSettings', sinon.stub());
       $provide.value('Telemetry', { record: sinon.stub() });
       $provide.value('Tour', { getTours: () => Promise.resolve([]) });
-      $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
+      $provide.value('RulesEngine', { isEnabled: () => rulesEnginePromise.promise });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.value('Enketo', sinon.stub());
       $provide.constant('APP_CONFIG', {
@@ -103,96 +87,68 @@ describe('InboxCtrl controller', () => {
       });
     });
 
-    inject(($rootScope, $controller) => {
+    inject(($rootScope, $controller, _$translate_) => {
       scope = $rootScope.$new();
+      _$translate_.onReady = sinon.stub().resolves();
+
       createController = () => {
         return $controller('InboxCtrl', {
           $scope: scope,
           $rootScope: $rootScope,
+          $window: {
+            addEventListener: () => {},
+            location: { href: '' },
+            localStorage: {
+              getItem: sinon.stub(),
+            },
+            startupTimes: {},
+            PouchDB: {},
+          },
         });
       };
     });
-
-    createController();
-    spyState.go.resetHistory();
   });
 
   afterEach(() => sinon.restore());
 
-  it('navigates back to contacts state after deleting contact', done => {
-    scope.deleteDoc(dummyId);
-
-    setTimeout(() => {
-      scope.$apply(); // needed to resolve the promises
-
-      chai.assert(spyState.go.called, 'Should change state');
-      chai.expect(spyState.go.args[0][0]).to.equal(spyState.current.name);
-      chai.expect(spyState.go.args[0][1]).to.deep.equal({ id: null });
-      done();
-    });
-  });
-
-  it('does not change state after deleting message', done => {
-    spyState.includes = state => {
-      return state === 'messages';
-    };
-
-    scope.deleteDoc(dummyId);
-
-    setTimeout(() => {
-      scope.$apply(); // needed to resolve the promises
-
-      chai.assert.isFalse(spyState.go.called, 'state change should not happen');
-      done();
-    });
-  });
-
-  it('does not deleteContact if user cancels modal', done => {
-    stubModal.reset();
-    stubModal.returns(Promise.reject({ err: 'user cancelled' }));
-
-    scope.deleteDoc(dummyId);
-
-    setTimeout(() => {
-      scope.$apply(); // needed to resolve the promises
-
-      chai.assert.isFalse(spyState.go.called, 'state change should not happen');
-      chai.assert.isFalse(snackbar.called, 'toast should be shown');
-      done();
-    });
-  });
-
   it('should start the relative date update recurring process', done => {
+    createController();
+    rulesEnginePromise.resolve();
     setTimeout(() => {
-      scope.$apply();
-
-      chai
-        .expect(RecurringProcessManager.startUpdateRelativeDate.callCount)
-        .to.equal(1);
+      chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
       done();
     });
   });
 
   it('should cancel the relative date update recurring process when destroyed', () => {
+    createController();
     scope.$destroy();
-    chai
-      .expect(RecurringProcessManager.stopUpdateRelativeDate.callCount)
-      .to.equal(1);
+    chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
   });
 
-  it('should not start the UpdateUnreadDocsCount recurring process when not online', () => {
-    chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(0);
-    scope.$destroy();
-    chai.expect(RecurringProcessManager.stopUpdateReadDocsCount.callCount).to.equal(1);
+  it('should not start the UpdateUnreadDocsCount recurring process when not online', done => {
+    createController();
+    rulesEnginePromise.resolve();
+    setTimeout(() => {
+      chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(0);
+      scope.$destroy();
+      chai.expect(RecurringProcessManager.stopUpdateReadDocsCount.callCount).to.equal(1);
+      done();
+    });
   });
 
-  it('should start the UpdateUnreadDocsCount recurring process when online', () => {
+  it('should start the UpdateUnreadDocsCount recurring process when online, after lazy load', done => {
     session.isOnlineOnly.returns(true);
     createController();
-    chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);
+    rulesEnginePromise.resolve();
+    setTimeout(() => {
+      chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);
+      done();
+    });
   });
 
   it('should watch changes in translations, ddoc and user context', () => {
+    createController();
     chai.expect(changesListener['inbox-translations']).to.be.an('object');
     chai.expect(changesListener['inbox-ddoc']).to.be.an('object');
     chai.expect(changesListener['inbox-user-context']).to.be.an('object');
@@ -208,17 +164,14 @@ describe('InboxCtrl controller', () => {
 
     session.userCtx.returns(false);
     createController();
-    chai
-      .expect(
-        changesListener['inbox-user-context'].filter({
-          doc: { type: 'user-settings', name: 'a' },
-        })
-      )
+    chai.expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a' }}))
       .to.equal(false);
   });
 
   it('InboxUserContent Changes listener callback should check current session', () => {
-    changesListener['inbox-user-context'].callback();
+    createController();
     chai.expect(session.init.callCount).to.equal(1);
+    changesListener['inbox-user-context'].callback();
+    chai.expect(session.init.callCount).to.equal(2);
   });
 });

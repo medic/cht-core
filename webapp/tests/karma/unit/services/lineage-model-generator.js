@@ -2,9 +2,9 @@ describe('LineageModelGenerator service', () => {
 
   'use strict';
 
-  let service,
-      dbQuery,
-      dbAllDocs;
+  let service;
+  let dbQuery;
+  let dbAllDocs;
 
   beforeEach(() => {
     module('inboxApp');
@@ -160,7 +160,9 @@ describe('LineageModelGenerator service', () => {
     it('should merge lineage with undefined members', () => {
       const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
-      dbQuery.resolves({ rows: [{ doc: contact, key: ['a', 0] }, { doc: parent,  key: ['a', 1] }, { key: ['a', 2] }, { key: ['a', 3] }] });
+      dbQuery.resolves({ rows:
+        [{ doc: contact, key: ['a', 0] }, { doc: parent,  key: ['a', 1] }, { key: ['a', 2] }, { key: ['a', 3] }]
+      });
       const expected = {
         _id: 'a',
         doc: {
@@ -178,7 +180,12 @@ describe('LineageModelGenerator service', () => {
     it('should merge lineage with undefined members v2', () => {
       const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
-      dbQuery.resolves({ rows: [{ doc: contact, key: ['a', 0] }, { doc: parent,  key: ['a', 1] }, { key: ['a', 2] }, { key: ['a', 3], doc: { _id: 'd', name: '4' } }] });
+      dbQuery.resolves({ rows: [
+        { doc: contact, key: ['a', 0] },
+        { doc: parent,  key: ['a', 1] },
+        { key: ['a', 2] },
+        { key: ['a', 3], doc: { _id: 'd', name: '4' } }
+      ] });
       const expected = {
         _id: 'a',
         doc: {
@@ -186,10 +193,11 @@ describe('LineageModelGenerator service', () => {
           name: '1',
           parent: { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd', name: '4' } } },
         },
-        lineage: [{ _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, { _id: 'd', name: '4' }]
+        lineage: [
+          { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, { _id: 'd', name: '4' }
+        ]
       };
       return service.contact('a', { merge: true }).then(actual => {
-        console.log(JSON.stringify(actual, null, 2));
         chai.expect(actual).to.deep.equal(expected);
       });
     });

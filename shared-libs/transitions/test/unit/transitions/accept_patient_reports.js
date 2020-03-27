@@ -1,12 +1,12 @@
 require('chai').should();
-const sinon = require('sinon'),
-  should = require('chai').should(),
-  moment = require('moment'),
-  db = require('../../../src/db'),
-  utils = require('../../../src/lib/utils'),
-  config = require('../../../src/config'),
-  transition = require('../../../src/transitions/accept_patient_reports'),
-  messages = require('../../../src/lib/messages');
+const sinon = require('sinon');
+const should = require('chai').should();
+const moment = require('moment');
+const db = require('../../../src/db');
+const utils = require('../../../src/lib/utils');
+const config = require('../../../src/config');
+const transition = require('../../../src/transitions/accept_patient_reports');
+const messages = require('../../../src/lib/messages');
 
 describe('accept_patient_reports', () => {
   afterEach(done => {
@@ -926,7 +926,7 @@ describe('accept_patient_reports', () => {
           },
         ],
       };
-      it('returns all scheduled or pending scheduled_tasks that are in groups with at least one task in the given range', () => {
+      it('returns all scheduled or pending scheduled_tasks that are in groups with tasks in the given range', () => {
         const results = transition._findToClear(registration, now.valueOf(), {
           silence_type: 'x',
           silence_for: silence_for,

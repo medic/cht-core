@@ -42,7 +42,7 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
       [staticDirectoryPath]: '',
       [path.join(apiSrcDirectoryPath, 'public')]: '',
     },
-    maximumFileSizeToCacheInBytes: 1048576 * 20,
+    maximumFileSizeToCacheInBytes: 1048576 * 30,
     verbose: true,
   };
 

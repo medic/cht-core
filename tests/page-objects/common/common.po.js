@@ -1,31 +1,29 @@
-const helper = require('../../helper'),
-  utils = require('../../utils');
+const helper = require('../../helper');
+const utils = require('../../utils');
 
-const medicLogo = element(by.className('logo-full')),
-  genericSubmitButton = element(by.css('.btn.btn-primary')),
-  genericCancelBtn = element(by.css('.modal .btn.cancel')),
-  messagesLink = element(by.id('messages-tab')),
-  analyticsLink = element(by.id('analytics-tab')),
-  hamburgerMenu = element(by.css('.dropdown.options>a')),
-  hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li')),
-  logoutButton = $('[ng-click=logout]'),
-  // Configuration wizard
-  wizardTitle = element(by.css('.modal-header>h2')),
-  defaultCountryCode = element(
-    by.css('#select2-default-country-code-setup-container')
-  ),
-  skipSetup = element(by.css('.modal-footer>a:first-of-type')),
-  finishBtn = element(by.css('.modal-footer>a:nth-of-type(2)')),
-  // Tour
-  tourBtns = element.all(by.css('.btn.tour-option')),
-  // About
-  debugMode = element(by.css('label')),
-  // User settings
-  settings = element.all(by.css('.configuration a>span')),
-  // Report bug
-  bugDescriptionField = element(by.css('[placeholder="Bug description"]')),
-  modalFooter = element(by.css('.modal-footer')),
-  deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
+const medicLogo = element(by.className('logo-full'));
+const genericSubmitButton = element(by.css('.btn.btn-primary'));
+const genericCancelBtn = element(by.css('.modal .btn.cancel'));
+const messagesLink = element(by.id('messages-tab'));
+const analyticsLink = element(by.id('analytics-tab'));
+const hamburgerMenu = element(by.css('.dropdown.options>a'));
+const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
+const logoutButton = $('[ng-click=logout]');
+// Configuration wizard
+const wizardTitle = element(by.css('.modal-header>h2'));
+const defaultCountryCode = element(
+  by.css('#select2-default-country-code-setup-container')
+);
+const skipSetup = element(by.css('.modal-footer>a:first-of-type'));
+const finishBtn = element(by.css('.modal-footer>a:nth-of-type(2)'));
+// Tour
+const tourBtns = element.all(by.css('.btn.tour-option'));
+// User settings
+const settings = element.all(by.css('.configuration a>span'));
+// Report bug
+const bugDescriptionField = element(by.css('[placeholder="Bug description"]'));
+const modalFooter = element(by.css('.modal-footer'));
+const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 
 module.exports = {
   calm: () => {
@@ -38,7 +36,6 @@ module.exports = {
   checkAbout: () => {
     openSubmenu('about');
     expect(genericSubmitButton.getText()).toEqual('Reload');
-    expect(debugMode.getText()).toEqual('Enable debug mode');
   },
 
   checkConfigurationWizard: () => {

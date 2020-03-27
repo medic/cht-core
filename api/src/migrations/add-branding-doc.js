@@ -1,9 +1,9 @@
-const db = require('../db'),
-      fs = require('fs'),
-      logger = require('../logger'),
-      path = require('path'),
-      BRANDING_ID = 'branding',
-      appTitle = 'Medic Mobile';
+const db = require('../db');
+const fs = require('fs');
+const logger = require('../logger');
+const path = require('path');
+const BRANDING_ID = 'branding';
+const appTitle = 'Medic Mobile';
 
 const logo = {
   name: 'logo',
@@ -62,7 +62,9 @@ const createDoc = () => {
     return db.medic.put(doc)
       .catch(err => {
         if (err.status === 409) {
-          logger.warn(`add-branding-doc migration tried to create '${BRANDING_ID}' doc but it already exists, keeping original`);
+          logger.warn(
+            `add-branding-doc migration tried to create '${BRANDING_ID}' doc but it already exists, keeping original`
+          );
         } else {
           throw err;
         }

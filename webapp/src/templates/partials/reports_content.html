@@ -20,7 +20,7 @@
     <div ng-repeat="selection in reportsContentCtrl.selectedReports track by selection._id" class="body report-body">
 
       <div class="item-summary" ng-click="reportsContentCtrl.toggleExpand(selection)">
-        <span class="icon" ng-bind-html="reportsContentCtrl.summaries[$index] | formIcon:forms"></span>
+        <span class="icon" ng-bind-html="reportsContentCtrl.summaries[$index] | formIcon:reportsContentCtrl.forms"></span>
         <a class="deselect" ng-show="reportsContentCtrl.selectMode" ng-click="reportsContentCtrl.deselect(reportsContentCtrl.summaries[$index], $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
@@ -43,7 +43,7 @@
               </span>
           </div>
           <mm-sender ng-if="!reportsContentCtrl.summaries[$index].subject.type" message="selection" hide-lineage="true"></mm-sender>
-          <div>{{reportsContentCtrl.summaries[$index] | title:forms}}</div>
+          <div>{{reportsContentCtrl.summaries[$index] | title:reportsContentCtrl.forms}}</div>
           <div class="position small-font"
                ng-if="reportsContentCtrl.summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place || (!selection.form && selection.name)"
                ng-bind-html="reportsContentCtrl.summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place | lineage">
@@ -110,7 +110,7 @@
               <h3>{{group.name}}</h3>
               <p>
                 <span ng-hide="group.loading">
-                  <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
+                  <a class="btn btn-link" ng-click="reportsContentCtrl.edit(selection, group)" translate>Edit</a>
                   <a class="btn btn-link" ng-click="reportsContentCtrl.mute(selection, group)" ng-show="reportsContentCtrl.canMute(group)" translate>Mute</a>
                   <a class="btn btn-link" ng-click="reportsContentCtrl.schedule(selection, group)" ng-show="reportsContentCtrl.canSchedule(group)" translate>Schedule</a>
                 </span>

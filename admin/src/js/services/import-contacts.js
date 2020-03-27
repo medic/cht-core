@@ -29,7 +29,7 @@ angular.module('services').factory('ImportContacts',
       });
     };
 
-    var savePerson = function(doc) {
+    const savePerson = function(doc) {
       return getPersonType(doc.contact)
         .then(type => {
           const person = {
@@ -52,7 +52,7 @@ angular.module('services').factory('ImportContacts',
         });
     };
 
-    var saveRecord = function(contact, create) {
+    const saveRecord = function(contact, create) {
       if (create && contact._rev) {
         // delete _rev since this is a new doc in this database
         delete contact._rev;
@@ -76,10 +76,10 @@ angular.module('services').factory('ImportContacts',
         });
     };
 
-    var importContact = function(overwrite, contact) {
+    const importContact = function(overwrite, contact) {
       return $http.head(`${Location.url}/${contact._id}`)
         .then(function(response) {
-          var rev = CleanETag(response.headers('ETag'));
+          const rev = CleanETag(response.headers('ETag'));
           if (!rev || !overwrite) {
             // do nothing
             return $q.resolve();

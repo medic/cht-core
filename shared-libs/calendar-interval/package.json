@@ -1,0 +1,19 @@
+{
+  "name": "@medic/calendar-interval",
+  "version": "1.0.0",
+  "description": "Provides helper function when dealing with monthly calendar intervals",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2"
+  },
+  "dependencies": {
+    "moment": "^2.24.0"
+  }
+}

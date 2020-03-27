@@ -1,5 +1,5 @@
-const chai = require('chai'),
-      records = require('../../../src/services/records');
+const chai = require('chai');
+const records = require('../../../src/services/records');
 
 const process = timestamp => {
   const body = {

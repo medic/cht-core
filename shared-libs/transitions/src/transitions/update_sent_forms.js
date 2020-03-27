@@ -1,10 +1,10 @@
-var _ = require('underscore'),
-  moment = require('moment'),
-  config = require('../config'),
-  logger = require('../lib/logger'),
-  db = require('../db'),
-  transitionUtils = require('./utils'),
-  NAME = 'update_sent_forms';
+const _ = require('lodash');
+const moment = require('moment');
+const config = require('../config');
+const logger = require('../lib/logger');
+const db = require('../db');
+const transitionUtils = require('./utils');
+const NAME = 'update_sent_forms';
 
 /*
  * Update sent_forms property on facilities so we can setup reminders for
@@ -14,7 +14,7 @@ var _ = require('underscore'),
 // https://github.com/medic/medic/issues/5939
 module.exports = {
   filter: function(doc, info = {}) {
-    var self = module.exports;
+    const self = module.exports;
     return Boolean(
       doc &&
         doc.form &&
@@ -28,10 +28,10 @@ module.exports = {
     );
   },
   _getConfig: function() {
-    return _.extend({}, config.get('reminders'));
+    return Object.assign({}, config.get('reminders'));
   },
   _hasConfig: function(doc) {
-    var self = module.exports;
+    const self = module.exports;
     // confirm the form is defined on a reminder config
     return _.find(self._getConfig(), function(obj) {
       return (
@@ -42,11 +42,11 @@ module.exports = {
   },
   onMatch: change => {
     return new Promise((resolve, reject) => {
-      var doc = change.doc,
-        form = doc.form,
-        reported_date = doc.reported_date,
-        clinic = doc.contact && doc.contact.parent,
-        clinicId = clinic && clinic._id;
+      const doc = change.doc;
+      const form = doc.form;
+      const reported_date = doc.reported_date;
+      const clinic = doc.contact && doc.contact.parent;
+      const clinicId = clinic && clinic._id;
 
       db.medic.get(clinicId, function(err, clinic) {
         if (err) {
@@ -80,6 +80,7 @@ module.exports = {
   asynchronousOnly: true,
 
   init: () => {
-    logger.warn('"update_sent_forms" transition is deprecated and will be removed in next major version. Consider updating your configuration to disable it.');
+    logger.warn('"update_sent_forms" transition is deprecated and will be removed in next major version. ' +
+      'Consider updating your configuration to disable it.');
   }
 };

@@ -1,6 +1,6 @@
 const db = require('../db');
 const authorization = require('./authorization');
-const _ = require('underscore');
+const _ = require('lodash');
 
 const startKeyParams = ['startkey', 'start_key', 'startkey_docid', 'start_key_doc_id'];
 const endKeyParams = ['endkey', 'end_key', 'endkey_docid', 'end_key_doc_id'];
@@ -27,8 +27,8 @@ const filterRequestIds = (allowedIds, requestIds, query) => {
   }
 
   // support multiple startKey/endKey params in the same query, last one wins
-  const startKeys = _.values(_.pick(query, (value, key) => startKeyParams.indexOf(key) !== -1)),
-        endKeys = _.values(_.pick(query, (value, key) => endKeyParams.indexOf(key) !== -1));
+  const startKeys = _.values(_.pickBy(query, (value, key) => startKeyParams.includes(key)));
+  const endKeys = _.values(_.pickBy(query, (value, key) => endKeyParams.includes(key)));
 
   if (startKeys.length) {
     const startKey = _.last(startKeys);
@@ -50,7 +50,7 @@ const filterRequestIds = (allowedIds, requestIds, query) => {
 // fills in the "gaps" for forbidden docs
 const stubSkipped = (requestIds, result) => {
   return requestIds.map(docId =>
-    _.findWhere(result, { id: docId }) || { id: docId, error: 'forbidden' }
+    _.find(result, { id: docId }) || { id: docId, error: 'forbidden' }
   );
 };
 
@@ -127,7 +127,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _filterRequestIds: filterRequestIds,
     _getRequestIds: getRequestIds,
     _filterAllowedDocs: filterAllowedDocs,

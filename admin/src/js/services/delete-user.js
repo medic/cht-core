@@ -14,7 +14,7 @@ angular.module('services').factory('DeleteUser',
     'ngInject';
     'use strict';
     return function(username) {
-      var url = '/api/v1/users/' + username;
+      const url = '/api/v1/users/' + username;
 
       if (!username) {
         return $q.reject('You must provide a username to delete a user');

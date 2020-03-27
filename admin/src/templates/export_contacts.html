@@ -2,16 +2,17 @@
   
   <div>
     <legend translate>Export</legend>
+    <p translate>export.people.description</p>
     <a class="btn btn-default" ng-click="export()" ng-disabled="exporting">
       <i class="fa fa-arrow-down"></i>
-      <span translate>Export</span>
+      <span translate>Download</span>
     </a>
   </div>
 
   <div class="section">
     <form id="import-contacts">
       <fieldset>
-        <legend translate>Import</legend>
+        <legend translate>upload</legend>
         <div class="form-group required">
           <label translate>Contacts</label>
           <input type="file" name="contacts"/>
@@ -28,7 +29,7 @@
       <div class="form-footer">
         <button type="button" class="btn btn-default" ng-click="import()" ng-disabled="importing">
           <i class="fa fa-arrow-up"></i>
-          <span translate>Import</span>
+          <span translate>upload</span>
         </button>
         <span class="error" ng-show="error">{{error}}</span>
       </div>

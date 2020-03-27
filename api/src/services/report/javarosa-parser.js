@@ -1,8 +1,8 @@
 /**
  * @module javarosa-parser
  */
-const _ = require('underscore'),
-          config = require('../../config');
+const _ = require('lodash');
+const config = require('../../config');
 
 /**
  * Custom Medic Mobile Javarosa message parser.
@@ -13,10 +13,10 @@ const _ = require('underscore'),
  * object if parsing fails.
  */
 exports.parse = (def, doc) => {
-  const data = doc.message.split('!').slice(2).join('!'),
-        labels = [],
-        vals = [],
-        obj = {};
+  const data = doc.message.split('!').slice(2).join('!');
+  const labels = [];
+  const vals = [];
+  const obj = {};
 
   // Split on hash '#' unless it is escaped.  Use uncommon string as
   // placeholder.
@@ -37,10 +37,10 @@ exports.parse = (def, doc) => {
     }
   }
 
-   // Loop through form definition fields and build object when tiny label
-   // matches. Also in field values remove escape characters on escaped
-   // delimiters.
-  _.each(def.fields, (field, key) => {
+  // Loop through form definition fields and build object when tiny label
+  // matches. Also in field values remove escape characters on escaped
+  // delimiters.
+  _.forEach(def.fields, (field, key) => {
     // ignore fields without tiny labels
     if (!field.labels || !field.labels.tiny) {
       return;

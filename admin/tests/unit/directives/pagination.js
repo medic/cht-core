@@ -2,8 +2,8 @@ describe('pagination directive', () => {
 
   'use strict';
 
-  let compile,
-      scope;
+  let compile;
+  let scope;
 
   beforeEach(() => {
     module('adminApp');

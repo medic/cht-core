@@ -1,26 +1,16 @@
-const config = require('../config');
-const transitionUtils = require('./utils');
+const logger = require('../lib/logger');
+const generateShortcodeOnContacts = require('./generate_shortcode_on_contacts');
 
+// As of 3.8.0, generates a shortcode for every configured contact type.
 module.exports = {
-  filter: doc => {
-    if (doc.patient_id) {
-      // already has a patient id
-      return;
-    }
-    const typeId = (doc.type === 'contact' && doc.contact_type) || doc.type;
-    const contactTypes = config.get('contact_types') || [];
-    const type = contactTypes.find(type => type.id === typeId);
-    return type && type.person;
+  init: () => {
+    logger.warn(
+      '"generate_patient_id_on_people" transition is deprecated. ' +
+      'Please use "generate_shortcode_on_contacts" transition instead.'
+    );
   },
-  onMatch: change => {
-    return new Promise((resolve, reject) => {
-      transitionUtils.addUniqueId(change.doc, err => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(true);
-      });
-    });
-  },
+
+  filter: (doc) => generateShortcodeOnContacts.filter(doc),
+  onMatch: (change) => generateShortcodeOnContacts.onMatch(change),
   asynchronousOnly: true
 };

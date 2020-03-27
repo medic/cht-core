@@ -8,7 +8,7 @@ angular.module('inboxServices').factory('Markdown',
   function() {
     'use strict';
 
-    var basic = function(html) {
+    const basic = function(html) {
       // Convert markdown
       html = html.replace(/^# (.*)\n/gm, '<h1>$1</h1>');
       html = html.replace(/^## (.*)\n/gm, '<h2>$1</h2>');
@@ -32,12 +32,12 @@ angular.module('inboxServices').factory('Markdown',
       return html;
     };
 
-    var translateElement = function(e) {
+    const translateElement = function(e) {
       return e.each(function() {
-        var html,
-          $childStore = $('<div/>');
+        let html;
+        const $childStore = $('<div/>');
         $(this).children(':not(input, select, textarea)').each(function(index) {
-          var name = '$$$' + index;
+          const name = '$$$' + index;
           translateElement($(this).clone()).appendTo($childStore);
           $(this).replaceWith(name);
         });
@@ -45,7 +45,7 @@ angular.module('inboxServices').factory('Markdown',
         html = basic($(this).html());
 
         $childStore.children().each(function(i) {
-          var regex = new RegExp('\\$\\$\\$' + i);
+          const regex = new RegExp('\\$\\$\\$' + i);
           html = html.replace(regex, $(this)[ 0 ].outerHTML);
         });
         $(this).text('').append(html);

@@ -1,7 +1,7 @@
-const helper = require('../../helper'),
-      ZScoreForm = require('../../page-objects/forms/z-score.po'),
-      constants = require('../../constants'),
-      utils = require('../../utils');
+const helper = require('../../helper');
+const ZScoreForm = require('../../page-objects/forms/z-score.po');
+const constants = require('../../constants');
+const utils = require('../../utils');
 
 const userContactDoc = {
   _id: constants.USER_CONTACT_ID,
@@ -80,8 +80,11 @@ describe('Submit Z-Score form', () => {
     expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(3) p')))).toEqual('female');
     expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(4) p')))).toEqual('2');
 
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(5) p')))).toEqual('2.0387096774193547');
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(6) p')))).toEqual('-0.4708520179372194');
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(7) p')))).toEqual('-2.346895074946466');
+    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(5) p'))))
+      .toEqual('2.0387096774193547');
+    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(6) p'))))
+      .toEqual('-0.4708520179372194');
+    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(7) p'))))
+      .toEqual('-2.346895074946466');
   });
 });

@@ -2,61 +2,34 @@ describe('ReportsCtrl controller', () => {
 
   'use strict';
 
-  let createController,
-      scope,
-      reportsActions,
-      report,
-      get,
-      post,
-      auth,
-      modal,
-      LiveList,
-      MarkRead,
-      PlaceHierarchy,
-      Search,
-      Changes,
-      FormatDataRecord,
-      changesCallback,
-      changesFilter,
-      searchFilters,
-      liveListInit,
-      liveListReset;
+  let createController;
+  let scope;
+  let globalActions;
+  let reportsActions;
+  let report;
+  let get;
+  let post;
+  let hasAuth;
+  let modal;
+  let LiveList;
+  let MarkRead;
+  let PlaceHierarchy;
+  let Search;
+  let Changes;
+  let FormatDataRecord;
+  let changesCallback;
+  let changesFilter;
+  let searchFilters;
+  let liveListReset;
 
   beforeEach(() => {
     module('inboxApp');
-    KarmaUtils.setupMockStore();
-  });
 
-  beforeEach(inject(($rootScope, $controller, $ngRedux, GlobalActions, ReportsActions) => {
     get = sinon.stub();
     post = sinon.stub();
-    scope = $rootScope.$new();
-    scope.filterModel = { date: {} };
-    report = { _id: 'x' };
-    scope.readStatus = { forms: 0, messages: 0 };
-    scope.updateReadStatus = () => {};
-    scope.isRead = () => true;
-    scope.reports = [ report, { _id: 'a' } ];
-    scope.clearSelected = () => {};
-    scope.setBackTarget = () => {};
-    scope.isMobile = () => false;
+    const DB = KarmaUtils.mockDB({ get, post, info: sinon.stub() })();
 
-    const globalActions = GlobalActions($ngRedux.dispatch);
-    const stubbedGlobalActions = {
-      setRightActionBar: sinon.stub()
-    };
-    reportsActions = ReportsActions($ngRedux.dispatch);
-    scope.setTitle = () => {};
-    scope.setRightActionBar = sinon.stub();
-    scope.setLeftActionBar = sinon.stub();
-    scope.settingSelected = () => {};
-
-    reportsActions = ReportsActions($ngRedux.dispatch);
-    auth = sinon.stub().resolves();
-    modal = sinon.stub().resolves();
-    liveListInit = sinon.stub();
     liveListReset = sinon.stub();
-
     LiveList = {
       reports: {
         initialised: () => true,
@@ -69,9 +42,35 @@ describe('ReportsCtrl controller', () => {
       'report-search': {
         set: sinon.stub()
       },
-      $init: liveListInit,
       $reset: liveListReset
     };
+    KarmaUtils.setupMockStore(null, { DB, LiveList });
+  });
+
+  beforeEach(inject(($rootScope, $controller, $ngRedux, GlobalActions, ReportsActions) => {
+    scope = $rootScope.$new();
+    scope.filterModel = { date: {} };
+    report = { _id: 'x' };
+    scope.readStatus = { forms: 0, messages: 0 };
+    scope.updateReadStatus = () => {};
+    scope.isRead = () => true;
+    scope.reports = [ report, { _id: 'a' } ];
+    scope.clearSelected = () => {};
+    scope.setBackTarget = () => {};
+    scope.isMobile = () => false;
+
+    globalActions = Object.assign({}, GlobalActions($ngRedux.dispatch), {
+      setRightActionBar: sinon.stub()
+    });
+    reportsActions = ReportsActions($ngRedux.dispatch);
+    scope.setTitle = () => {};
+    scope.setRightActionBar = sinon.stub();
+    scope.setLeftActionBar = sinon.stub();
+    scope.settingSelected = () => {};
+
+    hasAuth = sinon.stub().resolves(true);
+    modal = sinon.stub().resolves();
+
     MarkRead = () => {};
     FormatDataRecord = data => {
       return {
@@ -106,20 +105,21 @@ describe('ReportsCtrl controller', () => {
         '$scope': scope,
         '$translate': { instant: () => {} },
         AddReadStatus: () => {},
-        Auth: auth,
+        Auth: {
+          has: hasAuth,
+        },
         Changes: Changes,
-        DB: KarmaUtils.mockDB({ get, post })(),
         DeleteDocs: {},
         EditGroup: {},
         Export: () => {},
         FormatDataRecord: FormatDataRecord,
-        GlobalActions: () => Object.assign({}, globalActions, stubbedGlobalActions),
-        LiveList: LiveList,
+        GlobalActions: () => globalActions,
         MarkRead: MarkRead,
         MessageState: {},
         Modal: modal,
         PlaceHierarchy: PlaceHierarchy,
         ReportViewModelGenerator: {},
+        ReportsActions: () => reportsActions,
         Search: Search,
         SearchFilters: searchFilters,
         Settings: KarmaUtils.nullPromise(),
@@ -132,50 +132,30 @@ describe('ReportsCtrl controller', () => {
 
   afterEach(() => sinon.restore());
 
-  it('set up controller', () => {
-    createController();
-    chai.expect(liveListInit.called, true);
-    chai.expect(liveListInit.args[0]).to.deep.equal([scope, 'reports', 'report-search']);
-  });
-
-  it('when selecting a report, it sets the phone number in the actionbar', done => {
-    const phone = 12345;
-    get.returns(Promise.resolve({ _id: 'def', name: 'hello', phone: phone }));
-    post.returns(Promise.resolve());
-    const ctrl = createController();
-    const report = { doc: {
-      _id: 'abc',
-      form: 'P',
-      contact: { _id: 'def' }
-    }};
-    scope.setSelected(report);
-    setTimeout(() => { // timeout to let the DB query finish
-      chai.expect(ctrl.setRightActionBar.callCount).to.equal(1);
-      chai.expect(ctrl.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
-      done();
-    });
-  });
-
   describe('verifying reports', () => {
     const scenarios = [
       /* User scenarios with permission to edit */
       { canEdit: true, initial: undefined, setTo: true, expectVerified: true, expectPost: true, expectedDate: 0 },
       { canEdit: true, initial: undefined, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
       { canEdit: true, initial: true, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: false, setTo: false, expectVerified: undefined, expectPost: true, expectedDate: undefined },
-      { canEdit: true, initial: true, setTo: true, expectVerified: undefined, expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: false, setTo: false, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: true, setTo: true, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
 
       /* User scenarios without permission to edit */
-      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true, expectPost: true, expectedDate: 0 },
-      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false, expectPost: false, expectedDate: undefined },
+      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true,
+        expectPost: true, expectedDate: 0 },
+      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false,
+        expectPost: false, expectedDate: undefined },
       { canEdit: false, initial: true, setTo: false, expectVerified: true, expectPost: false, expectedDate: 0 },
       { canEdit: false, initial: false, setTo: false, expectVerified: false, expectPost: false, expectedDate: 0 },
     ];
 
     scenarios.forEach(scenario => {
       const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
-      it(`user ${canEdit ? 'can' : 'cannot'} edit, verified:${initial}->${setTo} yields verified:${expectVerified}`, () => {
-        auth = canEdit ? sinon.stub().resolves() : sinon.stub().rejects();
+      it(`user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`, () => {
+        hasAuth = canEdit ? hasAuth.resolves(true) : hasAuth.resolves(false);
         confirm ? modal.resolves() : modal.rejects();
         post.returns(Promise.resolve());
 
@@ -204,7 +184,6 @@ describe('ReportsCtrl controller', () => {
       });
     });
   });
-
 
   describe('Changes listener', () => {
     it('subscribes to changes', () => {
@@ -244,22 +223,24 @@ describe('ReportsCtrl controller', () => {
 
     it('removes deleted reports from the list', () => {
       createController();
+      const searchBaseline = Search.callCount;
 
       return Promise.resolve().then(() => {
         changesCallback({ deleted: true, id: 'id' });
         chai.expect(LiveList.reports.remove.callCount).to.equal(1);
         chai.expect(LiveList.reports.remove.args[0]).to.deep.equal(['id']);
-        chai.expect(Search.callCount).to.equal(0);
+        chai.expect(Search.callCount).to.equal(searchBaseline);
       });
     });
 
     it('refreshes list', () => {
       createController();
+      const searchBaseline = Search.callCount;
 
       return Promise.resolve().then(() => {
         changesCallback({ doc: { _id: 'id' } });
         chai.expect(LiveList.reports.remove.callCount).to.equal(0);
-        chai.expect(Search.callCount).to.equal(1);
+        chai.expect(Search.callCount).to.equal(searchBaseline + 1);
       });
     });
   });

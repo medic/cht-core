@@ -23,30 +23,30 @@ angular.module('inboxServices').factory('Changes',
     $q,
     $timeout,
     DB,
-    GlobalActions,
     Selectors,
+    ServicesActions,
     Session
   ) {
 
     'use strict';
     'ngInject';
 
-    var RETRY_MILLIS = 5000;
+    const RETRY_MILLIS = 5000;
 
     const self = this;
     const mapStateToTarget = (state) => ({
       lastChangedDoc: Selectors.getLastChangedDoc(state),
     });
     const mapDispatchToTarget = (dispatch) => {
-      const globalActions = GlobalActions(dispatch);
+      const servicesActions = ServicesActions(dispatch);
       return {
-        setLastChangedDoc: globalActions.setLastChangedDoc
+        setLastChangedDoc: servicesActions.setLastChangedDoc
       };
     };
 
     $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
 
-    var dbs = {
+    const dbs = {
       medic: {
         lastSeq: null,
         callbacks: {},
@@ -59,12 +59,12 @@ angular.module('inboxServices').factory('Changes',
       }
     };
 
-    var notifyAll = function(meta, change) {
+    const notifyAll = function(meta, change) {
       $log.debug('Change notification firing', meta, change);
-      var db = meta ? dbs.meta : dbs.medic;
+      const db = meta ? dbs.meta : dbs.medic;
       db.lastSeq = change.seq;
       Object.keys(db.callbacks).forEach(function(key) {
-        var options = db.callbacks[key];
+        const options = db.callbacks[key];
         if (!options.filter || options.filter(change)) {
           try {
             options.callback(change);
@@ -75,12 +75,12 @@ angular.module('inboxServices').factory('Changes',
       });
     };
 
-    var watches = [];
+    let watches = [];
 
-    var watchChanges = function(meta) {
+    const watchChanges = function(meta) {
       $log.info(`Initiating changes watch (meta=${meta})`);
       const db = meta ? dbs.meta : dbs.medic;
-      var watch = DB({ meta: meta })
+      const watch = DB({ meta: meta })
         .changes({
           live: true,
           since: db.lastSeq,
@@ -107,7 +107,7 @@ angular.module('inboxServices').factory('Changes',
       watches.push(watch);
     };
 
-    var init = function() {
+    const init = function() {
       $log.info('Initiating changes service');
       watches = [];
       return $q.all([
@@ -128,15 +128,15 @@ angular.module('inboxServices').factory('Changes',
         });
     };
 
-    var initPromise = init();
+    const initPromise = init();
 
-    var service = function(options) {
+    const service = function(options) {
       // Test hook, so we can know when watchChanges is up and running
       if (!options) {
         return initPromise;
       }
 
-      var db = options.metaDb ? dbs.meta : dbs.medic;
+      const db = options.metaDb ? dbs.meta : dbs.medic;
       db.callbacks[options.key] = options;
 
       return {

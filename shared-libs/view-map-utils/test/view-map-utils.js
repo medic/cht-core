@@ -1,6 +1,6 @@
-var sinon = require('sinon');
+const sinon = require('sinon');
 require('chai').should();
-var lib = require('../src/view-map-utils');
+const lib = require('../src/view-map-utils');
 
 describe('Replication Helper Views Lib', function() {
   afterEach(function() {
@@ -10,7 +10,7 @@ describe('Replication Helper Views Lib', function() {
 
   describe('loadViewMaps', function() {
     it('saves view map function from ddoc', function() {
-      var ddoc = {
+      const ddoc = {
         _id: '_design/ddoc',
         views: {
           view1: { map: 'view1_map' },
@@ -38,7 +38,7 @@ describe('Replication Helper Views Lib', function() {
 
   describe('getViewMapFn', function() {
     it('returns the correct function', function() {
-      var fnString = 'function(a, b, operator) {' +
+      const fnString = 'function(a, b, operator) {' +
                      '  // this is a comment! ' +
                      '  \n \n \n \n ' +
                      '  switch (operator) { '+
@@ -52,41 +52,41 @@ describe('Replication Helper Views Lib', function() {
                      '      return emit(a / b);' +
                      '  }' +
                      '}';
-      var ddoc = {
+      const ddoc = {
         _id: '_design/ddoc',
         views: {
           viewName: { map: fnString },
           viewName2: { map: ' function(a){ return emit(a + 2) } '}}
       };
       lib.loadViewMaps(ddoc, 'viewName', 'viewName2');
-      var fn = lib.getViewMapFn('ddoc', 'viewName');
+      const fn = lib.getViewMapFn('ddoc', 'viewName');
       fn(2, 3, '+').should.deep.equal([[5]]);
       fn(5, 2, '-').should.deep.equal([[3]]);
       fn(4, 2, '*').should.deep.equal([[8]]);
       fn(16, 4, '/').should.deep.equal([[4]]);
 
-      var fn2 = lib.getViewMapFn('ddoc', 'viewName2');
+      const fn2 = lib.getViewMapFn('ddoc', 'viewName2');
       fn2(0).should.deep.equal([[2]]);
       fn2(2).should.deep.equal([[4]]);
       fn2(-2).should.deep.equal([[0]]);
     });
 
     it('supports multiple emits', function() {
-      var fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
-      var ddoc = {
+      const fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
+      const ddoc = {
         _id: '_design/ddoc',
         views: {
           viewName: { map: fnString }
         }
       };
       lib.loadViewMaps(ddoc, 'viewName');
-      var fn = lib.getViewMapFn('ddoc', 'viewName');
+      const fn = lib.getViewMapFn('ddoc', 'viewName');
       fn(1).should.deep.equal([[2], [3], [4]]);
       fn(2).should.deep.equal([[3], [4], [5]]);
     });
 
     it('throws error when requested a view that does not exist ', function() {
-      var ddoc = {
+      const ddoc = {
         _id: '_design/ddoc',
         views: {
           viewName2: { map: ' function(a){ return emit(a + 2) } '}
@@ -99,15 +99,15 @@ describe('Replication Helper Views Lib', function() {
     it('caches results', function() {
       sinon.spy(lib, 'getViewMapString');
 
-      var fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
-      var ddoc = {
+      const fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
+      const ddoc = {
         _id: '_design/ddoc',
         views: {
           viewName: { map: fnString }
         }
       };
       lib.loadViewMaps(ddoc, 'viewName');
-      var fn = lib.getViewMapFn('ddoc', 'viewName');
+      let fn = lib.getViewMapFn('ddoc', 'viewName');
       fn = lib.getViewMapFn('ddoc', 'viewName');
       fn = lib.getViewMapFn('ddoc', 'viewName');
       fn = lib.getViewMapFn('ddoc', 'viewName');
@@ -120,9 +120,9 @@ describe('Replication Helper Views Lib', function() {
 
   describe('getViewMapString', function() {
     it('returns correct view', function() {
-      var fnStringView1 = 'function(a) { return a; }';
-      var fnStringView2 = 'function(a) { return a * 2; }';
-      var ddoc = {
+      const fnStringView1 = 'function(a) { return a; }';
+      const fnStringView2 = 'function(a) { return a * 2; }';
+      const ddoc = {
         _id: '_design/ddoc',
         views: {
           view1: { map: fnStringView1 },
@@ -135,8 +135,8 @@ describe('Replication Helper Views Lib', function() {
 
   describe('hot reloading', function() {
     it('returns correct functions when views are reloaded', function() {
-      var fnStringView1 = 'function(a) { return emit(a); }';
-      var ddoc = {
+      let fnStringView1 = 'function(a) { return emit(a); }';
+      let ddoc = {
         _id: '_design/ddoc',
         views: {
           view1: { map: fnStringView1 }
@@ -170,8 +170,8 @@ describe('Replication Helper Views Lib', function() {
     });
 
     it('supports hot reloading for multiple ddocs', function() {
-      var fnStringView1 = 'function(a) { return emit(a); }';
-      var ddoc1 = {
+      let fnStringView1 = 'function(a) { return emit(a); }';
+      let ddoc1 = {
         _id: '_design/ddoc1',
         views: {
           view: { map: fnStringView1 }
@@ -179,8 +179,8 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc1, 'view');
 
-      var fnStringView2 = 'function(a) { return emit(a + 2); }';
-      var ddoc2 = {
+      let fnStringView2 = 'function(a) { return emit(a + 2); }';
+      let ddoc2 = {
         _id: '_design/ddoc2',
         views: {
           view: { map: fnStringView2 }

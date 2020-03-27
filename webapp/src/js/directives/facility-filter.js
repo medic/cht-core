@@ -5,13 +5,20 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
   return {
     restrict: 'E',
     templateUrl: 'templates/directives/filters/facility.html',
-    controller: function($ngRedux, $scope, GlobalActions, Selectors) {
+    controller: function(
+      $log,
+      $ngRedux,
+      $scope,
+      $timeout,
+      GlobalActions,
+      PlaceHierarchy,
+      Selectors
+    ) {
       'ngInject';
 
       const ctrl = this;
       const mapStateToTarget = function(state) {
         return {
-          facilities: Selectors.getFacilities(state),
           isAdmin: Selectors.getIsAdmin(state),
           selectMode: Selectors.getSelectMode(state)
         };
@@ -23,6 +30,29 @@ angular.module('inboxDirectives').directive('mmFacilityFilter', function(SearchF
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
+
+      // Render the facilities hierarchy as the user is scrolling through the list
+      // Initially, don't load/render any
+      ctrl.totalFacilitiesDisplayed = 0;
+      ctrl.facilities = [];
+
+      // Load the facilities hierarchy and render one district hospital
+      // when the user clicks on the filter dropdown
+      ctrl.monitorFacilityDropdown = () => {
+        PlaceHierarchy()
+          .then(hierarchy => {
+            ctrl.facilities = hierarchy;
+            ctrl.totalFacilitiesDisplayed += 1;
+          })
+          .catch(err => $log.error('Error loading facilities', err));
+
+        $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
+          // visible height + pixel scrolled >= total height - 100
+          if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
+            $timeout(() => ctrl.totalFacilitiesDisplayed += 1);
+          }
+        });
+      };
 
       $scope.$on('$destroy', unsubscribe);
     },

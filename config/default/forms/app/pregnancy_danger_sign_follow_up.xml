@@ -179,7 +179,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-10-17 04:59:36">
+        <pregnancy_danger_sign_follow_up delimiter="#" id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" version="2019-11-04 14:14:20">
           <inputs>
             <meta>
               <location>
@@ -224,7 +224,7 @@
             <congratulate_no_ds_note tag="hidden"/>
             <refer_patient_note_1 tag="hidden"/>
             <refer_patient_note_2 tag="hidden"/>
-            <danger_signs_question_note/>
+            <danger_signs_question_note tag="hidden"/>
             <vaginal_bleeding/>
             <fits/>
             <severe_abdominal_pain/>
@@ -288,7 +288,7 @@
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy_danger_sign_follow_up/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/pregnancy_danger_sign_follow_up/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_danger_sign_follow_up/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_danger_sign_follow_up/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/pregnancy_danger_sign_follow_up/patient_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_label)" nodeset="/pregnancy_danger_sign_follow_up/patient_short_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_start_label)" nodeset="/pregnancy_danger_sign_follow_up/patient_short_name_start" type="string"/>

@@ -1,11 +1,12 @@
 const _ = require('lodash');
-const assert = require('chai').assert;
-const NootilsManager = require('medic-nootils/src/node/test-wrapper');
+const { assert } = require('chai');
+const path = require('path');
+const sinon = require('sinon');
 
-const now = NootilsManager.BASE_DATE;
+const TestHarness = require('medic-conf-test-harness');
+const now = 1469358731456;
 const MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
 const MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks
-const IMMUNIZATION_PERIOD = 2*365;
 const DAYS_IN_PNC = 42;
 
 const freshCloneOf = o => () => _.cloneDeep(o);
@@ -13,14 +14,15 @@ const freshCloneOf = o => () => _.cloneDeep(o);
 // TEST DATA
 // THESE ARE FUNCTIONS TO PREVENT THEIR MODIFICATION IN-PLACE AND CHANGES MADE
 // IN ONE TEST LEAKING INTO OTHERS.
+const patient = {
+  type: 'person',
+  name: 'Zoe',
+  date_of_birth: '1990-09-01',
+  reported_date: now,
+  _id: 'contact-1'
+};
+
 const fixtures = {
-  contact: freshCloneOf({
-    type: 'person',
-    name: 'Zoe',
-    date_of_birth: '1990-09-01',
-    reported_date: now,
-    _id: 'contact-1'
-  }),
   reports: {
     d:  freshCloneOf(require(`./data/d-form.report.json`)),
     p:  freshCloneOf(require(`./data/p-form.report.json`)),
@@ -29,12 +31,14 @@ const fixtures = {
       _id: 'flag-1',
       fields:{ notes:'' },
       form: 'F',
+      patient_id: patient._id,
       reported_date: now,
     }),
     pregnancy: freshCloneOf({
       _id: 'pregnancy-1',
       fields: {},
       form: 'P',
+      patient_id: patient._id,
       reported_date: now,
     }),
     delivery: freshCloneOf({
@@ -42,6 +46,7 @@ const fixtures = {
       fields:{ delivery_code:'NS' },
       birth_date: iso(daysAgo(3)),
       form: 'delivery',
+      patient_id: patient._id,
       reported_date: now,
     }),
     nutrition_screening: freshCloneOf({
@@ -57,6 +62,7 @@ const fixtures = {
         }
       ],
       form: 'nutrition_screening',
+      patient_id: patient._id,
       reported_date: now,
     }),
     g_with_severity_2: freshCloneOf({
@@ -65,6 +71,7 @@ const fixtures = {
         severity: '2'
       },
       form: 'G',
+      patient_id: patient._id,
       reported_date: now,
     }),
     g_with_severity_3: freshCloneOf({
@@ -73,12 +80,14 @@ const fixtures = {
         severity: '3'
       },
       form: 'G',
+      patient_id: patient._id,
       reported_date: now,
     }),
     dr: freshCloneOf({
       _id: 'dr-report-1',
       fields: {},
       form: 'DR',
+      patient_id: patient._id,
       reported_date: now,
     }),
     nutrition_exit_dead: freshCloneOf({
@@ -88,68 +97,70 @@ const fixtures = {
           outcome: 'dead'
         }
       },
+      patient_id: patient._id,
       form: 'nutrition_exit',
       reported_date: now
     }),
   },
 };
 
-describe('Standard Configuration Tasks', function() {
-  const TEST_USER = {
-    parent: {
-      type: 'health_center',
-      use_cases: 'anc pnc imm'
-    },
-  };
+const TEST_USER = {
+  parent: {
+    type: 'health_center',
+    use_cases: 'anc pnc imm'
+  },
+};
+const harness = new TestHarness({
+  directory: path.resolve(__dirname, '..'),
+  inputs: {
+    user: TEST_USER,
+    content: { contact: patient },
+  },
+});
 
-  let nootilsManager, Contact, session;
-
+describe('Standard Configuration Tasks', () => {
   before(async () => {
-    nootilsManager = await NootilsManager({ user:TEST_USER });
-    Contact = nootilsManager.Contact;
-    session = nootilsManager.session;
+    sinon.useFakeTimers(now);
   });
-  afterEach(() => nootilsManager.afterEach());
-  after(() => nootilsManager.after());
+  after(() => sinon.restore());
+  afterEach(() => harness.clear());
 
-  describe('Birth not at facility', function() {
+  describe('Birth not at facility', () => {
     // TODO Fix tests: When run late in day EDT the Tasks dates are off by one. Possibly because it is already the next day in GMT
 
-    it('should have a clinic visit task', function() {
+    it('should have a clinic visit task', async () => {
       // given
-      session.assert(contactWith(fixtures.reports.delivery()));
+      harness.pushMockedReport(fixtures.reports.delivery());
 
       // when
-      return session.emitTasks()
-        .then(tasks => {
+      const tasks = await harness.getTasks({ resolved: true });
+      // then
+      assert.equal(tasks.length, 1);
 
-          // then
-          assert.equal(tasks.length, 1);
-
-          const task = tasks[0];
-          assertPriority(task, 'high', 'task.warning.home_birth');
-          assertIcon(task, 'mother-child');
-          assertTitle(task, 'task.postnatal_home_birth.title');
-          assertNotResolved(task);
-          assert.deepInclude(task.actions[0].content, {
-            "source": "task",
-            "source_id": "report-1",
-            contact: fixtures.contact(),
-          });
-        });
+      const task = tasks[0];
+      assertPriority(task, 'high', 'task.warning.home_birth');
+      assertIcon(task, 'mother-child');
+      assertTitle(task, 'task.postnatal_home_birth.title');
+      assertNotResolved(task);
+      assert.deepInclude(task.actions[0].content, {
+        'source': 'task',
+        'source_id': 'report-1',
+        contact: patient,
+      });
     });
-    it('should have first visit task completed when PNC app form is submitted', function() {
+
+    it('should have first visit task completed when PNC app form is submitted', () => {
       // given
       const pncVisitAppReport = {
-        "_id": "report-2",
-        "fields": {},
-        "form": "postnatal_visit",
-        "reported_date": tomorrow,
+        '_id': 'report-2',
+        'fields': {},
+        'form': 'postnatal_visit',
+        'reported_date': tomorrow,
       };
-      session.assert(contactWith(fixtures.reports.delivery(), pncVisitAppReport));
+      harness.pushMockedReport(fixtures.reports.delivery(), pncVisitAppReport);
 
       // when
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           // then
@@ -162,18 +173,18 @@ describe('Standard Configuration Tasks', function() {
           assertResolved(task);
         });
     });
-    it('should have first visit task completed when PNC SMS form is submitted', function() {
+    it('should have first visit task completed when PNC SMS form is submitted', () => {
       // given
       const pncVisitSMSReport = {
-        "_id": "report-3",
-        "fields": {},
-        "form": "M",
-        "reported_date": tomorrow,
+        '_id': 'report-3',
+        'fields': {},
+        'form': 'M',
+        'reported_date': tomorrow,
       };
-      session.assert(contactWith(fixtures.reports.delivery(), pncVisitSMSReport));
+      harness.pushMockedReport(fixtures.reports.delivery(), pncVisitSMSReport);
 
       // when
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           // then
@@ -186,7 +197,7 @@ describe('Standard Configuration Tasks', function() {
           assertResolved(task);
         });
     });
-    it(`should have a 'postnatal-danger-sign' task if a flag is sent during PNC period`, function() {
+    it(`should have a 'postnatal-danger-sign' task if a flag is sent during PNC period`, () => {
       // given
       const deliveryReport = fixtures.reports.delivery();
       setDate(deliveryReport, daysAgo(25));
@@ -194,10 +205,10 @@ describe('Standard Configuration Tasks', function() {
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      session.assert(contactWith(deliveryReport, flagReport));
+      harness.pushMockedReport(deliveryReport, flagReport);
 
       // when
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           // then
@@ -211,7 +222,7 @@ describe('Standard Configuration Tasks', function() {
         });
     });
 
-    describe('Postnatal visit schedule', function() {
+    describe('Postnatal visit schedule', () => {
       const postnatalTaskDays = [ 5, 6, 7, 8, 9, 10, 11, 12, 44, 45, 46, 47 ];
       // Tasks are associated to the last scheduled message of each group.
       // We won't have scheduled messages before receiving the report, so only
@@ -221,15 +232,15 @@ describe('Standard Configuration Tasks', function() {
 
       range(0, DAYS_IN_PNC+10).forEach(day => {
 
-        describe(`Postnatal period: day ${day}:`, function() {
+        describe(`Postnatal period: day ${day}:`, () => {
           if (postnatalTaskDays.includes(day)) {
-            it(`should have 'postnatal-missing-visit' visit task`, function() {
+            it(`should have 'postnatal-missing-visit' visit task`, () => {
               // given
-              session.assert(contactWith(
-                  backdatedReport('d', day-ageInDaysWhenRegistered)));
+              harness.pushMockedReport(
+                  backdatedReport('d', day-ageInDaysWhenRegistered));
 
               // when
-              return session.emitTasks()
+              return harness.getTasks({ resolved: true })
                 .then(tasks => {
 
                   // then
@@ -243,14 +254,14 @@ describe('Standard Configuration Tasks', function() {
                 });
             });
           } else {
-            it(`should not have 'postnatal-missing-visit' visit task`, function() {
+            it(`should not have 'postnatal-missing-visit' visit task`, () => {
               // given
-              session.assert(contactWith(
-                  backdatedReport('d', day - ageInDaysWhenRegistered)));
+              harness.pushMockedReport(
+                  backdatedReport('d', day - ageInDaysWhenRegistered));
 
 
               // when
-              return session.emitTasks()
+              return harness.getTasks({ resolved: true })
                 .then(tasks => {
 
                   // then
@@ -263,7 +274,7 @@ describe('Standard Configuration Tasks', function() {
     });
   });
 
-  describe('Pregnancy without LMP', function() {
+  describe('Pregnancy without LMP', () => {
 
     // A weekday offset needed if scheduled messages are set to a specific weekday eg Monday 9am
     // In this case it is -3, since the test report on Thursday has 1 week notification going out on the first Monday.
@@ -295,17 +306,17 @@ describe('Standard Configuration Tasks', function() {
     var deliveryTaskDays = getRangeFromTask(deliveryTasks, weekdayOffset);
 
 
-    it(`should have a 'pregnancy-danger-sign' task if a flag is sent during active pregnancy`, function() {
+    it('should have a "pregnancy-danger-sign" task if a flag is sent during active pregnancy', () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(6);
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      session.assert(contactWith(pregnancyReport, flagReport));
+      harness.pushMockedReport(pregnancyReport, flagReport);
 
       // when
-      return session.emitTasks()
+      return harness.getTasks()
         .then(tasks => {
 
           // then
@@ -319,17 +330,17 @@ describe('Standard Configuration Tasks', function() {
         });
     });
 
-    it(`should not have a 'pregnancy-danger-sign' task if a flag is sent before pregnancy`, function() {
+    it('should not have a "pregnancy-danger-sign" task if a flag is sent before pregnancy', () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(2);
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      session.assert(contactWith(pregnancyReport, flagReport));
+      harness.pushMockedReport(pregnancyReport, flagReport);
 
       // when
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           // then
@@ -337,7 +348,7 @@ describe('Standard Configuration Tasks', function() {
         });
     });
 
-    it(`should not have a 'pregnancy-danger-sign' task if a flag is sent after pregnancy`, function() {
+    it('should not have a "pregnancy-danger-sign" task if a flag is sent after pregnancy', () => {
       // given
       const pregnancyReport = fixtures.reports.pregnancy();
       pregnancyReport.reported_date = daysAgo(8);
@@ -348,14 +359,14 @@ describe('Standard Configuration Tasks', function() {
       const flagReport = fixtures.reports.flag();
       flagReport.reported_date = daysAgo(4);
 
-      session.assert(contactWith(
+      harness.pushMockedReport(
         pregnancyReport,
         deliveryReport,
         flagReport
-      ));
+      );
 
       // when
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           // then
@@ -373,15 +384,15 @@ describe('Standard Configuration Tasks', function() {
 
     range(weekdayOffset, MAX_DAYS_IN_PREGNANCY).forEach(day => {
 
-      describe(`Pregnancy without LMP: day ${day}:`, function() {
+      describe(`Pregnancy without LMP: day ${day}:`, () => {
 
         if (pregnancyTaskDays.includes(day)) {
-          it(`should have 'pregnancy-missing-visit' visit task`, function() {
+          it('should have "pregnancy-missing-visit" visit task', () => {
             // given
-            session.assert(contactWith(backdatedReport('p', day)));
+            harness.pushMockedReport(backdatedReport('p', day));
 
             // when
-            return session.emitTasks()
+            return harness.getTasks({ resolved: true })
               .then(tasks => {
 
                 // then
@@ -395,12 +406,12 @@ describe('Standard Configuration Tasks', function() {
               });
           });
         } else {
-          it(`should not have 'pregnancy-missing-visit' visit task`, function() {
+          it('should not have "pregnancy-missing-visit" visit task', () => {
             // given
-            session.assert(contactWith(backdatedReport('p', day)));
+            harness.pushMockedReport(backdatedReport('p', day));
 
             // when
-            return session.emitTasks()
+            return harness.getTasks({ resolved: true })
               .then(tasks =>
 
                 // then
@@ -408,12 +419,12 @@ describe('Standard Configuration Tasks', function() {
           });
         }
         if (deliveryTaskDays.includes(day)) {
-          it(`should have 'pregnancy-missing-birth' visit task`, function() {
+          it('should have "pregnancy-missing-birth" visit task', () => {
             // given
-            session.assert(contactWith(backdatedReport('p', day)));
+            harness.pushMockedReport(backdatedReport('p', day));
 
             // when
-            return session.emitTasks()
+            return harness.getTasks({ resolved: true })
               .then(tasks => {
 
                 // then
@@ -427,12 +438,12 @@ describe('Standard Configuration Tasks', function() {
               });
           });
         } else {
-          it(`should not have 'pregnancy-missing-birth' visit task`, function() {
+          it('should not have "pregnancy-missing-birth" visit task', () => {
             // given
-            session.assert(contactWith(backdatedReport('p', day)));
+            harness.pushMockedReport(backdatedReport('p', day));
 
             // when
-            return session.emitTasks()
+            return harness.getTasks({ resolved: true })
               .then(tasks =>
 
                 // then
@@ -443,7 +454,7 @@ describe('Standard Configuration Tasks', function() {
     });
   });
 
-  describe('Childhood Immunizations', function() {
+  describe('Childhood Immunizations', () => {
 
     var weekdayOffset = 0;
     var immunizationTasks = {
@@ -470,17 +481,16 @@ describe('Standard Configuration Tasks', function() {
     var ageInDaysWhenRegistered = Math.floor((cwReport.reported_date - (new Date(cwReport.birth_date).getTime()))/MS_IN_DAY);
 
     // Test for 10 days beyond the immunization period
-    range(0, IMMUNIZATION_PERIOD + 10).forEach(day => {
-      describe(`Immunization: day ${day}:`, function() {
+    range(45, 46).forEach(day => {
+      describe(`Immunization: day ${day}:`, () => {
 
         if (immunizationTaskDays.includes(day)) {
-          it(`should have 'immunization-missing-visit' visit task`, function() {
+          it('should have "immunization-missing-visit" visit task', () => {
             // given
-            session.assert(contactWith(
-                backdatedReport('cw', day - ageInDaysWhenRegistered)));
+            harness.pushMockedReport(backdatedReport('cw', day - ageInDaysWhenRegistered));
 
             // when
-            return session.emitTasks()
+            return harness.getTasks({ now, resolved: true })
               .then(tasks => {
 
                 // then
@@ -494,7 +504,7 @@ describe('Standard Configuration Tasks', function() {
                 assertNotResolved(task);
               });
           });
-          it(`should have a cleared visit task if received a visit`, function() {
+          it('should have a cleared visit task if received a visit', async () => {
             // given
             // FIXME understand what this is and then give it a descriptive name
             const dayOffset = day - ageInDaysWhenRegistered;
@@ -502,36 +512,34 @@ describe('Standard Configuration Tasks', function() {
               _id: 'report-imm',
               fields: {},
               form: 'IMM',
+              patient_id: patient._id,
               reported_date: now,
             };
-            session.assert(contactWith(
+            harness.pushMockedReport(
                 backdatedReport('cw', dayOffset),
-                immVisitReport));
+                immVisitReport);
 
             // when
-            return session.emitTasks()
-              .then(tasks => {
+            const tasks = await harness.getTasks({ resolved: true });
+            // then
+            assert.equal(tasks.length, 1);
 
-                // then
-                assert.equal(tasks.length, 1);
-
-                const task = tasks[0];
-                assertNoPriority(task);
-                assertIcon(task, 'immunization');
-                assertTitle(task, 'task.immunization_missing_visit.title');
-                assertType(task, 'immunization-missing-visit');
-                assertResolved(task);
-              });
+            const task = tasks[0];
+            assertNoPriority(task);
+            assertIcon(task, 'immunization');
+            assertTitle(task, 'task.immunization_missing_visit.title');
+            assertType(task, 'immunization-missing-visit');
+            assertResolved(task);
           });
 
         } else {
-          it(`should not have 'immunization-missing-visit' visit task`, function() {
+          it('should not have "immunization-missing-visit" visit task', () => {
             // given
-            session.assert(contactWith(
-                backdatedReport('cw', day - ageInDaysWhenRegistered)));
+            harness.pushMockedReport(
+                backdatedReport('cw', day - ageInDaysWhenRegistered));
 
             // when
-            return session.emitTasks()
+            return harness.getTasks({ resolved: true })
 
               // then
               .then(tasks => assert.equal(tasks.length, 0));
@@ -545,9 +553,9 @@ describe('Standard Configuration Tasks', function() {
 
     it('should raise nutrition screening task for G form with severity 2', function(){
 
-      session.assert(contactWith(fixtures.reports.g_with_severity_2()));
+      harness.pushMockedReport(fixtures.reports.g_with_severity_2());
 
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           const task = tasks[0];
@@ -561,9 +569,9 @@ describe('Standard Configuration Tasks', function() {
 
     it('should raise nutrition screening task for G form with severity 3', function(){
 
-      session.assert(contactWith(fixtures.reports.g_with_severity_3()));
+      harness.pushMockedReport(fixtures.reports.g_with_severity_3());
 
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           const task = tasks[0];
@@ -577,9 +585,9 @@ describe('Standard Configuration Tasks', function() {
 
     it('should raise nutrition follow up task', function(){
 
-      session.assert(contactWith(fixtures.reports.nutrition_screening()));
+      harness.pushMockedReport(fixtures.reports.nutrition_screening());
 
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
           const task = tasks[0];
 
@@ -592,9 +600,9 @@ describe('Standard Configuration Tasks', function() {
 
     it('should raise death confirmation task from CHW death report', function(){
 
-      session.assert(contactWith(fixtures.reports.dr()));
+      harness.pushMockedReport(fixtures.reports.dr());
 
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
 
           const task = tasks[0];
@@ -607,9 +615,9 @@ describe('Standard Configuration Tasks', function() {
     });
 
     it('should raise death confirmation task from nutrition followup death exit', function(){
-      session.assert(contactWith(fixtures.reports.nutrition_exit_dead()));
+      harness.pushMockedReport(fixtures.reports.nutrition_exit_dead());
 
-      return session.emitTasks()
+      return harness.getTasks({ resolved: true })
         .then(tasks => {
           const task = tasks[0];
 
@@ -621,12 +629,6 @@ describe('Standard Configuration Tasks', function() {
     });
 
   });
-
-  function contactWith(...reports) {
-    // TODO: Investigate how timezone affect showing task.
-    // Tests pass vs fail with task window being off by one at 11pm vs 12:15am on GMT+2.
-    return new Contact({ contact:fixtures.contact(), reports });
-  }
 
   const tomorrow = daysAgo(-1);
 
@@ -663,8 +665,8 @@ function setDate(form, newDate) {
   var diff = originalDate - newDate;
   diff = (Math.round(diff/MS_IN_DAY))*MS_IN_DAY; // to avoid changing the number of days between event get diff in days, not ms
   form.reported_date = newDate;
-  traverse(form, resetDate, "birth_date", diff);
-  traverse(form, resetDate, "due", diff);
+  traverse(form, resetDate, 'birth_date', diff);
+  traverse(form, resetDate, 'due', diff);
 }
 
 function resetDate(object, key, keyToChange, offset) {
@@ -676,9 +678,10 @@ function resetDate(object, key, keyToChange, offset) {
 }
 
 function traverse(object, func, key, offset) {
+    // eslint-disable-next-line guard-for-in
     for (var i in object) {
         func.apply(this, [object, i, key, offset]);
-        if (object[i] !== null && typeof(object[i])=="object") {
+        if (object[i] !== null && typeof(object[i]) === 'object') {
             //going one step down in the object tree!!
             traverse(object[i], func, key, offset);
         }

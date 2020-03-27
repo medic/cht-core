@@ -1,7 +1,7 @@
-const db = require('../db'),
-  authorization = require('./authorization'),
-  _ = require('underscore'),
-  logger = require('../logger');
+const db = require('../db');
+const authorization = require('./authorization');
+const _ = require('lodash');
+const logger = require('../logger');
 
 const utils = require('@medic/bulk-docs-utils')({
   Promise: Promise,
@@ -132,7 +132,8 @@ const deleteDocs = (
 
       if (deletionFailures.length > 0 || updateFailures.length > 0) {
         return fetchDocs(deletionFailures).then(docsToDelete => {
-          // Retry updates by resending through the child doc (ensuring the update is still necessary in case of conflict)
+          // Retry updates by resending through the child doc
+          // (ensuring the update is still necessary in case of conflict)
           const updatesToRetryThroughDocDeletions = updateFailures
             .map(id => documentByParentId[id])
             .filter(doc => !deletionFailures.includes(doc._id));
@@ -149,7 +150,7 @@ const deleteDocs = (
 };
 
 const filterNewDocs = (allowedDocIds, docs) => {
-  let docIds = _.unique(_.compact(docs.map(doc => doc._id)));
+  let docIds = _.uniq(_.compact(docs.map(doc => doc._id)));
 
   if (!docIds.length) {
     // all docs are new
@@ -249,14 +250,15 @@ const filterRequestDocs = (authorizationContext, docs) => {
 };
 
 const stubSkipped = (docs, filteredDocs, result) => {
-  return docs.map(doc => {
-    const filteredIdx = _.findIndex(filteredDocs, doc);
-    if (filteredIdx !== -1) {
-      return result[filteredIdx];
-    }
-
-    return { id: doc._id, error: 'forbidden' };
-  });
+  return docs
+    .map(doc => {
+      const filteredIdx = _.findIndex(filteredDocs, doc);
+      if (filteredIdx !== -1) {
+        return result[filteredIdx];
+      }
+      return { id: doc._id, error: 'forbidden' };
+    })
+    .filter(resp => resp);
 };
 
 module.exports = {
@@ -299,10 +301,8 @@ module.exports = {
 
   // results received from CouchDB need to be ordered to maintain same sequence as original `docs` parameter
   // and forbidden docs stubs must be added
-  formatResults: (new_edits, requestDocs, filteredDocs, response) => {
-    if (new_edits !== false && _.isArray(response)) {
-      // CouchDB doesn't return results when `new_edits` parameter is `false`
-      // The consensus is that the response array sequence should reflect the request array sequence.
+  formatResults: (requestDocs, filteredDocs, response) => {
+    if (_.isArray(response)) {
       response = stubSkipped(requestDocs, filteredDocs, response);
     }
 
@@ -312,7 +312,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _filterRequestDocs: filterRequestDocs,
     _filterNewDocs: filterNewDocs,
     _filterAllowedDocs: filterAllowedDocs,

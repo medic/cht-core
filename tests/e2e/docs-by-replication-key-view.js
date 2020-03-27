@@ -1,5 +1,5 @@
-const utils = require('../utils'),
-      async = require('async');
+const utils = require('../utils');
+const async = require('async');
 
 describe('view docs_by_replication_key', () => {
 
@@ -150,6 +150,19 @@ describe('view docs_by_replication_key', () => {
       contact: { _id: 'someuser' },
       fields: { patient_uuid: 'testpatient' }
     },
+    {
+      _id: 'task_created_by_user',
+      type: 'task',
+      user: 'org.couchdb.user:username',
+      requester: 'someuser',
+      owner: 'testpatient',
+    },
+    {
+      _id: 'target_created_by_user',
+      type: 'target',
+      user: 'org.couchdb.user:username',
+      owner: 'testuser',
+    },
   ];
 
   const documentsToIgnore = [
@@ -233,6 +246,19 @@ describe('view docs_by_replication_key', () => {
       contact: { _id: 'someuser' },
       fields: { patient_uuid: 'not_the_testpatient' }
     },
+    {
+      _id: 'task_created_by_other_user',
+      type: 'task',
+      user: 'org.couchdb.user:not_username',
+      requester: 'someuser',
+      owner: 'testpatient',
+    },
+    {
+      _id: 'target_created_by_other_user',
+      type: 'target',
+      user: 'org.couchdb.user:not_username',
+      owner: 'not_someuser',
+    },
   ];
 
   // Should pass filter if unassigned = true
@@ -280,8 +306,8 @@ describe('view docs_by_replication_key', () => {
   ];
 
   // TODO: consider removing this and just pulling ids from the two arrays above
-  let docByPlaceIds,
-      docByPlaceIds_unassigned;
+  let docByPlaceIds;
+  let docByPlaceIds_unassigned;
 
   beforeAll(done => {
     const alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
@@ -319,11 +345,11 @@ describe('view docs_by_replication_key', () => {
         }
         console.log('…done');
 
-        getChanges(['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace'])
+        getChanges(['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username'])
           .then(docs => {
             docByPlaceIds = docs;
 
-            getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace'])
+            getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ])
               .then(docs => {
                 docByPlaceIds_unassigned = docs;
                 done();
@@ -391,6 +417,18 @@ describe('view docs_by_replication_key', () => {
       expect(docByPlaceIds).toContain('needs_signoff_within_branch');
       expect(docByPlaceIds).not.toContain('needs_signoff_within_branch_falsy');
       expect(docByPlaceIds).not.toContain('needs_signoff_outside_branch');
+    });
+
+    it('should return target docs', () => {
+      expect(docByPlaceIds).toContain('target_created_by_user');
+      expect(docByPlaceIds).not.toContain('target_created_by_other_user');
+    });
+  });
+
+  describe('Documents associated with user id', () => {
+    it('should return task docs', () => {
+      expect(docByPlaceIds).toContain('task_created_by_user');
+      expect(docByPlaceIds).not.toContain('task_created_by_other_user');
     });
   });
 

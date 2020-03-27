@@ -1,9 +1,9 @@
-var moment = require('moment'),
-  sinon = require('sinon'),
-  assert = require('chai').assert,
-  db = require('../../src/db'),
-  logger = require('../../src/lib/logger'),
-  transition = require('../../src/transitions/update_sent_forms');
+const moment = require('moment');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const db = require('../../src/db');
+const logger = require('../../src/lib/logger');
+const transition = require('../../src/transitions/update_sent_forms');
 
 describe('update sent by', () => {
   beforeEach(() => {
@@ -30,9 +30,9 @@ describe('update sent by', () => {
   });
 
   it('Saves clinic and updated sent_forms', () => {
-    var now = moment();
+    const now = moment();
     sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
-    var save = sinon.stub(db.medic, 'put').callsArgWith(1, null);
+    const save = sinon.stub(db.medic, 'put').callsArgWith(1, null);
     const change = {
       doc: {
         form: 'XXX',
@@ -49,8 +49,8 @@ describe('update sent by', () => {
   });
 
   it('does not overwrite if existing date is after', () => {
-    var now = moment(),
-      tomorrow = now.clone().add(1, 'day');
+    const now = moment();
+    const tomorrow = now.clone().add(1, 'day');
     sinon.stub(db.medic, 'get').callsArgWith(1, null, {
       sent_forms: { XXX: tomorrow.toISOString() },
     });
@@ -67,12 +67,12 @@ describe('update sent by', () => {
   });
 
   it('overwrites if existing date is before', () => {
-    var now = moment(),
-      yesterday = now.clone().subtract(1, 'day');
+    const now = moment();
+    const yesterday = now.clone().subtract(1, 'day');
     sinon.stub(db.medic, 'get').callsArgWith(1, null, {
       sent_forms: { XXX: yesterday.toISOString() },
     });
-    var save = sinon.stub(db.medic, 'put').callsArgWith(1, null);
+    const save = sinon.stub(db.medic, 'put').callsArgWith(1, null);
 
     const change = {
       doc: {

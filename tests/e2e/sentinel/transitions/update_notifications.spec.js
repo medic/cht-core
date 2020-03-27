@@ -1,6 +1,6 @@
-const utils = require('../../../utils'),
-      sentinelUtils = require('../utils'),
-      uuid = require('uuid');
+const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
+const uuid = require('uuid');
 
 const contacts = [
   {
@@ -21,7 +21,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'person',
+      parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -264,8 +267,8 @@ describe('update_notifications', () => {
       content_type: 'xml'
     };
 
-    let muteTime,
-        unmuteTime;
+    let muteTime;
+    let unmuteTime;
 
     return utils
       .updateSettings(settings, true)

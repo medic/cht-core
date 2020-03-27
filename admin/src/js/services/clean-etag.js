@@ -1,4 +1,4 @@
-var ETAG_REGEX = /(?:^W\/)|['"]/g;
+const ETAG_REGEX = /(?:^W\/)|['"]/g;
 
 /**
  * Returns the original etag from the given header value. This is

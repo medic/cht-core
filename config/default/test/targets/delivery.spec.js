@@ -47,7 +47,7 @@ describe('Delivery in facility target tests', () => {
     expect(delivery.errors).to.be.empty;
     //await harness.setNow('1999-08-01');
     //await harness.flush(day);
-    let facilityDeliveries = await harness.getTargets({ type: 'facility-deliveries' });
+    const facilityDeliveries = await harness.getTargets({ type: 'facility-deliveries' });
     expect(facilityDeliveries[0]).to.nested.include({ 'value.pass': 0 });
     expect(facilityDeliveries[0]).to.nested.include({ 'value.total': 1 });
 

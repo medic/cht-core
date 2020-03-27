@@ -1,6 +1,6 @@
-const _ = require('underscore'),
-      parseArgs = require('minimist'),
-      diff = require('just-diff').diff;
+const _ = require('underscore');
+const parseArgs = require('minimist');
+const diff = require('just-diff').diff;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -85,7 +85,8 @@ const resolveConflictLoop = (docId, conflictRev) => DB
           console.log('Merged', results);
         });
     } else {
-      console.log(`${verbose ? '' : docId} managed to resolve ${resolvedCount} conflicts, ${unresolvedConflicts.length} remain, skipping...`);
+      console.log(`${verbose ? '' : docId} managed to resolve ${resolvedCount} conflicts, ` +
+        `${unresolvedConflicts.length} remain, skipping...`);
     }
   });
 

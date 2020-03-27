@@ -36,13 +36,19 @@ describe('User DB service', () => {
   describe('create', () => {
 
     it('does nothing if the db already exists', () => {
-      sinon.stub(db, 'exists').resolves(true);
-      return service.create('gareth');
+      const userDb = { close: sinon.stub() };
+      sinon.stub(db, 'exists').resolves(userDb);
+      sinon.stub(db, 'close');
+      return service.create('gareth').then(() => {
+        chai.expect(db.close.callCount).to.equal(1);
+        chai.expect(db.close.args[0]).to.deep.equal([userDb]);
+      });
     });
 
     it('creates the db if it does not exist', () => {
       const userDb = { put: function() {} };
       const create = sinon.stub(db, 'exists').resolves(false);
+      sinon.stub(db, 'close');
       const get = sinon.stub(db, 'get').returns(userDb);
       const dbPut = sinon.stub(userDb, 'put').resolves();
       const requestPut = sinon.stub(request, 'put').resolves();
@@ -63,9 +69,33 @@ describe('User DB service', () => {
         chai.expect(dbPut.callCount).to.equal(1);
         const ddoc = dbPut.args[0][0];
         chai.expect(ddoc._id).to.equal('_design/medic-user');
-        chai.expect(ddoc.views.read.map).to.equal('function (doc) {\n  var parts = doc._id.split(\':\');\n  if (parts[0] === \'read\') {\n    emit(parts[1]);\n  }\n}');
+        chai.expect(ddoc.views.read.map).to.equal(
+          'function (doc) {\n  var parts = doc._id.split(\':\');\n  if (parts[0] === \'read\') ' +
+          '{\n    emit(parts[1]);\n  }\n}'
+        );
         chai.expect(ddoc.views.read.reduce).to.equal('_count');
+        chai.expect(db.close.callCount).to.equal(1);
+        chai.expect(db.close.args[0]).to.deep.equal([userDb]);
       });
+    });
+
+    it('should close the db even with errors', () => {
+      sinon.stub(db, 'exists').resolves(false);
+      const userDb = {
+        close: sinon.stub(),
+        put: sinon.stub().rejects({ err: 'boom' }),
+      };
+      sinon.stub(db, 'get').returns(userDb);
+      sinon.stub(db, 'close');
+      return service
+        .create('gareth')
+        .then(r => chai.expect(r).to.equal('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ err: 'boom' });
+          chai.expect(userDb.put.callCount).to.equal(1);
+          chai.expect(db.close.callCount).to.equal(1);
+          chai.expect(db.close.args[0]).to.deep.equal([userDb]);
+        });
     });
   });
 

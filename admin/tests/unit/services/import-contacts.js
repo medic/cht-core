@@ -2,10 +2,10 @@ describe('ImportContacts service', function() {
 
   'use strict';
 
-  var service,
-      put,
-      $httpBackend,
-      $rootScope;
+  let service;
+  let put;
+  let $httpBackend;
+  let $rootScope;
 
   beforeEach(function() {
     put = sinon.stub();
@@ -84,8 +84,8 @@ describe('ImportContacts service', function() {
     put
       .onFirstCall().returns(Promise.resolve({ _id: 1, _rev: 1 }))
       .onSecondCall().returns(Promise.resolve({ _id: 2, _rev: 1 }));
-    var contact1 = { _id: 1 };
-    var contact2 = { _id: 2 };
+    const contact1 = { _id: 1 };
+    const contact2 = { _id: 2 };
 
     service([contact1, contact2], true)
       .then(function() {
@@ -173,8 +173,8 @@ describe('ImportContacts service', function() {
     put.onCall(1).returns(Promise.resolve({ }));
     put.onCall(2).returns(Promise.resolve({ _id: 4, _rev: 1 }));
     put.onCall(3).returns(Promise.resolve({ }));
-    var contact1 = { _id: 1, contact: { name: 'john', phone: '+123', type: 'contact', contact_type: 'chp' } };
-    var contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
+    const contact1 = { _id: 1, contact: { name: 'john', phone: '+123', type: 'contact', contact_type: 'chp' } };
+    const contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
 
     service([contact1, contact2], true)
       .then(function() {

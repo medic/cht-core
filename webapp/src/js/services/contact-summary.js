@@ -1,4 +1,4 @@
-var SETTING_NAME = 'contact_summary';
+const SETTING_NAME = 'contact_summary';
 
 /**
  * Service for generating summary information based on a given
@@ -15,9 +15,9 @@ angular.module('inboxServices').service('ContactSummary',
     'use strict';
     'ngInject';
 
-    var generatorFunction;
+    let generatorFunction;
 
-    var getGeneratorFunction = function() {
+    const getGeneratorFunction = function() {
       if (!generatorFunction) {
         generatorFunction = Settings()
           .then(function(settings) {
@@ -33,7 +33,7 @@ angular.module('inboxServices').service('ContactSummary',
       return generatorFunction;
     };
 
-    var applyFilter = function(field) {
+    const applyFilter = function(field) {
       if (field && field.filter) {
         try {
           field.value = $filter(field.filter)(field.value);
@@ -43,7 +43,7 @@ angular.module('inboxServices').service('ContactSummary',
       }
     };
 
-    var applyFilters = function(summary) {
+    const applyFilters = function(summary) {
       $log.debug('contact summary eval result', summary);
 
       summary = summary || {};

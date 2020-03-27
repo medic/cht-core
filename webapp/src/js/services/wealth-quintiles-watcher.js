@@ -27,19 +27,19 @@ angular.module('inboxServices').factory('WealthQuintilesWatcher',
               endkey: [change.doc.fields.place_id, {}],
               include_docs: true
             }).then(function(result) {
-                var updatedDocs = result.rows.map(function(row) {
-                  if (row.doc.wealth_quintile_national !== change.doc.fields.NationalQuintile ||
+              const updatedDocs = result.rows.map(function(row) {
+                if (row.doc.wealth_quintile_national !== change.doc.fields.NationalQuintile ||
                     row.doc.wealth_quintile_urban !== change.doc.fields.UrbanQuintile) {
 
-                    row.doc.wealth_quintile_national = change.doc.fields.NationalQuintile;
-                    row.doc.wealth_quintile_urban = change.doc.fields.UrbanQuintile;
-                    return row.doc;
-                  }
-                }).filter(function(doc) {
-                  return doc;
-                });
-                return DB().bulkDocs(updatedDocs);
+                  row.doc.wealth_quintile_national = change.doc.fields.NationalQuintile;
+                  row.doc.wealth_quintile_urban = change.doc.fields.UrbanQuintile;
+                  return row.doc;
+                }
+              }).filter(function(doc) {
+                return doc;
               });
+              return DB().bulkDocs(updatedDocs);
+            });
           }
         });
       }

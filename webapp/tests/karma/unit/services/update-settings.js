@@ -2,8 +2,8 @@ describe('UpdateSettings service', function() {
 
   'use strict';
 
-  var service,
-      $httpBackend;
+  let service;
+  let $httpBackend;
 
   beforeEach(function() {
     module('inboxApp');
@@ -19,7 +19,7 @@ describe('UpdateSettings service', function() {
   });
 
   it('updates settings', function() {
-    var updates = {
+    const updates = {
       isTrue: true,
       isString: 'hello'
     };
@@ -31,7 +31,7 @@ describe('UpdateSettings service', function() {
   });
 
   it('replaces settings', function() {
-    var updates = {
+    const updates = {
       isTrue: true,
       isString: 'hello'
     };
@@ -43,7 +43,7 @@ describe('UpdateSettings service', function() {
   });
 
   it('returns errors', function(done) {
-    var updates = {
+    const updates = {
       isTrue: true,
       isString: 'hello'
     };

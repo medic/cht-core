@@ -1,9 +1,9 @@
-var moment = require('moment'),
-  validation = require('../../src/lib/validation'),
-  db = require('../../src/db'),
-  sinon = require('sinon'),
-  assert = require('chai').assert,
-  clock;
+const moment = require('moment');
+const validation = require('../../src/lib/validation');
+const db = require('../../src/db');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+let clock;
 
 describe('validations', () => {
   afterEach(() => {
@@ -14,10 +14,10 @@ describe('validations', () => {
   });
 
   it('validate handles pupil parse errors', done => {
-    var doc = {
+    const doc = {
       phone: '123',
     };
-    var validations = [
+    const validations = [
       {
         property: 'phone',
         rule: 'regex(bad no quotes)',
@@ -32,7 +32,7 @@ describe('validations', () => {
   });
 
   it('validate handles pupil regex', done => {
-    var validations = [
+    const validations = [
       {
         property: 'phone',
         rule: 'regex("^\\d+$")',
@@ -59,16 +59,16 @@ describe('validations', () => {
   });
 
   it('pass unique validation when no doc found', done => {
-    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [],
     });
-    var validations = [
+    const validations = [
       {
         property: 'patient_id',
         rule: 'unique("patient_id")',
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       patient_id: '111',
     };
@@ -82,7 +82,7 @@ describe('validations', () => {
   });
 
   it('pass unique validation when doc is the same', done => {
-    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [
         {
           id: 'same',
@@ -90,13 +90,13 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'patient_id',
         rule: 'unique("patient_id")',
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       patient_id: '111',
     };
@@ -121,13 +121,13 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'patient_id',
         rule: 'unique("patient_id")',
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       patient_id: '111',
     };
@@ -154,7 +154,7 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'xyz',
         rule: 'unique("xyz")',
@@ -166,7 +166,7 @@ describe('validations', () => {
         ],
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       xyz: '444',
     };
@@ -193,7 +193,7 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'xyz',
         rule: 'unique("xyz","abc")',
@@ -205,7 +205,7 @@ describe('validations', () => {
         ],
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       xyz: '444',
       abc: 'CHeeSE', // value is lowercased as it is in the view map definition
@@ -247,7 +247,7 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'xyz',
         rule: 'uniqueWithin("xyz","2 weeks")',
@@ -259,7 +259,7 @@ describe('validations', () => {
         ],
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       xyz: '444',
     };
@@ -309,7 +309,7 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'xyz',
         rule: 'uniqueWithin("xyz","2 weeks")',
@@ -321,7 +321,7 @@ describe('validations', () => {
         ],
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       xyz: '444',
     };
@@ -337,13 +337,13 @@ describe('validations', () => {
   });
 
   it('pass isISOWeek validation on doc', done => {
-    var validations = [
+    const validations = [
       {
         property: 'week',
         rule: 'isISOWeek("week", "year")',
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       week: 32,
       year: 2016,
@@ -355,13 +355,13 @@ describe('validations', () => {
   });
 
   it('pass isISOWeek validation on doc when no year field is provided', done => {
-    var validations = [
+    const validations = [
       {
         property: 'week',
         rule: 'isISOWeek("week")',
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       week: 32,
     };
@@ -372,13 +372,13 @@ describe('validations', () => {
   });
 
   it('fail isISOWeek validation on doc', done => {
-    var validations = [
+    const validations = [
       {
         property: 'week',
         rule: 'isISOWeek("week", "year")',
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       week: 55,
       year: 2016,
@@ -390,13 +390,13 @@ describe('validations', () => {
   });
 
   it('fail isISOWeek validation on doc when no year field is provided', done => {
-    var validations = [
+    const validations = [
       {
         property: 'week',
         rule: 'isISOWeek("week")',
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       week: 65,
     };
@@ -433,7 +433,7 @@ describe('validations', () => {
   });
 
   it('pass exists validation when matching document', done => {
-    var view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [{ id: 'different' }],
     });
     sinon.stub(db.medic, 'allDocs').callsArgWith(1, null, {
@@ -444,7 +444,7 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'parent_id',
         rule: 'exists("REGISTRATION", "patient_id")',
@@ -456,7 +456,7 @@ describe('validations', () => {
         ],
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       patient_id: '444',
     };
@@ -475,7 +475,7 @@ describe('validations', () => {
     sinon.stub(db.medic, 'query').callsArgWith(2, null, {
       rows: [],
     });
-    var validations = [
+    const validations = [
       {
         property: 'parent_id',
         rule: 'exists("REGISTRATION", "patient_id")',
@@ -487,7 +487,7 @@ describe('validations', () => {
         ],
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       parent_id: '444',
     };
@@ -511,7 +511,7 @@ describe('validations', () => {
         },
       ],
     });
-    var validations = [
+    const validations = [
       {
         property: 'parent_id',
         rule: 'exists("REGISTRATION", "patient_id")',
@@ -523,7 +523,7 @@ describe('validations', () => {
         ],
       },
     ];
-    var doc = {
+    const doc = {
       _id: 'same',
       parent_id: '444',
     };

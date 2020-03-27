@@ -1,6 +1,6 @@
-const path = require('path'),
-      constants = require('../../../constants'),
-      utils = require('../../../utils');
+const path = require('path');
+const constants = require('../../../constants');
+const utils = require('../../../utils');
 
 const getDoc = () => {
   return utils.getDoc('settings');
@@ -12,7 +12,8 @@ describe('Settings API', () => {
   describe('old api', () => {
 
     const update = (updates, replace=false) => {
-      let uri = path.join('/', constants.DB_NAME, '_design', constants.MAIN_DDOC_NAME, '_rewrite/update_settings', constants.MAIN_DDOC_NAME);
+      let uri = path.join('/', constants.DB_NAME, '_design',
+        constants.MAIN_DDOC_NAME, '_rewrite/update_settings', constants.MAIN_DDOC_NAME);
       if (replace) {
         uri += '?replace=1';
       }
@@ -77,7 +78,8 @@ describe('Settings API', () => {
         })
         .then(() => {
           return utils.request({
-            path: path.join('/', constants.DB_NAME, '_design', constants.MAIN_DDOC_NAME, '_rewrite/app_settings', constants.MAIN_DDOC_NAME),
+            path: path.join('/', constants.DB_NAME, '_design', constants.MAIN_DDOC_NAME,
+              '_rewrite/app_settings', constants.MAIN_DDOC_NAME),
             method: 'GET'
           });
         })

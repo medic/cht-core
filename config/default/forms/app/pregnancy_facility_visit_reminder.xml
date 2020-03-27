@@ -65,7 +65,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-10-17 05:00:49">
+        <pregnancy_facility_visit_reminder delimiter="#" id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" version="2019-11-04 14:15:20">
           <inputs>
             <meta>
               <location>
@@ -102,7 +102,7 @@
           <patient_name tag="hidden"/>
           <patient_short_name tag="hidden"/>
           <patient_short_name_start tag="hidden"/>
-          <pregnancy_uuid_ctx tag="hiden"/>
+          <pregnancy_uuid_ctx/>
           <visit_date_for_task/>
           <facility_visit_reminder>
             <remind_note tag="hidden"/>
@@ -146,7 +146,7 @@
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy_facility_visit_reminder/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/pregnancy_facility_visit_reminder/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_facility_visit_reminder/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_facility_visit_reminder/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/pregnancy_facility_visit_reminder/patient_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../facility_visit_reminder/custom_translations/custom_woman_label)" nodeset="/pregnancy_facility_visit_reminder/patient_short_name" type="string"/>
       <bind calculate="coalesce(../inputs/contact/short_name, ../facility_visit_reminder/custom_translations/custom_woman_start_label)" nodeset="/pregnancy_facility_visit_reminder/patient_short_name_start" type="string"/>

@@ -2,8 +2,8 @@ angular.module('services').factory('Blob', function($window) {
   'use strict';
   'ngInject';
 
-  var blobify = function(str, mime) {
-    var blob = new Blob([ str ], { type: mime });
+  const blobify = function(str, mime) {
+    const blob = new Blob([ str ], { type: mime });
     return ($window.URL || $window.webkitURL).createObjectURL(blob);
   };
 

@@ -1,4 +1,4 @@
-var moment = require('moment');
+const moment = require('moment');
 
 angular.module('directives').directive('relativeDate', function() {
   'use strict';

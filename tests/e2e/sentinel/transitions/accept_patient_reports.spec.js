@@ -1,6 +1,6 @@
-const utils = require('../../../utils'),
-      sentinelUtils = require('../utils'),
-      uuid = require('uuid');
+const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
+const uuid = require('uuid');
 
 
 const contacts = [
@@ -22,7 +22,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'person',
+      parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -63,7 +66,10 @@ describe('accept_patient_reports', () => {
       type: 'data_record',
       reported_date: new Date().getTime(),
       from: '+phone',
-      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -89,7 +95,10 @@ describe('accept_patient_reports', () => {
       type: 'data_record',
       reported_date: new Date().getTime(),
       from: '+phone',
-      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -142,7 +151,10 @@ describe('accept_patient_reports', () => {
         patient_id: 'unknown'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -154,7 +166,10 @@ describe('accept_patient_reports', () => {
         patient_id: 'this will not match the validation rule'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -250,7 +265,10 @@ describe('accept_patient_reports', () => {
         patient_id: 'patient'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -263,7 +281,10 @@ describe('accept_patient_reports', () => {
         something: true
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person2', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person2',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -334,7 +355,10 @@ describe('accept_patient_reports', () => {
           patient_id: 'patient'
         },
         reported_date: new Date().getTime(),
-        contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+        contact: {
+          _id: 'person',
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        }
       },
       { // not a registration
         _id: 'incorrect_content',
@@ -372,7 +396,10 @@ describe('accept_patient_reports', () => {
           patient_id: 'patient'
         },
         reported_date: new Date().getTime() + 3000,
-        contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+        contact: {
+          _id: 'person',
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        }
       },
       { // valid registration
         _id: 'registration_3',
@@ -405,7 +432,10 @@ describe('accept_patient_reports', () => {
         patient_id: 'patient',
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -468,7 +498,10 @@ describe('accept_patient_reports', () => {
           { id: 4, type: 'type2', state: 'sent', due: new Date().getTime() - 10 * oneDay },
           { id: 5, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay },
         ],
-        contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+        contact: {
+          _id: 'person',
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        }
       },
       {
         _id: uuid(),
@@ -490,7 +523,10 @@ describe('accept_patient_reports', () => {
           { id: 4, type: 'type2', group: 'b', state: 'sent', due: new Date().getTime() - 20 * oneDay },
           { id: 5, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 1 * oneDay },
         ],
-        contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+        contact: {
+          _id: 'person',
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        }
       },
       {
         _id: uuid(),
@@ -505,7 +541,10 @@ describe('accept_patient_reports', () => {
           { id: 4, type: 'type3', state: 'pending', due: new Date().getTime() + 10 * oneDay },
           { id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay },
         ],
-        contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+        contact: {
+          _id: 'person',
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        }
       },
       {
         _id: uuid(),
@@ -522,7 +561,10 @@ describe('accept_patient_reports', () => {
           { id: 2, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 2 * oneDay },
           { id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay },
         ],
-        contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+        contact: {
+          _id: 'person',
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        }
       }
     ];
 
@@ -547,7 +589,10 @@ describe('accept_patient_reports', () => {
         patient_id: 'patient',
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const silence2 = {

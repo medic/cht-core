@@ -1,39 +1,30 @@
+const contactTypesUtils = require('@medic/contact-types-utils');
+
 angular.module('inboxServices').service('ContactTypes', function(
   Settings
 ) {
   'use strict';
   'ngInject';
 
-  const HARDCODED_TYPES = [
-    'district_hospital',
-    'health_center',
-    'clinic',
-    'person'
-  ];
-
-  const getConfig = () => Settings().then(config => config.contact_types || []);
-  const filterOnPerson = person => getConfig().then(types => types.filter(type => !!type.person === person));
-  const isHardcodedType = type => HARDCODED_TYPES.includes(type);
-
   return {
 
-    HARDCODED_TYPES: HARDCODED_TYPES,
+    HARDCODED_TYPES: contactTypesUtils.HARDCODED_TYPES,
 
     /**
      * Returns a Promise to resolve the configured contact type identified by the given id.
      */
-    get: id => getConfig().then(types => types.find(type => type.id === id)),
+    get: id => Settings().then(config => contactTypesUtils.getTypeById(config, id)),
 
     /**
      * Returns a Promise to resolve an array of configured contact types.
      */
-    getAll: getConfig,
+    getAll: () => Settings().then(config => contactTypesUtils.getContactTypes(config)),
 
     /**
      * Returns true if the given type is one of the contact types that
      * were hardcoded in old versions.
      */
-    isHardcodedType: isHardcodedType,
+    isHardcodedType: contactTypesUtils.isHardcodedType,
 
     /**
      * Returns true if the given doc is a contact type.
@@ -44,30 +35,23 @@ angular.module('inboxServices').service('ContactTypes', function(
         return false;
       }
       return type === 'contact' ||   // configurable hierarchy
-             isHardcodedType(type);  // hardcoded
+             contactTypesUtils.isHardcodedType(type);  // hardcoded
     },
 
     /**
      * Returns a Promise to resolve an array of child type names for the
      * given type id. If parent is falsey, returns the types with no parent.
      */
-    getChildren: parent => {
-      return getConfig().then(types => {
-        return types.filter(type => {
-          const parents = type.parents || [];
-          return (!parent && !parents.length) || parents.includes(parent);
-        });
-      });
-    },
+    getChildren: parent => Settings().then(config => contactTypesUtils.getChildren(config, parent)),
 
     /**
      * Returns a Promise to resolve all the configured place contact types
      */
-    getPlaceTypes: () => filterOnPerson(false),
+    getPlaceTypes: () => Settings().then(config => contactTypesUtils.getPlaceTypes(config)),
 
     /**
      * Returns a Promise to resolve all the configured person contact types
      */
-    getPersonTypes: () => filterOnPerson(true),
+    getPersonTypes: () => Settings().then(config => contactTypesUtils.getPersonTypes(config)),
   };
 });

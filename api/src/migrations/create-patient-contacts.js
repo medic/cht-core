@@ -1,14 +1,14 @@
-var _ = require('underscore'),
-  { promisify } = require('util'),
-  db = require('../db'),
-  logger = require('../logger'),
-  async = require('async'),
-  registrationUtils = require('@medic/registration-utils'),
-  settingsService = require('../services/settings');
+const _ = require('lodash');
+const { promisify } = require('util');
+const db = require('../db');
+const logger = require('../logger');
+const async = require('async');
+const registrationUtils = require('@medic/registration-utils');
+const settingsService = require('../services/settings');
 
-var BATCH_SIZE = 100;
+const BATCH_SIZE = 100;
 
-var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
+const registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
   db.medic.query(
     'medic-client/contacts_by_reference',
     {
@@ -19,10 +19,10 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
         return callback(err);
       }
 
-      var existingContactShortcodes = results.rows.map(row => row.key[1]);
+      const existingContactShortcodes = results.rows.map(row => row.key[1]);
 
-      var potentialRegistrationIdsToConsider = batch.filter(
-        row => !_.contains(existingContactShortcodes, row[0])
+      const potentialRegistrationIdsToConsider = batch.filter(
+        row => !_.includes(existingContactShortcodes, row[0])
       );
 
       db.medic.allDocs(
@@ -30,7 +30,7 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
           include_docs: true,
           keys: _.chain(potentialRegistrationIdsToConsider)
             .map(row => row[1])
-            .flatten()
+            .flattenDeep()
             .value(),
         },
         function(err, results) {
@@ -38,7 +38,7 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
             return callback(err);
           }
 
-          var registrations = results.rows
+          const registrations = results.rows
             .map(row => row.doc)
             .filter(doc =>
               registrationUtils.isValidRegistration(doc, settings)
@@ -51,7 +51,7 @@ var registrationIdsWithNoPatientContacts = function(batch, settings, callback) {
   );
 };
 
-var batchCreatePatientContacts = function(batch, settings, callback) {
+const batchCreatePatientContacts = function(batch, settings, callback) {
   process.stdout.write('Of ' + batch.length + ' potential patients ');
 
   registrationIdsWithNoPatientContacts(batch, settings, function(
@@ -72,13 +72,13 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
 
     process.stdout.write('Getting registrations.. ');
 
-    var uniqueValidRegistrations = _.chain(registrationsToConsider)
+    const uniqueValidRegistrations = _.chain(registrationsToConsider)
       .filter(function(registration) {
         // Registrations require a patient_id to indicate they are the type to
         // have a patient contact created for them
         return registration.patient_id;
       })
-      .uniq(false, function(registration) {
+      .uniqBy(function(registration) {
         // And we only need one for each patient.
         return registration.patient_id;
       })
@@ -94,8 +94,8 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
         ' new patient registrations.. Getting parents.. '
     );
 
-    var contactPhoneNumbers = _.chain(uniqueValidRegistrations)
-      .pluck('from')
+    const contactPhoneNumbers = _.chain(uniqueValidRegistrations)
+      .map('from')
       .uniq()
       .value();
 
@@ -110,8 +110,8 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
           return callback(err);
         }
 
-        var contactForPhoneNumber = _.chain(results.rows)
-          .pluck('doc')
+        const contactForPhoneNumber = _.chain(results.rows)
+          .map('doc')
           .uniq()
           .reduce(function(memo, doc) {
             memo[doc.phone] = doc;
@@ -119,18 +119,18 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
           }, {})
           .value();
 
-        var patientPersons = uniqueValidRegistrations.map(function(
+        const patientPersons = uniqueValidRegistrations.map(function(
           registration
         ) {
-          var contact = contactForPhoneNumber[registration.from];
+          const contact = contactForPhoneNumber[registration.from];
           // create a new patient with this patient_id
-          var fields = registration.fields || {};
-          var name =
+          const fields = registration.fields || {};
+          const name =
             fields.patient_name ||
             fields.full_name ||
             registration.patient_name ||
             registration.full_name;
-          var patient = {
+          const patient = {
             name: name,
             parent: contact && contact.parent,
             reported_date: registration.reported_date,
@@ -153,7 +153,7 @@ var batchCreatePatientContacts = function(batch, settings, callback) {
             return callback(err);
           }
 
-          var errors = results.filter(function(result) {
+          const errors = results.filter(function(result) {
             return !result.ok;
           });
 
@@ -189,7 +189,7 @@ module.exports = {
           return callback();
         }
 
-        var registrationsForPatientShortcode = _.pairs(
+        const registrationsForPatientShortcode = _.toPairs(
           _.reduce(
             results.rows,
             function(memo, row) {
@@ -204,14 +204,14 @@ module.exports = {
           )
         );
 
-        var progressCount = 0;
-        var total = registrationsForPatientShortcode.length;
+        let progressCount = 0;
+        const total = registrationsForPatientShortcode.length;
 
         logger.info(`There are ${total} patients with registrations`);
 
         async.doWhilst(
           function(callback) {
-            var batch = registrationsForPatientShortcode.splice(0, BATCH_SIZE);
+            const batch = registrationsForPatientShortcode.splice(0, BATCH_SIZE);
             progressCount += BATCH_SIZE;
 
             process.stdout.write('[' + progressCount + '/' + total + '] ');

@@ -9,7 +9,7 @@
     </div>
 
     <div>
-      <h3 translate>about</h3>
+      <h3 translate ng-click="aboutCtrl.secretDoor()">about</h3>
       <dl class="horizontal">
         <dt translate>version</dt>
         <dd>{{aboutCtrl.version}}</dd>
@@ -18,9 +18,9 @@
           <dd>{{androidAppVersion}}</dd>
         </span>
         <dt translate>ddoc.version</dt>
-        <dd>{{aboutCtrl.ddocVersion}}</dd>
+        <dd>{{aboutCtrl.remoteRev}}</dd>
         <dt translate>clientDdoc.version</dt>
-        <dd>{{aboutCtrl.clientDdocVersion}}</dd>
+        <dd>{{aboutCtrl.localRev}}</dd>
         <dt translate>url</dt>
         <dd>{{aboutCtrl.url}}</dd>
         <dt translate>User Name</dt>
@@ -77,17 +77,6 @@
         <dt translate>android_app.data_usage.tx</dt>
         <dd translate="number.bytes" translate-values="{ number: '{{aboutCtrl.androidDataUsage.app.tx | number}}' }"></dd>
       </dl>
-    </div>
-
-    <div ng-if="aboutCtrl.debugOptionEnabled">
-      <h3 translate>debug.mode</h3>
-      <p translate>debug.mode.description</p>
-      <form>
-        <label>
-          <input ng-model="enableDebugModel.val" type="checkbox" />
-          <span translate>debug.mode.title</span>
-        </label>
-      </form>
     </div>
 
     <div ng-if="aboutCtrl.partners && aboutCtrl.partners.length" class="partners">

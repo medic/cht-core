@@ -1,10 +1,10 @@
-const sinon = require('sinon'),
-      { expect, assert } = require('chai'),
-      pouchDbOptions = {
-        local: { auto_compaction: true },
-        remote: { skip_setup: true },
-        remote_headers: { 'Accept': 'application/json' }
-      };
+const sinon = require('sinon');
+const { expect, assert } = require('chai');
+const pouchDbOptions = {
+  local: { auto_compaction: true },
+  remote: { skip_setup: true },
+  remote_headers: { 'Accept': 'application/json' }
+};
 const rewire = require('rewire');
 const bootstrapper = rewire('../../../src/js/bootstrapper');
 const purger = require('../../../src/js/bootstrapper/purger');
@@ -296,7 +296,10 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
+      assert.equal(
+        err.redirect,
+        '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
+      );
       done();
     });
   });
@@ -318,7 +321,10 @@ describe('bootstrapper', () => {
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(err.status, 401);
-      assert.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
+      assert.equal(
+        err.redirect,
+        '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
+      );
       done();
     });
   });
@@ -373,6 +379,43 @@ describe('bootstrapper', () => {
     });
   });
 
+  it('ignores error if users-info fetch fails', done => {
+    setUserCtxCookie({ name: 'jim' });
+    localGet.withArgs('_design/medic-client').onCall(0).rejects();
+    localGet.withArgs('_design/medic-client').onCall(1).resolves();
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'info').resolves('some-info');
+    sinon.stub(purger, 'checkpoint').resolves();
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+
+    const localReplicateResult = Promise.resolve();
+    localReplicateResult.on = () => {};
+    localReplicate.returns(localReplicateResult);
+
+    localId.resolves('some random string');
+
+    localAllDocs.resolves({ total_rows: 0 });
+
+    fetch.resolves({ json: sinon.stub().resolves({ code: 500, error: 'Server error' }) });
+
+    const log = sinon.stub(console, 'warn');
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+
+      assert.equal(log.callCount, 1);
+      assert.equal(log.args[0][0], 'Error fetching users-info - ignoring');
+      assert.deepEqual(log.args[0][1], { code: 500, error: 'Server error' });
+
+      // purger is called anyway...
+      assert.equal(purger.info.callCount, 1);
+      assert.equal(fetch.callCount, 1);
+      done();
+    });
+
+  });
+
   it('error results if service worker fails registration', done => {
     setUserCtxCookie({ name: 'jim' });
     pouchDb.onCall(0).returns({
@@ -400,7 +443,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
     let purgeOn;
-    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
+    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() }); // eslint-disable-line prefer-const
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     bootstrapper(pouchDbOptions, err => {
@@ -423,7 +466,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
     let purgeOn;
-    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() });
+    purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() }); // eslint-disable-line prefer-const
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
     const localReplicateResult = Promise.resolve();

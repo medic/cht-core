@@ -1,15 +1,15 @@
-const _ = require('underscore'),
-      config = require('../config'),
-      transitionUtils = require('./utils'),
-      utils = require('../lib/utils'),
-      messages = require('../lib/messages'),
-      validation = require('../lib/validation'),
-      mutingUtils = require('../lib/muting_utils');
+const _ = require('lodash');
+const config = require('../config');
+const transitionUtils = require('./utils');
+const utils = require('../lib/utils');
+const messages = require('../lib/messages');
+const validation = require('../lib/validation');
+const mutingUtils = require('../lib/muting_utils');
 
-const TRANSITION_NAME = 'muting',
-      CONFIG_NAME = 'muting',
-      MUTE_PROPERTY = 'mute_forms',
-      UNMUTE_PROPERTY = 'unmute_forms';
+const TRANSITION_NAME = 'muting';
+const CONFIG_NAME = 'muting';
+const MUTE_PROPERTY = 'mute_forms';
+const UNMUTE_PROPERTY = 'unmute_forms';
 
 const getConfig = () => {
   return config.get(CONFIG_NAME) || {};
@@ -61,15 +61,17 @@ module.exports = {
   init: () => {
     const forms = getConfig()[MUTE_PROPERTY];
     if (!forms || !_.isArray(forms) || !forms.length) {
-      throw new Error(`Configuration error. Config must define have a '${CONFIG_NAME}.${MUTE_PROPERTY}' array defined.`);
+      throw new Error(
+        `Configuration error. Config must define have a '${CONFIG_NAME}.${MUTE_PROPERTY}' array defined.`
+      );
     }
   },
 
   filter: (doc, info = {}) => isRelevantReport(doc, info) || isRelevantContact(doc, info),
 
   validate: function(doc) {
-    const config = getConfig(),
-          validations = config.validations && config.validations.list;
+    const config = getConfig();
+    const validations = config.validations && config.validations.list;
 
     return new Promise(resolve => {
       validation.validate(doc, validations, (errors) => {
@@ -90,7 +92,11 @@ module.exports = {
       mutingUtils.updateContact(change.doc, muted);
       return mutingUtils
         .updateRegistrations(utils.getSubjectIds(change.doc), muted)
-        .then(() => mutingUtils.updateMutingHistory(change.doc, new Date(change.info.initial_replication_date).getTime(), muted))
+        .then(() => mutingUtils.updateMutingHistory(
+          change.doc,
+          new Date(change.info.initial_replication_date).getTime(),
+          muted
+        ))
         .then(() => true);
     }
 
@@ -131,14 +137,14 @@ module.exports = {
       .then(() => true);
   },
   _addMsg: function(eventType, doc, contact) {
-    const msgConfig = _.findWhere(getConfig().messages, { event_type: eventType });
+    const msgConfig = _.find(getConfig().messages, { event_type: eventType });
     if (msgConfig) {
       messages.addMessage(doc, msgConfig, msgConfig.recipient, { patient: contact });
     }
   },
   _addErr: function(eventType, doc) {
-    const locale = utils.getLocale(doc),
-          evConf = _.findWhere(getConfig().messages, { event_type: eventType });
+    const locale = utils.getLocale(doc);
+    const evConf = _.find(getConfig().messages, { event_type: eventType });
 
     const msg = messages.getMessage(evConf, locale);
     if (msg) {

@@ -1,7 +1,7 @@
-const utils = require('../utils'),
-      helper = require('../helper'),
-      moment = require('moment'),
-      commonElements = require('../page-objects/common/common.po.js');
+const utils = require('../utils');
+const helper = require('../helper');
+const moment = require('moment');
+const commonElements = require('../page-objects/common/common.po.js');
 
 describe('Filters reports', () => {
   const reports = [
@@ -109,7 +109,8 @@ describe('Filters reports', () => {
 
     element(by.css('#date-filter')).click();
     element(by.css('.daterangepicker [name="daterangepicker_start"]')).click().sendKeys(clear + '05/16/2016');
-    element(by.css('.daterangepicker [name="daterangepicker_end"]')).click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
+    element(by.css('.daterangepicker [name="daterangepicker_end"]'))
+      .click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
 
     helper.waitElementToPresent(element(by.css('#reports-list .loader')));

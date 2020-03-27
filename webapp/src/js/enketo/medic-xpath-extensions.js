@@ -1,7 +1,7 @@
-var zscoreUtil,
-    _ = require('underscore');
+let zscoreUtil;
+const _ = require('lodash/core');
 
-var getValue = function(resultObject) {
+const getValue = function(resultObject) {
   if (!_.isObject(resultObject) || !resultObject.t) {
     return resultObject;
   }
@@ -14,22 +14,22 @@ var getValue = function(resultObject) {
   return resultObject.v;
 };
 
-var now_and_today = function() { return { t: 'date', v: new Date() }; };
+const now_and_today = function() { return { t: 'date', v: new Date() }; };
 
-var toISOLocalString = function(date) {
+const toISOLocalString = function(date) {
   if (date.toString() === 'Invalid Date') {
     return date.toString();
   }
 
-  var dt = new Date(date.getTime() - (date.getTimezoneOffset() * 60 * 1000))
-            .toISOString()
-            .replace('Z', module.exports.getTimezoneOffsetAsTime(date));
+  const dt = new Date(date.getTime() - (date.getTimezoneOffset() * 60 * 1000))
+    .toISOString()
+    .replace('Z', module.exports.getTimezoneOffsetAsTime(date));
 
   return dt;
 };
 
-var getTimezoneOffsetAsTime = function(date) {
-  var pad2 = function(x) {
+const getTimezoneOffsetAsTime = function(date) {
+  const pad2 = function(x) {
     return ( x < 10 ) ? '0' + x : x;
   };
 
@@ -56,12 +56,12 @@ module.exports = {
     now: now_and_today,
     today: now_and_today,
     'z-score': function() {
-      var args = Array.from(arguments).map(function(arg) {
+      const args = Array.from(arguments).map(function(arg) {
         return getValue(arg);
       });
-      var result = zscoreUtil.apply(null, args);
+      const result = zscoreUtil.apply(null, args);
       if (!result) {
-          return { t: 'str', v: '' };
+        return { t: 'str', v: '' };
       }
       return { t: 'num', v: result };
     }
@@ -75,6 +75,6 @@ module.exports = {
           stringValue: module.exports.toISOLocalString(r.v),
         };
       }
-    }  
+    }
   }
 };

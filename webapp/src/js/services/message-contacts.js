@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('MessageContacts',
   function(
@@ -10,13 +10,13 @@ angular.module('inboxServices').factory('MessageContacts',
     'use strict';
     'ngInject';
 
-    var listParams = function() {
+    const listParams = function() {
       return {
         group_level: 1
       };
     };
 
-    var conversationParams = function(id, skip) {
+    const conversationParams = function(id, skip) {
       return {
         reduce: false,
         descending: true,
@@ -28,15 +28,15 @@ angular.module('inboxServices').factory('MessageContacts',
       };
     };
 
-    var getMessages = function(params) {
+    const getMessages = function(params) {
       return DB().query('medic-client/messages_by_contact_date', params)
         .then(function(response) {
           //include_docs on reduce views (listParams)
           if(params.reduce === undefined || params.reduce === true) {
-            var valueId = function(value) { return value.id; };
-            var ids = _.map(_.pluck(response.rows, 'value'), valueId);
+            const valueId = function(value) { return value.id; };
+            const ids = _.map(_.map(response.rows, 'value'), valueId);
             return GetDataRecords(ids, {include_docs: true}).then(function(docs) {
-              _.each(response.rows, function(row, idx) { row.doc = docs[idx]; });
+              _.forEach(response.rows, function(row, idx) { row.doc = docs[idx]; });
               return response.rows;
             });
           } else {

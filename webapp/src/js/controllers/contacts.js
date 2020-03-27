@@ -1,5 +1,5 @@
-var _ = require('underscore'),
-  scrollLoader = require('../modules/scroll-loader');
+const _ = require('lodash/core');
+let scrollLoader = require('../modules/scroll-loader');
 
 const PAGE_SIZE = 50;
 
@@ -13,10 +13,8 @@ const PAGE_SIZE = 50;
     $scope,
     $state,
     $stateParams,
-    $translate,
     Auth,
     Changes,
-    ContactSummary,
     ContactTypes,
     ContactsActions,
     Export,
@@ -29,12 +27,9 @@ const PAGE_SIZE = 50;
     Session,
     Settings,
     Simprints,
-    TasksForContact,
     Tour,
-    TranslateFrom,
     UHCSettings,
-    UserSettings,
-    XmlForms
+    UserSettings
   ) {
     'ngInject';
 
@@ -49,43 +44,28 @@ const PAGE_SIZE = 50;
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       const contactsActions = ContactsActions(dispatch);
-      return {
-        clearCancelCallback: globalActions.clearCancelCallback,
-        clearFilters: globalActions.clearFilters,
-        clearRightActionBar: globalActions.clearRightActionBar,
-        loadSelectedContactChildren: contactsActions.loadSelectedContactChildren,
-        loadSelectedContactReports: contactsActions.loadSelectedContactReports,
-        setContactsLoadingSummary: contactsActions.setContactsLoadingSummary,
-        setLeftActionBar: globalActions.setLeftActionBar,
-        setRightActionBar: globalActions.setRightActionBar,
-        setLoadingSelectedContact: contactsActions.setLoadingSelectedContact,
-        setSelectedContact: contactsActions.setSelectedContact,
-        setTitle: globalActions.setTitle,
-        updateSelectedContact: contactsActions.updateSelectedContact
-      };
+      return Object.assign({}, globalActions, contactsActions);
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    var liveList = LiveList.contacts;
-
-    LiveList.$init($scope, 'contacts', 'contact-search');
+    let liveList = LiveList.contacts;
 
     ctrl.appending = false;
     ctrl.error = false;
     ctrl.loading = true;
-    ctrl.setSelectedContact(null);
+    ctrl.clearSelection();
     ctrl.clearFilters();
-    var defaultTypeFilter = {};
-    var usersHomePlace;
-    var additionalListItem = false;
+    let defaultTypeFilter = {};
+    let usersHomePlace;
+    let additionalListItem = false;
     let childPlaces = [];
 
     ctrl.sortDirection = ctrl.defaultSortDirection = 'alpha';
-    var isSortedByLastVisited = function() {
+    const isSortedByLastVisited = function() {
       return ctrl.sortDirection === 'last_visited_date';
     };
 
-    var _initScroll = function() {
+    const _initScroll = function() {
       scrollLoader.init(function() {
         if (!ctrl.loading && ctrl.moreItems) {
           _query({
@@ -96,7 +76,7 @@ const PAGE_SIZE = 50;
       });
     };
 
-    var _query = function(options) {
+    const _query = function(options) {
       options = options || {};
       if (!options.limit || options.limit < PAGE_SIZE) {
         options.limit = PAGE_SIZE;
@@ -123,12 +103,12 @@ const PAGE_SIZE = 50;
         }
       }
 
-      var actualFilter = defaultTypeFilter;
+      let actualFilter = defaultTypeFilter;
       if (ctrl.filters.search || ctrl.filters.simprintsIdentities) {
         actualFilter = ctrl.filters;
       }
 
-      var extensions = {};
+      const extensions = {};
       if (ctrl.lastVisitedDateExtras) {
         extensions.displayLastVisitedDate = true;
         extensions.visitCountSettings = ctrl.visitCountSettings;
@@ -137,7 +117,7 @@ const PAGE_SIZE = 50;
         extensions.sortByLastVisitedDate = true;
       }
 
-      var docIds;
+      let docIds;
       if (options.withIds) {
         docIds = liveList.getList().map(function(item) {
           return item._id;
@@ -148,7 +128,7 @@ const PAGE_SIZE = 50;
         .then(function(contacts) {
           // If you have a home place make sure its at the top
           if (usersHomePlace) {
-            var homeIndex = _.findIndex(contacts, function(contact) {
+            const homeIndex = _.findIndex(contacts, function(contact) {
               return contact._id === usersHomePlace._id;
             });
 
@@ -171,7 +151,7 @@ const PAGE_SIZE = 50;
               }
               if (ctrl.filters.simprintsIdentities) {
                 contacts.forEach(function(contact) {
-                  var identity = ctrl.filters.simprintsIdentities.find(
+                  const identity = ctrl.filters.simprintsIdentities.find(
                     function(identity) {
                       return identity.id === contact.simprints_id;
                     }
@@ -189,7 +169,7 @@ const PAGE_SIZE = 50;
             contacts.length >= options.limit;
 
           const mergedList = options.paginating ?
-            _.uniq(contacts.concat(liveList.getList()), false, _.property('_id'))
+            _.uniqBy(contacts.concat(liveList.getList()), '_id')
             : contacts;
           liveList.set(mergedList, !!options.reuseExistingDom);
 
@@ -207,172 +187,10 @@ const PAGE_SIZE = 50;
         });
     };
 
-    const getChildTypes = function(model) {
-      if (!model.type) {
-        $log.error(`Unknown contact type "${model.doc.contact_type || model.doc.type}" for contact "${model.doc._id}"`);
-        return [];
-      }
-      return ContactTypes.getChildren(model.type.id).then(childTypes => {
-        const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
-        const models = [];
-        if (grouped.places) {
-          models.push({
-            menu_key: 'Add place',
-            menu_icon: 'fa-building',
-            permission: 'can_create_places',
-            types: grouped.places
-          });
-        }
-        if (grouped.persons) {
-          models.push({
-            menu_key: 'Add person',
-            menu_icon: 'fa-user',
-            permission: 'can_create_people',
-            types: grouped.persons
-          });
-        }
-        return models;
-      });
-    };
-
-    // only admins can edit their own place
-    var getCanEdit = function(selectedDoc) {
-      if (Session.isAdmin()) {
-        return true;
-      }
-      return setupPromise
-        .then(() => usersHomePlace._id !== selectedDoc._id)
-        .catch(() => false);
-    };
-
-    var translateTitle = function(key, label) {
-      return key ? $translate.instant(key) : TranslateFrom(label);
-    };
-
-    var isUnmuteForm = function(settings, formId) {
-      return Boolean(settings &&
-                     formId &&
-                     settings.muting &&
-                     settings.muting.unmute_forms &&
-                     settings.muting.unmute_forms.includes(formId));
-    };
-
-    const getTasks = () => {
-      return Auth('can_view_tasks')
-        .then(() => TasksForContact(ctrl.selectedContact, 'ContactsCtrl', receiveTasks))
-        .catch(() => $log.debug('Not authorized to view tasks'));
-    };
-
-    const receiveTasks = (tasks) => {
-      const tasksByContact = {};
-      tasks.forEach(task => {
-        if (task.doc && task.doc.contact) {
-          const contactId = task.doc.contact._id;
-          tasksByContact[contactId] = ++tasksByContact[contactId] || 1;
-        }
-      });
-      ctrl.updateSelectedContact({ tasks });
-      ctrl.updateSelectedContact({ tasksByContact });
-    };
-
-    const getTitle = selected => {
-      const title = (selected.type && selected.type.name_key) ||
-                    'contact.profile';
-      return $translate(title).catch(() => title);
-    };
-
-    // Don't allow deletion if this contact has any children
-    const canDelete = selected => {
-      return !selected.children ||
-             selected.children.every(group => !group.contacts || !group.contacts.length);
-    };
-
-    $scope.setSelected = function(selected, contactViewModelOptions) {
-      liveList.setSelected(selected.doc._id);
-      ctrl.setLoadingSelectedContact();
-      ctrl.setSelectedContact(selected);
-      ctrl.clearCancelCallback();
-      const lazyLoadedContactData = ctrl.loadSelectedContactChildren(contactViewModelOptions).then(ctrl.loadSelectedContactReports);
-
-      ctrl.setContactsLoadingSummary(true);
-      return $q
-        .all([
-          getTitle(ctrl.selectedContact),
-          getCanEdit(ctrl.selectedContact.doc),
-          getChildTypes(ctrl.selectedContact)
-        ])
-        .then(([ title, canEdit, childTypes ]) => {
-          ctrl.setTitle(title);
-
-          ctrl.setRightActionBar({
-            relevantForms: [], // this disables the "New Action" button in action bar until full load is complete
-            sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
-            canDelete: false, // this disables the "Delete" button in action bar until full load is complete
-            canEdit: canEdit,
-            childTypes: childTypes
-          });
-
-          return lazyLoadedContactData
-            .then(function() {
-              return $q.all([
-                ContactSummary(ctrl.selectedContact.doc, ctrl.selectedContact.reports, ctrl.selectedContact.lineage),
-                Settings(),
-                getTasks()
-              ])
-              .then(([ summary, settings ]) => {
-                ctrl.setContactsLoadingSummary(false);
-                ctrl.updateSelectedContact({ summary: summary });
-                const options = { doc: ctrl.selectedContact.doc, contactSummary: summary.context };
-                XmlForms.listen('ContactsCtrl', options, function(err, forms) {
-                  if (err) {
-                    $log.error('Error fetching relevant forms', err);
-                  }
-                  const showUnmuteModal = function(formId) {
-                    return ctrl.selectedContact.doc &&
-                          ctrl.selectedContact.doc.muted &&
-                          !isUnmuteForm(settings, formId);
-                  };
-                  const formSummaries = forms && forms.map(function(xForm) {
-                    return {
-                      code: xForm.internalId,
-                      title: translateTitle(xForm.translation_key, xForm.title),
-                      icon: xForm.icon,
-                      showUnmuteModal: showUnmuteModal(xForm.internalId)
-                    };
-                  });
-                  ctrl.setRightActionBar({
-                    relevantForms: formSummaries,
-                    sendTo: selected.type && selected.type.person ? ctrl.selectedContact.doc : '',
-                    canEdit,
-                    canDelete: canDelete(ctrl.selectedContact),
-                    childTypes,
-                  });
-                });
-              });
-            });
-        })
-        .catch(function(e) {
-          $log.error('Error setting selected contact');
-          $log.error(e);
-          ctrl.updateSelectedContact({ error: true });
-          ctrl.clearRightActionBar();
-        });
-    };
-
-    $scope.$on('ClearSelected', function() {
-      clearSelection();
-    });
-
-    const clearSelection = () => {
-      ctrl.setSelectedContact(null);
-      LiveList.contacts.clearSelected();
-      LiveList['contact-search'].clearSelected();
-    };
-
     ctrl.search = function() {
       if(ctrl.filters.search && !ctrl.enketoEdited) {
         $state.go('contacts.detail', { id: null }, { notify: false });
-        clearSelection();
+        ctrl.clearSelection();
       }
 
       ctrl.loading = true;
@@ -423,7 +241,7 @@ const PAGE_SIZE = 50;
       return p.then(children => children.filter(child => !child.person));
     };
 
-    var setActionBarData = function() {
+    const setActionBarData = function() {
       ctrl.setLeftActionBar({
         hasResults: ctrl.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
@@ -434,7 +252,7 @@ const PAGE_SIZE = 50;
       });
     };
 
-    var getUserHomePlaceSummary = function() {
+    const getUserHomePlaceSummary = function() {
       return UserSettings()
         .then(function(userSettings) {
           if (userSettings.facility_id) {
@@ -449,21 +267,15 @@ const PAGE_SIZE = 50;
         });
     };
 
-    var canViewLastVisitedDate = function() {
+    const canViewLastVisitedDate = function() {
       if (Session.isDbAdmin()) {
         // disable UHC for DB admins
         return false;
       }
-      return Auth('can_view_last_visited_date')
-        .then(function() {
-          return true;
-        })
-        .catch(function() {
-          return false;
-        });
+      return Auth.has('can_view_last_visited_date');
     };
 
-    var setupPromise = $q
+    const setupPromise = $q
       .all([
         getUserHomePlaceSummary(),
         canViewLastVisitedDate(),
@@ -496,8 +308,8 @@ const PAGE_SIZE = 50;
       return setupPromise;
     };
 
-    var isRelevantVisitReport = function(doc) {
-      var isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
+    const isRelevantVisitReport = function(doc) {
+      const isRelevantDelete = doc && doc._deleted && isSortedByLastVisited();
       return (
         doc &&
         ctrl.lastVisitedDateExtras &&
@@ -510,7 +322,7 @@ const PAGE_SIZE = 50;
       );
     };
 
-    var changeListener = Changes({
+    const changeListener = Changes({
       key: 'contacts-list',
       callback: function(change) {
         const limit = liveList.count();

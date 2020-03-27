@@ -1,14 +1,14 @@
-var _ = require('underscore'),
-  moment = require('moment'),
-  config = require('../config'),
-  logger = require('../lib/logger'),
-  messages = require('../lib/messages'),
-  transitionUtils = require('./utils'),
-  NAME = 'default_responses';
+const _ = require('lodash');
+const moment = require('moment');
+const config = require('../config');
+const logger = require('../lib/logger');
+const messages = require('../lib/messages');
+const transitionUtils = require('./utils');
+const NAME = 'default_responses';
 
 module.exports = {
   filter: function(doc, info = {}) {
-    var self = module.exports;
+    const self = module.exports;
     return Boolean(
       doc &&
         doc.from &&
@@ -23,16 +23,16 @@ module.exports = {
      * Avoid infinite loops of auto-reply messages between gateway and itself.
      */
   _isMessageFromGateway: function(doc) {
-    var from = doc.sms_message && doc.sms_message.from;
+    const from = doc.sms_message && doc.sms_message.from;
     if (typeof from === 'string') {
       return messages.isMessageFromGateway(from);
     }
     return false;
   },
   _isReportedAfterStartDate: function(doc) {
-    var self = module.exports,
-      config = self._getConfig(NAME),
-      start_date;
+    const self = module.exports;
+    const config = self._getConfig(NAME);
+    let start_date;
 
     function isEmpty() {
       return !(config && config.start_date && config.start_date.trim());
@@ -73,9 +73,9 @@ module.exports = {
     return config.get(key);
   },
   onMatch: change => {
-    var self = module.exports,
-      doc = change.doc,
-      key;
+    const self = module.exports;
+    const doc = change.doc;
+    let key;
 
     if (self._isMessageEmpty(doc)) {
       key = 'empty';

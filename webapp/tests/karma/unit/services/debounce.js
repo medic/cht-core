@@ -1,9 +1,9 @@
 describe('Debounce Service', () => {
   'use strict';
 
-  let $timeout,
-      service,
-      callback;
+  let $timeout;
+  let service;
+  let callback;
 
   describe('Actual debouncing', () => {
     beforeEach(function() {

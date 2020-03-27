@@ -1,13 +1,13 @@
 const sinon = require('sinon').sandbox.create();
 require('chai').should();
-const controller = require('../../../src/controllers/db-doc'),
-      service = require('../../../src/services/db-doc'),
-      serverUtils = require('../../../src/server-utils'),
-      _ = require('underscore');
+const controller = require('../../../src/controllers/db-doc');
+const service = require('../../../src/services/db-doc');
+const serverUtils = require('../../../src/server-utils');
+const _ = require('lodash');
 
-let testReq,
-    testRes,
-    next;
+let testReq;
+let testRes;
+let next;
 
 describe('db-doc controller', () => {
   beforeEach(() => {
@@ -236,7 +236,11 @@ describe('db-doc controller', () => {
           .all([
             controller.request(testReq, testRes, next), // GET without open revs
             controller.request(_.defaults({ query: { open_revs: false } }, testReq), testRes, next),
-            controller.request(_.defaults({ method: 'POST', query: { open_revs: true }, params: {} }, testReq), testRes, next),
+            controller.request(
+              _.defaults(
+                { method: 'POST', query: { open_revs: true }, params: {}},
+                testReq
+              ), testRes, next),
             controller.request(_.defaults({ method: 'POST', params: {} }, testReq), testRes, next),
             controller.request(_.defaults({ method: 'PUT', query: { open_revs: true } }, testReq), testRes, next),
             controller.request(_.defaults({ method: 'PUT' }, testReq), testRes, next),

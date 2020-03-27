@@ -9,14 +9,14 @@ angular.module('inboxDirectives').directive('showMutedModal', function(
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
-      var goToState = function() {
-        var toState = attrs.toState,
-            toStateParams = $parse(attrs.toStateParams)(scope);
+      const goToState = function() {
+        const toState = attrs.toState;
+        const toStateParams = $parse(attrs.toStateParams)(scope);
 
         $state.go(toState, toStateParams);
       };
 
-      var hookFn = function(event) {
+      const hookFn = function(event) {
         event.preventDefault();
         event.stopPropagation();
 

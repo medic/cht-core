@@ -1,6 +1,6 @@
-var _ = require('underscore'),
-    moment = require('moment'),
-    Search = require('@medic/search');
+const _ = require('lodash/core');
+const moment = require('moment');
+const Search = require('@medic/search');
 
 (function () {
 
@@ -35,10 +35,10 @@ var _ = require('underscore'),
 
       'ngInject';
 
-      var _currentQuery = {};
+      let _currentQuery = {};
 
       // Silently cancel repeated queries.
-      var debounce = function(type, filters, options) {
+      const debounce = function(type, filters, options) {
         if (type === _currentQuery.type &&
           _.isEqual(filters, _currentQuery.filters) &&
           _.isEqual(options, _currentQuery.options)) {
@@ -50,18 +50,18 @@ var _ = require('underscore'),
         return false;
       };
 
-      var _search = SearchFactory();
+      const _search = SearchFactory();
 
-      var getLastVisitedDates = function(searchResults, searchResultsCache, settings) {
+      const getLastVisitedDates = function(searchResults, searchResultsCache, settings) {
         settings = settings || {};
-        var interval = CalendarInterval.getCurrent(settings.monthStartDate),
-            visitStats = {};
+        const interval = CalendarInterval.getCurrent(settings.monthStartDate);
+        const visitStats = {};
 
         searchResults.forEach(function(id) {
           visitStats[id] = { lastVisitedDate: -1, visitDates: [] };
         });
 
-        var getVisitsInInterval = function() {
+        const getVisitsInInterval = function() {
           return DB()
             .query('medic-client/visits_by_date', { start_key: interval.start, end_key: interval.end })
             .then(function(result) {
@@ -73,7 +73,7 @@ var _ = require('underscore'),
             });
         };
 
-        var setLastVisitedDate = function(rows) {
+        const setLastVisitedDate = function(rows) {
           rows.forEach(function(row) {
             if (visitStats[row.key]) {
               visitStats[row.key].lastVisitedDate = _.isObject(row.value) ? row.value.max : row.value;
@@ -81,13 +81,13 @@ var _ = require('underscore'),
           });
         };
 
-        var getLastVisited = function() {
+        const getLastVisited = function() {
           if (searchResultsCache) {
             // when sorting by last visited date, we receive the data from Search library
             return setLastVisitedDate(searchResultsCache);
           }
 
-          var query;
+          let query;
           if (Session.isOnlineOnly()) {
             query = DB().query(
               'medic-client/contacts_by_last_visited',
@@ -155,13 +155,13 @@ var _ = require('underscore'),
                 }
               });
             }
-            var dataRecordsPromise = GetDataRecords(searchResults.docIds, options);
+            const dataRecordsPromise = GetDataRecords(searchResults.docIds, options);
 
             if (!extensions.displayLastVisitedDate) {
               return dataRecordsPromise;
             }
 
-            var lastVisitedDatePromise = getLastVisitedDates(
+            const lastVisitedDatePromise = getLastVisitedDates(
               searchResults.docIds,
               searchResults.queryResultsCache,
               extensions.visitCountSettings
@@ -172,12 +172,12 @@ var _ = require('underscore'),
               lastVisitedDates: lastVisitedDatePromise
             }).then(function(r) {
               r.lastVisitedDates.forEach(function(dateResult) {
-                var relevantDataRecord = r.dataRecords.find(function(dataRecord) {
+                const relevantDataRecord = r.dataRecords.find(function(dataRecord) {
                   return dataRecord._id === dateResult.key;
                 });
 
                 if (relevantDataRecord) {
-                  _.extend(relevantDataRecord, dateResult.value);
+                  Object.assign(relevantDataRecord, dateResult.value);
                   relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
                 }
               });

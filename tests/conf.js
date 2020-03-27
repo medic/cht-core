@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 const request = require('request-promise-native');
 const utils = require('./utils');
 const constants = require('./constants');
@@ -74,7 +73,7 @@ const baseConfig = {
         });
     });
 
-    return login(browser);
+    return login(browser).then(() => runAndLog('User setup', setupUser));
   }
 };
 
@@ -88,8 +87,7 @@ const runAndLog = (msg, func) => {
 const startApi = () =>
   listenForApi()
     .then(() => runAndLog('Settings setup', setupSettings))
-    .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc))
-    .then(() => runAndLog('User setup', setupUser));
+    .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
 
 const listenForApi = () => {
   console.log('Checking API');
@@ -126,8 +124,7 @@ const login = browser => {
 };
 
 const setupSettings = () => {
-  const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
-  const defaultAppSettings = JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
+  const defaultAppSettings = utils.getDefaultSettings();
   defaultAppSettings.transitions = {};
 
   return utils.request({

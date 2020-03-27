@@ -8,12 +8,22 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
+  "rules": {
+    "max-len": "off",
+    "no-var": "off",
+    "indent": "off",
+    "one-var-declaration-per-line": "off",
+    "one-var": "off",
+    "curly": "off",
+    "no-prototype-builtins": "off",
+    "quotes": ["error", "single", { "allowTemplateLiterals": true, "avoidEscape": true } ]
+  },
   "globals": {
     "contact": true,
     "reports": true,
     "lineage": true,
     "Utils": true,
-    "no-global-assign": true,
+    "no-global-assign": true
   },
   "overrides": [
     {

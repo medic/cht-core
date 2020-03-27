@@ -41,7 +41,10 @@ const contacts = [
     type: 'contact',
     contact_type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: reportedDate,
   },
   {
@@ -50,7 +53,10 @@ const contacts = [
     type: 'contact',
     contact_type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'chw2', parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw2',
+      parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: reportedDate,
   },
   {
@@ -95,14 +101,20 @@ const reports = [
   {
     _id: 'report1', // no tasks
     type: 'data_record',
-    contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     fields: { patient_id: 'patient1', value: 1 },
     reported_date: oneMonthAgo
   },
   {
     _id: 'report2',
     type: 'data_record',
-    contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     fields: { patient_id: 'patient1', value: 2 },
     reported_date: oneMonthAgo,
     scheduled_tasks: [
@@ -132,7 +144,10 @@ const reports = [
   {
     _id: 'report3',
     type: 'data_record',
-    contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     fields: { patient_id: 'patient1', value: 2 },
     reported_date: oneMonthAgo,
     scheduled_tasks: [
@@ -169,7 +184,10 @@ const reports = [
   {
     _id: 'report4',
     type: 'data_record',
-    contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     fields: { patient_id: 'patient2', value: 2 },
     reported_date: oneMonthAgo,
     scheduled_tasks: [
@@ -190,7 +208,8 @@ const reports = [
       {
         due: threeDaysAgo, // task with text
         message: [{
-          content: 'THREE. Reported by {{contact.name}}. Patient {{patient_name}}({{patient_id}}). Value {{fields.value}}',
+          content: 'THREE. Reported by {{contact.name}}. Patient {{patient_name}}({{patient_id}}). ' +
+                   'Value {{fields.value}}',
           locale: 'test'
         }],
         recipient: 'health_center',
@@ -221,8 +240,10 @@ const messagesTest = {
   name: 'test-language',
   enabled: true,
   generic: {
-    'messages.one': 'ONE. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
-    'messages.two': 'TWO. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
+    'messages.one': 'ONE. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). ' +
+      'Value {{fields.value}}',
+    'messages.two': 'TWO. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). ' +
+      'Value {{fields.value}}',
   }
 };
 
@@ -239,7 +260,8 @@ describe('Due Tasks', () => {
       .then(() => utils.saveDocs(reports))
       .then(() => utils.startSentinel())
       .then(() => sentinelUtils.waitForSentinel(ids))
-      // we can't reliably *know* when the scheduler has finished processing the docs, so I'm just waiting for the revs to change
+      // we can't reliably *know* when the scheduler has finished processing the docs,
+      // so I'm just waiting for the revs to change
       .then(() => utils.waitForDocRev([{ id: 'report3', rev: 2 }, { id: 'report4', rev: 2 }]))
       .then(() => utils.getDocs(ids))
       .then(updatedReports => {

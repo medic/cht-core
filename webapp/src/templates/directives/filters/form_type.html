@@ -10,7 +10,7 @@
   </span>
   <span role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
     <ul>
-      <li role="presentation" ng-repeat="form in forms | orderBy:'title' track by form.code">
+      <li role="presentation" ng-repeat="form in formTypeFilterCtrl.forms | orderBy:'title' track by form.code">
         <a role="menuitem" tabindex="-1" data-value="{{form}}">{{form.title || form.code}}</a>
       </li>
     </ul>

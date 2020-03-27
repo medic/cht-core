@@ -4,7 +4,7 @@ const angular = global.angular = {
   element: () => ({
     injector: () => ({
       get: () => ({
-	instant: key => key,
+        instant: key => key,
       }),
     }),
   }),
@@ -15,7 +15,7 @@ const angular = global.angular = {
         filter: (filterName, filter) => {
           global.angular.modules[moduleName].filters[filterName] = filter;
         },
-	filters: {},
+        filters: {},
       };
     }
     return global.angular.modules[moduleName];

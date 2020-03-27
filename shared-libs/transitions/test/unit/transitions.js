@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      assert = require('chai').assert,
-      transitions = require('../../src/transitions'),
-      config = require('../../src/config'),
-      _ = require('underscore');
+const sinon = require('sinon');
+const assert = require('chai').assert;
+const transitions = require('../../src/transitions');
+const config = require('../../src/config');
+const _ = require('lodash');
 
 const requiredFunctions = {
   onMatch: 1,
@@ -14,6 +14,7 @@ const asyncOnlyTransitions = [
   'update_notifications',
   'multi_report_alerts',
   'generate_patient_id_on_people',
+  'generate_shortcode_on_contacts',
   'update_sent_forms'
 ];
 

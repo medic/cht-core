@@ -2,10 +2,10 @@ describe('Language service', function() {
 
   'use strict';
 
-  var service,
-      UserSettings = sinon.stub(),
-      Settings = sinon.stub(),
-      ipCookie = sinon.stub();
+  let service;
+  const UserSettings = sinon.stub();
+  const Settings = sinon.stub();
+  const ipCookie = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');

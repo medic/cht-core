@@ -2,23 +2,23 @@ describe('ContactViewModelGenerator service', () => {
 
   'use strict';
 
-  let assert = chai.assert,
-      service,
-      ContactTypes,
-      lineageModelGenerator,
-      childContactPerson,
-      deceasedChildPerson,
-      childPerson,
-      childPerson2,
-      childPlace,
-      childPlace2,
-      dbGet,
-      dbQuery,
-      dbAllDocs,
-      doc,
-      search,
-      GetDataRecords,
-      Session;
+  const assert = chai.assert;
+  let service;
+  let ContactTypes;
+  let lineageModelGenerator;
+  let childContactPerson;
+  let deceasedChildPerson;
+  let childPerson;
+  let childPerson2;
+  let childPlace;
+  let childPlace2;
+  let dbGet;
+  let dbQuery;
+  let dbAllDocs;
+  let doc;
+  let search;
+  let GetDataRecords;
+  let Session;
 
   const childPlaceIcon = 'fa-mushroom';
 
@@ -80,7 +80,13 @@ describe('ContactViewModelGenerator service', () => {
       const parentId = 'districtsdistrict';
       const contactId = 'mario';
       childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
-      deceasedChildPerson = { _id: 'deceaseduuid', name: 'casper', type: 'person', date_of_death: 123456789, parent: { _id: parentId } };
+      deceasedChildPerson = {
+        _id: 'deceaseduuid',
+        name: 'casper',
+        type: 'person',
+        date_of_death: 123456789,
+        parent: { _id: parentId }
+      };
 
       childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
 
@@ -103,15 +109,15 @@ describe('ContactViewModelGenerator service', () => {
 
   function waitForModelToLoad(model) {
     return service
-            .loadChildren(model)
-            .then(children => {
-              model.children = children;
-              return service.loadReports(model);
-            })
-            .then(reports => {
-              model.reports = reports;
-              return model;
-            });
+      .loadChildren(model)
+      .then(children => {
+        model.children = children;
+        return service.loadReports(model);
+      })
+      .then(reports => {
+        model.reports = reports;
+        return model;
+      });
   }
 
   describe('Place', () => {
@@ -233,8 +239,10 @@ describe('ContactViewModelGenerator service', () => {
         doc.type = 'clinic';
         const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
-        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
-        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+        const mutedChildPerson1 =
+          { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 =
+          { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
 
         return runPlaceTest([childPerson1, mutedChildPerson2, mutedChildPerson1, childPerson2]).then(model => {
           assert.equal(model.children[0].contacts.length, 5);
@@ -251,8 +259,10 @@ describe('ContactViewModelGenerator service', () => {
         doc.type = 'clinic';
         const childPerson1 = { _id: 'childPerson1', type: 'chp', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'chp', name: 'person 2', date_of_birth: '1999-01-01' };
-        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'chp', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
-        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'chp', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+        const mutedChildPerson1 =
+          { _id: 'mutedChildPerson1', type: 'chp', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 =
+          { _id: 'mutedChildPerson2', type: 'chp', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
 
         return runPlaceTest([mutedChildPerson2, mutedChildPerson1, childPerson2, childPerson1]).then(model => {
           assert.equal(model.children[0].contacts.length, 4);
@@ -285,8 +295,10 @@ describe('ContactViewModelGenerator service', () => {
         doc.muted = 123456;
         const childPerson1 = { _id: 'childPerson1', type: 'chp', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'chp', name: 'person 2', date_of_birth: '1999-01-01' };
-        const mutedChildPerson1 = { _id: 'mutedChildPerson1', type: 'chp', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
-        const mutedChildPerson2 = { _id: 'mutedChildPerson2', type: 'chp', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+        const mutedChildPerson1 =
+          { _id: 'mutedChildPerson1', type: 'chp', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+        const mutedChildPerson2 =
+          { _id: 'mutedChildPerson2', type: 'chp', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
         const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
         const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
         const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
@@ -381,7 +393,8 @@ describe('ContactViewModelGenerator service', () => {
       return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(search.args[0][1].subjectIds).to.have.members([ doc._id, childPerson._id, childPerson2._id, deceasedChildPerson._id ]);
+          chai.expect(search.args[0][1].subjectIds)
+            .to.have.members([ doc._id, childPerson._id, childPerson2._id, deceasedChildPerson._id ]);
           chai.expect(search.callCount).to.equal(1);
           chai.expect(model.reports.length).to.equal(2);
           chai.expect(model.reports[0]._id).to.equal('ab');
@@ -536,8 +549,8 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('should reflect self unmuted state when no muted lineage', () => {
-      const doc = { _id: 'doc', contact_type: 'family' },
-            lineage = [{ _id: 'p1' }, { _id: 'p2' }];
+      const doc = { _id: 'doc', contact_type: 'family' };
+      const lineage = [{ _id: 'p1' }, { _id: 'p2' }];
 
       return runMutingTest(doc, lineage).then(result => {
         chai.expect(result.doc.muted).to.equal(false);
@@ -545,8 +558,8 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('should reflect muted in lineage state', () => {
-      const doc = { _id: 'doc', contact_type: 'family' },
-            lineage = [{ _id: 'p1' }, { _id: 'p2', muted: true }, { _id: 'p3' }];
+      const doc = { _id: 'doc', contact_type: 'family' };
+      const lineage = [{ _id: 'p1' }, { _id: 'p2', muted: true }, { _id: 'p3' }];
 
       return runMutingTest(doc, lineage).then(result => {
         chai.expect(result.doc.muted).to.equal(true);

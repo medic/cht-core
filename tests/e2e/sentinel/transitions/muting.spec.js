@@ -1,6 +1,6 @@
-const utils = require('../../../utils'),
-      sentinelUtils = require('../utils'),
-      uuid = require('uuid');
+const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
+const uuid = require('uuid');
 
 const contacts = [
   {
@@ -21,7 +21,10 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'person',
+      parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -41,7 +44,10 @@ const extraContacts = [
     name: 'Clinic',
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: { _id: 'person2', parent:  { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } },
+    contact: {
+      _id: 'person2',
+      parent:  { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
     reported_date: new Date().getTime()
   },
   {
@@ -77,7 +83,10 @@ describe('muting', () => {
         patient_uuid: 'person'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -108,7 +117,10 @@ describe('muting', () => {
         patient_uuid: 'person'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -161,7 +173,10 @@ describe('muting', () => {
         patient_id: 'unknown'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const doc2 = {
@@ -173,7 +188,10 @@ describe('muting', () => {
         patient_id: 'this will not pass validation'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     return utils
@@ -261,7 +279,10 @@ describe('muting', () => {
         patient_id: 'person'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const mute2 = {
@@ -272,7 +293,10 @@ describe('muting', () => {
         patient_id: 'person'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const unmute1 = {
@@ -283,7 +307,10 @@ describe('muting', () => {
         patient_id: 'person'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const unmute2 = {
@@ -294,11 +321,14 @@ describe('muting', () => {
         patient_id: 'person'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
-    let muteTime,
-        unmuteTime;
+    let muteTime;
+    let unmuteTime;
 
     return utils
       .updateSettings(settings, true)
@@ -421,7 +451,10 @@ describe('muting', () => {
         place_id: 'clinic'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const unmute = {
@@ -432,7 +465,10 @@ describe('muting', () => {
         place_id: 'clinic'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     let muteTime;
@@ -532,7 +568,10 @@ describe('muting', () => {
         patient_id: '99999'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const muteHC = {
@@ -543,7 +582,10 @@ describe('muting', () => {
         place_id: 'health_center'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const unmute = {
@@ -554,11 +596,14 @@ describe('muting', () => {
         patient_id: '99999'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
-    let mutePersonTime,
-        muteHCTime;
+    let mutePersonTime;
+    let muteHCTime;
 
     return utils
       .updateSettings(settings, true)
@@ -676,7 +721,10 @@ describe('muting', () => {
         place_id: 'clinic'
       },
       reported_date: new Date().getTime(),
-      contact: { _id: 'person', parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } } }
+      contact: {
+        _id: 'person',
+        parent:  { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
     };
 
     const person = {
@@ -773,8 +821,10 @@ describe('muting', () => {
           patient_id: 'person'
         },
         scheduled_tasks: [
-          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
-          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
           { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       },
@@ -787,9 +837,11 @@ describe('muting', () => {
         },
         contact: { _id: 'person' },
         scheduled_tasks: [
-          { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+          { group: 1, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
           { group: 2, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
-          { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
+          { group: 3, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
         ]
       },
       { // valid registration
@@ -802,8 +854,10 @@ describe('muting', () => {
         contact: { _id: 'person' },
         scheduled_tasks: [
           { group: 1, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
-          { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
-          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+          { group: 2, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 3, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
         ]
       },
       { // valid registration from other "branch"
@@ -815,8 +869,10 @@ describe('muting', () => {
         },
         contact: { _id: 'person2' },
         scheduled_tasks: [
-          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() + notToday },
-          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic', due: new Date().getTime() - notToday },
+          { group: 1, state: 'pending', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() + notToday },
+          { group: 2, state: 'scheduled', translation_key: 'beta', recipient: 'clinic',
+            due: new Date().getTime() - notToday },
           { group: 3, state: 'something_else', translation_key: 'beta', recipient: 'clinic' },
         ]
       }
@@ -850,7 +906,9 @@ describe('muting', () => {
       .then(() => utils.saveDocs(reports))
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
-      .then(() => utils.getDocs(['no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4']))
+      .then(() => utils.getDocs(
+        ['no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4']
+      ))
       .then(reports => {
         expect(reports[0].scheduled_tasks[0].state).toEqual('pending');
         expect(reports[0].scheduled_tasks[1].state).toEqual('scheduled');
@@ -884,7 +942,9 @@ describe('muting', () => {
       })
       .then(() => utils.saveDoc(unmute))
       .then(() => sentinelUtils.waitForSentinel(unmute._id))
-      .then(() => utils.getDocs(['no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4']))
+      .then(() => utils.getDocs(
+        ['no_registration_config', 'incorrect_content', 'sms_without_contact', 'registration_4']
+      ))
       .then(reports => {
         expect(reports[0].scheduled_tasks[0].state).toEqual('pending');
         expect(reports[0].scheduled_tasks[1].state).toEqual('scheduled');

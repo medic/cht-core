@@ -1,18 +1,18 @@
 /**
  * @module message-utils
  */
-var _ = require('underscore'),
-    uuid = require('uuid'),
-    gsm = require('gsm'),
-    mustache = require('mustache'),
-    objectPath = require('object-path'),
-    moment = require('moment'),
-    toBikramSambatLetters = require('bikram-sambat').toBik_text,
-    phoneNumber = require('@medic/phone-number'),
-    SMS_TRUNCATION_SUFFIX = '...';
+const _ = require('lodash/core');
+const uuid = require('uuid');
+const gsm = require('gsm');
+const mustache = require('mustache');
+const objectPath = require('object-path');
+const moment = require('moment');
+const toBikramSambatLetters = require('bikram-sambat').toBik_text;
+const phoneNumber = require('@medic/phone-number');
+const SMS_TRUNCATION_SUFFIX = '...';
 
-var getParent = function(doc, type) {
-  var facility = doc.parent ? doc : doc.contact;
+const getParent = function(doc, type) {
+  let facility = doc.parent ? doc : doc.contact;
   while (facility && facility.type !== type && facility.contact_type !== type) {
     facility = facility.parent;
   }
@@ -20,30 +20,30 @@ var getParent = function(doc, type) {
   return facility || undefined;
 };
 
-var getClinic = function(doc) {
+const getClinic = function(doc) {
   return doc && getParent(doc, 'clinic');
 };
 
-var getHealthCenter = function(doc) {
+const getHealthCenter = function(doc) {
   return doc && getParent(doc, 'health_center');
 };
 
-var getDistrict = function(doc) {
+const getDistrict = function(doc) {
   return doc && getParent(doc, 'district_hospital');
 };
 
-var getClinicPhone = function(doc) {
-  var clinic = getClinic(doc);
+const getClinicPhone = function(doc) {
+  const clinic = getClinic(doc);
   return clinic && clinic.contact && clinic.contact.phone;
 };
 
-var getHealthCenterPhone = function(doc) {
-  var healthCenter = getHealthCenter(doc);
+const getHealthCenterPhone = function(doc) {
+  const healthCenter = getHealthCenter(doc);
   return healthCenter && healthCenter.contact && healthCenter.contact.phone;
 };
 
-var getDistrictPhone = function(doc) {
-  var district = getDistrict(doc);
+const getDistrictPhone = function(doc) {
+  const district = getDistrict(doc);
   return district && district.contact && district.contact.phone;
 };
 
@@ -52,21 +52,21 @@ const getParentPhone = function(doc, type) {
   return parent && parent.contact && parent.contact.phone;
 };
 
-var applyPhoneReplacement = function(config, phone) {
-  var replacement = config.outgoing_phone_replace;
+const applyPhoneReplacement = function(config, phone) {
+  const replacement = config.outgoing_phone_replace;
   if (!phone || !replacement || !replacement.match) {
     return phone;
   }
-  var match = replacement.match,
-      replace = replacement.replace || '';
+  const match = replacement.match;
+  const replace = replacement.replace || '';
   if (phone.indexOf(match) === 0) {
     phone = replace + phone.substring(match.length);
   }
   return phone;
 };
 
-var applyPhoneFilters = function(config, phone) {
-  var filters = config.outgoing_phone_filters;
+const applyPhoneFilters = function(config, phone) {
+  const filters = config.outgoing_phone_filters;
   if (!phone || !filters) {
     return phone;
   }
@@ -79,16 +79,16 @@ var applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
-var getRecipient = function(context, recipient) {
+const getRecipient = function(context, recipient) {
   if (!context) {
     return;
   }
   recipient = recipient && recipient.trim();
-  var from = context.from || (context.contact && context.contact.phone);
+  const from = context.from || (context.contact && context.contact.phone);
   if (!recipient) {
     return from;
   }
-  var phone;
+  let phone;
   if (recipient === 'reporting_unit') {
     phone = from;
   } else if (recipient.startsWith('ancestor:')) {
@@ -136,13 +136,13 @@ var getRecipient = function(context, recipient) {
   return phone || from || recipient;
 };
 
-var getPhone = function(config, context, recipient) {
-  var phone = getRecipient(context, recipient);
+const getPhone = function(config, context, recipient) {
+  let phone = getRecipient(context, recipient);
   phone = applyPhoneReplacement(config, phone);
   return applyPhoneFilters(config, phone);
 };
 
-var getLocale = function(config, doc) {
+const getLocale = function(config, doc) {
   return  doc.locale ||
           (doc.sms_message && doc.sms_message.locale) ||
           config.locale_outgoing ||
@@ -150,11 +150,11 @@ var getLocale = function(config, doc) {
           'en';
 };
 
-var extractTemplateContext = function(doc) {
-  var clinic = getClinic(doc);
-  var healthCenter = getHealthCenter(doc);
-  var district = getDistrict(doc);
-  var internal = {
+const extractTemplateContext = function(doc) {
+  const clinic = getClinic(doc);
+  const healthCenter = getHealthCenter(doc);
+  const district = getDistrict(doc);
+  const internal = {
     clinic: clinic,
     health_center: healthCenter,
     district: district,
@@ -165,9 +165,10 @@ var extractTemplateContext = function(doc) {
   return _.defaults(internal, doc.fields, doc);
 };
 
-var extendedTemplateContext = function(doc, extras) {
-  var templateContext = {
-    patient: extras.patient
+const extendedTemplateContext = function(doc, extras) {
+  const templateContext = {
+    patient: extras.patient,
+    place: extras.place,
   };
 
   if (extras.templateContext) {
@@ -180,6 +181,10 @@ var extendedTemplateContext = function(doc, extras) {
     // Don't want to add this to extractTemplateContext as 'name' is too generic
     // and eTC gets called elsewhere
     templateContext.patient_name = templateContext.patient_name || extras.patient.name;
+  }
+
+  if (extras.place) {
+    _.defaults(templateContext, extractTemplateContext(extras.place));
   }
 
   _.defaults(templateContext, extractTemplateContext(doc));
@@ -195,8 +200,8 @@ mustache.escape = function(value) {
   return value;
 };
 
-var formatDate = function(config, text, view, formatString, locale) {
-  var date = render(config, text, view);
+const formatDate = function(config, text, view, formatString, locale) {
+  let date = render(config, text, view);
   if (!isNaN(date)) {
     date = parseInt(date, 10);
   }
@@ -204,8 +209,8 @@ var formatDate = function(config, text, view, formatString, locale) {
   return moment(date).locale(locale).format(formatString);
 };
 
-var render = function(config, template, view, locale) {
-  return mustache.render(template, _.extend(view, {
+const render = function(config, template, view, locale) {
+  return mustache.render(template, Object.assign(view, {
     bikram_sambat_date: function() {
       return function(text) {
         return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD'));
@@ -224,8 +229,8 @@ var render = function(config, template, view, locale) {
   }));
 };
 
-var truncateMessage = function(parts, max) {
-  var message = parts.slice(0, max).join('');
+const truncateMessage = function(parts, max) {
+  const message = parts.slice(0, max).join('');
   return message.slice(0, -SMS_TRUNCATION_SUFFIX.length) + SMS_TRUNCATION_SUFFIX;
 };
 
@@ -249,21 +254,21 @@ var truncateMessage = function(parts, max) {
 exports.generate = function(config, translate, doc, content, recipient, extraContext) {
   'use strict';
 
-  var context = extendedTemplateContext(doc, extraContext || {});
+  const context = extendedTemplateContext(doc, extraContext || {});
 
-  var result = {
+  const result = {
     uuid: uuid.v4(),
     to: getPhone(config, context, recipient)
   };
 
-  var message = exports.template(config, translate, doc, content, extraContext);
+  const message = exports.template(config, translate, doc, content, extraContext);
   if (!message || (content.translationKey && message === content.translationKey)) {
     result.error = 'messages.errors.message.empty';
     return [ result ];
   }
 
-  var parsed = gsm(message);
-  var max = config.multipart_sms_limit || 10;
+  const parsed = gsm(message);
+  const max = config.multipart_sms_limit || 10;
 
   if (parsed.sms_count <= max) {
     // no need to truncate
@@ -274,7 +279,7 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
     result.original_message = message;
   }
 
-  var isMissingPatient = extraContext &&
+  const isMissingPatient = extraContext &&
                          !extraContext.patient &&
                          extraContext.registrations &&
                          extraContext.registrations.length;
@@ -300,12 +305,12 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
  */
 exports.template = function(config, translate, doc, content, extraContext) {
   extraContext = extraContext || {};
-  var locale = getLocale(config, doc);
-  var template;
+  const locale = getLocale(config, doc);
+  let template;
   if (content.translationKey) {
     template = translate(content.translationKey, locale);
   } else if (_.isArray(content.message)) {
-    var message = _.findWhere(content.message, { locale: locale }) ||
+    const message = _.find(content.message, { locale: locale }) ||
                   content.message[0];
     if (message) {
       template = message.content && message.content.trim();
@@ -317,7 +322,7 @@ exports.template = function(config, translate, doc, content, extraContext) {
   if (!template) {
     return '';
   }
-  var context = extendedTemplateContext(doc, extraContext);
+  const context = extendedTemplateContext(doc, extraContext);
   return render(config, template, context, locale);
 };
 

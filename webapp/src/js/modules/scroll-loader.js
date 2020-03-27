@@ -3,7 +3,7 @@
   'use strict';
 
   exports.init = function(callback) {
-    var _check = function() {
+    const _check = function() {
       if (this.scrollHeight - this.scrollTop - 10 < this.clientHeight) {
         callback();
       }

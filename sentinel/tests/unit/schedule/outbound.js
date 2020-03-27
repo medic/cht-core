@@ -131,7 +131,7 @@ describe('outbound schedule', () => {
     });
 
     it('Errors if the task fails to resolve a document for some other reason', () => {
-           const task = {
+      const task = {
         _id: 'task:outbound:some_doc_id',
         doc_id: 'some_doc_id',
         queue: ['some', 'task']
@@ -224,7 +224,8 @@ describe('outbound schedule', () => {
         }
       };
 
-      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), `Mapping error for 'test-config/foo' on source document 'test-doc': cannot find 'doc.fields.foo' on source document`);
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), `Mapping error for 'test-config/foo' on ` +
+        `source document 'test-doc': cannot find 'doc.fields.foo' on source document`);
     });
 
     it('supports optional path mappings', () => {
@@ -349,6 +350,40 @@ describe('outbound schedule', () => {
         });
     });
 
+    it('should support pushing via header auth', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          auth: {
+            type: 'Header',
+            name: 'Authorization',
+            value_key: 'test-config'
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      sinon.stub(secureSettings, 'getCredentials').resolves('Bearer credentials');
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('send')(payload, conf)
+        .then(() => {
+          assert.equal(secureSettings.getCredentials.callCount, 1);
+          assert.equal(secureSettings.getCredentials.args[0][0], 'test-config');
+          assert.equal(request.post.callCount, 1);
+          assert.equal(request.post.args[0][0].url, 'http://test/foo');
+          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
+          assert.equal(request.post.args[0][0].json, true);
+          assert.deepEqual(request.post.args[0][0].headers, {
+            Authorization: 'Bearer credentials'
+          });
+        });
+    });
+    
     it('should support Muso SIH custom auth', () => {
       const payload = {
         some: 'data'
@@ -394,7 +429,7 @@ describe('outbound schedule', () => {
         });
     });
 
-    it('should error is Muso SIH custom auth fails to return a 200', () => {
+    it('should error if Muso SIH custom auth fails to return a 200', () => {
       const payload = {
         some: 'data'
       };
@@ -479,7 +514,7 @@ describe('outbound schedule', () => {
     let sentinelPut;
     let sentinelGet;
 
-    let restores = [];
+    const restores = [];
 
     beforeEach(() => {
       const transitionsLib = {
@@ -499,7 +534,7 @@ describe('outbound schedule', () => {
 
     afterEach(() => restores.forEach(restore => restore()));
 
-    it('should create a outbound push out of the passed parameters, and update the infodoc and task if successful', () => {
+    it('should create a outbound push out of the passed parameters, and update the infodoc and task if success', () => {
       const config = {
         some: 'config'
       };
@@ -654,7 +689,7 @@ describe('outbound schedule', () => {
       }]).then(() => {
         assert.equal(db.sentinel.bulkDocs.callCount, 1);
         assert.deepEqual(db.sentinel.bulkDocs.args[0][0], [{
-         _id: 'task:outbound:test-doc-3',
+          _id: 'task:outbound:test-doc-3',
           doc_id: 'test-doc-3',
           queue: ['test-push-2'],
           _deleted: true
@@ -668,7 +703,7 @@ describe('outbound schedule', () => {
     let queuedTasks;
     let singlePush;
     let removeInvalidTasks;
-    let restores = [];
+    const restores = [];
 
     beforeEach(() => {
       configGet = sinon.stub(config, 'get');

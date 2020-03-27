@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('MergeUriParameters',
   function(
@@ -9,19 +9,19 @@ angular.module('inboxServices').factory('MergeUriParameters',
 
     // converts the given uri to a Location object
     // https://developer.mozilla.org/en-US/docs/Web/API/Location
-    var parse = function(uri) {
-      var parser = document.createElement('a');
+    const parse = function(uri) {
+      const parser = document.createElement('a');
       parser.href = uri;
       return parser;
     };
 
     // splits the search in the given location into a map of params
-    var getParams = function(location) {
-      var result = {};
+    const getParams = function(location) {
+      const result = {};
       if (location.search && location.search.length) {
-        var search = location.search.substr(1);
+        const search = location.search.substr(1);
         search.split('&').forEach(function(part) {
-          var item = part.split('=');
+          const item = part.split('=');
           result[item[0]] = decodeURIComponent(item[1]);
         });
       }
@@ -34,8 +34,8 @@ angular.module('inboxServices').factory('MergeUriParameters',
      * the new uri as a string.
      */
     return function(uri, defaults) {
-      var location = parse(uri);
-      var existing = getParams(location);
+      const location = parse(uri);
+      const existing = getParams(location);
       _.defaults(existing, defaults);
       return location.pathname + '?' + $httpParamSerializer(existing);
     };

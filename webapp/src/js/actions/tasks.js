@@ -13,8 +13,13 @@ angular.module('inboxServices').factory('TasksActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_TASK, 'selected', selected));
       }
 
+      function setTasksLoaded(promise) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_TASKS_LOADED, 'loaded', promise));
+      }
+
       return {
-        setSelectedTask
+        setSelectedTask,
+        setTasksLoaded,
       };
     };
   }

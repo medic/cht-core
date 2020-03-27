@@ -1,6 +1,6 @@
-const dbDoc = require('../services/db-doc'),
-      _ = require('underscore'),
-      serverUtils = require('../server-utils');
+const dbDoc = require('../services/db-doc');
+const _ = require('lodash');
+const serverUtils = require('../server-utils');
 
 // block this middleware from processing requests to these endpoints
 const RESERVED_ENDPOINTS = [
@@ -106,7 +106,7 @@ module.exports = {
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
-  _.extend(module.exports, {
+  Object.assign(module.exports, {
     _isValidRequest: isValidRequest,
     _isValidAttachmentRequest: isValidAttachmentRequest
   });

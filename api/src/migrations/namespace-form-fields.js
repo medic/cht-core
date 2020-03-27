@@ -1,21 +1,21 @@
 // For `data_records`, moves form fields from `doc.my_field` to `doc.fields.my_field`.
 
-var async = require('async'),
-  _ = require('underscore'),
-  { promisify } = require('util'),
-  db = require('../db'),
-  logger = require('../logger'),
-  settingsService = require('../services/settings'),
-  forms;
+const async = require('async');
+const _ = require('lodash');
+const { promisify } = require('util');
+const db = require('../db');
+const logger = require('../logger');
+const settingsService = require('../services/settings');
+let forms;
 
-var BATCH_SIZE = 100;
+const BATCH_SIZE = 100;
 
-var namespace = function(docs, callback) {
+const namespace = function(docs, callback) {
   docs.forEach(function(doc) {
     if (doc.fields || !doc.form) {
       return;
     }
-    var form = forms[doc.form];
+    const form = forms[doc.form];
     if (!form) {
       return;
     }
@@ -32,7 +32,7 @@ var namespace = function(docs, callback) {
     }
 
     if (results && results.length) {
-      var errors = [];
+      const errors = [];
       results.forEach(function(result) {
         if (!result.ok) {
           errors.push(new Error(result.error + ' - ' + result.reason));
@@ -50,8 +50,8 @@ var namespace = function(docs, callback) {
   });
 };
 
-var runBatch = function(batchSize, skip, callback) {
-  var options = {
+const runBatch = function(batchSize, skip, callback) {
+  const options = {
     key: ['data_record'],
     include_docs: true,
     limit: batchSize,
@@ -62,10 +62,10 @@ var runBatch = function(batchSize, skip, callback) {
       return callback(err);
     }
     logger.info(`        Processing ${skip} to (${skip + batchSize}) docs of ${result.total_rows} total`);
-    var docs = _.uniq(_.pluck(result.rows, 'doc'));
+    const docs = _.uniq(_.map(result.rows, 'doc'));
 
     namespace(docs, function(err) {
-      var keepGoing = result.total_rows > skip + batchSize;
+      const keepGoing = result.total_rows > skip + batchSize;
       callback(err, keepGoing);
     });
   });

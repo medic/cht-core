@@ -1,10 +1,10 @@
-const _ = require('underscore'),
-  phoneNumber = require('@medic/phone-number'),
-  messageUtils = require('@medic/message-utils'),
-  utils = require('./utils'),
-  config = require('../config'),
-  history = require('./history'),
-  logger = require('./logger');
+const _ = require('lodash');
+const phoneNumber = require('@medic/phone-number');
+const messageUtils = require('@medic/message-utils');
+const utils = require('./utils');
+const config = require('../config');
+const history = require('./history');
+const logger = require('./logger');
 
 const messageStatus = (from, msg) => {
   let status = 'denied';
@@ -80,7 +80,7 @@ module.exports = {
     }
 
     // otherwise, use the configured messages (deprecated)
-    var messages = configuration.messages || configuration.message;
+    const messages = configuration.messages || configuration.message;
     if (!_.isArray(messages)) {
       logger.warn(
         'Message property should be an array. Please check your configuration.'
@@ -94,8 +94,8 @@ module.exports = {
       return '';
     }
     // default to first item in messages array in case locale match fails
-    var message =
-      _.findWhere(messages, { locale: locale || 'en' }) || messages[0];
+    const message =
+      _.find(messages, { locale: locale || 'en' }) || messages[0];
     return (message.content && message.content.trim()) || '';
   },
   /*
@@ -103,7 +103,7 @@ module.exports = {
      *
      * Deny if any
      * - recipient phone number matches gateway number
-     * - outgoing_deny_list is a comma delimited list, deny when beginning of the recipient phone number matches any entry
+     * - outgoing_deny_list is a comma delimited list, deny when start of the recipient phone number matches any entry
      * - outgoing_deny_shorter_than is an integer, deny when the recipient phone number is shorter than
      * - outgoing_deny_with_alphas is a boolean, deny when true and the recipient phone number contains letters
      *

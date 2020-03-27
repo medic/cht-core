@@ -1,9 +1,9 @@
-const assert = require('chai').assert,
-  net = require('net'),
-  constants = require('../constants'),
-  host = constants.API_HOST,
-  port = constants.API_PORT,
-  dbName = constants.DB_NAME;
+const assert = require('chai').assert;
+const net = require('net');
+const constants = require('../constants');
+const host = constants.API_HOST;
+const port = constants.API_PORT;
+const dbName = constants.DB_NAME;
 const utils = require('../utils');
 const db = utils.db;
 
@@ -157,8 +157,8 @@ const rawHttpRequest = rawRequest => {
 
     api.on('close', () => {
       const response = { headers: {} };
-      let line,
-        lines = rawResponse.split('\r\n');
+      let line;
+      const lines = rawResponse.split('\r\n');
 
       response.statusCode = parseInt(lines.shift().split(' ')[1]);
       while ((line = lines.shift())) {

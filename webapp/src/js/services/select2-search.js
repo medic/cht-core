@@ -1,6 +1,6 @@
-var _ = require('underscore'),
-    format = require('../modules/format'),
-    phoneNumber = require('@medic/phone-number');
+const _ = require('lodash/core');
+const format = require('../modules/format');
+const phoneNumber = require('@medic/phone-number');
 
 angular.module('inboxServices').factory('Select2Search',
   function(
@@ -17,7 +17,7 @@ angular.module('inboxServices').factory('Select2Search',
     'use strict';
     'ngInject';
 
-    var defaultTemplateResult = function(row) {
+    const defaultTemplateResult = function(row) {
       if(!row.doc) {
         return $('<span>' + (row.text || '&nbsp;') + '</span>');
       }
@@ -26,37 +26,37 @@ angular.module('inboxServices').factory('Select2Search',
       return $(format.sender(row.doc, $translate));
     };
 
-    var defaultTemplateSelection = function(row) {
+    const defaultTemplateSelection = function(row) {
       if(row.doc) {
         return row.doc.name + (row.doc.muted ? ' (' + $translate.instant('contact.muted') + ')': '');
       }
       return row.text;
     };
 
-    var defaultSendMessageExtras = function(row) {
+    const defaultSendMessageExtras = function(row) {
       return row;
     };
 
     return function(selectEl, _types, options) {
 
       options = options || {};
-      var currentQuery;
+      let currentQuery;
 
-      var pageSize = options.pageSize || 20,
-          allowNew = options.allowNew || false,
-          templateResult = options.templateResult || defaultTemplateResult,
-          templateSelection = options.templateSelection || defaultTemplateSelection,
-          sendMessageExtras = options.sendMessageExtras || defaultSendMessageExtras,
-          tags = options.tags || false,
-          initialValue = options.initialValue || selectEl.val(),
-          types = Array.isArray(_types) ? _types : [ _types ];
+      const pageSize = options.pageSize || 20;
+      const allowNew = options.allowNew || false;
+      const templateResult = options.templateResult || defaultTemplateResult;
+      const templateSelection = options.templateSelection || defaultTemplateSelection;
+      const sendMessageExtras = options.sendMessageExtras || defaultSendMessageExtras;
+      const tags = options.tags || false;
+      const initialValue = options.initialValue || selectEl.val();
+      const types = Array.isArray(_types) ? _types : [ _types ];
 
       if (allowNew && types.length !== 1) {
         throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
       }
-      var addNewText = $translate.instant('contact.type.' + types[0] + '.new');
+      const addNewText = $translate.instant('contact.type.' + types[0] + '.new');
 
-      var prepareRows = function(documents) {
+      const prepareRows = function(documents) {
         return _.sortBy(documents, function(doc) {
           return doc.name;
         }).map(function(doc) {
@@ -67,10 +67,10 @@ angular.module('inboxServices').factory('Select2Search',
         });
       };
 
-      var query = function(params, successCb, failureCb) {
+      const query = function(params, successCb, failureCb) {
         currentQuery = params.data.q;
-        var skip = ((params.data.page || 1) - 1) * pageSize;
-        var filters = {
+        const skip = ((params.data.page || 1) - 1) * pageSize;
+        const filters = {
           types: { selected: types },
           search: params.data.q
         };
@@ -98,7 +98,7 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      var getDoc = function(id) {
+      const getDoc = function(id) {
         return LineageModelGenerator.contact(id, { merge: true })
           .then(function(contact) {
             contact.doc.muted = ContactMuted(contact.doc);
@@ -114,7 +114,7 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      var resolveInitialValue = function(selectEl, initialValue) {
+      const resolveInitialValue = function(selectEl, initialValue) {
         if (initialValue) {
           if (!selectEl.children('option[value="' + initialValue + '"]').length) {
             selectEl.append($('<option value="' + initialValue + '"/>'));
@@ -124,8 +124,8 @@ angular.module('inboxServices').factory('Select2Search',
           selectEl.val('');
         }
 
-        var resolution;
-        var value = selectEl.val();
+        let resolution;
+        let value = selectEl.val();
         if (!(value && value.length)) {
           resolution = $q.resolve();
         } else {
@@ -136,14 +136,14 @@ angular.module('inboxServices').factory('Select2Search',
           }
           if (phoneNumber.validate(Settings, value)) {
             // Raw phone number, don't resolve from DB
-            var text = templateSelection({ text: value });
+            const text = templateSelection({ text: value });
             selectEl.select2('data')[0].text = text;
             resolution = $q.resolve();
           } else {
             resolution = getDoc(value).then(function(doc) {
               selectEl.select2('data')[0].doc = doc;
             })
-            .catch(err => $log.error('Select2 failed to get document', err));
+              .catch(err => $log.error('Select2 failed to get document', err));
           }
         }
 
@@ -153,7 +153,7 @@ angular.module('inboxServices').factory('Select2Search',
         });
       };
 
-      var initSelect2 = function(selectEl) {
+      const initSelect2 = function(selectEl) {
         selectEl.select2({
           ajax: {
             delay: 500,
@@ -168,7 +168,7 @@ angular.module('inboxServices').factory('Select2Search',
           minimumInputLength: Session.isOnlineOnly() ? 3 : 0
         });
         if (allowNew) {
-          var button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
+          const button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
             .on('click', function() {
               selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
               selectEl.trigger('change');
@@ -180,7 +180,7 @@ angular.module('inboxServices').factory('Select2Search',
         // !tags -> only support single values, until there is a use-case
         if (!tags) {
           selectEl.on('select2:select', function(e) {
-            var docId = e.params &&
+            const docId = e.params &&
                         e.params.data &&
                         e.params.data.id;
 
@@ -189,7 +189,7 @@ angular.module('inboxServices').factory('Select2Search',
                 selectEl.select2('data')[0].doc = doc;
                 selectEl.trigger('change');
               })
-              .catch(err => $log.error('Select2 failed to get document', err));
+                .catch(err => $log.error('Select2 failed to get document', err));
             }
           });
         }

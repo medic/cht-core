@@ -1,12 +1,12 @@
-const auth = require('../auth'),
-      serverUtils = require('../server-utils');
+const auth = require('../auth');
+const serverUtils = require('../server-utils');
 
 const service = require('../services/upgrade');
 
 const upgrade = (req, res, stageOnly) => {
   return auth.check(req, 'can_configure')
     .then(userCtx => {
-      var buildInfo = req.body.build;
+      const buildInfo = req.body.build;
       if (!buildInfo) {
         throw {
           message: 'You must provide a build info body',

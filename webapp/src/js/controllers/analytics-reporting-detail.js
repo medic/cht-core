@@ -1,6 +1,6 @@
-var _ = require('underscore'),
-    d3 = require('d3'),
-    reportingUtils = require('../modules/reporting-rates-utils');
+const _ = require('lodash/core');
+const d3 = require('d3');
+const reportingUtils = require('../modules/reporting-rates-utils');
 
 angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
   function (
@@ -44,14 +44,14 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
 
     Settings()
       .then(function(settings) {
-        var newSettings = _.findWhere(settings['kujua-reporting'], { code: ctrl.filters.form });
+        const newSettings = _.find(settings['kujua-reporting'], { code: ctrl.filters.form });
         ctrl.setFilter({ reporting_freq: newSettings && newSettings.reporting_freq });
       })
       .catch(function(err) {
         $log.error('Error fetching settings', err);
       });
 
-    var TRANSLATION_KEYS = {
+    const TRANSLATION_KEYS = {
       week: [
         'week',
         'week.plural'
@@ -119,16 +119,16 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       setDistrict();
     };
 
-    var findDistrict = function(place) {
+    const findDistrict = function(place) {
       while(place && place.parent) {
         place = place.parent;
       }
       return place;
     };
 
-    var getRows = function(type, facilities, reports, dates) {
-      var rowsFn = type === 'health_center' ? reportingUtils.getRowsHC : reportingUtils.getRows;
-      var rows = rowsFn(facilities, reports, dates);
+    const getRows = function(type, facilities, reports, dates) {
+      const rowsFn = type === 'health_center' ? reportingUtils.getRowsHC : reportingUtils.getRows;
+      const rows = rowsFn(facilities, reports, dates);
       rows.forEach(function(facility) {
         facility.chart = [
           { key: 'valid', y: facility.valid_percent },
@@ -138,18 +138,18 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       return rows;
     };
 
-    var colours = {
+    const colours = {
       valid: '#009900',
       invalid: '#990000',
       missing: '#999999'
     };
-    var colorFunction = function(d) {
+    const colorFunction = function(d) {
       return colours[d.key];
     };
-    var xFunction = function(d) {
+    const xFunction = function(d) {
       return d.key;
     };
-    var yFunction = function(d) {
+    const yFunction = function(d) {
       return d.y;
     };
 
@@ -198,10 +198,10 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       }
     };
 
-    var setDistrict = function(placeId) {
+    const setDistrict = function(placeId) {
       ctrl.error = false;
       ctrl.loadingTotals = true;
-      var dates = reportingUtils.getDates(ctrl.filters);
+      const dates = reportingUtils.getDates(ctrl.filters);
       DB()
         .get(placeId || ctrl.place._id)
         .then(function(place) {
@@ -210,11 +210,11 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
             getViewReports(place, dates)
           ])
             .then(function(results) {
-              var facilities = results[0];
-              var reports = results[1];
+              const facilities = results[0];
+              const reports = results[1];
 
               ctrl.totals = reportingUtils.getTotals(facilities, reports, dates);
-              var rows = getRows(place.type, facilities, reports, dates);
+              const rows = getRows(place.type, facilities, reports, dates);
               if (place.type === 'health_center') {
                 ctrl.clinics = rows;
               } else {
@@ -239,7 +239,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
 
     setDistrict($state.params.place);
 
-    var loadAvailableFacilities = function() {
+    const loadAvailableFacilities = function() {
       PlaceHierarchy()
         .then(function(hierarchy) {
           ctrl.facilities = hierarchy;
@@ -250,9 +250,9 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
     };
     loadAvailableFacilities();
 
-    var getViewReports = function(doc, dates) {
-      var params = reportingUtils.getReportingViewArgs(dates),
-          view = 'reports_by_form_year_month_places';
+    const getViewReports = function(doc, dates) {
+      const params = reportingUtils.getReportingViewArgs(dates);
+      let view = 'reports_by_form_year_month_places';
 
       if (dates.reporting_freq === 'week') {
         view = 'reports_by_form_year_week_places';
@@ -261,8 +261,8 @@ angular.module('inboxControllers').controller('AnalyticsReportingDetailCtrl',
       return DB().query('medic-client/' + view, params)
         .then(function(data) {
           // additional filtering for this facility
-          var saved_data = [];
-          var contactIdProperty = doc.type === 'health_center' ? 'healthCenterId' : 'districtId';
+          const saved_data = [];
+          const contactIdProperty = doc.type === 'health_center' ? 'healthCenterId' : 'districtId';
           data.rows.forEach(function(row) {
             if (doc._id === row.value[contactIdProperty]) {
               saved_data.push(row);

@@ -142,6 +142,35 @@ describe('Minify', function() {
       chai.expect(actual).to.deep.equal(expected);
     });
 
+    it('removes the place', () => {
+      // Given
+      const actual = {
+        _id: 'c',
+        type: 'data_record',
+        place_id: '123',
+        place: {
+          _id: 'a',
+          name: 'Alice',
+          place_id: '123',
+          parent: {
+            _id: 'b',
+            name: 'Bob'
+          }
+        }
+      };
+      const expected = {
+        _id: 'c',
+        type: 'data_record',
+        place_id: '123'
+      };
+
+      // when
+      lineage.minify(actual);
+
+      // then
+      chai.expect(actual).to.deep.equal(expected);
+    });
+
     it('errors out on potential infinite recursion', function() {
       const doc = {
         _id: 'same_id',

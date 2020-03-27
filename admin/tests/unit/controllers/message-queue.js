@@ -2,12 +2,12 @@ describe('MessageQueueCtrl controller', () => {
 
   'use strict';
 
-  let scope,
-      stateGo,
-      MessageQueue,
-      Settings,
-      $rootScope,
-      createController;
+  let scope;
+  let stateGo;
+  let MessageQueue;
+  let Settings;
+  let $rootScope;
+  let createController;
 
   beforeEach(module('adminApp'));
 

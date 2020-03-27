@@ -58,7 +58,8 @@ describe('africas talking service', () => {
       service.send(given)
         .then(() => done(new Error('expected error to be thrown')))
         .catch(err => {
-          chai.expect(err).to.equal('No username configured. Refer to the Africa\'s Talking configuration documentation.');
+          chai.expect(err)
+            .to.equal('No username configured. Refer to the Africa\'s Talking configuration documentation.');
           done();
         });
     });

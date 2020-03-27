@@ -1,15 +1,15 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      db = require('../../../src/db'),
-      people = require('../../../src/controllers/people'),
-      places = require('../../../src/controllers/places'),
-      migration = require('../../../src/migrations/extract-person-contacts');
+const sinon = require('sinon');
+const chai = require('chai');
+const db = require('../../../src/db');
+const people = require('../../../src/controllers/people');
+const places = require('../../../src/controllers/places');
+const migration = require('../../../src/migrations/extract-person-contacts');
 
-let createPerson,
-    getDoc,
-    getView,
-    insertDoc,
-    updatePlace;
+let createPerson;
+let getDoc;
+let getView;
+let insertDoc;
+let updatePlace;
 
 describe('extract-person-contacts migration', () => {
 

@@ -1,4 +1,6 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
+_.toPairs = require('lodash/toPairs');
+
 
 angular.module('controllers').controller('IconsCtrl',
   function(
@@ -21,9 +23,9 @@ angular.module('controllers').controller('IconsCtrl',
     $scope.icons = null;
     $scope.loading = true;
 
-    var renderResources = function() {
-      $scope.icons = _.map(_.pairs($scope.doc.resources), function(pair) {
-        var icon = $scope.doc._attachments[pair[1]];
+    const renderResources = function() {
+      $scope.icons = _.map(_.toPairs($scope.doc.resources), function(pair) {
+        const icon = $scope.doc._attachments[pair[1]];
         return {
           name: pair[0],
           data: icon.data,
@@ -33,7 +35,7 @@ angular.module('controllers').controller('IconsCtrl',
       $scope.loading = false;
     };
 
-    var getResourcesDoc = function() {
+    const getResourcesDoc = function() {
       return DB().get('resources', { attachments: true });
     };
 
@@ -46,7 +48,7 @@ angular.module('controllers').controller('IconsCtrl',
         $log.error('Error fetching resources file', err);
       });
 
-    var addAttachment = function(file) {
+    const addAttachment = function(file) {
       $scope.submitting = true;
       DB()
         .putAttachment('resources', file.name, $scope.doc._rev, file, file.type)
@@ -79,7 +81,7 @@ angular.module('controllers').controller('IconsCtrl',
           field: $translate.instant('Name')
         });
       }
-      var files = $('#icon-upload .uploader')[0].files;
+      const files = $('#icon-upload .uploader')[0].files;
       if (!files || files.length === 0) {
         $scope.error = $translate.instant('field is required', {
           field: $translate.instant('icon')

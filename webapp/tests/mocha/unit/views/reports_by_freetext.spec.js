@@ -1,4 +1,4 @@
-const _ = require('underscore');
+const _ = require('lodash');
 const assert = require('chai').assert;
 const utils = require('./utils');
 
@@ -6,7 +6,7 @@ const doc = {
   _id: '7383B568-4A6C-2C97-B463-3CC2630A562E',
   _rev: '1-ddec60a626c8f5b17b0f5fcdc2031c39',
   content: '<content field full of stuff>',
-    'fields': {
+  'fields': {
     'inputs': {
       'source': 'task',
       source_id: '82CFA683-D6F5-3427-95C7-45D792EA5A08',
@@ -123,7 +123,7 @@ describe('reports_by_freetext view', () => {
 
     // then
     // Keys are arrays, so flatten the array of arrays for easier asserts.
-    var flattened = _.flatten(emitted);
+    const flattened = _.flattenDeep(emitted);
     assert.include(flattened, 'patient');
     assert.include(flattened, 'with');
     assert.include(flattened, 'problem');
@@ -139,7 +139,7 @@ describe('reports_by_freetext view', () => {
 
     // then
     // Keys are arrays, so flatten the array of arrays for easier asserts.
-    var flattened = _.flatten(emitted);
+    const flattened = _.flattenDeep(emitted);
     assert.include(flattened, 'बुद्ध');
     assert.include(flattened, 'élève');
   });
@@ -153,7 +153,7 @@ describe('reports_by_freetext view', () => {
 
     // then
     // Keys are arrays, so flatten the array of arrays for easier asserts.
-    var flattened = _.flatten(emitted);
+    const flattened = _.flattenDeep(emitted);
     assert.notInclude(flattened, 'a');
   });
 

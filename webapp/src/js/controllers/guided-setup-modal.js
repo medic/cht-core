@@ -1,5 +1,5 @@
-var phoneNumber = require('@medic/phone-number'),
-    countries = require('../modules/countries');
+const phoneNumber = require('@medic/phone-number');
+const countries = require('../modules/countries');
 
 // TODO convert this controller to use angular more and jquery less
 angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
@@ -18,11 +18,11 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
 
     const ctrl = this;
 
-    var validate = function() {
-      var countryCode = $('#guided-setup [name=default-country-code]').val();
-      var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
+    const validate = function() {
+      const countryCode = $('#guided-setup [name=default-country-code]').val();
+      const gatewayNumber = $('#guided-setup [name=gateway-number]').val();
       if (gatewayNumber &&
-          !phoneNumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
+          !phoneNumber.validate({ default_country_code: countryCode, phone_validation: 'none' }, gatewayNumber)) {
         return {
           valid: false,
           error: 'Phone number not valid'
@@ -34,18 +34,24 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
     ctrl.submit = function() {
       $scope.setProcessing();
 
-      var valid = validate();
+      const valid = validate();
       if (!valid.valid) {
         $scope.setError(null, valid.error);
         return;
       }
 
-      var settings = {};
-      var val;
+      const settings = {};
+      let val;
 
       val = $('#guided-setup [name=gateway-number]').val();
       if (val) {
-        settings.gateway_number = val;
+        // normalise value        
+        const info = { 
+          default_country_code: $('#guided-setup [name=default-country-code]').val(),
+          phone_validation: 'none'
+        };
+        
+        settings.gateway_number = phoneNumber.normalize(info, val);
       }
       val = $('#guided-setup [name=default-country-code]').val();
       if (val) {
@@ -81,15 +87,15 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
       $uibModalInstance.dismiss();
     };
 
-    var selectOption = function(e) {
+    const selectOption = function(e) {
       e.preventDefault();
-      var elem = $(this);
+      const elem = $(this);
       elem.closest('.horizontal-options')
         .find('.selected')
         .removeClass('selected');
       elem.addClass('selected');
-      var panel = elem.closest('.panel');
-      var label = [];
+      const panel = elem.closest('.panel');
+      const label = [];
       panel.find('.horizontal-options .selected').each(function() {
         label.push($(this).text().trim());
       });
@@ -99,10 +105,10 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
         .text(label.join(', '));
     };
 
-    var updateNumbers = function() {
-      var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
-      var defaultCountryCode = $('#guided-setup [name=default-country-code]').val();
-      var parts = [];
+    const updateNumbers = function() {
+      const gatewayNumber = $('#guided-setup [name=gateway-number]').val();
+      const defaultCountryCode = $('#guided-setup [name=default-country-code]').val();
+      const parts = [];
       if (defaultCountryCode) {
         parts.push('+' + defaultCountryCode);
       }
@@ -130,7 +136,8 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
                 $('#guided-setup [name=gateway-number]').val(res.gateway_number).trigger('input');
                 $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
                 $('#language-preference-content .locale a[data-value="' + res.locale + '"]').trigger('click');
-                $('#language-preference-content .locale-outgoing a[data-value="' + res.locale_outgoing + '"]').trigger('click');
+                $('#language-preference-content .locale-outgoing a[data-value="' + res.locale_outgoing + '"]')
+                  .trigger('click');
                 $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
               });
             }

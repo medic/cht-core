@@ -1,24 +1,24 @@
 /**
  * Service to identify relevant changes in relation to a Contact document.
  */
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').factory('ContactChangeFilter',
   function(ContactTypes) {
     'ngInject';
     'use strict';
 
-    var isValidInput = function(object) {
+    const isValidInput = function(object) {
       return !!(object && object.doc);
     };
 
-    var isReport = function(change) {
+    const isReport = function(change) {
       return !!change.doc.form && change.doc.type === 'data_record';
     };
 
-    var matchReportSubject = function(report, contact) {
+    const matchReportSubject = function(report, contact) {
       if (report.doc.fields && (
-          (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc._id) ||
+        (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc._id) ||
           (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc.patient_id) ||
           (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc._id) ||
           (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc.place_id))) {
@@ -35,11 +35,11 @@ angular.module('inboxServices').factory('ContactChangeFilter',
       return false;
     };
 
-    var isChild = function(change, contact) {
+    const isChild = function(change, contact) {
       return !!change.doc.parent && change.doc.parent._id === contact.doc._id;
     };
 
-    var wasChild = function(change, contact) {
+    const wasChild = function(change, contact) {
       return _.some(contact.children, function(children) {
         return children instanceof Array && _.some(children, function(child) {
           return child.doc._id === change.doc._id;
@@ -47,13 +47,13 @@ angular.module('inboxServices').factory('ContactChangeFilter',
       });
     };
 
-    var isAncestor = function(change, contact) {
-     return _.some(contact.lineage, function(lineage) {
+    const isAncestor = function(change, contact) {
+      return _.some(contact.lineage, function(lineage) {
         return !!lineage && lineage._id === change.doc._id;
       });
     };
 
-    var matchChildReportSubject = function(change, contact) {
+    const matchChildReportSubject = function(change, contact) {
       return _.some(contact.children, function(children) {
         return children instanceof Array && _.some(children, function(child) {
           return matchReportSubject(change, child);

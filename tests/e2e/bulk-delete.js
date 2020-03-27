@@ -1,6 +1,6 @@
-const utils = require('../utils'),
-  commonElements = require('../page-objects/common/common.po.js'),
-  reports = require('../page-objects/reports/reports.po');
+const utils = require('../utils');
+const commonElements = require('../page-objects/common/common.po.js');
+const reports = require('../page-objects/reports/reports.po');
 
 describe('Bulk delete reports', () => {
   const docs = [

@@ -100,12 +100,12 @@ angular.module('inboxServices').factory('XmlForms',
           return true;
         }
         if (type.person && (
-            (typeof context.person !== 'undefined' && !context.person) ||
+          (typeof context.person !== 'undefined' && !context.person) ||
             (typeof context.person === 'undefined' && context.place))) {
           return false;
         }
         if (!type.person && (
-            (typeof context.place !== 'undefined' && !context.place) ||
+          (typeof context.place !== 'undefined' && !context.place) ||
             (typeof context.place === 'undefined' && context.person))) {
           return false;
         }
@@ -153,13 +153,7 @@ angular.module('inboxServices').factory('XmlForms',
         if (!form.context.permission) {
           return true;
         }
-        return Auth(form.context.permission)
-          .then(function() {
-            return true;
-          })
-          .catch(function() {
-            return false;
-          });
+        return Auth.has(form.context.permission);
       });
     };
 
@@ -247,7 +241,7 @@ angular.module('inboxServices').factory('XmlForms',
        *     Undefined will ignore this filter.
        *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
        * it should be shown or not shown.
-       * E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "can_edit_stuff"}`
+       * E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "xyz"}`
        * Using ignoreContext = true will ignore that filter.
        *   - doc (Object) : when the context filter is on, the doc to pass to the forms context expression to
        *     determine if the form is applicable.

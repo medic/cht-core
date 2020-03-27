@@ -1,12 +1,12 @@
-var format = require('../modules/format'),
-    _ = require('underscore');
+const format = require('../modules/format');
+const _ = require('lodash/core');
 
 (function () {
 
   'use strict';
 
-  var getFormName = function(record, forms) {
-    var form = _.findWhere(forms, { code: record.form });
+  const getFormName = function(record, forms) {
+    const form = _.find(forms, { code: record.form });
     if (form) {
       return form.title;
     }

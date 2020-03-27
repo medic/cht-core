@@ -12,7 +12,7 @@ describe('Creating contacts with standard config', function() {
     return Promise.all([
       utils.saveDocs(expectedDocs)
     ])
-    .then(() => done()).catch(done.fail);
+      .then(() => done()).catch(done.fail);
   });
   
   const expectedDocs = [

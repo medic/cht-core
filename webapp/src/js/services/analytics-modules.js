@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 (function () {
 
@@ -14,7 +14,7 @@ var _ = require('underscore');
 
       'ngInject';
 
-      var getTargetsModule = function(settings) {
+      const getTargetsModule = function(settings) {
         return {
           label: 'analytics.targets',
           state: 'analytics.targets',
@@ -26,7 +26,7 @@ var _ = require('underscore');
         };
       };
 
-      var getReportingRatesModule = function(settings, scheduledForms) {
+      const getReportingRatesModule = function(settings, scheduledForms) {
         return {
           label: 'Reporting Rates',
           state: 'analytics.reporting',
@@ -36,7 +36,7 @@ var _ = require('underscore');
         };
       };
 
-      var getModules = function(settings, scheduledForms) {
+      const getModules = function(settings, scheduledForms) {
         return _.filter([
           getReportingRatesModule(settings, scheduledForms),
           getTargetsModule(settings)
@@ -55,8 +55,8 @@ var _ = require('underscore');
       return function() {
         return $q.all([ Settings(), ScheduledForms() ])
           .then(function(results) {
-            var modules = getModules(results[0], results[1]);
-            $log.debug('AnalyticsMobules. Enabled modules: ', _.pluck(modules, 'label'));
+            const modules = getModules(results[0], results[1]);
+            $log.debug('AnalyticsMobules. Enabled modules: ', _.map(modules, 'label'));
             return modules;
           });
       };

@@ -1,4 +1,4 @@
-var utils = require('./utils');
+const utils = require('./utils');
 
 describe('remove-empty-parents migration', function() {
   afterEach(function() {
@@ -22,32 +22,32 @@ describe('remove-empty-parents migration', function() {
         name: 'realparent',
       },
     ])
-    .then(function() {
+      .then(function() {
 
-      // when
-      return utils.runMigration('remove-empty-parents');
+        // when
+        return utils.runMigration('remove-empty-parents');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        {
-          _id: 'abc',
-          type: 'district_hospital',
-          name: 'myfacility',
-          parent: {
+        // expect
+        return utils.assertDb([
+          {
+            _id: 'abc',
+            type: 'district_hospital',
+            name: 'myfacility',
+            parent: {
+              _id: 'def',
+              name: 'realparent',
+            },
+          },
+          {
             _id: 'def',
             name: 'realparent',
           },
-        },
-        {
-          _id: 'def',
-          name: 'realparent',
-        },
-      ]);
+        ]);
 
-    });
+      });
   });
 
   it('should delete parents which are null', function() {
@@ -60,24 +60,24 @@ describe('remove-empty-parents migration', function() {
         parent: null,
       },
     ])
-    .then(function() {
+      .then(function() {
 
-      // when
-      return utils.runMigration('remove-empty-parents');
+        // when
+        return utils.runMigration('remove-empty-parents');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        {
-          _id: 'abc',
-          type: 'district_hospital',
-          name: 'myfacility',
-        },
-      ]);
+        // expect
+        return utils.assertDb([
+          {
+            _id: 'abc',
+            type: 'district_hospital',
+            name: 'myfacility',
+          },
+        ]);
 
-    });
+      });
   });
 
   it('should delete parents which have no properties', function() {
@@ -90,23 +90,23 @@ describe('remove-empty-parents migration', function() {
         parent: {},
       },
     ])
-    .then(function() {
+      .then(function() {
 
-      // when
-      return utils.runMigration('remove-empty-parents');
+        // when
+        return utils.runMigration('remove-empty-parents');
 
-    })
-    .then(function() {
+      })
+      .then(function() {
 
-      // expect
-      return utils.assertDb([
-        {
-          _id: 'abc',
-          type: 'district_hospital',
-          name: 'myfacility',
-        },
-      ]);
+        // expect
+        return utils.assertDb([
+          {
+            _id: 'abc',
+            type: 'district_hospital',
+            name: 'myfacility',
+          },
+        ]);
 
-    });
+      });
   });
 });

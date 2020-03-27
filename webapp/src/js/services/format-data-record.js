@@ -1,7 +1,7 @@
-var _ = require('underscore'),
-  messages = require('@medic/message-utils'),
-  lineageFactory = require('@medic/lineage'),
-  registrationUtils = require('@medic/registration-utils');
+const _ = require('lodash/core');
+const messages = require('@medic/message-utils');
+const lineageFactory = require('@medic/lineage');
+const registrationUtils = require('@medic/registration-utils');
 
 angular
   .module('inboxServices')
@@ -17,11 +17,11 @@ angular
     'ngInject';
     'use strict';
 
-    var lineage = lineageFactory($q, DB());
+    const lineage = lineageFactory($q, DB());
     const patientFields = ['patient_id', 'patient_uuid', 'patient_name'];
 
-    var getRegistrations = function(patientId) {
-      var options = {
+    const getRegistrations = function(patientId) {
+      const options = {
         key: patientId,
         include_docs: true,
       };
@@ -34,8 +34,8 @@ angular
         });
     };
 
-    var getPatient = function(patientId) {
-      var options = { key: ['shortcode', patientId] };
+    const getPatient = function(patientId) {
+      const options = { key: ['shortcode', patientId] };
       return DB()
         .query('medic-client/contacts_by_reference', options)
         .then(function(result) {
@@ -53,7 +53,7 @@ angular
         });
     };
 
-    var fieldsToHtml = function(
+    const fieldsToHtml = function(
       settings,
       keys,
       labels,
@@ -69,23 +69,23 @@ angular
         def = getForm(settings, def);
       }
 
-      var fields = {
+      const fields = {
         headers: [],
         data: [],
       };
 
-      var data = _.extend({}, data_record, data_record.fields);
+      const data = Object.assign({}, data_record, data_record.fields);
 
-      _.each(keys, function(key) {
+      _.forEach(keys, function(key) {
         if (_.isArray(key)) {
           fields.headers.push({ head: titleize(key[0]) });
           fields.data.push(
-            _.extend(fieldsToHtml(key[1], labels, data[key[0]], def, locale), {
+            Object.assign(fieldsToHtml(key[1], labels, data[key[0]], def, locale), {
               isArray: true,
             })
           );
         } else {
-          var label = labels.shift();
+          const label = labels.shift();
           fields.headers.push({ head: getMessage(settings, label) });
           if (def && def[key]) {
             def = def[key];
@@ -110,12 +110,12 @@ angular
      *
      * @return Array  - form field keys based on forms definition
      */
-    var getFormKeys = function(def) {
-      var keys = {};
+    const getFormKeys = function(def) {
+      const keys = {};
 
-      var getKeys = function(key, hash) {
+      const getKeys = function(key, hash) {
         if (key.length > 1) {
-          var tmp = key.shift();
+          const tmp = key.shift();
           if (!hash[tmp]) {
             hash[tmp] = {};
           }
@@ -125,10 +125,10 @@ angular
         }
       };
 
-      var hashToArray = function(hash) {
-        var array = [];
+      const hashToArray = function(hash) {
+        const array = [];
 
-        _.each(hash, function(value, key) {
+        _.forEach(hash, function(value, key) {
           if (typeof value === 'string') {
             array.push(key);
           } else {
@@ -148,8 +148,8 @@ angular
       return hashToArray(keys);
     };
 
-    var translateKey = function(settings, key, field, locale) {
-      var label;
+    const translateKey = function(settings, key, field, locale) {
+      let label;
       if (field) {
         label = getMessage(
           settings,
@@ -168,9 +168,9 @@ angular
     };
 
     // returns the deepest array from `key`
-    var unrollKey = function(array) {
-      var target = [].concat(array),
-        root = [];
+    const unrollKey = function(array) {
+      let target = [].concat(array);
+      const root = [];
 
       while (_.isArray(_.last(target))) {
         root.push(_.first(target));
@@ -188,7 +188,7 @@ angular
      * @param str The string to transform.
      * @returns {String}
      */
-    var titleize = function(s) {
+    const titleize = function(s) {
       return s
         .trim()
         .toLowerCase()
@@ -200,13 +200,13 @@ angular
         });
     };
 
-    var formatDateField = function(date, field) {
+    const formatDateField = function(date, field) {
       if (!date) {
         return;
       }
-      var formatted;
-      var relative;
-      if (_.contains(['child_birth_date', 'birth_date'], field)) {
+      let formatted;
+      let relative;
+      if (['child_birth_date', 'birth_date'].includes(field)) {
         formatted = FormatDate.date(date);
         relative = FormatDate.relative(date, { withoutTime: true });
       } else {
@@ -221,7 +221,7 @@ angular
      * @param {String} key - key for field
      * @param {Object} def - form or field definition
      */
-    var prettyVal = function(settings, data_record, key, def, locale) {
+    const prettyVal = function(settings, data_record, key, def, locale) {
       if (
         !data_record ||
         _.isUndefined(key) ||
@@ -230,7 +230,7 @@ angular
         return;
       }
 
-      var val = data_record[key];
+      const val = data_record[key];
 
       if (!def) {
         return val;
@@ -250,9 +250,9 @@ angular
         // use list value for month
         if (def.validate && def.validate.is_numeric_month) {
           if (def.list) {
-            for (var i in def.list) {
+            for (const i in def.list) {
               if (Object.prototype.hasOwnProperty.call(def.list, i)) {
-                var item = def.list[i];
+                const item = def.list[i];
                 if (item[0] === val) {
                   return translate(settings, item[1], locale);
                 }
@@ -264,12 +264,12 @@ angular
       return val;
     };
 
-    var translate = function(settings, key, locale, ctx, skipInterpolation) {
+    const translate = function(settings, key, locale, ctx, skipInterpolation) {
       if (_.isObject(key)) {
         return getMessage(settings, key, locale) || key;
       }
-      var interpolation = skipInterpolation ? 'no-interpolation' : null;
-      // NB: The 5th parameter must be explicitely null to disable sanitization.
+      const interpolation = skipInterpolation ? 'no-interpolation' : null;
+      // NB: The 5th parameter must be explicitly null to disable sanitization.
       // The result will be sanitized by angular when it's rendered, so using
       // the default sanitization would result in double encoding.
       // Issue: medic/medic#4618
@@ -282,8 +282,8 @@ angular
      * create these fields and it is useful to show these new fields in the data
      * records screen/render even though they are not defined in the form.
      */
-    var includeNonFormFields = function(settings, doc, form_keys, locale) {
-      var fields = [
+    const includeNonFormFields = function(settings, doc, form_keys, locale) {
+      const fields = [
         'mother_outcome',
         'child_birth_outcome',
         'child_birth_weight',
@@ -293,11 +293,11 @@ angular
         'patient_id',
       ];
 
-      var dateFields = ['child_birth_date', 'expected_date', 'birth_date'];
+      const dateFields = ['child_birth_date', 'expected_date', 'birth_date'];
 
-      _.each(fields, function(field) {
-        var label = translate(settings, field, locale),
-          value = doc[field];
+      _.forEach(fields, function(field) {
+        const label = translate(settings, field, locale);
+        let value = doc[field];
 
         // Only include the property if we find it on the doc and not as a form
         // key since then it would be duplicated.
@@ -305,7 +305,7 @@ angular
           return;
         }
 
-        if (_.contains(dateFields, field)) {
+        if (dateFields.includes(field)) {
           value = formatDateField(value, field);
         }
 
@@ -323,14 +323,14 @@ angular
       });
     };
 
-    var getGroupName = function(task) {
+    const getGroupName = function(task) {
       if (task.group) {
         return task.type + ':' + task.group;
       }
       return task.type;
     };
 
-    var getGroupDisplayName = function(settings, task, language) {
+    const getGroupDisplayName = function(settings, task, language) {
       if (task.translation_key) {
         return translate(settings, task.translation_key, language, {
           group: task.group,
@@ -351,20 +351,20 @@ angular
      *
      * @api private
      */
-    var getLabels = function(settings, keys, form, locale) {
-      var def = getForm(settings, form),
-        fields = def && def.fields;
+    const getLabels = function(settings, keys, form, locale) {
+      const def = getForm(settings, form);
+      const fields = def && def.fields;
 
       return _.reduce(
         keys,
         function(memo, key) {
-          var field = fields && fields[key];
+          const field = fields && fields[key];
 
           if (_.isString(key)) {
             memo.push(translateKey(settings, key, field, locale));
           } else if (_.isArray(key)) {
-            _.each(unrollKey(key), function(key) {
-              var field = fields && fields[key];
+            _.forEach(unrollKey(key), function(key) {
+              const field = fields && fields[key];
               memo.push(translateKey(settings, key, field, locale));
             });
           }
@@ -375,14 +375,14 @@ angular
       );
     };
 
-    var getForm = function(settings, code) {
+    const getForm = function(settings, code) {
       return settings.forms && settings.forms[code];
     };
 
-    var getMessage = function(settings, value, locale) {
+    const getMessage = function(settings, value, locale) {
       function _findTranslation(value, locale) {
         if (value.translations) {
-          var translation = _.findWhere(value.translations, { locale: locale });
+          const translation = _.find(value.translations, { locale: locale });
           return translation && translation.content;
         } else {
           // fallback to old translation definition to support
@@ -395,13 +395,13 @@ angular
         return value;
       }
 
-      var test = false;
+      let test = false;
       if (locale === 'test') {
         test = true;
         locale = 'en';
       }
 
-      var result =
+      let result =
         // 0) does it have a translation_key
         (value.translation_key &&
           translate(settings, value.translation_key, locale)) ||
@@ -470,10 +470,10 @@ angular
       const fields = getFields(doc, [], doc.fields, label, 0);
       const hide = doc.hidden_fields || [];
       hide.push('inputs');
-      return _.reject(fields, function(field) {
-        return _.some(hide, function(h) {
+      return _.filter(fields, function(field) {
+        return _.every(hide, function(h) {
           const hiddenLabel = label + '.' + h;
-          return hiddenLabel === field.label || field.label.indexOf(hiddenLabel + '.') === 0;
+          return hiddenLabel !== field.label && field.label.indexOf(hiddenLabel + '.') !== 0;
         });
       });
     };
@@ -586,17 +586,17 @@ angular
      *  ]
      */
     const formatOutgoingMessages = function(doc) {
-      var outgoing_messages = [];
-      var outgoing_messages_recipients = [];
+      const outgoing_messages = [];
+      const outgoing_messages_recipients = [];
       doc.tasks.forEach(function(task) {
         task.messages.forEach(function(msg) {
-          var recipient = {
+          const recipient = {
             to: msg.to,
             facility: msg.facility,
             timestamp: task.timestamp,
             uuid: msg.uuid,
           };
-          var done = false;
+          let done = false;
           // append recipient to existing
           outgoing_messages.forEach(function(m) {
             if (
@@ -630,8 +630,8 @@ angular
     /*
      * Take data record document and return nice formated JSON object.
      */
-    var makeDataRecordReadable = function(doc, settings, language, context) {
-      var formatted = _.clone(doc);
+    const makeDataRecordReadable = function(doc, settings, language, context) {
+      const formatted = _.clone(doc);
 
       if (formatted.content_type === 'xml') {
         formatXmlFields(formatted);
@@ -651,16 +651,16 @@ angular
     };
 
     return function(doc) {
-      var promises = [Settings(), Language()];
-      var patientId = doc.patient_id || (doc.fields && doc.fields.patient_id);
+      const promises = [Settings(), Language()];
+      const patientId = doc.patient_id || (doc.fields && doc.fields.patient_id);
       if (doc.scheduled_tasks && patientId) {
         promises.push(getPatient(patientId));
         promises.push(getRegistrations(patientId));
       }
       return $q.all(promises).then(function(results) {
-        var settings = results[0];
-        var language = results[1];
-        var context = {};
+        const settings = results[0];
+        const language = results[1];
+        const context = {};
         if (results.length === 4) {
           context.patient = results[2];
           context.registrations = results[3].filter(function(registration) {

@@ -1,5 +1,5 @@
-var settingsService = require('../services/settings'),
-    {promisify} = require('util');
+const settingsService = require('../services/settings');
+const {promisify} = require('util');
 
 module.exports = {
   name: 'remove-can-access-directly-permission',

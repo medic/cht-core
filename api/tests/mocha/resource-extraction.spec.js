@@ -1,9 +1,10 @@
-const rewire = require('rewire'),
-      resourceExtraction = rewire('../../src/resource-extraction'),
-      sinon = require('sinon'),
-      { expect } = require('chai'); // jshint ignore:line
+const rewire = require('rewire');
+const resourceExtraction = rewire('../../src/resource-extraction');
+const sinon = require('sinon');
+const { expect } = require('chai'); // jshint ignore:line
 
-let fakeDdoc, mockFs, mockDb;
+let fakeDdoc; let mockFs; let 
+  mockDb;
 resourceExtraction.__set__('logger', { debug: () => {} });
 function doMocking(overwrites = {}) {
   const defaultAttachment = {

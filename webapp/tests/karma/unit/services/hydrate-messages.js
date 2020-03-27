@@ -2,9 +2,9 @@ describe('HydrateMessages service', () => {
 
   'use strict';
 
-  let service,
-      query,
-      lineageModelGenerator;
+  let service;
+  let query;
+  let lineageModelGenerator;
 
   const contact = { _id: 'contact', name: 'aa' };
 
@@ -55,7 +55,7 @@ describe('HydrateMessages service', () => {
       id: doc._id,
       key: contact._id,
       contact: contact.name,
-      lineage: _.pluck(lineage, 'name'),
+      lineage: _.map(lineage, 'name'),
       outgoing: true,
       from: contact._id,
       date: given[0].value.date,
@@ -90,7 +90,7 @@ describe('HydrateMessages service', () => {
       id: doc._id,
       key: contact._id,
       contact: contact.name,
-      lineage: _.pluck(lineage, 'name'),
+      lineage: _.map(lineage, 'name'),
       outgoing: false,
       from: doc._id,
       date: given[0].value.date,

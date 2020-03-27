@@ -2,12 +2,12 @@ describe('EditTranslationCtrl controller', function() {
 
   'use strict';
 
-  var createController,
-      rootScope,
-      scope,
-      uibModalInstance,
-      bulkDocs,
-      model;
+  let createController;
+  let rootScope;
+  let scope;
+  let uibModalInstance;
+  let bulkDocs;
+  let model;
 
   beforeEach(module('adminApp'));
 
@@ -82,7 +82,7 @@ describe('EditTranslationCtrl controller', function() {
     scope.submit();
     setTimeout(function() {
       rootScope.$digest();
-      var updated = bulkDocs.args[0][0];
+      const updated = bulkDocs.args[0][0];
       chai.expect(updated.length).to.equal(2); // spanish not saved as not updated
       chai.expect(updated[0].code).to.equal('en');
       chai.expect(updated[0].custom['title.key']).to.equal('Hello');
@@ -109,7 +109,7 @@ describe('EditTranslationCtrl controller', function() {
     scope.submit();
     setTimeout(function() {
       rootScope.$digest();
-      var updated = bulkDocs.args[0][0];
+      const updated = bulkDocs.args[0][0];
       chai.expect(updated.length).to.equal(3);
       chai.expect(updated[0].code).to.equal('en');
       chai.expect(updated[0].custom['title.key']).to.equal('Hello');
@@ -137,7 +137,7 @@ describe('EditTranslationCtrl controller', function() {
     scope.submit();
     setTimeout(function() {
       rootScope.$digest();
-      var updated = bulkDocs.args[0][0];
+      const updated = bulkDocs.args[0][0];
       chai.expect(updated.length).to.equal(3);
       chai.expect(updated[0].code).to.equal('en');
       chai.expect(updated[0].custom.somethingelse).to.equal('a');

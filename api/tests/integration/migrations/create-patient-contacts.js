@@ -1,6 +1,6 @@
-var utils = require('./utils');
+const utils = require('./utils');
 
-var migrate = function() {
+const migrate = function() {
   return utils.runMigration('create-patient-contacts');
 };
 
@@ -11,19 +11,19 @@ describe('create-patient-contacts migration', function() {
 
   it('should run cleanly with no registered patients', function() {
     return utils.initDb([])
-    .then(migrate)
-    .then(function() {
-      return utils.assertDb([]);
-    });
+      .then(migrate)
+      .then(function() {
+        return utils.assertDb([]);
+      });
   });
 
   it('should ignore registrations that already have patient contacts', function() {
-    var settings = {
+    const settings = {
       registrations: [{
         form: 'A'
       }]
     };
-    var documents = [
+    const documents = [
       {
         _id: 'registrationA',
         patient_id: '1234',
@@ -39,20 +39,20 @@ describe('create-patient-contacts migration', function() {
       }
     ];
     return utils.initDb(documents)
-    .then(() => utils.initSettings(settings))
-    .then(migrate)
-    .then(function() {
-      return utils.assertDb(documents);
-    });
+      .then(() => utils.initSettings(settings))
+      .then(migrate)
+      .then(function() {
+        return utils.assertDb(documents);
+      });
   });
 
   it('should ignore registrations that are not "actual" registrations', function() {
-    var settings = {
+    const settings = {
       registrations: [{
         form: 'A'
       }]
     };
-    var documents = [
+    const documents = [
       {
         _id: 'chw',
         type: 'person',
@@ -128,20 +128,20 @@ describe('create-patient-contacts migration', function() {
       }
     ];
     return utils.initDb(documents)
-    .then(() => utils.initSettings(settings))
-    .then(migrate)
-    .then(function() {
-      return utils.assertDb(documents);
-    });
+      .then(() => utils.initSettings(settings))
+      .then(migrate)
+      .then(function() {
+        return utils.assertDb(documents);
+      });
   });
 
   it('converts a registration into a patient contact', function() {
-    var settings = {
+    const settings = {
       registrations: [{
         form: 'A'
       }]
     };
-    var registration = {
+    const registration = {
       _id: 'registrationA',
       patient_id: '1234',
       form: 'A',
@@ -153,7 +153,7 @@ describe('create-patient-contacts migration', function() {
       content_type: 'xml',
       type: 'data_record'
     };
-    var contact = {
+    const contact = {
       _id: 'chw',
       phone: '555-5555',
       reported_date: 'now',
@@ -162,7 +162,7 @@ describe('create-patient-contacts migration', function() {
         _id: 'a-parent'
       }
     };
-    var patientContact = {
+    const patientContact = {
       name: 'Testerina',
       patient_id: '1234',
       reported_date: 'now',
@@ -172,20 +172,20 @@ describe('create-patient-contacts migration', function() {
       }
     };
     return utils.initDb([registration, contact])
-    .then(() => utils.initSettings(settings))
-    .then(migrate)
-    .then(function() {
-      return utils.assertDb([registration, contact, patientContact]);
-    });
+      .then(() => utils.initSettings(settings))
+      .then(migrate)
+      .then(function() {
+        return utils.assertDb([registration, contact, patientContact]);
+      });
   });
 
   it('supports patients with multiple registrations', function() {
-    var settings = {
+    const settings = {
       registrations: [{
         form: 'A'
       }]
     };
-    var registrationA = {
+    const registrationA = {
       _id: 'registrationA',
       patient_id: '1234',
       form: 'A',
@@ -197,7 +197,7 @@ describe('create-patient-contacts migration', function() {
       content_type: 'xml',
       type: 'data_record'
     };
-    var registrationB = {
+    const registrationB = {
       _id: 'registrationB',
       form: 'A',
       from: '555-5555',
@@ -209,7 +209,7 @@ describe('create-patient-contacts migration', function() {
       content_type: 'xml',
       type: 'data_record'
     };
-    var contact = {
+    const contact = {
       _id: 'chw',
       phone: '555-5555',
       reported_date: 'now',
@@ -218,7 +218,7 @@ describe('create-patient-contacts migration', function() {
         _id: 'a-parent'
       }
     };
-    var patientContact = {
+    const patientContact = {
       name: 'Testerina',
       patient_id: '1234',
       reported_date: 'now',
@@ -228,10 +228,10 @@ describe('create-patient-contacts migration', function() {
       }
     };
     return utils.initDb([registrationA, registrationB, contact])
-    .then(() => utils.initSettings(settings))
-    .then(migrate)
-    .then(function() {
-      return utils.assertDb([registrationA, registrationB, contact, patientContact]);
-    });
+      .then(() => utils.initSettings(settings))
+      .then(migrate)
+      .then(function() {
+        return utils.assertDb([registrationA, registrationB, contact, patientContact]);
+      });
   });
 });

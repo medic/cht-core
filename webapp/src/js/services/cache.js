@@ -6,7 +6,7 @@
     function(Changes) {
       'ngInject';
 
-      var caches = [];
+      const caches = [];
 
       Changes({
         key: 'cache',
@@ -34,7 +34,7 @@
        */
       return function(options) {
 
-        var cache = {
+        const cache = {
           docs: null,
           pending: false,
           invalidate: options.invalidate,

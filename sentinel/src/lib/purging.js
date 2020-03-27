@@ -7,7 +7,7 @@ const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 
-let purgeDbs = {};
+const purgeDbs = {};
 let currentlyPurging = false;
 const getPurgeDb = (hash, refresh) => {
   if (!purgeDbs[hash] || refresh) {
@@ -28,6 +28,13 @@ const initPurgeDbs = (roles) => {
         }
       });
   }));
+};
+
+const closePurgeDbs = () => {
+  Object.keys(purgeDbs).forEach(hash => {
+    db.close(purgeDbs[hash]);
+    delete purgeDbs[hash];
+  });
 };
 
 const BATCH_SIZE = 1000;
@@ -170,7 +177,7 @@ const assignContactToGroups = (row, groups, subjectIds) => {
     ids: []
   };
   let key;
-  let contact = row.doc;
+  const contact = row.doc;
   if (tombstoneUtils.isTombstoneId(row.id)) {
     // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
     // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
@@ -198,7 +205,7 @@ const getRecordGroupInfo = (row, groups, subjectIds) => {
   }
 
   if (row.doc.form) {
-    const subjectId = registrationUtils.getPatientId(row.doc);
+    const subjectId = registrationUtils.getSubjectId(row.doc);
     if (row.doc.needs_signoff) {
       // reports with needs_signoff will emit for every contact from their submitter lineage,
       // but we only want to process them once, either associated to their patient or alone, if no patient_id
@@ -237,8 +244,8 @@ const getRecordsByKey = (rows, groups, subjectIds) => {
     recordsByKey[key] = recordsByKey[key] || { reports: [], messages: [] };
 
     return report ?
-           recordsByKey[key].reports.push(report) :
-           recordsByKey[key].messages.push(message);
+      recordsByKey[key].reports.push(report) :
+      recordsByKey[key].messages.push(message);
   });
   return recordsByKey;
 };
@@ -458,7 +465,10 @@ const purge = () => {
     .catch(err => {
       logger.error('Error while running Server Side Purge: %o', err);
     })
-    .then(() => currentlyPurging = false);
+    .then(() => {
+      currentlyPurging = false;
+      closePurgeDbs();
+    });
 };
 
 module.exports = {

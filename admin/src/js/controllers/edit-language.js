@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('controllers').controller('EditLanguageCtrl',
   function (
@@ -11,8 +11,8 @@ angular.module('controllers').controller('EditLanguageCtrl',
     'use strict';
     'ngInject';
 
-    var validate = function(model) {
-      var errors = null;
+    const validate = function(model) {
+      let errors = null;
       if (!model.name) {
         errors = errors || {};
         errors.name = $translate.instant('field is required', {

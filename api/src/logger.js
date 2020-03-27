@@ -1,5 +1,5 @@
-const { createLogger, format, transports } = require('winston'),
-  env = process.env.NODE_ENV || 'development';
+const { createLogger, format, transports } = require('winston');
+const env = process.env.NODE_ENV || 'development';
 
 const enumerateErrorFormat = format(info => {
   if (info.message instanceof Error) {

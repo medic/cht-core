@@ -6,6 +6,7 @@
   const contacts = require('./contacts');
   const messages = require('./messages');
   const reports = require('./reports');
+  const services = require('./services');
   const tasks = require('./tasks');
 
   const rootReducer = redux.combineReducers({
@@ -14,6 +15,7 @@
     contacts,
     messages,
     reports,
+    services,
     tasks
   });
 

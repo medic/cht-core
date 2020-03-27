@@ -1,12 +1,12 @@
-const _ = require('underscore'),
-  logger = require('./logger');
+const _ = require('lodash');
+const logger = require('./logger');
 
-const ID_LENGTH_DOC_ID = 'shortcode-id-length',
-  ID_LENGTH_PARAM = 'current_length',
-  MIN_ID_LENGTH = 5,
-  INITIAL_ID_LENGTH = MIN_ID_LENGTH,
-  MAX_ID_LENGTH = 13,
-  MAX_IDS_TO_CACHE = 100;
+const ID_LENGTH_DOC_ID = 'shortcode-id-length';
+const ID_LENGTH_PARAM = 'current_length';
+const MIN_ID_LENGTH = 5;
+const INITIAL_ID_LENGTH = MIN_ID_LENGTH;
+const MAX_ID_LENGTH = 13;
+const MAX_IDS_TO_CACHE = 100;
 
 /*
 Is not used to actually directly check ID validity: instead, it introduces an inherent

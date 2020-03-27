@@ -33,8 +33,8 @@ NB: multiple CouchDB nodes will be more complicated, but the general pattern out
 ## Build the webapp
 
 ```shell
-git clone https://github.com/medic/medic
-cd medic
+git clone https://github.com/medic/cht-core
+cd cht-core
 npm ci
 ```
 
@@ -150,10 +150,11 @@ This will echo a URL which you can connect to.
 ngrok sometimes fails due to connection throttling which can cause the service worker cache preload to fail. It's included here as an alternative in case serveo doesn't work for some reason.
 
 1. Create a ngrok account at https://ngrok.com/
-2. Follow instructions on downloading and linking your computer to your ngrok account.
-3. Start ngrok
-  * To connect to an API running via `grunt` or `horti`, execute `./ngrok http 5988`
-  * To connect to an API running via `Docker`, execute `./ngrok http 443`
+1. Follow instructions on downloading and linking your computer to your ngrok account.
+1. Start ngrok
+    * To connect to an API running via `grunt` or `horti`, execute `./ngrok http 5988`
+    * To connect to an API running via `Docker`, execute `./ngrok http 443`
+1. Access the app using the https address shown, eg https://123456.ngrok.io
 
 ## Data
 

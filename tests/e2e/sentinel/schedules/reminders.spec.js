@@ -270,8 +270,11 @@ describe('reminders', () => {
       .then(() => utils.revertSettings(true))
       .then(() => {
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(3, 'minute'));
-        return utils.updateSettings({ transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig }, true);
-       })
+        return utils.updateSettings(
+          { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
+          true
+        );
+      })
       .then(() => restartSentinel())
       .then(() => getReminderLogs(3))
       .then(({ rows: reminderLogs }) => {
@@ -370,7 +373,10 @@ describe('reminders', () => {
       .then(() => utils.revertSettings(true))
       .then(() => {
         remindersConfig[1].text_expression = momentToTextExpression(start.clone().subtract(1, 'minute'));
-        return utils.updateSettings({ transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig }, true);
+        return utils.updateSettings(
+          { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
+          true
+        );
       })
       .then(() => restartSentinel())
       .then(() => getReminderLogs(4))

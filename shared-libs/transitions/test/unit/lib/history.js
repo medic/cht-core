@@ -1,6 +1,6 @@
-const history = require('../../../src/lib/history'),
-      sinon = require('sinon'),
-      should = require('chai').should();
+const history = require('../../../src/lib/history');
+const sinon = require('sinon');
+const should = require('chai').should();
 
 describe('history utility', () => {
 

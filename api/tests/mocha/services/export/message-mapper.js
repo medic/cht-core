@@ -1,10 +1,10 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      service = require('../../../../src/services/export/message-mapper'),
-      messageUtils = require('@medic/message-utils'),
-      registrationUtils = require('@medic/registration-utils'),
-      db = require('../../../../src/db'),
-      config = require('../../../../src/config');
+const sinon = require('sinon');
+const chai = require('chai');
+const service = require('../../../../src/services/export/message-mapper');
+const messageUtils = require('@medic/message-utils');
+const registrationUtils = require('@medic/registration-utils');
+const db = require('../../../../src/db');
+const config = require('../../../../src/config');
 
 describe('Message mapper', () => {
 

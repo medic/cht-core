@@ -1,7 +1,9 @@
-const url = require('url'),
-      request = require('request');
+const url = require('url');
+const request = require('request');
 
 const MIN_MAJOR = 8;
+
+/* eslint-disable no-console */
 
 const nodeVersionCheck = () => {
   try {
@@ -39,9 +41,9 @@ const envVarsCheck = () => {
 };
 
 const couchDbNoAdminPartyModeCheck = () => {
-  const noAuthUrl = url.parse(process.env.COUCH_URL),
-        protocol = noAuthUrl.protocol.replace(':', ''),
-        net = require(protocol);
+  const noAuthUrl = url.parse(process.env.COUCH_URL);
+  const protocol = noAuthUrl.protocol.replace(':', '');
+  const net = require(protocol);
   delete noAuthUrl.auth;
 
   return new Promise((resolve, reject) => {
@@ -52,7 +54,7 @@ const couchDbNoAdminPartyModeCheck = () => {
       } else {
         console.error('Expected a 401 when accessing db without authentication.');
         console.error(`Instead we got a ${statusCode}`);
-        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/cht-core#enabling-a-secure-couchdb'));
+        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
       }
     });
   });

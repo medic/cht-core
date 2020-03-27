@@ -1,5 +1,5 @@
-var settingsService = require('../services/settings'),
-    {promisify} = require('util');
+const settingsService = require('../services/settings');
+const {promisify} = require('util');
 
 module.exports = {
   name: 'convert-permissions-array-to-object',
@@ -8,7 +8,7 @@ module.exports = {
     settingsService.get()
       .then(settings => {
         if (Array.isArray(settings.permissions)) {
-          var permissions = {};
+          const permissions = {};
           settings.permissions.forEach(function(permission){ 
             permissions[permission.name] = permission.roles; 
           });

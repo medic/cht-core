@@ -28,7 +28,7 @@ describe('Pregnancy form analytic field tests', () => {
     // Verify some attributes on the resulting report
     expect(result.report.fields.data).to.deep.include({
       __lmp_method: 'method_lmp',
-      __no_lmp_why_register: '',
+      __no_lmp_registration_reason: '',
       __lmp_date: '1999-11-01',
       __lmp_approx_weeks: '',
       __lmp_approx_months: '',
@@ -86,7 +86,7 @@ describe('Pregnancy form analytic field tests', () => {
     // Verify some attributes on the resulting report
     expect(result.report.fields.data).to.deep.include({
       __lmp_method: 'method_lmp',
-      __no_lmp_why_register: '',
+      __no_lmp_registration_reason: '',
       __lmp_date: '1999-08-01',
       __lmp_approx_weeks: '',
       __lmp_approx_months: '',
@@ -144,7 +144,7 @@ describe('Pregnancy form analytic field tests', () => {
     // Verify analytics fields on the resulting report
     expect(result.report.fields.data).to.deep.include({
       __lmp_method: 'method_approx',
-      __no_lmp_why_register: '',
+      __no_lmp_registration_reason: '',
       __lmp_date: '1999-10-09',
       __lmp_approx_weeks: '12',
       __lmp_approx_months: '',
@@ -203,7 +203,7 @@ describe('Pregnancy form analytic field tests', () => {
     // Verify analytics fields on the resulting report
     expect(result.report.fields.data).to.deep.include({
       __lmp_method: 'method_approx',
-      __no_lmp_why_register: '',
+      __no_lmp_registration_reason: '',
       __lmp_date: '1999-10-01',
       __lmp_approx_weeks: '',
       __lmp_approx_months: '3',
@@ -216,7 +216,7 @@ describe('Pregnancy form analytic field tests', () => {
       __first_pregnancy: 'no',
       __previous_miscarriage: 'no',
       __previous_difficulties: 'no',
-      o_more_than_4_children: 'no',
+      __more_than_4_children: 'no',
       __last_baby_born_less_than_1_year_ago: 'no',
       __heart_condition: 'no',
       __asthma: 'no',
@@ -262,7 +262,7 @@ describe('Pregnancy form analytic field tests', () => {
     // Verify analytics fields on the resulting report
     expect(result.report.fields.data).to.deep.include({
       __lmp_method: 'method_edd',
-      __no_lmp_why_register: '',
+      __no_lmp_registration_reason: '',
       __lmp_date: '1999-08-01',
       __lmp_approx_weeks: '',
       __lmp_approx_months: '',
@@ -275,7 +275,7 @@ describe('Pregnancy form analytic field tests', () => {
       __first_pregnancy: 'no',
       __previous_miscarriage: 'no',
       __previous_difficulties: 'no',
-      o_more_than_4_children: 'no',
+      __more_than_4_children: 'no',
       __last_baby_born_less_than_1_year_ago: 'no',
       __heart_condition: 'no',
       __asthma: 'no',
@@ -300,11 +300,13 @@ describe('Pregnancy form analytic field tests', () => {
       __received_deworming_meds: 'no',
       __tested_for_hiv_in_past_3_months: 'no',
       __received_tetanus_toxoid_this_pregnancy: '',
-      __patient_uuid: 'patient_id',
-      __patient_id: 'patient_id',
-      __household_uuid: 'patient_parent_id',
-      __source: 'action',
-      __source_id: ''
+      meta: {
+        __patient_uuid: 'patient_id',
+        __patient_id: 'patient_id',
+        __household_uuid: 'patient_parent_id',
+        __source: 'action',
+        __source_id: ''
+      }
     });
   });
 

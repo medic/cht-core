@@ -1,13 +1,13 @@
 const request = require('request-promise-native');
 const url = require('url');
-const _ = require('underscore');
+const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
 
-var get = (path, headers) => {
+const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
-  var fullUrl = url.format({
+  const fullUrl = url.format({
     protocol: dbUrl.protocol,
     host: dbUrl.host,
     pathname: path
@@ -20,21 +20,21 @@ var get = (path, headers) => {
 };
 
 // TODO Use a shared library for this duplicated code #4021
-var hasRole = (userCtx, role) => {
-  return _.contains(userCtx && userCtx.roles, role);
+const hasRole = (userCtx, role) => {
+  return _.includes(userCtx && userCtx.roles, role);
 };
 
-var isDbAdmin = userCtx => hasRole(userCtx, '_admin');
+const isDbAdmin = userCtx => hasRole(userCtx, '_admin');
 
-var hasPermission = (userCtx, permission) => {
-  var roles = config.get('permissions')[permission];
+const hasPermission = (userCtx, permission) => {
+  const roles = config.get('permissions')[permission];
   if (!roles) {
     return false;
   }
-  return _.some(roles, role => _.contains(userCtx.roles, role));
+  return _.some(roles, role => _.includes(userCtx.roles, role));
 };
 
-var checkDistrict = (requested, permitted) => {
+const checkDistrict = (requested, permitted) => {
   if (!requested) {
     // limit to configured facility
     return permitted;
@@ -51,7 +51,7 @@ var checkDistrict = (requested, permitted) => {
 };
 
 const getFacilityId = (req, userCtx) => {
-  var url = '/_users/org.couchdb.user:' + userCtx.name;
+  const url = '/_users/org.couchdb.user:' + userCtx.name;
   return get(url, req.headers).then(user => user.facility_id);
 };
 
@@ -65,7 +65,8 @@ module.exports = {
   isOffline: roles => {
     const configured = config.get('roles') || {};
     const configuredRole = roles.some(role => configured[role]);
-    return !configuredRole ||
+    return !isDbAdmin({ roles }) &&
+           !configuredRole ||
            roles.some(role => configured[role] && configured[role].offline);
   },
 
@@ -144,7 +145,9 @@ module.exports = {
       return false;
     }
 
-    let username, password;
+    let username;
+    let password;
+
     try {
       [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
     } catch (err) {
@@ -186,8 +189,10 @@ module.exports = {
         db.medic.get('org.couchdb.user:' + userCtx.name)
       ])
       .then(([ user, medicUser ]) => {
-        _.extend(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+        Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
         return medicUser;
       });
-  }
+  },
+
+  isDbAdmin: isDbAdmin,
 };

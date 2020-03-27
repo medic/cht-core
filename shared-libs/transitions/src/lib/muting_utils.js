@@ -1,8 +1,8 @@
-const db = require('../db'),
-      lineage = require('@medic/lineage')(Promise, db.medic),
-      utils = require('./utils'),
-      moment = require('moment'),
-      infodoc = require('@medic/infodoc');
+const db = require('../db');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const utils = require('./utils');
+const moment = require('moment');
+const infodoc = require('@medic/infodoc');
 
 infodoc.initLib(db.medic, db.sentinel);
 
@@ -85,8 +85,8 @@ const getContactsAndSubjectIds = (contactIds, muted) => {
   return db.medic
     .allDocs({ keys: contactIds, include_docs: true })
     .then(result => {
-      const contacts   = [],
-            subjectIds = [];
+      const contacts   = [];
+      const subjectIds = [];
 
       result.rows.forEach(row => {
         if (!row.doc || Boolean(row.doc.muted) === Boolean(muted)) {

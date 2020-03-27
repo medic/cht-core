@@ -1,8 +1,8 @@
-const sinon = require('sinon'),
-      chai = require('chai'),
-      db = require('../../../src/db'),
-      settingsService = require('../../../src/services/settings'),
-      migration = require('../../../src/migrations/extract-translations');
+const sinon = require('sinon');
+const chai = require('chai');
+const db = require('../../../src/db');
+const settingsService = require('../../../src/services/settings');
+const migration = require('../../../src/migrations/extract-translations');
 
 describe('extract-translations migration', () => {
 

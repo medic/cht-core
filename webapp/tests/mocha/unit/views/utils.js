@@ -16,8 +16,8 @@ module.exports.loadView = (ddocName, viewName) => {
 
   const mapScript = new vm.Script('(' + mapString + ')(' + MAP_ARG_NAME + ');');
 
-  const emitted = [],
-        emittedValues = [];
+  const emitted = [];
+  const emittedValues = [];
   const context = new vm.createContext({
     emitted: emitted,
     emittedValues: emittedValues,

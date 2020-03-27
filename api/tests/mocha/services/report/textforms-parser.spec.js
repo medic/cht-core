@@ -1,5 +1,5 @@
-const chai = require('chai'),
-      textformsParser = require('../../../../src/services/report/textforms-parser');
+const chai = require('chai');
+const textformsParser = require('../../../../src/services/report/textforms-parser');
 
 const def = {
   meta: {

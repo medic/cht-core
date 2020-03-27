@@ -1,4 +1,4 @@
-var _ = require('underscore');
+const _ = require('lodash/core');
 
 angular.module('inboxServices').service('EnketoPrepopulationData',
   function(
@@ -16,10 +16,10 @@ angular.module('inboxServices').service('EnketoPrepopulationData',
 
       return UserSettings()
         .then(function(user) {
-          var xml = $($.parseXML(model));
-          var bindRoot = xml.find('model instance').children().first();
+          const xml = $($.parseXML(model));
+          const bindRoot = xml.find('model instance').children().first();
 
-          var userRoot = bindRoot.find('>inputs>user');
+          const userRoot = bindRoot.find('>inputs>user');
 
           if (data) {
             EnketoTranslation.bindJsonToXml(bindRoot, data, function(name) {

@@ -242,7 +242,7 @@ function isPregnancyTerminatedByMiscarriage(contact, report) {
 
 function isActivePregnancy(contact, report) {
   if (!isPregnancyForm(report)) { return false; }
-  let lmpDate = getMostRecentLMPDateForPregnancy(contact, report) || report.reported_date;
+  const lmpDate = getMostRecentLMPDateForPregnancy(contact, report) || report.reported_date;
   const isPregnancyRegisteredWithin9Months = lmpDate > today - MAX_DAYS_IN_PREGNANCY * MS_IN_DAY;
   const isPregnancyTerminatedByDeliveryInLast6Weeks = getSubsequentDeliveries(contact, report, 6 * 7).length > 0;
   const isPregnancyTerminatedByAnotherPregnancyReport = getSubsequentPregnancies(contact, report).length > 0;
@@ -266,7 +266,7 @@ function countANCFacilityVisits(contact, pregnancyReport) {
     if (isNaN(pastANCHFVisits.visited_hf_count)) { return sum; }
     return sum += pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count);
   },
-    0);
+  0);
   return ancHFVisits;
 }
 

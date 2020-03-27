@@ -31,7 +31,7 @@ describe('Form2Sms service', function() {
   describe('#()', function() {
     it('should throw for a non-existent doc', () => {
       // given
-      var NO_FORM;
+      let NO_FORM;
 
       // when
       return service(NO_FORM)
