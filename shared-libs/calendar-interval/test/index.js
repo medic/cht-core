@@ -12,7 +12,6 @@ describe('CalendarInterval', () => {
     sinon.restore();
   });
 
-
   describe('getCurrent', () => {
     it('returns 1st of current month when month start is not set or incorrect', () => {
       clock = sinon.useFakeTimers(moment('2018-01-20 21:10:01').valueOf());
