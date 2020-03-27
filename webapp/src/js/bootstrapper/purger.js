@@ -133,9 +133,11 @@ module.exports.purge = (localDb, userCtx) => {
 };
 
 module.exports.purgeMeta = (localDb, untilSeq) => {
+  const s = new Date().getTime();
   return getPurgeLog(localDb)
     .then(purgeLog => batchedMetaPurge(localDb, purgeLog.last_purge_seq, untilSeq))
-    .then(() => writeMetaPurgeLog(localDb, untilSeq));
+    .then(() => writeMetaPurgeLog(localDb, untilSeq))
+    .then(() => console.log('purging took', (new Date().getTime() - s) / 1000), 'seconds');
 };
 
 const writePurgeLog = (localDb, totalPurged, userCtx) => {
@@ -165,6 +167,7 @@ const writeMetaPurgeLog = (localDb, seq) => {
 
 const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq) => {
   const isFeedbackOrTelemetryDoc = change => change.id.startsWith('telemetry-') || change.id.startsWith('feedback-');
+  console.log('purging', sinceSeq, untilSeq);
   return localDb
     .changes({ since: sinceSeq, limit: 100 })
     .then(changes => {
@@ -173,14 +176,16 @@ const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq) => {
         .map(change => change.id);
 
       const shouldContinue = changes.results.length &&
-                             changes.results.last_seq <= untilSeq &&
-                             changes.results.last_seq;
+                             changes.last_seq <= untilSeq &&
+                             changes.last_seq;
 
       if (!ids || !ids.length) {
         return shouldContinue;
       }
 
-      return purgeIds(localDb, ids).then(() => shouldContinue);
+      return purgeIds(localDb, ids)
+        .then(() => writeMetaPurgeLog(localDb, shouldContinue))
+        .then(() => shouldContinue);
     })
     .then(sinceSeq => sinceSeq && batchedMetaPurge(localDb, sinceSeq, untilSeq));
 };

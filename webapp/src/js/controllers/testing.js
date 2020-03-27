@@ -1,4 +1,5 @@
 const purger = require('../bootstrapper/purger');
+const uuid = require('uuid');
 
 angular.module('inboxControllers').controller('TestingCtrl',
   function(
@@ -6,6 +7,7 @@ angular.module('inboxControllers').controller('TestingCtrl',
     $q,
     $window,
     DB,
+    Feedback,
     Debug,
     Session,
     ipCookie
@@ -66,6 +68,19 @@ angular.module('inboxControllers').controller('TestingCtrl',
           DB({ remote: false, meta: true }).destroy()
         ])
         .catch(err => $log.error('Error wiping databases', err));
+    };
+
+    ctrl.generateACrazyAmountOfFeedback = () => {
+      const nbr = 5000;
+      let p = Promise.resolve();
+      let st = new Date().getTime();
+      for (let i = 0; i < nbr; i++) {
+        p = p.then(() => Feedback.submit(uuid() + 'Expected \\",\\" or \\"}\\" but \\"r\\" found.",\n"stack": "SyntaxError: Expected \\",\\" or \\"}\\" but \\"r\\" found.\\n    at https://muso-mali.app.medicmobile.org/js/inbox.js:3:1473724\\n    at parse (https://muso-mali.app.medicmobile.org/js/inbox.js:3:1473758)\\n    at t.value (https://muso-mali.app.medicmobile.org/js/inbox.js:3:1481640)\\n    at t.value (https://muso-mali.app.medicmobile.org/js/inbox.js:3:1488495)\\n    at Object.o.interpolate (https://muso-mali.app.medicmobile.org/js/inbox.js:3:2424731)\\n    at nt (https://muso-mali.app.medicmobile.org/js/inbox.js:3:293439)\\n    at W (https://muso-mali.app.medicmobile.org/js/inbox.js:3:290320)\\n    at S (https://muso-mali.app.medicmobile.org/js/inbox.js:3:300782)\\n    at x (https://muso-mali.app.medicmobile.org/js/inbox.js:3:300657)\\n    at v (https://muso-mali.app.medicmobile.org/js/inbox.js:3:299529)'));
+      }
+      p.then(() => {
+        console.log('duration to generate', nbr, 'feedback docs', (new Date().getTime() - st) / 1000, 's');
+        alert('GENERATED');
+      });
     };
 
     const wipeCookies = () => {

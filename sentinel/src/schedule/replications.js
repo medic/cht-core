@@ -4,6 +4,9 @@ const db = require('../db');
 const logger = require('../lib/logger');
 const rpn = require('request-promise-native');
 
+const ONE_TIME_PURGE_LOCAL_DOC_ID = '_local/one_time_purge';
+const BATCH_SIZE = 1000;
+
 let timers = [];
 
 // set later to use local time
@@ -59,14 +62,66 @@ const purgeDocs = (sourceDb, docs) => {
     });
 };
 
+const getHasRunOneTimePurge = (sourceDb) => {
+  return sourceDb
+    .get(ONE_TIME_PURGE_LOCAL_DOC_ID)
+    .then(() => false)
+    .catch(err => {
+      if (err.status === 404) {
+        return true;
+      }
+      throw err;
+    });
+};
+
+const oneTimePurgeRan = (sourceDb) => {
+  return sourceDb.put({ _id: ONE_TIME_PURGE_LOCAL_DOC_ID });
+}
+
+const oneTimePurge = (sourceDb, replicationInfo) => {
+  return getHasRunOneTimePurge(sourceDb)
+    .then(hasRunOneTimePurge => {
+      if (hasRunOneTimePurge) {
+        return;
+      }
+
+      return batchedDescendingPurge(sourceDb, replicationInfo.last_seq).then(() => oneTimePurgeRan(sourceDb));
+    });
+};
+
+const batchedDescendingPurge = (sourceDb, lastSeq) => {
+  const opts = {
+    since: lastSeq,
+    descending: true,
+    limit: BATCH_SIZE,
+  };
+
+  return sourceDb.changes({ opts }).then(result => {
+    if (!result.results.length) {
+      return;
+    }
+
+    const docsToPurge = result.results
+      .filter(change => !change.deleted && isTelemetryOrFeedback(change.id))
+      .map(change => ({ _id: change.id, _rev: change.changes[0].rev }));
+
+    return purgeDocs(sourceDb, docsToPurge).then(() => batchedDescendingPurge(sourceDb, result.last_seq));
+  });
+};
+
+const isTelemetryOrFeedback = (docId) => docId.startsWith('telemetry-') || docId.startsWith('feedback-');
+
 function replicateDb(sourceDb, targetDb) {
   // Replicate only telemetry and feedback docs
   return sourceDb.replicate
     .to(targetDb, {
-      filter: doc => !doc._deleted && (doc._id.startsWith('telemetry-') || doc._id.startsWith('feedback-'))
+      filter: doc => !doc._deleted && isTelemetryOrFeedback(doc._id),
     })
     .on('change', changes => {
       return purgeDocs(sourceDb, changes.docs);
+    })
+    .then(info => {
+      return oneTimePurge(sourceDb, info);
     })
     .catch(err => {
       logger.error('Error while replicating: %o', err);
