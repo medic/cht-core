@@ -5,6 +5,7 @@ const serverUtils = require('../server-utils');
 const settingsService = require('../services/settings');
 const objectPath = require('object-path');
 const _ = require('lodash/core');
+_.union = require('lodash/union');
 
 const ajv = new Ajv({ allErrors: true });
 const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());
