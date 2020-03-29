@@ -432,7 +432,11 @@
                     "add_patient",
                     "assign_schedule",
                     "clear_schedule",
-                    "add_expected_date"
+                    "add_expected_date",
+                    "parent_field_not_provided",
+                    "parent_invalid",
+                    "parent_not_found",
+                    "add_place"
                   ]
                 },
                 "params": {
@@ -491,7 +495,11 @@
                   "type": "string",
                   "enum": [
                     "report_accepted",
-                    "registration_not_found"
+                    "registration_not_found",
+                    "parent_field_not_provided",
+                    "parent_invalid",
+                    "parent_not_found",
+                    "add_place"
                   ]
                 },
                 "recipient": {
