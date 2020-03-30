@@ -5,7 +5,7 @@ const logger = require('../lib/logger');
 const rpn = require('request-promise-native');
 
 const ONE_TIME_PURGE_LOCAL_DOC_ID = '_local/one_time_purge';
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = 100;
 
 let timers = [];
 
@@ -65,10 +65,10 @@ const purgeDocs = (sourceDb, docs) => {
 const getHasRunOneTimePurge = (sourceDb) => {
   return sourceDb
     .get(ONE_TIME_PURGE_LOCAL_DOC_ID)
-    .then(() => false)
+    .then(() => true)
     .catch(err => {
       if (err.status === 404) {
-        return true;
+        return false;
       }
       throw err;
     });
@@ -78,34 +78,47 @@ const oneTimePurgeRan = (sourceDb) => {
   return sourceDb.put({ _id: ONE_TIME_PURGE_LOCAL_DOC_ID });
 };
 
-const oneTimePurge = (sourceDb, replicationInfo) => {
+const oneTimePurge = (sourceDb, targetDb) => {
   return getHasRunOneTimePurge(sourceDb)
     .then(hasRunOneTimePurge => {
       if (hasRunOneTimePurge) {
         return;
       }
 
-      return batchedDescendingPurge(sourceDb, replicationInfo.last_seq).then(() => oneTimePurgeRan(sourceDb));
+      return batchedPurge(sourceDb, targetDb).then(() => oneTimePurgeRan(sourceDb));
     });
 };
 
-const batchedDescendingPurge = (sourceDb, lastSeq) => {
+const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
   const opts = {
     since: lastSeq,
-    descending: true,
     limit: BATCH_SIZE,
   };
 
-  return sourceDb.changes({ opts }).then(result => {
+  const getReplicatedIds = (targetDb, ids) => {
+    if (!ids || !ids.length) {
+      return Promise.resolve([]);
+    }
+
+    return targetDb.changes({ doc_ids: ids }).then(result => result.results.map(change => change.id));
+  };
+
+  return sourceDb.changes(opts).then(result => {
     if (!result.results.length) {
       return;
     }
 
-    const docsToPurge = result.results
+    const idsToPurge = result.results
       .filter(change => !change.deleted && isTelemetryOrFeedback(change.id))
-      .map(change => ({ _id: change.id, _rev: change.changes[0].rev }));
+      .map(change => change.id);
 
-    return purgeDocs(sourceDb, docsToPurge).then(() => batchedDescendingPurge(sourceDb, result.last_seq));
+    return getReplicatedIds(targetDb, idsToPurge).then(idsSafeToPurge => {
+      const docsToPurge = result.results
+        .filter(change => idsSafeToPurge.includes(change.id))
+        .map(change => ({ _id: change.id, _rev: change.changes[0].rev }));
+
+      return purgeDocs(sourceDb, docsToPurge).then(() => batchedPurge(sourceDb, targetDb, result.last_seq));
+    });
   });
 };
 
@@ -120,8 +133,8 @@ function replicateDb(sourceDb, targetDb) {
     .on('change', changes => {
       return purgeDocs(sourceDb, changes.docs);
     })
-    .then(info => {
-      return oneTimePurge(sourceDb, info);
+    .then(() => {
+      return oneTimePurge(sourceDb, targetDb);
     })
     .catch(err => {
       logger.error('Error while replicating: %o', err);
@@ -169,9 +182,9 @@ module.exports = {
     const targetDb = db.get(toDb);
     return fromDbs
       .reduce((p, fromDb) => {
-        logger.info(`Replicating docs from "${fromDb}" to "${toDb}"`);
         const sourceDb = db.get(fromDb);
         return p
+          .then(() => logger.info(`Replicating docs from "${fromDb}" to "${toDb}"`))
           .then(() => replicateDb(sourceDb, targetDb))
           .then(() => db.close(sourceDb));
       }, Promise.resolve()

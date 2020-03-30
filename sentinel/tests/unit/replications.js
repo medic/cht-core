@@ -96,7 +96,11 @@ describe('replications', () => {
         promise.on = rescursiveOn;
         return promise;
       });
-      source = { replicate: { to: sinon.stub() } };
+
+      source = {
+        replicate: { to: sinon.stub() },
+        get: sinon.stub(),
+      };
       source.replicate.to.returns({ on: rescursiveOn });
       target = {};
     });
@@ -106,6 +110,7 @@ describe('replications', () => {
       sinon.stub(db, 'close');
       db.get.withArgs('target').returns(target);
       db.get.withArgs('source').returns(source);
+      source.get.resolves();
       return replications.replicateDbs(['source'], 'target').then(() => {
         assert.equal(source.replicate.to.callCount, 1);
         assert.deepEqual(source.replicate.to.args[0][0], target);
@@ -120,6 +125,7 @@ describe('replications', () => {
       sinon.stub(db, 'close');
       db.get.withArgs('target').returns(target);
       db.get.withArgs('source').returns(source);
+      source.get.resolves();
       return replications.replicateDbs(['source'], 'target').then(() => {
         const filter = source.replicate.to.args[0][1].filter;
 
@@ -141,6 +147,7 @@ describe('replications', () => {
       db.get.withArgs('target').returns(target);
       db.get.withArgs('source1').returns(source);
       db.get.withArgs('source2').returns(source);
+      source.get.resolves();
       return replications.replicateDbs(['source1', 'source2'], 'target').then(() => {
         assert.equal(source.replicate.to.callCount, 2);
         assert.equal(db.get.callCount, 3);
@@ -155,6 +162,7 @@ describe('replications', () => {
       db.get.withArgs('source1').returns(source);
       db.get.withArgs('source2').returns(source);
       db.get.withArgs('source3').returns(source);
+      source.get.resolves();
       return replications.replicateDbs(['source1', 'source2', 'source3'], 'target').then(() => {
         assert.equal(source.replicate.to.callCount, 3);
         assert.equal(db.get.callCount, 4);
@@ -170,6 +178,7 @@ describe('replications', () => {
       db.get.withArgs('target').returns(target);
       db.get.withArgs('source').returns(source);
       sinon.stub(rpn, 'post').resolves();
+      source.get.resolves();
       source.info = sinon.stub().resolves({ db_name: 'source' });
 
       return replications.replicateDbs(['source'], 'target').then(() => {
@@ -205,7 +214,7 @@ describe('replications', () => {
       db.get.withArgs('target').returns(target);
       db.get.withArgs('source').returns(source);
       source.info = sinon.stub().resolves({ db_name: 'source' });
-
+      source.get.resolves();
       return replications.replicateDbs(['source'], 'target').then(() => {
         return events['change']({ }).then(() => {
           assert.equal(source.info.callCount, 0);
@@ -213,6 +222,275 @@ describe('replications', () => {
       });
     });
 
-    //todo one time purge tests!!!!
+    describe('oneTimePurge', () => {
+      it('should not run oneTimePurge if already ran', () => {
+        sinon.stub(db, 'get');
+        sinon.stub(db, 'close');
+        db.get.withArgs('target').returns(target);
+        source.changes = sinon.stub();
+        db.get.withArgs('source').returns(source);
+        source.get.resolves({ _id: '_local/one_time_purge' });
+
+        return replications.replicateDbs(['source'], 'target').then(() => {
+          assert.equal(source.get.callCount, 1);
+          assert.deepEqual(source.get.args[0], ['_local/one_time_purge']);
+          assert.equal(source.changes.callCount, 0);
+        });
+      });
+
+      it('should batch changes and purge all replicated feedback and telemetry docs', () => {
+        sinon.stub(db, 'get');
+        sinon.stub(db, 'close');
+        target.changes = sinon.stub();
+        db.get.withArgs('target').returns(target);
+        source.changes = sinon.stub();
+        source.put = sinon.stub();
+        source.get.rejects({ status: 404 });
+        source.info = sinon.stub().resolves({ db_name: 'source' });
+        db.get.withArgs('source').returns(source);
+
+        const changes = [
+          {
+            last_seq: 100,
+            results: [
+              { id: 'telemetry-1', changes: [{ rev: '1' }] },
+              { id: 'read:doc', changes: [{ rev: '2' }] },
+              { id: 'something', changes: [{ rev: '3' }] },
+              { id: 'feedback-1', changes: [{ rev: '4' }] },
+            ],
+          },
+          {
+            last_seq: 200,
+            results: [
+              { id: 'feedback-2', changes: [{ rev: '2' }] },
+              { id: 'feedback-3', changes: [{ rev: '11' }] },
+              { id: 'telemetry-3', changes: [{ rev: '1' }] },
+            ],
+          },
+          {
+            last_seq: 300,
+            results: [
+              { id: 'something', changes: [{ rev: '4' }] },
+              { id: 'read:doc2', changes: [{ rev: '5' }] },
+              { id: 'read:doc3', changes: [{ rev: '6' }] },
+            ],
+          },
+          {
+            last_seq: 400,
+            results: [
+              { id: 'telemetry-4', changes: [{ rev: '1' }] },
+              { id: 'telemetry-5', changes: [{ rev: '1' }] },
+              { id: 'read:doc3', changes: [{ rev: '6' }] },
+            ],
+          },
+          { last_seq: 400, results: [] },
+        ];
+
+        source.changes.callsFake(() => Promise.resolve(changes.splice(0, 1)[0]));
+        // presume all docs are already replicated
+        target.changes.callsFake(({ doc_ids }) => Promise.resolve({ results: doc_ids.map(id => ({ id })) }));
+        sinon.stub(rpn, 'post').resolves();
+
+        return replications.replicateDbs(['source'], 'target').then(() => {
+          assert.equal(source.get.callCount, 1);
+          assert.deepEqual(source.get.args[0], ['_local/one_time_purge']);
+          assert.equal(source.changes.callCount, 5);
+          assert.deepEqual(source.changes.args[0], [{ since: 0, limit: 100 }]);
+          assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100 }]);
+          assert.deepEqual(source.changes.args[2], [{ since: 200, limit: 100 }]);
+          assert.deepEqual(source.changes.args[3], [{ since: 300, limit: 100 }]);
+          assert.deepEqual(source.changes.args[4], [{ since: 400, limit: 100 }]);
+          assert.equal(rpn.post.callCount, 3);
+          assert.deepEqual(rpn.post.args[0], [{
+            uri: `${db.serverUrl}/source/_purge`,
+            json: true,
+            body: {
+              'telemetry-1': ['1'],
+              'feedback-1': ['4'],
+            }
+          }]);
+          assert.deepEqual(rpn.post.args[1], [{
+            uri: `${db.serverUrl}/source/_purge`,
+            json: true,
+            body: {
+              'feedback-2': ['2'],
+              'feedback-3': ['11'],
+              'telemetry-3': ['1'],
+            }
+          }]);
+          assert.deepEqual(rpn.post.args[2], [{
+            uri: `${db.serverUrl}/source/_purge`,
+            json: true,
+            body: {
+              'telemetry-4': ['1'],
+              'telemetry-5': ['1'],
+            }
+          }]);
+
+          assert.equal(target.changes.callCount, 3);
+          assert.deepEqual(target.changes.args[0], [{ doc_ids: ['telemetry-1', 'feedback-1'] }]);
+          assert.deepEqual(target.changes.args[1], [{ doc_ids: ['feedback-2', 'feedback-3', 'telemetry-3'] }]);
+          assert.deepEqual(target.changes.args[2], [{ doc_ids: ['telemetry-4', 'telemetry-5'] }]);
+
+          assert.equal(source.put.callCount, 1);
+          assert.deepEqual(source.put.args[0], [{ _id: '_local/one_time_purge' }]);
+        });
+      });
+
+      it('should only purge docs that have been replicated', () => {
+        sinon.stub(db, 'get');
+        sinon.stub(db, 'close');
+        target.changes = sinon.stub();
+        db.get.withArgs('target').returns(target);
+        source.changes = sinon.stub();
+        source.put = sinon.stub();
+        source.get.rejects({ status: 404 });
+        source.info = sinon.stub().resolves({ db_name: 'source' });
+        db.get.withArgs('source').returns(source);
+
+        const changes = [
+          {
+            last_seq: 100,
+            results: [
+              { id: 'telemetry-1', changes: [{ rev: '1' }] },
+              { id: 'read:doc', changes: [{ rev: '2' }] },
+              { id: 'something', changes: [{ rev: '3' }] },
+              { id: 'feedback-1', changes: [{ rev: '4' }] },
+            ],
+          },
+          {
+            last_seq: 200,
+            results: [
+              { id: 'feedback-2', changes: [{ rev: '2' }] },
+              { id: 'feedback-3', changes: [{ rev: '11' }] },
+              { id: 'telemetry-3', changes: [{ rev: '1' }] },
+            ],
+          },
+          { last_seq: 200, results: [] },
+        ];
+
+        source.changes.callsFake(() => Promise.resolve(changes.splice(0, 1)[0]));
+        // presume all docs are already replicated
+        const replicatedIds = ['telemetry-1', 'feedback-1', 'feedback-2'];
+        target.changes.callsFake(({ doc_ids }) => (
+          Promise.resolve({ results: doc_ids.filter(id => replicatedIds.includes(id)).map(id => ({ id })) }))
+        );
+        sinon.stub(rpn, 'post').resolves();
+
+        return replications.replicateDbs(['source'], 'target').then(() => {
+          assert.equal(source.get.callCount, 1);
+          assert.deepEqual(source.get.args[0], ['_local/one_time_purge']);
+          assert.equal(source.changes.callCount, 3);
+          assert.deepEqual(source.changes.args[0], [{ since: 0, limit: 100 }]);
+          assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100 }]);
+          assert.deepEqual(source.changes.args[2], [{ since: 200, limit: 100 }]);
+          assert.equal(rpn.post.callCount, 2);
+          assert.deepEqual(rpn.post.args[0], [{
+            uri: `${db.serverUrl}/source/_purge`,
+            json: true,
+            body: {
+              'telemetry-1': ['1'],
+              'feedback-1': ['4'],
+            }
+          }]);
+          assert.deepEqual(rpn.post.args[1], [{
+            uri: `${db.serverUrl}/source/_purge`,
+            json: true,
+            body: {
+              'feedback-2': ['2'],
+            }
+          }]);
+
+          assert.equal(target.changes.callCount, 2);
+          assert.deepEqual(target.changes.args[0], [{ doc_ids: ['telemetry-1', 'feedback-1'] }]);
+          assert.deepEqual(target.changes.args[1], [{ doc_ids: ['feedback-2', 'feedback-3', 'telemetry-3'] }]);
+
+          assert.equal(source.put.callCount, 1);
+          assert.deepEqual(source.put.args[0], [{ _id: '_local/one_time_purge' }]);
+        });
+      });
+
+      it('should interrupt when an error is thrown', () => {
+        sinon.stub(db, 'get');
+        sinon.stub(db, 'close');
+        target.changes = sinon.stub();
+        db.get.withArgs('target').returns(target);
+        source.changes = sinon.stub();
+        source.put = sinon.stub();
+        source.get.rejects({ status: 404 });
+        source.info = sinon.stub().resolves({ db_name: 'source' });
+        db.get.withArgs('source').returns(source);
+
+        const changes = [
+          {
+            last_seq: 100,
+            results: [
+              { id: 'telemetry-1', changes: [{ rev: '1' }] },
+              { id: 'read:doc', changes: [{ rev: '2' }] },
+              { id: 'something', changes: [{ rev: '3' }] },
+              { id: 'feedback-1', changes: [{ rev: '4' }] },
+            ],
+          },
+          {
+            last_seq: 200,
+            results: [
+              { id: 'feedback-2', changes: [{ rev: '2' }] },
+              { id: 'feedback-3', changes: [{ rev: '11' }] },
+              { id: 'telemetry-3', changes: [{ rev: '1' }] },
+            ],
+          },
+          {
+            last_seq: 300,
+            results: [
+              { id: 'something', changes: [{ rev: '4' }] },
+              { id: 'read:doc2', changes: [{ rev: '5' }] },
+              { id: 'read:doc3', changes: [{ rev: '6' }] },
+            ],
+          },
+          {
+            last_seq: 400,
+            results: [
+              { id: 'telemetry-4', changes: [{ rev: '1' }] },
+              { id: 'telemetry-5', changes: [{ rev: '1' }] },
+              { id: 'read:doc3', changes: [{ rev: '6' }] },
+            ],
+          },
+          { last_seq: 400, results: [] },
+        ];
+
+        source.changes.callsFake(() => Promise.resolve(changes.splice(0, 1)[0]));
+        // presume all docs are already replicated
+        target.changes.callsFake(({ doc_ids }) => Promise.resolve({ results: doc_ids.map(id => ({ id })) }));
+        sinon.stub(rpn, 'post').onCall(0).resolves().onCall(1).rejects({ some: 'error' });
+
+        return replications.replicateDbs(['source'], 'target').then(() => {
+          assert.equal(source.get.callCount, 1);
+          assert.deepEqual(source.get.args[0], ['_local/one_time_purge']);
+          assert.equal(source.changes.callCount, 2);
+          assert.deepEqual(source.changes.args[0], [{ since: 0, limit: 100 }]);
+          assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100 }]);
+          assert.equal(rpn.post.callCount, 2);
+          assert.deepEqual(rpn.post.args[0], [{
+            uri: `${db.serverUrl}/source/_purge`,
+            json: true,
+            body: {
+              'telemetry-1': ['1'],
+              'feedback-1': ['4'],
+            }
+          }]);
+          assert.deepEqual(rpn.post.args[1], [{
+            uri: `${db.serverUrl}/source/_purge`,
+            json: true,
+            body: {
+              'feedback-2': ['2'],
+              'feedback-3': ['11'],
+              'telemetry-3': ['1'],
+            }
+          }]);
+
+          assert.equal(source.put.callCount, 0);
+        });
+      });
+    });
   });
 });

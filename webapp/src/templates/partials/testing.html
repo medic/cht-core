@@ -30,9 +30,17 @@
     </div>
 
     <div>
-      <a ng-click="testingCtrl.generateACrazyAmountOfFeedback()" class="btn btn-danger">
-        Generate many feedbacks!!!!
-      </a>
+      <h3 translate>generate.feedback.title</h3>
+      <p translate>generate.feedback.description</p>
+      <div class="row">
+        <div class="col-lg-3 col-sm-6">
+          <input class="form-control" ng-model="testingCtrl.amountFeedbackDocs">
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <a ng-click="testingCtrl.generateFeedback()" class="btn btn-danger" translate>Start</a>
+          <div class="loader inline small" ng-show="testingCtrl.generatingFeedback"></div>
+        </div>
+      </div>
     </div>
 
   </div>
