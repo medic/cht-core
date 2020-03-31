@@ -179,7 +179,7 @@ const setCookies = (req, res, sessionRes) => {
           return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
         })
         .then(() => {
-          res.status(302).send(getRedirectUrl(userCtx, req.body.redirect))
+          res.status(302).send(getRedirectUrl(userCtx, req.body.redirect));
         });
     })
     .catch(err => {
