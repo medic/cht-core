@@ -90,7 +90,7 @@ describe('login controller', () => {
       },
     ].forEach(({given, expected}) => {
       it(`Bad URL "${given}" should redirect to root`, () => {
-        chai.expect(expected).to.equal(controller.safePath(given));
+        chai.expect(expected).to.equal(controller._safePath(given));
       });
     });
 
@@ -102,7 +102,7 @@ describe('login controller', () => {
       '/lg/_design/medic/_rewrite/long/path',
     ].forEach(requested => {
       it(`Good URL "${requested}" should redirect unchanged`, () => {
-        chai.expect(requested).to.equal(controller.safePath(requested));
+        chai.expect(requested).to.equal(controller._safePath(requested));
       });
     });
 
@@ -125,7 +125,7 @@ describe('login controller', () => {
       },
     ].forEach(({ given, expected }) => {
       it(`Absolute URL "${given}" should redirect as a relative url`, () => {
-        chai.expect(expected).to.equal(controller.safePath(given));
+        chai.expect(expected).to.equal(controller._safePath(given));
       });
     });
 

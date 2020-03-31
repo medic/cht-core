@@ -39,6 +39,7 @@ const submit = function(e) {
   const payload = JSON.stringify({
     user: document.getElementById('user').value.toLowerCase().trim(),
     password: document.getElementById('password').value,
+    redirect: document.getElementById('redirect').value,
     locale: selectedLocale
   });
   post(url, payload, handleResponse);
@@ -115,11 +116,20 @@ const parseTranslations = function() {
   return JSON.parse(decodeURIComponent(raw));
 };
 
+const setRedirectUrl = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirect = urlParams.get('redirect');
+  if (redirect) {
+    document.getElementById('redirect').value = redirect;
+  }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale();
 
   translate();
+  setRedirectUrl();
 
   document.getElementById('login').addEventListener('click', submit, false);
 
