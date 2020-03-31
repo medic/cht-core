@@ -391,31 +391,28 @@ const batchedUnallocatedPurge = (roles, purgeFn) => {
 
 const batchedTasksPurge = (roles) => {
   const type = 'tasks';
-  const url = `${db.couchUrl}/_design/medic/_view/tasks_by_state`;
+  const url = `${db.couchUrl}/_design/medic/_view/tasks_in_terminal_state`;
+  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
 
-  const terminalStates = ['Cancelled', 'Completed', 'Failed'];
-  const getQueryParams = (startKeyDocId) => ({
+  const getQueryParams = (startKeyDocId, startKey) => ({
     limit: BATCH_SIZE,
-    keys: JSON.stringify(terminalStates),
+    end_key: JSON.stringify(maximumEmissionEndDate),
+    start_key: JSON.stringify(startKey),
     startkey_docid: startKeyDocId,
   });
 
   const purgeCallback = (rolesHashes, rows) => {
-    const now = moment();
     const toPurge = {};
     rows.forEach(row => {
       rolesHashes.forEach(hash => {
         toPurge[hash] = toPurge[hash] || {};
-        const daysSinceTaskEndDate = now.diff(row.value.endDate, 'days');
-        if (daysSinceTaskEndDate >= TASK_EXPIRATION_PERIOD) {
-          toPurge[hash][row.id] = row.id;
-        }
+        toPurge[hash][row.id] = row.id;
       });
     });
     return toPurge;
   };
 
-  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '');
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '', '');
 };
 
 const batchedTargetsPurge = (roles) => {
@@ -443,22 +440,24 @@ const batchedTargetsPurge = (roles) => {
   return batchedPurge(type, url, getQueryParams, purgeCallback, roles, 'target~');
 };
 
-const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyDocId) => {
+const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyDocId, startKey) => {
+  let nextKey;
   let nextKeyDocId;
   const rows = [];
   const docIds = [];
   const rolesHashes = Object.keys(roles);
 
   logger.debug(`Starting ${type} purge batch with id ${startKeyDocId}`);
+  // using `rpn` because PouchDB doesn't support `start_key_doc_id`
   return request
-    .get(uri, { qs: getQueryParams(startKeyDocId), json: true })
+    .get(uri, { qs: getQueryParams(startKeyDocId, startKey), json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
           return;
         }
 
-        nextKeyDocId = row.id;
+        ({ id: nextKeyDocId, key: nextKey } = row);
         docIds.push(row.id);
         rows.push(row);
       });
@@ -469,7 +468,7 @@ const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyD
       const toPurge = purgeCallback(rolesHashes, rows);
       return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
     })
-    .then(() => nextKeyDocId && batchedPurge(type, uri, getQueryParams, purgeCallback, roles, nextKeyDocId));
+    .then(() => nextKeyDocId && batchedPurge(type, uri, getQueryParams, purgeCallback, roles, nextKeyDocId, nextKey));
 };
 
 const writePurgeLog = (roles, duration) => {

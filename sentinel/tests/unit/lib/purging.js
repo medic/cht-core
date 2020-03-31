@@ -1730,6 +1730,8 @@ describe('ServerSidePurge', () => {
   describe('batchedTasksPurge', () => {
     let roles;
 
+    const getDaysAgo = (days) => moment().subtract(days, 'days').format('YYYY-MM-DD');
+
     beforeEach(() => {
       roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
       db.couchUrl = 'http://a:p@localhost:6500/medic';
@@ -1737,14 +1739,17 @@ describe('ServerSidePurge', () => {
 
     it('should request first batch', () => {
       sinon.stub(request, 'get').resolves({ rows:[] });
+      clock = sinon.useFakeTimers(moment('2020-03-01').valueOf());
+
       return service.__get__('batchedTasksPurge')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(1);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_by_state',
+          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
               limit: 1000,
-              keys: JSON.stringify(['Cancelled', 'Completed', 'Failed']),
+              end_key: JSON.stringify(getDaysAgo(60)),
+              start_key: JSON.stringify(''),
               startkey_docid: '',
             },
             json: true
@@ -1754,58 +1759,60 @@ describe('ServerSidePurge', () => {
     });
 
     it('should stop after no longer getting results', () => {
-      const day = 24 * 60 * 60 * 1000;
-      clock = sinon.useFakeTimers();
-      clock.tick(100 * day);
+      clock = sinon.useFakeTimers(moment('2020-01-23').valueOf());
+
       sinon.stub(request, 'get');
       request.get.onCall(0).resolves({ rows: [
-        { id: 'task1', value: { dueDate: 10, startDate: 2, endDate: 41 * day }, key: 'Cancelled' },
-        { id: 'task2', value: { dueDate: 22, startDate: 2, endDate: 59 * day }, key: 'Completed' },
-        { id: 'task3', value: { dueDate: 32, startDate: 4, endDate: 46 * day }, key: 'Failed' },
+        { id: 'task1', key: getDaysAgo(120) },
+        { id: 'task2', key: getDaysAgo(100) },
+        { id: 'task3', key: getDaysAgo(98) },
       ]});
 
       request.get.onCall(1).resolves({ rows: [
-        { id: 'task3', value: { dueDate: 10, startDate: 2, endDate: 50 * day }, key: 'Cancelled' },
-        { id: 'task4', value: { dueDate: 23, startDate: 2, endDate: 60 * day }, key: 'Failed' },
-        { id: 'task5', value: { dueDate: 11, startDate: 2, endDate: 69 * day }, key: 'Completed' },
+        { id: 'task3', key: getDaysAgo(98) },
+        { id: 'task4', key: getDaysAgo(78) },
+        { id: 'task5', key: getDaysAgo(65) },
       ]});
 
       request.get.onCall(2).resolves({ rows: [
-        { id: 'task5', value: { dueDate: 11, startDate: 2, endDate: 30 }, key: 'Completed' },
+        { id: 'task5', key: getDaysAgo(65) },
       ]});
 
-      sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
+      sinon.stub(db, 'get').returns({changes: sinon.stub().resolves({ results: [] }), bulkDocs: sinon.stub() });
 
       return service.__get__('batchedTasksPurge')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(3);
         chai.expect(request.get.args[0]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_by_state',
+          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
               limit: 1000,
-              keys: JSON.stringify(['Cancelled', 'Completed', 'Failed']),
+              end_key: JSON.stringify(getDaysAgo(60)),
+              start_key: JSON.stringify(''),
               startkey_docid: '',
             },
             json: true,
           }]);
 
         chai.expect(request.get.args[1]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_by_state',
+          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
               limit: 1000,
-              keys: JSON.stringify(['Cancelled', 'Completed', 'Failed']),
+              end_key: JSON.stringify(getDaysAgo(60)),
+              start_key: JSON.stringify(getDaysAgo(98)),
               startkey_docid: 'task3',
             },
             json: true,
           }]);
 
         chai.expect(request.get.args[2]).to.deep.equal([
-          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_by_state',
+          'http://a:p@localhost:6500/medic/_design/medic/_view/tasks_in_terminal_state',
           {
             qs: {
               limit: 1000,
-              keys: JSON.stringify(['Cancelled', 'Completed', 'Failed']),
+              end_key: JSON.stringify(getDaysAgo(60)),
+              start_key: JSON.stringify(getDaysAgo(65)),
               startkey_docid: 'task5',
             },
             json: true,
@@ -1813,23 +1820,21 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should save new purges and remove old purges', () => {
-      const day = 24 * 60 * 60 * 1000;
-      clock = sinon.useFakeTimers();
-      clock.tick(100 * day);
+    it('should save new purges', () => {
+      clock = sinon.useFakeTimers(moment('2020-01-23').valueOf());
 
       sinon.stub(request, 'get');
       request.get.onCall(0).resolves({ rows: [
-        { id: 't1', value: { startDate:1, dueDate: 2, endDate: 45 * day } }, // 55 days ago
-        { id: 't2', value: { startDate:1, dueDate: 2, endDate: 35 * day } }, // 65 days ago
-        { id: 't3', value: { startDate:1, dueDate: 2, endDate: 40 * day } }, // 60 days ago
-        { id: 't4', value: { startDate:1, dueDate: 2, endDate: 59 * day } }, // 41 days ago
-        { id: 't5', value: { startDate:1, dueDate: 2, endDate: 20 * day } }, // 80 days ago
-        { id: 't6', value: { startDate:1, dueDate: 2, endDate: 42 * day } }, // 58 days ago
+        { id: 't1', key: getDaysAgo(120) },
+        { id: 't2', key: getDaysAgo(115) },
+        { id: 't3', key: getDaysAgo(110) },
+        { id: 't4', key: getDaysAgo(90) },
+        { id: 't5', key: getDaysAgo(80) },
+        { id: 't6', key: getDaysAgo(70) },
       ]});
 
       request.get.onCall(1).resolves({ rows: [
-        { id: 't6', value: { startDate:1, dueDate: 2, endDate: 42 * day } },
+        { id: 't6', key: getDaysAgo(70) },
       ]});
 
       const dbA = { changes: sinon.stub(), bulkDocs: sinon.stub() };
@@ -1842,21 +1847,26 @@ describe('ServerSidePurge', () => {
 
       dbB.changes.resolves({ results: [
         { id: 'purged:t2', changes: [{ rev: 't2-rev' }] },
-        { id: 'purged:t5', changes: [{ rev: 't5-rev' }], deleted: true },
+        { id: 'purged:t5', changes: [{ rev: 't5-rev' }] },
       ]});
 
       return service.__get__('batchedTasksPurge')(roles).then(() => {
         chai.expect(request.get.callCount).to.equal(2);
         chai.expect(dbA.bulkDocs.callCount).to.equal(1);
         chai.expect(dbA.bulkDocs.args[0]).to.deep.equal([{ docs: [
+          { _id: 'purged:t1' },
           { _id: 'purged:t2' },
           { _id: 'purged:t3' },
+          { _id: 'purged:t4' },
           { _id: 'purged:t5' },
+          { _id: 'purged:t6' },
         ]}]);
         chai.expect(dbB.bulkDocs.callCount).to.equal(1);
         chai.expect(dbB.bulkDocs.args[0]).to.deep.equal([{ docs: [
+          { _id: 'purged:t1' },
           { _id: 'purged:t3' },
-          { _id: 'purged:t5' },
+          { _id: 'purged:t4' },
+          { _id: 'purged:t6' },
         ]}]);
       });
     });
