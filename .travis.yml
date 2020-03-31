@@ -108,7 +108,7 @@ after_failure:
         echo "-------------------------"
       done
     )
-  - [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
+    [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
     echo "Inside last after_failure -- $TRAVIS_PULL_REQUEST"
 
     if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
