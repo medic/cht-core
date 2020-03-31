@@ -108,7 +108,8 @@ after_failure:
         echo "-------------------------"
       done
     )
-    echo "outside loop after_failure -- $TRAVIS_PULL_REQUEST"
+    echo "Travis build stage name - ${TRAVIS_BUILD_STAGE_NAME} - build number - ${TRAVIS_BUILD_NUMBER}"
+    echo "outside loop after_failure -- $TRAVIS_BUILD_STAGE_NAME"
 
     [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
 
