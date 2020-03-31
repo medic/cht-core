@@ -107,10 +107,12 @@ after_failure:
         tail "$log"
         echo "-------------------------"
       done
+      echo "Inside loop finished"
     )
+  - echo "hiiiiiiiiii"
 
     [[ "$TRAVIS_BUILD_STAGE_NAME" = "Test" ]] || return
-
+    echo "Inside last after_failure -- $TRAVIS_PULL_REQUEST"
     if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
       S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
     else
