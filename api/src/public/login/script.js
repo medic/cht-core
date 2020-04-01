@@ -5,27 +5,16 @@ const setState = function(className) {
   document.getElementById('form').className = className;
 };
 
-const post = function(url, payload, callback) {
+const request = function(method, url, payload, callback) {
   const xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
       callback(xmlhttp);
     }
   };
-  xmlhttp.open('POST', url, true);
+  xmlhttp.open(method, url, true);
   xmlhttp.setRequestHeader('Content-Type', 'application/json');
   xmlhttp.send(payload);
-};
-
-const handleResponse = function(xmlhttp) {
-  if (xmlhttp.status === 302) {
-    window.location = xmlhttp.response;
-  } else if (xmlhttp.status === 401) {
-    setState('loginincorrect');
-  } else {
-    setState('loginerror');
-    console.error('Error logging in', xmlhttp.response);
-  }
 };
 
 const submit = function(e) {
@@ -42,7 +31,19 @@ const submit = function(e) {
     redirect: document.getElementById('redirect').value,
     locale: selectedLocale
   });
-  post(url, payload, handleResponse);
+  request('POST', url, payload, function(xmlhttp) {
+    if (xmlhttp.status === 302) {
+      // success - redirect to app
+      window.location = xmlhttp.response;
+    } else if (xmlhttp.status === 401) {
+      // bad user/pass provided
+      setState('loginincorrect');
+    } else {
+      // unknown error
+      setState('loginerror');
+      console.error('Error logging in', xmlhttp.response);
+    }
+  });
 };
 
 const focusOnPassword = function(e) {
@@ -74,12 +75,12 @@ const handleLocaleSelection = function(e) {
   }
 };
 
-const getLocaleCookie = function() {
+const getCookie = function(name) {
   const cookies = document.cookie && document.cookie.split(';');
   if (cookies) {
     for (const cookie of cookies) {
       const parts = cookie.trim().split('=');
-      if (parts[0] === 'locale') {
+      if (parts[0] === name) {
         return parts[1].trim();
       }
     }
@@ -87,7 +88,7 @@ const getLocaleCookie = function() {
 };
 
 const getLocale = function() {
-  const selectedLocale = getLocaleCookie();
+  const selectedLocale = getCookie('locale');
   const defaultLocale = document.body.getAttribute('data-default-locale');
   const locale = selectedLocale || defaultLocale;
   if (translations[locale]) {
@@ -124,12 +125,37 @@ const setRedirectUrl = function() {
   }
 };
 
+const checkSession = function() {
+  if (getCookie('login') === 'force') {
+    // require user to login regardless of session state
+    return;
+  }
+  const redirect = encodeURIComponent(document.getElementById('redirect').value);
+  request('GET', '/medic/login/identity?redirect=' + redirect, null, function(xmlhttp) {
+    if (xmlhttp.status === 0 || xmlhttp.status === 401) {
+      // no internet connection or not logged in - ignore
+      return;
+    }
+    if (xmlhttp.status !== 200) {
+      return console.error(`Could not determine session status. Response: ${xmlhttp.status}, ${xmlhttp.response}`);
+    }
+    try {
+      const response = JSON.parse(xmlhttp.response);
+      window.location = response.url || '/';
+    } catch (e) {
+      return console.error('Could not parse session status.', e);
+    }
+  });
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+  setRedirectUrl();
+  checkSession();
+
   translations = parseTranslations();
   selectedLocale = getLocale();
 
   translate();
-  setRedirectUrl();
 
   document.getElementById('login').addEventListener('click', submit, false);
 

@@ -135,25 +135,7 @@ describe('login controller', () => {
 
   describe('get', () => {
 
-    it('when already logged in redirect to app', () => {
-      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
-      const redirect = sinon.stub(res, 'redirect');
-      const cookie = sinon.stub(res, 'cookie').returns(res);
-      const query = sinon.stub(db, 'query');
-      return controller.get(req, res).then(() => {
-        chai.expect(getUserCtx.callCount).to.equal(1);
-        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
-        chai.expect(cookie.callCount).to.equal(1);
-        chai.expect(cookie.args[0][0]).to.equal('userCtx');
-        chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
-        chai.expect(redirect.callCount).to.equal(1);
-        chai.expect(redirect.args[0][0]).to.equal('/');
-        chai.expect(query.callCount).to.equal(0);
-      });
-    });
-
-    it('when not logged in send login page', () => {
-      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+    it('send login page', () => {
       const query = sinon.stub(db, 'query').resolves({ rows: [] });
       const getDoc = sinon.stub(db, 'get').resolves({
         _id: 'branding',
@@ -172,8 +154,6 @@ describe('login controller', () => {
         .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }}');
       sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
       return controller.get(req, res).then(() => {
-        chai.expect(getUserCtx.callCount).to.equal(1);
-        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
         chai.expect(send.args[0][0])
@@ -183,42 +163,20 @@ describe('login controller', () => {
       });
     });
 
-    it('when branding doc missing when not logged in send login page', () => {
-      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+    it('when branding doc missing send login page', () => {
       const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       sinon.stub(db, 'query').resolves({ rows: [] });
       const send = sinon.stub(res, 'send');
       sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE.');
       sinon.stub(config, 'getTranslationValues').returns({});
       return controller.get(req, res).then(() => {
-        chai.expect(getUserCtx.callCount).to.equal(1);
-        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE.');
       });
     });
 
-    it('when already logged in and login=force cookie is present, render login', () => {
-      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
-      const send = sinon.stub(res, 'send');
-      sinon.stub(db, 'get').resolves({});
-      sinon.stub(db, 'query').resolves({ rows: [] });
-      const cookie = sinon.stub(res, 'cookie').returns(res);
-      req.headers.cookie = 'login=force';
-      return controller.get(req, res).then(() => {
-        chai.expect(getUserCtx.callCount).to.equal(1);
-        chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
-        chai.expect(cookie.callCount).to.equal(1);
-        chai.expect(cookie.args[0][0]).to.equal('userCtx');
-        chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
-        chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.include('<form id="form" action="/medic/login" method="POST">');
-      });
-    });
-
     it('caches the login page template for performance', () => {
-      sinon.stub(auth, 'getUserCtx').rejects('not logged in');
       sinon.stub(res, 'send');
       sinon.stub(db, 'query').resolves({ rows: [] });
       sinon.stub(res, 'cookie').returns(res);
@@ -251,7 +209,6 @@ describe('login controller', () => {
     });
 
     it('hides locale selector when there is only one option', () => {
-      sinon.stub(auth, 'getUserCtx').rejects('not logged in');
       sinon.stub(db, 'query').resolves({ rows: [ { doc: { code: 'en', name: 'English' } } ] });
       sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       const send = sinon.stub(res, 'send');
@@ -515,7 +472,10 @@ describe('login controller', () => {
         chai.expect(res.type.args[0][0]).to.equal('application/json');
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.deep.equal({ success: true });
+        chai.expect(send.args[0][0]).to.deep.equal({
+          success: true,
+          url: '/'
+        });
       });
     });
 
