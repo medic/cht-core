@@ -5,6 +5,8 @@ const logger = require('../lib/logger');
 const rpn = require('request-promise-native');
 
 const ONE_TIME_PURGE_LOCAL_DOC_ID = '_local/one_time_purge';
+// default CouchDB purge max_document_id_number
+// https://docs.couchdb.org/en/master/cluster/purging.html#config-settings
 const BATCH_SIZE = 100;
 
 let timers = [];
@@ -93,6 +95,7 @@ const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
   const opts = {
     since: lastSeq,
     limit: BATCH_SIZE,
+    batch_size: BATCH_SIZE,
   };
 
   const getReplicatedIds = (targetDb, ids) => {
@@ -135,9 +138,6 @@ function replicateDb(sourceDb, targetDb) {
     })
     .then(() => {
       return oneTimePurge(sourceDb, targetDb);
-    })
-    .catch(err => {
-      logger.error('Error while replicating: %o', err);
     });
 }
 
