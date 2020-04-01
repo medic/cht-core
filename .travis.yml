@@ -108,11 +108,9 @@ after_failure:
         echo "-------------------------"
       done
     )
-    echo "Travis build stage name - ${TRAVIS_BUILD_STAGE_NAME} - build number - ${TRAVIS_BUILD_NUMBER}"
-    echo "outside loop after_failure -- $TRAVIS_BUILD_STAGE_NAME"
 
     [[ "$TRAVIS_BUILD_STAGE_NAME" = "test" ]] || return
-    echo "Yay! We are inside now!"
+
     if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
       S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
     else
