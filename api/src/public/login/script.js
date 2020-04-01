@@ -28,7 +28,7 @@ const submit = function(e) {
   const payload = JSON.stringify({
     user: document.getElementById('user').value.toLowerCase().trim(),
     password: document.getElementById('password').value,
-    redirect: document.getElementById('redirect').value,
+    redirect: getRedirectUrl(),
     locale: selectedLocale
   });
   request('POST', url, payload, function(xmlhttp) {
@@ -117,12 +117,9 @@ const parseTranslations = function() {
   return JSON.parse(decodeURIComponent(raw));
 };
 
-const setRedirectUrl = function() {
+const getRedirectUrl = function() {
   const urlParams = new URLSearchParams(window.location.search);
-  const redirect = urlParams.get('redirect');
-  if (redirect) {
-    document.getElementById('redirect').value = redirect;
-  }
+  return urlParams.get('redirect');
 };
 
 const checkSession = function() {
@@ -130,7 +127,7 @@ const checkSession = function() {
     // require user to login regardless of session state
     return;
   }
-  const redirect = encodeURIComponent(document.getElementById('redirect').value);
+  const redirect = encodeURIComponent(getRedirectUrl());
   request('GET', '/medic/login/identity?redirect=' + redirect, null, function(xmlhttp) {
     if (xmlhttp.status === 0 || xmlhttp.status === 401) {
       // no internet connection or not logged in - ignore
@@ -149,7 +146,6 @@ const checkSession = function() {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  setRedirectUrl();
   checkSession();
 
   translations = parseTranslations();
