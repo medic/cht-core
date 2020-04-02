@@ -10,7 +10,8 @@ module.exports = {
 
     if (docIds.length === 1) {
       return lineage.fetchHydratedDoc(docIds[0])
-        .then(hydratedDoc => res.json(hydratedDoc));
+        .then(hydratedDoc => res.json(hydratedDoc))
+        .catch(err => serverUtils.serverError(err, req, res));
     }
 
     return db.medic.allDocs({keys: docIds, include_docs: true})
