@@ -1,5 +1,3 @@
-const _ = require('lodash/core');
-
 angular.module('inboxServices').factory('MessageContacts',
   function(
     AddReadStatus,
@@ -10,51 +8,62 @@ angular.module('inboxServices').factory('MessageContacts',
     'use strict';
     'ngInject';
 
-    const listParams = function() {
-      return {
-        group_level: 1
-      };
-    };
+    const listParams = () => ({
+      group_level: 1
+    });
 
-    const conversationParams = function(id, skip) {
-      return {
-        reduce: false,
-        descending: true,
-        include_docs: true,
-        skip: skip,
-        limit: 50,
-        startkey: [ id, {} ],
-        endkey: [ id ]
-      };
-    };
+    const defaultLimit = 50;
 
-    const getMessages = function(params) {
-      return DB().query('medic-client/messages_by_contact_date', params)
-        .then(function(response) {
-          //include_docs on reduce views (listParams)
-          if(params.reduce === undefined || params.reduce === true) {
-            const valueId = function(value) { return value.id; };
-            const ids = _.map(_.map(response.rows, 'value'), valueId);
-            return GetDataRecords(ids, {include_docs: true}).then(function(docs) {
-              _.forEach(response.rows, function(row, idx) { row.doc = docs[idx]; });
-              return response.rows;
-            });
-          } else {
+    const conversationParams = (id, skip, limit = 0) => ({
+      reduce: false,
+      descending: true,
+      include_docs: true,
+      skip: skip,
+      limit: Math.max(limit, defaultLimit),
+      startkey: [ id, {} ],
+      endkey: [ id ],
+    });
+
+    const getMessages = (params) => {
+      return DB()
+        .query('medic-client/messages_by_contact_date', params)
+        .then(response => {
+          if (!response.rows) {
+            return [];
+          }
+
+          if(params.reduce !== undefined && params.reduce !== true) {
             return response.rows;
           }
+
+          //include_docs on reduce views (listParams)
+          const ids = response.rows.map(row => row.value && row.value.id);
+          return GetDataRecords(ids, { include_docs: true }).then(docs => {
+            response.rows.forEach((row, idx) => row.doc = docs[idx]);
+            return response.rows;
+          });
         })
         .then(HydrateMessages);
     };
 
     return {
-      list: function() {
+      list: () => {
         return getMessages(listParams())
           .then(AddReadStatus.messages);
       },
-      conversation: function(id, skip) {
-        return getMessages(conversationParams(id, skip || 0))
+      conversation: (id, skip = 0, limit = 0) => {
+        return getMessages(conversationParams(id, skip, limit))
           .then(AddReadStatus.messages);
-      }
+      },
+
+      isRelevantChange: (change, conversation) => (
+        (change.doc && change.doc.kujua_message) ||
+        (change.doc && change.doc.sms_message) ||
+        change.deleted ||
+        (conversation && conversation.messages && conversation.messages.find(message => message.doc._id === change.id))
+      ),
+
+      defaultLimit,
     };
   }
 );

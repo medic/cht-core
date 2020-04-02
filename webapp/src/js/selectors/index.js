@@ -40,7 +40,7 @@ const getSelectedContactDoc = reselect.createSelector(
 // Messages
 const getMessagesState = state => state.messages;
 const getMessagesError = state => getMessagesState(state).error;
-const getSelectedMessage = state => getMessagesState(state).selected;
+const getSelectedConversation = state => getMessagesState(state).selected;
 const getConversations = state => getMessagesState(state).conversations;
 
 // Reports
@@ -104,7 +104,7 @@ angular.module('inboxServices').constant('Selectors', {
 
   getMessagesState,
   getMessagesError,
-  getSelectedMessage,
+  getSelectedConversation,
   getConversations,
 
   getReportsState,

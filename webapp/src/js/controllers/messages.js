@@ -25,7 +25,7 @@ angular
     const mapStateToTarget = function(state) {
       return {
         currentTab: Selectors.getCurrentTab(state),
-        selectedMessage: Selectors.getSelectedMessage(state),
+        selectedConversation: Selectors.getSelectedConversation(state),
         conversations: Selectors.getConversations(state)
       };
     };
@@ -34,45 +34,29 @@ angular
       const messagesActions = MessagesActions(dispatch);
       return {
         setLeftActionBar: globalActions.setLeftActionBar,
-        setSelectedMessage: messagesActions.setSelectedMessage,
-        settingSelected: globalActions.settingSelected,
-        updateSelectedMessage: messagesActions.updateSelectedMessage,
-        setConversations: messagesActions.setConversations
+        updateSelectedConversation: messagesActions.updateSelectedConversation,
+        setConversations: messagesActions.setConversations,
+        setSelectedConversation: messagesActions.setSelectedConversation,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    ctrl.setSelectedMessage(null);
+    ctrl.setSelectedConversation(null);
     ctrl.loading = true;
 
     const updateActionBar = () => {
       ctrl.setLeftActionBar({
-        hasResults: ctrl.conversations.length > 0,
+        hasResults: ctrl.conversations && ctrl.conversations.length > 0,
         exportFn: () => Export('messages', {}, { humanReadable: true })
       });
-    };
-
-    const updateSelected = () => {
-      const selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
-      if (selectedId) {
-        const found = ctrl.conversations.some(conversation => conversation.key === selectedId);
-        if (found) {
-          MessageContacts.conversation(selectedId).then(conversation => {
-            ctrl.updateSelectedMessage({ messages: conversation });
-          });
-        }
-      }
     };
 
     const setConversations = (conversations=[], { merge=false }={}) => {
       if (merge) {
         MessageListUtils.removeDeleted(ctrl.conversations, conversations);
         MessageListUtils.mergeUpdated(ctrl.conversations, conversations);
-        ctrl.setConversations(conversations);
-        updateSelected();
-      } else {
-        ctrl.setConversations(conversations);
       }
+      ctrl.setConversations(conversations);
       updateActionBar();
     };
 
@@ -101,18 +85,12 @@ angular
           });
         }
       })
-      .catch(err =>$log.error('Error fetching contact', err));
+      .catch(err => $log.error('Error fetching contact', err));
 
     const changeListener = Changes({
       key: 'messages-list',
       callback: () => updateConversations({ merge: true }),
-      filter: change => {
-        return ctrl.currentTab === 'messages' && (
-          (change.doc && change.doc.kujua_message) ||
-          (change.doc && change.doc.sms_message) ||
-          change.deleted
-        );
-      },
+      filter: change => ctrl.currentTab === 'messages' && MessageContacts.isRelevantChange(change),
     });
 
     $scope.$on('$destroy', function() {

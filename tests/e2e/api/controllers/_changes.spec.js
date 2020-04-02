@@ -712,7 +712,7 @@ describe('changes handler', () => {
             stevevilleIds.forEach(id => chai.expect(changeIds).to.not.include(id));
           } else {
             // when we didn't receive Steve's update, we should only get steveVille docs
-            chai.expect(stevevilleIds).to.include(changeIds);
+            chai.expect(stevevilleIds).to.include.members(changeIds);
           }
         })
         .then(() => utils.request({ path: '/_users/org.couchdb.user:steve' }))

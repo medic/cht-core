@@ -18,22 +18,22 @@ describe('Messages store', () => {
 
   const createMessagesState = state => ({ messages: state });
 
-  it('sets selected message', () => {
+  it('sets selected conversation', () => {
     const initialState = createMessagesState({ selected: null });
     setupStore(initialState);
     const selected = {};
-    messagesActions.setSelectedMessage(selected);
+    messagesActions.setSelectedConversation(selected);
     const state = getState();
     const messagesState = selectors.getMessagesState(state);
     chai.expect(state).to.not.equal(initialState);
     chai.expect(messagesState).to.deep.equal({ selected });
   });
 
-  it('updates selected message', () => {
+  it('updates selected conversation', () => {
     const initialState = createMessagesState({ selected: { doc: '1' } });
     setupStore(initialState);
     const selected = { doc: '2' };
-    messagesActions.updateSelectedMessage(selected);
+    messagesActions.updateSelectedConversation(selected);
     const state = getState();
     const messagesState = selectors.getMessagesState(state);
     chai.expect(state).to.not.equal(initialState);
@@ -41,13 +41,13 @@ describe('Messages store', () => {
     chai.expect(messagesState).to.deep.equal({ selected });
   });
 
-  it('adds a message to selected', () => {
+  it('adds a message to selected conversation', () => {
     const message1 = { id: '1' };
     const message2 = { id: '2' };
     const initialState = createMessagesState({ selected: { messages: [message1] } });
     setupStore(initialState);
 
-    messagesActions.addSelectedMessage(message2);
+    messagesActions.updateSelectedConversation({ messages: [message2] });
 
     const state = getState();
     const messagesState = selectors.getMessagesState(state);
@@ -55,16 +55,16 @@ describe('Messages store', () => {
     chai.expect(messagesState.selected).to.not.equal(selectors.getMessagesState(initialState).selected);
     chai.expect(messagesState.selected.messages)
       .to.not.equal(selectors.getMessagesState(initialState).selected.messages);
-    chai.expect(messagesState).to.deep.equal({ selected: { messages: [message1, message2]} });
+    chai.expect(messagesState).to.deep.equal({ selected: { messages: [ message2, message1 ]} });
   });
 
-  it('removes a message from selected', () => {
+  it('removes a message from selected conversation', () => {
     const message1 = { id: '1' };
     const message2 = { id: '2' };
     const initialState = createMessagesState({ selected: { messages: [message1, message2] } });
     setupStore(initialState);
 
-    messagesActions.removeSelectedMessage('1');
+    messagesActions.removeMessageFromSelectedConversation('1');
 
     const state = getState();
     const messagesState = selectors.getMessagesState(state);
@@ -73,6 +73,10 @@ describe('Messages store', () => {
     chai.expect(messagesState.selected.messages)
       .to.not.equal(selectors.getMessagesState(initialState).selected.messages);
     chai.expect(messagesState).to.deep.equal({ selected: { messages: [message2]} });
+  });
+
+  it('should update selected conversation correctly', () => {
+    // todo
   });
 
 });

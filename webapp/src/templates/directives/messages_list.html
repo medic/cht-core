@@ -1,6 +1,6 @@
 <div id="message-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!messagesListCtrl.loading">
-    <li ng-repeat="conversation in messagesListCtrl.conversations | orderBy:'-date'" data-record-id="{{conversation.key}}" data-record-type="{{conversation.type}}" class="content-row" ng-class="{ 'selected': conversation.key === messagesListCtrl.loadingContent || !messagesListCtrl.loadingContent && conversation.key === messagesListCtrl.selectedMessage.id, 'unread': !conversation.read }">
+    <li ng-repeat="conversation in messagesListCtrl.conversations | orderBy:'-date'" data-record-id="{{conversation.key}}" data-record-type="{{conversation.type}}" class="content-row" ng-class="{ 'selected': conversation.key === messagesListCtrl.loadingContent || !messagesListCtrl.loadingContent && conversation.key === messagesListCtrl.selectedConversation.id, 'unread': !conversation.read }">
       <a href="#messages/{{conversation.type}}:{{conversation.key}}">
         <div class="content">
           <div class="heading">
