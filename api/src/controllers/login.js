@@ -132,7 +132,14 @@ const setSessionCookie = (res, cookie) => {
 const setUserCtxCookie = (res, userCtx) => {
   const options = getCookieOptions();
   options.maxAge = ONE_YEAR;
-  res.cookie('userCtx', JSON.stringify(userCtx), options);
+  const home = getHomeUrl(userCtx);
+  let content;
+  if (home === '/') {
+    content = userCtx;
+  } else {
+    content = Object.assign({}, userCtx, { home });
+  }
+  res.cookie('userCtx', JSON.stringify(content), options);
 };
 
 const setLocaleCookie = (res, locale) => {
@@ -242,10 +249,7 @@ module.exports = {
       .getUserCtx(req)
       .then(userCtx => {
         setUserCtxCookie(res, userCtx);
-        res.send({
-          success: true,
-          url: getRedirectUrl(userCtx, req.query.redirect)
-        });
+        res.send({ success: true });
       })
       .catch(() => {
         res.status(401);

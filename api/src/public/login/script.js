@@ -122,27 +122,27 @@ const getRedirectUrl = function() {
   return urlParams.get('redirect');
 };
 
+const getUserCtx = function() {
+  const cookie = getCookie('userCtx');
+  if (cookie) {
+    try {
+      return JSON.parse(decodeURIComponent(cookie));
+    } catch(e) {
+      console.error('Error parsing cookie', e);
+    }
+  }
+};
+
 const checkSession = function() {
   if (getCookie('login') === 'force') {
     // require user to login regardless of session state
     return;
   }
-  const redirect = encodeURIComponent(getRedirectUrl());
-  request('GET', '/medic/login/identity?redirect=' + redirect, null, function(xmlhttp) {
-    if (xmlhttp.status === 0 || xmlhttp.status === 401) {
-      // no internet connection or not logged in - ignore
-      return;
-    }
-    if (xmlhttp.status !== 200) {
-      return console.error(`Could not determine session status. Response: ${xmlhttp.status}, ${xmlhttp.response}`);
-    }
-    try {
-      const response = JSON.parse(xmlhttp.response);
-      window.location = response.url || '/';
-    } catch (e) {
-      return console.error('Could not parse session status.', e);
-    }
-  });
+  const userCtx = getUserCtx();
+  if (userCtx && userCtx.name) {
+    // user is already logged in - redirect to app
+    window.location = getRedirectUrl() || userCtx.home || '/';
+  }
 };
 
 document.addEventListener('DOMContentLoaded', function() {
