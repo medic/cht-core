@@ -318,7 +318,7 @@ angular.module('inboxServices').service('Enketo',
           footer.find('.previous-page').addClass('disabled');
         } else {
           footer.removeClass('end')
-                .find('.previous-page, .next-page').removeClass('disabled');
+            .find('.previous-page, .next-page').removeClass('disabled');
         }
       }
     };
@@ -330,7 +330,7 @@ angular.module('inboxServices').service('Enketo',
           form.pages._next()
             .then(function(valid) {
               if(valid) {
-                var currentIndex = form.pages._getCurrentIndex();
+                const currentIndex = form.pages._getCurrentIndex();
                 if(typeof currentIndex === 'number') {
                   $window.history.pushState({ enketo_page_number: currentIndex }, '');
                 }

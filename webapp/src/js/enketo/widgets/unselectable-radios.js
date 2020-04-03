@@ -4,7 +4,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
   };
 }
 
-define( function( require, exports, module ) {
+define( function( require ) {
   'use strict';
   const Widget = require( 'enketo-core/src/js/widget' ).default;
   const $ = require( 'jquery' );
