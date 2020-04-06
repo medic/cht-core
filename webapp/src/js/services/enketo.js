@@ -309,16 +309,15 @@ angular.module('inboxServices').service('Enketo',
       if (form.pages) {
         const lastIndex = form.pages.$activePages.length - 1;
         const footer = $wrapper.find('.form-footer');
+        footer.removeClass('end');
+        footer.find('.previous-page, .next-page').removeClass('disabled');
+
         if (currentIndex >= lastIndex) {
-          footer.addClass('end').find('.next-page').addClass('disabled');
-          if (currentIndex === 0) {
-            footer.find('.previous-page').addClass('disabled');
-          }
-        } else if (currentIndex === 0) {
+          footer.addClass('end');
+          footer.find('.next-page').addClass('disabled');
+        }
+        if (currentIndex === 0) {
           footer.find('.previous-page').addClass('disabled');
-        } else {
-          footer.removeClass('end')
-            .find('.previous-page, .next-page').removeClass('disabled');
         }
       }
     };
