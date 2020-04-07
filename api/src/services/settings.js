@@ -47,7 +47,7 @@ module.exports = {
   },
   /**
    * Process a request to either replace, overwrite or extend existing settings.
-   * If both replace and overwite are set, then it is assumed that only overwite
+   * If both replace and overwrite are set, then it is assumed that only overwrite
    * is set.
    * @param replace If true, recursively merges the properties leaving existing
    *                properties not in the input document intact.

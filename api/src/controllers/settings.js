@@ -45,8 +45,8 @@ module.exports = {
         const overwrite = req.query && req.query.overwrite;
         return settingsService.update(req.body, replace, overwrite);
       })
-      .then(() => {
-        res.json({ success: true });
+      .then(result => {
+        res.json({ success: true, updated: !!(result && result.rev) });
       })
       .catch(err => {
         serverUtils.error(err, req, res, true);
