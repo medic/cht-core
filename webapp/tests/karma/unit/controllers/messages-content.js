@@ -205,7 +205,7 @@ describe('MessagesContentCtrl', () => {
           })
           .then(() => {
             chai.expect(messageContacts.conversation.callCount).to.equal(2);
-            chai.expect(messageContacts.conversation.args[1]).to.deep.equal(['c1', undefined, 2]);
+            chai.expect(messageContacts.conversation.args[1]).to.deep.equal(['c1', undefined, messages.length]);
             chai.expect(messagesActions.updateSelectedConversation.callCount).to.equal(1);
             chai.expect(messagesActions.updateSelectedConversation.args[0]).to.deep.equal([
               { messages: [...messages, { doc: { _id: 'message3' } }] }

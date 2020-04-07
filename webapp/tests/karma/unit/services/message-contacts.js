@@ -172,6 +172,26 @@ describe('MessageContacts service', () => {
       });
     });
 
+    it('should build conversation with limit under default', () => {
+      query.resolves({});
+      hydrateMessages.resolves([]);
+      return service.conversation('abc', 45, 45).then(result => {
+        chai.expect(query.args[0][1]).to.deep.equal({
+          reduce: false,
+          descending: true,
+          include_docs: true,
+          skip: 45,
+          limit: 50,
+          startkey: [ 'abc', {} ],
+          endkey: [ 'abc' ]
+        });
+        chai.expect(getDataRecords.callCount).to.deep.equal(0);
+        chai.expect(hydrateMessages.callCount).to.equal(1);
+        chai.expect(hydrateMessages.args[0]).to.deep.equal([[]]);
+        chai.expect(result).to.deep.equal([]);
+      });
+    });
+
     it('returns errors from db query', () => {
       query.rejects('server error');
       service

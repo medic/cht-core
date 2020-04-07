@@ -34,7 +34,6 @@ angular
       const messagesActions = MessagesActions(dispatch);
       return {
         setLeftActionBar: globalActions.setLeftActionBar,
-        updateSelectedConversation: messagesActions.updateSelectedConversation,
         setConversations: messagesActions.setConversations,
         setSelectedConversation: messagesActions.setSelectedConversation,
       };
