@@ -135,11 +135,14 @@ const setupSettings = () => {
 };
 
 const setupUser = () => {
-  return utils.getDoc('org.couchdb.user:' + auth.username).then(doc => {
-    doc.contact_id = constants.USER_CONTACT_ID;
-    doc.known = true;
-    doc.language = 'en';
-    doc.roles = ['_admin'];
-    return utils.saveDoc(doc);
-  });
+  return utils
+    .getDoc('org.couchdb.user:' + auth.username)
+    .then(doc => {
+      doc.contact_id = constants.USER_CONTACT_ID;
+      doc.known = true;
+      doc.language = 'en';
+      doc.roles = ['_admin'];
+      return utils.saveDoc(doc);
+    })
+    .then(() => utils.refreshToGetNewSettings());
 };
