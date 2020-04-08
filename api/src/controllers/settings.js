@@ -7,15 +7,15 @@ const doGet = req => auth.getUserCtx(req).then(() => settingsService.get());
 
 module.exports = {
   get: (req, res) => {
-    doGet(req, res)
+    return doGet(req, res)
       .then(settings => res.json(settings))
       .catch(err => {
         serverUtils.error(err, req, res, true);
       });
   },
-  // deprecated - used by medic-configurer, medic-reporter, etc
+  // deprecated - used by medic-conf, medic-reporter, etc
   getV0: (req, res) => {
-    doGet(req, res)
+    return doGet(req, res)
       .then(settings => {
         if (req.params.path) {
           settings = objectPath.get(settings, req.params.path) || {};
@@ -31,7 +31,7 @@ module.exports = {
       });
   },
   put: (req, res) => {
-    auth.getUserCtx(req)
+    return auth.getUserCtx(req)
       .then(userCtx => {
         if (!auth.hasAllPermissions(userCtx, 'can_configure')) {
           throw {
@@ -46,7 +46,7 @@ module.exports = {
         return settingsService.update(req.body, replace, overwrite);
       })
       .then(result => {
-        res.json({ success: true, updated: !!(result && result.rev) });
+        res.json({ success: true, updated: !!result });
       })
       .catch(err => {
         serverUtils.error(err, req, res, true);

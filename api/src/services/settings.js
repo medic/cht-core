@@ -87,7 +87,7 @@ module.exports = {
 
         if (JSON.stringify(doc.settings) !== original) {
           info('Updating settings with new defaults');
-          return db.medic.put(doc);
+          return db.medic.put(doc).then(() => true);
         }
 
         return Promise.resolve();
