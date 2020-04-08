@@ -30,7 +30,7 @@ describe('Settings API', () => {
       it('with replace', () => {
         return update({ _test_sandbox: { times: 'one', b: 'c' } }, true)
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -40,7 +40,7 @@ describe('Settings API', () => {
             return update({ _test_sandbox: { times: 'two' } }, true);
           })
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -51,7 +51,7 @@ describe('Settings API', () => {
       it('without replace', () => {
         return update({ _test_sandbox: { times: 'one', b: 'c' } }, false)
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -61,7 +61,7 @@ describe('Settings API', () => {
             return update({ _test_sandbox: { times: 'two' } }, false);
           })
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -74,7 +74,7 @@ describe('Settings API', () => {
     it('get', () => {
       return update({ _test_sandbox: { times: 'three', b: 'c' } }, true)
         .then(response => {
-          expect(response).toEqual({ success: true });
+          expect(response).toEqual({ success: true, updated: true });
         })
         .then(() => {
           return utils.request({
@@ -107,7 +107,7 @@ describe('Settings API', () => {
       it('with replace', () => {
         return update({ _test_sandbox: { times: 'one', b: 'c' } }, true)
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -117,7 +117,7 @@ describe('Settings API', () => {
             return update({ _test_sandbox: { times: 'two' } }, true);
           })
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -128,7 +128,7 @@ describe('Settings API', () => {
       it('without replace', () => {
         return update({ _test_sandbox: { times: 'one', b: 'c' } }, false)
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -138,7 +138,7 @@ describe('Settings API', () => {
             return update({ _test_sandbox: { times: 'two' } }, false);
           })
           .then(response => {
-            expect(response).toEqual({ success: true });
+            expect(response).toEqual({ success: true, updated: true });
           })
           .then(getDoc)
           .then(doc => {
@@ -151,7 +151,7 @@ describe('Settings API', () => {
     it('get', () => {
       return update({ _test_sandbox: { times: 'three', b: 'c' } }, true)
         .then(response => {
-          expect(response).toEqual({ success: true });
+          expect(response).toEqual({ success: true, updated: true });
         })
         .then(() => {
           return utils.request({
