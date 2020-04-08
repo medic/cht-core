@@ -15,7 +15,7 @@ You will need to install the following:
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
-- [CouchDB](https://couchdb.apache.org) 2.x
+- [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). If on a Mac, please note that installation via homebrew is **not** supported.
 - xsltproc
 - python 2.7
 
