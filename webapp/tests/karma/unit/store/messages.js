@@ -56,7 +56,7 @@ describe('Messages store', () => {
       chai.expect(messagesState.selected).to.not.equal(selectors.getMessagesState(initialState).selected);
       chai.expect(messagesState.selected.messages)
         .to.not.equal(selectors.getMessagesState(initialState).selected.messages);
-      chai.expect(messagesState).to.deep.equal({ selected: { messages: [ message2, message1 ]} });
+      chai.expect(messagesState).to.deep.equal({ selected: { messages: [ message1, message2 ]} });
     });
 
     it('removes a message from selected conversation', () => {
@@ -103,10 +103,10 @@ describe('Messages store', () => {
         selected: {
           messages: [
             { id: 'message1', updated: true },
-            { id: 'message3', updated: true },
-            { id: 'message5' },
             { id: 'message2' },
+            { id: 'message3', updated: true },
             { id: 'message4' },
+            { id: 'message5' },
           ]
         }
       });
