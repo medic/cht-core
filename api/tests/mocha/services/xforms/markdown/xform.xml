@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Note Demo</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="name_note:label">
+            <value>
+# Hello <output value="/notedata/name"/>!
+</value>
+          </text>
+          <text id="lmp_note:label">
+            <value><output value="/notedata/name"/> is currently &lt;span style=&quot;font-family:monospace&quot;&gt;12 weeks&lt;/span&gt; pregnant.</value>
+          </text>
+          <text id="patient_details:label">
+            <value>Remind woman of the **6 STEPS TO A HEALTHY PREGNANCY:**
+
+             &lt;ol style=&quot;margin-left:1em; list-style: decimal inside;&quot;&gt;&lt;li&gt;Attend regular ANC visits&lt;/li&gt;&lt;li&gt;Sleep under a treated net **every** night&lt;/li&gt;&lt;li&gt;<output value="/notedata/name"/> is in her **first trimester**. Remind her to take supplements:&lt;ul style=&quot;margin-left:1em; list-style: disc inside;&quot;&gt;&lt;li&gt;_Take Iron Folate daily_&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li&gt;Eat well: Eat more often than usual and eat a variety of foods to give you strength and to help your baby grow&lt;/li&gt;&lt;li&gt;Deliver your child at a health center&lt;/li&gt;&lt;li&gt;Breastfeed the baby **immediately** after birth&lt;/ol&gt;</value>
+          </text>
+          <text id="referrals:label">
+            <value>Referrals&lt;I class="fa fa-hospital-o"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="submit_note:label">
+            <value>&lt;h4 style="text-align:center;"&gt;Click the Submit button at the bottom of the form.&lt;/h4&gt;</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <notedata delimiter="#" id="note_demo">
+          <name/>
+          <name_note/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </notedata>
+      </instance>
+      <bind nodeset="/notedata/name" type="string"/>
+      <bind nodeset="/notedata/name_note" readonly="true()" type="string"/>
+      <bind nodeset="/notedata/lmp_note" readonly="true()" type="string"/>
+      <bind nodeset="/notedata/patient_details" readonly="true()" type="string"/>
+      <bind nodeset="/notedata/referrals" readonly="true()" type="string"/>
+      <bind nodeset="/notedata/submit_note" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list summary" ref="/notedata">
+      <input ref="/notedata/name">
+        <label>Name</label>
+      </input>
+      <input ref="/notedata/name_note">
+        <label ref="jr:itext('name_note:label')"/>
+      </input>
+      <input appearance="h2 yellow markdown" ref="/notedata/lmp_note">
+        <label ref="jr:itext('lmp_note:label')"/>
+      </input>
+      <input ref="/notedata/patient_details">
+        <label ref="jr:itext('patient_details:label')"/>
+      </input>
+      <input ref="/notedata/referrals">
+        <label ref="jr:itext('referrals:label')"/>
+      </input>
+      <input ref="/notedata/submit_note">
+        <label ref="jr:itext('submit_note:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>

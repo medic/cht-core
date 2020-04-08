@@ -3,12 +3,15 @@
  * Also converts newline characters
  *
  * Not supported: escaping and other MarkDown syntax
+ * TODO delete me!
  */
 angular.module('inboxServices').factory('Markdown',
   function() {
     'use strict';
 
     const basic = function(html) {
+
+
       // Convert markdown
       html = html.replace(/^# (.*)\n/gm, '<h1>$1</h1>');
       html = html.replace(/^## (.*)\n/gm, '<h2>$1</h2>');
@@ -34,21 +37,21 @@ angular.module('inboxServices').factory('Markdown',
 
     const translateElement = function(e) {
       return e.each(function() {
-        let html;
+        const clone = $(this).clone(true);
         const $childStore = $('<div/>');
-        $(this).children(':not(input, select, textarea)').each(function(index) {
-          const name = '$$$' + index;
+        clone.children(':not(input, select, textarea)').each(function(i) {
           translateElement($(this).clone()).appendTo($childStore);
-          $(this).replaceWith(name);
+          clone.replaceWith(`~~~${i}~~~`);
         });
 
-        html = basic($(this).html());
+        let html = basic(clone.html());
 
         $childStore.children().each(function(i) {
-          const regex = new RegExp('\\$\\$\\$' + i);
-          html = html.replace(regex, $(this)[ 0 ].outerHTML);
+          html = html.replace(`~~~${i}~~~`, clone[0].outerHTML);
         });
-        $(this).text('').append(html);
+        // $(this).text('').append(html);
+        $(this).append('<span class="or-output">' + html + '</span>');
+        // $(this).append(html);
       });
     };
 

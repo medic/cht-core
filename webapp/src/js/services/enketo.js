@@ -373,6 +373,7 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
+    // TODO remove
     const replaceMarkup = function(doc) {
       $('.question :not(.note) > .question-label, .question > .or-hint', doc.html).each(function () {
         $(this).html(Markdown.basic($(this).html()));

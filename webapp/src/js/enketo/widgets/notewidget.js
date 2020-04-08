@@ -37,47 +37,47 @@ define( function( require, exports, module ) {
     const $el = $( this.element );
     const markdownToHtml = angular.element(document.body).injector().get('Markdown').element;
 
-    applyLiveLinkHtml( $el );
+    // applyLiveLinkHtml( $el );
 
     markdownToHtml($el.find( '.question-label' ));
 
-    applyLiveLinkEventHandlers( $el );
+    // applyLiveLinkEventHandlers( $el );
 
-    $el.find( '[readonly]' ).addClass( 'ignore' );
+    // $el.find( '[readonly]' ).addClass( 'ignore' );
 
-    if ( $el.is( '.note' ) && !$el.next().is( '.note' ) ) {
-      $el.addClass( 'last-of-class' );
-    }
+    // if ( $el.is( '.note' ) && !$el.next().is( '.note' ) ) {
+    //   $el.addClass( 'last-of-class' );
+    // }
   };
 
   Notewidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
 
-  // Replace any markdown-style links containing HTML with hrefs which are
-  // generated when the link is clicked.
-  function applyLiveLinkHtml( $el ) {
-    // The html may include form inputs with values set via javascript,
-    // explicitly set value attributes otherwise call html() won't include them
-    $el.find('input').each(function () {
-      $(this).attr('value', $(this).val());
-    });
+  // // Replace any markdown-style links containing HTML with hrefs which are
+  // // generated when the link is clicked.
+  // function applyLiveLinkHtml( $el ) {
+  //   // The html may include form inputs with values set via javascript,
+  //   // explicitly set value attributes otherwise call html() won't include them
+  //   $el.find('input').each(function () {
+  //     $(this).attr('value', $(this).val());
+  //   });
 
-    let html = $el.html();
+  //   let html = $el.html();
 
-    html = html.replace( /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
-      '<a class="live-link" href="#" target="_blank" rel="noopener noreferrer">' +
-        '$1<span class="href" style="display:none">$2</span></a>' );
+  //   html = html.replace( /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
+  //     '<a class="live-link" href="#" target="_blank" rel="noopener noreferrer">' +
+  //       '$1<span class="href" style="display:none">$2</span></a>' );
 
-    $el.text( '' ).append( html );
-  }
+  //   $el.text( '' ).append( html );
+  // }
 
-  function applyLiveLinkEventHandlers( $el ) {
-    $el.find( '.live-link' ).each( function() {
-      const $this = $( this );
-      $this.on( 'click', function( e ) {
-        e.originalEvent.currentTarget.href = $( this ).find( '.href' ).text();
-      } );
-    } );
-  }
+  // function applyLiveLinkEventHandlers( $el ) {
+  //   $el.find( '.live-link' ).each( function() {
+  //     const $this = $( this );
+  //     $this.on( 'click', function( e ) {
+  //       e.originalEvent.currentTarget.href = $( this ).find( '.href' ).text();
+  //     } );
+  //   } );
+  // }
 
   $.fn[ pluginName ] = function( options, event ) {
     return this.each( function() {
@@ -94,7 +94,7 @@ define( function( require, exports, module ) {
   };
 
 
-  Notewidget.selector = '.note';
+  // Notewidget.selector = '.note';
   Notewidget.condition = function() { return false; };
 
   module.exports = Notewidget;

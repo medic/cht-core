@@ -82,6 +82,8 @@ describe('generate-xform service', () => {
 
     it('correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root'));
 
+    it('replaces markdown elements', () => runTest('markdown'));
+
     it('errors if child process errors', done => {
       runTest('simple', 'some error')
         .then(() => done(new Error('expected error to be thrown')))
