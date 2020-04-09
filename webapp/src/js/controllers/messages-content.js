@@ -190,7 +190,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           ctrl.updateSelectedConversation({ messages: conversation });
 
           if (options.skip) {
-            ctrl.allLoaded = conversation.length < MessageContacts.defaultLimit;
+            ctrl.allLoaded = conversation.length < MessageContacts.minLimit;
             delete ctrl.firstUnread;
           }
 

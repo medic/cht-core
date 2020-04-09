@@ -206,8 +206,8 @@ describe('MessageContacts service', () => {
 
   });
 
-  it('should return default limit', () => {
-    chai.expect(service.defaultLimit).to.equal(50);
+  it('should return minimum limit', () => {
+    chai.expect(service.minLimit).to.equal(50);
   });
 
   describe('isRelevantChange', () => {

@@ -12,14 +12,14 @@ angular.module('inboxServices').factory('MessageContacts',
       group_level: 1
     });
 
-    const defaultLimit = 50;
+    const minLimit = 50;
 
     const conversationParams = (id, skip, limit = 0) => ({
       reduce: false,
       descending: true,
       include_docs: true,
       skip: skip,
-      limit: Math.max(limit, defaultLimit),
+      limit: Math.max(limit, minLimit),
       startkey: [ id, {} ],
       endkey: [ id ],
     });
@@ -63,7 +63,7 @@ angular.module('inboxServices').factory('MessageContacts',
         (conversation && conversation.messages && conversation.messages.find(message => message.doc._id === change.id))
       ),
 
-      defaultLimit,
+      minLimit: minLimit,
     };
   }
 );

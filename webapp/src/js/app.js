@@ -140,7 +140,7 @@ const createReduxLoggerConfig = Selectors => ({
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('TranslationMessageFormatInterpolation');
     $translateProvider.addInterpolation('TranslationNullInterpolation');
-    //$translateProvider.useMissingTranslationHandlerLog();
+    $translateProvider.useMissingTranslationHandlerLog();
     $compileProvider.aHrefSanitizationWhitelist(
       /^\s*(https?|ftp|mailto|tel|sms|file|blob):/
     );
