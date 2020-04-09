@@ -13,11 +13,11 @@ describe('Form2Sms service', function() {
     module('inboxApp');
 
     module(function($provide) {
-      $provide.value('$log', { debug:sinon.stub(), error:sinon.stub() });
+      $provide.value('$log', { debug: sinon.stub(), error: sinon.stub() });
       $provide.value('$q', Q);
-      $provide.factory('DB', KarmaUtils.mockDB({ get:dbGet }));
+      $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet }));
       $provide.value('GetReportContent', GetReportContent);
-      $provide.value('Settings', Promise.resolve({ gateway_number:'+1234567890' }));
+      $provide.value('Settings', Promise.resolve({ gateway_number: '+1234567890' }));
     });
     inject(function(_Form2Sms_) {
       service = _Form2Sms_;
@@ -45,7 +45,7 @@ describe('Form2Sms service', function() {
       // given
       const doc = aFormSubmission();
       // and there's no form
-      dbGet.withArgs(TEST_FORM_ID).returns(Promise.reject(new Error('expected')));
+      dbGet.withArgs(TEST_FORM_ID).rejects(new Error('expected'));
 
       // when
       return service(doc)
@@ -68,7 +68,7 @@ describe('Form2Sms service', function() {
         .then(smsContent => assert.equal(smsContent, 'T 1 2 3'));
     });
 
-    it('should fall back to ODK compact form specification if no custom code is provided', () => {
+    it('should fall back to ODK compact form specification if no custom code is provided but value is truthy', () => {
       // given
       const doc = aFormSubmission(`
         <test prefix="T" delimiter="#">
@@ -78,7 +78,7 @@ describe('Form2Sms service', function() {
         </test>
       `);
       // and
-      testFormExists();
+      testFormExistsWithAttachedCode(true);
 
       // when
       return service(doc)
@@ -86,11 +86,37 @@ describe('Form2Sms service', function() {
         .then(smsContent => assert.equal(smsContent, 'T#f1#une#f2#deux'));
     });
 
+    it('should do nothing if xml2sms field not provided', () => {
+      const doc = aFormSubmission(`
+        <test prefix="T" delimiter="#">
+          <field_one tag="f1">une</field_one>
+          <field_two tag="f2">deux</field_two>
+          <ignored_field>rien</ignored_field>
+        </test>
+      `);
+
+      testFormExists();
+      return service(doc).then(smsContent => assert.isUndefined(smsContent));
+    });
+
+    it('should do nothing if xml2sms field is false', () => {
+      const doc = aFormSubmission(`
+        <test prefix="T" delimiter="#">
+          <field_one tag="f1">une</field_one>
+          <field_two tag="f2">deux</field_two>
+          <ignored_field>rien</ignored_field>
+        </test>
+      `);
+
+      testFormExistsWithAttachedCode(false);
+      return service(doc).then(smsContent => assert.isUndefined(smsContent));
+    });
+
     it('should return nothing if neither code nor ODK compact format are provided', () => {
       // given
       const doc = aFormSubmission('<test/>');
       // and
-      testFormExists();
+      testFormExistsWithAttachedCode(true);
 
       // when
       return service(doc)
@@ -146,11 +172,11 @@ describe('Form2Sms service', function() {
   }
 
   function testFormExistsWithAttachedCode(code) {
-    dbGet.withArgs(TEST_FORM_ID).returns(Promise.resolve({ xml2sms:code }));
+    dbGet.withArgs(TEST_FORM_ID).resolves({ xml2sms:code });
   }
 
   function aFormSubmission(xml) {
-    GetReportContent.returns(Promise.resolve(xml));
+    GetReportContent.resolves(xml);
     return { _id:'abc-123', form:TEST_FORM_NAME };
   }
 });
