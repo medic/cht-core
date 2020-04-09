@@ -47,17 +47,31 @@ const transform = (formXml, stylesheet) => {
 
 const replaceMarkdown = html => {
   return html
-    // convert markdown
+    // headings
     .replace(/\n# (.*)\n/gm, '<h1>$1</h1>')
     .replace(/\n## (.*)\n/gm, '<h2>$1</h2>')
     .replace(/\n### (.*)\n/gm, '<h3>$1</h3>')
     .replace(/\n#### (.*)\n/gm, '<h4>$1</h4>')
     .replace(/\n##### (.*)\n/gm, '<h5>$1</h5>')
+
+    // font styles
     .replace(/__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>')
     .replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>')
     .replace(/\s_([^_\s]([^_]*[^_\s])?)_/gm, ' <em>$1</em>')
     .replace(/\*([^*\s]([^*]*[^*\s])?)\*/gm, '<em>$1</em>')
+
+    // urls containing tags
+    .replace(
+      /\[([^\]]*)\]\(([^)]*<[^>]*>[^)]*)\)/gm,
+      '<a href="#" target="_blank" rel="noopener noreferrer" class="dynamic-url">' +
+      '$1<span class="url hidden">$2</span>' +
+      '</a>'
+    )
+    
+    // plain urls
     .replace(/\[([^\]]*)\]\(([^)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    
+    // new lines
     .replace(/\n/gm, '<br />')
 
     // convert embedded html
@@ -158,7 +172,7 @@ const updateAttachments = (accumulator, doc) => {
       return results;
     }
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return module.exports._generate(form.data.toString()).then(result => {
+    return generate(form.data.toString()).then(result => {
       results.push(result);
       return results;
     });
@@ -220,8 +234,6 @@ module.exports = {
         });
       });
 
-  },
-
-  _generate: generate
+  }
 
 };

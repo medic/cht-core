@@ -55,7 +55,6 @@
   require('./live-list');
   require('./location');
   require('./mark-read');
-  require('./markdown');
   require('./merge-uri-parameters');
   require('./message-contacts');
   require('./message-list-utils');

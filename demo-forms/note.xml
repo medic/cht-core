@@ -16,13 +16,16 @@
           <text id="patient_details:label">
             <value>Remind woman of the **6 STEPS TO A HEALTHY PREGNANCY:**
 
-             &lt;ol style=&quot;margin-left:1em; list-style: decimal inside;&quot;&gt;&lt;li&gt;Attend regular ANC visits&lt;/li&gt;&lt;li&gt;Sleep under a treated net **every** night&lt;/li&gt;&lt;li&gt;<output value="/notedata/name"/> is in her **first trimester**. Remind her to take supplements:&lt;ul style=&quot;margin-left:1em; list-style: disc inside;&quot;&gt;&lt;li&gt;_Take Iron Folate daily_&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li&gt;Eat well: Eat more often than usual and eat a variety of foods to give you strength and to help your baby grow&lt;/li&gt;&lt;li&gt;Deliver your child at a health center&lt;/li&gt;&lt;li&gt;Breastfeed the baby **immediately** after birth&lt;/ol&gt;</value>
+             &lt;ol style=&quot;margin-left:1em; list-style: decimal inside;&quot;&gt;&lt;li&gt;Attend regular ANC visits&lt;/li&gt;&lt;li&gt;Sleep under a treated net **every** night&lt;/li&gt;&lt;li&gt;<output value="/notedata/name"/> is in her **first trimester**. Remind her to take supplements:&lt;ul style=&quot;margin-left:1em; list-style: disc inside;&quot;&gt;&lt;li&gt; _Take Iron Folate daily_&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li&gt;Eat well: Eat more often than usual and eat a variety of foods to give you strength and to help your baby grow&lt;/li&gt;&lt;li&gt;Deliver your child at a health center&lt;/li&gt;&lt;li&gt;Breastfeed the baby **immediately** after birth&lt;/ol&gt;</value>
           </text>
           <text id="referrals:label">
             <value>Referrals&lt;I class="fa fa-hospital-o"&gt;&lt;/i&gt;</value>
           </text>
           <text id="submit_note:label">
             <value>&lt;h4 style="text-align:center;"&gt;Click the Submit button at the bottom of the form.&lt;/h4&gt;</value>
+          </text>
+          <text id="name_search:label">
+            <value>[Search for <output value="/notedata/name"/>](http://google.com?q=<output value="/notedata/name"/>)</value>
           </text>
         </translation>
       </itext>
@@ -41,6 +44,7 @@
       <bind nodeset="/notedata/patient_details" readonly="true()" type="string"/>
       <bind nodeset="/notedata/referrals" readonly="true()" type="string"/>
       <bind nodeset="/notedata/submit_note" readonly="true()" type="string"/>
+      <bind nodeset="/notedata/name_search" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body class="pages">
@@ -62,6 +66,9 @@
       </input>
       <input ref="/notedata/submit_note">
         <label ref="jr:itext('submit_note:label')"/>
+      </input>
+      <input ref="/notedata/name_search">
+        <label ref="jr:itext('name_search:label')"/>
       </input>
     </group>
   </h:body>

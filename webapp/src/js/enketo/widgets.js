@@ -15,7 +15,6 @@ define( function( require, exports, module ) {
     require( './widgets/filepicker-widget' ),
     require( './widgets/datepicker-widget' ),
     require( './widgets/horizontal-choices' ),
-    require( './widgets/notewidget' ),
     require( './widgets/countdown-widget' ),
     require( './widgets/db-object-widget' ),
     require( './widgets/phone-widget' ),

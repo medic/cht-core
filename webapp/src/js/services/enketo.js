@@ -110,6 +110,7 @@ angular.module('inboxServices').service('Enketo',
 
           // TODO remove this when our enketo-core dependency is updated as the latest
           //      version uses the language passed to the constructor
+          // TODO this thing!!!
           const languages = $html.find('#form-languages option');
           if (languages.length > 1) { // TODO how do we detect a non-localized form?
             // for localized forms, change language to user's language
@@ -299,6 +300,7 @@ angular.module('inboxServices').service('Enketo',
         $window.history.replaceState({ enketo_page_number: 0 }, '');
         overrideNavigationButtons(currentForm, wrapper);
         addPopStateHandler(currentForm, wrapper);
+        addDynamicUrlListener();
         forceRecalculate(currentForm);
         setupNavButtons(currentForm, wrapper, 0);
         return currentForm;
@@ -348,6 +350,18 @@ angular.module('inboxServices').service('Enketo',
           forceRecalculate(form);
           return false;
         });
+    };
+
+    const dynamicUrlHander = function() {
+      this.href = $(this).find('.url').text();
+    };
+
+    const addDynamicUrlListener = function() {
+      $(document.body).on('click', '.enketo a.dynamic-url', dynamicUrlHander);
+    };
+
+    const removeDynamicUrlListener = function() {
+      $(document.body).off('click', '.enketo a.dynamic-url', dynamicUrlHander);
     };
 
     const addPopStateHandler = function(form, $wrapper) {
@@ -606,6 +620,7 @@ angular.module('inboxServices').service('Enketo',
 
     this.unload = function(form) {
       $($window).off('.enketo-pagemode');
+      removeDynamicUrlListener();
       if (form) {
         form.resetView();
       }
