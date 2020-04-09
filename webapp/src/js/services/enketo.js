@@ -22,7 +22,6 @@ angular.module('inboxServices').service('Enketo',
     GetReportContent,
     Language,
     LineageModelGenerator,
-    Markdown,
     Search,
     ServicesActions,
     SubmitFormBySms,
@@ -387,18 +386,9 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    // TODO remove
-    const replaceMarkup = function(doc) {
-      $('.question :not(.note) > .question-label, .question > .or-hint', doc.html).each(function () {
-        $(this).html(Markdown.basic($(this).html()));
-      });
-      return doc;
-    };
-
     const renderForm = function(selector, formDoc, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
         return transformXml(formDoc, language)
-          .then(doc => replaceMarkup(doc))
           .then(doc => {
             replaceJavarosaMediaWithLoaders(formDoc, doc.html);
             return renderFromXmls(doc, selector, instanceData, language);
