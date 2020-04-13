@@ -12,7 +12,8 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
   ctrl.loading = true;
   ctrl.targetsDisabled = false;
 
-  RulesEngine.isEnabled()
+  RulesEngine
+    .isEnabled()
     .then(isEnabled => {
       ctrl.targetsDisabled = !isEnabled;
       return isEnabled ? RulesEngine.fetchTargets() : [];
@@ -23,7 +24,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
     })
     .then(targets => {
       ctrl.loading = false;
-      ctrl.targets = targets;
+      ctrl.targets = targets.filter(target => target.visible !== false);
     });
 }
 );

@@ -9,15 +9,15 @@
 /** @summary state
  * Functions in this module all accept a "state" parameter or return a "state" object.
  * This state has the following structure:
- * 
- * @example 
+ *
+ * @example
  * {
  *   target.id: {
  *     id: 'target_id',
  *     type: 'count',
  *     goal: 0,
  *     ..
- *   
+ *
  *     emissions: {
  *       emission.id: {
  *         requestor.id: {
@@ -116,7 +116,7 @@ module.exports = {
         // if there are multiple emissions with the same id emitted by different contacts, disambiguate them
         .map(emissionsByRequestor => emissionOfLatestRequestor(emissionsByRequestor))
         .filter(emission => emission);
-        
+
       const passingThreshold = target.passesIfGroupCount && target.passesIfGroupCount.gte;
       if (!passingThreshold) {
         return {
@@ -146,7 +146,7 @@ module.exports = {
     const aggregateTarget = target => {
       const aggregated = pick(
         target,
-        ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key']
+        ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key', 'visible']
       );
       aggregated.value = scoreTarget(target);
 
