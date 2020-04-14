@@ -17,21 +17,22 @@ describe('Debounce Service', () => {
     });
 
     it('should callback after wait interval', () => {
-      service(callback, 50)();
+      const debounced = service(callback, 50);
+      debounced();
       chai.expect(callback.callCount).to.equal(0);
       $timeout.flush(50);
       chai.expect(callback.callCount).to.equal(1);
+      chai.expect(debounced.executed()).to.equal(true);
     });
 
     it('should not callback when using incorrect arguments', () =>{
-      service(callback, -200);
-      $timeout.flush(50);
+      chai.expect(service.bind(service, callback, -200)).to.throw();
       chai.expect(callback.callCount).to.equal(0);
-      service(callback, 'test');
-      $timeout.flush(50);
+
+      chai.expect(service.bind(service, callback, 'test')).to.throw();
       chai.expect(callback.callCount).to.equal(0);
-      service(callback, 'a', 'b');
-      $timeout.flush(50);
+
+      chai.expect(service.bind(service, callback, 'a', 'b')).to.throw();
       chai.expect(callback.callCount).to.equal(0);
     });
 
@@ -242,6 +243,47 @@ describe('Debounce Service', () => {
       chai.expect(callback.args[0][0]).to.equal(1);
       chai.expect(callback.args[1][0]).to.equal(2);
     });
+
+    it('should set executed correctly with wait', () => {
+      const debounced = service(callback, 1000);
+      debounced();
+      chai.expect(debounced.executed()).to.equal(false);
+      $timeout.flush(100);
+      chai.expect(debounced.executed()).to.equal(false);
+      $timeout.flush(1000);
+      chai.expect(debounced.executed()).to.equal(true);
+    });
+
+    it('should set executed correctly with immediate', () => {
+      const debounced = service(callback, 1000, 0, true);
+      debounced();
+      chai.expect(debounced.executed()).to.equal(true);
+      $timeout.flush(100);
+      chai.expect(debounced.executed()).to.equal(true);
+      $timeout.flush(1000);
+      chai.expect(debounced.executed()).to.equal(true);
+    });
+
+    it('should set executed correctly with maxDelay', () => {
+      const debounced = service(callback, 1000, 2000);
+      debounced();
+      chai.expect(debounced.executed()).to.equal(false);
+      $timeout.flush(500);
+      chai.expect(debounced.executed()).to.equal(false);
+      debounced(1);
+      chai.expect(debounced.executed()).to.equal(false);
+      $timeout.flush(500);
+      chai.expect(debounced.executed()).to.equal(false);
+      debounced(2);
+      chai.expect(debounced.executed()).to.equal(false);
+      $timeout.flush(600);
+      debounced(3);
+      chai.expect(debounced.executed()).to.equal(false);
+      $timeout.flush(500);
+      chai.expect(debounced.executed()).to.equal(true);
+
+      chai.expect(callback.callCount).to.equal(1);
+    });
   });
 
 
@@ -265,16 +307,16 @@ describe('Debounce Service', () => {
       service(callback, 50)();
       chai.expect($timeout.callCount).to.equal(1);
       chai.expect($timeout.args[0][1]).to.equal(50);
-      chai.expect($timeout.args[0][2]).to.equal(undefined);
+      chai.expect($timeout.args[0][2]).to.equal(false);
     });
 
     it('$timeout should receive correct maxDelay argument', () => {
       service(callback, 50, 100)();
       chai.expect($timeout.callCount).to.equal(2);
       chai.expect($timeout.args[0][1]).to.equal(50);
-      chai.expect($timeout.args[0][2]).to.equal(undefined);
+      chai.expect($timeout.args[0][2]).to.equal(false);
       chai.expect($timeout.args[1][1]).to.equal(100);
-      chai.expect($timeout.args[1][2]).to.equal(undefined);
+      chai.expect($timeout.args[1][2]).to.equal(false);
     });
 
     it('$timeout should receive correct invokeApply value - true', () => {

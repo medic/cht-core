@@ -243,6 +243,12 @@ const self = {
     state.targetState,
     targetEmissionFilter
   ),
+
+  /**
+   * Returns a list of UUIDs of tracked contacts that are marked as dirty
+   * @returns {Array} list of dirty contacts UUIDs
+   */
+  getDirtyContacts: () => self.getContactIds().filter(self.isDirty),
 };
 
 const hashRulesConfig = (settings) => {

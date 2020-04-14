@@ -15,6 +15,7 @@
     RulesEngine,
     Selectors,
     TasksActions,
+    Telemetry,
     Tour
   ) {
     'ngInject';
@@ -65,29 +66,39 @@
       unsubscribe();
     });
 
-    const refreshTasks = () => RulesEngine.isEnabled()
-      .then(isEnabled => {
-        ctrl.tasksDisabled = !isEnabled;
-        return isEnabled ? RulesEngine.fetchTaskDocsForAllContacts() : [];
-      })
-      .then(taskDocs => {
-        ctrl.hasTasks = taskDocs.length > 0;
-        ctrl.loading = false;
-        LiveList.tasks.set(taskDocs.map(doc => doc.emission));
-      })
-      .catch(err => {
-        $log.error('Error getting tasks for all contacts', err);
+    const refreshTasks = (initialLoad = false) => {
+      const telemetryData = {
+        start: Date.now(),
+      };
 
-        const notifyError = LiveList.tasks.notifyError;
-        if (notifyError) {
-          notifyError();
-        }
+      return RulesEngine
+        .isEnabled()
+        .then(isEnabled => {
+          ctrl.tasksDisabled = !isEnabled;
+          return isEnabled ? RulesEngine.fetchTaskDocsForAllContacts() : [];
+        })
+        .then(taskDocs => {
+          ctrl.hasTasks = taskDocs.length > 0;
+          ctrl.loading = false;
+          LiveList.tasks.set(taskDocs.map(doc => doc.emission));
 
-        ctrl.error = true;
-        ctrl.loading = false;
-        ctrl.hasTasks = false;
-        LiveList.tasks.set([]);
-      });
+          telemetryData.end = Date.now();
+          Telemetry.record(initialLoad ? `tasks:load`: `tasks:refresh`, telemetryData.end - telemetryData.start);
+        })
+        .catch(err => {
+          $log.error('Error getting tasks for all contacts', err);
+
+          const notifyError = LiveList.tasks.notifyError;
+          if (notifyError) {
+            notifyError();
+          }
+
+          ctrl.error = true;
+          ctrl.loading = false;
+          ctrl.hasTasks = false;
+          LiveList.tasks.set([]);
+        });
+    };
 
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
     const changesFeed = Changes({
@@ -104,6 +115,6 @@
     });
 
     const debouncedReload = Debounce(refreshTasks, 1000, 10 * 1000);
-    ctrl.setTasksLoaded(refreshTasks());
+    ctrl.setTasksLoaded(refreshTasks(true));
   });
 }());

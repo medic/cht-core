@@ -251,4 +251,23 @@ describe('rules-state-store', () => {
       expect(actual).to.not.be.empty;
     });
   });
+
+  describe('getDirtyContacts', () => {
+    it('no contacts', async () => {
+      await rulesStateStore.build({});
+      expect(rulesStateStore.getDirtyContacts()).to.deep.equal([]);
+    });
+
+    it('some contacts', async () => {
+      const now = moment();
+      clock = sinon.useFakeTimers(now.valueOf());
+      await rulesStateStore.build({});
+      await rulesStateStore.markFresh(0, ['a', 'b', 'c', 'd']);
+      const tenDays = 10 * 24 * 60 * 60 * 1000;
+      clock.tick(tenDays); // 10 days
+      expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['a', 'b', 'c', 'd']);
+      await rulesStateStore.markFresh(now.add(10, 'days').valueOf(), ['a', 'b', 'c']);
+      expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['d']);
+    });
+  });
 });
