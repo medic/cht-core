@@ -25,7 +25,7 @@ module.exports = function(state, action) {
   case actionTypes.UPDATE_SELECTED_CONVERSATION: {
     const mergedMessages = {};
     if (action.payload.selected && action.payload.selected.messages) {
-      mergedMessages.messages = ((state.selected && state.selected.messages) || []).map(message => message);
+      mergedMessages.messages = [...((state.selected && state.selected.messages) || [])];
       action.payload.selected.messages.forEach(updated => {
         const index = mergedMessages.messages.findIndex(existent => updated.id === existent.id);
         if (index > -1) {
