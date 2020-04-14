@@ -1,24 +1,15 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
+'use strict';
+const Columns = require( 'enketo-core/src/widget/columns/columns' ).default;
+
+function HorizontalChoices( element, options ) {
+  Object.assign(this, new Columns(element, options));
 }
 
-define( function( require, exports, module ) {
-  'use strict';
-  const Columns = require( 'enketo-core/src/widget/columns/columns' ).default;
+//copy the prototype functions from the Columns super class
+HorizontalChoices.prototype = Object.create( Columns.prototype );
 
-  function HorizontalChoices( element, options ) {
-    Object.assign(this, new Columns(element, options));
-  }
+HorizontalChoices.selector =
+  '.or-appearance-horizontal, .or-appearance-horizontal-compact';
+HorizontalChoices.condition = function() { return true; };
 
-  //copy the prototype functions from the Columns super class
-  HorizontalChoices.prototype = Object.create( Columns.prototype );
-
-  HorizontalChoices.selector =
-    '.or-appearance-horizontal, .or-appearance-horizontal-compact';
-  HorizontalChoices.condition = function() { return true; };
-
-  module.exports = HorizontalChoices;
-
-} );
+module.exports = HorizontalChoices;

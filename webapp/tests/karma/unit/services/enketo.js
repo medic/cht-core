@@ -219,15 +219,17 @@ describe('Enketo service', () => {
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
       return service.render(wrapper, mockEnketoDoc('myform')).then(() => {
-        // need to wait for async get attachment to complete
-        const img = wrapper.find('img').first();
-        expect(img.css('visibility')).to.satisfy(val => {
-          // different browsers return different values but both are equivalent
-          return val === '' || val === 'visible';
+        return Promise.resolve().then(() => {
+          // need to wait for async get attachment to complete
+          const img = wrapper.find('img').first();
+          expect(img.css('visibility')).to.satisfy(val => {
+            // different browsers return different values but both are equivalent
+            return val === '' || val === 'visible';
+          });
+          expect(enketoInit.callCount).to.equal(1);
+          expect(createObjectURL.callCount).to.equal(1);
+          expect(createObjectURL.args[0][0]).to.equal('myobjblob');
         });
-        expect(enketoInit.callCount).to.equal(1);
-        expect(createObjectURL.callCount).to.equal(1);
-        expect(createObjectURL.args[0][0]).to.equal('myobjblob');
       });
     });
 
@@ -252,6 +254,25 @@ describe('Enketo service', () => {
         expect(loader.is(':hidden')).to.equal(true);
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(0);
+      });
+    });
+
+    it('passes users language to Enketo', () => {
+      const data = '<data><patient_id>123</patient_id></data>';
+      UserContact.resolves({ contact_id: '123' });
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      EnketoPrepopulationData.resolves(data);
+      Language.resolves('sw');
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
+        expect(Language.callCount).to.equal(1);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][2].language).to.equal('sw');
       });
     });
 

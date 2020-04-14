@@ -94,7 +94,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    const transformXml = function(form, language) {
+    const transformXml = function(form) {
       return $q.all([
         getAttachment(form._id, HTML_ATTACHMENT_NAME),
         getAttachment(form._id, MODEL_ATTACHMENT_NAME)
@@ -106,26 +106,6 @@ angular.module('inboxServices').service('Enketo',
             const $this = $(this);
             $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
           });
-
-          // TODO remove this when our enketo-core dependency is updated as the latest
-          //      version uses the language passed to the constructor
-          // TODO this thing!!!
-          const languages = $html.find('#form-languages option');
-          if (languages.length > 1) { // TODO how do we detect a non-localized form?
-            // for localized forms, change language to user's language
-            $html
-              .find('[lang]')
-              .removeClass('active')
-              .filter('[lang="' + language + '"], [lang=""]')
-              .filter(function() {
-                // localized forms can support a short and long version for labels
-                // Enketo takes this into account when switching languages
-                // https://opendatakit.github.io/xforms-spec/#languages
-                return !$(this).hasClass('or-form-short') ||
-                       ($(this).hasClass('or-form-short') && $(this).siblings( '.or-form-long' ).length === 0 );
-              })
-              .addClass( 'active' );
-          }
 
           const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
           return {
@@ -250,22 +230,22 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    const getEnketoOptions = function(doc, instanceData) {
+    const getEnketoForm = function(wrapper, doc, instanceData) {
       return $q.all([
         EnketoPrepopulationData(doc.model, instanceData),
         getContactSummary(doc, instanceData),
         Language()
       ])
         .then(([ instanceStr, contactSummary, language ]) => {
-          const options = {
+          const data = {
             modelStr: doc.model,
-            instanceStr: instanceStr,
-            language: language
+            instanceStr: instanceStr
           };
           if (contactSummary) {
-            options.external = [ contactSummary ];
+            data.external = [ contactSummary ];
           }
-          return options;
+          const form = wrapper.find('form').first();
+          return new EnketoForm(form, data, { language });
         });
     };
 
@@ -275,8 +255,8 @@ angular.module('inboxServices').service('Enketo',
       const formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
 
-      return getEnketoOptions(doc, instanceData).then(function(options) {
-        currentForm = new EnketoForm(wrapper.find('form').first(), options);
+      return getEnketoForm(wrapper, doc, instanceData).then(function(form) {
+        currentForm = form;
         const loadErrors = currentForm.init();
         if (loadErrors && loadErrors.length) {
           return $q.reject(new Error(JSON.stringify(loadErrors)));
@@ -387,19 +367,17 @@ angular.module('inboxServices').service('Enketo',
     };
 
     const renderForm = function(selector, formDoc, instanceData, editedListener, valuechangeListener) {
-      return Language().then(language => {
-        return transformXml(formDoc, language)
-          .then(doc => {
-            replaceJavarosaMediaWithLoaders(formDoc, doc.html);
-            return renderFromXmls(doc, selector, instanceData, language);
-          })
-          .then(function(form) {
-            replaceMediaLoaders(selector, formDoc);
-            registerEditedListener(selector, editedListener);
-            registerValuechangeListener(selector, valuechangeListener);
-            return form;
-          });
-      });
+      return transformXml(formDoc)
+        .then(doc => {
+          replaceJavarosaMediaWithLoaders(formDoc, doc.html);
+          return renderFromXmls(doc, selector, instanceData);
+        })
+        .then(function(form) {
+          replaceMediaLoaders(selector, formDoc);
+          registerEditedListener(selector, editedListener);
+          registerValuechangeListener(selector, valuechangeListener);
+          return form;
+        });
     };
 
     this.render = function(selector, form, instanceData, editedListener, valuechangeListener) {
