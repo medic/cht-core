@@ -65,7 +65,7 @@ describe('settings service', () => {
         .update(settings, replace)
         .then(result => {
           update.callCount.should.equal(0);
-          (!!result).should.equal(false);
+          result.should.equal(false);
         });
     });
 
@@ -78,7 +78,7 @@ describe('settings service', () => {
         .update(settings)
         .then(result => {
           update.callCount.should.equal(0);
-          (!!result).should.equal(false);
+          result.should.equal(false);
         });
     });
 
