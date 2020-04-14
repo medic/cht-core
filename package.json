@@ -86,7 +86,7 @@
   "bundlesize": [
     {
       "path": "./build/ddocs/medic/_attachments/js/inbox.js",
-      "maxSize": "840 kB"
+      "maxSize": "820 kB"
     },
     {
       "path": "./build/ddocs/medic/_attachments/js/templates.js",
