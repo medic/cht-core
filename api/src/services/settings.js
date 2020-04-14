@@ -52,6 +52,7 @@ module.exports = {
    * @param replace If true, recursively merges the properties leaving existing
    *                properties not in the input document intact.
    * @param overwrite If true, replace the settings document with input document.
+   * @returns Boolean whether or not settings doc has been updated
    */
   update: (body, replace, overwrite) => {
     const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
@@ -90,7 +91,8 @@ module.exports = {
           return db.medic.put(doc).then(() => true);
         }
 
-        return Promise.resolve();
+        info('Not updating settings - the existing settings are already up to date');
+        return Promise.resolve(false);
       });
   }
 };
