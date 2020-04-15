@@ -1,14 +1,15 @@
+const _ = require('lodash');
 const controller = require('../../../src/controllers/login');
 const chai = require('chai');
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
 const cookie = require('../../../src/services/cookie');
+const users = require('../../../src/services/users');
 const db = require('../../../src/db').medic;
 const sinon = require('sinon');
 const config = require('../../../src/config');
 const request = require('request-promise-native');
 const fs = require('fs');
-const users = require('../../../src/services/users');
 const DB_NAME = 'lg';
 const DDOC_NAME = 'medic';
 
@@ -50,6 +51,8 @@ describe('login controller', () => {
     environment.host = originalEnvironment.host;
     environment.port = originalEnvironment.port;
     environment.pathname = originalEnvironment.pathname;
+
+    controller._reset();
 
     sinon.restore();
   });
@@ -134,6 +137,7 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
       const redirect = sinon.stub(res, 'redirect');
       const cookie = sinon.stub(res, 'cookie').returns(res);
+      const query = sinon.stub(db, 'query');
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
@@ -142,11 +146,13 @@ describe('login controller', () => {
         chai.expect(cookie.args[0][1]).to.equal('{"name":"josh"}');
         chai.expect(redirect.callCount).to.equal(1);
         chai.expect(redirect.args[0][0]).to.equal('/');
+        chai.expect(query.callCount).to.equal(0);
       });
     });
 
     it('when not logged in send login page', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+      const query = sinon.stub(db, 'query').resolves({ rows: [] });
       const getDoc = sinon.stub(db, 'get').resolves({
         _id: 'branding',
         resources: {
@@ -160,35 +166,34 @@ describe('login controller', () => {
         }
       });
       const send = sinon.stub(res, 'send');
-      const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
-      const translate = sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
-      const cookieGet = sinon.stub(cookie, 'get').returns('es');
+      const readFile = sinon.stub(fs, 'readFile')
+        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }}');
+      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
+        chai.expect(send.args[0][0])
+          .to.equal('LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D');
         chai.expect(readFile.callCount).to.equal(1);
-        chai.expect(translate.args[0][1]).to.equal('es');
-        chai.expect(cookieGet.callCount).to.equal(1);
-        chai.expect(cookieGet.args[0][1]).to.equal('locale');
+        chai.expect(query.callCount).to.equal(1);
       });
     });
 
     it('when branding doc missing when not logged in send login page', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('not logged in');
       const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
+      sinon.stub(db, 'query').resolves({ rows: [] });
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{translations.login}}');
-      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
-      sinon.stub(cookie, 'get').returns('es');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE.');
+      sinon.stub(config, 'getTranslationValues').returns({});
       return controller.get(req, res).then(() => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0]).to.deep.equal(req);
         chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
-        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. TRANSLATED VALUE.');
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE.');
       });
     });
 
@@ -196,6 +201,7 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves({ name: 'josh' });
       const send = sinon.stub(res, 'send');
       sinon.stub(db, 'get').resolves({});
+      sinon.stub(db, 'query').resolves({ rows: [] });
       const cookie = sinon.stub(res, 'cookie').returns(res);
       req.headers.cookie = 'login=force';
       return controller.get(req, res).then(() => {
@@ -208,6 +214,53 @@ describe('login controller', () => {
         chai.expect(send.args[0][0]).to.include('<form id="form" action="/medic/login" method="POST">');
       });
     });
+
+    it('caches the login page template for performance', () => {
+      sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+      sinon.stub(res, 'send');
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(res, 'cookie').returns(res);
+      const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'file content');
+      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      const template = sinon.stub(_, 'template').returns(sinon.stub());
+      sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
+      return controller.get(req, res) // first request
+        .then(() => {
+          chai.expect(readFile.callCount).to.equal(1);
+          chai.expect(template.callCount).to.equal(1);
+        })
+        .then(() => controller.get(req, res)) // second request
+        .then(() => {
+          // should be cached
+          chai.expect(readFile.callCount).to.equal(1);
+          chai.expect(template.callCount).to.equal(1);
+        });
+    });
+
+    it('hides locale selector when there is only one option', () => {
+      sinon.stub(auth, 'getUserCtx').rejects('not logged in');
+      sinon.stub(db, 'query').resolves({ rows: [ { doc: { code: 'en', name: 'English' } } ] });
+      sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
+      const send = sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ locales.length }}');
+      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+      sinon.stub(cookie, 'get').returns('en');
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. 0'); // one locale is dropped
+      });
+    });
+
   });
 
   describe('post', () => {
@@ -303,7 +356,7 @@ describe('login controller', () => {
       });
     });
 
-    it('does not set locale cookie if user language not defined', () => {
+    it('sets user settings and cookie to default when no locale selected', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
         statusCode: 200,
@@ -316,10 +369,42 @@ describe('login controller', () => {
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
       sinon.stub(auth, 'hasAllPermissions').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ });
+      sinon.stub(config, 'get').returns('fr');
+      const update = sinon.stub(users, 'updateUser').resolves();
       return controller.post(req, res).then(() => {
-        chai.expect(cookie.callCount).to.equal(2);
+        chai.expect(cookie.callCount).to.equal(3);
         chai.expect(cookie.args[0][0]).to.equal('AuthSession');
         chai.expect(cookie.args[1][0]).to.equal('userCtx');
+        chai.expect(cookie.args[2][0]).to.equal('locale');
+        chai.expect(cookie.args[2][1]).to.equal('fr');
+        chai.expect(update.callCount).to.equal(1);
+        chai.expect(update.args[0][0]).to.equal('sharon');
+        chai.expect(update.args[0][1].language).to.equal('fr');
+      });
+    });
+
+    it('does not set locale when not changed', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      sinon.stub(request, 'post').resolves(postResponse);
+      sinon.stub(res, 'send');
+      sinon.stub(res, 'status').returns(res);
+      const cookie = sinon.stub(res, 'cookie').returns(res);
+      sinon.stub(auth, 'getUserCtx').resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
+      sinon.stub(auth, 'hasAllPermissions').returns(false);
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'fr' });
+      sinon.stub(config, 'get').returns('fr');
+      const update = sinon.stub(users, 'updateUser').resolves();
+      return controller.post(req, res).then(() => {
+        chai.expect(cookie.callCount).to.equal(3);
+        chai.expect(cookie.args[0][0]).to.equal('AuthSession');
+        chai.expect(cookie.args[1][0]).to.equal('userCtx');
+        chai.expect(cookie.args[2][0]).to.equal('locale');
+        chai.expect(cookie.args[2][1]).to.equal('fr');
+        chai.expect(update.callCount).to.equal(0);
       });
     });
 

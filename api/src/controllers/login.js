@@ -8,12 +8,12 @@ const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
 const cookie = require('../services/cookie');
+const users = require('../services/users');
 const SESSION_COOKIE_RE = /AuthSession=([^;]*);/;
 const ONE_YEAR = 31536000000;
 const logger = require('../logger');
 const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
-const users = require('../services/users');
 
 let loginTemplate;
 
@@ -33,32 +33,53 @@ const safePath = requested => {
   return parsed.path + (parsed.hash || '');
 };
 
+const getEnabledLocales = () => {
+  const options = { key: ['translations', true], include_docs: true };
+  return db.medic
+    .query('medic-client/doc_by_type', options)
+    .then(result => result.rows.map(row => ({ key: row.doc.code, label: row.doc.name })))
+    .then(enabled => (enabled.length < 2) ? [] : enabled) // hide selector if only one option
+    .catch(err => {
+      logger.error('Error loading translations: %o', err);
+      return [];
+    });
+};
+
 const getLoginTemplate = () => {
   if (loginTemplate) {
-    return Promise.resolve(loginTemplate);
+    return loginTemplate;
   }
   const filepath = path.join(__dirname, '..', 'templates', 'login', 'index.html');
-  return promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
-    .then(data => _.template(data));
+  loginTemplate = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
+    .then(file => _.template(file));
+  return loginTemplate;
+};
+
+const getTranslationsString = () => {
+  return encodeURIComponent(JSON.stringify(config.getTranslationValues([
+    'login',
+    'login.error',
+    'login.incorrect',
+    'online.action.message',
+    'User Name',
+    'Password'
+  ])));
 };
 
 const renderLogin = (req, redirect, branding) => {
-  const locale = cookie.get(req, 'locale');
-  return getLoginTemplate().then(template => {
-    return template({
-      action: '/medic/login',
-      redirect: redirect,
-      branding: branding,
-      translations: {
-        login: config.translate('login', locale),
-        loginerror: config.translate('login.error', locale),
-        loginincorrect: config.translate('login.incorrect', locale),
-        loginoffline: config.translate('online.action.message', locale),
-        username: config.translate('User Name', locale),
-        password: config.translate('Password', locale),
-      },
+  return Promise.all([
+    getLoginTemplate(),
+    getEnabledLocales()
+  ])
+    .then(([ template, locales ]) => {
+      return template({
+        redirect: redirect,
+        branding: branding,
+        defaultLocale: config.get('locale'),
+        locales: locales,
+        translations: getTranslationsString()
+      });
     });
-  });
 };
 
 const getSessionCookie = res => {
@@ -123,6 +144,13 @@ const getRedirectUrl = userCtx => {
   return '/';
 };
 
+const updateUserLanguageIfRequired = (user, current, selected) => {
+  if (current === selected) {
+    return Promise.resolve();
+  }
+  return users.updateUser(user, { language: selected });
+};
+
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
@@ -146,11 +174,13 @@ const setCookies = (req, res, sessionRes) => {
           throw err;
         })
         .then(({ language }={}) => {
-          if (language) {
-            setLocaleCookie(res, language);
-          }
-          res.status(302).send(getRedirectUrl(userCtx));
-        });
+          const selectedLocale = req.body.locale
+            || language
+            || config.get('locale');
+          setLocaleCookie(res, selectedLocale);
+          return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
+        })
+        .then(() => res.status(302).send(getRedirectUrl(userCtx)));
     })
     .catch(err => {
       logger.error(`Error getting authCtx %o`, err);
@@ -235,4 +265,5 @@ module.exports = {
         return res.send();
       });
   },
+  _reset: () => { loginTemplate = null; } // exposed for testing
 };

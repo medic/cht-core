@@ -6,21 +6,26 @@
     <link href="/login/style.css" media="all" rel="stylesheet">
     <link rel="shortcut icon" href="/favicon.ico">
   </head>
-  <body>
+  <body data-default-locale="{{ defaultLocale }}" data-translations="{{ translations }}">
     <div class="center">
-      <form id="form" action="{{ action }}" method="POST">
+      <form id="form" action="/medic/login" method="POST">
         <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
         <input id="redirect" type="hidden" name="redirect" value="{{ redirect }}">
-        <label for="user">{{ translations.username }}</label>
+        <label for="user" translate="User Name"></label>
         <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-        <label for="password">{{ translations.password }}</label>
+        <label for="password" translate="Password"></label>
         <input id="password" name="password" type="password"/>
-        <p class="error offline">{{ translations.loginoffline }}</p>
-        <p class="error incorrect">{{ translations.loginincorrect }}</p>
-        <p class="error unknown">{{ translations.loginerror }}</p>
-        <button id="login" class="btn">{{ translations.login }}</button>
+        <p class="error offline" translate="online.action.message"></p>
+        <p class="error incorrect" translate="login.incorrect"></p>
+        <p class="error unknown" translate="login.error"></p>
+        <button id="login" class="btn" translate="login"></button>
         <div class="loader"></div>
       </form>
+      <div id="locale" class="locale-wrapper">
+        <% locales.forEach(function(locale) { %>
+          <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
+        <% }); %>
+      </div>
     </div>
     <script src="/login/script.js"></script>
   </body>

@@ -1,3 +1,6 @@
+let selectedLocale;
+let translations;
+
 const setState = function(className) {
   document.getElementById('form').className = className;
 };
@@ -35,7 +38,8 @@ const submit = function(e) {
   const url = document.getElementById('form').action;
   const payload = JSON.stringify({
     user: document.getElementById('user').value.toLowerCase().trim(),
-    password: document.getElementById('password').value
+    password: document.getElementById('password').value,
+    locale: selectedLocale
   });
   post(url, payload, handleResponse);
 };
@@ -53,7 +57,70 @@ const focusOnSubmit = function(e) {
   }
 };
 
+const highlightSelectedLocale = function() {
+  const locales = document.getElementsByClassName('locale');
+  for (let i = 0; i < locales.length; i++) {
+    const elem = locales[i];
+    elem.className = (elem.name === selectedLocale) ? 'locale selected' : 'locale';
+  }
+};
+
+const handleLocaleSelection = function(e) {
+  if (e.target.tagName.toLowerCase() === 'a') {
+    e.preventDefault();
+    selectedLocale = e.target.name;
+    translate();
+  }
+};
+
+const getLocaleCookie = function() {
+  const cookies = document.cookie && document.cookie.split(';');
+  if (cookies) {
+    for (const cookie of cookies) {
+      const parts = cookie.trim().split('=');
+      if (parts[0] === 'locale') {
+        return parts[1].trim();
+      }
+    }
+  }
+};
+
+const getLocale = function() {
+  const selectedLocale = getLocaleCookie();
+  const defaultLocale = document.body.getAttribute('data-default-locale');
+  const locale = selectedLocale || defaultLocale;
+  if (translations[locale]) {
+    return locale;
+  }
+  const validLocales = Object.keys(translations);
+  if (validLocales.length) {
+    return validLocales[0];
+  }
+  return;
+};
+
+const translate = function() {
+  if (!selectedLocale) {
+    return console.error('No enabled locales found - not translating');
+  }
+  highlightSelectedLocale();
+  document.querySelectorAll('[translate]').forEach(function(elem) {
+    const key = elem.getAttribute('translate');
+    elem.innerText = translations[selectedLocale][key];
+  });
+};
+
+const parseTranslations = function() {
+  const raw = document.body.getAttribute('data-translations');
+  return JSON.parse(decodeURIComponent(raw));
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+  translations = parseTranslations();
+  selectedLocale = getLocale();
+
+  translate();
+
   document.getElementById('login').addEventListener('click', submit, false);
 
   const user = document.getElementById('user');
@@ -62,6 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
   
+  document.getElementById('locale').addEventListener('click', handleLocaleSelection, false);
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js');
   }

@@ -67,7 +67,6 @@ process
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {
-    // jshint ignore:line
     if (res.headersSent) {
       // If we've already started a response (eg streaming), pass on to express to abort it
       // rather than attempt to resend headers for a 5xx response

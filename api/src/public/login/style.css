@@ -57,6 +57,24 @@ form {
   width: 300px;
   margin: 0 auto;
 }
+.locale-wrapper {
+  max-width: 800px;
+  text-align: center;
+  margin: 1em auto;
+  padding: 0 20px;
+}
+.locale {
+  color: #bbbbbb;
+  text-decoration: none;
+  padding: 5px 10px;
+  display: inline-block;
+}
+.locale.selected {
+  color: #ffffff;
+}
+.locale:hover {
+  text-decoration: underline;
+}
 .error {
   color: #DA4548;
   display: none;
@@ -104,5 +122,10 @@ form {
   100% {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
+  }
+}
+@media (max-width: 400px) {
+  .locale {
+    display: block
   }
 }

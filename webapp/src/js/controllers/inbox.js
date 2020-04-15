@@ -384,17 +384,6 @@ const moment = require('moment');
     };
 
     const startupModals = [
-      // select language
-      {
-        required: (settings, user) => !user.language,
-        render: () => {
-          return Modal({
-            templateUrl: 'templates/modals/user_language.html',
-            controller: 'UserLanguageModalCtrl',
-            controllerAs: 'userLanguageModalCtrl'
-          }).catch(() => {});
-        },
-      },
       // welcome screen
       {
         required: settings => !settings.setup_complete,
