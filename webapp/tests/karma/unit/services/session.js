@@ -74,16 +74,14 @@ describe('Session service', function() {
     done();
   });
 
-  it('redirects to login if not logged in remotely', function(done) {
+  it('cookie gets deleted when session expires', function(done) {
     ipCookie.returns({ name: 'bryan' });
-    location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend
       .expect('GET', '/_session')
       .respond(401);
     service.init();
     $httpBackend.flush();
-    chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     done();
   });
