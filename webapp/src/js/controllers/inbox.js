@@ -306,6 +306,7 @@ const moment = require('moment');
     });
 
     $transitions.onSuccess({}, function(trans) {
+      Tour.endCurrent();
       ctrl.setCurrentTab(trans.to().name.split('.')[0]);
       if (!$state.includes('reports')) {
         ctrl.setSelectMode(false);
