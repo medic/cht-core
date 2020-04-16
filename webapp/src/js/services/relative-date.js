@@ -13,18 +13,26 @@ angular.module('inboxServices').factory('RelativeDate',
 
     const skipOptions = ['FormatDate', 'RelativeDate', 'suffix', 'prefix'];
 
+    const getRelativeDate = function(timestamp, options) {
+      if (options.age) {
+        return FormatDate.age(timestamp, options);
+      }
+      if (!options.withoutTime && moment(timestamp).isSame(moment(), 'day') && options.absoluteToday) {
+        return FormatDate.time(timestamp);
+      }
+      return FormatDate.relative(timestamp, options);
+    };
+
     return {
+      getRelativeDate,
       getCssSelector: function() {
         return config.cssSelector;
       },
-      generateDataset: function(date, options, absoluteToday) {
+      generateDataset: function(date, options) {
         const dataAttributes = {};
         const momentDate = moment(date);
 
         dataAttributes.date = momentDate.valueOf();
-        if (absoluteToday) {
-          dataAttributes.absoluteToday = true;
-        }
 
         for (const key in options) {
           if (typeof options[key] !== 'object' && skipOptions.indexOf(key) === -1 && options[key]) {
@@ -32,9 +40,9 @@ angular.module('inboxServices').factory('RelativeDate',
           }
         }
 
-        return 'data-date-options=\''+ JSON.stringify(dataAttributes) +'\'';
+        return `data-date-options='${JSON.stringify(dataAttributes)}'`;
       },
-      updateRelativeDates: function () {
+      updateRelativeDates: function() {
         const elements = document.querySelectorAll('.' + config.cssSelector);
         elements.forEach(function(element) {
           const dataset = element.dataset.dateOptions;
@@ -56,13 +64,7 @@ angular.module('inboxServices').factory('RelativeDate',
             return;
           }
 
-          if (options.age) {
-            element.textContent = FormatDate.age(timestamp, options);
-          } else if (!options.withoutTime && moment(timestamp).isSame(moment(), 'day') && options.absoluteToday) {
-            element.textContent = FormatDate.time(timestamp);
-          } else {
-            element.textContent = FormatDate.relative(timestamp, options);
-          }
+          element.textContent = getRelativeDate(timestamp, options);
         });
       }
     };

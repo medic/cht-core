@@ -1,4 +1,4 @@
-describe('relativeDay filter', function() {
+describe('relativeDay filter', () => {
 
   'use strict';
 
@@ -7,32 +7,32 @@ describe('relativeDay filter', function() {
   const date = sinon.stub();
   const relative = sinon.stub();
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
-    module(function ($provide) {
+    module($provide => {
       $provide.value('FormatDate', {
         date: date,
         relative: relative
       });
     });
-    inject(function(_$compile_, _$rootScope_) {
+    inject((_$compile_, _$rootScope_) => {
       compile = _$compile_;
       scope = _$rootScope_.$new();
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     KarmaUtils.restore(date, relative);
   });
 
-  it('should render nothing when no date', function() {
+  it('should render nothing when no date', () => {
     scope.date = undefined;
     const element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('<span></span>');
   });
 
-  it('should render date', function() {
+  it('should render date', () => {
     date.returns('1st Jan 2020');
     relative.returns('in 5 days');
     scope.date = moment().add(5, 'days').valueOf();
@@ -42,7 +42,7 @@ describe('relativeDay filter', function() {
     chai.expect(element.text()).to.equal('in 5 days');
   });
 
-  it('should render "today"', function() {
+  it('should render "today"', () => {
     date.returns('1st Jan 2020');
     relative.returns('today');
     scope.date = moment().valueOf();

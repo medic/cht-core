@@ -82,7 +82,7 @@ describe('TasksForContact service', function() {
     fetchTaskDocsFor.resolves([task]);
     const model = { type: PERSON_TYPE, doc: {} };
     const tasks = await service(model);
-    expect(tasks[0].emission.isLate).to.eq(true);
+    expect(tasks[0].emission.overdue).to.eq(true);
   });
 
   it('sorts tasks by duedate', async () => {

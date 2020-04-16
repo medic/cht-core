@@ -1,4 +1,3 @@
-const _ = require('lodash/core');
 const moment = require('moment');
 
 (function () {
@@ -12,30 +11,18 @@ const moment = require('moment');
     return options.FormatDate.datetime(date);
   };
 
-  const getRelativeDateString = function(date, options) {
-    if (options.age) {
-      return options.FormatDate.age(date, options);
-    } else if (!options.withoutTime && moment(date).isSame(moment(), 'day')) {
-      return options.FormatDate.time(date);
-    } else {
-      return options.FormatDate.relative(date, options);
-    }
-  };
-
   const getRelativeDate = function(date, options) {
-    options = options || {};
-    _.defaults(options, { prefix: '', suffix: '' });
+    options = Object.assign({ prefix: '', suffix: '', absoluteToday: true }, options);
 
     if (!date) {
       if (options.raw) {
         return;
-      } else {
-        return '<span>' + options.prefix + options.suffix + '</span>';
       }
+      return `<span>${options.prefix}${options.suffix}</span>`;
     }
 
     const momentDate = moment(date);
-    const relative = getRelativeDateString(momentDate, options);
+    const relative = options.RelativeDate.getRelativeDate(momentDate, options);
 
     if (options.raw) {
       return relative;
@@ -56,20 +43,16 @@ const moment = require('moment');
       classes.push('future');
     }
 
-    if(options.age){
+    if (options.age) {
       classes.push('age');
     }
 
-    return options.prefix +
-           '<span class="' + classes.join(' ') + '" title="' + absolute + '">' +
-             '<span ' +
-               'class="relative-date-content '+ options.RelativeDate.getCssSelector() +'" ' +
-                options.RelativeDate.generateDataset(date, options, true) +
-             '>' +
-                relative +
-             '</span>' +
-           '</span>' +
-           options.suffix;
+    const relativeDateClass = options.RelativeDate.getCssSelector();
+    const dataSet = options.RelativeDate.generateDataset(date, options);
+
+    return `${options.prefix}<span class="${classes.join(' ')}" title="${absolute}">` +
+      `<span class="relative-date-content ${relativeDateClass}" ${dataSet}>${relative}</span>` +
+      `</span>${options.suffix}`;
   };
 
   const getTaskDate = function(task) {
@@ -229,6 +212,22 @@ const moment = require('moment');
     };
   });
 
+  angular.module('inboxFilters').filter('taskDueDate', function(
+    $sce,
+    FormatDate,
+    RelativeDate
+  ) {
+    'ngInject';
+    return function(date) {
+      return $sce.trustAsHtml(getRelativeDate(date, {
+        FormatDate: FormatDate,
+        RelativeDate: RelativeDate,
+        withoutTime: true,
+        task: true
+      }));
+    };
+  });
+
   angular.module('inboxFilters').filter('simpleDate', function(FormatDate) {
     return function (date) {
       return FormatDate.date(date);
@@ -250,15 +249,14 @@ const moment = require('moment');
       if (!date) {
         return '';
       }
-      const result = '<div ' +
-                      'class="relative-date-content '+ RelativeDate.getCssSelector() +'" ' +
-                      RelativeDate.generateDataset(date) +
-                   '>' +
-                      FormatDate.relative(date) +
-                   '</div>' +
-                   '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
-
-      return $sce.trustAsHtml(result);
+      const cssSelector = RelativeDate.getCssSelector();
+      const dataset = RelativeDate.generateDataset(date);
+      const relative = FormatDate.relative(date);
+      const absolute = FormatDate.datetime(date);
+      return $sce.trustAsHtml(
+        `<div class="relative-date-content ${cssSelector}" ${dataset}>${relative}</div>` +
+        `<div class="full-date">${absolute}</div>`
+      );
     };
   });
 
@@ -275,7 +273,7 @@ const moment = require('moment');
         classes.push('approximate');
       }
       const attr = classes.length ? ' class="weeks-pregnant ' + classes.join(' ') + '"' : '';
-      return '<span' + attr + '>' + weeks.number + '</span>';
+      return `<span${attr}>${weeks.number}</span>`;
     };
   });
 
