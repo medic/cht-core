@@ -3,7 +3,12 @@
  * Usage: Snackbar('My notification');
  */
 angular.module('inboxServices').service('Snackbar',
-  function($timeout) {
+  function(
+    $location,
+    $log,
+    $timeout
+  ) {
+
     'ngInject';
     'use strict';
 
@@ -25,15 +30,19 @@ angular.module('inboxServices').service('Snackbar',
       $('#snackbar').removeClass('active');
     };
 
-    return function(text) {
-      if (hideTimer) {
-        hide();
-        $timeout(function() {
+    return (text, {dev} = {}) => {
+      if (!dev || $location.host() === 'localhost') {
+        if (hideTimer) {
+          hide();
+          $timeout(function() {
+            show(text);
+          }, ANIMATION_DURATION);
+        } else {
           show(text);
-        }, ANIMATION_DURATION);
-      } else {
-        show(text);
+        }
       }
+
+      $log.info(text);
     };
   }
 );

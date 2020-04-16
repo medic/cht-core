@@ -4,7 +4,8 @@ Handles service worker updates
 angular.module('inboxServices').factory('UpdateServiceWorker', function(
   $log,
   $timeout,
-  $window
+  $window,
+  Snackbar
 ) {
   'use strict';
   'ngInject';
@@ -32,7 +33,7 @@ angular.module('inboxServices').factory('UpdateServiceWorker', function(
           installingWorker.onstatechange = function() {
             switch (installingWorker.state) {
             case 'activated':
-              $log.info('New service worker activated');
+              Snackbar('New service worker activated', {dev: true});
               registration.onupdatefound = undefined;
               onSuccess();
               break;

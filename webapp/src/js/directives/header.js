@@ -34,7 +34,6 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
           templateUrl: 'templates/modals/logout_confirm.html',
           controller: 'LogoutConfirmCtrl',
           controllerAs: 'logoutConfirmCtrl',
-          singleton: true,
         }).catch(() => {}); // modal dismissed is ok
       };
 

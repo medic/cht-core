@@ -196,7 +196,6 @@ angular.module('inboxServices').factory('GlobalActions',
             templateUrl: 'templates/modals/navigation_confirm.html',
             controller: 'NavigationConfirmCtrl',
             controllerAs: 'navigationConfirmCtrl',
-            singleton: true,
           }).then(() => {
             setEnketoEditedStatus(false);
             if (transition) {
@@ -215,7 +214,6 @@ angular.module('inboxServices').factory('GlobalActions',
           templateUrl: 'templates/modals/tour_select.html',
           controller: 'TourSelectCtrl',
           controllerAs: 'tourSelectCtrl',
-          singleton: true,
         }).catch(() => {}); // modal dismissed is ok
       }
 
