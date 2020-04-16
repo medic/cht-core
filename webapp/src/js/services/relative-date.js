@@ -17,7 +17,9 @@ angular.module('inboxServices').factory('RelativeDate',
       if (options.age) {
         return FormatDate.age(timestamp, options);
       }
-      if (!options.withoutTime && moment(timestamp).isSame(moment(), 'day') && options.absoluteToday) {
+      if (options.absoluteToday &&
+          !options.withoutTime &&
+          moment(timestamp).isSame(moment(), 'day')) {
         return FormatDate.time(timestamp);
       }
       return FormatDate.relative(timestamp, options);
