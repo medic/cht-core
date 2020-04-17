@@ -41,7 +41,8 @@ body > div {
 }
 
 .container {
-  width: @admin-content-width;
+  width: 100%;
+  max-width: @admin-content-width;
 }
 .content {
   width: 100%;
@@ -106,6 +107,17 @@ body > div {
 ul {
   list-style-type: none;
   padding: 0;
+}
+
+.resource-icon {
+  height: @icon-large;
+  display: inline-block;
+
+  svg,
+  img {
+    width: @icon-large;
+    height: @icon-large;
+  }
 }
 
 .loader {

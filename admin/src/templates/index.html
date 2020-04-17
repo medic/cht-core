@@ -6,8 +6,10 @@
     <title translate>admin.app.name</title>
   </head>
   <body ng-controller="MainCtrl" ng-cloak>
-    <div class="loader" ng-hide="authorized"></div>
-    <div ng-if="authorized">
+    <div ng-hide="authorized">
+      <div class="loader"></div>
+    </div>
+    <div ng-show="authorized">
       <ng-include src="'templates/header.html'"></ng-include>
       <div class="body container">
         <div class="navigation">

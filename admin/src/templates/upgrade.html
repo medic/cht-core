@@ -1,4 +1,3 @@
-
 <div class="upgrade-config col-sm-12" ng-hide="currentDeploy || loading" mm-auth="can_configure">
   <legend translate>instance.upgrade.no_horti</legend>
   <p translate>instance.upgrade.no_horti.detail</p>
@@ -61,60 +60,64 @@
 
     <div><p translate>upgrade.description</p></div>
 
-    <div>
-      <legend translate>instance.upgrade.releases</legend>
-      <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
-      <div ng-show="versions.betas.length">
-        <div class="row selection-heading">
-          <div class="col-xs-5" translate>instance.upgrade.version</div>
-          <div class="col-xs-7" translate>instance.upgrade.date</div>
-        </div>
-        <ul>
-          <li ng-repeat="release in versions.releases" class="row">
-            <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
-          </li>
-        </ul>
-      </div>
+    <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
+      <div class="loader"></div>
     </div>
 
-    <div ng-show="allowPrereleaseBuilds">
-      <legend translate>instance.upgrade.betas</legend>
+    <div ng-hide="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
+
       <div>
-        <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
+        <legend translate>instance.upgrade.releases</legend>
+        <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
         <div ng-show="versions.betas.length">
           <div class="row selection-heading">
             <div class="col-xs-5" translate>instance.upgrade.version</div>
             <div class="col-xs-7" translate>instance.upgrade.date</div>
           </div>
           <ul>
-            <li ng-repeat="release in versions.betas" class="row">
+            <li ng-repeat="release in versions.releases" class="row">
               <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
             </li>
           </ul>
         </div>
       </div>
-    </div>
 
-    <div ng-show="allowPrereleaseBuilds">
-      <legend translate>instance.upgrade.branches</legend>
-      <div>
-        <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
-        <div ng-show="versions.branches.length">
-          <div class="row selection-heading">
-            <div class="col-xs-5" translate>instance.upgrade.version</div>
-            <div class="col-xs-7" translate>instance.upgrade.date</div>
+      <div ng-show="allowPrereleaseBuilds">
+        <legend translate>instance.upgrade.betas</legend>
+        <div>
+          <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
+          <div ng-show="versions.betas.length">
+            <div class="row selection-heading">
+              <div class="col-xs-5" translate>instance.upgrade.version</div>
+              <div class="col-xs-7" translate>instance.upgrade.date</div>
+            </div>
+            <ul>
+              <li ng-repeat="release in versions.betas" class="row">
+                <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
+              </li>
+            </ul>
           </div>
-          <ul>
-            <li ng-repeat="release in versions.branches" class="row">
-              <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
-            </li>
-          </ul>
+        </div>
+      </div>
+
+      <div ng-show="allowPrereleaseBuilds">
+        <legend translate>instance.upgrade.branches</legend>
+        <div>
+          <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
+          <div ng-show="versions.branches.length">
+            <div class="row selection-heading">
+              <div class="col-xs-5" translate>instance.upgrade.version</div>
+              <div class="col-xs-7" translate>instance.upgrade.date</div>
+            </div>
+            <ul>
+              <li ng-repeat="release in versions.branches" class="row">
+                <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="col-sm-12" ng-show="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
-    <div class="loader"></div>
-  </div>
 </div>

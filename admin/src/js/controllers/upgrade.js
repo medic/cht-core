@@ -26,7 +26,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
 
-    const getCurrentDeployment = function() {
+    const getDeploymentInProgress = function() {
       return DB().get(DEPLOY_DOC_ID)
         .then(function(deployDoc) {
           $scope.deployDoc = deployDoc;
@@ -44,7 +44,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    $q.all([getCurrentDeployment(), getExistingDeployment()])
+    $q.all([getDeploymentInProgress(), getExistingDeployment()])
       .then(function() {
         if (!$scope.currentDeploy) {
           // This user has not deployed via horti, so upgrading via it (for now)
@@ -180,7 +180,7 @@ angular.module('controllers').controller('UpgradeCtrl',
       filter: change => change.id === DEPLOY_DOC_ID,
       callback: change => {
         if (!change.deleted) {
-          return getCurrentDeployment();
+          return getDeploymentInProgress();
         }
 
         if ($scope.deployDoc) {
