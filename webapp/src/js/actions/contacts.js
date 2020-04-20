@@ -75,7 +75,7 @@ angular.module('inboxServices').factory('ContactsActions',
                   ActionUtils.createSingleValueAction(actionTypes.UPDATE_SELECTED_CONTACT_TASKS, 'tasks', taskDocs)
                 );
               })
-              .catch(err => $log.error('Failed to load tasks for contact', err))
+              .catch(err => $log.error('Failed to load tasks for contact', err));
           });
       };
 
