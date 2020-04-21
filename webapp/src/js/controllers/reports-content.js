@@ -59,8 +59,8 @@ const _ = require('lodash/core');
         ctrl.unsetSelected();
       }
 
-      ctrl.search = function(text) {
-        SearchFilters.freetextSearch(text);
+      ctrl.search = function(query) {
+        SearchFilters.freetextSearch(query);
       };
 
       ctrl.canMute = function(group) {

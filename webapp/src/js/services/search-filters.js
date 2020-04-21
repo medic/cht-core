@@ -14,26 +14,30 @@ const responsive = require('../modules/responsive');
     ) {
       'ngInject';
 
+      let search = () => {};
+
       const isEnter = function(e) {
         return e.which === ENTER_KEY_CODE;
       };
 
       const initFreetext = function(callback) {
+        search = () => callback(true);
+
         $('#search').on('click', function(e) {
           e.preventDefault();
-          callback();
+          search();
         });
         $('#freetext').on('keypress', function(e) {
           if (isEnter(e)) {
             e.preventDefault();
-            callback();
+            search();
           }
         });
 
         const performMobileSearch = function(e) {
           e.preventDefault();
           $(e.target).closest('.filter').removeClass('open');
-          callback();
+          search();
         };
         $('#mobile-search-go').on('click', performMobileSearch);
         $('#mobile-freetext').on('keypress', function(e) {
@@ -213,8 +217,8 @@ const responsive = require('../modules/responsive');
         date: initDate,
         facility: initFacility,
         freetextSearch: function(query) {
-          $('#freetext').val(query).trigger('change');
-          $('#search').click();
+          $('#freetext,#mobile-freetext').val(query).trigger('change');
+          search();
         },
         reset: function() {
           $('.filter.multidropdown:not(.no-reset)').each(function() {
