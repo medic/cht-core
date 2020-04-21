@@ -40,7 +40,7 @@ describe('hydration controller', () => {
         chai.expect(res.status.args[0]).to.deep.equal([400]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([
-          { error: 'bad_request', reason: '`doc_ids` parameter must be an array.' }
+          { error: 'bad_request', reason: '`doc_ids` parameter must be a json array.' }
         ]);
       });
     });
@@ -56,7 +56,7 @@ describe('hydration controller', () => {
         chai.expect(res.status.args[0]).to.deep.equal([400]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([
-          { error: 'bad_request', reason: '`doc_ids` parameter must be an array.' }
+          { error: 'bad_request', reason: '`doc_ids` parameter must be a json array.' }
         ]);
       });
     });
@@ -72,7 +72,7 @@ describe('hydration controller', () => {
         chai.expect(res.status.args[0]).to.deep.equal([400]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([
-          { error: 'bad_request', reason: '`doc_ids` parameter must be an array.' }
+          { error: 'bad_request', reason: '`doc_ids` parameter must be a json array.' }
         ]);
       });
     });

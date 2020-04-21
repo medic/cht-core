@@ -17,14 +17,14 @@ const getDocIds = (req) => {
 
 const invalidParameterError = (res) => {
   res.status(400);
-  return res.json({ error: 'bad_request', reason: '`doc_ids` parameter must be an array.' });
+  return res.json({ error: 'bad_request', reason: '`doc_ids` parameter must be a json array.' });
 };
 
 /**
  * @typedef {Object} HydrationResult
  * @property {string} id - The document uuid
  * @property {string} [error] document "not_found" - only present when document is not found
- * @property {Object} [hydrated] hydrated document - only present when document is found
+ * @property {Object} [doc] hydrated document - only present when document is found
  */
 
 /**
@@ -38,9 +38,9 @@ const invalidParameterError = (res) => {
  */
 const formatResponse = (docIds, hydratedDocs) => {
   return docIds.map(id => {
-    const hydrated = hydratedDocs.find(doc => doc._id === id);
-    if (hydrated) {
-      return { id, doc: hydrated };
+    const hydratedDoc = hydratedDocs.find(doc => doc._id === id);
+    if (hydratedDoc) {
+      return { id, doc: hydratedDoc };
     }
 
     return { id, error: 'not_found' };
