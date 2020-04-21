@@ -210,6 +210,10 @@ const responsive = require('../modules/responsive');
         $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
       };
 
+      const updateFreetextValue = val => {
+        $('#freetext,#mobile-freetext').val(val).trigger('change');
+      };
+
       return {
         freetext: initFreetext,
         formType: initFormType,
@@ -217,14 +221,14 @@ const responsive = require('../modules/responsive');
         date: initDate,
         facility: initFacility,
         freetextSearch: function(query) {
-          $('#freetext,#mobile-freetext').val(query).trigger('change');
+          updateFreetextValue(query);
           search();
         },
         reset: function() {
           $('.filter.multidropdown:not(.no-reset)').each(function() {
             $(this).multiDropdown().reset();
           });
-          $('#freetext').val('').trigger('change');
+          updateFreetextValue('');
         },
         destroy: function() {
           $('#date-filter').data('daterangepicker').remove();

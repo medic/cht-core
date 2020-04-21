@@ -45,8 +45,7 @@ const _ = require('lodash/core');
           setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
           setSelectedReports: reportsActions.setSelectedReports,
           setRightActionBarVerified: globalActions.setRightActionBarVerified,
-          updateSelectedReportItem: reportsActions.updateSelectedReportItem,
-          setFilter: globalActions.setFilter
+          updateSelectedReportItem: reportsActions.updateSelectedReportItem
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
