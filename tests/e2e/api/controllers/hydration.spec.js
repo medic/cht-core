@@ -47,6 +47,7 @@ const users = [
 
 let offlineRequestOptions;
 let onlineRequestOptions;
+let noAuthRequestOptions;
 
 const contacts = [
   parentPlace,
@@ -179,6 +180,32 @@ describe('Hydration API', () => {
   beforeEach(() => {
     offlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'offline', password }, };
     onlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'online', password }, };
+    noAuthRequestOptions = { path: '/api/v1/hydrate', headers: { 'Accept': 'application/json' }, noAuth: true };
+  });
+
+  describe('it should block unauthenticated requests', () => {
+    it('using GET', () => {
+      noAuthRequestOptions.qs = { doc_ids: ['fixture:offline'] };
+      return utils
+        .request(noAuthRequestOptions)
+        .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
+        .catch(err => {
+          chai.expect(err.statusCode).to.equal(401);
+          chai.expect(err.error).to.deep.include({ code: 401, error: 'unauthorized' });
+        });
+    });
+
+    it('using POST', () => {
+      noAuthRequestOptions.body = { doc_ids: ['fixture:offline'] };
+      noAuthRequestOptions.method = 'POST';
+      return utils
+        .request(noAuthRequestOptions)
+        .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
+        .catch(err => {
+          chai.expect(err.statusCode).to.equal(401);
+          chai.expect(err.error).to.deep.include({ code: 401, error: 'unauthorized' });
+        });
+    });
   });
 
   describe('it should block offline users', () => {
@@ -215,7 +242,7 @@ describe('Hydration API', () => {
           chai.expect(err.statusCode).to.equal(400);
           chai.expect(err.error).to.deep.equal({
             error: 'bad_request',
-            reason: '`doc_ids` parameter must be an array.'
+            reason: '`doc_ids` parameter must be a json array.'
           });
         });
     });
@@ -229,7 +256,7 @@ describe('Hydration API', () => {
           chai.expect(err.statusCode).to.equal(400);
           chai.expect(err.error).to.deep.equal({
             error: 'bad_request',
-            reason: '`doc_ids` parameter must be an array.'
+            reason: '`doc_ids` parameter must be a json array.'
           });
         });
     });
@@ -316,7 +343,7 @@ describe('Hydration API', () => {
           chai.expect(err.statusCode).to.equal(400);
           chai.expect(err.error).to.deep.equal({
             error: 'bad_request',
-            reason: '`doc_ids` parameter must be an array.'
+            reason: '`doc_ids` parameter must be a json array.'
           });
         });
     });
@@ -330,7 +357,7 @@ describe('Hydration API', () => {
           chai.expect(err.statusCode).to.equal(400);
           chai.expect(err.error).to.deep.equal({
             error: 'bad_request',
-            reason: '`doc_ids` parameter must be an array.'
+            reason: '`doc_ids` parameter must be a json array.'
           });
         });
     });
