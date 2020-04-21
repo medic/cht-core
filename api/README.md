@@ -52,8 +52,8 @@ Node server to support the medic app.
 - [Upgrades](#upgrades)
   - [Example](#example)
 - [Hydration](#hydration)
-  - [Example GET](#hydration-example-get)
-  - [Example POST](#hydration-example-post)  
+  - [Example GET](#get-apiv1hydration)
+  - [Example POST](#post-apiv1hydration)  
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1161,7 +1161,7 @@ When documents are not found, an entry with the missing uuid and an error is add
 Supports both GET and POST. 
 Only allowed for users with "online" roles. 
 
-## GET
+## GET api/v1/hydration
 
 #### Query parameters
 
@@ -1188,7 +1188,7 @@ Content-Type: application/json
 ```
 
 
-## POST
+## POST api/v1/hydration
 
 #### Parameters
 
