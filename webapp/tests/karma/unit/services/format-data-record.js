@@ -99,9 +99,9 @@ describe('FormatDataRecord service', () => {
 
     return service(report).then(result => {
       chai.expect(result.fields).to.deep.equal([
-        { label: 'report.my-form.field1', value: 1, depth: 0, hasUrl: false },
+        { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
         { label: 'report.my-form.group3', depth: 0 },
-        { label: 'report.my-form.group3.field4', value: 3, depth: 1, hasUrl: false },
+        { label: 'report.my-form.group3.field4', value: 3, depth: 1, target: undefined },
       ]);
     });
   });
@@ -130,15 +130,15 @@ describe('FormatDataRecord service', () => {
 
     return service(report).then(result => {
       chai.expect(result.fields).to.deep.equal([
-        { label: 'report.my-form.field1', value: 1, depth: 0, hasUrl: false },
+        { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
         { label: 'report.my-form.fields', depth: 0 },
-        { label: 'report.my-form.fields.field21', value: 1, depth: 1, hasUrl: false },
+        { label: 'report.my-form.fields.field21', value: 1, depth: 1, target: undefined },
         { label: 'report.my-form.fields.fields', depth: 1 },
-        { label: 'report.my-form.fields.fields.field31', value: 1, depth: 2, hasUrl: false },
+        { label: 'report.my-form.fields.fields.field31', value: 1, depth: 2, target: undefined },
         { label: 'report.my-form.fields.fields.fields', depth: 2 },
-        { label: 'report.my-form.fields.fields.fields.field41', value: 1, depth: 3, hasUrl: false },
+        { label: 'report.my-form.fields.fields.fields.field41', value: 1, depth: 3, target: undefined },
         { label: 'report.my-form.fields.fields.fields.fields', depth: 3 },
-        { label: 'report.my-form.fields.fields.fields.fields.field51', value: 1, depth: 3, hasUrl: false }
+        { label: 'report.my-form.fields.fields.fields.fields.field51', value: 1, depth: 3, target: undefined }
       ]);
     });
   });
@@ -165,7 +165,7 @@ describe('FormatDataRecord service', () => {
           value: 'some image',
           depth: 0,
           imagePath: 'user-file/my-form/image',
-          hasUrl: false
+          target: undefined
         },
         {
           label: 'report.my-form.deep',
@@ -176,7 +176,7 @@ describe('FormatDataRecord service', () => {
           value: 'other',
           depth: 1,
           imagePath: 'user-file/my-form/deep/image2',
-          hasUrl: false
+          target: undefined
         }
       ]);
     });
@@ -187,6 +187,7 @@ describe('FormatDataRecord service', () => {
       _id: 'my-report',
       form: 'my-form',
       content_type: 'xml',
+      patient: { _id: 'some-patient-id' },
       fields: {
         patient_id: '1234',
         patient_uuid: 'some-uuid',
@@ -195,32 +196,60 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-
     return service(report).then(result => {
       chai.expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.patient_id',
           value: '1234',
           depth: 0,
-          hasUrl: true
+          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
         },
         {
           label: 'report.my-form.patient_uuid',
           value: 'some-uuid',
           depth: 0,
-          hasUrl: true
+          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
         },
         {
           label: 'report.my-form.patient_name',
           value: 'linky mclinkface',
           depth: 0,
-          hasUrl: true
+          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
         },
         {
           label: 'report.my-form.not_patient_id',
           value: 'pass',
           depth: 0,
-          hasUrl: false
+          target: undefined
+        }
+      ]);
+    });
+  });
+
+  it('detects links to cases', () => {
+    const report = {
+      _id: 'my-report',
+      form: 'my-form',
+      content_type: 'xml',
+      fields: {
+        case_id: '1234',
+        not_case_id: 'pass'
+      }
+    };
+
+    return service(report).then(result => {
+      chai.expect(result.fields).to.deep.equal([
+        {
+          label: 'report.my-form.case_id',
+          value: '1234',
+          depth: 0,
+          target: { filter: 'case_id:1234' }
+        },
+        {
+          label: 'report.my-form.not_case_id',
+          value: 'pass',
+          depth: 0,
+          target: undefined
         }
       ]);
     });

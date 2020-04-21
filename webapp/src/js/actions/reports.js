@@ -111,7 +111,6 @@ angular.module('inboxServices').factory('ReportsActions',
 
       function setSelected(model) {
         dispatch(function(dispatch, getState) {
-          const liveList = LiveList.reports;
           const selectMode = Selectors.getSelectMode(getState());
           const selectedReports = Selectors.getSelectedReports(getState());
           let refreshing = true;
@@ -124,8 +123,9 @@ angular.module('inboxServices').factory('ReportsActions',
               addSelectedReport(model);
             }
           } else {
-            if (liveList.initialised()) {
-              liveList.setSelected(model.doc && model.doc._id);
+            if (LiveList.reports.initialised()) {
+              LiveList.reports.setSelected(model.doc && model.doc._id);
+              LiveList['report-search'].setSelected(model.doc && model.doc._id);
             }
             refreshing =
               model.doc &&
@@ -139,7 +139,7 @@ angular.module('inboxServices').factory('ReportsActions',
             setSelectedReports([model]);
             setTitle(model);
 
-            const listModel = liveList.getList().find(item => item._id === model._id);
+            const listModel = LiveList.reports.getList().find(item => item._id === model._id);
             if (listModel && !listModel.read) {
               const unreadCount = Selectors.getUnreadCount(getState());
               globalActions.updateUnreadCount({ report: unreadCount.report - 1 });

@@ -212,10 +212,15 @@ const responsive = require('../modules/responsive');
         status: initStatus,
         date: initDate,
         facility: initFacility,
+        freetextSearch: function(query) {
+          $('#freetext').val(query).trigger('change');
+          $('#search').click();
+        },
         reset: function() {
           $('.filter.multidropdown:not(.no-reset)').each(function() {
             $(this).multiDropdown().reset();
           });
+          $('#freetext').val('').trigger('change');
         },
         destroy: function() {
           $('#date-filter').data('daterangepicker').remove();

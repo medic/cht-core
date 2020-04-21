@@ -1647,6 +1647,34 @@ describe('registration', () => {
     });
   });
 
+  describe('addCase', () => {
+    it('trigger assigns a case id', () => {
+      const caseId = '99955';
+      const change = {
+        doc: {
+          _id: 'def',
+          type: 'data_record',
+          form: 'S',
+          reported_date: 53,
+          from: '+555123',
+          fields: { level: 8 }
+        },
+      };
+      const eventConfig = {
+        form: 'S',
+        events: [{ name: 'on_create', trigger: 'add_case' }],
+      };
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(caseId);
+      sinon.stub(config, 'getAll').returns(settings);
+
+      return transition.onMatch(change).then(() => {
+        change.doc.case_id.should.equal(caseId);
+      });
+    });
+  });
+
   describe('assign_schedule', () => {
     it('event creates the named schedule', () => {
       const change = {

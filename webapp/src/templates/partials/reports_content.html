@@ -64,14 +64,16 @@
               {{field.label}}
               <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
             </label>
-            <span ng-if="field.hasUrl"><a ui-sref="contacts.detail({ id: reportsContentCtrl.summaries[$index].subject._id || reportsContentCtrl.summaries[$index].fields.patient_uuid })">{{field.value}}</a></span>
-            <span ng-if="!field.hasUrl">{{field.value}}</span>
+            <span ng-if="field.target && field.target.filter"><a ng-click="reportsContentCtrl.search(field.target.filter)">{{field.value}}</a></span>
+            <span ng-if="field.target && field.target.url"><a ui-sref="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
+            <span ng-if="!field.target">{{field.value}}</span>
           </li>
           <li ng-if="selection.formatted.form && selection.formatted.content_type === 'xml'" ng-repeat="field in selection.formatted.fields" class="indent-{{field.depth}}">
             <label translate>{{field.label}}</label>
             <p ng-hide="field.imagePath">
-              <span ng-if="field.hasUrl"><a ui-sref="contacts.detail({ id: reportsContentCtrl.summaries[$index].subject._id || reportsContentCtrl.summaries[$index].fields.patient_uuid })">{{field.value}}</a></span>
-              <span ng-if="!field.hasUrl">{{field.value}}</span>
+              <span ng-if="field.target && field.target.filter"><a ng-click="reportsContentCtrl.search(field.target.filter)">{{field.value}}</a></span>
+              <span ng-if="field.target && field.target.url"><a ui-sref="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
+              <span ng-if="!field.target">{{field.value}}</span>
             </p>
             <report-image ng-if="field.imagePath" report="{{selection.formatted._id}}" path="{{field.imagePath}}"/>
           </li>

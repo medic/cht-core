@@ -17,6 +17,7 @@ const _ = require('lodash/core');
       MessageState,
       Modal,
       ReportsActions,
+      SearchFilters,
       Selectors
     ) {
 
@@ -44,7 +45,8 @@ const _ = require('lodash/core');
           setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
           setSelectedReports: reportsActions.setSelectedReports,
           setRightActionBarVerified: globalActions.setRightActionBarVerified,
-          updateSelectedReportItem: reportsActions.updateSelectedReportItem
+          updateSelectedReportItem: reportsActions.updateSelectedReportItem,
+          setFilter: globalActions.setFilter
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -56,6 +58,10 @@ const _ = require('lodash/core');
       } else {
         ctrl.unsetSelected();
       }
+
+      ctrl.search = function(text) {
+        SearchFilters.freetextSearch(text);
+      };
 
       ctrl.canMute = function(group) {
         return MessageState.any(group, 'scheduled');
