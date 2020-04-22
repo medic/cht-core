@@ -218,6 +218,7 @@ module.exports = function(Promise, DB) {
           })
           .then(function(contacts) {
             fillContactsInDocs(lineage, contacts);
+            fillContactsInDocs(patientLineage, contacts);
             return mergeLineagesIntoDoc(lineage, contacts, patientLineage);
           });
       })
@@ -364,7 +365,15 @@ module.exports = function(Promise, DB) {
     }
 
     if (docIDs.length === 1) {
-      return fetchHydratedDoc(docIDs[0]);
+      return fetchHydratedDoc(docIDs[0])
+        .then(doc => [doc])
+        .catch(err => {
+          if (err.status === 404) {
+            return [];
+          }
+
+          throw err;
+        });
     }
 
     return DB

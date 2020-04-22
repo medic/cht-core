@@ -135,10 +135,7 @@ const hydrate = records => {
 
 module.exports = {
   getDocs: ids => {
-    return db.medic.allDocs({ keys: ids, include_docs: true })
-      .then(result => result.rows.map(row => row.doc))
-      .then(lineage.hydrateDocs)
-      .then(hydrate);
+    return lineage.fetchHydratedDocs(ids).then(hydrate);
   },
   getDocIds: (options) => {
     return db.medic.query('medic/messages_by_state', options)

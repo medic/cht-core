@@ -58,29 +58,8 @@ module.exports = {
       return res.json([]);
     }
 
-    if (docIds.length === 1) {
-      return lineage
-        .fetchHydratedDoc(docIds[0])
-        .then(hydratedDoc => res.json(formatResponse(docIds, [hydratedDoc])))
-        .catch(err => {
-          if (err && err.status === 404) {
-            return res.json(formatResponse(docIds, []));
-          }
-
-          return serverUtils.serverError(err, req, res);
-        });
-    }
-
-    return db.medic
-      .allDocs({ keys: docIds, include_docs: true })
-      .then(result => {
-        const docs = result.rows.map(row => row.doc).filter(doc => doc);
-        if (!docs.length) {
-          return [];
-        }
-
-        return lineage.hydrateDocs(docs);
-      })
+    return lineage
+      .fetchHydratedDocs(docIds)
       .then(hydratedDocs => res.json(formatResponse(docIds, hydratedDocs)))
       .catch(err => serverUtils.serverError(err, req, res));
   },

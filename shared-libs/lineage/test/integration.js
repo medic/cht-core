@@ -197,12 +197,9 @@ const report_patient = {
   type: 'person',
   name: 'patient_name',
   parent: {
-    _id: report_contact._id,
+    _id: report_parent._id,
     parent: {
-      _id: report_parent._id,
-      parent: {
-        _id: report_grandparent._id
-      }
+      _id: report_grandparent._id
     }
   },
   reported_date: '5'
@@ -373,8 +370,13 @@ describe('Lineage', function() {
       .then(database => {
         db = database;
         lineage = lineageFactory(Promise, db);
-        return db.bulkDocs(fixtures);
       });
+  });
+
+  beforeEach(() => {
+    // some tests delete docs, make sure we have all available before all test.
+    // if none are deleted, this will just return conflicts
+    return db.bulkDocs(fixtures);
   });
 
   after(function() {
@@ -472,16 +474,28 @@ describe('Lineage', function() {
           form: 'A',
           patient: {
             name: report_patient.name,
-            parent: { name: report_contact.name }
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+                phone: report_parentContact.phone,
+              }
+            }
           },
           contact: {
             name: report_contact.name,
             parent: {
               name: report_parent.name,
-              contact: { phone: '+123' },
+              contact: {
+                phone: '+123',
+                name: report_parentContact.name,
+              },
               parent: {
                 name: report_grandparent.name,
-                contact: { phone: '+456' }
+                contact: {
+                  phone: '+456',
+                  name: report_grandparentContact.name,
+                }
               }
             }
           },
@@ -496,7 +510,12 @@ describe('Lineage', function() {
           form: 'A',
           patient: {
             name: report_patient.name,
-            parent: { name: report_contact.name }
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name
+              }
+            }
           },
           contact: {
             name: report_contact.name,
@@ -520,7 +539,12 @@ describe('Lineage', function() {
           form: 'A',
           patient: {
             name: report_patient.name,
-            parent: { name: report_contact.name }
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              }
+            }
           },
           contact: {
             name: report_contact.name,
@@ -646,15 +670,11 @@ describe('Lineage', function() {
               _id: report_patient._id,
               name: report_patient.name,
               parent: {
-                _id: report_contact._id,
-                name: report_contact.name,
-                parent: {
-                  _id: report_parent._id,
-                  name: report_parent.name,
-                  contact: {
-                    _id: report_parentContact._id,
-                    name: report_parentContact.name,
-                  }
+                _id: report_parent._id,
+                name: report_parent.name,
+                contact: {
+                  _id: report_parentContact._id,
+                  name: report_parentContact.name,
                 }
               }
             }
@@ -808,22 +828,223 @@ describe('Lineage', function() {
         });
     });
 
-    it('processing a doc with itself as a parent errors out', function() {
+    it('processing a doc with itself as a parent does not error out', function() {
       const docs = [ cloneDeep(child_is_parent) ];
 
-      expect(lineage.hydrateDocs(docs)).to.be.rejected;
+      return lineage.hydrateDocs(docs).then(result => {
+        assert.checkDeepProperties(result[0], {
+          _id: 'child_is_parent',
+          parent: {
+            _id: 'child_is_parent',
+            parent: { _id: 'child_is_parent' },
+          },
+        });
+      });
     });
 
-    it('processing a doc with itself as a grandparent errors out', function() {
+    it('processing a doc with itself as a grandparent does not error out', function() {
       const docs = [ cloneDeep(child_is_grandparent) ];
 
-      expect(lineage.hydrateDocs(docs)).to.be.rejected;
+      return lineage.hydrateDocs(docs).then(result => {
+        assert.checkDeepProperties(result[0], {
+          _id: 'child_is_grandparent',
+          parent: {
+            _id: 'something_else',
+            parent: {
+              _id: 'child_is_grandparent',
+              parent: {
+                _id: 'something_else'
+              },
+            },
+          },
+        });
+      });
     });
 
-    it('processing a doc with itself as a grandparent referenced through intermediate docs errors out', function() {
+    it('processing a doc with itself as a grandparent referenced through intermediate docs does not error out', () => {
       const docs = [ cloneDeep(child_is_great_grandparent), cloneDeep(cigg_parent), cloneDeep(cigg_grandparent) ];
 
-      expect(lineage.hydrateDocs(docs)).to.be.rejected;
+      return lineage.hydrateDocs(docs).then(result => {
+        expect(result.length).to.equal(3);
+        assert.checkDeepProperties(result[0], {
+          _id: 'child_is_great_grandparent',
+          parent: {
+            _id: 'cigg_parent',
+            parent: {
+              _id: 'cigg_grandparent',
+            },
+          },
+        });
+        assert.checkDeepProperties(result[1], {
+          _id: 'cigg_parent',
+          parent: {
+            _id: 'cigg_grandparent',
+            parent: {
+              _id: 'child_is_great_grandparent',
+            },
+          },
+        });
+        assert.checkDeepProperties(result[2], {
+          _id: 'cigg_grandparent',
+          parent: {
+            _id: 'child_is_great_grandparent',
+            parent: {
+              _id: 'cigg_parent',
+              parent: {
+                _id: 'cigg_grandparent'
+              },
+            },
+          },
+        });
+      });
+    });
+  });
+
+  describe('fetchHydratedDocs', () => {
+    it('should work with one contact', () => {
+      return lineage.fetchHydratedDocs([report_patient._id]).then(result => {
+        expect(result.length).to.equal(1);
+        assert.checkDeepProperties(result[0], {
+          _id: 'report_patient',
+          patient_id: '12345',
+          name: 'patient_name',
+          parent: {
+            _id: report_parent._id,
+            name: report_parent.name,
+            contact: {
+              name: report_parentContact.name,
+            },
+            parent: {
+              _id: report_grandparent._id,
+              name: report_grandparent.name,
+              contact: {
+                name: report_grandparentContact.name,
+              },
+            }
+          },
+        });
+      });
+    });
+
+    it('should work with one report', () => {
+      return lineage.fetchHydratedDocs([report._id]).then(result => {
+        expect(result.length).to.equal(1);
+        assert.checkDeepProperties(result[0], {
+          _id: 'report',
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  name: report_grandparentContact.name,
+                }
+              }
+            }
+          },
+          patient: {
+            name: report_patient.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  name: report_grandparentContact.name
+                }
+              }
+            }
+          }
+        });
+      });
+    });
+
+    it('should work with one non-existent doc', () => {
+      return lineage.fetchHydratedDocs(['non-existent']).then(result => {
+        expect(result).to.deep.equal([]);
+      });
+    });
+
+    it('should work with multiple docs', () => {
+      return lineage.fetchHydratedDocs([report_patient._id, 'not_found', place._id, report._id]).then(result => {
+        expect(result.length).to.equal(3);
+        assert.checkDeepProperties(result[0], {
+          _id: 'report_patient',
+          patient_id: '12345',
+          name: 'patient_name',
+          parent: {
+            _id: report_parent._id,
+            name: report_parent.name,
+            contact: {
+              name: report_parentContact.name,
+            },
+            parent: {
+              _id: report_grandparent._id,
+              name: report_grandparent.name,
+              contact: {
+                name: report_grandparentContact.name,
+              },
+            }
+          },
+        });
+
+        assert.checkDeepProperties(result[1], {
+          _id: 'place',
+          name: 'place_name',
+          contact: {
+            _id: place_contact._id,
+            name: place_contact.name,
+          },
+          parent: {
+            _id: place_parent._id,
+            name: place_parent.name,
+            parent: {
+              _id: place_grandparent._id,
+              name: place_grandparent.name,
+            }
+          }
+        });
+
+        assert.checkDeepProperties(result[2], {
+          _id: 'report',
+          contact: {
+            name: report_contact.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  name: report_grandparentContact.name,
+                }
+              }
+            }
+          },
+          patient: {
+            name: report_patient.name,
+            parent: {
+              name: report_parent.name,
+              contact: {
+                name: report_parentContact.name,
+              },
+              parent: {
+                name: report_grandparent.name,
+                contact: {
+                  name: report_grandparentContact.name
+                }
+              }
+            }
+          }
+        });
+      });
     });
   });
 });
