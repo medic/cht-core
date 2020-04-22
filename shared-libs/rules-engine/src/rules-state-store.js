@@ -146,6 +146,8 @@ const self = {
       };
     }
 
+    state.calculatedAt = calculatedAt;
+
     return onStateChange(state);
   },
 

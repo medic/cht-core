@@ -12,6 +12,7 @@ const refreshRulesEmissions = require('./refresh-rules-emissions');
 const rulesEmitter = require('./rules-emitter');
 const rulesStateStore = require('./rules-state-store');
 const updateTemporalStates = require('./update-temporal-states');
+const calendarInterval = require('@medic/calendar-interval');
 
 let wireupOptions;
 
@@ -35,21 +36,24 @@ module.exports = {
     const { enableTasks=true, enableTargets=true } = settings;
     wireupOptions = { enableTasks, enableTargets };
 
-    return provider.existingRulesStateStore()
+    return provider
+      .existingRulesStateStore()
       .then(existingStateDoc => {
         if (!rulesEmitter.isLatestNoolsSchema()) {
           throw Error('Rules Engine: Updates to the nools schema are required');
         }
 
-        const contactClosure = updatedState => provider.stateChangeCallback(
-          existingStateDoc,
-          { rulesStateStore: updatedState }
-        );
-        rulesStateStore.load(
-          existingStateDoc.rulesStateStore,
-          settings,
-          contactClosure
-        );
+        return handleIntervalTurnover(provider, settings, existingStateDoc).then(() => {
+          const contactClosure = updatedState => provider.stateChangeCallback(
+            existingStateDoc,
+            { rulesStateStore: updatedState }
+          );
+          rulesStateStore.load(
+            existingStateDoc.rulesStateStore,
+            settings,
+            contactClosure
+          );
+        });
       });
   },
 
@@ -192,4 +196,25 @@ const storeTargetsDoc = (provider, targets, filterInterval) => {
     rulesStateStore.currentUserSettings(),
     targetDocTag
   );
+};
+
+const handleIntervalTurnover = (provider, settings, existingStateDoc) => {
+  if (!existingStateDoc.calculatedAt) {
+    return Promise.resolve();
+  }
+
+  const currentInterval = calendarInterval.getCurrent(settings.monthStartDate);
+
+  if (moment(existingStateDoc.calculatedAt).isBetween(currentInterval.start, currentInterval.end)) {
+    return;
+  }
+
+  const filterInterval = calendarInterval.getInterval(settings.monthStartDate, existingStateDoc.calculatedAt);
+  const targetEmissionFilter = (emission => {
+    const emissionDate = moment(emission.date);
+    return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
+  });
+
+  const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
+  return storeTargetsDoc(provider, targets, filterInterval);
 };
