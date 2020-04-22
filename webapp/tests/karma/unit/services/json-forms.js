@@ -34,15 +34,17 @@ describe('JsonForms service', function() {
       A: { meta: { code: 'A', label: 'First',  icon: 'a' } },
       B: { meta: { code: 'B', label: 'Second', icon: 'b' } },
       C: { meta: { code: 'C', label: 'Third',  icon: 'c' } },
-      D: { meta: { code: 'D', translation_key: 'Fourth', icon: 'd' } }
+      D: { meta: { code: 'D', translation_key: 'Fourth', icon: 'd' } },
+      E: { meta: { code: 'E', subject_key: 'Fifth', icon: 'd' } }
     } }));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
-          { code: 'A', name: 'First',   translation_key: undefined, icon: 'a' },
-          { code: 'B', name: 'Second',  translation_key: undefined, icon: 'b' },
-          { code: 'C', name: 'Third',   translation_key: undefined, icon: 'c' },
-          { code: 'D', name: undefined, translation_key: 'Fourth' , icon: 'd' }
+          { code: 'A', name: 'First',   translation_key: undefined, icon: 'a', subject_key: undefined },
+          { code: 'B', name: 'Second',  translation_key: undefined, icon: 'b', subject_key: undefined },
+          { code: 'C', name: 'Third',   translation_key: undefined, icon: 'c', subject_key: undefined },
+          { code: 'D', name: undefined, translation_key: 'Fourth' , icon: 'd', subject_key: undefined },
+          { code: 'E', name: undefined, translation_key: undefined, icon: 'd', subject_key: 'Fifth'   },
         ]);
         done();
       })
@@ -59,10 +61,10 @@ describe('JsonForms service', function() {
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
-          { code: 'A', name: undefined, translation_key: undefined, icon: undefined },
-          { code: 'B', name: undefined, translation_key: undefined, icon: 'b' },
-          { code: 'C', name: 'Third',   translation_key: undefined, icon: undefined },
-          { code: 'D', name: undefined, translation_key: undefined, icon: undefined }
+          { code: 'A', name: undefined, translation_key: undefined, icon: undefined, subject_key: undefined },
+          { code: 'B', name: undefined, translation_key: undefined, icon: 'b'      , subject_key: undefined },
+          { code: 'C', name: 'Third',   translation_key: undefined, icon: undefined, subject_key: undefined },
+          { code: 'D', name: undefined, translation_key: undefined, icon: undefined, subject_key: undefined }
         ]);
         done();
       })

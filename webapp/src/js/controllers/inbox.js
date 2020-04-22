@@ -348,6 +348,7 @@ const moment = require('moment');
               code: jsonForm.code,
               title: translateTitle(jsonForm.translation_key, jsonForm.name),
               icon: jsonForm.icon,
+              subjectKey: jsonForm.subject_key
             };
           });
           XmlForms.listen(
@@ -362,6 +363,7 @@ const moment = require('moment');
                   code: xForm.internalId,
                   title: translateTitle(xForm.translation_key, xForm.title),
                   icon: xForm.icon,
+                  subjectKey: xForm.subject_key
                 };
               });
               const forms = xFormSummaries.concat(jsonFormSummaries);

@@ -79,7 +79,8 @@ angular.module('inboxServices').factory('GetSummaries',
           reported_date: doc.reported_date,
           contact: doc.contact && doc.contact._id,
           lineage: getLineage(doc.contact && doc.contact.parent),
-          subject: getSubject(doc)
+          subject: getSubject(doc),
+          case_id: doc.case_id || (doc.fields && doc.fields.case_id)
         };
       }
       if (ContactTypes.includes(doc)) { // contact

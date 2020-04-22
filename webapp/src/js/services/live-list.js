@@ -143,7 +143,10 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: contacts_config.listItem,
       });
 
-      const getHeading = function(report) {
+      const getHeading = function(form, report) {
+        if (form && form.subjectKey) {
+          return $translate.instant(form.subjectKey, report);
+        }
         if (report.validSubject) {
           return report.subject.value;
         }
@@ -174,7 +177,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           const form = _.find(ctrl.forms, { code: report.form });
           scope.route = 'reports';
           scope.icon = form && form.icon;
-          scope.heading = getHeading(report);
+          scope.heading = getHeading(form, report);
           scope.date = report.reported_date;
           scope.summary = form ? form.title : report.form;
           scope.showStatus = true;
