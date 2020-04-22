@@ -51,9 +51,9 @@ Node server to support the medic app.
   - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
 - [Upgrades](#upgrades)
   - [Example](#example)
-- [Hydration](#hydration)
-  - [Example GET](#get-apiv1hydration)
-  - [Example POST](#post-apiv1hydration)  
+- [Hydrate](#hydrate)
+  - [Example GET](#get-apiv1hydrate)
+  - [Example POST](#post-apiv1hydrate)  
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1154,14 +1154,14 @@ You know that an upgrade has been staged when the `horti-upgrade` document in Co
 
 Completes a staged upgrade. Throws a `404` if there is no upgrade in the staged position.
 
-# Hydration
+# Hydrate
 
 Accepts a JSON array of document uuids and returns fully hydrated documents, in the same order in which they were requested. 
 When documents are not found, an entry with the missing uuid and an error is added instead.  
 Supports both GET and POST. 
 Only allowed for users with "online" roles. 
 
-## GET api/v1/hydration
+## GET api/v1/hydrate
 
 #### Query parameters
 
@@ -1173,7 +1173,7 @@ Only allowed for users with "online" roles.
 #### Example
 
 ```
-GET /api/v1/hydration?doc_ids=["id1","missingId","id3"]
+GET /api/v1/hydrate?doc_ids=["id1","missingId","id3"]
 ```
 
 ```
@@ -1188,7 +1188,7 @@ Content-Type: application/json
 ```
 
 
-## POST api/v1/hydration
+## POST api/v1/hydrate
 
 #### Parameters
 
@@ -1200,7 +1200,7 @@ Content-Type: application/json
 #### Example
 
 ```
-POST /api/v1/hydration
+POST /api/v1/hydrate
 Content-Type: application/json
 
 {

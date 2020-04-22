@@ -358,6 +358,23 @@ module.exports = function(Promise, DB) {
       });
   };
 
+  const fetchHydratedDocs = docIDs => {
+    if (!Array.isArray([docIDs])) {
+      return Promise.resolve([]);
+    }
+
+    if (docIDs.length === 1) {
+      return fetchHydratedDoc(docIDs[0]);
+    }
+
+    return DB
+      .allDocs({ keys: docIDs, include_docs: true })
+      .then(result => {
+        const docs = result.rows.map(row => row.doc).filter(doc => doc);
+        return hydrateDocs(docs);
+      });
+  };
+
   return {
     /**
      * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents)
@@ -368,6 +385,14 @@ module.exports = function(Promise, DB) {
      * @returns {Promise} A promise to return the hydrated doc.
      */
     fetchHydratedDoc: (id, options, callback) => fetchHydratedDoc(id, options, callback),
+
+    /**
+     * Given an array of ids, returns hydrated versions of every requested doc (using hydrateDocs or fetchHydratedDoc)
+     * If a doc is not found, it's simply excluded from the results list
+     * @param {Object[]} docs The array of docs to hydrate
+     * @returns {Promise} A promise to return the hydrated docs
+     */
+    fetchHydratedDocs: docIds => fetchHydratedDocs(docIds),
 
     /**
      * Given an array of docs bind the parents, contact (and parents) and patient (and parents)
