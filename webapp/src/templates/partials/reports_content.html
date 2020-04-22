@@ -59,18 +59,13 @@
 
       <div class="details" ng-show="selection.expanded">
         <ul>
-          <li ng-if="selection.formatted.form && selection.formatted.content_type !== 'xml'" ng-repeat="field in selection.formatted.fields.data">
+          <li ng-if="selection.formatted.form" ng-repeat="field in selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data" class="indent-{{field.depth || 0}}">
             <label>
-              {{field.label}}
-              <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
+              <span ng-if="selection.formatted.content_type === 'xml'" translate>{{field.label}}</span>
+              <span ng-if="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
+              <span class="fa fa-cogs" ng-if="field.generated" translate translate-attr-title="Generated report field"></span>
             </label>
-            <span ng-if="field.target && field.target.filter"><a ng-click="reportsContentCtrl.search(field.target.filter)">{{field.value}}</a></span>
-            <span ng-if="field.target && field.target.url"><a ui-sref="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
-            <span ng-if="!field.target">{{field.value}}</span>
-          </li>
-          <li ng-if="selection.formatted.form && selection.formatted.content_type === 'xml'" ng-repeat="field in selection.formatted.fields" class="indent-{{field.depth}}">
-            <label translate>{{field.label}}</label>
-            <p ng-hide="field.imagePath">
+            <p ng-if="!field.imagePath">
               <span ng-if="field.target && field.target.filter"><a ng-click="reportsContentCtrl.search(field.target.filter)">{{field.value}}</a></span>
               <span ng-if="field.target && field.target.url"><a ui-sref="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
               <span ng-if="!field.target">{{field.value}}</span>

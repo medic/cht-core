@@ -79,7 +79,6 @@ angular
         data: [],
       };
 
-
       _.forEach(keys, function(key) {
         if (_.isArray(key)) {
           const result = fieldsToHtml(settings, doc, key[1], labels, locale, data[key[0]], def);
@@ -299,7 +298,7 @@ angular
      * create these fields and it is useful to show these new fields in the data
      * records screen/render even though they are not defined in the form.
      */
-    const includeNonFormFields = function(settings, doc, formKeys, locale) {
+    const includeNonFormFieldsJson = function(settings, doc, formKeys, locale) {
       const fields = [
         'mother_outcome',
         'child_birth_outcome',
@@ -313,8 +312,7 @@ angular
 
       const dateFields = ['child_birth_date', 'expected_date', 'birth_date'];
 
-      _.forEach(fields, function(field) {
-        const label = translate(settings, field, locale);
+      fields.forEach(function(field) {
         let value = doc[field];
 
         // Only include the property if we find it on the doc and not as a form
@@ -323,6 +321,7 @@ angular
           return;
         }
 
+        const label = translate(settings, field, locale);
         if (dateFields.includes(field)) {
           value = formatDateField(value, field);
         }
@@ -337,6 +336,26 @@ angular
 
         doc.fields.headers.unshift({
           head: label,
+        });
+      });
+    };
+
+    const includeNonFormFieldsXml = function(doc, fields) {
+      const generatedFields = [
+        'patient_id',
+        'case_id'
+      ];
+
+      generatedFields.forEach(function(field) {
+        const value = doc[field];
+        if (!value) {
+          return;
+        }
+        fields.unshift({
+          label: field,
+          value,
+          generated: true,
+          target: getClickTarget(field, doc)
         });
       });
     };
@@ -483,6 +502,7 @@ angular
       }
       const label = 'report.' + doc.form;
       const fields = getFields(doc, [], doc.fields, label, 0);
+      includeNonFormFieldsXml(doc, fields);
       const hide = doc.hidden_fields || [];
       hide.push('inputs');
       return _.filter(fields, function(field) {
@@ -504,7 +524,7 @@ angular
       const keys = getFormKeys(getForm(settings, doc.form));
       const labels = getLabels(settings, keys, doc.form, language);
       doc.fields = fieldsToHtml(settings, doc, keys, labels, language);
-      includeNonFormFields(settings, doc, keys, language);
+      includeNonFormFieldsJson(settings, doc, keys, language);
     };
 
     const formatScheduledTasks = function(doc, settings, language, context) {

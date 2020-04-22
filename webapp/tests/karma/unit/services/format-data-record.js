@@ -255,4 +255,43 @@ describe('FormatDataRecord service', () => {
     });
   });
 
+  it('detects generated case_id fields', () => {
+    const report = {
+      _id: 'my-report',
+      form: 'my-form',
+      content_type: 'xml',
+      case_id: '1234',
+      patient_id: '5678',
+      patient: {
+        _id: 'abc'
+      },
+      fields: {
+        not_case_id: 'pass'
+      }
+    };
+
+    return service(report).then(result => {
+      chai.expect(result.fields).to.deep.equal([
+        {
+          label: 'case_id',
+          value: '1234',
+          generated: true,
+          target: { filter: 'case_id:1234' }
+        },
+        {
+          label: 'patient_id',
+          value: '5678',
+          generated: true,
+          target: { url: { route: 'contacts.detail', params: { id: 'abc' } } }
+        },
+        {
+          label: 'report.my-form.not_case_id',
+          value: 'pass',
+          depth: 0,
+          target: undefined
+        }
+      ]);
+    });
+  });
+
 });
