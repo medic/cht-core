@@ -374,8 +374,7 @@ describe('Lineage', function() {
   });
 
   beforeEach(() => {
-    // some tests delete docs, make sure we have all available before all test.
-    // if none are deleted, this will just return conflicts
+    // some tests delete docs, so make sure all exist!
     return db.bulkDocs(fixtures);
   });
 
