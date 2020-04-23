@@ -62,13 +62,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       {name:'analytics',state:'analytics',icon:'fa-bar-chart-o',translation:'Analytics',
         permissions:['can_view_analytics','can_view_analytics_tab']}];
 
-      const hasAuthorization = permission => {
-        return Auth(permission)
-          .then(() => true)
-          .catch(() => false);
-      };
-
-      $q.all(tabs.map(tab => hasAuthorization(tab.permissions))).then(results => {
+      $q.all(tabs.map(tab => Auth.has(tab.permissions))).then(results => {
         ctrl.permittedTabs = tabs.filter((tab,index) => results[index]);
       });
 
