@@ -359,13 +359,13 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchHydratedDocs = docIDs => {
-    if (!Array.isArray([docIDs])) {
+  const fetchHydratedDocs = docIds => {
+    if (!docIds.length) {
       return Promise.resolve([]);
     }
 
-    if (docIDs.length === 1) {
-      return fetchHydratedDoc(docIDs[0])
+    if (docIds.length === 1) {
+      return fetchHydratedDoc(docIds[0])
         .then(doc => [doc])
         .catch(err => {
           if (err.status === 404) {
@@ -377,7 +377,7 @@ module.exports = function(Promise, DB) {
     }
 
     return DB
-      .allDocs({ keys: docIDs, include_docs: true })
+      .allDocs({ keys: docIds, include_docs: true })
       .then(result => {
         const docs = result.rows.map(row => row.doc).filter(doc => doc);
         return hydrateDocs(docs);
