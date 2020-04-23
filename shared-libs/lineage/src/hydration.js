@@ -360,7 +360,7 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchHydratedDocs = docIds => {
-    if (!docIds.length) {
+    if (!Array.isArray(docIds) || !docIds.length) {
       return Promise.resolve([]);
     }
 
