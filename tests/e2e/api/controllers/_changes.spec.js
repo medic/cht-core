@@ -1267,7 +1267,7 @@ describe('changes handler', () => {
     });
   });
 
-  it('should not return reports about your place by someone above you in the hierarchy', () =>
+  xit('should not return reports about your place by someone above you in the hierarchy', () =>
     utils
       .saveDoc({
         type:'data_record', _id:'chw-report', place_id:'fixture:chwville',
