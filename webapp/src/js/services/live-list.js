@@ -227,18 +227,16 @@ angular.module('inboxServices').factory('LiveListConfig',
         },
         listItem: function(task) {
           const scope = {};
-          const startOfToday = moment().startOf('day');
           const dueDate = moment(task.dueDate, 'YYYY-MM-DD');
           scope.id = task._id;
           scope.route = 'tasks';
           scope.date = new Date(dueDate.valueOf());
-          scope.overdue = dueDate.isBefore(startOfToday);
-          scope.due = dueDate.isSame(new Date(), 'day');
+          scope.overdue = dueDate.isBefore(moment());
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
           scope.summary = task.title;
           scope.warning = task.priorityLabel;
-          scope.hideTime = true;
+          scope.dateFormat = 'taskDueDate';
           return renderTemplate(scope);
         },
       });

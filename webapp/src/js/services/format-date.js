@@ -18,6 +18,7 @@ const moment = require('moment');
         date: 'DD-MMM-YYYY',
         datetime: 'DD-MMM-YYYY HH:mm:ss',
         time: MomentLocaleData().longDateFormat('LT'),
+        taskDayLimit: 4,
         ageBreaks: [
           { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
           { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
@@ -29,6 +30,9 @@ const moment = require('moment');
         .then(function(res) {
           config.date = res.date_format;
           config.datetime = res.reported_date_format;
+          if (typeof res.task_day_limit !== 'undefined') {
+            config.taskDayLimit = res.task_day_limit;
+          }
         })
         .catch(function(err) {
           $log.error('Error fetching settings', err);
@@ -49,6 +53,19 @@ const moment = require('moment');
           }
         }
         return { quantity: 0, key: { singular: 'd', plural: 'dd' } };
+      };
+
+      const getTaskDueDate = function(given) {
+        const date = moment(given).startOf('day');
+        const today = moment().startOf('day');
+        const diff = date.diff(today, 'days');
+        if (diff <= 0) {
+          return $translate.instant('task.overdue');
+        }
+        if (diff <= config.taskDayLimit) {
+          return $translate.instant('task.days.left', { DAYS: diff }, 'messageformat');
+        }
+        return '';
       };
 
       const relativeDate = function(date, options) {
@@ -82,6 +99,9 @@ const moment = require('moment');
         },
         relative: function(date, options) {
           options = options || {};
+          if (options.task) {
+            return getTaskDueDate(date);
+          }
           if (options.withoutTime) {
             return relativeDate(date, { suffix: true, humanize: true });
           }
