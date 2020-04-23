@@ -191,11 +191,11 @@ describe('Authorization service', () => {
       return service
         .getAllowedDocIds({subjectIds, userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' }})
         .then(result => {
-          result.length.should.equal(13);
+          result.length.should.equal(15);
           result.should.deep.equal([
             '_design/medic-client', 'org.couchdb.user:user',
             'r1', 'r2', 'r3', 'r4',
-            'r5', 'r6', 'r9', 'r10',
+            'r5', 'r6', 'r7', 'r8', 'r9', 'r10',
             'r11', 'r12', 'r13'
           ]);
         });
@@ -489,11 +489,11 @@ describe('Authorization service', () => {
       it('returns false for reports with allowed subject, denied submitter and sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
         viewResults = { replicationKeys: [[userCtx.contact_id, { submitter: 'submitter' }]], contactsByDepth: [] };
-        service.allowedDoc(report, feed, viewResults).should.equal(false);
+        service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
         viewResults = { replicationKeys: [[userCtx.facility_id, { submitter: 'submitter' }]], contactsByDepth: [] };
-        service.allowedDoc(report, feed, viewResults).should.equal(false);
+        service.allowedDoc(report, feed, viewResults).should.equal(true);
       });
 
       it('returns true for reports with allowed subject, allowed submitter and about user`s contact or place', () => {
