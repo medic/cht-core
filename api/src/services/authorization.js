@@ -327,16 +327,8 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
 
 
 // Method to ensure users don't see reports submitted by their boss about the user
-const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
-  if (!subject || !submitter) {
-    return false;
-  }
-
-  if (subject !== userCtx.contact_id && subject !== userCtx.facility_id) {
-    return false;
-  }
-
-  return !allowedSubmitter;
+const isSensitive = function() {
+  return false;
 };
 
 const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
