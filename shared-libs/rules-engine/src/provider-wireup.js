@@ -43,16 +43,17 @@ module.exports = {
           throw Error('Rules Engine: Updates to the nools schema are required');
         }
 
-        return handleIntervalTurnover(provider, settings, existingStateDoc).then(() => {
-          const contactClosure = updatedState => provider.stateChangeCallback(
-            existingStateDoc,
-            { rulesStateStore: updatedState }
-          );
-          rulesStateStore.load(
-            existingStateDoc.rulesStateStore,
-            settings,
-            contactClosure
-          );
+        const contactClosure = updatedState => provider.stateChangeCallback(
+          existingStateDoc,
+          { rulesStateStore: updatedState }
+        );
+        const needsBuilding = rulesStateStore.load(existingStateDoc.rulesStateStore, settings, contactClosure);
+        return handleIntervalTurnover(provider, settings).then(() => {
+          if (!needsBuilding) {
+            return;
+          }
+
+          rulesStateStore.build(settings, contactClosure);
         });
       });
   },
@@ -169,52 +170,56 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
       });
   };
 
-  if (contactIds) {
-    return refreshForKnownContacts(calculationTimestamp, contactIds);
-  }
+  return handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }).then(() => {
+    if (contactIds) {
+      return refreshForKnownContacts(calculationTimestamp, contactIds);
+    }
 
-  // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
-  // reports/tasks)
-  if (!rulesStateStore.hasAllContacts()) {
-    return refreshForAllContacts(calculationTimestamp);
-  }
+    // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
+    // reports/tasks)
+    if (!rulesStateStore.hasAllContacts()) {
+      return refreshForAllContacts(calculationTimestamp);
+    }
 
-  // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-  return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
+    // Once the contact state store has all contacts, trust it and only refresh those marked dirty
+    return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
+  });
 };
 
-const storeTargetsDoc = (provider, targets, filterInterval) => {
+const storeTargetsDoc = (provider, targets, filterInterval, force = false) => {
   const targetDocTag = filterInterval ? moment(filterInterval.end).format('YYYY-MM') : 'latest';
   const minifyTarget = target => ({ id: target.id, value: target.value });
-  const content = {
-    updated_date: Date.now(),
-    targets: targets.map(minifyTarget),
-  };
+
   return provider.commitTargetDoc(
-    content,
+    targets.map(minifyTarget),
     rulesStateStore.currentUserContact(),
     rulesStateStore.currentUserSettings(),
-    targetDocTag
+    targetDocTag,
+    force
   );
 };
 
-const handleIntervalTurnover = (provider, settings, existingStateDoc) => {
-  if (!existingStateDoc.calculatedAt) {
+const handleIntervalTurnover = (provider, { monthStartDate }) => {
+  if (!rulesStateStore.isLoaded() || !wireupOptions.enableTargets) {
     return Promise.resolve();
   }
 
-  const currentInterval = calendarInterval.getCurrent(settings.monthStartDate);
-
-  if (moment(existingStateDoc.calculatedAt).isBetween(currentInterval.start, currentInterval.end)) {
-    return;
+  const stateCalculatedAt = rulesStateStore.stateLastUpdatedAt();
+  if (!stateCalculatedAt) {
+    return Promise.resolve();
   }
 
-  const filterInterval = calendarInterval.getInterval(settings.monthStartDate, existingStateDoc.calculatedAt);
+  const currentInterval = calendarInterval.getCurrent(monthStartDate);
+  if (moment(stateCalculatedAt).isBetween(currentInterval.start, currentInterval.end)) {
+    return Promise.resolve();
+  }
+
+  const filterInterval = calendarInterval.getInterval(monthStartDate, stateCalculatedAt);
   const targetEmissionFilter = (emission => {
     const emissionDate = moment(emission.date);
     return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
   });
 
   const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-  return storeTargetsDoc(provider, targets, filterInterval);
+  return storeTargetsDoc(provider, targets, filterInterval, true);
 };

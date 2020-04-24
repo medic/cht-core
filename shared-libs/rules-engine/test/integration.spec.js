@@ -104,6 +104,8 @@ describe('Rules Engine Integration Tests', () => {
     const rulesSettings = chtRulesSettings({ configHashSalt });
     await rulesEngine.rulesConfigChange(rulesSettings);
     sinon.useFakeTimers(1);
+    // make sure our "calculatedDate" isn't in the future! (and inherently outside the current reporting interval)
+    await rulesEngine.updateEmissionsFor(['patient']);
   });
 
   afterEach(() => {
@@ -169,7 +171,15 @@ describe('Rules Engine Integration Tests', () => {
     sinon.useFakeTimers(MS_IN_DAY * 39);
     const monthLater = await rulesEngine.fetchTasksFor(['patient']);
     expect(monthLater).to.have.property('length', 0);
-    expect(db.bulkDocs.callCount).to.eq(2);
+    expect(db.bulkDocs.callCount).to.eq(3);
+    expect(db.bulkDocs.args[2][0].docs.length).to.equal(1);
+    const date = moment(MS_IN_DAY).format('YYYY-MM');
+    expect(db.bulkDocs.args[2][0].docs[0]).to.deep.include({
+      _id: `target~${date}~user~org.couchdb.user:username`,
+      type: 'target',
+      owner: 'user',
+      reporting_period: date,
+    });
   });
 
   it('fail facility_reminder because of fresh doc merge', async () => {

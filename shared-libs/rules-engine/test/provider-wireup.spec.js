@@ -1,6 +1,13 @@
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
-const { chtDocs, RestorableRulesStateStore, noolsPartnerTemplate, mockEmission, chtRulesSettings } = require('./mocks');
+const {
+  chtDocs,
+  RestorableRulesStateStore,
+  noolsPartnerTemplate,
+  mockEmission,
+  chtRulesSettings
+} = require('./mocks');
+
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const PouchDB = require('pouchdb');
@@ -64,11 +71,13 @@ const fixtures = [
   headlessTask,
 ];
 
+let clock;
+
 describe('provider-wireup integration tests', () => {
   let provider;
   let db;
   beforeEach(async () => {
-    sinon.useFakeTimers(NOW);
+    clock = sinon.useFakeTimers(NOW);
     sinon.stub(rulesStateStore, 'currentUserContact').returns({ _id: 'mock_user_id' });
     sinon.stub(rulesStateStore, 'currentUserSettings').returns({ _id: 'org.couchdb.user:username' });
     wireup.__set__('rulesStateStore', rulesStateStore);
@@ -85,6 +94,7 @@ describe('provider-wireup integration tests', () => {
     rulesStateStore.restore();
     sinon.restore();
     rulesEmitter.shutdown();
+    clock && clock.restore();
   });
 
   describe('stateChangeCallback', () => {
@@ -96,6 +106,7 @@ describe('provider-wireup integration tests', () => {
       expect(db.put.args[0]).excludingEvery(['rulesConfigHash', 'targetState']).to.deep.eq([{
         _id: pouchdbProvider.RULES_STATE_DOCID,
         rulesStateStore: {
+          calculatedAt: NOW,
           contactState: {},
           monthStartDate: 1,
         },
@@ -115,6 +126,7 @@ describe('provider-wireup integration tests', () => {
                 calculatedAt: NOW,
               },
             },
+            calculatedAt: NOW,
             monthStartDate: 1,
           },
         }]);
@@ -306,13 +318,13 @@ describe('provider-wireup integration tests', () => {
       });
 
       sinon.spy(db, 'bulkDocs');
-      sinon.useFakeTimers(moment('2000-01-01').valueOf());
+      clock = sinon.useFakeTimers(moment('2000-01-01').valueOf());
       const emission = mockChtEmission();
       sinon.stub(rulesEmitter, 'getEmissionsFor').resolves({ tasks: [emission], targets: [] });
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
 
       const rules = noolsPartnerTemplate('', { });
-      const settings = { rules };
+      const settings = { rules, enableTargets: false };
       await wireup.initialize(provider, settings, {});
       await wireup.fetchTasksFor(provider);
 
@@ -320,7 +332,7 @@ describe('provider-wireup integration tests', () => {
       expect(firstDoc.state).to.eq('Ready');
 
       // rewind one year
-      sinon.useFakeTimers(moment('1999-01-01').valueOf());
+      clock = sinon.useFakeTimers(moment('1999-01-01').valueOf());
       db.bulkDocs.restore();
       sinon.spy(db, 'bulkDocs');
       const earlierEmission = mockChtEmission();
@@ -337,14 +349,14 @@ describe('provider-wireup integration tests', () => {
     });
 
     it('cht yields task when targets disabled', async () => {
-      sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
+      clock = sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
       await wireup.initialize(provider, chtRulesSettings({ enableTasks: true, enableTargets: false }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual.length).to.eq(1);
     });
 
     it('cht yields nothing when tasks disabled', async () => {
-      sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
+      clock = sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
       await wireup.initialize(provider, chtRulesSettings({ enableTasks: false, enableTargets: true }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual).to.be.empty;
@@ -475,6 +487,303 @@ describe('provider-wireup integration tests', () => {
           total: 4, // not 4
         },
       }]);
+    });
+  });
+
+  describe('interval turnover', () => {
+    const mockTargetEmission = (type, contactId, date, pass) => ({
+      _id: `${contactId}_${type}_${date}`,
+      type,
+      contact: { _id: contactId },
+      date,
+      pass,
+    });
+
+    const prepareExistentState = async (state) => {
+      const existing = await provider.existingRulesStateStore();
+      await provider.stateChangeCallback(existing, { rulesStateStore: state });
+    };
+
+    const loadState = async (settings) => {
+      const existing = await provider.existingRulesStateStore();
+      const updateState = updatedState => provider.stateChangeCallback(existing, { rulesStateStore: updatedState });
+      await rulesStateStore.load(existing.rulesStateStore, settings, updateState);
+    };
+
+    beforeEach(() => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      sinon.spy(provider, 'commitTargetDoc');
+    });
+
+    describe('during initialization', () => {
+      it('should do nothing when there is no stale state', async () => {
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          enableTargets: true,
+          rules,
+          targets: [{
+            id: 'uhc',
+          }]
+        };
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+      });
+
+      it('should do nothing when stale state has no calculation date', async () => {
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{ id: 'uhc' }]
+        };
+
+        const staleState = {
+          rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
+          contactState: {},
+          targetState: {},
+        };
+        await prepareExistentState(staleState);
+
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+      });
+
+      it('should do nothing when stale state is within same interval', async () => {
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{
+            id: 'uhc',
+          }],
+          monthStartDate: 1,
+        };
+
+        const staleState = {
+          rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
+          contactState: {},
+          targetState: {},
+          calculatedAt: moment('2020-04-20').valueOf(),
+          monthStartDate: 1,
+        };
+        await prepareExistentState(staleState);
+
+        clock = sinon.useFakeTimers(moment('2020-04-23').valueOf()); // 3 days later
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+      });
+
+      it('should update the targets doc when the state was calculated outside of the interval', async () => {
+        clock = sinon.useFakeTimers(moment('2020-04-28').valueOf());
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{ id: 'uhc' }],
+          monthStartDate: 1,
+        };
+
+        const staleState = {
+          rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
+          contactState: {},
+          targetState: { uhc: { emissions: {}, id: 'uhc' } },
+          calculatedAt: moment('2020-04-28').valueOf(),
+          monthStartDate: 1,
+        };
+
+        await prepareExistentState(staleState);
+        await loadState(settings);
+        const emissions = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), false), // fail outside interval
+          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc3', moment('2020-04-16').valueOf(), false), // fail within interval
+        ];
+        await rulesStateStore.storeTargetEmissions([], emissions);
+        rulesStateStore.restore();
+
+        clock = sinon.useFakeTimers(moment('2020-05-02').valueOf()); // next interval
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
+          [{ id: 'uhc', value: { pass: 1, total: 2 } }],
+          { _id: 'mock_user_id' },
+          { _id: 'org.couchdb.user:username' },
+          '2020-04',
+          true,
+        ]);
+      });
+
+      it('should work when the settings have been changed', async () => {
+        clock = sinon.useFakeTimers(moment('2020-04-14').valueOf());
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{
+            id: 'uhc',
+          }],
+          monthStartDate: 15, // the target doc will be calculated using the current month start date value
+        };
+
+        // with monthStartDate = 15, and today being April 28th,
+        // the current interval is Apr 15 - May 14 and the previous interval is Mar 15 - Apr 14
+        const emissions = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc3', moment('2020-04-16').valueOf(), true), // passes outside interval
+        ];
+
+        const staleState = {
+          rulesConfigHash: 'not the same hash!!',
+          contactState: {},
+          targetState: { uhc: { id: 'uhc', emissions: {}}},
+          calculatedAt: moment('2020-04-14').valueOf(),
+          monthStartDate: 1,
+        };
+
+        await prepareExistentState(staleState);
+        await loadState(settings);
+        await rulesStateStore.storeTargetEmissions([], emissions);
+        rulesStateStore.restore();
+
+        clock = sinon.useFakeTimers(moment('2020-04-28').valueOf()); // next interval
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
+          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
+          { _id: 'mock_user_id' },
+          { _id: 'org.couchdb.user:username' },
+          '2020-04',
+          true,
+        ]);
+      });
+    });
+
+    describe('during regular use', () => {
+      it('should do nothing when in same interval', async () => {
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{
+            id: 'uhc',
+          }],
+          monthStartDate: 1,
+        };
+
+        clock = sinon.useFakeTimers(moment('2020-04-23').valueOf());
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+
+        const emissions = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc3', moment('2020-04-16').valueOf(), true), // passes within interval
+        ];
+        const refreshRulesEmissions = sinon.stub().resolves({ targetEmissions: emissions });
+        const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+
+        await withMockRefresher(() => wireup.fetchTasksFor(provider));
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+        const currentInterval = { start: moment('2020-04-01').valueOf(), end: moment('2020-04-30').valueOf() };
+        await withMockRefresher(() => wireup.fetchTargets(provider, currentInterval));
+
+        // we didn't have a target doc before, so this is creating it for the first time
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+      });
+
+      it('should update targets when in new interval when refreshing tasks', async () => {
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{
+            id: 'uhc',
+          }],
+          monthStartDate: 1,
+        };
+
+        clock = clock = sinon.useFakeTimers(moment('2020-04-30 23:00:00').valueOf());
+        await wireup.initialize(provider, settings, {});
+
+        const emissions = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc3', moment('2020-04-14').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc5', moment('2020-05-05').valueOf(), true), // passes outside interval
+        ];
+
+        const refreshRulesEmissions = sinon.stub().resolves({ targetEmissions: emissions });
+        const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+        await withMockRefresher(() => wireup.fetchTasksFor(provider));
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+
+        clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
+        await withMockRefresher(() => wireup.fetchTasksFor(provider));
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+      });
+
+      it('should update targets when in new interval when refreshing targets', async () => {
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{
+            id: 'uhc',
+          }],
+          monthStartDate: 1,
+        };
+
+        clock = clock = sinon.useFakeTimers(moment('2020-04-30 23:00:00').valueOf());
+        await wireup.initialize(provider, settings, {});
+
+        const emissionsBefore = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc3', moment('2020-04-14').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc5', moment('2020-05-05').valueOf(), true), // passes outside interval
+        ];
+
+        // simulate that we have a target with date: now (doc3) and that gets counted in both targets
+        const emissionsAfter = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc3', moment('2020-05-05').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc5', moment('2020-05-05').valueOf(), true), // passes outside interval
+        ];
+
+        const refreshRulesEmissions = sinon.stub()
+          .onCall(0).resolves({ targetEmissions: emissionsBefore })
+          .onCall(1).resolves({ targetEmissions: emissionsAfter });
+
+        const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+        // make sure our state has been "calculated" at least once!
+        await withMockRefresher(() => wireup.fetchTasksFor(provider));
+
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+
+        clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
+        const currentInterval = { start: moment('2020-05-01').valueOf(), end: moment('2020-05-31').valueOf() };
+        await withMockRefresher(() => wireup.fetchTargets(provider, currentInterval));
+
+        expect(provider.commitTargetDoc.callCount).to.equal(2);
+        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-05');
+        expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+      });
     });
   });
 });
