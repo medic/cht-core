@@ -360,7 +360,11 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchHydratedDocs = docIds => {
-    if (!Array.isArray(docIds) || !docIds.length) {
+    if (!Array.isArray(docIds)) {
+      return Promise.reject(new Error('Invalid parameter: "docIds" must be an array'));
+    }
+
+    if (!docIds.length) {
       return Promise.resolve([]);
     }
 

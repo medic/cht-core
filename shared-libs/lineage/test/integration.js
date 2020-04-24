@@ -900,6 +900,15 @@ describe('Lineage', function() {
   });
 
   describe('fetchHydratedDocs', () => {
+    it('should crash with bad param', () => {
+      return lineage
+        .fetchHydratedDocs('false')
+        .then(() => assert.fail('Should have thrown'))
+        .catch(err => {
+          expect(err.message).to.equal('Invalid parameter: "docIds" must be an array');
+        });
+    });
+
     it('should work with one contact', () => {
       return lineage.fetchHydratedDocs([report_patient._id]).then(result => {
         expect(result.length).to.equal(1);
