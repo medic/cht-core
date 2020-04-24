@@ -59,6 +59,7 @@
     "infodoc",
     "lineage",
     "message-utils",
+    "outbound",
     "phone-number",
     "purging-utils",
     "registration-utils",
