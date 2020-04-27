@@ -25,6 +25,7 @@ module.exports = {
    * @param {Object[]} settings.targets Target definitions from settings doc
    * @param {Boolean} settings.enableTasks Flag to enable tasks
    * @param {Boolean} settings.enableTargets Flag to enable targets
+   * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} userDoc User's hydrated contact document
    */
   initialize: (provider, settings) => {
@@ -107,8 +108,7 @@ module.exports = {
     return refreshRulesEmissionForContacts(provider, calculationTimestamp)
       .then(() => {
         const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-        storeTargetsDoc(provider, targets, filterInterval);
-        return targets;
+        return storeTargetsDoc(provider, targets, filterInterval).then(() => targets);
       });
   },
 

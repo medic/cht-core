@@ -9,6 +9,7 @@ const sinon = require('sinon');
 
 const RulesEngine = require('../src');
 const rulesEmitter = require('../src/rules-emitter');
+const calendarInterval = require('@medic/calendar-interval');
 
 const { expect } = chai;
 chai.use(chaiExclude);
@@ -70,17 +71,20 @@ const expectedQueriesForFreshData = [
   'medic-client/tasks_by_contact',
 ];
 
-const fetchTargets = async (targetEmissionFilter) => {
-  const targets = await rulesEngine.fetchTargets(targetEmissionFilter);
+const fetchTargets = async (filterInterval) => {
+  filterInterval = filterInterval || calendarInterval.getInterval(chtRulesSettings().monthStartDate, THE_FUTURE);
+  const targets = await rulesEngine.fetchTargets(filterInterval);
   return targets.reduce((agg, target) => {
     agg[target.id] = target;
     return agg;
   }, {});
 };
 
+let clock;
+
 describe('Rules Engine Integration Tests', () => {
   before(async () => {
-    sinon.useFakeTimers(THE_FUTURE);
+    clock = sinon.useFakeTimers(THE_FUTURE);
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
     await rulesEngine.initialize(chtRulesSettings());
@@ -95,7 +99,7 @@ describe('Rules Engine Integration Tests', () => {
     // Some nuanced behavior of medic-nootils with useFakeTimers: due to the closures around { Date } in medic-nootils,
     // the library uses the fake date at the time the library is created. In this case, that is the time of
     // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
-    sinon.useFakeTimers(THE_FUTURE);
+    clock = sinon.useFakeTimers(THE_FUTURE);
 
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
@@ -103,13 +107,15 @@ describe('Rules Engine Integration Tests', () => {
     configHashSalt++;
     const rulesSettings = chtRulesSettings({ configHashSalt });
     await rulesEngine.rulesConfigChange(rulesSettings);
-    sinon.useFakeTimers(1);
+    clock = sinon.useFakeTimers(1);
     // make sure our "calculatedDate" isn't in the future! (and inherently outside the current reporting interval)
+    // otherwise it will cause any operation tested below to update targets for the "stale" state.
     await rulesEngine.updateEmissionsFor(['patient']);
   });
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
   });
 
   it('behavior after initialization', async () => {
@@ -489,6 +495,70 @@ describe('Rules Engine Integration Tests', () => {
       total: 1,
       pass: 1,
     });
+  });
+
+  it('targets on interval turnover', async () => {
+    const targetsSaved = () => {
+      const targets = [];
+      db.bulkDocs.args.forEach(([docs]) => {
+        if (!docs) {
+          return;
+        }
+
+        if (docs && docs.docs) {
+          docs = docs.docs;
+        }
+        docs.forEach(doc => doc._id.startsWith('target') && targets.push(doc));
+      });
+
+      return targets;
+    };
+
+    clock = sinon.useFakeTimers(THE_FUTURE);
+    const patientContact2 = Object.assign({}, patientContact, { _id: 'patient2', patient_id: 'patient_id2', });
+    const pregnancyRegistrationReport2 = Object.assign(
+      {},
+      pregnancyRegistrationReport,
+      {
+        _id: 'pregReg2',
+        fields: { lmp_date_8601: THE_FUTURE, patient_id: patientContact2.patient_id },
+        reported_date: THE_FUTURE+1
+      },
+    );
+    await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
+    await rulesEngine.updateEmissionsFor(['patient']);
+    // we're in THE_FUTURE and our state is fresh
+
+    sinon.spy(db, 'bulkDocs');
+    sinon.spy(db, 'query');
+    const targets = await fetchTargets();
+    expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
+    expect(targets[['pregnancy-registrations-this-month']].value).to.deep.eq({
+      total: 2,
+      pass: 2,
+    });
+    expect(targetsSaved().length).to.equal(1);
+
+    const sameTargets = await fetchTargets();
+    expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
+    expect(sameTargets).to.deep.eq(targets);
+    expect(targetsSaved().length).to.equal(1);
+
+    // fast forward one month
+    clock.tick(moment(THE_FUTURE).add(1, 'month').diff(moment(THE_FUTURE)));
+    const newTargets = await fetchTargets(calendarInterval.getCurrent());
+    expect(newTargets[['pregnancy-registrations-this-month']].value).to.deep.eq({
+      total: 0,
+      pass: 0,
+    });
+    const savedTargets = targetsSaved();
+    expect(savedTargets.length).to.equal(3);
+
+    const firstTargetInterval = calendarInterval.getInterval(1, THE_FUTURE);
+    const secondTargetInterval = calendarInterval.getCurrent();
+    expect(savedTargets[0].reporting_period).to.equal(moment(firstTargetInterval.end).format('YYYY-MM'));
+    expect(savedTargets[1].reporting_period).to.equal(moment(firstTargetInterval.end).format('YYYY-MM'));
+    expect(savedTargets[2].reporting_period).to.equal(moment(secondTargetInterval.end).format('YYYY-MM'));
   });
 });
 
