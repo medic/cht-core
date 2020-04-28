@@ -497,7 +497,7 @@ describe('Rules Engine Integration Tests', () => {
     });
   });
 
-  it('targets on interval turnover', async () => {
+  it('targets on interval turnover only recalculates targets when interval changes', async () => {
     const targetsSaved = () => {
       const targets = [];
       db.bulkDocs.args.forEach(([docs]) => {

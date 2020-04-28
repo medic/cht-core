@@ -199,6 +199,13 @@ const storeTargetsDoc = (provider, targets, filterInterval, force = false) => {
   );
 };
 
+// Because we only save the `target` document once per day (when we calculate targets for the first time),
+// we're losing all updates to targets that happened in the last day of the reporting period.
+// This function takes the last saved state (which may be stale) and generates the targets doc for the corresponding
+// reporting interval (that includes the date when the state was calculated).
+// We don't recalculate the state prior to this because we support targets that count events infinitely to emit `now`,
+// which means that they would all be excluded from the emission filter (being outside the past reporting interval).
+// https://github.com/medic/cht-core/issues/6209
 const handleIntervalTurnover = (provider, { monthStartDate }) => {
   if (!rulesStateStore.isLoaded() || !wireupOptions.enableTargets) {
     return Promise.resolve();
@@ -216,8 +223,7 @@ const handleIntervalTurnover = (provider, { monthStartDate }) => {
 
   const filterInterval = calendarInterval.getInterval(monthStartDate, stateCalculatedAt);
   const targetEmissionFilter = (emission => {
-    const emissionDate = moment(emission.date);
-    return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
+    return moment(emission.date).isBetween(filterInterval.start, filterInterval.end);
   });
 
   const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);

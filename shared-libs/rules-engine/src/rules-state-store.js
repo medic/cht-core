@@ -37,7 +37,7 @@ const self = {
     setOnChangeState(stateChangeCallback);
 
     const rulesConfigHash = hashRulesConfig(settings);
-    if (existingState && existingState.rulesConfigHash !== rulesConfigHash) {
+    if (state && state.rulesConfigHash !== rulesConfigHash) {
       state.stale = true;
     }
 
