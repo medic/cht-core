@@ -127,7 +127,6 @@ describe('Tasks controller', () => {
     expect(service.tasksDisabled).to.be.false;
     expect(service.hasTasks).to.be.true;
     expect(!!service.error).to.be.false;
-    console.log(JSON.stringify(LiveList.tasks.set.args, null, 2));
     expect(LiveList.tasks.set.args).to.deep.eq([[[{ _id: 'e1' }, { _id: 'e2' }]]]);
   });
 
