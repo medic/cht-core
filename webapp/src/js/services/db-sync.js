@@ -30,14 +30,20 @@ angular
       meta: undefined,
     };
 
-    const readOnlyFilter = function(doc) {
-      // Never replicate "purged" documents upwards
+    const isPurgedDoc = (doc) => {
       const keys = Object.keys(doc);
       if (keys.length === 4 &&
           keys.includes('_id') &&
           keys.includes('_rev') &&
           keys.includes('_deleted') &&
           keys.includes('purged')) {
+        return true;
+      }
+    };
+
+    const readOnlyFilter = (doc) => {
+      // Never replicate "purged" documents upwards
+      if (isPurgedDoc(doc)) {
         return false;
       }
 
@@ -48,6 +54,8 @@ angular
         doc._id.indexOf(DDOC_PREFIX) !== 0
       );
     };
+
+    const metaReadOnlyFilter = doc => !isPurgedDoc(doc);
 
     const DIRECTIONS = [
       {
@@ -162,7 +170,7 @@ angular
       local
         .info()
         .then(info => currentSeq = info.update_seq)
-        .then(() => local.sync(remote, { filter: readOnlyFilter }))
+        .then(() => local.sync(remote, { filter: metaReadOnlyFilter }))
         .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
     };
 
