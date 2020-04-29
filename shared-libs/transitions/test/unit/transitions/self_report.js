@@ -3,12 +3,12 @@ const sinon = require('sinon');
 const chai = require('chai');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const transition = rewire('../../../src/transitions/update_patient');
+const transition = rewire('../../../src/transitions/self_report');
 
 let lineage;
 let revertLineage;
 
-describe('update_patient transition', () => {
+describe('self_report transition', () => {
   beforeEach(() => {
     lineage = { fetchHydratedDoc: sinon.stub() };
     revertLineage = transition.__set__('lineage', lineage);
@@ -60,7 +60,7 @@ describe('update_patient transition', () => {
       chai.expect(transition.filter(alreadyHasPatientUuid)).to.equal(false);
 
       const transitionAlreadyRan = { type: 'data_record', from: 'a', form: 'configured_form2' };
-      const info = { transitions: { update_patient: { success: true } } };
+      const info = { transitions: { self_report: { success: true } } };
       chai.expect(transition.filter(transitionAlreadyRan, info)).to.equal(false);
     });
 
@@ -79,14 +79,15 @@ describe('update_patient transition', () => {
       chai.expect(transition.filter(form2, info)).to.equal(true);
 
       chai.expect(config.get.callCount).to.equal(2);
-      chai.expect(config.get.args[0]).to.deep.equal(['update_patient']);
-      chai.expect(config.get.args[1]).to.deep.equal(['update_patient']);
+      chai.expect(config.get.args[0]).to.deep.equal(['self_report']);
+      chai.expect(config.get.args[1]).to.deep.equal(['self_report']);
     });
   });
 
   describe('onMatch', () => {
     it('should search for the sender and add error when sender not found', () => {
       sinon.stub(config, 'get').returns([{ form: 'the_form' }]);
+      sinon.stub(config, 'getTranslations').returns({ en: { 'messages.generic.sender_not_found': 'Sender not found' }});
       db.medic.query.resolves({ rows: [] });
       const doc = { from: '12345', form: 'the_form' };
       return transition.onMatch({ doc }).then(result => {
@@ -97,8 +98,15 @@ describe('update_patient transition', () => {
           { key: '12345' }
         ]);
         chai.expect(lineage.fetchHydratedDoc.callCount).to.equal(0);
-        chai.expect(doc).to.have.all.keys('from', 'errors', 'form');
-        chai.expect(doc.errors).to.deep.equal([{ message: 'Sender not found', code: 'invalid_report' }]);
+        chai.expect(doc).to.have.all.keys('from', 'errors', 'form', 'tasks');
+        chai.expect(doc.errors).to.deep.equal([
+          { message: 'messages.generic.sender_not_found', code: 'sender_not_found' }
+        ]);
+        chai.expect(doc.tasks.length).to.equal(1);
+        chai.expect(doc.tasks[0].messages[0]).to.include({
+          to: '12345',
+          message: 'Sender not found'
+        });
       });
     });
 
@@ -134,7 +142,7 @@ describe('update_patient transition', () => {
           chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-client/contacts_by_phone', { key: '12345' } ]);
           chai.expect(lineage.fetchHydratedDoc.callCount).to.equal(0);
           chai.expect(doc).to.have.all.keys('from', 'errors', 'form', 'tasks');
-          chai.expect(doc.errors).to.deep.equal([ {message: 'translated message', code: 'invalid_report'} ]);
+          chai.expect(doc.errors).to.deep.equal([ {message: 'translated message', code: 'sender_not_found'} ]);
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages[0]).to.include({ to: '12345', message: 'translated message' });
         });
