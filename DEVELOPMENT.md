@@ -15,7 +15,7 @@ You will need to install the following:
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
-- [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). If on a Mac, please note that installation via homebrew is **not** supported.
+- [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). If on a Mac, please note that installation via homebrew is **not** supported. For simplicity we [recommend installing via docker](#couchdb-on-docker)
 - xsltproc
 - python 2.7
 
@@ -25,6 +25,25 @@ To run end-to-end tests you will also need:
 - Docker
 
 Installation instructions for these tools differ heavily based on your operating system and aren't covered here.
+
+### CouchDB on Docker
+
+We recommend using Docker to install and use CouchDB. This ensures you are getting a compatible version and are not relying on OS packages that may be more or less up to date than needed. 
+
+After installing docker, you can create a docker container like so:
+
+```sh
+docker run -d -p 4984:5984 -p 4986:5986 --name medic-couchdb -v /home/scdf/dockers/e2e-couchdb/opt/couchdb/data:/opt/couchdb/data apache/couchdb:2
+```
+
+Notes before copy pasting:
+ - `--name` creates a container called `medic-couchdb`. You can name it whatever you want, but this is how you refer to it later
+ - `-v` maps where couchdb stores data to your local file system for performance, using the path *before* the `:` (the path after the colon is the internal path inside the docker image). This should be somewhere in your home directory you have write access to, and want this data to be stored.
+ - `apache/couchdb:2` will install the latest package for CouchDB 2.x
+ 
+Once this downloads and starts, you can use `docker stop medic-couchdb` to stop it and `docker start medic-couchdb` to start it again. Remember that you'll need to start it whenever you restart your OS, which might not be the case if you use a normal OS package.
+
+Medic recommends you familiarise yourself with other Docker commands to make docker image and container management clearer.
 
 ## Setup CouchDB on a single node
 
