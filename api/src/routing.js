@@ -129,6 +129,7 @@ app.use(
         connectSrc: [
           `'self'`,
           BUILDS_DB,
+          'maps.googleapis.com' // used for enketo geopoint widget
         ],
         childSrc:  [`'self'`],
         formAction: [`'self'`],
@@ -136,6 +137,7 @@ app.use(
           `'self'`,
           'data:', // unsafe
           'blob:',
+          '*.openstreetmap.org', // used for enketo geopoint widget
         ],
         mediaSrc: [
           `'self'`,

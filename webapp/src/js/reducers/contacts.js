@@ -38,6 +38,28 @@ module.exports = function(state, action) {
     return Object.assign({}, state, {
       selected: merge({}, state.selected, action.payload.selected)
     });
+  case actionTypes.UPDATE_SELECTED_CONTACT_TASKS: {
+    const taskDocs = action.payload.tasks;
+    const taskCounts = {};
+    taskDocs.forEach(task => {
+      const childId = task.emission.forId;
+      if (taskCounts[childId]) {
+        taskCounts[childId] = taskCounts[childId] + 1;
+      } else {
+        taskCounts[childId] = 1;
+      }
+    });
+    const children = state.selected.children.map(group => {
+      group.contacts = group.contacts.map(child => {
+        return Object.assign({}, child, { taskCount: taskCounts[child.id] });
+      });
+      return group;
+    });
+    const tasks = taskDocs.map(doc => doc.emission);
+    return Object.assign({}, state, {
+      selected: Object.assign({}, state.selected, { tasks, children })
+    });
+  }
   default:
     return state;
   }

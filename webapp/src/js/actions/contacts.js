@@ -69,9 +69,12 @@ angular.module('inboxServices').factory('ContactsActions',
               $log.debug('Not authorized to view tasks');
               return;
             }
-
-            return TasksForContact(selected)
-              .then(taskDocs => updateSelectedContact({ tasks: taskDocs.map(doc => doc.emission) }))
+            TasksForContact(selected)
+              .then(taskDocs => {
+                dispatch(
+                  ActionUtils.createSingleValueAction(actionTypes.UPDATE_SELECTED_CONTACT_TASKS, 'tasks', taskDocs)
+                );
+              })
               .catch(err => $log.error('Failed to load tasks for contact', err));
           });
       };

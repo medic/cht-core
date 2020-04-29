@@ -172,6 +172,21 @@ Returns the settings in JSON format.
 | overwrite  | Whether to replace settings document with input document. If both replace and overwite are set, then it overwites only. Defaults to replace. |
 | replace  | Whether to replace existing settings for the given properties or to merge. Defaults to false (merging). |
 
+Returns a JSON object with two fields:
+
+```json
+{
+  "success": true,
+  "upgraded": false
+}
+```
+
+| Variable | Type | Description                                                                                             |
+| -------- | ------|------------------------------------------------------------------------------------------------- |
+| success  | Boolean | Always `true`
+| upgraded  | Boolean |  Whether the settings doc was updated or not
+
+
 # Export
 
 Request different types of data in various formats.
