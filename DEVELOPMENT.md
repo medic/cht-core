@@ -15,7 +15,7 @@ You will need to install the following:
 - [Node.js](https://nodejs.org) 8.11.x and above
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
-- [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). If on a Mac, please note that installation via homebrew is **not** supported.
+- [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). For simplicity we [recommend installing via docker](#couchdb-on-docker). If on a Mac, please note that installation via homebrew is **not** supported.
 - xsltproc
 - python 2.7
 
@@ -26,9 +26,41 @@ To run end-to-end tests you will also need:
 
 Installation instructions for these tools differ heavily based on your operating system and aren't covered here.
 
-## Setup CouchDB on a single node
+### CouchDB on Docker
 
-NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
+We recommend using Docker to install and use CouchDB. This ensures you are getting a compatible version and are not relying on OS packages that may be more or less up to date than needed.
+
+After [installing docker](https://docs.docker.com/get-docker/), you can create a docker container like so:
+
+```sh
+docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -v <path>:/opt/couchdb/data apache/couchdb:2
+```
+
+Notes before copy pasting:
+ - `--name` creates a container called `medic-couchdb`. You can name it whatever you want, but this is how you refer to it later
+ - `-v` maps where couchdb stores data to your local file system for performance, using the path *before* the `:` (the path after the colon is the internal path inside the docker image). This should be somewhere in your home directory you have write access to, and want this data to be stored.
+ - `apache/couchdb:2` will install the latest package for CouchDB 2.x
+
+Once this downloads and starts, you will need to [initialise CouchDB](http://localhost:5984/_utils/#/setup) as noted in [their install instructions](https://docs.couchdb.org/en/2.3.1/setup/index.html#setup).
+
+You can use `docker stop medic-couchdb` to stop it and `docker start medic-couchdb` to start it again. Remember that you'll need to start it whenever you restart your OS, which might not be the case if you use a normal OS package.
+
+Medic recommends you familiarise yourself with other Docker commands to make docker image and container management clearer.
+
+## Required environment variables
+
+Medic needs the following environment variables to be declared:
+ - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myAdminUser:myAdminPass@localhost:5984/medic`
+ - `COUCH_NODE_NAME`: the name of your CouchDB's node. The Docker image default is `noname@nohost`. Other installations may use `couchdb@127.0.0,1`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
+ - (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
+ - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
+
+How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
+
+```sh
+export COUCH_NODE_NAME=noname@nohost
+export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
+```
 
 ## Build the webapp
 
@@ -42,12 +74,12 @@ npm ci
 
 By default CouchDB runs in *admin party mode*, which means you do not need users to read or edit any data. This is great for some, but to use your application safely we're going to disable this feature.
 
-First, add an admin user. When prompted to create an admin during installation, use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
+First, add an admin user. When prompted to create an admin [during installation](https://docs.couchdb.org/en/2.3.1/setup/index.html#setup), use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.3.1/install/).
 
-Now, configure some security settings on CouchDB:
+Once you have an admin user you can proceed with securing CouchDB:
 
 ```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=couchdb@127.0.0.1 grunt secure-couchdb
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=noname@nohost grunt secure-couchdb
 ```
 
 After following these steps CouchDB should no longer allow unauthorised access:
@@ -65,22 +97,11 @@ curl -X PUT "http://myAdminUser:myAdminPass@localhost:5984/_node/$COUCH_NODE_NAM
   -d '"Basic realm=\"administrator\""' -H "Content-Type: application/json"
 ```
 
-## Required environment variables
+## Deploying CHT-Core
 
-Medic needs the following environment variables to be declared:
- - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myAdminUser:myAdminPass@localhost:5984/medic`
- - `COUCH_NODE_NAME`: the name of your CouchDB's node. This is likely to either be `couchdb@127.0.0,1` or `noname@nohost`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
- - (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
- - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
+There are three steps to getting cht-core up and running.
 
-How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
-
-```sh
-export COUCH_NODE_NAME=couchdb@127.0.0.1
-export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
-```
-
-### Deploy the webapp
+### Deploying the web app
 
 Webapp code is stored in CouchDB. To compile and deploy the current code, use `grunt`:
 
