@@ -7,7 +7,6 @@ const _ = require('lodash');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
-const cookie = require('../services/cookie');
 const users = require('../services/users');
 const SESSION_COOKIE_RE = /AuthSession=([^;]*);/;
 const ONE_YEAR = 31536000000;
@@ -16,6 +15,17 @@ const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
+
+const getHomeUrl = userCtx => {
+  // https://github.com/medic/medic/issues/5035
+  // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
+  if (auth.isOnlineOnly(userCtx) &&
+      auth.hasAllPermissions(userCtx, 'can_configure') &&
+      environment.db !== 'medic-test') {
+    return '/admin/';
+  }
+  return '/';
+};
 
 const getRedirectUrl = (userCtx, requested) => {
   const root = getHomeUrl(userCtx);
@@ -122,24 +132,20 @@ const setSessionCookie = (res, cookie) => {
 const setUserCtxCookie = (res, userCtx) => {
   const options = getCookieOptions();
   options.maxAge = ONE_YEAR;
-  res.cookie('userCtx', JSON.stringify(userCtx), options);
+  const home = getHomeUrl(userCtx);
+  let content;
+  if (home === '/') {
+    content = userCtx;
+  } else {
+    content = Object.assign({}, userCtx, { home });
+  }
+  res.cookie('userCtx', JSON.stringify(content), options);
 };
 
 const setLocaleCookie = (res, locale) => {
   const options = getCookieOptions();
   options.maxAge = ONE_YEAR;
   res.cookie('locale', locale, options);
-};
-
-const getHomeUrl = userCtx => {
-  // https://github.com/medic/medic/issues/5035
-  // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
-  if (auth.isOnlineOnly(userCtx) &&
-      auth.hasAllPermissions(userCtx, 'can_configure') &&
-      environment.db !== 'medic-test') {
-    return '/admin/';
-  }
-  return '/';
 };
 
 const updateUserLanguageIfRequired = (user, current, selected) => {
@@ -218,23 +224,10 @@ const getBranding = () => {
 
 module.exports = {
   get: (req, res, next) => {
-    return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        // already logged in
-        setUserCtxCookie(res, userCtx);
-        const hasForceLoginCookie = cookie.get(req, 'login') === 'force';
-        if (hasForceLoginCookie) {
-          throw new Error('Force login');
-        }
-        res.redirect(getRedirectUrl(userCtx, req.query.redirect));
-      })
-      .catch(() => {
-        return getBranding()
-          .then(branding => renderLogin(req, branding))
-          .then(body => res.send(body))
-          .catch(next);
-      });
+    return getBranding()
+      .then(branding => renderLogin(req, branding))
+      .then(body => res.send(body))
+      .catch(next);
   },
   post: (req, res) => {
     return createSession(req)

@@ -5,27 +5,16 @@ const setState = function(className) {
   document.getElementById('form').className = className;
 };
 
-const post = function(url, payload, callback) {
+const request = function(method, url, payload, callback) {
   const xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
       callback(xmlhttp);
     }
   };
-  xmlhttp.open('POST', url, true);
+  xmlhttp.open(method, url, true);
   xmlhttp.setRequestHeader('Content-Type', 'application/json');
   xmlhttp.send(payload);
-};
-
-const handleResponse = function(xmlhttp) {
-  if (xmlhttp.status === 302) {
-    window.location = xmlhttp.response;
-  } else if (xmlhttp.status === 401) {
-    setState('loginincorrect');
-  } else {
-    setState('loginerror');
-    console.error('Error logging in', xmlhttp.response);
-  }
 };
 
 const submit = function(e) {
@@ -39,10 +28,22 @@ const submit = function(e) {
   const payload = JSON.stringify({
     user: document.getElementById('user').value.toLowerCase().trim(),
     password: document.getElementById('password').value,
-    redirect: document.getElementById('redirect').value,
+    redirect: getRedirectUrl(),
     locale: selectedLocale
   });
-  post(url, payload, handleResponse);
+  request('POST', url, payload, function(xmlhttp) {
+    if (xmlhttp.status === 302) {
+      // success - redirect to app
+      window.location = xmlhttp.response;
+    } else if (xmlhttp.status === 401) {
+      // bad user/pass provided
+      setState('loginincorrect');
+    } else {
+      // unknown error
+      setState('loginerror');
+      console.error('Error logging in', xmlhttp.response);
+    }
+  });
 };
 
 const focusOnPassword = function(e) {
@@ -74,12 +75,12 @@ const handleLocaleSelection = function(e) {
   }
 };
 
-const getLocaleCookie = function() {
+const getCookie = function(name) {
   const cookies = document.cookie && document.cookie.split(';');
   if (cookies) {
     for (const cookie of cookies) {
       const parts = cookie.trim().split('=');
-      if (parts[0] === 'locale') {
+      if (parts[0] === name) {
         return parts[1].trim();
       }
     }
@@ -87,7 +88,7 @@ const getLocaleCookie = function() {
 };
 
 const getLocale = function() {
-  const selectedLocale = getLocaleCookie();
+  const selectedLocale = getCookie('locale');
   const defaultLocale = document.body.getAttribute('data-default-locale');
   const locale = selectedLocale || defaultLocale;
   if (translations[locale]) {
@@ -116,20 +117,41 @@ const parseTranslations = function() {
   return JSON.parse(decodeURIComponent(raw));
 };
 
-const setRedirectUrl = function() {
+const getRedirectUrl = function() {
   const urlParams = new URLSearchParams(window.location.search);
-  const redirect = urlParams.get('redirect');
-  if (redirect) {
-    document.getElementById('redirect').value = redirect;
+  return urlParams.get('redirect');
+};
+
+const getUserCtx = function() {
+  const cookie = getCookie('userCtx');
+  if (cookie) {
+    try {
+      return JSON.parse(decodeURIComponent(cookie));
+    } catch(e) {
+      console.error('Error parsing cookie', e);
+    }
+  }
+};
+
+const checkSession = function() {
+  if (getCookie('login') === 'force') {
+    // require user to login regardless of session state
+    return;
+  }
+  const userCtx = getUserCtx();
+  if (userCtx && userCtx.name) {
+    // user is already logged in - redirect to app
+    window.location = getRedirectUrl() || userCtx.home || '/';
   }
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+  checkSession();
+
   translations = parseTranslations();
   selectedLocale = getLocale();
 
   translate();
-  setRedirectUrl();
 
   document.getElementById('login').addEventListener('click', submit, false);
 
