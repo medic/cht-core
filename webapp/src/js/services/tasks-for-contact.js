@@ -46,10 +46,9 @@ angular.module('inboxServices').factory('TasksForContact',
     };
 
     const decorateAndSortTasks = function(tasks) {
-      tasks.forEach(function(task) {	
-        const momentDate = moment(task.emission.dueDate, 'YYYY-MM-DD');	
-        const now = moment().startOf('day');
-        task.emission.isLate = momentDate.isBefore(now);	
+      tasks.forEach(function(task) {
+        const dueDate = moment(task.emission.dueDate, 'YYYY-MM-DD');
+        task.emission.overdue = dueDate.isBefore(moment());
       });
 
       tasks.sort(function(a, b) {	

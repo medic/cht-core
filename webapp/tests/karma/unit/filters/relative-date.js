@@ -1,39 +1,33 @@
-describe('relativeDate filter', function() {
+describe('relativeDate filter', () => {
 
   'use strict';
 
   let compile;
   let scope;
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
-    module(function ($provide) {
+    module($provide => {
       $provide.value('FormatDate', {
-        datetime: function() {
-          return 'day 0';
-        },
-        relative: function() {
-          return 'somerelativetime';
-        },
-        time: function() {
-          return 'sometime';
-        }
+        datetime: () => 'day 0',
+        relative: () => 'somerelativetime',
+        time: () => 'sometime'
       });
     });
-    inject(function(_$compile_, _$rootScope_) {
+    inject((_$compile_, _$rootScope_) => {
       compile = _$compile_;
       scope = _$rootScope_.$new();
     });
   });
 
-  it('should render nothing when no date', function() {
+  it('should render nothing when no date', () => {
     scope.date = undefined;
     const element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
     scope.$digest();
     chai.expect(element.html()).to.equal('<span></span>');
   });
 
-  it('should render date', function() {
+  it('should render date', () => {
     //                   some time in the past
     scope.date = moment('2017-10-10T10:10:10.100').valueOf();
     const element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
@@ -51,11 +45,12 @@ describe('relativeDate filter', function() {
     chai.expect(element.text()).to.equal('sometime');
   });
 
-  it('should render a date in the future', function() {
+  it('should render a date in the future', () => {
     scope.date = moment().add(2, 'days').valueOf();
     const element = compile('<div ng-bind-html="date | relativeDate"></div>')(scope);
     scope.$digest();
     chai.expect(element.find('span').attr('class')).to.equal('relative-date future');
     chai.expect(element.text()).to.equal('somerelativetime');
   });
+
 });

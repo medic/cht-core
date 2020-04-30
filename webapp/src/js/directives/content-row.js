@@ -40,8 +40,8 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       // string: (optional) warning information for the row
       warning: '=',
 
-      // boolean: (optional) whether to render the date without time of day
-      hideTime: '=',
+      // string: (optional) the date formatter to use, default: relativeDate
+      dateFormat: '=',
 
       // boolean: (optional) whether or not to show the status bubble
       showStatus: '=',

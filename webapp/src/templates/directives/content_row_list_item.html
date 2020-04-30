@@ -28,9 +28,9 @@ Places of interest
           <i class="fa fa-star primary {{primaryContact ? '' : 'ng-hide'}}" translate translate-attr-title="Primary contact"></i>
           <span>{{heading}}</span>
         </h4>
-        <div class="date {{due ? 'due' : ''}}">
-          <span class="{{hideTime ? 'ng-hide' : ''}}" ng-bind-html="date | relativeDate"></span>
-          <span class="{{hideTime ? '' : 'ng-hide'}}" ng-bind-html="date | relativeDay"></span>
+        <div class="date">
+          <span class="{{dateFormat === 'taskDueDate' ? '' : 'ng-hide'}}" ng-bind-html="date | taskDueDate"></span>
+          <span class="{{dateFormat === 'taskDueDate' ? 'ng-hide' : ''}}" ng-bind-html="date | relativeDate"></span>
           <span ng-if="!date && dod" ng-bind-html="dod | dateOfDeath"></span>
         </div>
         <div class="status tasks-count {{taskCount ? '' : 'ng-hide'}}">

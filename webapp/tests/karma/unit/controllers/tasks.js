@@ -1,7 +1,6 @@
 describe('Tasks controller', () => {
   const { expect } = chai;
-  let
-    getService;
+  let getService;
   let $ngRedux;
   let $scope;
   let Changes;
