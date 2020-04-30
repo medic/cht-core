@@ -8,6 +8,8 @@ describe('InboxCtrl controller', () => {
   const changesListener = {};
   let session;
   let rulesEnginePromise;
+  let isSyncInProgress;
+  let sync;
 
   beforeEach(() => {
     module('inboxApp');
@@ -31,8 +33,10 @@ describe('InboxCtrl controller', () => {
       isOnlineOnly: sinon.stub()
     };
 
-
     rulesEnginePromise = Q.defer();
+
+    isSyncInProgress = sinon.stub();
+    sync = sinon.stub();
 
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
@@ -51,8 +55,9 @@ describe('InboxCtrl controller', () => {
       $provide.value('WatchDesignDoc', sinon.stub());
       $provide.value('DBSync', {
         addUpdateListener: sinon.stub(),
-        sync: sinon.stub(),
-        isEnabled: sinon.stub().returns(true)
+        isEnabled: sinon.stub().returns(true),
+        sync,
+        isSyncInProgress
       });
       $provide.value('Changes', changes);
       $provide.value('CheckDate', sinon.stub());
@@ -173,5 +178,25 @@ describe('InboxCtrl controller', () => {
     chai.expect(session.init.callCount).to.equal(1);
     changesListener['inbox-user-context'].callback();
     chai.expect(session.init.callCount).to.equal(2);
+  });
+
+  describe('sync status changes', () => {
+
+    it('does nothing if sync in progress', () => {
+      createController();
+      isSyncInProgress.returns(true);
+      chai.expect(changesListener['sync-status']).to.be.an('object');
+      changesListener['sync-status'].callback();
+      chai.expect(sync.callCount).to.equal(0);
+    });
+
+    it('calls sync if not currently syncing', () => {
+      createController();
+      isSyncInProgress.returns(false);
+      chai.expect(changesListener['sync-status']).to.be.an('object');
+      changesListener['sync-status'].callback();
+      chai.expect(sync.callCount).to.equal(1);
+    });
+
   });
 });
