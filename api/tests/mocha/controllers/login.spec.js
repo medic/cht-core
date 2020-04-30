@@ -42,6 +42,8 @@ describe('login controller', () => {
     environment.host = 'test.com';
     environment.port = 1234;
     environment.pathname = 'sesh';
+
+    sinon.stub(auth, 'isOnlineOnly').returns(false);
   });
 
   afterEach(() => {
@@ -90,7 +92,7 @@ describe('login controller', () => {
       },
     ].forEach(({given, expected}) => {
       it(`Bad URL "${given}" should redirect to root`, () => {
-        chai.expect(expected).to.equal(controller.safePath(given));
+        chai.expect(controller._safePath({}, given)).to.equal(expected);
       });
     });
 
@@ -102,7 +104,7 @@ describe('login controller', () => {
       '/lg/_design/medic/_rewrite/long/path',
     ].forEach(requested => {
       it(`Good URL "${requested}" should redirect unchanged`, () => {
-        chai.expect(requested).to.equal(controller.safePath(requested));
+        chai.expect(controller._safePath({}, requested)).to.equal(requested);
       });
     });
 
@@ -125,7 +127,7 @@ describe('login controller', () => {
       },
     ].forEach(({ given, expected }) => {
       it(`Absolute URL "${given}" should redirect as a relative url`, () => {
-        chai.expect(expected).to.equal(controller.safePath(given));
+        chai.expect(controller._safePath({}, given)).to.equal(expected);
       });
     });
 
@@ -326,7 +328,6 @@ describe('login controller', () => {
       const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      const isOnlineOnly = sinon.stub(auth, 'isOnlineOnly').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -337,7 +338,7 @@ describe('login controller', () => {
         chai.expect(post.args[0][0].auth.pass).to.equal('p4ss');
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
-        chai.expect(isOnlineOnly.callCount).to.equal(1);
+        chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(send.args[0][0]).to.deep.equal('/');
@@ -420,7 +421,6 @@ describe('login controller', () => {
       const status = sinon.stub(res, 'status').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      const isOnlineOnly = sinon.stub(auth, 'isOnlineOnly').returns(false);
       const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
@@ -428,7 +428,7 @@ describe('login controller', () => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
         chai.expect(hasAllPermissions.callCount).to.equal(0);
-        chai.expect(isOnlineOnly.callCount).to.equal(1);
+        chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(send.args[0][0]).to.equal('/');
@@ -446,7 +446,7 @@ describe('login controller', () => {
       const status = sinon.stub(res, 'status').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      const isOnlineOnly = sinon.stub(auth, 'isOnlineOnly').returns(true);
+      auth.isOnlineOnly.returns(true);
       const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
@@ -454,7 +454,7 @@ describe('login controller', () => {
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
         chai.expect(hasAllPermissions.callCount).to.equal(1);
-        chai.expect(isOnlineOnly.callCount).to.equal(1);
+        chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(send.args[0][0]).to.equal('/admin/');
@@ -473,7 +473,7 @@ describe('login controller', () => {
       sinon.stub(users, 'createAdmin').resolves();
       const userCtx = { name: 'shazza', roles: [ '_admin' ] };
       sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      sinon.stub(auth, 'isOnlineOnly').returns(true);
+      auth.isOnlineOnly.returns(true);
       sinon.stub(auth, 'isDbAdmin').returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings')

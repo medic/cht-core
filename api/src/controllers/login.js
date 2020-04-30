@@ -17,9 +17,8 @@ const production = process.env.NODE_ENV === 'production';
 
 let loginTemplate;
 
-const safePath = requested => {
-  const root = '/';
-
+const getRedirectUrl = (userCtx, requested) => {
+  const root = getHomeUrl(userCtx);
   if (!requested) {
     return root;
   }
@@ -66,14 +65,13 @@ const getTranslationsString = () => {
   ])));
 };
 
-const renderLogin = (req, redirect, branding) => {
+const renderLogin = (req, branding) => {
   return Promise.all([
     getLoginTemplate(),
     getEnabledLocales()
   ])
     .then(([ template, locales ]) => {
       return template({
-        redirect: redirect,
         branding: branding,
         defaultLocale: config.get('locale'),
         locales: locales,
@@ -133,7 +131,7 @@ const setLocaleCookie = (res, locale) => {
   res.cookie('locale', locale, options);
 };
 
-const getRedirectUrl = userCtx => {
+const getHomeUrl = userCtx => {
   // https://github.com/medic/medic/issues/5035
   // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
   if (auth.isOnlineOnly(userCtx) &&
@@ -180,7 +178,9 @@ const setCookies = (req, res, sessionRes) => {
           setLocaleCookie(res, selectedLocale);
           return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
         })
-        .then(() => res.status(302).send(getRedirectUrl(userCtx)));
+        .then(() => {
+          res.status(302).send(getRedirectUrl(userCtx, req.body.redirect));
+        });
     })
     .catch(err => {
       logger.error(`Error getting authCtx %o`, err);
@@ -217,9 +217,7 @@ const getBranding = () => {
 };
 
 module.exports = {
-  safePath: safePath,
   get: (req, res, next) => {
-    const redirect = safePath(req.query.redirect);
     return auth
       .getUserCtx(req)
       .then(userCtx => {
@@ -229,11 +227,11 @@ module.exports = {
         if (hasForceLoginCookie) {
           throw new Error('Force login');
         }
-        res.redirect(redirect);
+        res.redirect(getRedirectUrl(userCtx, req.query.redirect));
       })
       .catch(() => {
         return getBranding()
-          .then(branding => renderLogin(req, redirect, branding))
+          .then(branding => renderLogin(req, branding))
           .then(body => res.send(body))
           .catch(next);
       });
@@ -265,5 +263,7 @@ module.exports = {
         return res.send();
       });
   },
-  _reset: () => { loginTemplate = null; } // exposed for testing
+  // exposed for testing
+  _safePath: getRedirectUrl,
+  _reset: () => { loginTemplate = null; }
 };
