@@ -6,7 +6,7 @@
     <link href="/login/style.css" media="all" rel="stylesheet">
     <link rel="shortcut icon" href="/favicon.ico">
   </head>
-  <body data-default-locale="{{ defaultLocale }}" data-translations="{{ translations }}">
+  <body data-browser-locale="{{ browserLocale }}" data-default-locale="{{ defaultLocale }}" data-translations="{{ translations }}">
     <div class="center">
       <form id="form" action="/medic/login" method="POST">
         <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">

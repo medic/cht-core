@@ -89,8 +89,9 @@ const getCookie = function(name) {
 
 const getLocale = function() {
   const selectedLocale = getCookie('locale');
+  const browserLocale = document.body.getAttribute('data-browser-locale');
   const defaultLocale = document.body.getAttribute('data-default-locale');
-  const locale = selectedLocale || defaultLocale;
+  const locale = selectedLocale || browserLocale || defaultLocale;
   if (translations[locale]) {
     return locale;
   }
