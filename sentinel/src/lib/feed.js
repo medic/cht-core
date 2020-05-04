@@ -50,7 +50,7 @@ const registerFeed = seq => {
           request.cancel();
           request = null;
         }
-        
+
         enqueue(change);
       }
     })
@@ -138,7 +138,7 @@ const changeQueue = async.queue((change, callback) => {
 });
 
 changeQueue.drain(() => {
-  logger.debug(`transitions: queue drained, we restart the listener`);
+  logger.debug(`transitions: queue drained`);
   listen();
 });
 
