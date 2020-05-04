@@ -23,6 +23,12 @@ const readMapFunction = function (doc) {
 };
 /* eslint-enable no-var */
 
+const validateDocUpdate = function (newDoc) {
+  if (newDoc && newDoc._deleted && newDoc.purged) {
+    throw({forbidden: 'Purged documents should not be written to CouchDB!'});
+  }
+};
+
 const ddoc = {
   _id: '_design/medic-user',
   views: {
@@ -30,7 +36,8 @@ const ddoc = {
       map: readMapFunction.toString(),
       reduce: '_count'
     }
-  }
+  },
+  validate_doc_update: validateDocUpdate.toString(),
 };
 
 // Replaces characters that are invalid in a couchdb database name
@@ -39,12 +46,20 @@ const escapeUsername = name => name.replace(DB_NAME_BLACKLIST, match => {
   return `(${match.charCodeAt(0)})`;
 });
 
+const dbNameRegexp = new RegExp(`^${environment.db}-user-.+-meta$`);
+
 module.exports = {
   /**
    * @param {String} username
    * @returns {String} The name of the user db
    */
   getDbName: username => `${environment.db}-user-${escapeUsername(username)}-meta`,
+
+  /**
+   * @param {String} dbName
+   * @returns {boolean} Whether is it a meta db name or not
+   */
+  isDbName: (dbName) => dbNameRegexp.test(dbName),
 
   /**
    * @param {String} dbName
@@ -98,4 +113,6 @@ module.exports = {
         throw err;
       });
   },
+
+  validateDocUpdate,
 };

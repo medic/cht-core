@@ -1,6 +1,7 @@
 const PouchDB = require('pouchdb-core');
 const logger = require('./logger');
 const environment = require('./environment');
+const rpn = require('request-promise-native');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -12,7 +13,7 @@ if (UNIT_TEST_ENV) {
     'medic',
     'users',
     'medicUsersMeta',
-    'sentinel'
+    'sentinel',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -31,6 +32,7 @@ if (UNIT_TEST_ENV) {
     'get',
     'exists',
     'close',
+    'allDbs',
   ];
 
   const notStubbed = (first, second) => {
@@ -97,4 +99,6 @@ if (UNIT_TEST_ENV) {
       })
       .catch(() => false);
   };
+
+  module.exports.allDbs = () => rpn.get({ uri: `${environment.serverUrl}/_all_dbs`, json: true });
 }

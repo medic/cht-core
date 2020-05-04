@@ -386,19 +386,13 @@ describe('DBSync service', () => {
         isOnlineOnly.returns(false);
       });
 
-      it('should sync meta dbs with the metaReadOnlyFilter', () => {
+      it('should sync meta dbs with no filter', () => {
         return service.sync().then(() => {
           expect(db.withArgs({ meta: true }).callCount).to.equal(1);
           expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(1);
           expect(localMetaDb.sync.callCount).to.equal(1);
           expect(localMetaDb.sync.args[0][0]).to.equal(remoteMetaDb);
-          expect(localMetaDb.sync.args[0][1]).to.have.all.keys('filter');
-          const filterFn = localMetaDb.sync.args[0][1].filter;
-          expect(filterFn({ _id: 'feedback-', _rev: 'some', _deleted: true, purged: true })).to.equal(false);
-          expect(filterFn({ _id: 'feedback-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
-          expect(filterFn({ _id: 'telemetry-', _rev: 'aaaa', meta: 'somwething' })).to.equal(true);
-          expect(filterFn({ _id: 'read:report:id', _rev: 'aaaa' })).to.equal(true);
-          expect(filterFn({ _id: '_design/medic-user' })).to.equal(true);
+          expect(localMetaDb.sync.args[0][1]).to.equal(undefined);
         });
       });
 
