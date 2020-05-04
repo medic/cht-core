@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const logger = require('./logger');
 
 const ID_LENGTH_DOC_ID = 'shortcode-id-length';
@@ -19,11 +18,10 @@ const addCheckDigit = digits => {
   const digitArray = digits.split('');
 
   const offset = digitArray.length + 1;
-  const total = _.reduce(
-    digitArray,
-    (sum, digit, index) => sum + Number(digit) * (offset - index),
-    0
-  );
+  let total = 0;
+  digitArray.forEach((digit, i) => {
+    total += Number(digit) * (offset - i);
+  });
 
   const result = total % 11;
   digitArray.push(result === 10 ? 0 : result);
@@ -101,21 +99,14 @@ const putIdLengthDoc = (db, idLengthDoc) => {
 /*
  * Given a collection of ids return an array of those not used already
  */
-const findUnusedIds = (db, freshIds) => {
-  const keys = [...freshIds].reduce((keys, id) => {
-    keys.push(['shortcode', id], ['tombstone-shortcode', id]);
-    return keys;
-  }, []);
-
+const findUnusedIds = (db, keys) => {
   return db.medic
-    .query('medic-client/contacts_by_reference', { keys })
+    .query('medic-client/docs_by_shortcode', { keys })
     .then(results => {
-      const uniqueIds = new Set(freshIds);
-
+      const uniqueIds = new Set(keys);
       results.rows.forEach(row => {
-        uniqueIds.delete(row.key[1]);
+        uniqueIds.delete(row.key);
       });
-
       return uniqueIds;
     });
 };
@@ -126,7 +117,7 @@ const generateNewIds = currentIdLength => {
     freshIds.add(generateId(currentIdLength));
   } while (freshIds.size < MAX_IDS_TO_CACHE);
 
-  return freshIds;
+  return Array.from(freshIds);
 };
 
 const generator = function*(db) {

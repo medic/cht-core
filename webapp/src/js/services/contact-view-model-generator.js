@@ -247,6 +247,10 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     const getHeading = function(report) {
+      const caseId = report.case_id || (report.fields && report.fields.case_id);
+      if (caseId) {
+        return false;
+      }
       if (report.validSubject && report.subject && report.subject.value) {
         return report.subject.value;
       }

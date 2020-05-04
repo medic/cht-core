@@ -99,7 +99,7 @@ const medicPouchProvider = db => {
             return agg;
           }, new Set(contactIds));
 
-          const keys = Array.from(subjectIds).map(key => [key]);
+          const keys = Array.from(subjectIds);
           return Promise.all([
             docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
             self.tasksByRelation(contactIds, 'requester'),

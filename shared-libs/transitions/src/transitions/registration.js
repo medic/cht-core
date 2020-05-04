@@ -203,12 +203,7 @@ const triggers = {
     return setPlaceId(options).then(() => addPlace(options));
   },
   add_case: (options) => {
-    // if we already have a place id then return
-    if (options.doc.case_id) {
-      return;
-    }
-
-    return setCaseId(options);
+    return setCaseId(options).then(() => addPlaceId(options));
   },
   add_patient_id: (options) => {
     // Deprecated name for add_patient
@@ -232,11 +227,15 @@ const triggers = {
       silence_for: null,
     };
 
-    return utils
-      .getReportsBySubject({
-        ids: utils.getSubjectIds(options.doc.patient),
-        registrations: true
-      })
+    const subjectIds = utils.getSubjectIds(options.doc.patient);
+    const caseId = options.doc.case_id ||
+      (options.doc.fields && options.doc.fields.case_id);
+    if (caseId) {
+      subjectIds.push(caseId);
+    }
+
+    // TODO does this even work for cases?
+    return utils.getReportsBySubject({ ids: subjectIds, registrations: true })
       .then(registrations => new Promise((resolve, reject) => {
         acceptPatientReports.silenceRegistrations(
           config,
@@ -337,7 +336,23 @@ const generateId = (doc, key) => {
 };
 
 const setPlaceId = ({ doc }) => generateId(doc, 'place_id');
-const setCaseId = ({ doc }) => generateId(doc, 'case_id');
+const setCaseId = ({ doc }) => {
+  if (doc.case_id) {
+    return Promise.resolve();
+  }
+  return generateId(doc, 'case_id');
+};
+
+const addPlaceId = ({ doc }) => {
+  const placeId = doc.contact && doc.contact.parent && doc.contact.parent._id;
+  if (!placeId) {
+    return;
+  }
+  if (!doc.fields) {
+    doc.fields = {};
+  }
+  doc.fields.place_uuid = placeId;
+};
 
 const setPatientId = (options) => {
   const doc = options.doc;

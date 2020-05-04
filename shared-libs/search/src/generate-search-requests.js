@@ -28,11 +28,12 @@ const getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
   if (!keys || keys.length === 0) {
     return;
   }
+  if (mapKeysFunc) {
+    keys = mapKeysFunc(keys);
+  }
   return {
-    view: view,
-    params: {
-      keys: mapKeysFunc(keys)
-    }
+    view,
+    params: { keys }
   };
 };
 
@@ -116,7 +117,7 @@ const freetextRequest = function(filters, view) {
 
 const subjectRequest = function(filters) {
   const subjectIds = filters.subjectIds;
-  return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds, getKeysArray);
+  return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds);
 };
 
 const contactTypeRequest = function(filters, sortByLastVisitedDate) {

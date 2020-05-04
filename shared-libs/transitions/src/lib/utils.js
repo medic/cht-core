@@ -178,9 +178,9 @@ module.exports = {
   getReportsBySubject: (options) => {
     const viewOptions = { include_docs: true };
     if (options.id) {
-      viewOptions.key = [options.id];
+      viewOptions.key = options.id;
     } else if (options.ids) {
-      viewOptions.keys = options.ids.map(id => ([id]));
+      viewOptions.keys = options.ids;
     } else {
       return Promise.resolve([]);
     }
