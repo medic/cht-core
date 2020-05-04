@@ -51,14 +51,14 @@ Medic recommends you familiarise yourself with other Docker commands to make doc
 
 Medic needs the following environment variables to be declared:
  - `COUCH_URL`: the full authenticated url to the `medic` DB. Locally this would be  `http://myAdminUser:myAdminPass@localhost:5984/medic`
- - `COUCH_NODE_NAME`: the name of your CouchDB's node. The Docker image default is `noname@nohost`. Other installations may use `couchdb@127.0.0,1`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
+ - `COUCH_NODE_NAME`: the name of your CouchDB's node. The Docker image default is `nonode@nohost`. Other installations may use `couchdb@127.0.0,1`. You can find out by querying [CouchDB's membership API](https://docs.couchdb.org/en/stable/api/server/common.html#membership)
  - (optionally) `API_PORT`: the port API will run on. If not defined we use `5988`
  - (optionally) `CHROME_BIN`: only required if `grunt unit` or `grunt e2e` complain that they can't find Chrome.
 
 How to permanently define environment variables depends on your OS and shell (e.g. for bash you can put them `~/.bashrc`). You can temporarily define them with `export`:
 
 ```sh
-export COUCH_NODE_NAME=noname@nohost
+export COUCH_NODE_NAME=nonode@nohost
 export COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic
 ```
 
@@ -79,7 +79,7 @@ First, add an admin user. When prompted to create an admin [during installation]
 Once you have an admin user you can proceed with securing CouchDB:
 
 ```shell
-COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=noname@nohost grunt secure-couchdb
+COUCH_URL=http://myAdminUser:myAdminPass@localhost:5984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb
 ```
 
 After following these steps CouchDB should no longer allow unauthorised access:
