@@ -51,6 +51,7 @@ const app = express();
 // requires content-type application/json header
 const jsonParser = bodyParser.json({ limit: '32mb' });
 const jsonQueryParser = require('./middleware/query-parser').json;
+const wantsJson = require('./middleware/wants-json');
 const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
 const handleJsonRequest = (method, path, callback) => {
@@ -402,8 +403,21 @@ app.postJson('/api/v1/people', function(req, res) {
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
 // offline users are not allowed to hydrate documents via the hydrate API
-app.get('/api/v1/hydrate', authorization.offlineUserFirewall, jsonQueryParser, hydration.hydrate);
-app.post('/api/v1/hydrate', authorization.offlineUserFirewall, jsonParser, jsonQueryParser, hydration.hydrate);
+app.get(
+  '/api/v1/hydrate',
+  wantsJson,
+  authorization.offlineUserFirewall,
+  jsonQueryParser,
+  hydration.hydrate
+);
+app.post(
+  '/api/v1/hydrate',
+  wantsJson,
+  authorization.offlineUserFirewall,
+  jsonParser,
+  jsonQueryParser,
+  hydration.hydrate
+);
 
 app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
