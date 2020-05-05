@@ -5,15 +5,9 @@ const vm = require('vm');
 
 const MAP_ARG_NAME = 'doc';
 
-module.exports.loadView = (ddocName, viewName) => {
-  const mapString = fs.readFileSync(path.join(
-    __dirname,
-    '../../../../../ddocs',
-    ddocName,
-    'views',
-    viewName,
-    '/map.js'), 'utf8');
-
+module.exports.loadView = (dbName, ddocName, viewName) => {
+  const mapPath = path.join(__dirname, '../../../../../ddocs', dbName, ddocName, 'views', viewName, '/map.js');
+  const mapString = fs.readFileSync(mapPath, 'utf8');
   const mapScript = new vm.Script('(' + mapString + ')(' + MAP_ARG_NAME + ');');
 
   const emitted = [];

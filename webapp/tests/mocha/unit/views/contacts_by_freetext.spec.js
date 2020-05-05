@@ -40,7 +40,7 @@ describe('contacts_by_freetext view', () => {
 
   it('indexes doc name', () => {
     // given
-    const map = utils.loadView('medic-client', 'contacts_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
 
     // when
     const emitted = map(doc);
@@ -55,7 +55,7 @@ describe('contacts_by_freetext view', () => {
 
   it('indexes non-ascii doc name', () => {
     // given
-    const map = utils.loadView('medic-client', 'contacts_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
 
     // when
     const emitted = map(nonAsciiDoc);
@@ -69,7 +69,7 @@ describe('contacts_by_freetext view', () => {
 
   it('does not index words of less than 3 chars', () => {
     // given
-    const map = utils.loadView('medic-client', 'contacts_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
 
     // when
     const emitted = map(doc);
@@ -82,7 +82,7 @@ describe('contacts_by_freetext view', () => {
 
   it('does not index non-contact docs', () => {
     // given
-    const map = utils.loadView('medic-client', 'contacts_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
 
     // when
     const emitted = map({ type: 'data_record', name: 'do not index me'});

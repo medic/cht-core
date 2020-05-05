@@ -49,6 +49,8 @@ Node server to support the medic app.
   - [GET /api/v1/users-info](#get-apiv1users-info)
 - [Bulk Operations](#bulk-operations)
   - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
+- [Monitoring](#monitoring)
+  - [GET /api/v1/monitoring](#get-apiv1monitoring)
 - [Upgrades](#upgrades)
   - [Example](#example)
 - [Hydrate](#hydrate)
@@ -1125,6 +1127,53 @@ Content-Type: application/json
   ]
 ]
 ```
+
+# Monitoring
+
+## GET /api/v1/monitoring
+
+Used to retrieve a range of metrics about the instance. While the output is human readable this is intended for automated monitoring allowing for tracking trends over time and alerting about potential issues.
+
+### Permissions
+
+No permissions required.
+
+### Examples
+
+#### JSON format
+
+```
+curl http://localhost:5988/api/v1/monitoring
+
+{"version":{"app":"3.9.0","node":"v10.16.0","couchdb":"2.3.1"},"couchdb":{"medic":{"name":"medic","update_sequence":5733,"doc_count":278,"doc_del_count":32,"fragmentation":1.0283517758420173}...
+```
+
+### Response content
+
+| JSON path | Type | Description |
+| --------- | ----------------- | ---- | ----------- |
+| `version.app` | String | The version of the webapp. |
+| `version.node` | String | The version of NodeJS. |
+| `version.couchdb` | String | The version of CouchDB. |
+| `couchdb.<dbname>.name` | String | The name of the db, usually one of "medic", "medic-sentinel", "medic-users-meta", "_users". |
+| `couchdb.<dbname>.update_sequence` | Number | The number of changes in the db. |
+| `couchdb.<dbname>.doc_count` | Number | The number of docs in the db. |
+| `couchdb.<dbname>.doc_del_count` | Number | The number of deleted docs in the db. |
+| `couchdb.<dbname>.fragmentation` |  Number | The fragmentation of the db, lower is better, "1" is no fragmentation. |
+| `date.current` | Number | The current server date in millis since the epoch, useful for ensuring the server time is correct. |
+| `date.uptime` | Number | How long API has been running. |
+| `sentinel.backlog` | Number | Number of changes yet to be processed by Sentinel. |
+| `messaging.outgoing.due` | Number | The number of messages due to be sent. |
+| `messaging.outgoing.scheduled` | Number | The number of messages scheduled to be sent in the future. |
+| `messaging.outgoing.muted` | Number | The number of messages that are muted and therefore will not be sent. |
+| `outbound_push.backlog` | Number | Number of changes yet to be processed by Outbound Push. |
+| `feedback.count` | Number | Number of feedback docs created usually indicative of client side errors. |
+| `conflict.count` | Number | Number of doc conflicts which need to be resolved manually. |
+
+### Errors
+
+- A metric of `""` (for string values) or `-1` (for numeric values) indicates an error occurred while querying the metric - check the API logs for details.
+- If no response or an error response is received the the instance is unreachable. Thus, this API can be used as an uptime monitoring endpoint.
 
 # Upgrades
 
