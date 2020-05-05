@@ -237,9 +237,8 @@ const addMessagesToDoc = (doc, config, registrations) => {
 };
 
 const handleReport = (doc, config, callback) => {
-  const subjectIds = utils.getSubjectIds(doc.patient);
   utils
-    .getReportsBySubject({ ids: subjectIds, registrations: true })
+    .getReportsBySubject({ ids: utils.getSubjectIds(doc.patient), registrations: true })
     .then(registrations => {
       addMessagesToDoc(doc, config, registrations);
       addRegistrationToDoc(doc, registrations);

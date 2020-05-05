@@ -234,7 +234,6 @@ const triggers = {
       subjectIds.push(caseId);
     }
 
-    // TODO does this even work for cases?
     return utils.getReportsBySubject({ ids: subjectIds, registrations: true })
       .then(registrations => new Promise((resolve, reject) => {
         acceptPatientReports.silenceRegistrations(
