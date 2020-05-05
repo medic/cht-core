@@ -15,6 +15,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $state,
     $stateParams,
     $timeout,
+    Changes,
     GlobalActions,
     LineageModelGenerator,
     MessageContacts,
@@ -33,24 +34,23 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       return {
         currentTab: Selectors.getCurrentTab(state),
         loadingContent: Selectors.getLoadingContent(state),
-        selectedMessage: Selectors.getSelectedMessage(state)
+        selectedConversation: Selectors.getSelectedConversation(state)
       };
     };
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);
       const messagesActions = MessagesActions(dispatch);
       return {
-        addSelectedMessage: messagesActions.addSelectedMessage,
         deleteDoc: globalActions.deleteDoc,
         markSelectedConversationRead: messagesActions.markSelectedConversationRead,
         unsetSelected: globalActions.unsetSelected,
-        removeSelectedMessage: messagesActions.removeSelectedMessage,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingShowContent: globalActions.setLoadingShowContent,
         setMessagesError: messagesActions.setMessagesError,
         setSelected: messagesActions.setSelected,
         setTitle: globalActions.setTitle,
-        updateSelectedMessage: messagesActions.updateSelectedMessage
+        updateSelectedConversation: messagesActions.updateSelectedConversation,
+        removeMessageFromSelectedConversation: messagesActions.removeMessageFromSelectedConversation,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -98,7 +98,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
 
     const markConversationReadIfNeeded = () => {
-      const hasUnreadDoc = ctrl.selectedMessage.messages.some(message => {
+      const hasUnreadDoc = ctrl.selectedConversation.messages.some(message => {
         return !message.read && message.doc;
       });
       if (hasUnreadDoc) {
@@ -113,29 +113,24 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         ctrl.unsetSelected();
         return;
       }
+
       $('.message-content-wrapper').off('scroll', checkScroll);
       ctrl.setSelected({ id: id, messages: [] });
       ctrl.setLoadingShowContent(id);
 
-      return $q.all([
-        getContactable(id, type),
-        MessageContacts.conversation(id)
-      ])
-        .then(function(results) {
-          let contactModel = results[0];
-          const conversation = results[1];
-          if (!contactModel) {
-            const firstTaskWithContact = conversation[0].doc.tasks.find(
-              function(task) {
-                const message = task.messages && task.messages[0];
-                return message && message.contact && message.contact._id === id;
-              }
-            );
-            const firstMessageWithContact = firstTaskWithContact.messages.find(
-              function(message) {
-                return message.contact._id === id;
-              }
-            );
+      return $q
+        .all([
+          getContactable(id, type),
+          MessageContacts.conversation(id)
+        ])
+        .then(([contactModel, conversation]) => {
+          if (!contactModel && conversation.length) {
+            const firstTaskWithContact = conversation[0].doc.tasks.find((task) => {
+              const message = task.messages && task.messages[0];
+              return message && message.contact && message.contact._id === id;
+            });
+
+            const firstMessageWithContact = firstTaskWithContact.messages.find(message => message.contact._id === id);
             contactModel = {
               doc: {
                 name: '',
@@ -143,7 +138,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
               }
             };
           }
-          if (ctrl.selectedMessage && ctrl.selectedMessage.id !== id) {
+
+          if (ctrl.selectedConversation && ctrl.selectedConversation.id !== id) {
             // ignore response for previous request
             return;
           }
@@ -152,8 +148,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           ctrl.setMessagesError(false);
           const unread = conversation.filter(message => !message.read);
           ctrl.firstUnread = _.minBy(unread, message => message.doc.reported_date);
-          ctrl.updateSelectedMessage({ contact: contactModel, messages: conversation });
-          ctrl.setTitle((contactModel.doc && contactModel.doc.name) || id);
+          ctrl.updateSelectedConversation({ contact: contactModel, messages: conversation });
+          ctrl.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
           markConversationReadIfNeeded();
           $timeout(scrollToUnread);
         })
@@ -165,64 +161,67 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
 
     const updateConversation = (options={}) => {
-      const selectedId = ctrl.selectedMessage && ctrl.selectedMessage.id;
-      if (selectedId) {
-        const skip = options.skip && ctrl.selectedMessage.messages.length;
-        if (skip) {
-          $timeout(function() {
-            ctrl.loadingMoreContent = true;
-          });
-        }
-
-        MessageContacts.conversation(selectedId, skip)
-          .then(function(conversation) {
-            ctrl.loadingMoreContent = false;
-            const contentElem = $('.message-content-wrapper');
-            let scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
-            const first = $('.item-content .body > ul > li').filter(':first');
-            conversation.forEach(function(updated) {
-              const match = _.find(ctrl.selectedMessage.messages, { id: updated.id });
-              if (match) {
-                angular.extend(match, updated);
-              } else {
-                ctrl.addSelectedMessage(updated);
-                if (updated.doc.sent_by === userCtx.name) {
-                  scrollToBottom = true;
-                }
-              }
-            });
-            if (options.skip) {
-              ctrl.allLoaded = conversation.length < 50;
-              delete ctrl.firstUnread;
-            }
-            markConversationReadIfNeeded();
-            $timeout(function() {
-              let scroll = false;
-              if (options.skip) {
-                const spinnerHeight = 102;
-                scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
-              } else if (first.length && scrollToBottom) {
-                scroll = $('.message-content-wrapper')[0].scrollHeight;
-              }
-              if (scroll) {
-                $('.message-content-wrapper').scrollTop(scroll);
-              }
-            });
-          })
-          .catch(err => $log.error('Error fetching contact conversation', err));
+      const selectedId = ctrl.selectedConversation && ctrl.selectedConversation.id;
+      if (!selectedId) {
+        return;
       }
+
+      if (options.change && options.change.deleted) {
+        return ctrl.removeMessageFromSelectedConversation(options.change.id);
+      }
+
+      const skip = options.skip && ctrl.selectedConversation.messages.length;
+      const limit = !options.skip && ctrl.selectedConversation.messages.length;
+
+      if (skip) {
+        $timeout(() => ctrl.loadingMoreContent = true);
+      }
+
+      return MessageContacts
+        .conversation(selectedId, skip, limit)
+        .then((conversation) => {
+          ctrl.loadingMoreContent = false;
+
+          const newMessageFromUser = conversation.find(message => (
+            message.doc.sent_by === userCtx.name &&
+            !ctrl.selectedConversation.messages.find(existent => existent.id === message.id)
+          ));
+
+          ctrl.updateSelectedConversation({ messages: conversation });
+
+          if (options.skip) {
+            ctrl.allLoaded = conversation.length < MessageContacts.minLimit;
+            delete ctrl.firstUnread;
+          }
+
+          const first = $('.item-content .body #message-content ul > li').filter(':first');
+          markConversationReadIfNeeded();
+          $timeout(function() {
+            let scroll = false;
+            if (options.skip) {
+              const spinnerHeight = 102;
+              scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
+            } else if (first.length && newMessageFromUser) {
+              scroll = $('.message-content-wrapper')[0].scrollHeight;
+            }
+            if (scroll) {
+              $('.message-content-wrapper').scrollTop(scroll);
+            }
+          });
+        })
+        .catch(err => $log.error('Error fetching contact conversation', err));
     };
 
     ctrl.sendMessage = () => {
-      if (!ctrl.selectedMessage) {
+      if (!ctrl.selectedConversation) {
         $log.error('Error sending message', new Error('No facility selected'));
         return;
       }
-      let recipient;
-      if (ctrl.selectedMessage.contact.doc) { // known contact
-        recipient = { doc: ctrl.selectedMessage.contact.doc };
+      const recipient = {};
+      if (ctrl.selectedConversation.contact.doc) { // known contact
+        recipient.doc = ctrl.selectedConversation.contact.doc;
       } else { // unknown sender
-        recipient = { doc: { contact: { phone: ctrl.selectedMessage.id } } };
+        recipient.doc = { contact: { phone: ctrl.selectedConversation.id } };
       }
       SendMessage(recipient, ctrl.send.message)
         .then(() => {
@@ -239,20 +238,31 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         controller: 'SendMessageCtrl',
         controllerAs: 'sendMessageCtrl',
         model: {
-          to: ctrl.selectedMessage.id,
+          to: ctrl.selectedConversation.id,
           message: ctrl.send.message
         }
       });
       ctrl.send.message = '';
     };
 
+    const changeListener = Changes({
+      key: 'messages-content',
+      callback: change => updateConversation({ change }),
+      filter: change => (
+        ctrl.currentTab === 'messages' &&
+        MessageContacts.isRelevantChange(change, ctrl.selectedConversation)
+      ),
+    });
+
     $scope.$on('$destroy', function() {
       unsubscribe();
+      changeListener.unsubscribe();
       if (!$state.includes('messages.detail')) {
         $('body').off('focus', '#message-footer textarea');
         $('body').off('blur', '#message-footer textarea');
       }
     });
+
 
     $('.tooltip').remove();
 

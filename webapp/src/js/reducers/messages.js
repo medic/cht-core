@@ -1,4 +1,3 @@
-const merge = require('lodash/merge');
 const actionTypes = require('../actions/actionTypes');
 const initialState = {
   error: false,
@@ -11,15 +10,9 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
-  case actionTypes.ADD_SELECTED_MESSAGE:
-    return Object.assign({}, state, {
-      selected: Object.assign({}, state.selected, {
-        messages: state.selected.messages.concat(action.payload.message)
-      })
-    });
   case actionTypes.CLEAR_SELECTED:
     return Object.assign({}, state, { selected: null });
-  case actionTypes.REMOVE_SELECTED_MESSAGE: {
+  case actionTypes.REMOVE_MESSAGE_FROM_SELECTED_CONVERSATION: {
     const filteredMessages = state.selected.messages.filter(message => message.id !== action.payload.id);
     return Object.assign({}, state, {
       selected: Object.assign({}, state.selected, { messages: filteredMessages })
@@ -27,12 +20,27 @@ module.exports = function(state, action) {
   }
   case actionTypes.SET_MESSAGES_ERROR:
     return Object.assign({}, state, { error: action.payload.error });
-  case actionTypes.SET_SELECTED_MESSAGE:
+  case actionTypes.SET_SELECTED_CONVERSATION:
     return Object.assign({}, state, { selected: action.payload.selected });
-  case actionTypes.UPDATE_SELECTED_MESSAGE:
+  case actionTypes.UPDATE_SELECTED_CONVERSATION: {
+    const mergedMessages = {};
+    if (action.payload.selected && action.payload.selected.messages) {
+      mergedMessages.messages = [...((state.selected && state.selected.messages) || [])];
+      action.payload.selected.messages.forEach(updated => {
+        const index = mergedMessages.messages.findIndex(existent => updated.id === existent.id);
+        if (index > -1) {
+          // overwrite updated messages
+          mergedMessages.messages[index] = Object.assign({}, updated);
+        } else {
+          mergedMessages.messages.push(Object.assign({}, updated));
+        }
+      });
+    }
+
     return Object.assign({}, state, {
-      selected: merge({}, state.selected, action.payload.selected)
+      selected: Object.assign({}, state.selected, action.payload.selected, mergedMessages)
     });
+  }
   case actionTypes.SET_CONVERSATIONS:
     return Object.assign({}, state, { conversations: action.payload.conversations });
   case actionTypes.MARK_SELECTED_CONVERSATION_READ: {
