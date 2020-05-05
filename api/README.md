@@ -51,6 +51,9 @@ Node server to support the medic app.
   - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
 - [Upgrades](#upgrades)
   - [Example](#example)
+- [Hydrate](#hydrate)
+  - [Example GET](#get-apiv1hydrate)
+  - [Example POST](#post-apiv1hydrate)  
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1165,3 +1168,69 @@ You know that an upgrade has been staged when the `horti-upgrade` document in Co
 ## POST /api/v1/upgrade/complete
 
 Completes a staged upgrade. Throws a `404` if there is no upgrade in the staged position.
+
+# Hydrate
+
+Accepts a JSON array of document uuids and returns fully hydrated documents, in the same order in which they were requested. 
+When documents are not found, an entry with the missing uuid and an error is added instead.  
+Supports both GET and POST. 
+Only allowed for users with "online" roles. 
+
+## GET api/v1/hydrate
+
+#### Query parameters
+
+| Name | Required | Description |   
+| -----  | -------- | ------ | 
+| doc_ids | true | A JSON array of document uuids | 
+
+
+#### Example
+
+```
+GET /api/v1/hydrate?doc_ids=["id1","missingId","id3"]
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  { "id": "id1", "doc": { <...the hydrated document...> } },
+  { "id": "missingId1", "error": "not_found" },
+  { "id": "id3", "doc": { <...the hydrated document...> } },
+]
+```
+
+
+## POST api/v1/hydrate
+
+#### Parameters
+
+| Name | Required | Description |   
+| -----  | -------- | ------ | 
+| doc_ids | true | A JSON array of document uuids | 
+
+
+#### Example
+
+```
+POST /api/v1/hydrate
+Content-Type: application/json
+
+{
+  "doc_ids": ["id1","missingId","id3"]
+}
+
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  { "id": "id1", "doc": { <...the hydrated document...> } },
+  { "id": "missingId", "error": "not_found" },
+  { "id": "id3", "doc": { <...the hydrated document...> } },
+]
+```

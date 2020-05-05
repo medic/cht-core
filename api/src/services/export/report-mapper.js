@@ -37,11 +37,7 @@ const flatten = (fields, prepend=[]) => {
 };
 
 module.exports = {
-  getDocs: ids => {
-    return db.medic.allDocs({ keys: ids, include_docs: true })
-      .then(result => result.rows.map(row => row.doc))
-      .then(lineage.hydrateDocs);
-  },
+  getDocs: ids => lineage.fetchHydratedDocs(ids),
   getDocIds: (options, filters) => {
     return search('reports', filters, options).then(results => results.docIds);
   },
