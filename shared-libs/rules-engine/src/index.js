@@ -81,5 +81,11 @@ module.exports = db => {
         rulesEmitter.initialize(settings);
       }
     },
+
+    /**
+     * Returns a list of UUIDs of tracked contacts that are marked as dirty
+     * @returns {Array} list of dirty contacts UUIDs
+     */
+    getDirtyContacts: () => rulesStateStore.getDirtyContacts(),
   };
 };

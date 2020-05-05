@@ -1,6 +1,7 @@
 angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
   $log,
-  RulesEngine
+  RulesEngine,
+  Telemetry
 ) {
 
   'use strict';
@@ -11,6 +12,10 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
   ctrl.targets = [];
   ctrl.loading = true;
   ctrl.targetsDisabled = false;
+
+  const telemetryData = {
+    start: Date.now(),
+  };
 
   RulesEngine
     .isEnabled()
@@ -25,6 +30,9 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
     .then(targets => {
       ctrl.loading = false;
       ctrl.targets = targets.filter(target => target.visible !== false);
+
+      telemetryData.end = Date.now();
+      Telemetry.record(`analytics:targets:load`, telemetryData.end - telemetryData.start);
     });
 }
 );
