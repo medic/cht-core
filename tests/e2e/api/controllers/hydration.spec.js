@@ -180,7 +180,7 @@ describe('Hydration API', () => {
   beforeEach(() => {
     offlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'offline', password }, };
     onlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'online', password }, };
-    noAuthRequestOptions = { path: '/api/v1/hydrate', noAuth: true };
+    noAuthRequestOptions = { path: '/api/v1/hydrate', headers: { 'Accept': 'application/json' }, noAuth: true };
   });
 
   describe('it should block unauthenticated requests', () => {

@@ -5,7 +5,7 @@ const isClientHuman = require('./is-client-human');
 const logger = require('./logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
-const wantsJSON = req => req.get('Accept') === 'application/json' || req.wantsJson;
+const wantsJSON = req => req.get('Accept') === 'application/json';
 
 const writeJSON = (res, code, error, details) => {
   res.status(code);
