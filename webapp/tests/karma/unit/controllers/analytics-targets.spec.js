@@ -6,6 +6,7 @@ describe('AnalyticsTargetsCtrl controller', function() {
 
   let rulesEngine;
   let $rootScope;
+  let telemetry;
   let scope;
 
   beforeEach(() => {
@@ -18,6 +19,7 @@ describe('AnalyticsTargetsCtrl controller', function() {
       isEnabled: sinon.stub(),
       fetchTargets: sinon.stub(),
     };
+    telemetry = { record: sinon.stub() };
 
     scope = $rootScope.$new();
 
@@ -26,6 +28,7 @@ describe('AnalyticsTargetsCtrl controller', function() {
         '$scope': scope,
         '$rootScope': $rootScope,
         'RulesEngine': rulesEngine,
+        'Telemetry': telemetry,
       });
     };
   }));
@@ -54,6 +57,8 @@ describe('AnalyticsTargetsCtrl controller', function() {
       chai.expect(ctrl.targets).to.deep.equal([]);
       chai.expect(ctrl.loading).to.equal(false);
       chai.expect(ctrl.targetsDisabled).to.equal(true);
+      chai.expect(telemetry.record.callCount).to.equal(1);
+      chai.expect(telemetry.record.args[0][0]).to.equal('analytics:targets:load');
     });
   });
 
@@ -67,6 +72,8 @@ describe('AnalyticsTargetsCtrl controller', function() {
       chai.expect(ctrl.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
       chai.expect(ctrl.loading).to.equal(false);
       chai.expect(ctrl.targetsDisabled).to.equal(false);
+      chai.expect(telemetry.record.callCount).to.equal(1);
+      chai.expect(telemetry.record.args[0][0]).to.equal('analytics:targets:load');
     });
   });
 
