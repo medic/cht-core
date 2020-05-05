@@ -1138,12 +1138,6 @@ Used to retrieve a range of metrics about the instance. While the output is huma
 
 No permissions required.
 
-### Parameters
-
-| Parameter | Description                                 |
-| --------- | ------------------------------------------- |
-| format    | The desired format of the output, defaults to JSON. The only currently supported value is "openmetrics" which is compatible with the Prometheus monitoring application. |
-
 ### Examples
 
 #### JSON format
@@ -1154,43 +1148,27 @@ curl http://localhost:5988/api/v1/monitoring
 {"version":{"app":"3.9.0","node":"v10.16.0","couchdb":"2.3.1"},"couchdb":{"medic":{"name":"medic","update_sequence":5733,"doc_count":278,"doc_del_count":32,"fragmentation":1.0283517758420173}...
 ```
 
-#### OpenMetrics format
-
-```
-GET /api/v1/monitoring?format=openmetrics
-
-# HELP couchdb_medic_doc_count The number of docs in the medic db
-# TYPE couchdb_medic_doc_count gauge
-couchdb_medic_doc_count 278
-
-# HELP couchdb_medic_doc_del_count The number of deleted docs in the medic db
-# TYPE couchdb_medic_doc_del_count gauge
-couchdb_medic_doc_del_count 32
-
-...
-```
-
 ### Response content
 
-| JSON path | OpenMetrics label | Type | Description |
+| JSON path | Type | Description |
 | --------- | ----------------- | ---- | ----------- |
-| `version.app` | _not included_ | String | The version of the webapp. |
-| `version.node` | _not included_ | String | The version of NodeJS. |
-| `version.couchdb` | _not included_ | String | The version of CouchDB. |
-| `couchdb.<dbname>.name` | _not included_ | String | The name of the db, usually one of "medic", "medic-sentinel", "medic-users-meta", "_users". |
-| `couchdb.<dbname>.update_sequence` | `couchdb_<dbname>_update_seq` | Number | The number of changes in the db. |
-| `couchdb.<dbname>.doc_count` | `couchdb_<dbname>_doc_count` | Number | The number of docs in the db. |
-| `couchdb.<dbname>.doc_del_count` | `couchdb_<dbname>_doc_del_count` | Number | The number of deleted docs in the db. |
-| `couchdb.<dbname>.fragmentation` | `couchdb_<dbname>_fragmentation` | Number | The fragmentation of the db, lower is better, "1" is no fragmentation. |
-| `date.current` | _not included_ | Number | The current server date in millis since the epoch, useful for ensuring the server time is correct. |
-| `date.uptime` | _not included_ | Number | How long API has been running. |
-| `sentinel.backlog` | `sentinel_backlog` | Number | Number of changes yet to be processed by Sentinel. |
-| `messaging.outgoing.due` | `messaging_outgoing{state="due"}` | Number | The number of messages due to be sent. |
-| `messaging.outgoing.scheduled` | `messaging_outgoing{state="scheduled"}` | Number | The number of messages scheduled to be sent in the future. |
-| `messaging.outgoing.muted` | `messaging_outgoing{state="muted"}` | Number | The number of messages that are muted and therefore will not be sent. |
-| `outbound_push.backlog` | `outbound_push_backlog` | Number | Number of changes yet to be processed by Outbound Push. |
-| `feedback.count` | `feedback_doc` | Number | Number of feedback docs created usually indicative of client side errors. |
-| `conflict.count` | `conflicts` | Number | Number of doc conflicts which need to be resolved manually. |
+| `version.app` | String | The version of the webapp. |
+| `version.node` | String | The version of NodeJS. |
+| `version.couchdb` | String | The version of CouchDB. |
+| `couchdb.<dbname>.name` | String | The name of the db, usually one of "medic", "medic-sentinel", "medic-users-meta", "_users". |
+| `couchdb.<dbname>.update_sequence` | Number | The number of changes in the db. |
+| `couchdb.<dbname>.doc_count` | Number | The number of docs in the db. |
+| `couchdb.<dbname>.doc_del_count` | Number | The number of deleted docs in the db. |
+| `couchdb.<dbname>.fragmentation` |  Number | The fragmentation of the db, lower is better, "1" is no fragmentation. |
+| `date.current` | Number | The current server date in millis since the epoch, useful for ensuring the server time is correct. |
+| `date.uptime` | Number | How long API has been running. |
+| `sentinel.backlog` | Number | Number of changes yet to be processed by Sentinel. |
+| `messaging.outgoing.due` | Number | The number of messages due to be sent. |
+| `messaging.outgoing.scheduled` | Number | The number of messages scheduled to be sent in the future. |
+| `messaging.outgoing.muted` | Number | The number of messages that are muted and therefore will not be sent. |
+| `outbound_push.backlog` | Number | Number of changes yet to be processed by Outbound Push. |
+| `feedback.count` | Number | Number of feedback docs created usually indicative of client side errors. |
+| `conflict.count` | Number | Number of doc conflicts which need to be resolved manually. |
 
 ### Errors
 

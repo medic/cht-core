@@ -42,31 +42,4 @@ describe('Monitoring controller', () => {
 
   });
 
-  describe('OpenMetrics', () => {
-
-    beforeEach(() => {
-      req = { query: { format: 'openmetrics' } };
-      res = { end: sinon.stub() };
-    });
-
-    it('returns successfully', () => {
-      sinon.stub(service, 'openMetrics').resolves('abc');
-      return controller.get(req, res).then(() => {
-        chai.expect(res.end.callCount).to.equal(1);
-        chai.expect(res.end.args[0][0]).to.equal('abc');
-      });
-    });
-
-    it('handles promise rejection gracefully', () => {
-      sinon.stub(service, 'openMetrics').rejects(new Error('something missing'));
-      sinon.stub(serverUtils, 'error').returns();
-      return controller.get(req, res).then(() => {
-        chai.expect(serverUtils.error.callCount).to.equal(1);
-        chai.expect(res.end.callCount).to.equal(0);
-      });
-    });
-
-  });
-
 });
-
