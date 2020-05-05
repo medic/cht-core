@@ -101,7 +101,7 @@ const putIdLengthDoc = (db, idLengthDoc) => {
  */
 const findUnusedIds = (db, keys) => {
   return db.medic
-    .query('medic-client/docs_by_shortcode', { keys })
+    .query('medic/docs_by_shortcode', { keys })
     .then(results => {
       const uniqueIds = new Set(keys);
       results.rows.forEach(row => {
