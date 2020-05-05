@@ -56,12 +56,12 @@
           </a>
           <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-if="actionBarCtrl.actionBar.left.childPlaces.length > 1" mm-auth="can_create_places">
             <li ng-repeat="child in actionBarCtrl.actionBar.left.childPlaces | orderBy: 'id' track by child.id">
-              <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.addChild({ type: child.id, parent_id: actionBarCtrl.actionBar.left.userFacilityId, from: 'list' })">
+              <a ui-sref="contacts.addChild({ type: child.id, parent_id: actionBarCtrl.actionBar.left.userFacilityId, from: 'list' })">
                 <span class="fa-stack">
                   <i ng-bind-html="child.icon | resourceIcon"></i>
                   <i class="fa fa-plus fa-stack-1x"></i>
                 </span>
-                <p translate>{{child.create_key}}</p>
+                <span class="content" translate>{{child.create_key}}</span>
               </a>
             </li>
           </ul>
@@ -171,12 +171,12 @@
             </a>
             <ul class="dropdown-menu mm-dropdown-menu with-icon" ng-if="group.types.length > 1">
               <li ng-repeat="type in group.types | orderBy: 'id' track by type.id">
-                <a class="mm-icon mm-icon-caption" ui-sref="contacts.addChild({ type: type.id, parent_id: actionBarCtrl.selectedContactDoc._id })">
+                <a ui-sref="contacts.addChild({ type: type.id, parent_id: actionBarCtrl.selectedContactDoc._id })">
                   <span class="fa-stack">
                     <i ng-bind-html="type.icon | resourceIcon"></i>
                     <i class="fa fa-plus fa-stack-1x"></i>
                   </span>
-                  <p translate>{{type.create_key}}</p>
+                  <span class="content" translate>{{type.create_key}}</span>
                 </a>
               </li>
             </ul>
