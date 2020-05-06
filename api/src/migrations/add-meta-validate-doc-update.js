@@ -1,15 +1,25 @@
 const db = require('../db');
 const userDb = require('../services/user-db');
 
-const migradeDb = (dbName) => {
+const validateDocUpdate = userDb.validateDocUpdate.toString();
+
+const migrateDb = (dbName) => {
   const metaDb = db.get(dbName);
   return metaDb
     .get('_design/medic-user')
     .then(ddoc => {
-      ddoc.validate_doc_update = userDb.validateDocUpdate.toString();
+      if (ddoc.validate_doc_update && ddoc.validate_doc_update === validateDocUpdate) {
+        return;
+      }
+
+      ddoc.validate_doc_update = validateDocUpdate;
       return metaDb.put(ddoc);
     })
+    .then(() => {
+      db.close(metaDb);
+    })
     .catch(err => {
+      db.close(metaDb);
       if (err.status !== 404) {
         throw err;
       }
@@ -23,7 +33,7 @@ module.exports = {
     return db.allDbs().then(dbs => {
       return dbs
         .filter(dbName => userDb.isDbName(dbName))
-        .reduce((promise, dbName) => promise.then(() => migradeDb(dbName)), Promise.resolve());
+        .reduce((promise, dbName) => promise.then(() => migrateDb(dbName)), Promise.resolve());
     });
   },
 };
