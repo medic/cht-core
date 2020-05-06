@@ -4,7 +4,7 @@ const db = require('../db');
 const logger = require('../lib/logger');
 const rpn = require('request-promise-native');
 
-const ONE_TIME_PURGE_LOCAL_DOC_ID = '_local/one_time_purge';
+const PURGE_LOG_ID = '_local/purge_log';
 // default CouchDB purge max_document_id_number
 // https://docs.couchdb.org/en/master/cluster/purging.html#config-settings
 const BATCH_SIZE = 100;
@@ -43,13 +43,13 @@ function getSchedule(config) {
   }
 }
 
-const purgeDocs = (sourceDb, docs) => {
-  if (!docs || !docs.length) {
+const purgeDocs = (sourceDb, changes) => {
+  if (!changes || !changes.length) {
     return Promise.resolve();
   }
 
   const docsToPurge = {};
-  docs.forEach(doc => docsToPurge[doc._id] = [doc._rev]);
+  changes.forEach(change => docsToPurge[change.id] = [change.changes[0].rev]);
 
   return sourceDb
     .info()
@@ -64,30 +64,29 @@ const purgeDocs = (sourceDb, docs) => {
     });
 };
 
-const getHasRunOneTimePurge = (sourceDb) => {
+const purgeFeedback = (sourceDb, targetDb) => {
+  return sourceDb.info().then(info => {
+    return getPurgeLog(sourceDb).then(purgeLog => {
+      return batchedPurge(sourceDb, targetDb, purgeLog.seq)
+        .then(() => {
+          purgeLog.seq = info.update_seq;
+          return sourceDb.put(purgeLog);
+        });
+    });
+  });
+};
+
+const getPurgeLog = (sourceDb) => {
   return sourceDb
-    .get(ONE_TIME_PURGE_LOCAL_DOC_ID)
-    .then(() => true)
+    .get(PURGE_LOG_ID)
     .catch(err => {
       if (err.status === 404) {
-        return false;
+        return {
+          _id: PURGE_LOG_ID,
+          seq: 0,
+        };
       }
       throw err;
-    });
-};
-
-const oneTimePurgeRan = (sourceDb) => {
-  return sourceDb.put({ _id: ONE_TIME_PURGE_LOCAL_DOC_ID });
-};
-
-const oneTimePurge = (sourceDb, targetDb) => {
-  return getHasRunOneTimePurge(sourceDb)
-    .then(hasRunOneTimePurge => {
-      if (hasRunOneTimePurge) {
-        return;
-      }
-
-      return batchedPurge(sourceDb, targetDb).then(() => oneTimePurgeRan(sourceDb));
     });
 };
 
@@ -106,23 +105,29 @@ const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
     return targetDb.changes({ doc_ids: ids }).then(result => result.results.map(change => change.id));
   };
 
-  return sourceDb.changes(opts).then(result => {
-    if (!result.results.length) {
-      return;
-    }
+  return sourceDb
+    .changes(opts)
+    .then(result => {
+      if (!result.results.length) {
+        return;
+      }
 
-    const idsToPurge = result.results
-      .filter(change => !change.deleted && isTelemetryOrFeedback(change.id))
-      .map(change => change.id);
+      const idsToPurge = result.results
+        .filter(change => !change.deleted && isTelemetryOrFeedback(change.id))
+        .map(change => change.id);
 
-    return getReplicatedIds(targetDb, idsToPurge).then(idsSafeToPurge => {
-      const docsToPurge = result.results
-        .filter(change => idsSafeToPurge.includes(change.id))
-        .map(change => ({ _id: change.id, _rev: change.changes[0].rev }));
+      if (!idsToPurge) {
+        return result.last_seq;
+      }
 
-      return purgeDocs(sourceDb, docsToPurge).then(() => batchedPurge(sourceDb, targetDb, result.last_seq));
-    });
-  });
+      return getReplicatedIds(targetDb, idsToPurge)
+        .then(idsSafeToPurge => {
+          const docsToPurge = result.results.filter(change => idsSafeToPurge.includes(change.id));
+          return purgeDocs(sourceDb, docsToPurge);
+        })
+        .then(() => result.last_seq);
+    })
+    .then(nextSeq => nextSeq && batchedPurge(sourceDb, targetDb, nextSeq));
 };
 
 const isTelemetryOrFeedback = (docId) => docId.startsWith('telemetry-') || docId.startsWith('feedback-');
@@ -133,12 +138,7 @@ function replicateDb(sourceDb, targetDb) {
     .to(targetDb, {
       filter: doc => !doc._deleted && isTelemetryOrFeedback(doc._id),
     })
-    .on('change', changes => {
-      return purgeDocs(sourceDb, changes.docs);
-    })
-    .then(() => {
-      return oneTimePurge(sourceDb, targetDb);
-    });
+    .then(() => purgeFeedback(sourceDb, targetDb));
 }
 
 module.exports = {
