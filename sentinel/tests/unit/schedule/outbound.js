@@ -211,6 +211,7 @@ describe('outbound schedule', () => {
     let sentinelPut;
     let sentinelGet;
     let send;
+    let alreadySent;
 
     const restores = [];
 
@@ -224,7 +225,8 @@ describe('outbound schedule', () => {
       restores.push(outbound.__set__('mapDocumentToPayload', mapDocumentToPayload));
 
       send = sinon.stub();
-      restores.push(outbound.__set__('outbound', { send: send }));
+      alreadySent = sinon.stub();
+      restores.push(outbound.__set__('outbound', { send: send, alreadySent: alreadySent }));
 
       sentinelPut = sinon.stub(db.sentinel, 'put');
       sentinelGet = sinon.stub(db.sentinel, 'get');
@@ -253,6 +255,7 @@ describe('outbound schedule', () => {
       };
 
       mapDocumentToPayload.returns({map: 'called'});
+      alreadySent.returns(false);
       send.resolves();
       sentinelPut.onFirstCall().resolves({rev: '1-abc'});
       sentinelPut.resolves();
@@ -320,6 +323,45 @@ describe('outbound schedule', () => {
           assert.equal(task._deleted, true);
           assert.equal(task._rev, '1-abc');
           assert.equal(send.callCount, 0);
+        });
+    });
+
+    it('should remove queue entries that refer to already sent config items', () => {
+      const config = {
+        some: 'config'
+      };
+
+      const task = {
+        _id: 'task:outbound:test-doc-1',
+        doc_id: 'test-doc-1',
+        queue: ['test-push-1']
+      };
+
+      const doc = {
+        _id: 'test-doc-1', some: 'data-1'
+      };
+
+      const infoDoc = {
+        _id: 'test-doc-1-info',
+        type: 'info',
+        completed_tasks: [{
+          type: 'outbound',
+          key: 'test-push-1'
+        }]
+      };
+
+      mapDocumentToPayload.returns({map: 'called'});
+      alreadySent.returns(true);
+      send.resolves();
+      sentinelPut.onFirstCall().resolves({rev: '1-abc'});
+      sentinelPut.resolves();
+
+      return outbound.__get__('singlePush')(task, doc, infoDoc, config, 'some')
+        .then(() => {
+          assert.equal(task._deleted, true);
+          assert.equal(task._rev, '1-abc');
+          assert.equal(send.callCount, 0);
+          assert.equal(sentinelPut.callCount, 1);
         });
     });
 

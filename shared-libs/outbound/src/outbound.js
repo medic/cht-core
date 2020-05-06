@@ -211,6 +211,21 @@ module.exports = theLogger => {
           logger.error(`Failed to push ${record._id} to ${configName}: %o`, err);
           throw err;
         });
+    },
+
+    /**
+     * Returns a boolean indicating if this combination of config and record has already been sent.
+     *
+     * @param      {<string>}  configName  key used for this config in our app-settings (for logging)
+     * @param      {<object>}  recordInfo  the couchdb record's info doc
+     * @return     {<boolean>} whether we think it's been sent out before
+     */
+    alreadySent: (configName, recordInfo) => {
+      // For now for simplicity we're going to say that a particular config should only be sent once
+      // It would be completely acceptable for this logic to change to be more flexible or correct
+      // in the future.
+      return recordInfo.completed_tasks &&
+             recordInfo.completed_tasks.find(t => t.type === 'outbound' && t.name === configName);
     }
   };
 };

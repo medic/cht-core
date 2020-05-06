@@ -21,15 +21,15 @@ const queuedTasks = () => {
     include_docs: true,
     limit: BATCH_SIZE,
   })
-    .then(results => {
-      const outboundTaskDocs = results.rows.map(r => r.doc);
+    .then(taskResults => {
+      const outboundTaskDocs = taskResults.rows.map(r => r.doc);
       const associatedDocIds = outboundTaskDocs.map(q => q.doc_id);
 
       return db.medic.allDocs({
         keys: associatedDocIds,
         include_docs: true
-      }).then(results => {
-        const { validTasks, invalidTasks } = results.rows.reduce((acc, r, idx) => {
+      }).then(docResults => {
+        const { validTasks, invalidTasks } = docResults.rows.reduce((acc, r, idx) => {
           const task = outboundTaskDocs[idx];
           if (r.doc) {
             acc.validTasks.push({
@@ -98,6 +98,12 @@ const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise.resolve(
       logger.warn(
         `Unable to push ${medicDoc._id} for ${key} because this outbound config no longer exists, clearing task`
       );
+      return removeConfigKeyFromTask(taskDoc, key);
+    }
+
+    if (outbound.alreadySent(key, infoDoc)) {
+      // Don't send "duplicate" outbound pushes
+      logger.debug(`Skipping ${medicDoc._id} for ${key} because we've pushed this combination before`);
       return removeConfigKeyFromTask(taskDoc, key);
     }
 

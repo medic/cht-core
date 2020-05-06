@@ -14,10 +14,11 @@ const outbound = require('@medic/outbound')(logger);
 
 const CONFIGURED_PUSHES = 'outbound';
 
-const relevantTo = doc => {
+const relevantTo = (doc, infodoc) => {
   const pushes = config.get(CONFIGURED_PUSHES) || {};
 
   return Object.keys(pushes)
+    .filter(key => !outbound.alreadySent(key, infodoc))
     .filter(key => {
       const conf = pushes[key];
       return conf.relevant_to && vm.runInNewContext(conf.relevant_to, {doc});
@@ -29,7 +30,7 @@ const markForOutbound = (change) => {
   // We're working out the relevant tasks to perform here and not in the exported filter function,
   // because there is no way to communicate between the filter and onMatch functions, and so because
   // we *have* to do it here nothing of value is added to also perform it in filter
-  const relevantConfigs = relevantTo(change.doc);
+  const relevantConfigs = relevantTo(change.doc, change.info);
 
   let p = Promise.resolve();
 

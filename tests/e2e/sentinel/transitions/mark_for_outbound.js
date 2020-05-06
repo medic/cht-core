@@ -122,6 +122,59 @@ describe('mark_for_outbound', () => {
         });
     });
 
+    it('correctly skips sending the same outbound multiple times', () => {
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            destination: {
+              base_url: `http://localhost:${server.address().port}`,
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              rev: 'doc._rev'
+            }
+          }
+        }
+      };
+
+      // First round
+      return utils
+        .updateSettings(config, true)
+        .then(() => utils.saveDoc(report))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          expect(tasks.length).to.equal(0);
+        })
+        .then(() => utils.getDoc(report._id))
+        .then(report => {
+          expect(brokenEndpointRequests.length).to.equal(0);
+          expect(workingEndpointRequests.length).to.equal(1);
+          expect(workingEndpointRequests[0]).to.deep.equal({
+            id: report._id,
+            rev: report._rev
+          });
+
+          // It worked, let's do it again
+          report.anotherChange = true;
+          return utils.saveDoc(report);
+        })
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          // And confirm that there are no new writes to the external service
+          expect(tasks.length).to.equal(0);
+          expect(brokenEndpointRequests.length).to.equal(0);
+          expect(workingEndpointRequests.length).to.equal(1);
+        });
+    });
+
     it('correctly creates a task if the immediate server request fails', () => {
       const report = makeReport();
       const config = {

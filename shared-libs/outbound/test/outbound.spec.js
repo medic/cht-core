@@ -12,7 +12,7 @@ describe('outbound shared library', () => {
   // so the logger gets attached
   const service = outbound({... console, isDebugEnabled: () => false});
 
-  describe('service', () => {
+  describe('send', () => {
     let restores;
     let mapDocumentToPayload;
     let sendPayload;
@@ -405,6 +405,38 @@ describe('outbound shared library', () => {
         .catch(err => {
           assert.equal(err.message, 'Got 404 when requesting auth');
         });
+    });
+  });
+
+  describe('alreadySent', () => {
+    it('returns false if this record has never been sent anywhere before', () => {
+      assert.isNotOk(service.alreadySent('foo', {_id: 'some-record-info'}));
+    });
+
+    it('returns false if this record has been sent outbound before, but not for this configuration', () => {
+      assert.isNotOk(service.alreadySent('foo', {
+        _id: 'some-record-info',
+        completed_tasks: [{
+          type: 'outbound',
+          name: 'bar',
+          timestamp: Date.now()
+        }]
+      }));
+    });
+
+    it('returns true if this record has been sent outbound before, for this configuration', () => {
+      assert.isOk(service.alreadySent('foo', {
+        _id: 'some-record-info',
+        completed_tasks: [{
+          type: 'outbound',
+          name: 'bar',
+          timestamp: Date.now()
+        }, {
+          type: 'outbound',
+          name: 'foo',
+          timestamp: Date.now()
+        }]
+      }));
     });
   });
 });
