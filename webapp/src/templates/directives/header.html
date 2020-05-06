@@ -38,7 +38,7 @@
           </li>
           <li role="presentation" mm-auth="can_view_contacts,!can_view_contacts_tab">
             <a role="menuitem" tabindex="-1" ui-sref="contacts.detail">
-              <i class="fa fa-fw fa-user"></i>
+              <i class="fa fa-fw fa-home"></i>
               <span translate>Contacts</span>
             </a>
           </li>
@@ -141,7 +141,7 @@
         <div class="button-label" translate>Reports</div>
       </a><a ui-sref="contacts.detail" id="contacts-tab" class="contacts-tab" ng-class="{'selected': headerCtrl.currentTab === 'contacts'}" mm-auth="can_view_contacts,can_view_contacts_tab">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== 'contacts'}">
-          <span class="fa fa-user"></span>
+          <span class="fa fa-home"></span>
         </div>
         <div class="button-label" translate>Contacts</div>
       </a><a ui-sref="analytics" ui-sref-opts="{reload: true}" id="analytics-tab" class="analytics-tab" ng-class="{'selected': headerCtrl.currentTab === 'analytics'}" mm-auth="can_view_analytics,can_view_analytics_tab">
