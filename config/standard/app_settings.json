@@ -61,6 +61,25 @@
   "schedule_evening_minutes": 0,
   "synthetic_date": "",
   "contact_display_short": "clinic.name",
+  "roles": {
+    "data_entry": {
+      "name": "usertype.data-entry"
+    },
+    "analytics": {
+      "name": "usertype.analytics"
+    },
+    "gateway": {
+      "name": "usertype.gateway"
+    },
+    "national_admin": {
+      "name": "usertype.national_admin",
+      "offline": true
+    },
+    "district_admin": {
+      "name": "usertype.district_admin",
+      "offline": true
+    }
+  },
   "permissions": {
     "can_export_messages": [
       "national_admin",
