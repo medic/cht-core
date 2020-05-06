@@ -123,7 +123,8 @@ angular.module('inboxServices').factory('ContactsActions',
       function loadSelectedContactReports() {
         return dispatch(function(dispatch, getState) {
           const selected = Selectors.getSelectedContact(getState());
-          return ContactViewModelGenerator.loadReports(selected).then(reports => {
+          const forms = Selectors.getForms(getState());
+          return ContactViewModelGenerator.loadReports(selected, forms).then(reports => {
             return dispatch(ActionUtils.createSingleValueAction(
               actionTypes.RECEIVE_SELECTED_CONTACT_REPORTS, 'reports', reports
             ));

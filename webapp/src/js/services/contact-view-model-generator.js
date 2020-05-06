@@ -246,10 +246,10 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    const getHeading = function(report) {
-      const caseId = report.case_id || (report.fields && report.fields.case_id);
-      if (caseId) {
-        return false;
+    const getHeading = function(report, forms) {
+      const form = _.find(forms, { code: report.form });
+      if (form && form.subjectKey) {
+        return $translate.instant(form.subjectKey, report);
       }
       if (report.validSubject && report.subject && report.subject.value) {
         return report.subject.value;
@@ -260,13 +260,13 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return $translate.instant('report.subject.unknown');
     };
 
-    const addHeading = function(reports) {
+    const addHeading = function(reports, forms) {
       const reportIds = _.map(reports, '_id');
       return GetDataRecords(reportIds).then(function(dataRecords) {
         dataRecords.forEach(function(dataRecord) {
           const report = reports.find(report => report._id === dataRecord._id);
           if (report) {
-            report.heading = getHeading(dataRecord);
+            report.heading = getHeading(dataRecord, forms);
           }
         });
         return reports;
@@ -287,7 +287,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       });
     };
 
-    const loadReports = function(model) {
+    const loadReports = function(model, forms) {
       const contacts = [ model.doc ];
       model.children.forEach(group => {
         if (group.type && group.type.person) {
@@ -295,7 +295,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         }
       });
       return getReports(contacts)
-        .then(addHeading)
+        .then(reports => addHeading(reports, forms))
         .then(function(reports) {
           addPatientName(reports, contacts);
           reports.sort(REPORTED_DATE_COMPARATOR);

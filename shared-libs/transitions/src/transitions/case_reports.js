@@ -24,26 +24,28 @@ const validate = (config, doc) => {
 // NB: this is very similar to a function in the registration transition, except
 //     they also allow for an empty event_type
 const messageRelevant = (msg, doc) => {
-  if (msg.event_type === 'report_accepted') {
-    const expr = msg.bool_expr;
-    if (utils.isNonEmptyString(expr)) {
-      return utils.evalExpression(expr, { doc });
-    }
-    return true;
+  if (msg.event_type !== 'report_accepted') {
+    return;
   }
+  const expr = msg.bool_expr;
+  if (utils.isNonEmptyString(expr)) {
+    return utils.evalExpression(expr, { doc });
+  }
+  return true;
 };
 
 const addMessagesToDoc = (doc, config, registrations) => {
-  if (config.messages) {
-    config.messages.forEach(msg => {
-      if (messageRelevant(msg, doc)) {
-        messages.addMessage(doc, msg, msg.recipient, {
-          patient: doc.patient,
-          registrations
-        });
-      }
-    });
+  if (!config.messages) {
+    return;
   }
+  config.messages.forEach(msg => {
+    if (messageRelevant(msg, doc)) {
+      messages.addMessage(doc, msg, msg.recipient, {
+        patient: doc.patient,
+        registrations
+      });
+    }
+  });
 };
 
 const getCaseRegistrations = doc => {

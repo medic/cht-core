@@ -150,7 +150,7 @@
                 route="'reports'"
                 icon="report | formIconName:contactsContentCtrl.forms"
                 date="report.reported_date"
-                heading="contactsContentCtrl.selectedContact.children.length && report.heading ? report.heading : (report | summary:contactsContentCtrl.forms)"
+                heading="contactsContentCtrl.selectedContact.children.length ? report.heading : (report | summary:contactsContentCtrl.forms)"
                 summary="contactsContentCtrl.selectedContact.children.length ? (report | summary:contactsContentCtrl.forms) : ''"
                 show-status="true"
                 valid="report.valid"
