@@ -64,14 +64,11 @@ const purgeDocs = (sourceDb, changes) => {
     });
 };
 
-const purgeFeedback = (sourceDb, targetDb) => {
-  return sourceDb.info().then(info => {
-    return getPurgeLog(sourceDb).then(purgeLog => {
-      return batchedPurge(sourceDb, targetDb, purgeLog.seq)
-        .then(() => {
-          purgeLog.seq = info.update_seq;
-          return sourceDb.put(purgeLog);
-        });
+const purgeFeedback = (sourceDb, info, targetDb) => {
+  return getPurgeLog(sourceDb).then(purgeLog => {
+    return batchedPurge(sourceDb, targetDb, purgeLog.seq).then(() => {
+      purgeLog.seq = info.update_seq;
+      return sourceDb.put(purgeLog);
     });
   });
 };
@@ -134,11 +131,13 @@ const isTelemetryOrFeedback = (docId) => docId.startsWith('telemetry-') || docId
 
 function replicateDb(sourceDb, targetDb) {
   // Replicate only telemetry and feedback docs
-  return sourceDb.replicate
-    .to(targetDb, {
-      filter: doc => !doc._deleted && isTelemetryOrFeedback(doc._id),
-    })
-    .then(() => purgeFeedback(sourceDb, targetDb));
+  return sourceDb.info().then(info => {
+    return sourceDb.replicate
+      .to(targetDb, {
+        filter: doc => !doc._deleted && isTelemetryOrFeedback(doc._id),
+      })
+      .then(() => purgeFeedback(sourceDb, info, targetDb));
+  });
 }
 
 module.exports = {
