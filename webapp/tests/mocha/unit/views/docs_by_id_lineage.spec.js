@@ -25,7 +25,6 @@ describe('docs_by_id_lineage view', () => {
       };
 
       const result = map(doc, true);
-      console.log(result);
       expect(result.length).to.equal(1);
       expect(result[0]).to.deep.equal({ key: [ 'report', 0 ], value: undefined });
     });

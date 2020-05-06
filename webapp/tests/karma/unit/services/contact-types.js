@@ -24,14 +24,14 @@ describe('ContactTypes service', () => {
   });
 
   describe('get', () => {
-    
+
     it('returns undefined when no config', () => {
       Settings.resolves({});
       return service.get('nothing').then(type => {
         chai.assert.isUndefined(type);
       });
     });
-   
+
     it('returns undefined when no match', () => {
       const types = [ { id: 'something' } ];
       Settings.resolves({ contact_types: types });
@@ -78,7 +78,7 @@ describe('ContactTypes service', () => {
   });
 
   describe('isHardcodedType', () => {
-    
+
     HARDCODED_TYPES.forEach(type => {
       it(`returns true for ${type}`, () => {
         chai.expect(service.isHardcodedType(type)).to.equal(true);
@@ -97,7 +97,7 @@ describe('ContactTypes service', () => {
 
 
   describe('includes', () => {
-    
+
     HARDCODED_TYPES.forEach(type => {
       it(`returns true for ${type}`, () => {
         chai.expect(service.includes({ type: type })).to.equal(true);
@@ -196,4 +196,31 @@ describe('ContactTypes service', () => {
 
   });
 
+  describe('getTypeId', () => {
+    it('should return the type id of the provided contact', () => {
+      chai.expect(service.getTypeId({ type: 'person' })).to.equal('person');
+      chai.expect(service.getTypeId({ type: 'clinic' })).to.equal('clinic');
+      chai.expect(service.getTypeId({ type: 'contact', contact_type: 'something' })).to.equal('something');
+    });
+
+    it('should not crash when provided invalid inputs', () => {
+      chai.expect(service.getTypeId()).to.equal(undefined);
+      chai.expect(service.getTypeId({})).to.equal(undefined);
+      chai.expect(service.getTypeId([])).to.equal(undefined);
+    });
+  });
+
+  describe('isPersonType', () => {
+    it('should return true when provided a person type', () => {
+      chai.expect(service.isPersonType({ id: 'person' })).to.equal(true);
+      chai.expect(service.isPersonType({ id: 'other', person: true })).to.equal(true);
+    });
+
+    it('should return falsy when not provided a person type', () => {
+      chai.expect(service.isPersonType()).to.equal(undefined);
+      chai.expect(service.isPersonType({})).to.equal(false);
+      chai.expect(service.isPersonType({ id: 'not_a_person' })).to.equal(false);
+      chai.expect(service.isPersonType({ id: 'other', person: false })).to.equal(false);
+    });
+  });
 });

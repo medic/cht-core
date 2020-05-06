@@ -18,6 +18,7 @@ describe('Contacts store', () => {
   let setTitle;
   let setRightActionBar;
   let translateFrom;
+  let targetAggregates;
 
   let contactsActions;
   let getState;
@@ -42,6 +43,7 @@ describe('Contacts store', () => {
     setTitle = sinon.stub();
     setRightActionBar = sinon.stub();
     translateFrom = sinon.stub();
+    targetAggregates = { getCurrentTargetDoc: sinon.stub() };
   });
 
   const setupStore = initialState => {
@@ -64,6 +66,7 @@ describe('Contacts store', () => {
       $provide.value('XmlForms', { listen });
       $provide.value('GlobalActions', () => ({ settingSelected, clearCancelCallback, setTitle, setRightActionBar }));
       $provide.value('TranslateFrom', translateFrom);
+      $provide.value('TargetAggregates', targetAggregates);
     });
     inject(($ngRedux, ContactsActions, Selectors) => {
       contactsActions = ContactsActions($ngRedux.dispatch);
@@ -91,6 +94,7 @@ describe('Contacts store', () => {
       settings.resolves({});
       hasAuth.resolves(true);
       tasksForContact.resolves();
+      targetAggregates.getCurrentTargetDoc.resolves({});
     });
 
     it('sets selected contact', () => {
@@ -103,7 +107,8 @@ describe('Contacts store', () => {
             type: { person: true, name_key: 'label.peeps' },
             summary: { alive: true },
             children: [],
-            reports: []
+            reports: [],
+            targetDoc: {},
           },
           loadingSelectedChildren: false,
           loadingSelectedReports: false,
@@ -142,6 +147,32 @@ describe('Contacts store', () => {
         const state = getState();
         const contactsState = selectors.getContactsState(state);
         assert.deepEqual(contactsState.selected.tasks, taskEmissions);
+      });
+    });
+
+    it('should get and store targets and use in ContactSummary call', () => {
+      const targetDoc = {
+        _id: 'targets~2020-01~contact~user',
+        values: [
+          { id: 'target1', value: { total: 1, pass: 1 } },
+          { id: 'target2', value: { total: 20, pass: 5 } },
+          { id: 'target3', value: { total: 7, pass: 7 } },
+        ],
+      };
+      targetAggregates.getCurrentTargetDoc.resolves(targetDoc);
+
+      return contactsActions.setSelectedContact('123').then(() => {
+        chai.expect(targetAggregates.getCurrentTargetDoc.callCount).to.equal(1);
+        const state = getState();
+        const contactsState = selectors.getContactsState(state);
+        assert.deepEqual(contactsState.selected.targetDoc, targetDoc);
+        assert.equal(contactSummary.callCount, 1);
+        assert.deepEqual(contactSummary.args[0], [
+          { _id: '123' },
+          [],
+          undefined,
+          targetDoc,
+        ]);
       });
     });
 
