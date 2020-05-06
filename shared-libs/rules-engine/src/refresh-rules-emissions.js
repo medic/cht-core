@@ -36,6 +36,7 @@ module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTas
     ]))
     .then(([updatedTaskDocs, targetEmissions]) => ({ updatedTaskDocs, targetEmissions }));
 };
+/*
 
 const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
   const { taskDocs = [], userSettingsId } = freshData;
@@ -53,6 +54,27 @@ const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
   const updatedTaskDocs = taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
   return [...updatedTaskDocs, ...cancelledDocs];
 };
+*/
+
+const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
+  const { taskDocs = [], userSettingsId } = freshData;
+  const taskDocsByEmissionId = mapEmissionIdToTaskDocs(taskDocs);
+  const { winners: emissionIdToLatestDocMap, taskDocsToDedupe } =
+          disambiguateTaskDocs(taskDocsByEmissionId, calculationTimestamp);
+
+  const timelyEmissions  = taskEmissions.filter(emission => TaskStates.isTimely(emission, calculationTimestamp));
+  const taskTransforms = disambiguateEmissions(timelyEmissions, calculationTimestamp)
+    .map(taskEmission => {
+      const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
+      return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userSettingsId, existingDoc);
+    });
+
+  const freshTaskDocs = taskTransforms.map(doc => doc.taskDoc);
+  const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
+  const dedupedTasks = getDedupeUpdates(taskDocsToDedupe, calculationTimestamp);
+  const updatedTaskDocs = taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
+  return [...updatedTaskDocs, ...cancelledDocs, ...dedupedTasks];
+};
 
 /**
  * Examine the existing task documents which were previously emitted by the same contact
@@ -67,6 +89,12 @@ const getCancellationUpdates = (freshDocs, existingTaskDocs = [], calculatedAt) 
     .map(doc => TaskStates.setStateOnTaskDoc(doc, TaskStates.Cancelled, calculatedAt));
 };
 
+
+const getDedupeUpdates = (existingTaskDocs, calculatedAt) => {
+  return existingTaskDocs
+    .filter(doc => !TaskStates.isTerminal(doc.state))
+    .map(doc => TaskStates.setStateOnTaskDoc(doc, TaskStates.Cancelled, calculatedAt, 'duplicate'));
+};
 /*
 It is possible to receive multiple emissions with the same id. When this happens, we need to pick one winner.
 We pick the "most ready" emission.
@@ -86,6 +114,43 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
   }, {});
 
   return Object.keys(winners).map(key => winners[key]); // Object.values()
+};
+
+const disambiguateTaskDocs = (taskDocsByEmissionId, forTime) => {
+  const taskDocsToDedupe = [];
+  const winners = {};
+
+  Object.keys(taskDocsByEmissionId).forEach(emissionId => {
+    taskDocsByEmissionId[emissionId].forEach(taskDoc => {
+      if (!winners[emissionId]) {
+        winners[emissionId] = taskDoc;
+      } else {
+        const incomingState = TaskStates.calculateState(taskDoc, forTime) || TaskStates.Cancelled;
+        const currentState = TaskStates.calculateState(winners[emissionId], forTime) || TaskStates.Cancelled;
+        if (TaskStates.isMoreReadyThan(incomingState, currentState)) {
+          taskDocsToDedupe.push(winners[emissionId]);
+          winners[emissionId] = taskDoc;
+        } else {
+          taskDocsToDedupe.push(taskDoc);
+        }
+      }
+    });
+  });
+
+  return { winners, taskDocsToDedupe };
+};
+
+const mapEmissionIdToTaskDocs = (taskDocs) => {
+  const tasksByEmission = {};
+  taskDocs.forEach(doc => {
+    const emissionId = doc.emission._id;
+    if (!tasksByEmission[emissionId]) {
+      tasksByEmission[emissionId] = [];
+    }
+
+    tasksByEmission[emissionId].push(doc);
+  });
+  return tasksByEmission;
 };
 
 const mapEmissionIdToLatestTaskDoc = (taskDocs, maxTimestamp) => taskDocs
