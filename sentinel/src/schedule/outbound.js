@@ -12,6 +12,7 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 
 const CONFIGURED_PUSHES = 'outbound';
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
+const BATCH_SIZE = 1000;
 
 const fetchPassword = key => {
   return secureSettings.getCredentials(key).then(password => {
@@ -31,7 +32,8 @@ const queuedTasks = () => {
   return db.sentinel.allDocs({
     startkey: 'task:outbound:',
     endkey: 'task:outbound:\ufff0',
-    include_docs: true
+    include_docs: true,
+    limit: BATCH_SIZE,
   })
     .then(results => {
       const outboundTaskDocs = results.rows.map(r => r.doc);

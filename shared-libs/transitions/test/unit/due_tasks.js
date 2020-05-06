@@ -4,15 +4,16 @@ const moment = require('moment');
 const utils = require('../../src/lib/utils');
 const db = require('../../src/db');
 const schedule = require('../../src/schedule/due_tasks');
+const date = require('../../src/date');
 
 describe('due tasks', () => {
   afterEach(() => sinon.restore());
 
   it('due_tasks handles view returning no rows', done => {
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [],
     });
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null);
+    const saveDoc = sinon.stub(db.medic, 'put').resolves();
 
     schedule.execute(function(err) {
       assert.equal(err, undefined);
@@ -53,7 +54,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
           id: id,
@@ -73,10 +74,8 @@ describe('due tasks', () => {
       ],
     });
 
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
-    const hydrate = sinon
-      .stub(schedule._lineage, 'hydrateDocs')
-      .returns(Promise.resolve([doc]));
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
+    const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     schedule.execute(function(err) {
@@ -115,10 +114,8 @@ describe('due tasks', () => {
         },
       ],
     };
-    const hydrate = sinon
-      .stub(schedule._lineage, 'hydrateDocs')
-      .returns(Promise.resolve([doc]));
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
           id: id,
@@ -133,7 +130,7 @@ describe('due tasks', () => {
       ],
     });
 
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     schedule.execute(function(err) {
@@ -177,7 +174,7 @@ describe('due tasks', () => {
       ],
     };
 
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
           id: id1,
@@ -191,13 +188,10 @@ describe('due tasks', () => {
         },
       ],
     });
-    sinon
-      .stub(schedule._lineage, 'hydrateDocs')
-      .onCall(0)
-      .returns(Promise.resolve([doc1]))
-      .onCall(1)
-      .returns(Promise.resolve([doc2]));
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
+    sinon.stub(schedule._lineage, 'hydrateDocs')
+      .onCall(0).resolves([doc1])
+      .onCall(1).resolves([doc2]);
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
 
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
@@ -284,7 +278,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
           id: id,
@@ -296,7 +290,7 @@ describe('due tasks', () => {
     sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .resolves([hydrated]);
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
 
     schedule.execute(err => {
       assert.equal(err, undefined);
@@ -331,9 +325,7 @@ describe('due tasks', () => {
     const expectedMessage = 'old message';
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
     const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves(patientUuid);
-    const fetchHydratedDoc = sinon
-      .stub(schedule._lineage, 'fetchHydratedDoc')
-      .resolves({ name: 'jim' });
+    const fetchHydratedDoc = sinon.stub(schedule._lineage, 'fetchHydratedDoc').resolves({ name: 'jim' });
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     const minified = {
@@ -393,7 +385,7 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(db.medic, 'query').callsArgWith(2, null, {
+    const view = sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
           id: id,
@@ -402,10 +394,8 @@ describe('due tasks', () => {
         },
       ],
     });
-    sinon
-      .stub(schedule._lineage, 'hydrateDocs')
-      .returns(Promise.resolve([hydrated]));
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
+    sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
     schedule.execute(err => {
       assert.equal(err, undefined);
       assert.equal(view.callCount, 1);
@@ -486,11 +476,11 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [
+    sinon.stub(db.medic, 'query').resolves({ rows: [
       { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
     ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
-    sinon.stub(db.medic, 'put');
+    sinon.stub(db.medic, 'put').resolves();
 
     schedule.execute(err => {
       assert.equal(err, undefined);
@@ -576,11 +566,11 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(db.medic, 'query').callsArgWith(2, null, { rows: [
+    sinon.stub(db.medic, 'query').resolves({ rows: [
       { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
     ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
-    sinon.stub(db.medic, 'put').callsArgWith(1, null, {});
+    sinon.stub(db.medic, 'put').resolves({});
 
     schedule.execute(err => {
       assert.equal(err, undefined);
@@ -617,6 +607,27 @@ describe('due tasks', () => {
         messages: [{ message: 'visit-ad', to: phone}]
       });
 
+      done();
+    });
+  });
+
+  it('should query with a limit and correct start and end key', (done) => {
+    const now = moment('2020-02-01 00:00:00');
+    sinon.stub(date, 'getDate').returns(now);
+    const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
+
+    schedule.execute((err) => {
+      assert.equal(err, undefined);
+      assert.equal(view.callCount, 1);
+      assert.deepEqual(view.args[0], [
+        'medic/messages_by_state',
+        {
+          include_docs: true,
+          endkey: [ 'scheduled', now.valueOf() ],
+          startkey: [ 'scheduled', now.subtract(7, 'days').valueOf() ],
+          limit: 1000,
+        }
+      ]);
       done();
     });
   });
