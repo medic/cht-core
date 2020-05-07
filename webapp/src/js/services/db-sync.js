@@ -16,6 +16,7 @@ angular
     Auth,
     DB,
     DBSyncRetry,
+    RulesEngine,
     Session
   ) {
     'use strict';
@@ -73,6 +74,9 @@ angular
       const options = Object.assign({}, direction.options, { batch_size: batchSize });
       return DB()
         .replicate[direction.name](remote, options)
+        .on('change', replicationResult => {
+          RulesEngine.monitorExternalChanges(replicationResult.docs);
+        })
         .on('denied', function(err) {
           $log.error(`Denied replicating ${direction.name} remote server`, err);
           if (direction.onDenied) {

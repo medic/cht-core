@@ -172,6 +172,12 @@ angular.module('inboxServices').factory('RulesEngine', function(
     });
   };
 
+  const monitorExternalChanges = (changedDocs) => {
+    const isTask = doc => doc.type === 'task';
+    const contactsWithUpodatedTasks = docs.filter(isTask).map(doc => doc.requester);
+    RulesEngineCore.updateEmissionsFor(contactsWithUpodatedTasks);
+  };
+
   const translateTaskDocs = taskDocs => {
     const translateProperty = (property, task) => {
       if (typeof property === 'string') {
@@ -238,6 +244,10 @@ angular.module('inboxServices').factory('RulesEngine', function(
         })
         .then(telemetryData.passThrough);
     },
+
+    monitorExternalChanges: (changes) => (
+      initialized.then(() => monitorExternalChanges(changes))
+    ),
   };
 
   return self;
