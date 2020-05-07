@@ -1,4 +1,3 @@
-require('chai').should();
 const sinon = require('sinon');
 const should = require('chai').should();
 const moment = require('moment');
@@ -50,20 +49,19 @@ describe('accept_patient_reports', () => {
   });
 
   describe('onMatch', () => {
-    it('callback empty if form not included', done => {
+    it('callback empty if form not included', () => {
       sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
       const change = {
         doc: {
           form: 'y',
         },
       };
-      transition.onMatch(change).then(changed => {
+      return transition.onMatch(change).then(changed => {
         (typeof changed).should.equal('undefined');
-        done();
       });
     });
 
-    it('with no patient id adds error msg and response', done => {
+    it('with no patient id adds error msg and response', () => {
       sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
 
@@ -72,12 +70,11 @@ describe('accept_patient_reports', () => {
         fields: { patient_id: 'x' },
       };
 
-      transition.onMatch({ doc: doc }).then(() => {
+      return transition.onMatch({ doc: doc }).then(() => {
         doc.errors.length.should.equal(1);
         doc.errors[0].message.should.equal(
           'messages.generic.registration_not_found'
         );
-        done();
       });
     });
   });

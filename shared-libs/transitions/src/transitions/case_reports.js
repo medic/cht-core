@@ -51,7 +51,7 @@ const addMessagesToDoc = (doc, config, registrations) => {
 const getCaseRegistrations = doc => {
   const caseId = doc.case_id || (doc.fields && doc.fields.case_id);
   if (!caseId) {
-    return;
+    return Promise.resolve([]);
   }
   return utils.getReportsBySubject({ id: caseId, registrations: true });
 };

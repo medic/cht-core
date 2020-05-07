@@ -1648,6 +1648,7 @@ describe('registration', () => {
   });
 
   describe('addCase', () => {
+
     it('trigger assigns a case id', () => {
       const caseId = '99955';
       const change = {
@@ -1673,6 +1674,35 @@ describe('registration', () => {
         change.doc.case_id.should.equal(caseId);
       });
     });
+
+    it('adds place_uuid if known', () => {
+      const caseId = '99955';
+      const change = {
+        doc: {
+          _id: 'def',
+          type: 'data_record',
+          form: 'S',
+          reported_date: 53,
+          from: '+555123',
+          fields: { level: 8 },
+          contact: { parent: { _id: 'abc' } }
+        },
+      };
+      const eventConfig = {
+        form: 'S',
+        events: [{ name: 'on_create', trigger: 'add_case' }],
+      };
+      sinon.stub(config, 'get').returns([eventConfig]);
+      sinon.stub(validation, 'validate').callsArgWith(2, null);
+      sinon.stub(transitionUtils, 'getUniqueId').resolves(caseId);
+      sinon.stub(config, 'getAll').returns(settings);
+
+      return transition.onMatch(change).then(() => {
+        change.doc.case_id.should.equal(caseId);
+        change.doc.fields.place_uuid.should.equal('abc');
+      });
+    });
+
   });
 
   describe('assign_schedule', () => {
