@@ -439,6 +439,17 @@ describe('refresh-rules-emissions', () => {
         stateReason: 'duplicate',
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
+
+      clock = sinon.useFakeTimers(startDate.valueOf() + 3000);
+      const thirdData = {
+        contactDocs: [chtDocs.contact],
+        reportDocs: [chtDocs.pregnancyReport],
+        taskDocs: [ ...secondResult.updatedTaskDocs, externalTask1 ],
+      };
+
+      const thirdResult = await refreshRulesEmissionsContact(thirdData);
+      // tasks are not cancelled a second time
+      expect(thirdResult.updatedTaskDocs.length).to.equal(0);
     });
   });
 });
