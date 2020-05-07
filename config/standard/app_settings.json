@@ -62,6 +62,13 @@
   "synthetic_date": "",
   "contact_display_short": "clinic.name",
   "roles": {
+    "national_admin": {
+      "name": "usertype.national-manager"
+    },
+    "district_admin": {
+      "name": "usertype.district-manager",
+      "offline": true
+    },
     "data_entry": {
       "name": "usertype.data-entry"
     },
@@ -70,14 +77,6 @@
     },
     "gateway": {
       "name": "usertype.gateway"
-    },
-    "national_admin": {
-      "name": "usertype.national_admin",
-      "offline": true
-    },
-    "district_admin": {
-      "name": "usertype.district_admin",
-      "offline": true
     }
   },
   "permissions": {
