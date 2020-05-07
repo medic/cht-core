@@ -174,8 +174,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
   const monitorExternalChanges = (changedDocs) => {
     const isTask = doc => doc.type === 'task';
-    const contactsWithUpodatedTasks = docs.filter(isTask).map(doc => doc.requester);
-    RulesEngineCore.updateEmissionsFor(contactsWithUpodatedTasks);
+    const contactsWithUpdatedTasks = changedDocs.filter(isTask).map(doc => doc.requester);
+    RulesEngineCore.updateEmissionsFor(contactsWithUpdatedTasks);
   };
 
   const translateTaskDocs = taskDocs => {

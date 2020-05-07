@@ -75,7 +75,9 @@ angular
       return DB()
         .replicate[direction.name](remote, options)
         .on('change', replicationResult => {
-          RulesEngine.monitorExternalChanges(replicationResult.docs);
+          if (replicationResult && replicationResult.docs) {
+            RulesEngine.monitorExternalChanges(replicationResult.docs);
+          }
         })
         .on('denied', function(err) {
           $log.error(`Denied replicating ${direction.name} remote server`, err);
