@@ -1487,11 +1487,7 @@ a.fa:hover {
     .tabs {
       padding-left: 2px;
       a {
-        padding-top: 5px;
         min-width: 40px;
-      }
-      .mobile-tab-label {
-        display: none;
       }
       .configuration-tab {
         display: none;
@@ -1501,7 +1497,7 @@ a.fa:hover {
       right: 10%;
     }
     .inner {
-      height: 55px;
+      height: 60px;
     }
   }
   .action-container .actions {
@@ -1517,7 +1513,7 @@ a.fa:hover {
     }
   }
   .content .page {
-    top: 106px;
+    top: 111px;
   }
   .mobile-only {
     display: initial;
@@ -1529,6 +1525,17 @@ a.fa:hover {
   body.testing {
     .page {
       top: 55px;
+    }
+  }
+  body.hide-mobile-tab-labels {
+    .button-label {
+      display: none;
+    }
+    .header .inner {
+      height: 50px;
+    }
+    .content .page {
+      top: 101px;
     }
   }
 }

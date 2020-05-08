@@ -18,6 +18,7 @@ const initialState = {
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
+  minimalTabs: false,
   replicationStatus: {},
   selectMode: false,
   showActionBar: false,
@@ -75,6 +76,8 @@ module.exports = function(state, action) {
     return Object.assign({}, state, { loadingContent: action.payload.loadingContent });
   case actionTypes.SET_LOADING_SUB_ACTION_BAR:
     return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
+  case actionTypes.SET_MINIMAL_TABS:
+    return Object.assign({}, state, { minimalTabs: action.payload.minimalTabs });
   case actionTypes.SET_SELECT_MODE:
     return Object.assign({}, state, { selectMode: action.payload.selectMode });
   case actionTypes.SET_SHOW_ACTION_BAR:

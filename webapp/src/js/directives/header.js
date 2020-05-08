@@ -26,7 +26,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         const globalActions = GlobalActions(dispatch);
         return {
           openGuidedSetup: globalActions.openGuidedSetup,
-          openTourSelect: globalActions.openTourSelect
+          openTourSelect: globalActions.openTourSelect,
+          setMinimalTabs: globalActions.setMinimalTabs
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -65,6 +66,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       $q.all(tabs.map(tab => Auth.has(tab.permissions))).then(results => {
         ctrl.permittedTabs = tabs.filter((tab,index) => results[index]);
       });
+
+      ctrl.setMinimalTabs(tabs.length > 3);
 
       $scope.$on('$destroy', unsubscribe);
     },

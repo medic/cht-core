@@ -76,6 +76,7 @@ const moment = require('moment');
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         forms: Selectors.getForms(state),
+        minimalTabs : Selectors.getMinimalTabs(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
         showContent: Selectors.getShowContent(state)
