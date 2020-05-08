@@ -175,6 +175,12 @@ describe('provider-wireup integration tests', () => {
       // dupes don't matter here
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]);
     });
+
+    it('none', async () => {
+      sinon.stub(rulesStateStore, 'markDirty').resolves();
+      await wireup.updateEmissionsFor(provider);
+      expect(rulesStateStore.markDirty.args).to.deep.eq([[[]]]);
+    });
   });
 
   describe('fetchTasksFor', () => {
