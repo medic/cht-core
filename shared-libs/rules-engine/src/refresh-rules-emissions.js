@@ -39,7 +39,7 @@ module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTas
 
 const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
   const { taskDocs = [], userSettingsId } = freshData;
-  const { winners: emissionIdToLatestDocMap, duplicates: taskDocsToDedupe } = disambiguateTaskDocs(
+  const { winners: emissionIdToLatestDocMap, duplicates: duplicateTaskDocs } = disambiguateTaskDocs(
     taskDocs,
     calculationTimestamp
   );
@@ -53,9 +53,9 @@ const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
 
   const freshTaskDocs = taskTransforms.map(doc => doc.taskDoc);
   const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
-  const dedupedTasks = getDedupeUpdates(taskDocsToDedupe, calculationTimestamp);
+  const cancelledDuplicatedDocs = getDeduplicationUpdates(duplicateTaskDocs, calculationTimestamp);
   const updatedTaskDocs = taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
-  return [...updatedTaskDocs, ...cancelledDocs, ...dedupedTasks];
+  return [...updatedTaskDocs, ...cancelledDocs, ...cancelledDuplicatedDocs];
 };
 
 /**
@@ -73,12 +73,12 @@ const getCancellationUpdates = (freshDocs, existingTaskDocs = [], calculatedAt) 
 
 /**
  * All duplicate task docs that are not in a terminal state are "Cancelled" with a "duplicate" reason
- * @param {Array} existingTaskDocs
- * @param {number} calculatedAt
- * @returns {Array} task docs with updated state
+ * @param {Array} duplicatedTaskDocs - array of task docs that exist in the local DB
+ * @param {number} calculatedAt - Timestamp for the round of rules calculations
+ * @returns {Array} - task docs with updated state
  */
-const getDedupeUpdates = (existingTaskDocs, calculatedAt) => {
-  return existingTaskDocs
+const getDeduplicationUpdates = (duplicatedTaskDocs, calculatedAt) => {
+  return duplicatedTaskDocs
     .filter(doc => !TaskStates.isTerminal(doc.state))
     .map(doc => TaskStates.setStateOnTaskDoc(doc, TaskStates.Cancelled, calculatedAt, 'duplicate'));
 };
@@ -105,7 +105,7 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
 };
 
 /**
- * It's possible to receive multiple task docs with the same emission id. (For example, when the same account logs in
+ * It's possible to have multiple task docs with the same emission id. (For example, when the same account logs in
  * on multiple devices). When this happens, we pick the "most ready" most recent task. However, tasks that are authored
  * in the future are discarded.
  * @param {Array} taskDocs - An array of already exiting task documents
@@ -127,10 +127,12 @@ const disambiguateTaskDocs = (taskDocs, forTime) => {
         return;
       }
 
-      const stateCompare = TaskStates.compareState(taskDoc.state, winners[emissionId].state);
+      const stateComparison = TaskStates.compareState(taskDoc.state, winners[emissionId].state);
       if (
-        stateCompare < 0 || // if taskDoc is more ready
-        (stateCompare === 0 && taskDoc.authoredOn > winners[emissionId].authoredOn) // or taskDoc is more recent
+        // if taskDoc is more ready
+        stateComparison < 0 ||
+        // or taskDoc is more recent, when having the same state
+        (stateComparison === 0 && taskDoc.authoredOn > winners[emissionId].authoredOn)
       ) {
         duplicates.push(winners[emissionId]);
         winners[emissionId] = taskDoc;

@@ -253,12 +253,12 @@ describe('refresh-rules-emissions', () => {
     });
   });
 
-  describe('getDedupeUpdates', () => {
+  describe('getDeduplicationUpdates', () => {
     const mockTaskDoc = (emissionId, authoredOn = 0, augment) => Object.assign(
       { emission: { _id: emissionId }, stateHistory: [], authoredOn: authoredOn || moment().valueOf() },
       augment
     );
-    const getDedupeUpdates = refreshRulesEmissionsContact.__get__('getDedupeUpdates');
+    const getDeduplicationUpdates = refreshRulesEmissionsContact.__get__('getDeduplicationUpdates');
 
     it('should add Canceled + duplicate state and reason', () => {
       const tasks = [
@@ -273,7 +273,7 @@ describe('refresh-rules-emissions', () => {
         timestamp: 2000,
       }];
 
-      const result = getDedupeUpdates(tasks, 2000);
+      const result = getDeduplicationUpdates(tasks, 2000);
       expect(result.length).to.equal(4);
       expect(result).to.have.deep.members([
         mockTaskDoc('em1', 0, { id: 1, state: 'Cancelled', stateReason: 'duplicate', stateHistory  }),
@@ -296,7 +296,7 @@ describe('refresh-rules-emissions', () => {
         timestamp: 5000,
       }];
 
-      const result = getDedupeUpdates(tasks, 5000);
+      const result = getDeduplicationUpdates(tasks, 5000);
       expect(result.length).to.equal(2);
       expect(result).to.have.deep.members([
         mockTaskDoc('em2', 0, { id: 2, state: 'Cancelled', stateReason: 'duplicate', stateHistory  }),
