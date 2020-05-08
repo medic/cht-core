@@ -483,8 +483,54 @@ describe('provider-wireup integration tests', () => {
       expect(targets).to.deep.eq([{
         id: 'uhc',
         value: {
-          pass: 2, // 1 and 5
+          pass: 3, // 1, 2 and 5
           total: 4, // not 4
+        },
+      }]);
+    });
+
+    it('should use inclusive operator when comparing dates', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      const rules = noolsPartnerTemplate('', { });
+      const settings = {
+        rules,
+        targets: [{ id: 'uhc' }]
+      };
+      await wireup.initialize(provider, settings, {});
+
+      const emission = (day, patient) => {
+        const date = moment(`2000-01-${day}`);
+        return {
+          _id: `${patient}~${date.format('YYYY-MM-DD')}`,
+          contact: { _id: patient },
+          type: 'uhc',
+          date: date.valueOf(),
+          pass: true,
+        };
+      };
+
+      const refreshRulesEmissions = sinon.stub().resolves({
+        targetEmissions: [
+          emission(1, 'baby1'),
+          emission(2, 'baby2'),
+          emission(3, 'baby3'),
+          emission(31, 'baby4'),
+        ],
+      });
+      const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+
+      const interval = {
+        start: moment('2000-01-01').valueOf(),
+        end: moment('2000-01-31').valueOf(),
+      };
+
+      const targets = await withMockRefresher(() => wireup.fetchTargets(provider, interval));
+      expect(refreshRulesEmissions.callCount).to.eq(1);
+      expect(targets).to.deep.eq([{
+        id: 'uhc',
+        value: {
+          pass: 4,
+          total: 4,
         },
       }]);
     });
@@ -656,6 +702,89 @@ describe('provider-wireup integration tests', () => {
           { _id: 'mock_user_id' },
           { _id: 'org.couchdb.user:username' },
           '2020-04',
+          true,
+        ]);
+      });
+
+      it('should use inclusive operator when comparing dates (left)', async () => {
+        clock = sinon.useFakeTimers(moment('2020-05-28').valueOf());
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{ id: 'uhc' }],
+          monthStartDate: 1,
+        };
+
+        const staleState = {
+          rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
+          contactState: {},
+          targetState: { uhc: { emissions: {}, id: 'uhc' } },
+          calculatedAt: moment('2020-05-28').valueOf(),
+          monthStartDate: 1,
+        };
+
+        await prepareExistentState(staleState);
+        await loadState(settings);
+        const emissions = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true),
+          mockTargetEmission('uhc', 'doc2', moment('2020-04-30 23:59:59:999').valueOf(), true),
+          mockTargetEmission('uhc', 'doc1', moment('2020-05-01 00:00:00:000').valueOf(), true),
+          mockTargetEmission('uhc', 'doc3', moment('2020-05-06').valueOf(), true),
+        ];
+        await rulesStateStore.storeTargetEmissions([], emissions);
+        rulesStateStore.restore();
+
+        clock = sinon.useFakeTimers(moment('2020-06-02').valueOf()); // next interval
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
+          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
+          { _id: 'mock_user_id' },
+          { _id: 'org.couchdb.user:username' },
+          '2020-05',
+          true,
+        ]);
+      });
+
+      it('should use inclusive operator when comparing dates (right)', async () => {
+        clock = sinon.useFakeTimers(moment('2020-05-28').valueOf());
+        const rules = noolsPartnerTemplate('', { });
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{ id: 'uhc' }],
+          monthStartDate: 1,
+        };
+
+        const staleState = {
+          rulesConfigHash: rulesStateStore.__get__('hashRulesConfig')(settings),
+          contactState: {},
+          targetState: { uhc: { emissions: {}, id: 'uhc' } },
+          calculatedAt: moment('2020-05-28').valueOf(),
+          monthStartDate: 1,
+        };
+
+        await prepareExistentState(staleState);
+        await loadState(settings);
+        const emissions = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true),
+          mockTargetEmission('uhc', 'doc3', moment('2020-05-06').valueOf(), true),
+          mockTargetEmission('uhc', 'doc3', moment('2020-05-31 23:59:59').valueOf(), true),
+          mockTargetEmission('uhc', 'doc3', moment('2020-06-01 00:00:00').valueOf(), true),
+          mockTargetEmission('uhc', 'doc3', moment('2020-06-01 00:00:00').valueOf(), true),
+        ];
+        await rulesStateStore.storeTargetEmissions([], emissions);
+        rulesStateStore.restore();
+
+        clock = sinon.useFakeTimers(moment('2020-06-02').valueOf()); // next interval
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
+          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
+          { _id: 'mock_user_id' },
+          { _id: 'org.couchdb.user:username' },
+          '2020-05',
           true,
         ]);
       });

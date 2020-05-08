@@ -471,7 +471,7 @@ describe('Rules Engine Integration Tests', () => {
       pregnancyRegistrationReport,
       { _id: 'pregReg2', fields: {
         lmp_date_8601: THE_FUTURE, patient_id: patientContact2.patient_id
-      }, reported_date: THE_FUTURE+1
+      }, reported_date: THE_FUTURE+2
       });
     await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
 

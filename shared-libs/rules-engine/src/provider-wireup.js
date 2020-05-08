@@ -101,8 +101,8 @@ module.exports = {
 
     const calculationTimestamp = Date.now();
     const targetEmissionFilter = filterInterval && (emission => {
-      const emissionDate = moment(emission.date);
-      return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
+      // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
+      return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
     });
 
     return refreshRulesEmissionForContacts(provider, calculationTimestamp)
@@ -217,13 +217,15 @@ const handleIntervalTurnover = (provider, { monthStartDate }) => {
   }
 
   const currentInterval = calendarInterval.getCurrent(monthStartDate);
-  if (moment(stateCalculatedAt).isBetween(currentInterval.start, currentInterval.end)) {
+  // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
+  if (moment(stateCalculatedAt).isBetween(currentInterval.start, currentInterval.end, null, '[]')) {
     return Promise.resolve();
   }
 
   const filterInterval = calendarInterval.getInterval(monthStartDate, stateCalculatedAt);
   const targetEmissionFilter = (emission => {
-    return moment(emission.date).isBetween(filterInterval.start, filterInterval.end);
+    // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
+    return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
   });
 
   const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
