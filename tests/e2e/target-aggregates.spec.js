@@ -102,6 +102,7 @@ const updateSettings = (targetsConfig, user, contactSummary) => {
 const clickOnTargetAggregateListItem = (contactId) => {
   element(by.css(`.aggregate-detail li[data-record-id="${contactId}"] a`)).click();
   helper.waitUntilReady(element(by.id('contacts-list')));
+  helper.waitUntilReady(element(by.css('.content-pane .meta h2')));
 };
 
 describe('Target aggregates', () => {
