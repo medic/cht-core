@@ -36,25 +36,6 @@ module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTas
     ]))
     .then(([updatedTaskDocs, targetEmissions]) => ({ updatedTaskDocs, targetEmissions }));
 };
-/*
-
-const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
-  const { taskDocs = [], userSettingsId } = freshData;
-  const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs, calculationTimestamp);
-
-  const timelyEmissions  = taskEmissions.filter(emission => TaskStates.isTimely(emission, calculationTimestamp));
-  const taskTransforms = disambiguateEmissions(timelyEmissions, calculationTimestamp)
-    .map(taskEmission => {
-      const existingDoc = emissionIdToLatestDocMap[taskEmission._id];
-      return transformTaskEmissionToDoc(taskEmission, calculationTimestamp, userSettingsId, existingDoc);
-    });
-
-  const freshTaskDocs = taskTransforms.map(doc => doc.taskDoc);
-  const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
-  const updatedTaskDocs = taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
-  return [...updatedTaskDocs, ...cancelledDocs];
-};
-*/
 
 const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
   const { taskDocs = [], userSettingsId } = freshData;
@@ -125,7 +106,8 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
 
 /**
  * It's possible to receive multiple task docs with the same emission id. (For example, when the same account logs in
- * on multiple devices). When this happens, we pick the "most ready" emission.
+ * on multiple devices). When this happens, we pick the "most ready" most recent task. However, tasks that are authored
+ * in the future are discarded.
  * @param {Array} taskDocs - An array of already exiting task documents
  * @param {number} forTime - current calculation timestamp
  * @returns {Object} result
@@ -136,21 +118,24 @@ const disambiguateTaskDocs = (taskDocs, forTime) => {
   const duplicates = [];
   const winners = {};
 
-  const taskDocsByEmissionId = mapEmissionIdToTaskDocs(taskDocs);
+  const taskDocsByEmissionId = mapEmissionIdToTaskDocs(taskDocs, forTime);
 
   Object.keys(taskDocsByEmissionId).forEach(emissionId => {
     taskDocsByEmissionId[emissionId].forEach(taskDoc => {
       if (!winners[emissionId]) {
         winners[emissionId] = taskDoc;
+        return;
+      }
+
+      const stateCompare = TaskStates.compareState(taskDoc.state, winners[emissionId].state);
+      if (
+        stateCompare < 0 || // if taskDoc is more ready
+        (stateCompare === 0 && taskDoc.authoredOn > winners[emissionId].authoredOn) // or taskDoc is more recent
+      ) {
+        duplicates.push(winners[emissionId]);
+        winners[emissionId] = taskDoc;
       } else {
-        const incomingState = TaskStates.calculateState(taskDoc, forTime) || TaskStates.Cancelled;
-        const currentState = TaskStates.calculateState(winners[emissionId], forTime) || TaskStates.Cancelled;
-        if (TaskStates.isMoreReadyThan(incomingState, currentState)) {
-          duplicates.push(winners[emissionId]);
-          winners[emissionId] = taskDoc;
-        } else {
-          duplicates.push(taskDoc);
-        }
+        duplicates.push(taskDoc);
       }
     });
   });
@@ -158,15 +143,17 @@ const disambiguateTaskDocs = (taskDocs, forTime) => {
   return { winners, duplicates };
 };
 
-const mapEmissionIdToTaskDocs = (taskDocs) => {
+const mapEmissionIdToTaskDocs = (taskDocs, maxTimestamp) => {
   const tasksByEmission = {};
-  taskDocs.forEach(doc => {
-    const emissionId = doc.emission._id;
-    if (!tasksByEmission[emissionId]) {
-      tasksByEmission[emissionId] = [];
-    }
-
-    tasksByEmission[emissionId].push(doc);
-  });
+  taskDocs
+    // mitigate the fallout of a user who rewinds their system-clock after creating task docs
+    .filter(doc => doc.authoredOn <= maxTimestamp)
+    .forEach(doc => {
+      const emissionId = doc.emission._id;
+      if (!tasksByEmission[emissionId]) {
+        tasksByEmission[emissionId] = [];
+      }
+      tasksByEmission[emissionId].push(doc);
+    });
   return tasksByEmission;
 };

@@ -72,18 +72,18 @@ const getDisplayWindow = (taskEmission) => {
   };
 };
 
+const mostReadyOrder = [States.Ready, States.Draft, States.Completed, States.Failed, States.Cancelled];
+const orderOf = state => {
+  const order = mostReadyOrder.indexOf(state);
+  return order >= 0 ? order : mostReadyOrder.length;
+};
 
 module.exports = {
   isTerminal: state => [States.Cancelled, States.Completed, States.Failed].includes(state),
 
-  isMoreReadyThan: (stateA, stateB) => {
-    const mostReadyOrder = [States.Ready, States.Draft, States.Completed, States.Failed, States.Cancelled];
-    const orderOf = state => {
-      const order = mostReadyOrder.indexOf(state);
-      return order >= 0 ? order : mostReadyOrder.length;
-    };
-    return orderOf(stateA) < orderOf(stateB);
-  },
+  isMoreReadyThan: (stateA, stateB) => orderOf(stateA) < orderOf(stateB),
+
+  compareState: (stateA, stateB) => orderOf(stateA) - orderOf(stateB),
 
   calculateState: (taskEmission, timestamp) => {
     if (!taskEmission) {
@@ -137,7 +137,9 @@ module.exports = {
       taskDoc.stateReason = 'invalid';
     } else {
       taskDoc.state = updatedState;
-      taskDoc.stateReason = reason;
+      if (reason) {
+        taskDoc.stateReason = reason;
+      }
     }
 
     const stateHistory = taskDoc.stateHistory = taskDoc.stateHistory || [];

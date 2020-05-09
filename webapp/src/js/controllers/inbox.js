@@ -241,7 +241,7 @@ const moment = require('moment');
       callback: function() {
         if (!DBSync.isSyncInProgress()) {
           ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
-          //DBSync.sync();
+          DBSync.sync();
         }
       },
     });

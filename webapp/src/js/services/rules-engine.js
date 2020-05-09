@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash/core');
+
 const registrationUtils = require('@medic/registration-utils');
 const rulesEngineCore = require('@medic/rules-engine');
 
@@ -173,9 +175,14 @@ angular.module('inboxServices').factory('RulesEngine', function(
   };
 
   const monitorExternalChanges = (changedDocs) => {
-    const isTask = doc => doc.type === 'task';
-    const contactsWithUpdatedTasks = changedDocs.filter(isTask).map(doc => doc.requester);
-    RulesEngineCore.updateEmissionsFor(contactsWithUpdatedTasks);
+    const contactsWithUpdatedTasks = changedDocs
+      .filter(doc => doc.type === 'task')
+      .map(doc => doc.requester);
+    if (!contactsWithUpdatedTasks.length) {
+      return;
+    }
+
+    return RulesEngineCore.updateEmissionsFor(_.uniq(contactsWithUpdatedTasks));
   };
 
   const translateTaskDocs = taskDocs => {
@@ -245,8 +252,12 @@ angular.module('inboxServices').factory('RulesEngine', function(
         .then(telemetryData.passThrough);
     },
 
-    monitorExternalChanges: (changes) => (
-      initialized.then(() => monitorExternalChanges(changes))
+    monitorExternalChanges: (replicationResult) => (
+      initialized.then(() => {
+        return replicationResult &&
+               replicationResult.docs &&
+               monitorExternalChanges(replicationResult.docs);
+      })
     ),
   };
 

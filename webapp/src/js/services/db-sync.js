@@ -65,7 +65,8 @@ angular
           heartbeat: 10000, // 10 seconds
           timeout: 1000 * 60 * 10, // 10 minutes
         },
-        allowed: () => $q.resolve(true)
+        allowed: () => $q.resolve(true),
+        onChange: RulesEngine.monitorExternalChanges,
       }
     ];
 
@@ -75,8 +76,8 @@ angular
       return DB()
         .replicate[direction.name](remote, options)
         .on('change', replicationResult => {
-          if (replicationResult && replicationResult.docs) {
-            RulesEngine.monitorExternalChanges(replicationResult.docs);
+          if (direction.onChange) {
+            direction.onChange(replicationResult);
           }
         })
         .on('denied', function(err) {
