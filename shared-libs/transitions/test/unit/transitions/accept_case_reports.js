@@ -3,9 +3,9 @@ require('chai').should();
 const sinon = require('sinon');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
-const transition = require('../../../src/transitions/case_reports');
+const transition = require('../../../src/transitions/accept_case_reports');
 
-describe('case_reports', () => {
+describe('accept_case_reports', () => {
   afterEach(done => {
     sinon.restore();
     done();

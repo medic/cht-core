@@ -5,10 +5,10 @@ const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const acceptPatientReports = require('./accept_patient_reports');
 
-const NAME = 'case_reports';
+const NAME = 'accept_case_reports';
 
 const getConfig = form => {
-  const fullConfig = config.get('case_reports') || [];
+  const fullConfig = config.get('accept_case_reports') || [];
   return fullConfig.find(config => config.form === form);
 };
 
