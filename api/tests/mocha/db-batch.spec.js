@@ -2,6 +2,7 @@ const lib = require('../../src/db-batch');
 const chai = require('chai');
 const request = require('request-promise-native');
 const sinon = require('sinon');
+const environment = require('../../src/environment');
 const viewName = 'myddoc/myview';
 const viewKey = 'mykey';
 
@@ -10,6 +11,11 @@ let iteratee;
 describe('DB batch', () => {
 
   beforeEach(() => {
+    sinon.stub(environment, 'db').get(() => 'lg');
+    sinon.stub(environment, 'ddoc').get(() => '_design/medic');
+    sinon.stub(environment, 'protocol').get(() => 'http');
+    sinon.stub(environment, 'host').get(() => 'test.com');
+    sinon.stub(environment, 'port').get(() => 1234);
     iteratee = sinon.stub();
   });
 

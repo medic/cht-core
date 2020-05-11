@@ -5,6 +5,7 @@ const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const purger = require('../bootstrapper/purger');
 
 angular
   .module('inboxServices')
@@ -157,7 +158,12 @@ angular
     const syncMeta = function() {
       const remote = DB({ meta: true, remote: true });
       const local = DB({ meta: true });
-      local.sync(remote);
+      let currentSeq;
+      local
+        .info()
+        .then(info => currentSeq = info.update_seq)
+        .then(() => local.sync(remote))
+        .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
     };
 
     const sendUpdate = update => {

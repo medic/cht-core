@@ -7,11 +7,11 @@ describe('DBSync service', () => {
   let service;
   let to;
   let from;
-  let allDocs;
-  let info;
   let isOnlineOnly;
   let userCtx;
   let sync;
+  let syncResult;
+  let recursiveOnSync;
   let hasAuth;
   let recursiveOnTo;
   let recursiveOnFrom;
@@ -20,6 +20,12 @@ describe('DBSync service', () => {
   let getItem;
   let setItem;
   let dbSyncRetry;
+
+  let localMedicDb;
+  let localMetaDb;
+  let remoteMedicDb;
+  let remoteMetaDb;
+  let db;
 
   beforeEach(() => {
     replicationResult = Q.resolve;
@@ -43,25 +49,44 @@ describe('DBSync service', () => {
       return promise;
     });
     from.returns({ on: recursiveOnFrom });
-    allDocs = sinon.stub();
-    info = sinon.stub();
-    info.returns(Q.resolve({ update_seq: 99 }));
     isOnlineOnly = sinon.stub();
     userCtx = sinon.stub();
     sync = sinon.stub();
+    sync.events = {};
+    syncResult = Q.resolve;
+    recursiveOnSync = sinon.stub().callsFake((event, fn) => {
+      sync.events[event] = fn;
+      const promise = syncResult();
+      promise.on = recursiveOnSync;
+      return promise;
+    });
+    sync.returns({ on: recursiveOnSync });
     hasAuth = sinon.stub();
     setItem = sinon.stub();
     getItem = sinon.stub();
     dbSyncRetry = sinon.stub();
 
+    localMedicDb = {
+      replicate: { to: to, from: from },
+      info: sinon.stub().resolves({ update_seq: 99 }),
+    };
+    localMetaDb = {
+      sync,
+      info: sinon.stub().resolves({}),
+      get: sinon.stub().resolves({}),
+      put: sinon.stub(),
+    };
+    remoteMetaDb = {};
+    remoteMedicDb = {};
+
+    db = sinon.stub().returns(localMedicDb);
+    db.withArgs({ remote: true }).returns(remoteMedicDb);
+    db.withArgs({ meta: true }).returns(localMetaDb);
+    db.withArgs({ remote: true, meta: true }).returns(remoteMetaDb);
+
     module('inboxApp');
     module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({
-        replicate: { to, from },
-        allDocs: allDocs,
-        sync: sync,
-        info: info
-      }));
+      $provide.value('DB', db);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
         isOnlineOnly: isOnlineOnly,
@@ -154,7 +179,7 @@ describe('DBSync service', () => {
       replicationResult = () => Q.reject('error');
       const onUpdate = sinon.stub();
       service.addUpdateListener(onUpdate);
-      info.returns(Q.resolve({ update_seq: 100 }));
+      localMedicDb.info.resolves({ update_seq: 100 });
       getItem.returns('100');
 
       return service.sync().then(() => {
@@ -354,6 +379,36 @@ describe('DBSync service', () => {
         });
       });
     });
+
+    describe('sync meta', () => {
+      beforeEach(() => {
+        hasAuth.resolves(true);
+        isOnlineOnly.returns(false);
+      });
+
+      it('should sync meta dbs with no filter', () => {
+        return service.sync().then(() => {
+          expect(db.withArgs({ meta: true }).callCount).to.equal(1);
+          expect(db.withArgs({ meta: true, remote: true }).callCount).to.equal(1);
+          expect(localMetaDb.sync.callCount).to.equal(1);
+          expect(localMetaDb.sync.args[0][0]).to.equal(remoteMetaDb);
+          expect(localMetaDb.sync.args[0][1]).to.equal(undefined);
+        });
+      });
+
+      it('should write purge log with the current seq after syncing', () => {
+        localMetaDb.info.resolves({ update_seq: 100 });
+        localMetaDb.get
+          .withArgs('_local/purgelog')
+          .resolves({ _id: '_local/purgelog', synced_seq: 10, purged_seq: 10 });
+        return service.sync().then(() => {
+          expect(localMetaDb.info.callCount).to.equal(1);
+          expect(localMetaDb.get.callCount).to.equal(1);
+          expect(localMetaDb.put.callCount).to.equal(1);
+          expect(localMetaDb.put.args[0]).to.deep.equal([{ _id: '_local/purgelog', synced_seq: 100, purged_seq: 10 }]);
+        });
+      });
+    });
   });
 
   describe('replicateTo filter', () => {
@@ -364,9 +419,7 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
       userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
-      allDocs.returns(Q.resolve({ rows: [] }));
-      info.returns(Q.resolve({update_seq: -99}));
-      to.returns({ on: recursiveOnTo });
+      localMedicDb.info.resolves({ update_seq: -99 });
       from.returns({ on: recursiveOnFrom });
       return service.sync().then(() => {
         expect(to.callCount).to.equal(1);
