@@ -247,6 +247,10 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
+      function setMinimalTabs(minimal) {
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_MINIMAL_TABS, 'minimalTabs', minimal));
+      }
+
       return {
         clearCancelCallback,
         clearFilters,
@@ -269,6 +273,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setLoadingContent,
         setLoadingShowContent,
         setLoadingSubActionBar,
+        setMinimalTabs,
         setRightActionBar,
         setRightActionBarVerified,
         setSelectMode,
