@@ -6,6 +6,10 @@ const serverSidePurgeUtils = require('@medic/purging-utils');
 const logger = require('./logger');
 const { performance } = require('perf_hooks');
 const db = require('../db');
+const moment = require('moment');
+
+const TASK_EXPIRATION_PERIOD = 60; // days
+const TARGET_EXPIRATION_PERIOD = 6; // months
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -204,6 +208,10 @@ const getRecordGroupInfo = (row, groups, subjectIds) => {
     return;
   }
 
+  if (row.doc.type !== 'data_record') {
+    return;
+  }
+
   if (row.doc.form) {
     const subjectId = registrationUtils.getSubjectId(row.doc);
     if (row.doc.needs_signoff) {
@@ -348,55 +356,119 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     .then(() => nextKey && batchedContactsPurge(roles, purgeFn, nextKey, nextKeyDocId));
 };
 
-const batchedUnallocatedPurge = (roles, purgeFn, startKeyDocId = '') => {
-  let nextKeyDocId;
-  const docs = [];
-  const docIds = [];
-  const rolesHashes = Object.keys(roles);
-
-  logger.debug(`Starting unallocated purge batch with id ${startKeyDocId}`);
-
-  const queryString = {
+const batchedUnallocatedPurge = (roles, purgeFn) => {
+  const type = 'unallocated';
+  const url = `${db.couchUrl}/_design/medic/_view/docs_by_replication_key`;
+  const getQueryParams = (startKeyDocId) => ({
     limit: BATCH_SIZE,
     key: JSON.stringify('_unassigned'),
     startkey_docid: startKeyDocId,
     include_docs: true
+  });
+
+  const purgeCallback = (rolesHashes, rows) => {
+    const toPurge = {};
+    rows.forEach(row => {
+      const doc = row.doc;
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        const purgeIds = doc.form ?
+          purgeFn({ roles: roles[hash] }, {}, [doc], []) :
+          purgeFn({ roles: roles[hash] }, {}, [], [doc]);
+
+        if (!validPurgeResults(purgeIds)) {
+          return;
+        }
+        toPurge[hash][doc._id] = purgeIds.includes(doc._id);
+      });
+    });
+
+    return toPurge;
   };
 
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '');
+};
+
+const batchedTasksPurge = (roles) => {
+  const type = 'tasks';
+  const url = `${db.couchUrl}/_design/medic/_view/tasks_in_terminal_state`;
+  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
+
+  const getQueryParams = (startKeyDocId, startKey) => ({
+    limit: BATCH_SIZE,
+    end_key: JSON.stringify(maximumEmissionEndDate),
+    start_key: JSON.stringify(startKey),
+    startkey_docid: startKeyDocId,
+  });
+
+  const purgeCallback = (rolesHashes, rows) => {
+    const toPurge = {};
+    rows.forEach(row => {
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        toPurge[hash][row.id] = row.id;
+      });
+    });
+    return toPurge;
+  };
+
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, '', '');
+};
+
+const batchedTargetsPurge = (roles) => {
+  const type = 'targets';
+  const url = `${db.couchUrl}/_all_docs`;
+
+  const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
+  const getQueryParams = (startKeyDocId) => ({
+    limit: BATCH_SIZE,
+    start_key: JSON.stringify(startKeyDocId),
+    end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
+  });
+
+  const purgeCallback = (rolesHashes, rows) => {
+    const toPurge = {};
+    rows.forEach(row => {
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        toPurge[hash][row.id] = row.id;
+      });
+    });
+    return toPurge;
+  };
+
+  return batchedPurge(type, url, getQueryParams, purgeCallback, roles, 'target~');
+};
+
+const batchedPurge = (type, uri, getQueryParams, purgeCallback, roles, startKeyDocId, startKey) => {
+  let nextKey;
+  let nextKeyDocId;
+  const rows = [];
+  const docIds = [];
+  const rolesHashes = Object.keys(roles);
+
+  logger.debug(`Starting ${type} purge batch with id ${startKeyDocId}`);
+  // using `rpn` because PouchDB doesn't support `start_key_doc_id`
   return request
-    .get(`${db.couchUrl}/_design/medic/_view/docs_by_replication_key`, { qs: queryString, json: true })
+    .get(uri, { qs: getQueryParams(startKeyDocId, startKey), json: true })
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
           return;
         }
 
-        nextKeyDocId = row.id;
+        ({ id: nextKeyDocId, key: nextKey } = row);
         docIds.push(row.id);
-        docs.push(row.doc);
+        rows.push(row);
       });
 
       return getAlreadyPurgedDocs(rolesHashes, docIds);
     })
     .then(alreadyPurged => {
-      const toPurge = {};
-      docs.forEach(doc => {
-        rolesHashes.forEach(hash => {
-          toPurge[hash] = toPurge[hash] || {};
-          const purgeIds = doc.form ?
-            purgeFn({ roles: roles[hash] }, {}, [doc], []) :
-            purgeFn({ roles: roles[hash] }, {}, [], [doc]);
-
-          if (!validPurgeResults(purgeIds)) {
-            return;
-          }
-          toPurge[hash][doc._id] = purgeIds.includes(doc._id);
-        });
-      });
-
+      const toPurge = purgeCallback(rolesHashes, rows);
       return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
     })
-    .then(() => nextKeyDocId && batchedUnallocatedPurge(roles, purgeFn, nextKeyDocId));
+    .then(() => nextKeyDocId && batchedPurge(type, uri, getQueryParams, purgeCallback, roles, nextKeyDocId, nextKey));
 };
 
 const writePurgeLog = (roles, duration) => {
@@ -456,6 +528,8 @@ const purge = () => {
       return initPurgeDbs(roles)
         .then(() => batchedContactsPurge(roles, purgeFn))
         .then(() => batchedUnallocatedPurge(roles, purgeFn))
+        .then(() => batchedTasksPurge(roles))
+        .then(() => batchedTargetsPurge(roles))
         .then(() => {
           const duration = (performance.now() - start);
           logger.info(`Server Side Purge completed successfully in ${duration / 1000 / 60} minutes`);
