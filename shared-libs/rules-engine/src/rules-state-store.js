@@ -24,22 +24,24 @@ const self = {
    * @param {Object} settings.user User's user-settings document
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
    *    Receives the updated state as the only parameter.
+   * @returns {Boolean} that represents whether or not the state needs to be rebuilt
    */
   load: (existingState, settings, stateChangeCallback) => {
     if (state) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
-    const rulesConfigHash = hashRulesConfig(settings);
-    const useState = existingState && existingState.rulesConfigHash === rulesConfigHash;
-    if (!useState) {
-      return self.build(settings, stateChangeCallback);
-    }
-
     state = existingState;
     currentUserContact = settings.contact;
     currentUserSettings = settings.user;
-    onStateChange = safeCallback(stateChangeCallback);
+    setOnChangeState(stateChangeCallback);
+
+    const rulesConfigHash = hashRulesConfig(settings);
+    if (state && state.rulesConfigHash !== rulesConfigHash) {
+      state.stale = true;
+    }
+
+    return !state || state.stale;
   },
 
   /**
@@ -48,12 +50,12 @@ const self = {
    * @param {Object} settings Settings for the behavior of the rules store
    * @param {Object} settings.contact User's hydrated contact document
    * @param {Object} settings.user User's user-settings document
-   * @param {Object} settings.monthStartDate reporting interval start date
+   * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} stateChangeCallback Callback which is invoked whenever the state changes.
    *    Receives the updated state as the only parameter.
    */
   build: (settings, stateChangeCallback) => {
-    if (state) {
+    if (state && !state.stale) {
       throw Error('Attempted to initialize the rules-state-store multiple times.');
     }
 
@@ -66,7 +68,7 @@ const self = {
     currentUserContact = settings.contact;
     currentUserSettings = settings.user;
 
-    onStateChange = safeCallback(stateChangeCallback);
+    setOnChangeState(stateChangeCallback);
     return onStateChange(state);
   },
 
@@ -212,6 +214,21 @@ const self = {
   currentUserSettings: () => currentUserSettings,
 
   /**
+   * @returns {number} The timestamp when the current loaded state was last updated
+   */
+  stateLastUpdatedAt: () => state.calculatedAt,
+
+  /**
+   * @returns {number} current monthStartDate
+   */
+  getMonthStartDate: () => state.monthStartDate,
+
+  /**
+   * @returns {boolean} whether or not the state is loaded
+   */
+  isLoaded: () => !!state,
+
+  /**
    * Store a set of target emissions which were emitted by refreshing a set of contacts
    *
    * @param {string[]} contactIds An array of contact ids which produced these targetEmissions by being refreshed.
@@ -256,16 +273,20 @@ const hashRulesConfig = (settings) => {
   return md5(asString);
 };
 
-const safeCallback = callback => (...args) => {
-  if (callback && typeof callback === 'function') {
-    return callback(...args);
-  }
+const setOnChangeState = (stateChangeCallback) => {
+  onStateChange = (state) => {
+    state.calculatedAt = new Date().getTime();
+
+    if (stateChangeCallback && typeof stateChangeCallback === 'function') {
+      return stateChangeCallback(state);
+    }
+  };
 };
 
 // ensure all exported functions are only ever called after initialization
 module.exports = Object.keys(self).reduce((agg, key) => {
   agg[key] = (...args) => {
-    if (!['build', 'load'].includes(key) && (!state || !state.contactState)) {
+    if (!['build', 'load', 'isLoaded'].includes(key) && (!state || !state.contactState)) {
       throw Error(`Invalid operation: Attempted to invoke rules-state-store.${key} before call to build or load`);
     }
 

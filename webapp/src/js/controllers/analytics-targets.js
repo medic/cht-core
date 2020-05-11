@@ -1,5 +1,6 @@
 angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
   $log,
+  $timeout,
   RulesEngine,
   Telemetry
 ) {
@@ -28,11 +29,14 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl', function (
       return [];
     })
     .then(targets => {
-      ctrl.loading = false;
-      ctrl.targets = targets.filter(target => target.visible !== false);
+      $timeout(() => {
+        ctrl.loading = false;
+        ctrl.targets = targets.filter(target => target.visible !== false);
+      });
 
       telemetryData.end = Date.now();
       Telemetry.record(`analytics:targets:load`, telemetryData.end - telemetryData.start);
+
     });
 }
 );

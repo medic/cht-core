@@ -58,7 +58,9 @@ describe('rules-state-store', () => {
   it('fresh contact but dirty hash', async () => {
     const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     state.rulesConfigHash = 'hash';
-    await rulesStateStore.load(state, {});
+    const needsBuilding = await rulesStateStore.load(state, {});
+    expect(needsBuilding).to.equal(true);
+    await rulesStateStore.build({});
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.true;
@@ -139,7 +141,10 @@ describe('rules-state-store', () => {
 
   it('rewinding clock makes contacts dirty', async () => {
     await rulesStateStore.build({});
-    await rulesStateStore.markFresh(Date.now() + 1000, 'a');
+    const now = Date.now();
+    clock = sinon.useFakeTimers(now);
+    await rulesStateStore.markFresh(now + 1000, 'a');
+    expect(rulesStateStore.stateLastUpdatedAt()).to.equal(now);
     expect(rulesStateStore.isDirty('a')).to.be.true;
   });
 
@@ -237,6 +242,29 @@ describe('rules-state-store', () => {
       expect(rulesStateStore.isDirty('a')).to.be.true;
     });
 
+  });
+
+  describe('onChangeState', () => {
+    it('should update calculatedAt when making any change', async () => {
+      const one = moment('2020-04-12').valueOf();
+      clock = sinon.useFakeTimers(one);
+      await rulesStateStore.build({ monthStartDate: 25, targets: [{ id: 'target' }] });
+
+      await rulesStateStore.markDirty(['a']);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one);
+
+      clock.tick(5000);
+      await rulesStateStore.markFresh(one, ['a']);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000);
+
+      clock.tick(5000);
+      await rulesStateStore.markAllFresh(one, ['a']);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000 + 5000);
+
+      clock.tick(5000);
+      await rulesStateStore.storeTargetEmissions([], [{ type: 'target', contact: { _id: 'c' } }]);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000 + 5000 + 5000);
+    });
   });
 
   describe('hashRulesConfig', () => {

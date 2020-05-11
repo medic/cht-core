@@ -12,6 +12,7 @@ const refreshRulesEmissions = require('./refresh-rules-emissions');
 const rulesEmitter = require('./rules-emitter');
 const rulesStateStore = require('./rules-state-store');
 const updateTemporalStates = require('./update-temporal-states');
+const calendarInterval = require('@medic/calendar-interval');
 
 let wireupOptions;
 
@@ -24,6 +25,7 @@ module.exports = {
    * @param {Object[]} settings.targets Target definitions from settings doc
    * @param {Boolean} settings.enableTasks Flag to enable tasks
    * @param {Boolean} settings.enableTargets Flag to enable targets
+   * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} userDoc User's hydrated contact document
    */
   initialize: (provider, settings) => {
@@ -35,7 +37,8 @@ module.exports = {
     const { enableTasks=true, enableTargets=true } = settings;
     wireupOptions = { enableTasks, enableTargets };
 
-    return provider.existingRulesStateStore()
+    return provider
+      .existingRulesStateStore()
       .then(existingStateDoc => {
         if (!rulesEmitter.isLatestNoolsSchema()) {
           throw Error('Rules Engine: Updates to the nools schema are required');
@@ -45,11 +48,14 @@ module.exports = {
           existingStateDoc,
           { rulesStateStore: updatedState }
         );
-        rulesStateStore.load(
-          existingStateDoc.rulesStateStore,
-          settings,
-          contactClosure
-        );
+        const needsBuilding = rulesStateStore.load(existingStateDoc.rulesStateStore, settings, contactClosure);
+        return handleIntervalTurnover(provider, settings).then(() => {
+          if (!needsBuilding) {
+            return;
+          }
+
+          rulesStateStore.build(settings, contactClosure);
+        });
       });
   },
 
@@ -95,15 +101,14 @@ module.exports = {
 
     const calculationTimestamp = Date.now();
     const targetEmissionFilter = filterInterval && (emission => {
-      const emissionDate = moment(emission.date);
-      return emissionDate.isAfter(filterInterval.start) && emissionDate.isBefore(filterInterval.end);
+      // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
+      return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
     });
 
     return refreshRulesEmissionForContacts(provider, calculationTimestamp)
       .then(() => {
         const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-        storeTargetsDoc(provider, targets, filterInterval);
-        return targets;
+        return storeTargetsDoc(provider, targets, filterInterval).then(() => targets);
       });
   },
 
@@ -165,31 +170,64 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
       });
   };
 
-  if (contactIds) {
-    return refreshForKnownContacts(calculationTimestamp, contactIds);
-  }
+  return handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }).then(() => {
+    if (contactIds) {
+      return refreshForKnownContacts(calculationTimestamp, contactIds);
+    }
 
-  // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
-  // reports/tasks)
-  if (!rulesStateStore.hasAllContacts()) {
-    return refreshForAllContacts(calculationTimestamp);
-  }
+    // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
+    // reports/tasks)
+    if (!rulesStateStore.hasAllContacts()) {
+      return refreshForAllContacts(calculationTimestamp);
+    }
 
-  // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-  return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
+    // Once the contact state store has all contacts, trust it and only refresh those marked dirty
+    return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
+  });
 };
 
-const storeTargetsDoc = (provider, targets, filterInterval) => {
+const storeTargetsDoc = (provider, targets, filterInterval, force = false) => {
   const targetDocTag = filterInterval ? moment(filterInterval.end).format('YYYY-MM') : 'latest';
   const minifyTarget = target => ({ id: target.id, value: target.value });
-  const content = {
-    updated_date: Date.now(),
-    targets: targets.map(minifyTarget),
-  };
+
   return provider.commitTargetDoc(
-    content,
+    targets.map(minifyTarget),
     rulesStateStore.currentUserContact(),
     rulesStateStore.currentUserSettings(),
-    targetDocTag
+    targetDocTag,
+    force
   );
+};
+
+// Because we only save the `target` document once per day (when we calculate targets for the first time),
+// we're losing all updates to targets that happened in the last day of the reporting period.
+// This function takes the last saved state (which may be stale) and generates the targets doc for the corresponding
+// reporting interval (that includes the date when the state was calculated).
+// We don't recalculate the state prior to this because we support targets that count events infinitely to emit `now`,
+// which means that they would all be excluded from the emission filter (being outside the past reporting interval).
+// https://github.com/medic/cht-core/issues/6209
+const handleIntervalTurnover = (provider, { monthStartDate }) => {
+  if (!rulesStateStore.isLoaded() || !wireupOptions.enableTargets) {
+    return Promise.resolve();
+  }
+
+  const stateCalculatedAt = rulesStateStore.stateLastUpdatedAt();
+  if (!stateCalculatedAt) {
+    return Promise.resolve();
+  }
+
+  const currentInterval = calendarInterval.getCurrent(monthStartDate);
+  // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
+  if (moment(stateCalculatedAt).isBetween(currentInterval.start, currentInterval.end, null, '[]')) {
+    return Promise.resolve();
+  }
+
+  const filterInterval = calendarInterval.getInterval(monthStartDate, stateCalculatedAt);
+  const targetEmissionFilter = (emission => {
+    // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
+    return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
+  });
+
+  const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
+  return storeTargetsDoc(provider, targets, filterInterval, true);
 };
