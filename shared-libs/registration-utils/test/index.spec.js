@@ -267,6 +267,11 @@ describe('registrationUtils', () => {
       chai.expect(utils.getSubjectId({ place_id: 's1', fields: {} })).to.equal('s1');
     });
 
+    it('should return correct place_uuid', () => {
+      chai.expect(utils.getSubjectId({ fields: { place_uuid: 's1' } })).to.equal('s1');
+      chai.expect(utils.getSubjectId({ place_id: 's1', fields: { place_uuid: 's2' } })).to.equal('s1');
+    });
+
     it('should priorotize patient over place', () => {
       chai.expect(utils.getSubjectId({ patient_id: 'patient_s1', place_id: 'place_s1' }))
         .to.equal('patient_s1');
