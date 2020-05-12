@@ -1,4 +1,5 @@
 const utils = require('../../../utils');
+const sentinelUtils = require('../utils');
 const chai = require('chai');
 
 const outboundConfig = (port) => ({
@@ -106,16 +107,34 @@ describe('Outbound', () => {
         ]);
       })
       .then(() => utils.sentinelDb.allDocs({ keys: tasks.map(task => task._id), include_docs: true }))
-      .then(result => {
-        chai.expect(result.rows.length).to.equal(2);
-        chai.expect(result.rows[0].doc).to.deep.equal({
+      .then(tasksResult => {
+        chai.expect(tasksResult.rows.length).to.equal(2);
+        chai.expect(tasksResult.rows[0].doc).to.deep.equal({
           _id: `task:outbound:test-aaa`,
-          _rev: result.rows[0].doc._rev,
+          _rev: tasksResult.rows[0].doc._rev,
           type: 'task:outbound',
           doc_id: 'test-aaa',
           queue: ['broken'],
         });
-        chai.expect(result.rows[1].value.deleted).to.equal(true);
+        chai.expect(tasksResult.rows[1].value.deleted).to.equal(true);
+      })
+      .then(() => sentinelUtils.getInfoDocs(docs.map(doc => doc._id)))
+      .then(infoDocs => {
+        chai.expect(infoDocs.length).to.equal(2);
+        chai.expect(infoDocs[0]).to.nested.include({
+          _id: 'test-aaa-info',
+          type: 'info',
+          doc_id: 'test-aaa',
+          'completed_tasks[0].type': 'outbound',
+          'completed_tasks[0].name': 'working'
+        });
+        chai.expect(infoDocs[1]).to.nested.include({
+          _id: 'test-zzz-info',
+          type: 'info',
+          doc_id: 'test-zzz',
+          'completed_tasks[0].type': 'outbound',
+          'completed_tasks[0].name': 'working'
+        });
       });
   });
 });

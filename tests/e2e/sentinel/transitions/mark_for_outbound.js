@@ -119,6 +119,15 @@ describe('mark_for_outbound', () => {
             id: report._id,
             rev: report._rev
           });
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id,
+            'completed_tasks[0].type': 'outbound',
+            'completed_tasks[0].name': 'test'
+          });
         });
     });
 
@@ -172,6 +181,16 @@ describe('mark_for_outbound', () => {
           expect(tasks.length).to.equal(0);
           expect(brokenEndpointRequests.length).to.equal(0);
           expect(workingEndpointRequests.length).to.equal(1);
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id,
+            'completed_tasks[0].type': 'outbound',
+            'completed_tasks[0].name': 'test'
+          });
+          expect(infoDoc.completed_tasks.length).to.equal(1);
         });
     });
 
