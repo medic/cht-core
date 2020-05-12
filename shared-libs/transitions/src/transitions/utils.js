@@ -3,11 +3,11 @@ const messages = require('../lib/messages');
 const utils = require('../lib/utils');
 const idGenerator = require('../lib/ids').generator(db);
 
-const findFirstMatchingMessage = (config, errorKey) => {
+const findFirstMatchingMessage = (config, eventType) => {
   if (!config.messages || !config.messages.length) {
     return null;
   }
-  const matches = config.messages.filter(msg => msg.event_type === errorKey);
+  const matches = config.messages.filter(msg => msg.event_type === eventType);
   return matches && matches.length && matches[0];
 };
 
@@ -25,7 +25,7 @@ module.exports = {
       message = config;
     } else {
       errorMessage = `messages.generic.${errorKey}`;
-      message = { translationKey: errorMessage };
+      message = { translation_key: errorMessage };
     }
     const recipient = config && config.recipient || 'from';
     // A "message" ends up being a doc.task, which is something that is sent to
@@ -38,6 +38,16 @@ module.exports = {
       code: errorKey
     }, context);
   },
+
+  addSuccessMessage: (doc, reportConfig, eventType, context = {}) => {
+    const config = findFirstMatchingMessage(reportConfig, eventType);
+    if (!config) {
+      return;
+    }
+
+    messages.addMessage(doc, config, config.recipient, context);
+  },
+
   addRegistrationNotFoundError: (doc, reportConfig) => {
     module.exports.addRejectionMessage(doc, reportConfig, 'registration_not_found');
   },

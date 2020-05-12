@@ -646,6 +646,28 @@ module.exports = {
 
   getDefaultSettings: getDefaultSettings,
 
+  addTranslations: (languageCode, translations = {}) => {
+    const getTranslationsDoc = code => {
+      return db.get(`messages-${code}`).catch(err => {
+        if (err.status === 404) {
+          return {
+            _id: `messages-${code}`,
+            type: 'translations',
+            code: code,
+            name: code,
+            enabled: true,
+            generic: {}
+          };
+        }
+      });
+    };
+
+    return getTranslationsDoc(languageCode).then(translationsDoc => {
+      Object.assign(translationsDoc.generic, translations);
+      return db.put(translationsDoc);
+    });
+  },
+
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
 
 };
