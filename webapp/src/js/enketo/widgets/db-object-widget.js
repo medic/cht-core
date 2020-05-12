@@ -9,6 +9,7 @@ define( function( require, exports, module ) {
   const _ = require('lodash/core');
   const Widget = require('enketo-core/src/js/Widget');
   const $ = require('jquery');
+  const CONTACT_TYPE_CLASS_PREFIX = 'or-appearance-type-';
 
   require('enketo-core/src/js/plugins');
 
@@ -61,19 +62,33 @@ define( function( require, exports, module ) {
         .text(value);
       $textInput.append(preSelectedOption);
 
-      const dbObjectType = $textInput.attr('data-type-xml');
+      const contactType = getContactType($question, $textInput);
 
       if (!$question.hasClass('or-appearance-bind-id-only')) {
         $textInput.on('change.dbobjectwidget', changeHandler);
       }
-      Select2Search($textInput, dbObjectType, {
-        allowNew: $question.hasClass('or-appearance-allow-new')
-      }).then(function() {
+      const allowNew = $question.hasClass('or-appearance-allow-new');
+      Select2Search($textInput, contactType, { allowNew }).then(function() {
         // select2 doesn't understand readonly
         $textInput.prop('disabled', disabled);
       });
     });
   }
+
+  const getContactType = function($question, $textInput) {
+    const dbObjectType = $textInput.attr('data-type-xml');
+    if (dbObjectType !== 'select-contact') {
+      // deprecated db-object widget
+      return dbObjectType;
+    }
+    const names = $question.attr('class').split(/\s+/);
+    for (const name of names) {
+      if (name.startsWith(CONTACT_TYPE_CLASS_PREFIX)) {
+        return name.slice(CONTACT_TYPE_CLASS_PREFIX.length);
+      }
+    }
+    throw new Error('Contact type undefined: update the form to have a appearance of "type-<contact-type>"');
+  };
 
   const changeHandler = function() {
     const $this = $(this);
@@ -169,6 +184,6 @@ define( function( require, exports, module ) {
 
   module.exports = {
     'name': pluginName,
-    'selector': '.or-appearance-db-object',
+    'selector': '.or-appearance-db-object,.or-appearance-select-contact',
   };
 } );
