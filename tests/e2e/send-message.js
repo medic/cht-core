@@ -69,9 +69,7 @@ describe('Send message', () => {
   });
 
   afterAll(done => {
-    console.log('About to call utils.afterEach from send-message');
     utils.afterEach(() => {
-      console.log('Finished calling utils.afterEach from send-message');
       done();
     });
   });

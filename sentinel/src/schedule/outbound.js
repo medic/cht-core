@@ -111,7 +111,22 @@ const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise.resolve(
       .then(() => {
         // Worked, remove entry from queue and store infodoc that outbound service has updated
         return removeConfigKeyFromTask(taskDoc, key)
-          .then(() => db.sentinel.put(infoDoc));
+          .then(() => db.sentinel.put(infoDoc))
+          .catch(err => {
+            if (err.status !== 409) {
+              logger.error('Failed to save infodoc');
+              logger.error(err);
+              throw err;
+            }
+
+            // While we held the infodoc open something else wrote to it. Presume it wasn't
+            // anything task related, load a fresh version and overwrite
+            return db.sentinel.get(infoDoc._id)
+              .then(freshInfoDoc => {
+                freshInfoDoc.completed_tasks = infoDoc.completed_tasks;
+                return db.sentinel.put(freshInfoDoc);
+              });
+          });
       });
   }).catch(() => {
     // Failed!

@@ -633,7 +633,7 @@ module.exports = {
 
   setProcessedSeqToNow: () => {
     return Promise.all([
-      sentinel.get('_local/sentinel-meta-data'),
+      sentinel.get('_local/sentinel-meta-data').catch(() => ({_id: '_local/sentinel-meta-data'})),
       db.info()
     ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
       sentinelMetadata.processed_seq = updateSeq;

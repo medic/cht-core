@@ -118,7 +118,11 @@ describe('Outbound', () => {
         });
         chai.expect(tasksResult.rows[1].value.deleted).to.equal(true);
       })
-      .then(() => sentinelUtils.getInfoDocs(docs.map(doc => doc._id)))
+      .then(checkInfoDocs);
+  });
+
+  const checkInfoDocs = (retry = 10) =>
+    sentinelUtils.getInfoDocs(docs.map(doc => doc._id))
       .then(infoDocs => {
         chai.expect(infoDocs.length).to.equal(2);
         chai.expect(infoDocs[0]).to.nested.include({
@@ -135,6 +139,18 @@ describe('Outbound', () => {
           'completed_tasks[0].type': 'outbound',
           'completed_tasks[0].name': 'working'
         });
+      }).catch(err => {
+        console.log(retry);
+        console.log('ZZZZZZZZZZZZZZZZZZZZZZZZZZZZ');
+        console.log(JSON.stringify(infoDocs, null, 2));
+
+        // We don't really have a reliable way to know when these writes happen, because of how
+        // schedules work. Calling `waitForPushes` is only half the story, so sometimes this can
+        // flake
+        if (retry) {
+          return utils.delayPromise(() => checkInfoDocs(retry - 1), 1000);
+        }
+
+        throw err;
       });
-  });
 });
