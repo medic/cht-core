@@ -106,23 +106,25 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         return $q.resolve(task);
       }
 
-      return DB().get(task.forId)
-        .then(contactDoc => {
-          for (const action of task.actions) {
-            if (!action.content) {
-              action.content = {};
-            }
+      const setActionsContacts = (task, contact) => {
+        task.actions.forEach(action => {
+          action.content = action.content || {};
+          action.content.contact = action.content.contact || contact;
+        });
+      };
 
-            if (!action.content.contact) {
-              action.content.contact = contactDoc;
-            }
+      return DB()
+        .get(task.forId)
+        .catch(err => {
+          if (err.status !== 404) {
+            throw err;
           }
 
-
-          return task;
+          $log.info('Failed to hydrate contact information in task action', err);
+          return { _id: task.forId };
         })
-        .catch(err => {
-          $log.error('Failed to hydrate contact information in task action', err);
+        .then(contactDoc => {
+          setActionsContacts(task, contactDoc);
           return task;
         });
     };
