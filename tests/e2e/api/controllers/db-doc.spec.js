@@ -1167,7 +1167,7 @@ describe('db-doc handler', () => {
         .then(() => utils.updateSettings(settings))
         .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
         .then(result => {
-          // user can't see the unallocated report without permissions
+          // user can see the unallocated report with permissions
           chai.expect(result).to.deep.include(doc);
         });
     });
