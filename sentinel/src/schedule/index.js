@@ -71,7 +71,7 @@ function _reschedule() {
     heartbeat = now
       .clone()
       .startOf('minute')
-      .add(5, 'minutes'),
+      .add(1, 'minutes'),
     duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
   logger.info(`checking schedule again in ${moment.duration(duration).humanize()}`);
