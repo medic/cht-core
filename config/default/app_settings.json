@@ -360,7 +360,6 @@
         {
           "id": "deaths-this-month",
           "type": "count",
-          "goal": 0,
           "translation_key": "targets.death_reporting.deaths.title",
           "icon": "icon-death-general",
           "subtitle_translation_key": "targets.this_month.subtitle"
