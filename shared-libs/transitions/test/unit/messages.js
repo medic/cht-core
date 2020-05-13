@@ -152,6 +152,7 @@ describe('messages', () => {
   });
 
   it('addMessage detects duplicate messages', () => {
+    sinon.stub(config, 'get').returns({ allowed_duplicates_limit: 1 });
     const doc = {to: '+1234567'};
     messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
     assert.equal(doc.tasks.length, 1);
@@ -329,7 +330,7 @@ describe('messages', () => {
         ['5', 'ABCD', false],
         ['5', ' ABCD ', false],
         ['5.9', 'ABCD', false],
-        
+
         // allowed
         [0, '+123', true],
         ['5', '12345', true],
