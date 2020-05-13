@@ -140,10 +140,6 @@ describe('Outbound', () => {
           'completed_tasks[0].name': 'working'
         });
       }).catch(err => {
-        console.log(retry);
-        console.log('ZZZZZZZZZZZZZZZZZZZZZZZZZZZZ');
-        console.log(JSON.stringify(infoDocs, null, 2));
-
         // We don't really have a reliable way to know when these writes happen, because of how
         // schedules work. Calling `waitForPushes` is only half the story, so sometimes this can
         // flake
