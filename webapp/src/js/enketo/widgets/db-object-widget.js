@@ -77,7 +77,7 @@ define( function( require, exports, module ) {
 
   const getContactType = function($question, $textInput) {
     const dbObjectType = $textInput.attr('data-type-xml');
-    if (dbObjectType !== 'select-contact') {
+    if (dbObjectType !== 'string') {
       // deprecated db-object widget
       return dbObjectType;
     }
