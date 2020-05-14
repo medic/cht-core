@@ -62,32 +62,33 @@ define( function( require, exports, module ) {
         .text(value);
       $textInput.append(preSelectedOption);
 
-      const contactType = getContactType($question, $textInput);
+      const contactTypes = getContactTypes($question, $textInput);
 
       if (!$question.hasClass('or-appearance-bind-id-only')) {
         $textInput.on('change.dbobjectwidget', changeHandler);
       }
       const allowNew = $question.hasClass('or-appearance-allow-new');
-      Select2Search($textInput, contactType, { allowNew }).then(function() {
+      Select2Search($textInput, contactTypes, { allowNew }).then(function() {
         // select2 doesn't understand readonly
         $textInput.prop('disabled', disabled);
       });
     });
   }
 
-  const getContactType = function($question, $textInput) {
+  const getContactTypes = function($question, $textInput) {
     const dbObjectType = $textInput.attr('data-type-xml');
     if (dbObjectType !== 'string') {
       // deprecated db-object widget
-      return dbObjectType;
+      return [ dbObjectType ];
     }
+    const types = [];
     const names = $question.attr('class').split(/\s+/);
     for (const name of names) {
       if (name.startsWith(CONTACT_TYPE_CLASS_PREFIX)) {
-        return name.slice(CONTACT_TYPE_CLASS_PREFIX.length);
+        types.push(name.slice(CONTACT_TYPE_CLASS_PREFIX.length));
       }
     }
-    throw new Error('Contact type undefined: update the form to have a appearance of "type-<contact-type>"');
+    return types;
   };
 
   const changeHandler = function() {
