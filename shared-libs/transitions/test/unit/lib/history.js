@@ -26,7 +26,7 @@ describe('history utility', () => {
     should.equal(history.check('to2', 'msg2'), false);
   });
 
-  it('should return false when duplicate with default limit', () => {
+  it('should return false when not duplicate with default limit', () => {
     // not stubbing config.get cause, let's presume we have no config at all
     // default limit is 5
     should.equal(history.check('to1', 'msg1'), false);
@@ -68,6 +68,15 @@ describe('history utility', () => {
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), true);
+
+    config.get.returns({ allowed_duplicates_limit: '25 dolars' }); // not a number, so uses default limit
+    should.equal(history.check('to2', 'msg1'), false);
+    should.equal(history.check('to2', 'msg1'), false);
+    should.equal(history.check('to2', 'msg1'), false);
+    should.equal(history.check('to2', 'msg1'), false);
+    should.equal(history.check('to2', 'msg1'), false);
+    should.equal(history.check('to2', 'msg1'), true);
+
   });
 
   it('tracks keys', () => {
