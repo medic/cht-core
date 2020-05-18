@@ -35,6 +35,7 @@ const africasTalking = require('./controllers/africas-talking');
 const infodoc = require('./controllers/infodoc');
 const authorization = require('./middleware/authorization');
 const hydration = require('./controllers/hydration');
+const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
 const staticResources = /\/(templates|static)\//;
@@ -409,6 +410,10 @@ app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 // offline users are not allowed to hydrate documents via the hydrate API
 app.get('/api/v1/hydrate', authorization.offlineUserFirewall, jsonQueryParser, hydration.hydrate);
 app.post('/api/v1/hydrate', authorization.offlineUserFirewall, jsonParser, jsonQueryParser, hydration.hydrate);
+
+// offline users are not allowed to get contacts by phone
+app.get('/api/v1/contacts-by-phone', authorization.offlineUserFirewall, contactsByPhone.request);
+app.post('/api/v1/contacts-by-phone', authorization.offlineUserFirewall, jsonParser, contactsByPhone.request);
 
 app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
