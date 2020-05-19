@@ -2,106 +2,64 @@ const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const chai = require('chai');
 
-const pushes = {
-  one: {
+const outboundConfig = (port) => ({
+  working: {
     destination: {
-      base_url: 'http://127.0.0.1:8888',
-      path: '/one'
+      base_url: `http://127.0.0.1:${port}`,
+      path: '/test-working'
     },
     mapping: {
-      id: 'doc._id',
-      clinic: 'doc.contact.parent._id',
-      'fields.ab': {
-        expr: 'doc.fields.a * doc.fields.b + 100',
-      },
-      'fields.cd': {
-        expr: 'doc.fields.c - doc.fields.d',
-        optional: true,
-      },
-      patient: {
-        path: 'doc.fields.patient_id',
-        optional: true
-      }
-    }
+      id: 'doc._id'
+    },
+    relevant_to: 'false'
   },
-  two: {
+  broken: {
     destination: {
-      base_url: 'http://127.0.0.1:8888',
-      path: '/two'
+      base_url: `http://127.0.0.1:${port}`,
+      path: '/test-broken'
     },
     mapping: {
-      keys: {
-        expr: 'doc.fields && Object.keys(doc.fields).map(key => "key" + key)',
-      },
-      values: {
-        expr: 'doc.fields && Object.values(doc.fields).map(value => "value" + value)'
-      }
-    }
-  },
-};
+      id: 'doc._id'
+    },
+    relevant_to: 'false'
+  }
+});
 
 const docs = [
-  {
-    _id: 'no_clinic',
-    pushes: ['one'],
-  },
-  {
-    _id: 'no_patient_no_fields',
-    contact: { _id: 'chw_id', parent: { _id: 'clinic_id' } },
-    pushes: ['one'],
-  },
-  {
-    _id: 'no_patient_nocd',
-    contact: { _id: 'chw_id', parent: { _id: 'clinic_id' } },
-    fields: { a: 1, b: 2 },
-    pushes: ['one'],
-  },
-  {
-    _id: 'all_fields_1',
-    contact: { _id: 'other_chw', parent: { _id: 'other_clinic' } },
-    fields: { a: 5, b: 4, c: 10, d: 8, patient_id: 'alpha' },
-    pushes: ['one', 'two'],
-  },
-  {
-    _id: 'all_fields_2',
-    contact: { _id: 'some_chw', parent: { _id: 'some_clinic' } },
-    fields: { a: -5, b: 20, c: 9, d: 12, patient_id: 'beta' },
-    pushes: ['one', 'two'],
-  },
-  {
-    _id: 'for_two',
-    fields: { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 },
-    pushes: ['two', 'missing'],
-  }
+  {_id: 'test-aaa'},
+  {_id: 'test-zzz'}
 ];
 
-const docsToDelete = [
-  { _id: 'to_delete' }
-];
-
-const tasks = docs.concat(docsToDelete).map(doc => ({
-  _id: `task:outbound:${doc._id}`,
+const tasks = [{
+  _id: `task:outbound:test-aaa`,
   type: 'task:outbound',
-  doc_id: doc._id,
-  queue: doc.pushes,
-}));
+  doc_id: 'test-aaa',
+  queue: ['working', 'broken'],
+}, {
+  _id: `task:outbound:test-zzz`,
+  type: 'task:outbound',
+  doc_id: 'test-zzz',
+  queue: ['working'],
+}];
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const destinationApp = express();
 const jsonParser = bodyParser.json({ limit: '32mb' });
-const inboxes = { one: [], two: [] };
+const inboxes = { working: [], broken: [] };
 destinationApp.use(jsonParser);
-destinationApp.post('/one', (req, res) => inboxes['one'].push(req.body) && res.send('true'));
-destinationApp.post('/two', (req, res) => inboxes['two'].push(req.body) && res.send('true'));
+destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body) && res.send('true'));
+destinationApp.post('/test-broken', (req, res) => inboxes.broken.push(req.body) && res.status(500).end());
 let server;
 
 const waitForPushes = () => {
   return getTasks().then(result => {
-    if (result.rows.length === 2) {
+    // waiting for 1 task left should imply that the first task, which should stay because it points
+    // to a broken endpoint, has executed, since the second task has executed successfully and been
+    // deleted
+    if (result.rows.length === 1) {
       return;
     }
-
     return utils.delayPromise(waitForPushes, 100);
   });
 };
@@ -117,7 +75,7 @@ const wipeTasks = () => {
 
 describe('Outbound', () => {
   beforeAll(() => {
-    server = destinationApp.listen(8888);
+    server = destinationApp.listen();
   });
 
   afterAll(() => {
@@ -126,105 +84,69 @@ describe('Outbound', () => {
 
   afterEach(() => utils.revertDb().then(() => wipeTasks()));
 
-  it('should send outbound tasks correctly', () => {
+  it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
     return utils
-      .updateSettings({ outbound: pushes })
+      .updateSettings({ outbound: outboundConfig(server.address().port) })
       .then(() => utils.stopSentinel())
-      .then(() => utils.saveDocs(docs.concat(docsToDelete)))
-      .then(() => utils.deleteDocs(docsToDelete.map(d => d._id)))
+      .then(() => utils.saveDocs(docs))
       .then(() => utils.sentinelDb.bulkDocs(tasks))
       .then(() => utils.startSentinel())
-      .then(() => sentinelUtils.waitForSentinel())
+      .then(() => console.log('Waiting for schedules'))
       .then(() => waitForPushes())
       .then(() => {
-        chai.expect(inboxes.one.length).to.equal(3);
-        chai.expect(inboxes.two.length).to.equal(3);
+        chai.expect(inboxes.working.length).to.equal(2);
+        chai.expect(inboxes.broken.length).to.equal(1);
 
-        chai.expect(inboxes.one).to.have.deep.members([
-          {
-            id: 'no_patient_nocd',
-            clinic: 'clinic_id',
-            fields: {
-              ab: 102,
-              cd: null,
-            },
-          },
-          {
-            id: 'all_fields_1',
-            clinic: 'other_clinic',
-            fields: {
-              ab: 120,
-              cd: 2,
-            },
-            patient: 'alpha',
-          },
-          {
-            id: 'all_fields_2',
-            clinic: 'some_clinic',
-            fields: {
-              ab: 0,
-              cd: -3,
-            },
-            patient: 'beta',
-          }
+        chai.expect(inboxes.working).to.have.deep.members([
+          {id: 'test-aaa'},
+          {id: 'test-zzz'}
         ]);
 
-        chai.expect(inboxes.two).to.have.deep.members([
-          {
-            keys: ['keya', 'keyb', 'keyc', 'keyd', 'keypatient_id'],
-            values: ['value5', 'value4', 'value10', 'value8', 'valuealpha']
-          },
-          {
-            keys: ['keya', 'keyb', 'keyc', 'keyd', 'keypatient_id'],
-            values: ['value-5', 'value20', 'value9', 'value12', 'valuebeta']
-          },
-          {
-            keys: ['keya', 'keyb', 'keyc', 'keyd', 'keye', 'keyf'],
-            values: ['value1', 'value2', 'value3', 'value4', 'value5', 'value6']
-          }
+        chai.expect(inboxes.broken).to.have.deep.members([
+          {id: 'test-aaa'}
         ]);
-      })
-      .then(() => utils.getDocs(docs.map(doc => doc._id)))
-      .then(results => {
-        // original docs were not updated
-        results.forEach(doc => chai.expect(doc._rev.startsWith('1-')).to.equal(true));
       })
       .then(() => utils.sentinelDb.allDocs({ keys: tasks.map(task => task._id), include_docs: true }))
-      .then(result => {
-        // all sent task:outbound docs have been deleted, all unsent still exist unchanged
-        const sentTasks = [
-          'task:outbound:no_patient_nocd',
-          'task:outbound:all_fields_1',
-          'task:outbound:all_fields_2',
-          'task:outbound:for_two',
-          'task:outbound:to_delete'
-        ];
-        result.rows.forEach(task => {
-          if (sentTasks.includes(task.id)) {
-            chai.expect(task.doc).to.equal(null);
-          } else {
-            chai.expect(task.doc).not.to.equal(null);
-            chai.expect(task.doc).to.deep.include(tasks.find(t => t._id === task.id));
-          }
+      .then(tasksResult => {
+        chai.expect(tasksResult.rows.length).to.equal(2);
+        chai.expect(tasksResult.rows[0].doc).to.deep.equal({
+          _id: `task:outbound:test-aaa`,
+          _rev: tasksResult.rows[0].doc._rev,
+          type: 'task:outbound',
+          doc_id: 'test-aaa',
+          queue: ['broken'],
         });
+        chai.expect(tasksResult.rows[1].value.deleted).to.equal(true);
       })
-      .then(() => sentinelUtils.getInfoDocs(docs.concat(docsToDelete).map(doc => doc._id)))
-      .then(infos => {
-        const findById = id => infos.find(info => info.doc_id === id);
-
-        // infodoc.completed_tasks filled correctly
-        chai.expect(findById('no_clinic').completed_tasks).to.equal(undefined);
-        chai.expect(findById('no_patient_no_fields').completed_tasks).to.equal(undefined);
-        chai.expect(findById('no_patient_nocd').completed_tasks.length).to.equal(1);
-        chai.expect(findById('no_patient_nocd').completed_tasks[0].name).to.equal('one');
-        chai.expect(findById('all_fields_1').completed_tasks.length).to.equal(2);
-        chai.expect(findById('all_fields_1').completed_tasks[0].name).to.equal('one');
-        chai.expect(findById('all_fields_1').completed_tasks[1].name).to.equal('two');
-        chai.expect(findById('all_fields_2').completed_tasks.length).to.equal(2);
-        chai.expect(findById('all_fields_2').completed_tasks[0].name).to.equal('one');
-        chai.expect(findById('all_fields_2').completed_tasks[1].name).to.equal('two');
-        chai.expect(findById('for_two').completed_tasks.length).to.equal(1);
-        chai.expect(findById('for_two').completed_tasks[0].name).to.equal('two');
-      });
+      .then(checkInfoDocs);
   });
+
+  const checkInfoDocs = (retry = 10) =>
+    sentinelUtils.getInfoDocs(docs.map(doc => doc._id))
+      .then(infoDocs => {
+        chai.expect(infoDocs.length).to.equal(2);
+        chai.expect(infoDocs[0]).to.nested.include({
+          _id: 'test-aaa-info',
+          type: 'info',
+          doc_id: 'test-aaa',
+          'completed_tasks[0].type': 'outbound',
+          'completed_tasks[0].name': 'working'
+        });
+        chai.expect(infoDocs[1]).to.nested.include({
+          _id: 'test-zzz-info',
+          type: 'info',
+          doc_id: 'test-zzz',
+          'completed_tasks[0].type': 'outbound',
+          'completed_tasks[0].name': 'working'
+        });
+      }).catch(err => {
+        // We don't really have a reliable way to know when these writes happen, because of how
+        // schedules work. Calling `waitForPushes` is only half the story, so sometimes this can
+        // flake
+        if (retry) {
+          return utils.delayPromise(() => checkInfoDocs(retry - 1), 1000);
+        }
+
+        throw err;
+      });
 });

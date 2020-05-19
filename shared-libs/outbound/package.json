@@ -1,0 +1,27 @@
+{
+  "name": "@medic/outbound",
+  "version": "1.0.0",
+  "description": "Configurable outbound REST driver",
+  "main": "src/outbound.js",
+  "scripts": {
+    "test": "mocha ./test --require test/setup.js"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-exclude": "^2.0.2",
+    "chai-shallow-deep-equal": "^1.4.6",
+    "mocha": "^6.2.1",
+    "sinon": "^7.5.0",
+    "uuid": "^3.3.3"
+  },
+  "dependencies": {
+    "@medic/settings": "file:../settings",
+    "object-path": "^0.11.4",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8",
+    "url-join": "^4.0.1"
+  }
+}
