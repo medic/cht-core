@@ -1136,6 +1136,42 @@ describe('db-doc handler', () => {
         });
     });
 
+    it('GET unallocated records', () => {
+      const settings = {
+        district_admins_access_unallocated_messages: true,
+        permissions: {
+          can_view_unallocated_data_records: ['district_admin'],
+        }
+      };
+      const doc = {
+        _id: uuid(),
+        type: 'data_record',
+        form: 'FORM',
+        fields: {},
+        errors: [],
+        reported_date: new Date().getTime(),
+        sms_message: {
+          message: 'FORM public',
+          form: 'FORM',
+          from: '+01232323',
+        }
+      };
+
+      return utils
+        .saveDoc(doc)
+        .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
+        .then(result => {
+          // user can't see the unallocated report without permissions
+          chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+        })
+        .then(() => utils.updateSettings(settings))
+        .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
+        .then(result => {
+          // user can see the unallocated report with permissions
+          chai.expect(result).to.deep.include(doc);
+        });
+    });
+
     it('POST', () => {
       offlineRequestOptions.method = 'POST';
 
