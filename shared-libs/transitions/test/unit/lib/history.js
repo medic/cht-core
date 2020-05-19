@@ -77,6 +77,21 @@ describe('history utility', () => {
     should.equal(history.check('to2', 'msg1'), false);
     should.equal(history.check('to2', 'msg1'), true);
 
+    config.get.returns({ allowed_duplicates_limit: '0' }); // zero, so uses default limit
+    should.equal(history.check('to3', 'msg1'), false);
+    should.equal(history.check('to3', 'msg1'), false);
+    should.equal(history.check('to3', 'msg1'), false);
+    should.equal(history.check('to3', 'msg1'), false);
+    should.equal(history.check('to3', 'msg1'), false);
+    should.equal(history.check('to3', 'msg1'), true);
+
+    config.get.returns({ allowed_duplicates_limit: '-20' }); // lower than 0, so uses default limit
+    should.equal(history.check('to4', 'msg1'), false);
+    should.equal(history.check('to4', 'msg1'), false);
+    should.equal(history.check('to4', 'msg1'), false);
+    should.equal(history.check('to4', 'msg1'), false);
+    should.equal(history.check('to4', 'msg1'), false);
+    should.equal(history.check('to4', 'msg1'), true);
   });
 
   it('tracks keys', () => {
