@@ -20,6 +20,7 @@ describe('DBSync service', () => {
   let getItem;
   let setItem;
   let dbSyncRetry;
+  let rulesEngine;
 
   let localMedicDb;
   let localMetaDb;
@@ -65,6 +66,7 @@ describe('DBSync service', () => {
     setItem = sinon.stub();
     getItem = sinon.stub();
     dbSyncRetry = sinon.stub();
+    rulesEngine = { monitorExternalChanges: sinon.stub() };
 
     localMedicDb = {
       replicate: { to: to, from: from },
@@ -95,6 +97,7 @@ describe('DBSync service', () => {
       $provide.value('Auth', { has: hasAuth });
       $provide.value('$window', { localStorage: { setItem, getItem } });
       $provide.value('DBSyncRetry', dbSyncRetry);
+      $provide.value('RulesEngine', rulesEngine);
     });
     inject((_DBSync_, _$interval_) => {
       service = _DBSync_;
@@ -281,16 +284,6 @@ describe('DBSync service', () => {
 
       let count;
       let retries;
-      const recursiveOnTo = sinon.stub();
-
-      const replicationResultTo = () => {
-        if (count <= retries) {
-          count++;
-          return Q.reject({ code: 413 });
-        } else {
-          return Q.resolve();
-        }
-      };
 
       beforeEach(() => {
         count = 0;
@@ -298,22 +291,17 @@ describe('DBSync service', () => {
         isOnlineOnly.returns(false);
         hasAuth.resolves(true);
 
-        recursiveOnTo.callsFake(() => {
-          const promise = replicationResultTo();
-          promise.on = recursiveOnTo;
-          return promise;
-        });
-
         to.callsFake(() => {
           let promise;
           if (count < retries) {
             // Too big - retry
+            count++;
             promise = Q.reject({ code: 413 });
           } else {
             // small enough - complete
             promise = Q.resolve();
           }
-          promise.on = recursiveOnTo;
+          promise.on = () => promise;
           return promise;
         });
       });
@@ -323,10 +311,11 @@ describe('DBSync service', () => {
         return service.sync().then(() => {
           expect(hasAuth.callCount).to.equal(1);
           expect(from.callCount).to.equal(1);
-          expect(to.callCount).to.equal(3);
+          expect(to.callCount).to.equal(4);
           expect(to.args[0][1].batch_size).to.equal(100);
           expect(to.args[1][1].batch_size).to.equal(50);
           expect(to.args[2][1].batch_size).to.equal(25);
+          expect(to.args[3][1].batch_size).to.equal(12);
         });
       });
 
@@ -346,37 +335,69 @@ describe('DBSync service', () => {
       });
 
     });
+  });
 
-
-    describe('on denied', () => {
-      it('should have "denied" handles for every direction', () => {
-        isOnlineOnly.returns(false);
-        hasAuth.resolves(true);
-        return service.sync().then(() => {
-          expect(to.events.denied).to.be.a('function');
-          expect(from.events.denied).to.be.a('function');
-        });
+  describe('on denied', () => {
+    it('should have "denied" handles for every direction', () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      return service.sync().then(() => {
+        expect(to.events.denied).to.be.a('function');
+        expect(from.events.denied).to.be.a('function');
       });
+    });
 
-      it('"denied" from handle does nothing', () => {
-        isOnlineOnly.returns(false);
-        hasAuth.resolves(true);
-        return service.sync().then(() => {
-          from.events.denied();
-          expect(dbSyncRetry.callCount).to.equal(0);
-        });
+    it('"denied" from handle does nothing', () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      return service.sync().then(() => {
+        from.events.denied();
+        expect(dbSyncRetry.callCount).to.equal(0);
       });
+    });
 
-      it('"denied" to handle calls DBSyncRetry', () => {
-        isOnlineOnly.returns(false);
-        hasAuth.resolves(true);
-        return service.sync().then(() => {
-          to.events.denied({ some: 'err' });
-          expect(dbSyncRetry.callCount).to.equal(1);
-          expect(dbSyncRetry.args[0]).to.deep.equal([{ some: 'err' }]);
-          expect(to.callCount).to.equal(1);
-          expect(from.callCount).to.equal(1);
-        });
+    it('"denied" to handle calls DBSyncRetry', () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      return service.sync().then(() => {
+        to.events.denied({ some: 'err' });
+        expect(dbSyncRetry.callCount).to.equal(1);
+        expect(dbSyncRetry.args[0]).to.deep.equal([{ some: 'err' }]);
+        expect(to.callCount).to.equal(1);
+        expect(from.callCount).to.equal(1);
+      });
+    });
+  });
+
+  describe('on change', () => {
+    it('should have "change" handles for the "from" and "to" direction', () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      return service.sync().then(() => {
+        expect(to.events.change).to.be.a('function');
+        expect(from.events.change).to.be.a('function');
+      });
+    });
+
+    it('"changes" to handle does nothing', () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      return service.sync().then(() => {
+        to.events.change({});
+        expect(rulesEngine.monitorExternalChanges.callCount).to.equal(0);
+      });
+    });
+
+    it('"changes" from handle calls RulesEngine.monitorExternalChanges', () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      const replicationResult = { this: 'is', a: 'replication result' };
+      return service.sync().then(() => {
+        from.events.change(replicationResult);
+        expect(rulesEngine.monitorExternalChanges.callCount).to.equal(1);
+        expect(rulesEngine.monitorExternalChanges.args[0]).to.deep.equal([replicationResult]);
+        expect(to.callCount).to.equal(1);
+        expect(from.callCount).to.equal(1);
       });
     });
 

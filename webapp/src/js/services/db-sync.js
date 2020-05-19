@@ -17,6 +17,7 @@ angular
     Auth,
     DB,
     DBSyncRetry,
+    RulesEngine,
     Session
   ) {
     'use strict';
@@ -65,7 +66,8 @@ angular
           heartbeat: 10000, // 10 seconds
           timeout: 1000 * 60 * 10, // 10 minutes
         },
-        allowed: () => $q.resolve(true)
+        allowed: () => $q.resolve(true),
+        onChange: RulesEngine.monitorExternalChanges,
       }
     ];
 
@@ -74,6 +76,11 @@ angular
       const options = Object.assign({}, direction.options, { batch_size: batchSize });
       return DB()
         .replicate[direction.name](remote, options)
+        .on('change', replicationResult => {
+          if (direction.onChange) {
+            direction.onChange(replicationResult);
+          }
+        })
         .on('denied', function(err) {
           $log.error(`Denied replicating ${direction.name} remote server`, err);
           if (direction.onDenied) {

@@ -102,6 +102,8 @@ const updateSettings = (targetsConfig, user, contactSummary) => {
 const clickOnTargetAggregateListItem = (contactId) => {
   element(by.css(`.aggregate-detail li[data-record-id="${contactId}"] a`)).click();
   helper.waitUntilReady(element(by.id('contacts-list')));
+  // wait until contact-summary is loaded
+  helper.waitUntilReady(element(by.css('.content-pane .meta > div > .card .action-header h3')));
 };
 
 describe('Target aggregates', () => {
@@ -454,7 +456,6 @@ describe('Target aggregates', () => {
       clickOnTargetAggregateListItem(clarissa._id);
 
       expect(element(by.css('.content-pane .meta h2')).getText()).toEqual('Clarissa');
-      helper.waitUntilReady(element(by.css('.content-pane .meta > div > .card .action-header h3')));
       // assert that the activity card exists and has the right fields.
       expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
         .toBe('Activity this month');
@@ -471,7 +472,6 @@ describe('Target aggregates', () => {
       clickOnTargetAggregateListItem(prometheus._id);
 
       expect(element(by.css('.content-pane .meta h2')).getText()).toEqual('Prometheus');
-      helper.waitUntilReady(element(by.css('.content-pane .meta > div > .card .action-header h3')));
       // assert that the activity card exists and has the right fields.
       expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
         .toBe('Activity this month');

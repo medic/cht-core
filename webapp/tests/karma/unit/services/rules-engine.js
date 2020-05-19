@@ -358,5 +358,47 @@ describe(`RulesEngine service`, () => {
       expect(Telemetry.record.args[5][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
       expect(Telemetry.record.args[6][0]).to.equal('rules-engine:tasks:all-contacts');
     });
+
+    describe('monitorExternalChanges', () => {
+      it('should null check and do nothing when no docs', async () => {
+        await getService().monitorExternalChanges();
+        expect(RulesEngineCore.updateEmissionsFor.callCount).to.equal(0);
+        await getService().monitorExternalChanges({});
+        expect(RulesEngineCore.updateEmissionsFor.callCount).to.equal(0);
+        await getService().monitorExternalChanges({ docs: [] });
+        expect(RulesEngineCore.updateEmissionsFor.callCount).to.equal(0);
+        const docs = [
+          { _id: 'report', type: 'data_record' },
+          { _id: 'contact', type: 'contact' },
+          { _id: 'target', type: 'target' },
+          { _id: 'whatever', type: 'whatever' },
+        ];
+        await getService().monitorExternalChanges({ docs });
+        expect(RulesEngineCore.updateEmissionsFor.callCount).to.equal(0);
+      });
+
+      it('should only filter tasks and refresh requesters', async () => {
+        const replicationResult = {
+          doc_write_failures: 0,
+          docs_read: 6,
+          docs_written: 6,
+          errors: [],
+          ok: true,
+          last_seq: 20,
+          docs: [
+            { _id: 'report1', fields: { patient_id: 'patient' }, type: 'data_record' },
+            { _id: 'task~1', emission: { _id: '??' }, requester: 'patient_uuid', type: 'task' },
+            { _id: 'contact2', type: 'contact', name: 'C', patient_id: 'patient2' },
+            { _id: 'task~2', emission: { _id: '??' }, requester: 'other_patient', type: 'task' },
+            { _id: 'task~3', emission: { _id: '!!' }, requester: 'other_patient', type: 'task' },
+            { _id: 'report2', fields: { patient_uuid: 'etc' }, type: 'data_record' },
+          ]
+        };
+
+        await getService().monitorExternalChanges(replicationResult);
+        expect(RulesEngineCore.updateEmissionsFor.callCount).to.equal(1);
+        expect(RulesEngineCore.updateEmissionsFor.args[0]).to.deep.equal([['patient_uuid', 'other_patient']]);
+      });
+    });
   });
 });

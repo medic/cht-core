@@ -121,6 +121,10 @@ module.exports = {
    * @returns {Promise} To complete the transaction marking the subjectIds as dirty
    */
   updateEmissionsFor: (provider, subjectIds) => {
+    if (!subjectIds) {
+      subjectIds = [];
+    }
+
     if (subjectIds && !Array.isArray(subjectIds)) {
       subjectIds = [subjectIds];
     }
