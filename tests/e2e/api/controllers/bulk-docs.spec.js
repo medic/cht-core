@@ -1,3 +1,6 @@
+const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const _ = require('lodash');
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
@@ -114,16 +117,18 @@ describe('bulk-docs handler', () => {
 
     return utils
       .requestOnTestDb(onlineRequestOptions)
-      .then(result => {
-        expect(result.length).toEqual(3);
-        expect(result.every(row => row.ok)).toBe(true);
+      .then(results => {
+        chai.expect(results.length).to.equal(3);
+        results.forEach((result, idx) => {
+          chai.expect(result).excluding('rev').to.deep.equal({ ok: true, id: docs[idx]._id });
+        });
 
-        return Promise.all(result.map(row => utils.getDoc(row.id)));
+        return Promise.all(results.map(row => utils.getDoc(row.id)));
       })
       .then(results => {
-        results.forEach((result, idx) =>
-          expect(_.omit(result, '_rev')).toEqual(docs[idx])
-        );
+        results.forEach((result, idx) => {
+          chai.expect(result).excluding('_rev').to.deep.equal(docs[idx]);
+        });
       });
   });
 
@@ -227,34 +232,33 @@ describe('bulk-docs handler', () => {
             offlineRequestOptions.body = { docs };
             return utils.requestOnTestDb(offlineRequestOptions);
           }).then(result => {
-            expect(result.length).toEqual(8);
-            expect(_.pick(result[0], 'ok', 'id')).toEqual({
+            chai.expect(result.length).to.equal(8);
+            chai.expect(result[0]).to.deep.include({
               ok: true,
               id: 'new_allowed_contact_1',
             });
-            expect(_.pick(result[5], 'ok', 'id')).toEqual({
+            chai.expect(result[5]).to.deep.include({
               ok: true,
               id: 'allowed_contact_2',
             });
-            expect(_.pick(result[7], 'ok')).toEqual({ ok: true });
-
-            expect(result[1]).toEqual({
+            chai.expect(result[7]).to.include({ ok: true });
+            chai.expect(result[1]).to.deep.equal({
               id: 'new_denied_contact_1',
               error: 'forbidden',
             });
-            expect(result[2]).toEqual({
+            chai.expect(result[2]).to.deep.equal({
               id: 'denied_contact_1',
               error: 'forbidden',
             });
-            expect(result[3]).toEqual({
+            chai.expect(result[3]).to.deep.equal({
               id: 'denied_contact_2',
               error: 'forbidden',
             });
-            expect(result[4]).toEqual({
+            chai.expect(result[4]).to.deep.equal({
               id: 'allowed_contact_1',
               error: 'forbidden',
             });
-            expect(result[6]).toEqual({ error: 'forbidden' });
+            chai.expect(result[6]).to.deep.equal({ error: 'forbidden' });
 
             ids = result.map(r => r.id).filter(id => id);
 
@@ -262,39 +266,51 @@ describe('bulk-docs handler', () => {
               result.map(row => utils.getDoc(row.id).catch(err => err)),
             );
           }).then(result => {
-            expect(result.length).toEqual(8);
-            expect(_.omit(result[0], '_rev')).toEqual(docs[0]);
-            expect(result[1].responseBody.error).toEqual('not_found');
-            expect(_.omit(result[2], '_rev')).toEqual(existentDocs[2]);
-            expect(_.omit(result[3], '_rev')).toEqual(existentDocs[3]);
-            expect(_.omit(result[4], '_rev')).toEqual(existentDocs[0]);
-            expect(_.omit(result[5], '_rev')).toEqual(_.omit(docs[5], '_rev'));
-            expect(result[6].responseBody.error).toEqual('not_found');
-            expect(_.omit(result[7], '_rev', '_id')).toEqual(docs[7]);
+            chai.expect(result.length).to.equal(8);
+            chai.expect(result[0]).excluding('_rev').to.deep.equal(docs[0]);
+            chai.expect(result[1]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+            chai.expect(result[2]).excluding('_rev').to.deep.equal(existentDocs[2]);
+            chai.expect(result[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
+            chai.expect(result[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
+
+            delete docs[5]._rev;
+            delete docs[7]._rev;
+            delete docs[7]._id;
+            chai.expect(result[5]).excluding('_rev').to.deep.equal(docs[5]);
+            chai.expect(result[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+            chai.expect(result[7]).excluding( ['_rev', '_id']).to.deep.equal(docs[7]);
 
             return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
           }).then(result => {
-            expect(result.length).toEqual(7);
+            chai.expect(result.length).to.equal(7);
             // Successful new write
-            expect(result[0]._id).toEqual('new_allowed_contact_1-info');
+            chai.expect(result[0]).to.include({ _id: 'new_allowed_contact_1-info' });
 
             // Unsuccessful new write
-            expect(result[1]).not.toBeDefined();
+            chai.expect(result[1]).to.be.undefined;
 
             // Unsuccessful writes to existing
-            expect(_.pick(result[2], '_id', 'latest_replication_date'))
-              .toEqual(_.pick(existentDocsInfodocs[2], '_id', 'latest_replication_date'));
-            expect(_.pick(result[3], '_id', 'latest_replication_date'))
-              .toEqual(_.pick(existentDocsInfodocs[3], '_id', 'latest_replication_date'));
-            expect(_.pick(result[4], '_id', 'latest_replication_date'))
-              .toEqual(_.pick(existentDocsInfodocs[0], '_id', 'latest_replication_date'));
+            chai.expect(result[2]).to.deep.include({
+              _id: existentDocsInfodocs[2]._id,
+              latest_replication_date: existentDocsInfodocs[2].latest_replication_date
+            });
+            chai.expect(result[3]).to.deep.include({
+              _id: existentDocsInfodocs[3]._id,
+              latest_replication_date: existentDocsInfodocs[3].latest_replication_date
+            });
+            chai.expect(result[4]).to.deep.include({
+              _id: existentDocsInfodocs[0]._id,
+              latest_replication_date: existentDocsInfodocs[0].latest_replication_date
+            });
 
             // Successful write to existing
-            expect(result[5]._id).toEqual(existentDocsInfodocs[1]._id);
-            expect(result[5].latest_replication_date).not.toEqual(existentDocsInfodocs[1].latest_replication_date);
+            chai.expect(result[5]).to.include({ _id: existentDocsInfodocs[1]._id });
+            chai.expect(result[5]).to.not.include({
+              latest_replication_date: existentDocsInfodocs[1].latest_replication_date,
+            });
 
             // Successful completely new write
-            expect(result[6]).toBeDefined();
+            chai.expect(result[6]).to.be.ok;
           });
       });
   });
@@ -338,11 +354,11 @@ describe('bulk-docs handler', () => {
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
-        expect(result.length).toEqual(4);
-        expect(_.pick(result[0], 'id', 'ok')).toEqual({ id: 'allowed_task', ok: true });
-        expect(_.pick(result[2], 'id', 'ok')).toEqual({ id: 'allowed_target', ok: true });
-        expect(_.pick(result[1], 'id', 'error')).toEqual({ id: 'denied_task', error: 'forbidden' });
-        expect(_.pick(result[3], 'id', 'error')).toEqual({ id: 'denied_target', error: 'forbidden' });
+        chai.expect(result.length).to.equal(4);
+        chai.expect(result[0]).to.include({ id: 'allowed_task', ok: true });
+        chai.expect(result[2]).to.include({ id: 'allowed_target', ok: true });
+        chai.expect(result[1]).to.include({ id: 'denied_task', error: 'forbidden' });
+        chai.expect(result[3]).to.include({ id: 'denied_target', error: 'forbidden' });
 
         docs[0]._rev = result[0].rev;
         docs[2]._rev = result[2].rev;
@@ -351,13 +367,13 @@ describe('bulk-docs handler', () => {
         return utils.requestOnTestDb(supervisorRequestOptions);
       })
       .then(result => {
-        expect(result.length).toEqual(4);
-        expect(_.pick(result[0], 'id', 'error')).toEqual({ id: 'allowed_task', error: 'forbidden' });
-        expect(_.pick(result[1], 'id', 'error')).toEqual({ id: 'denied_task', error: 'forbidden' });
-        expect(_.pick(result[2], 'id', 'ok')).toEqual({ id: 'allowed_target', ok: true });
-        expect(_.pick(result[3], 'id', 'ok')).toEqual({ id: 'denied_target', ok: true });
+        chai.expect(result.length).to.equal(4);
+        // supervisors can't see any task, but can see the targets
+        chai.expect(result[0]).to.include({ id: 'allowed_task', error: 'forbidden' });
+        chai.expect(result[1]).to.include({ id: 'denied_task', error: 'forbidden' });
+        chai.expect(result[2]).to.include({ id: 'allowed_target', ok: true });
+        chai.expect(result[3]).to.include({ id: 'denied_target', ok: true });
       });
-
   });
 
   it('reiterates over docs', () => {
@@ -420,28 +436,28 @@ describe('bulk-docs handler', () => {
     offlineRequestOptions.body = { docs };
 
     return utils.requestOnTestDb(offlineRequestOptions).then(result => {
-      expect(result.length).toEqual(8);
-      expect(_.pick(result[0], 'ok', 'id')).toEqual({
+      chai.expect(result.length).to.equal(8);
+      chai.expect(result[0]).to.include({
         ok: true,
         id: 'allowed_1',
       });
-      expect(_.pick(result[2], 'ok', 'id')).toEqual({
+      chai.expect(result[2]).to.include({
         ok: true,
         id: 'allowed_2',
       });
-      expect(_.pick(result[4], 'ok', 'id')).toEqual({
+      chai.expect(result[4]).to.include({
         ok: true,
         id: 'allowed_3',
       });
-      expect(_.pick(result[5], 'ok', 'id')).toEqual({
+      chai.expect(result[5]).to.include({
         ok: true,
         id: 'allowed_4',
       });
 
-      expect(result[1]).toEqual({ id: 'denied_1', error: 'forbidden' });
-      expect(result[3]).toEqual({ id: 'denied_2', error: 'forbidden' });
-      expect(result[6]).toEqual({ id: 'denied_3', error: 'forbidden' });
-      expect(result[7]).toEqual({ id: 'denied_4', error: 'forbidden' });
+      chai.expect(result[1]).to.deep.equal({ id: 'denied_1', error: 'forbidden' });
+      chai.expect(result[3]).to.deep.equal({ id: 'denied_2', error: 'forbidden' });
+      chai.expect(result[6]).to.deep.equal({ id: 'denied_3', error: 'forbidden' });
+      chai.expect(result[7]).to.deep.equal({ id: 'denied_4', error: 'forbidden' });
     });
   });
 
@@ -538,29 +554,33 @@ describe('bulk-docs handler', () => {
         return utils.requestOnMedicDb(offlineRequestOptions);
       })
       .then(result => {
-        expect(result.length).toEqual(8);
-        expect(_.pick(result[0], 'ok', 'id')).toEqual({ ok: true, id: 'new_allowed_contact_2' });
-        expect(_.pick(result[5], 'ok', 'id')).toEqual({ ok: true, id: 'allowed_contact_2' });
-        expect(_.pick(result[7], 'ok')).toEqual({ ok: true });
+        chai.expect(result.length).to.equal(8);
+        chai.expect(result[0]).to.include({ ok: true, id: 'new_allowed_contact_2' });
+        chai.expect(result[5]).to.include({ ok: true, id: 'allowed_contact_2' });
+        chai.expect(result[7]).to.include({ ok: true });
 
-        expect(result[1]).toEqual({ id: 'new_denied_contact_2', error: 'forbidden' });
-        expect(result[2]).toEqual({ id: 'denied_contact_1', error: 'forbidden' });
-        expect(result[3]).toEqual({ id: 'denied_contact_2', error: 'forbidden' });
-        expect(result[4]).toEqual({ id: 'allowed_contact_1', error: 'forbidden' });
-        expect(result[6]).toEqual({ error: 'forbidden' });
+        chai.expect(result[1]).to.deep.equal({ id: 'new_denied_contact_2', error: 'forbidden' });
+        chai.expect(result[2]).to.deep.equal({ id: 'denied_contact_1', error: 'forbidden' });
+        chai.expect(result[3]).to.deep.equal({ id: 'denied_contact_2', error: 'forbidden' });
+        chai.expect(result[4]).to.deep.equal({ id: 'allowed_contact_1', error: 'forbidden' });
+        chai.expect(result[6]).to.deep.equal({ error: 'forbidden' });
 
         return Promise.all(result.map(row => utils.getDoc(row.id).catch(err => err)));
       })
       .then(results => {
-        expect(results.length).toEqual(8);
-        expect(_.omit(results[0], '_rev')).toEqual(docs[0]);
-        expect(results[1].responseBody.error).toEqual('not_found');
-        expect(_.omit(results[2], '_rev')).toEqual(existentDocs[2]);
-        expect(_.omit(results[3], '_rev')).toEqual(existentDocs[3]);
-        expect(_.omit(results[4], '_rev')).toEqual(existentDocs[0]);
-        expect(_.omit(results[5], '_rev')).toEqual(_.omit(docs[5], '_rev'));
-        expect(results[6].responseBody.error).toEqual('not_found');
-        expect(_.omit(results[7], '_rev', '_id')).toEqual(docs[7]);
+        chai.expect(results.length).to.equal(8);
+
+        chai.expect(results[0]).excluding('_rev').to.deep.equal(docs[0]);
+        chai.expect(results[1]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+        chai.expect(results[2]).excluding('_rev').to.deep.equal(existentDocs[2]);
+        chai.expect(results[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
+        chai.expect(results[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
+        delete docs[5]._rev;
+        chai.expect(results[5]).excluding('_rev').to.deep.equal(docs[5]);
+        chai.expect(results[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+        delete docs[7]._rev;
+        delete docs[7]._id;
+        chai.expect(results[7]).excluding(['_rev', '_id']).to.deep.equal(docs[7]);
       });
   });
 
@@ -595,20 +615,15 @@ describe('bulk-docs handler', () => {
         .request(_.defaults({ path: `//medic//_bulk_docs/something` }, offlineRequestOptions))
         .catch(err => err),
     ]).then(results => {
-      expect(
-        results.every(result => {
-          if (_.isArray(result)) {
-            return (
-              result.length === 1 &&
-              result[0].id === 'denied_report' &&
-              result[0].error === 'forbidden'
-            );
-          }
-
+      results.forEach(result => {
+        if (Array.isArray(result)) {
+          chai.expect(result.length).to.equal(1);
+          chai.expect(result[0]).to.include({ id: 'denied_report', error: 'forbidden' });
+        } else {
           // CouchDB interprets this as an attachment POST request
-          return result.responseBody.error === 'method_not_allowed';
-        })
-      ).toBe(true);
+          chai.expect(result).to.deep.nested.include({ 'responseBody.error': 'method_not_allowed' });
+        }
+      });
     });
   });
 
@@ -651,7 +666,10 @@ describe('bulk-docs handler', () => {
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
-        expect(result).toEqual([{ id: 'denied1', error: 'forbidden' }, { id: 'denied2', error: 'forbidden' }]);
+        chai.expect(result).to.deep.equal([
+          { id: 'denied1', error: 'forbidden' },
+          { id: 'denied2', error: 'forbidden' },
+        ]);
         return Promise.all([
           utils.getDoc('allowed1'),
           utils.getDoc('denied1').catch(err => err),
@@ -660,64 +678,158 @@ describe('bulk-docs handler', () => {
         ]);
       })
       .then(results => {
-        expect(results[0]).toEqual(docs[0]);
-        expect(results[1].statusCode).toEqual(404);
-        expect(results[2]).toEqual(docs[2]);
-        expect(results[3].statusCode).toEqual(404);
+        chai.expect(results[0]).to.deep.equal(docs[0]);
+        chai.expect(results[1]).to.include({ statusCode: 404 });
+        chai.expect(results[2]).to.deep.equal(docs[2]);
+        chai.expect(results[3]).to.include({ statusCode: 404 });
       });
   });
 
-  it('allows offline user creation of feedback docs', () => {
-    const docs = [
-      { _id: 'fb1', type: 'feedback', content: 'feedback1' },
-      { _id: 'fb2', type: 'feedback', content: 'feedback2' },
+  it('should work with replication_depth', () => {
+    const existentDocs = [
+      {
+        _id: 'existing_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'report_about_existing_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'existing_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'existing_person',
+        type: 'person',
+        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+      },
+      {
+        _id: 'denied_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person', needs_signoff: true },
+        contact: {
+          _id: 'existing_person',
+          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        },
+      },
+      {
+        _id: 'allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+      },
+      {
+        _id: 'denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:other',
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        owner: 'existing_person',
+      },
     ];
 
-    offlineRequestOptions.body = { docs };
+    const newDocs = [
+      {
+        _id: 'allowed_new_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'denied_new_person',
+        type: 'person',
+        parent: { _id: 'allowed_new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+      },
+      {
+        _id: 'allowed_report_about_new_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'allowed_new_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'denied_report_about_new_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'denied_new_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_new_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'denied_new_person', needs_signoff: true },
+        contact: {
+          _id: 'new_person',
+          parent: { _id: 'allowed_new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+        },
+      },
+      {
+        _id: 'new_allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+      },
+      {
+        _id: 'new_denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:other',
+      },
+      {
+        _id: 'new_allowed_target',
+        type: 'target',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'new_denied_target',
+        type: 'target',
+        owner: 'existing_person',
+      },
+    ];
+
+    const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .requestOnTestDb(offlineRequestOptions)
-      .then(result => {
-        expect(result.length).toEqual(2);
-        expect(_.omit(result[0], 'rev')).toEqual({ ok: true, id: 'fb1' });
-        expect(_.omit(result[1], 'rev')).toEqual({ ok: true, id: 'fb2' });
-        return Promise.all([utils.getDoc('fb1'), utils.getDoc('fb2')]);
+      .updateSettings(settings)
+      .then(() => utils.saveDocs(existentDocs))
+      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => {
+        offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
+        return utils.requestOnMedicDb(offlineRequestOptions);
       })
       .then(results => {
-        expect(_.omit(results[0], '_rev')).toEqual(docs[0]);
-        expect(_.omit(results[1], '_rev')).toEqual(docs[1]);
-      });
-  });
-
-  it('does not allow offline users updates of feedback docs', () => {
-    const docs = [
-      { _id: 'fb1', type: 'feedback', content: 'feedback1' },
-      { _id: 'fb2', type: 'feedback', content: 'feedback2' },
-    ];
-
-    return utils
-      .saveDocs(docs)
-      .then(result => {
-        result.forEach((row, idx) => {
-          docs[idx]._rev = row.rev;
-          docs[idx].content += 'update';
-        });
-
-        offlineRequestOptions.body = { docs };
-        return utils.requestOnTestDb(offlineRequestOptions);
-      })
-      .then(result => {
-        expect(result).toEqual([
-          { id: 'fb1', error: 'forbidden' },
-          { id: 'fb2', error: 'forbidden' },
+        chai.expect(results).excludingEvery('rev').to.deep.equal([
+          { id: 'allowed_new_clinic', ok: true },
+          { id: 'denied_new_person', error: 'forbidden' },
+          { id: 'allowed_report_about_new_clinic', ok: true },
+          { id: 'denied_report_about_new_person', error: 'forbidden' },
+          { id: 'allowed_report_about_new_person', ok: true },
+          { id: 'new_allowed_task', ok: true },
+          { id: 'new_denied_task', error: 'forbidden' },
+          { id: 'new_allowed_target', ok: true },
+          { id: 'new_denied_target', error: 'forbidden' },
+          { id: 'existing_clinic', ok: true },
+          { id: 'report_about_existing_clinic', ok: true },
+          { id: 'existing_person', error: 'forbidden' },
+          { id: 'denied_report_about_existing_person', error: 'forbidden' },
+          { id: 'allowed_report_about_existing_person', ok: true },
+          { id: 'allowed_task', ok: true },
+          { id: 'denied_task', error: 'forbidden' },
+          { id: 'allowed_target', ok: true },
+          { id: 'denied_target', error: 'forbidden' },
         ]);
-        return Promise.all([utils.getDoc('fb1'), utils.getDoc('fb2')]);
-      })
-      .then(results => {
-        expect(results[0].content).toEqual('feedback1');
-        expect(results[0]._rev).toEqual(docs[0]._rev);
-
-        expect(results[1].content).toEqual('feedback2');
-        expect(results[1]._rev).toEqual(docs[1]._rev);
       });
   });
 });

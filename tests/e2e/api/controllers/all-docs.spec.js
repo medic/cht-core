@@ -1,3 +1,6 @@
+const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const _ = require('lodash');
 const utils = require('../../../utils');
 const constants = require('../../../constants');
@@ -82,6 +85,10 @@ const unrestrictedKeys = [
   /^messages-.*$/
 ];
 
+const hasMatchingRow = (rows, id, exact = true) => {
+  return !!rows.find(row => exact ? row.id === id : row.id.match(id));
+};
+
 describe('all_docs handler', () => {
   beforeAll(done => {
     utils
@@ -116,8 +123,12 @@ describe('all_docs handler', () => {
     return utils
       .requestOnTestDb(onlineRequestOptions)
       .then(result => {
-        expect(unrestrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
-        expect(restrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
+        unrestrictedKeys.forEach(key => {
+          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
+        });
+        restrictedKeys.forEach(key => {
+          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
+        });
       });
   });
 
@@ -143,29 +154,42 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => utils.requestOnTestDb(offlineRequestOptions))
       .then(result => {
-        expect(unrestrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
-        expect(restrictedKeys.some(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(false);
+        unrestrictedKeys.forEach(key => {
+          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
+        });
+        restrictedKeys.forEach(key => {
+          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(false);
+        });
 
-        expect(result.rows.findIndex(row => row.id === 'allowed_contact')).not.toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'allowed_report')).not.toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'allowed_task')).not.toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'allowed_target')).not.toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'denied_contact')).toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'denied_report')).toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'denied_task')).toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'denied_target')).toEqual(-1);
+        const ids = result.rows.map(row => row.id);
+        chai.expect(ids).to.include.members([
+          'allowed_contact',
+          'allowed_report',
+          'allowed_task',
+          'allowed_target',
+        ]);
+        chai.expect(ids).not.to.include.members([
+          'denied_contact',
+          'denied_report',
+          'denied_task',
+          'denied_target',
+        ]);
       })
       .then(() => utils.requestOnTestDb(supervisorRequestOptions))
       .then(result => {
-        const resultIds = result.rows.map(row => row.id);
-        expect(resultIds).toContain('allowed_contact');
-        expect(resultIds).toContain('allowed_report');
-        expect(resultIds).not.toContain('allowed_task');
-        expect(resultIds).toContain('allowed_target');
-        expect(resultIds).toContain('denied_contact');
-        expect(resultIds).toContain('denied_report');
-        expect(resultIds).not.toContain('denied_task');
-        expect(resultIds).toContain('denied_target');
+        const ids = result.rows.map(row => row.id);
+        chai.expect(ids).to.include.members([
+          'allowed_contact',
+          'allowed_report',
+          'allowed_target',
+          'denied_contact',
+          'denied_report',
+          'denied_target',
+        ]);
+        chai.expect(ids).not.to.include.members([
+          'allowed_task',
+          'denied_task',
+        ]);
       });
   });
 
@@ -177,19 +201,17 @@ describe('all_docs handler', () => {
 
     return utils
       .saveDocs(docs)
-      .then(result => {
-        result.forEach((stub, key) => docs[key]._rev = stub.rev);
-        return Promise.all([
-          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="allowed_contact"'}, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="denied_contact"'}, offlineRequestOptions))
-        ]);
-      })
-      .then(result => {
-        expect(result[0].rows.length).toEqual(1);
-        expect(result[0].rows[0]).toEqual(
-          { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev } });
-        expect(result[1].rows.length).toEqual(1);
-        expect(result[1].rows[0]).toEqual({ id: 'denied_contact', error: 'forbidden'});
+      .then(() => Promise.all([
+        utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="allowed_contact"'}, offlineRequestOptions)),
+        utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="denied_contact"'}, offlineRequestOptions))
+      ]))
+      .then(([allowed, denied]) => {
+        chai.expect(allowed.rows.length).to.equal(1);
+        chai.expect(allowed.rows[0]).excludingEvery('rev').to.deep.equal(
+          { id: 'allowed_contact', key: 'allowed_contact', value: { }}
+        );
+        chai.expect(denied.rows.length).to.deep.equal(1);
+        chai.expect(denied.rows[0]).to.deep.equal({ id: 'denied_contact', error: 'forbidden'});
       });
   });
 
@@ -220,15 +242,17 @@ describe('all_docs handler', () => {
         utils.requestOnTestDb(_.defaults(request, offlineRequestOptions)),
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
       ]))
-      .then(results => {
+      .then((results) => {
         results.forEach(result => {
-          expect(result.rows.length).toEqual(7);
+          chai.expect(result.rows.length).to.equal(7);
           result.rows.forEach((row, idx) => {
-            expect(row.id).toEqual(keys[idx]);
-            if (allowed.indexOf(idx) !== -1) {
-              expect(row.value.rev).toBeTruthy();
+            // results are returned in the same sequence as requested
+            chai.expect(row.id).to.equal(keys[idx]);
+
+            if (allowed.includes(idx)) {
+              chai.expect(row.value.rev).to.be.ok;
             } else {
-              expect(row.error).toEqual('forbidden');
+              chai.expect(row.error).to.equal('forbidden');
             }
           });
         });
@@ -260,12 +284,14 @@ describe('all_docs handler', () => {
           { path: '/_all_docs?startkey="10"&endkey="8"&inclusive_end=false'}, offlineRequestOptions)
         )
       ]))
-      .then(result => {
-        expect(result[0].rows.length).toEqual(5);
-        expect(result[1].rows.length).toEqual(4);
+      .then(([inclusive, exclusive]) => {
+        chai.expect(inclusive.rows.length).to.equal(5);
+        chai.expect(exclusive.rows.length).to.equal(4);
 
-        expect(result[0].rows.map(row => row.id)).toEqual(['10', '3', '4', '6', '8']);
-        expect(result[1].rows.map(row => row.id)).toEqual(['10', '3', '4', '6']);
+        const inclusiveIds = inclusive.rows.map(row => row.id);
+        chai.expect(inclusiveIds).to.have.members(['10', '3', '4', '6', '8']);
+        const exclusiveIds = exclusive.rows.map(row => row.id);
+        chai.expect(exclusiveIds).to.have.members(['10', '3', '4', '6']);
       });
   });
 
@@ -290,28 +316,29 @@ describe('all_docs handler', () => {
           { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false` }, offlineRequestOptions)
         )
       ]))
-      .then(results => {
-        expect(results[0].rows.length).toEqual(5);
-        expect(results[0].rows.map(row => row.id)).toEqual(['1', '2', '3', '4', '5']);
-        expect(results[1].rows.length).toEqual(5);
-        expect(results[1].rows.map(row => row.id)).toEqual(['1', '2', '3', '4', '5']);
+      .then(([includeDocs, excludeDocs]) => {
+        chai.expect(includeDocs.rows.length).to.equal(5);
+        chai.expect(includeDocs.rows.map(row => row.id)).to.have.members(['1', '2', '3', '4', '5']);
 
-        results[0].rows.forEach(row => {
+        chai.expect(excludeDocs.rows.length).to.equal(5);
+        chai.expect(excludeDocs.rows.map(row => row.id)).to.have.members(['1', '2', '3', '4', '5']);
+
+        includeDocs.rows.forEach(row => {
           if (allowed.includes(row.id)) {
-            // jasmine.objectContaining is like a chai's deep.include
-            expect(row.doc).toEqual(jasmine.objectContaining(docs.find(doc => doc._id === row.id)));
+            const doc = docs.find(doc => doc._id === row.id);
+            chai.expect(row.doc).excludingEvery('_rev').to.deep.equal(doc);
           } else {
-            expect(row.doc).not.toBeDefined();
-            expect(row.error).toEqual('forbidden');
+            chai.expect(row).to.not.have.property('doc');
+            chai.expect(row.error).to.equal('forbidden');
           }
         });
 
-        expect(results[1].rows.every(row => !row.doc)).toBe(true);
-        results[1].rows.forEach(row => {
+        excludeDocs.rows.forEach(row => {
+          chai.expect(row).to.not.have.property('doc');
           if (allowed.includes(row.id)) {
-            expect(row.value).toBeDefined();
+            chai.expect(row).to.have.property('value');
           } else {
-            expect(row.error).toEqual('forbidden');
+            chai.expect(row.error).to.equal('forbidden');
           }
         });
       });
@@ -349,14 +376,18 @@ describe('all_docs handler', () => {
           { path: `/_all_docs?limit=1&skip=${skip + 2}&include_docs=true` }, offlineRequestOptions)
         )
       ]))
-      .then(results => {
-        expect(results[0].rows.length).toEqual(2);
-        expect(results[0].rows.map(row => row.id)).toEqual(['1', '3']);
-        expect(results[0].rows.every(row => !row.doc)).toBe(true);
-        expect(results[1].rows.length).toEqual(1);
-        expect(results[1].rows[0].id).toEqual('4');
-        expect(results[1].rows[0].doc)
-          .toEqual(jasmine.objectContaining({ _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' }));
+      .then(([excludeDocs, includeDocs]) => {
+        chai.expect(excludeDocs.rows.length).to.equal(2);
+        chai.expect(excludeDocs.rows).excludingEvery('value').to.have.deep.members([
+          { id: '1', key: '1' }, { id: '3', key: '3' }
+        ]);
+        excludeDocs.rows.forEach(row => chai.expect(row).to.not.have.property('doc'));
+
+        chai.expect(includeDocs.rows.length).to.equal(1);
+        chai.expect(includeDocs.rows[0].id).to.equal('4');
+        chai.expect(includeDocs.rows[0].doc).excludingEvery('_rev').to.deep.equal(
+          { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' }
+        );
       });
   });
 
@@ -396,7 +427,7 @@ describe('all_docs handler', () => {
       .then(() =>
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
       .then(result => {
-        expect(result.rows).toEqual([
+        chai.expect(result.rows).to.deep.equal([
           { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev, deleted: true }},
           { id: 'allowed_report', key: 'allowed_report', value: { rev: docs[1]._rev, deleted: true }},
           { id: 'denied_contact', error: 'forbidden' },
@@ -415,14 +446,24 @@ describe('all_docs handler', () => {
 
     return utils
       .saveDocs(docs)
-      .then(() => utils.requestOnMedicDb(offlineRequestOptions)).then(result => {
-        expect(unrestrictedKeys.every(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(true);
-        expect(restrictedKeys.some(id => result.rows.find(row => row.id === id || row.id.match(id)))).toBe(false);
+      .then(() => utils.requestOnMedicDb(offlineRequestOptions))
+      .then(result => {
+        unrestrictedKeys.forEach(key => {
+          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
+        });
+        restrictedKeys.forEach(key => {
+          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(false);
+        });
 
-        expect(result.rows.findIndex(row => row.id === 'allowed_contact')).not.toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'allowed_report')).not.toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'denied_contact')).toEqual(-1);
-        expect(result.rows.findIndex(row => row.id === 'denied_contact')).toEqual(-1);
+        const ids = result.rows.map(row => row.id);
+        chai.expect(ids).to.include.members([
+          'allowed_contact',
+          'allowed_report',
+        ]);
+        chai.expect(ids).not.to.include.members([
+          'denied_contact',
+          'denied_report',
+        ]);
       });
   });
 
@@ -462,13 +503,10 @@ describe('all_docs handler', () => {
           .catch(err => err)
       ]))
       .then(results => {
-        expect(results.every(result => {
-          if (result.rows) {
-            return result.rows.length === 1 &&
-                   result.rows[0].id === 'denied_report' &&
-                   result.rows[0].error === 'forbidden';
-          }
-        })).toBe(true);
+        results.forEach(result => {
+          chai.expect(result.rows.length).to.equal(1);
+          chai.expect(result.rows[0]).to.deep.equal({ id: 'denied_report', error: 'forbidden' });
+        });
       });
   });
 });
