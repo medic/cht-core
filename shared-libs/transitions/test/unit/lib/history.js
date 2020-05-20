@@ -41,7 +41,7 @@ describe('history utility', () => {
   });
 
   it('should return false when duplicate with configured limit', () => {
-    sinon.stub(config, 'get').returns({ allowed_duplicates_limit: 3 });
+    sinon.stub(config, 'get').returns({ duplicate_limit: 3 });
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
@@ -53,7 +53,7 @@ describe('history utility', () => {
   });
 
   it('should use default maximum limit when configured limit is too high', () => {
-    sinon.stub(config, 'get').returns({ allowed_duplicates_limit: 300 });
+    sinon.stub(config, 'get').returns({ duplicate_limit: 300 });
     for (let i = 0; i < 20; i++) {
       should.equal(history.check('to1', 'msg1'), false);
     }
@@ -61,7 +61,7 @@ describe('history utility', () => {
   });
 
   it('should normalize limit', () => {
-    sinon.stub(config, 'get').returns({ allowed_duplicates_limit: 'not a number' });
+    sinon.stub(config, 'get').returns({ duplicate_limit: 'not a number' });
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
@@ -69,7 +69,7 @@ describe('history utility', () => {
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), true);
 
-    config.get.returns({ allowed_duplicates_limit: '25 dolars' }); // not a number, so uses default limit
+    config.get.returns({ duplicate_limit: '25 dolars' }); // not a number, so uses default limit
     should.equal(history.check('to2', 'msg1'), false);
     should.equal(history.check('to2', 'msg1'), false);
     should.equal(history.check('to2', 'msg1'), false);
@@ -77,7 +77,7 @@ describe('history utility', () => {
     should.equal(history.check('to2', 'msg1'), false);
     should.equal(history.check('to2', 'msg1'), true);
 
-    config.get.returns({ allowed_duplicates_limit: '0' }); // zero, so uses default limit
+    config.get.returns({ duplicate_limit: '0' }); // zero, so uses default limit
     should.equal(history.check('to3', 'msg1'), false);
     should.equal(history.check('to3', 'msg1'), false);
     should.equal(history.check('to3', 'msg1'), false);
@@ -85,7 +85,7 @@ describe('history utility', () => {
     should.equal(history.check('to3', 'msg1'), false);
     should.equal(history.check('to3', 'msg1'), true);
 
-    config.get.returns({ allowed_duplicates_limit: '-20' }); // lower than 0, so uses default limit
+    config.get.returns({ duplicate_limit: '-20' }); // lower than 0, so uses default limit
     should.equal(history.check('to4', 'msg1'), false);
     should.equal(history.check('to4', 'msg1'), false);
     should.equal(history.check('to4', 'msg1'), false);
@@ -95,7 +95,7 @@ describe('history utility', () => {
   });
 
   it('tracks keys', () => {
-    sinon.stub(config, 'get').returns({ allowed_duplicates_limit: 1 });
+    sinon.stub(config, 'get').returns({ duplicate_limit: 1 });
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), true); // duplicate
 

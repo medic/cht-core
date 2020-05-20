@@ -14,7 +14,7 @@ const records = {};
 
 const getAllowedDuplicatesLimit = () => {
   const smsConfig = config.get('sms') || {};
-  const configuredLimit = smsConfig.allowed_duplicates_limit;
+  const configuredLimit = smsConfig.duplicate_limit;
 
   if (configuredLimit && !isNaN(configuredLimit) && configuredLimit > 0) {
     return Math.min(parseInt(configuredLimit), MAXIMUM_DUPLICATES_LIMIT);

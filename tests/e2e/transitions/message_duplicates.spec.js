@@ -134,7 +134,7 @@ describe('message duplicates', () => {
   });
 
   it('should mark as duplicate using configured limit', () => {
-    Object.assign(settings, { sms: { allowed_duplicates_limit: 3, outgoing_service: 'medic-gateway' } });
+    Object.assign(settings, { sms: { duplicate_limit: 3, outgoing_service: 'medic-gateway' } });
     const message = {
       from: 'new-duplicate-phone',
       content: 'SICK'
