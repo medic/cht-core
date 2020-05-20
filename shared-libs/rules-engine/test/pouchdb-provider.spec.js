@@ -76,7 +76,7 @@ describe('pouchdb provider', () => {
   it('allTaskData', async () => {
     expect(await pouchdbProvider(db).allTaskData(mockUserSettingsDoc)).excludingEvery('_rev').to.deep.eq({
       contactDocs: [chtDocs.contact],
-      reportDocs: [headlessReport, reportConnectedByPlace, chtDocs.pregnancyReport],
+      reportDocs: [headlessReport, chtDocs.pregnancyReport, reportConnectedByPlace],
       taskDocs: [headlessTask, taskRequestedByChtContact], // not owner
       userSettingsId: mockUserSettingsDoc._id,
     });
@@ -180,7 +180,7 @@ describe('pouchdb provider', () => {
       const actual = await pouchdbProvider(db).taskDataFor([chtDocs.contact._id, 'abc'], mockUserSettingsDoc);
       expect(actual).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
-        reportDocs: [reportConnectedByPlace, chtDocs.pregnancyReport],
+        reportDocs: [chtDocs.pregnancyReport, reportConnectedByPlace],
         taskDocs: [taskRequestedByChtContact],
         userSettingsId: 'org.couchdb.user:username',
       });

@@ -223,7 +223,7 @@ describe('transform-task-emission-to-doc', () => {
       expect(initialized).to.be.true;
 
       const { tasks } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);
-      expect(tasks.length).to.eq(1);
+      expect(tasks.length).to.eq(2);
 
       const copyOfTaskEmission = deepCopy(tasks[0]);
       copyOfTaskEmission.date = new Date(copyOfTaskEmission.date);

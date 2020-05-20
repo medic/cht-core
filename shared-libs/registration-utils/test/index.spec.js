@@ -220,18 +220,49 @@ describe('registrationUtils', () => {
   });
 
   describe('getSubjectIds', () => {
-    it('should return correct values', () => {
-      chai.expect(utils.getSubjectIds(false)).to.deep.equal([]);
-      chai.expect(utils.getSubjectIds({})).to.deep.equal([]);
-      chai.expect(utils.getSubjectIds({ _id: 'a' })).to.deep.equal(['a']);
-      chai.expect(utils.getSubjectIds({ patient_id: 'b' })).to.deep.equal(['b']);
-      chai.expect(utils.getSubjectIds({ place_id: 'c' })).to.deep.equal(['c']);
-      chai.expect(utils.getSubjectIds({ _id: '' })).to.deep.equal([]);
-      chai.expect(utils.getSubjectIds({ patient_id: false })).to.deep.equal([]);
-      chai.expect(utils.getSubjectIds({ place_id: null })).to.deep.equal([]);
-      chai.expect(utils.getSubjectIds({ _id: 'a', patient_id: 'b' })).to.deep.equal(['a', 'b']);
-      chai.expect(utils.getSubjectIds({ _id: 'b', place_id: 'c' })).to.deep.equal(['b', 'c']);
-      chai.expect(utils.getSubjectIds({ _id: 'd', place_id: 'f', foo: 'bar' })).to.deep.equal(['d', 'f']);
+    describe('contact', () => {
+      it('should return correct values', () => {
+        chai.expect(utils.getSubjectIds(false)).to.deep.equal([]);
+        chai.expect(utils.getSubjectIds({})).to.deep.equal([]);
+        chai.expect(utils.getSubjectIds({ _id: 'a' })).to.deep.equal(['a']);
+        chai.expect(utils.getSubjectIds({ patient_id: 'b' })).to.deep.equal(['b']);
+        chai.expect(utils.getSubjectIds({ place_id: 'c' })).to.deep.equal(['c']);
+        chai.expect(utils.getSubjectIds({ _id: '' })).to.deep.equal([]);
+        chai.expect(utils.getSubjectIds({ patient_id: false })).to.deep.equal([]);
+        chai.expect(utils.getSubjectIds({ place_id: null })).to.deep.equal([]);
+        chai.expect(utils.getSubjectIds({ _id: 'a', patient_id: 'b' })).to.deep.equal(['a', 'b']);
+        chai.expect(utils.getSubjectIds({ _id: 'b', place_id: 'c' })).to.deep.equal(['b', 'c']);
+        chai.expect(utils.getSubjectIds({ _id: 'd', place_id: 'f', foo: 'bar' })).to.deep.equal(['d', 'f']);
+      });
+    });
+    describe('report', () => {
+      it('should return correct values', () => {
+        chai.expect(utils.getSubjectIds({ type: 'data_record' })).to.have.members([]);
+        chai.expect(utils.getSubjectIds({ type: 'data_record', _id: 'a' })).to.have.members([]);
+        chai.expect(utils.getSubjectIds({ type: 'data_record', patient_id: 'b' })).to.have.members(['b']);
+        chai.expect(utils.getSubjectIds({ type: 'data_record', place_id: 'c' })).to.have.members(['c']);
+        chai.expect(utils.getSubjectIds({ type: 'data_record', patient_uuid: 'd' })).to.have.members(['d']);
+        chai.expect(utils.getSubjectIds({ type: 'data_record', place_uuid: 'e' })).to.have.members(['e']);
+        chai.expect(utils.getSubjectIds({ type: 'data_record', fields: { patient_uuid: 'f' } })).to.have.members(['f']);
+        chai.expect(utils.getSubjectIds({ type: 'data_record', fields: { place_uuid: 'g' } })).to.have.members(['g']);
+        chai.expect(utils.getSubjectIds({
+          type: 'data_record',
+          patient_id: 'a',
+          place_id: 'b',
+          patient_uuid: 'c',
+          place_uuid: 'd',
+          fields: {
+            patient_id: 'e',
+            place_id: 'f',
+            patient_uuid: 'g',
+            place_uuid: 'h',
+          }
+        })).to.have.members(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
+      });
+      it('dedupes the ids', () => {
+        chai.expect(utils.getSubjectIds({ type: 'data_record', patient_id: 'a', fields: { patient_id: 'a' } }))
+          .to.have.members(['a']);
+      });
     });
   });
 

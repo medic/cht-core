@@ -8,9 +8,14 @@
 /* eslint-disable no-console */
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
+const uniq = require('lodash/uniq');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
-const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
+const docsOf = query => {
+  return query.then(result => {
+    return uniq(result.rows.map(row => row.doc).filter(existing => existing));
+  });
+};
 
 const medicPouchProvider = db => {
   const self = {
