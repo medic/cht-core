@@ -89,7 +89,7 @@ angular.module('controllers').controller('MessageQueueCtrl',
       return query();
     };
 
-    $q.all([
+    const setupPromise = $q.all([
       Settings(),
       MessageQueue.loadTranslations()
     ])
@@ -100,5 +100,7 @@ angular.module('controllers').controller('MessageQueueCtrl',
       .catch(function(err) {
         $log.error('Error fetching settings', err);
       });
+
+    this.getSetupPromiseForTesting = () => setupPromise;
   }
 );
