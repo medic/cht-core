@@ -15,34 +15,55 @@ const couchDbUser = doc => doc.type === 'user-settings';
 const getUserSettingsId = username => `org.couchdb.user:${username}`;
 
 const getDepth = (userCtx) => {
+  const depth = {
+    contactDepth: -1,
+    reportDepth: -1,
+  };
+
   if (!userCtx.roles || !userCtx.roles.length) {
-    return -1;
+    return depth;
   }
 
   const settings = config.get('replication_depth');
   if (!settings) {
-    return -1;
+    return depth;
   }
-  let depth = -1;
+
   userCtx.roles.forEach(function(role) {
     // find the role with the deepest depth
     const setting = settings.find(setting => setting.role === role);
     const settingDepth = setting && parseInt(setting.depth, 10);
-    if (!isNaN(settingDepth) && settingDepth > depth) {
-      depth = settingDepth;
+    const settingsReportDepth = setting && parseInt(setting.report_depth);
+    if (!isNaN(depth.contactDepth) && settingDepth > depth.contactDepth) {
+      depth.contactDepth = settingDepth;
+      depth.reportDepth = !isNaN(settingsReportDepth) ? settingsReportDepth : -1;
     }
   });
+
   return depth;
 };
+
+const usesReportDepth = (authorizationContext) => authorizationContext.reportDepth >= 0;
 
 const hasAccessToUnassignedDocs = (userCtx) => {
   return config.get('district_admins_access_unallocated_messages') &&
          auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 };
 
-const include = (array, ...values) => {
+const include = ({ subjectIds, subjectsDepth }, values, valueDepth) => {
   let newValues = 0;
-  values.forEach(value => value && array.indexOf(value) === -1 && array.push(value) && newValues++);
+  values.forEach(value => {
+    if (!value) {
+      return;
+    }
+
+    subjectsDepth[value] = valueDepth;
+    if (!subjectIds.includes(value)) {
+      subjectIds.push(value);
+      newValues++;
+    }
+  });
+
   return newValues;
 };
 
@@ -50,9 +71,19 @@ const exclude = (array, ...values) => {
   return array.filter(value => values.indexOf(value) === -1);
 };
 
+// gets the depth of a contact, relative to the user's facility
+const getContactDepth = (authorizationContext, contactsByDepth) => {
+  const depthEntry = contactsByDepth.find(entry =>
+    entry[0].length === 2 &&
+    entry[0][0] === authorizationContext.userCtx.facility_id
+  );
+  return depthEntry && depthEntry[0][1];
+};
+
 // Updates authorizationContext.subjectIds, including or excluding tested contact `subjectId` and `docId`
 // @param   {Boolean} allowed - whether subjects should be included or excluded
 // @param   {Array}   authorizationContext.subjectIds - allowed subjectIds.
+// @param   {Object}  authorizationContext.subjectsByDepth
 // @param   {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @returns {Boolean} whether new subjectIds were added to authorizationContext
 const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
@@ -61,10 +92,11 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
     const [[[ docId ], subjectId ]] = contactsByDepth;
 
     if (allowed) {
-      return !!include(authorizationContext.subjectIds, subjectId, docId);
+      const contactDepth = getContactDepth(authorizationContext, contactsByDepth);
+      return !!include(authorizationContext, [subjectId, docId], contactDepth);
     }
 
-    authorizationContext.subjectIds = exclude(authorizationContext.subjectIds, subjectId, docId );
+    authorizationContext.subjectIds = exclude(authorizationContext.subjectIds, subjectId, docId);
     return false;
   }
 
@@ -98,6 +130,7 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
   }
 
   //it's a report, task or target
+  const allowedDepth = isAllowedDepth(authorizationContext, replicationKeys);
   return replicationKeys.some(replicationKey => {
     const [ subjectId, { submitter: submitterId } ] = replicationKey;
     const allowedSubmitter = submitterId && authorizationContext.subjectIds.indexOf(submitterId) !== -1;
@@ -105,7 +138,9 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
       return true;
     }
     const allowedSubject = subjectId && authorizationContext.subjectIds.indexOf(subjectId) !== -1;
-    return allowedSubject && !isSensitive(authorizationContext.userCtx, subjectId, submitterId, allowedSubmitter);
+    return allowedSubject &&
+           !isSensitive(authorizationContext.userCtx, subjectId, submitterId, allowedSubmitter) &&
+           allowedDepth;
   });
 };
 
@@ -166,30 +201,53 @@ const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
-const getContextObject = (userCtx) => ({
-  userCtx,
-  contactsByDepthKeys: getContactsByDepthKeys(userCtx, module.exports.getDepth(userCtx)),
-  subjectIds: [ ALL_KEY, getUserSettingsId(userCtx.name) ]
-});
+const getContextObject = (userCtx) => {
+  const { contactDepth, reportDepth } = getDepth(userCtx);
+  const subjectsDepth = {};
+  return {
+    userCtx,
+    contactsByDepthKeys: getContactsByDepthKeys(userCtx, contactDepth),
+    subjectIds: [ ALL_KEY, getUserSettingsId(userCtx.name) ],
+    contactDepth,
+    reportDepth,
+    subjectsDepth,
+  };
+};
+
+const getContactSubjects = (row) => {
+  const subjects = [];
+
+  if (tombstoneUtils.isTombstoneId(row.id)) {
+    subjects.push(tombstoneUtils.extractStub(row.id).id);
+  } else {
+    subjects.push(row.id);
+  }
+
+  if (row.value) {
+    subjects.push(row.value);
+  }
+
+  return subjects;
+};
 
 const getAuthorizationContext = (userCtx) => {
   const authorizationCtx = getContextObject(userCtx);
 
   return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
     results.rows.forEach(row => {
-      if (tombstoneUtils.isTombstoneId(row.id)) {
-        authorizationCtx.subjectIds.push(tombstoneUtils.extractStub(row.id).id);
-      } else {
-        authorizationCtx.subjectIds.push(row.id);
-      }
-      if (row.value) {
-        authorizationCtx.subjectIds.push(row.value);
+      const subjects = getContactSubjects(row);
+      authorizationCtx.subjectIds.push(...subjects);
+
+      if (authorizationCtx.reportDepth >= 0) {
+        const subjectDepth = row.key[1];
+        subjects.forEach(subject => authorizationCtx.subjectsDepth[subject] = subjectDepth);
       }
     });
 
     authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
     if (hasAccessToUnassignedDocs(userCtx)) {
       authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
+      authorizationCtx.subjectsDepth[UNASSIGNED_KEY] = 0;
     }
     return authorizationCtx;
   });
@@ -314,10 +372,14 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
         return;
       }
 
-      authorizationCtx.subjectIds.push(getContactUuid(viewResults));
+      const contactDepth = getContactDepth(authorizationCtx, viewResults.contactsByDepth);
+      const contactUuid = getContactUuid(viewResults);
+      authorizationCtx.subjectIds.push(contactUuid);
+      authorizationCtx.subjectsDepth[contactUuid] = contactDepth;
       const shortcode = getContactShortcode(viewResults);
       if (shortcode) {
         authorizationCtx.subjectIds.push(shortcode);
+        authorizationCtx.subjectsDepth[shortcode] = contactDepth;
       }
     });
 
@@ -344,10 +406,62 @@ const isSensitive = function(userCtx, subject, submitter, allowedSubmitter) {
   return !allowedSubmitter;
 };
 
+/**
+ * Returns whether a doc should be visible, depending on configured replication_depth.report_depth.
+ * We're receiving all relevant replication keys to check whether at least one is of valid depth.
+ * In cases of reports with `needs_signoff`, the replication key of valid depth might be at facility level, but that
+ * key would be marked as sensitive.
+ * @param {Object} authorizationContext
+ * @param {Object} authorizationContext.subjectsDepth
+ * @param {number} authorizationContext.subjectsDepth.subject - relative depth of every contact the user can see
+ * @param {Object} authorizationContext.reportDepth - the maximum allowed depth for replicated reports
+ * @param {Array[]} replicationKeys - array of pairs of subject + value, emitted by docs_by_replication_keys view
+ * @returns {boolean}
+ */
+const isAllowedDepth = (authorizationContext, replicationKeys) => {
+  if (!usesReportDepth(authorizationContext)) {
+    // no depth limitation
+    return true;
+  }
+
+  const docType = replicationKeys[0][1].type;
+  if (docType !== 'data_record') {
+    // allow everything that's not a data_record through (f.e. targets)
+    return true;
+  }
+
+  return replicationKeys.some(replicationKey => {
+    const [ subject, { submitter } ] = replicationKey;
+    if (submitter === authorizationContext.userCtx.contact_id) {
+      // current user is the submitter
+      return true;
+    }
+
+    return authorizationContext.subjectsDepth[subject] <= authorizationContext.reportDepth;
+  });
+};
+
+const getViewResultsById = (viewResult) => {
+  const mapById = {};
+  viewResult.rows.forEach(row => {
+    if (!mapById[row.id]) {
+      mapById[row.id] = [];
+    }
+
+    mapById[row.id].push([row.key, row.value]);
+  });
+  return mapById;
+};
+
 const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
   return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
     const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(feed.userCtx.name)];
     const tombstoneIds = [];
+
+    let viewResultsById = {};
+    if (usesReportDepth(feed)) {
+      viewResultsById = getViewResultsById(results);
+    }
 
     results.rows.forEach(row => {
       if (isSensitive(feed.userCtx, row.key, row.value.submitter, feed.subjectIds.includes(row.value.submitter))) {
@@ -358,7 +472,9 @@ const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
         return includeTombstones && tombstoneIds.push(row.id);
       }
 
-      validatedIds.push(row.id);
+      if (!usesReportDepth(feed) || isAllowedDepth(feed, viewResultsById[row.id])) {
+        validatedIds.push(row.id);
+      }
     });
 
     // only include tombstones if the winning rev of the document is deleted
@@ -396,7 +512,6 @@ const isAuthChange = (docId, userCtx, { couchDbUser }) => {
 module.exports = {
   isAuthChange: isAuthChange,
   allowedDoc: allowedDoc,
-  getDepth: getDepth,
   getViewResults: getViewResults,
   getAuthorizationContext: getAuthorizationContext,
   getAllowedDocIds: getAllowedDocIds,
