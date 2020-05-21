@@ -217,7 +217,7 @@ describe(`RulesEngine service`, () => {
           expect(change.filter(changeFeedFormat(scenario.doc))).to.be.true;
           await change.callback(changeFeedFormat(scenario.doc));
           expect(RulesEngineCore.updateEmissionsFor.callCount).to.eq(1);
-          expect(RulesEngineCore.updateEmissionsFor.args[0][0]).to.deep.eq([scenario.expected]);
+          expect(RulesEngineCore.updateEmissionsFor.args[0][0]).to.deep.eq(scenario.expected);
           expect(Telemetry.record.callCount).to.equal(2);
           expect(Telemetry.record.args[1][0]).to.equal('rules-engine:update-emissions');
         });

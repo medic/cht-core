@@ -24,6 +24,23 @@ const headlessReport = {
   patient_id: 'headless',
   reported_date: 1000,
 };
+const reportConnectedByPatientAndPlaceUuid = {
+  _id: 'reportByPatientAndPlaceUuid',
+  type: 'data_record',
+  form: 'form',
+  fields: {
+    place_uuid: 'place',
+  },
+  patient_id: 'patient',
+};
+const reportConnectedByPlaceUuid = {
+  _id: 'reportByPlaceUuid',
+  type: 'data_record',
+  form: 'form',
+  fields: {
+    place_uuid: 'place',
+  },
+};
 const taskOwnedByChtContact = {
   _id: 'taskOwnedBy',
   type: 'task',
@@ -34,6 +51,11 @@ const taskRequestedByChtContact = {
   type: 'task',
   requester: 'patient',
 };
+const taskRequestedByChtPlace = {
+  _id: 'taskRequestedByPlace',
+  type: 'task',
+  requester: 'place',
+};
 const headlessTask = {
   _id: 'headlessTask',
   type: 'task',
@@ -43,14 +65,18 @@ const headlessTask = {
 
 const fixtures = [
   chtDocs.contact,
+  chtDocs.place,
 
   chtDocs.pregnancyReport,
   headlessReport,
   reportConnectedByPlace,
+  reportConnectedByPatientAndPlaceUuid,
+  reportConnectedByPlaceUuid,
 
   taskOwnedByChtContact,
   taskRequestedByChtContact,
   headlessTask,
+  taskRequestedByChtPlace,
 ];
 
 describe('pouchdb provider', () => {
@@ -68,16 +94,22 @@ describe('pouchdb provider', () => {
 
   describe('allTasks', () => {
     it('for owner', async () => expect(await pouchdbProvider(db).allTasks('owner')).excludingEvery('_rev')
-      .to.deep.eq([taskRequestedByChtContact, headlessTask, taskOwnedByChtContact]));
+      .to.deep.eq([taskRequestedByChtContact, taskRequestedByChtPlace, headlessTask, taskOwnedByChtContact]));
     it('for requester', async () => expect(await pouchdbProvider(db).allTasks('requester')).excludingEvery('_rev')
-      .to.deep.eq([headlessTask, taskRequestedByChtContact]));
+      .to.deep.eq([headlessTask, taskRequestedByChtContact, taskRequestedByChtPlace]));
   });
 
   it('allTaskData', async () => {
     expect(await pouchdbProvider(db).allTaskData(mockUserSettingsDoc)).excludingEvery('_rev').to.deep.eq({
-      contactDocs: [chtDocs.contact],
-      reportDocs: [headlessReport, chtDocs.pregnancyReport, reportConnectedByPlace],
-      taskDocs: [headlessTask, taskRequestedByChtContact], // not owner
+      contactDocs: [chtDocs.place, chtDocs.contact],
+      reportDocs: [
+        headlessReport,
+        chtDocs.pregnancyReport,
+        reportConnectedByPatientAndPlaceUuid,
+        reportConnectedByPlace,
+        reportConnectedByPlaceUuid,
+      ],
+      taskDocs: [headlessTask, taskRequestedByChtContact, taskRequestedByChtPlace], // not owner
       userSettingsId: mockUserSettingsDoc._id,
     });
   });
@@ -180,8 +212,44 @@ describe('pouchdb provider', () => {
       const actual = await pouchdbProvider(db).taskDataFor([chtDocs.contact._id, 'abc'], mockUserSettingsDoc);
       expect(actual).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
-        reportDocs: [chtDocs.pregnancyReport, reportConnectedByPlace],
+        reportDocs: [chtDocs.pregnancyReport, reportConnectedByPatientAndPlaceUuid, reportConnectedByPlace ],
         taskDocs: [taskRequestedByChtContact],
+        userSettingsId: 'org.couchdb.user:username',
+      });
+    });
+
+    it('should exclude multi-subject reports who have other "primary" subjects for contact', async () => {
+      const forContact = await pouchdbProvider(db).taskDataFor([chtDocs.contact._id], mockUserSettingsDoc);
+      expect(forContact).excludingEvery('_rev').to.deep.eq({
+        contactDocs: [chtDocs.contact],
+        reportDocs: [chtDocs.pregnancyReport, reportConnectedByPatientAndPlaceUuid, reportConnectedByPlace, ],
+        taskDocs: [taskRequestedByChtContact],
+        userSettingsId: 'org.couchdb.user:username',
+      });
+    });
+
+    it('should exclude multi-subject reports who have other "primary" subjects for place', async () => {
+      const forPlace = await pouchdbProvider(db).taskDataFor([chtDocs.place._id], mockUserSettingsDoc);
+      chai.expect(forPlace).excludingEvery('_rev').to.deep.eq({
+        contactDocs: [chtDocs.place],
+        reportDocs: [reportConnectedByPlaceUuid],
+        taskDocs: [taskRequestedByChtPlace],
+        userSettingsId: 'org.couchdb.user:username',
+      });
+    });
+
+    it('should include all for both', async () => {
+      const forPlace = await pouchdbProvider(db)
+        .taskDataFor([chtDocs.place._id, chtDocs.contact._id], mockUserSettingsDoc);
+      chai.expect(forPlace).excludingEvery('_rev').to.deep.eq({
+        contactDocs: [chtDocs.place, chtDocs.contact],
+        reportDocs: [
+          reportConnectedByPatientAndPlaceUuid,
+          reportConnectedByPlaceUuid,
+          chtDocs.pregnancyReport,
+          reportConnectedByPlace,
+        ],
+        taskDocs: [taskRequestedByChtPlace, taskRequestedByChtContact],
         userSettingsId: 'org.couchdb.user:username',
       });
     });
