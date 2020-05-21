@@ -109,12 +109,21 @@ const medicPouchProvider = db => {
             docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
             self.tasksByRelation(contactIds, 'requester'),
           ])
-            .then(([reportDocs, taskDocs]) => ({
-              userSettingsId: userSettingsDoc && userSettingsDoc._id,
-              contactDocs,
-              reportDocs,
-              taskDocs,
-            }));
+            .then(([reportDocs, taskDocs]) => {
+              // tighten the connection between reports and contacts
+              // a report will only be allowed to generate tasks for a single contact!
+              reportDocs = reportDocs.filter(report => {
+                const subjectId = registrationUtils.getSubjectId(report);
+                return subjectIds.has(subjectId);
+              });
+
+              return {
+                userSettingsId: userSettingsDoc && userSettingsDoc._id,
+                contactDocs,
+                reportDocs,
+                taskDocs,
+              };
+            });
         });
     },
   };

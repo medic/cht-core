@@ -182,7 +182,7 @@ describe('rules-emitter', () => {
       expect(initialized).to.be.true;
 
       const { tasks, targets } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);
-      expect(tasks.length).to.eq(2);
+      expect(tasks.length).to.eq(1);
       expect(targets.length).to.eq(1);
     });
   });

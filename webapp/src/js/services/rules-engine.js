@@ -130,7 +130,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
       key: 'mark-contacts-dirty',
       filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc)),
       callback: change => {
-        const subjectIds = isReport(change.doc) ? registrationUtils.getSubjectIds(change.doc) : [ change.id ];
+        const subjectIds = isReport(change.doc) ? registrationUtils.getSubjectId(change.doc) : change.id;
         const telemetryData = telemetryEntry('rules-engine:update-emissions', true);
         return RulesEngineCore
           .updateEmissionsFor(subjectIds)
