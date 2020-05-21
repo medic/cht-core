@@ -34,7 +34,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 @channel I've just updated the translations in POE. These keys have been added: "<added-list>", and these keys have been updated: "<updated-list>"
 ```
 - [ ] Create a new document in the [release-notes folder](https://github.com/medic/medic/tree/master/release-notes) in `master`. Ensure all issues are in the GH Project, that they're correct labelled, and have human readable descriptions. Use [this script](https://github.com/medic/medic/blob/master/scripts/changelog-generator) to export the issues into our changelog format. Manually document any known migration steps and known issues. Provide description, screenshots, videos, and anything else to help communicate particularly important changes. Document any required or recommended upgrades to our other products (eg: medic-conf,  medic-gateway, medic-android). Assign the PR to a) the Director of Technology, and b) an SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient.
-- [ ] Create a Google Doc in the [blog posts folder](https://drive.google.com/drive/u/0/folders/0B2PTUNZFwxEvMHRWNTBjY2ZHNHc) with the draft of a blog post promoting the release based on the release notes above. Once it's ready ask Alix to review it.
+- [ ] Create a Google Doc in the [blog posts folder](https://drive.google.com/drive/u/0/folders/0B2PTUNZFwxEvMHRWNTBjY2ZHNHc) with the draft of a blog post promoting the release based on the release notes above. Once it's ready ask Max and Alix to review it.
 - [ ] Until release testing passes, make sure regressions are fixed in `master`, cherry-pick them into the release branch, and release another beta.
 - [ ] [Export the translations](https://github.com/medic/medic-docs/blob/master/development/translations.md#exporting-changes-from-poeditor-to-github), delete empty translation files and commit to `master`. Cherry-pick the commit into the release branch. 
 - [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/medic/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Link to the release notes in the description of the release.
@@ -53,5 +53,5 @@ Following our support policy, versions {{versions}} are no longer supported. Pro
 
 To see what's scheduled for the next releases have a read of the product roadmap: https://github.com/orgs/medic/projects?query=is%3Aopen+sort%3Aname-asc
 ```
-- [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the Development category. You can use the previous message and omit `@channel`.
+- [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the "Product - Releases" category. You can use the previous message and omit `@channel`.
 - [ ] Mark this issue "done" and close the project.
