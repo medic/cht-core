@@ -8,12 +8,13 @@
 /* eslint-disable no-console */
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
-const uniq = require('lodash/uniq');
+const uniqBy = require('lodash/uniqBy');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
 const docsOf = query => {
   return query.then(result => {
-    return uniq(result.rows.map(row => row.doc).filter(existing => existing));
+    const rows = uniqBy(result.rows, 'id');
+    return rows.map(row => row.doc).filter(existing => existing);
   });
 };
 
