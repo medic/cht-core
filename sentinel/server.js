@@ -9,10 +9,16 @@ if (process.env.TEST_ENV) {
   process.exit(1);
 }
 
-process.on('unhandledRejection', reason => {
-  logger.error('Unhandled Rejection:');
-  logger.error('%o',reason);
-});
+process
+  .on('unhandledRejection', reason => {
+    logger.error('Unhandled Rejection:');
+    logger.error('%o',reason);
+  })
+  .on('uncaughtException', err => {
+    logger.error('UNCAUGHT EXCEPTION!');
+    logger.error('  Error: %o', err);
+    process.exit(1);
+  });
 
 const waitForApi = () =>
   new Promise(resolve => {
