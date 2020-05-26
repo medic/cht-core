@@ -55,6 +55,7 @@ if (UNIT_TEST_ENV) {
   module.exports.allDbs = stubMe('allDbs');
   module.exports.get = stubMe('get');
   module.exports.close = stubMe('close');
+  module.exports.medicDbName = stubMe('close');
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');

@@ -110,12 +110,6 @@ describe('infodocs', () => {
     }).then(result => {
       // ...should succeed...
       assert.isTrue(result.ok);
-
-      // ..and the infodoc...
-      return delayedInfoDocsOf(doc._id);
-    }).then(result => {
-      // ... should be deleted.
-      assert.isNull(result[0]);
     });
   };
 
@@ -218,11 +212,6 @@ describe('infodocs', () => {
         // ...everything should work...
         assert.isTrue(result[0].ok);
         assert.isTrue(result[1].ok);
-
-        // ...and the second doc should not have a infodoc anymore
-        return delayedInfoDocsOf(docs[1]._id);
-      }).then(results => {
-        assert.isNull(results[0]);
       });
     });
   });

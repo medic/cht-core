@@ -4,19 +4,19 @@ const constants = require('../../constants');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 
-// This function resolves after Sentinel has processed all required docs (matched by provided docIds).
-// We achieve this by getting the last seq that sentinel has processed, querying the main db's changes feed,
-// filtering by the provided ids and using Sentinel's transitions_seq as a since param - simulating what Sentinel's
-// queue would be like. If we receive no results, we are finished. If we receive results, we try again in 100ms.
-// We use the timeout because local docs don't appear on the changes feed, otherwise we could `longpoll` it instead.
-// If no docIds are provided, we will query the main db's changes feed with the `since` param equal to sentinel's
-// `transitions_seq`. When we don't receive any changes, it means Sentinel has caught up. This is useful when testing
-// api SMS endpoints that generated docs with ids we do not know.
-const waitForSentinel = docIds => {
-  return requestOnSentinelTestDb('/_local/transitions-seq')
+//
+// Waits for a procedure that logs its progress to a metadata document (such as sentinel
+// transitions) to catch up, either to now, or far enough that it has processed all passed docIds.
+//
+// @param      {<string>}         metadataId  document that stores the seq, see the metadata library
+// @param      {<array[string]>}  docIds    documents that must be processed before returning
+// @return     {<promise>}        resolves once the wait is over
+//
+const waitForSeq = (metadataId, docIds) => {
+  return requestOnSentinelTestDb(metadataId)
     .catch(err => {
       if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
-        return { transitions_seq: 0 };
+        return { value: 0 };
       }
       throw err;
     })
@@ -43,7 +43,7 @@ const waitForSentinel = docIds => {
         return;
       }
 
-      return utils.delayPromise(() => waitForSentinel(docIds), 100);
+      return utils.delayPromise(() => waitForSeq(metadataId, docIds), 100);
     });
 };
 
@@ -108,7 +108,8 @@ const waitForPurgeCompletion = seq => {
 const getCurrentSeq = () => requestOnSentinelTestDb('').then(data => data.update_seq);
 
 module.exports = {
-  waitForSentinel: waitForSentinel,
+  waitForSentinel: docIds => waitForSeq('/_local/transitions-seq', docIds),
+  waitForBackgroundCleanup: docIds => waitForSeq('/_local/background-seq', docIds),
   requestOnSentinelTestDb: requestOnSentinelTestDb,
   getInfoDoc: getInfoDoc,
   getInfoDocs: getInfoDocs,

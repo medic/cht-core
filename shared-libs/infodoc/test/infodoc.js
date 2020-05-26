@@ -290,28 +290,6 @@ describe('infodoc', () => {
     });
   });
 
-  describe('delete', () => {
-    it('deleteInfo doc handles missing info doc', () => {
-      const given = { id: 'abc' };
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
-      return lib.delete(given);
-    });
-
-    it('deleteInfoDoc deletes info doc', () => {
-      const given = { id: 'abc' };
-      const get = sinon
-        .stub(db.sentinel, 'get')
-        .resolves({ _id: 'abc', _rev: '123' });
-      const insert = sinon.stub(db.sentinel, 'put').resolves({});
-      return lib.delete(given).then(() => {
-        assert.equal(get.callCount, 1);
-        assert.equal(get.args[0][0], 'abc-info');
-        assert.equal(insert.callCount, 1);
-        assert.equal(insert.args[0][0]._deleted, true);
-      });
-    });
-  });
-
   describe('bulkUpdate', () => {
     afterEach(() => {
       sinon.restore();
@@ -503,7 +481,7 @@ describe('infodoc', () => {
 
   describe('recordDocumentWrites', () => {
     describe('update one', () => {
-      let sentinelGet; let 
+      let sentinelGet; let
         sentinelPut;
       beforeEach(() => {
         sentinelGet = sinon.stub(db.sentinel, 'get');
@@ -583,7 +561,7 @@ describe('infodoc', () => {
     });
 
     describe('update many', () => {
-      let sentinelAllDocs; let 
+      let sentinelAllDocs; let
         sentinelBulkDocs;
       beforeEach(() => {
         sentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');

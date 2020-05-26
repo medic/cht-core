@@ -2,8 +2,17 @@
 const db = require('../db');
 
 const TRANSITION_SEQ_DOCUMENT = '_local/transitions-seq';
+const BACKGROUND_CLEANUP_SEQ_DOCUMENT = '_local/background-seq';
 
-const getValue = docId => db.sentinel.get(docId).then(doc => doc.value);
+const getValue = (docId, defaultValue) => db.sentinel.get(docId)
+  .then(doc => doc.value)
+  .catch(err => {
+    if (err.status !== 404) {
+      throw err;
+    }
+
+    return defaultValue;
+  });
 
 const setValue = (docId, value) =>
   db.sentinel.get(docId)
@@ -25,6 +34,10 @@ const setValue = (docId, value) =>
 
 
 module.exports = {
-  getTransitionSeq: () => getValue(TRANSITION_SEQ_DOCUMENT),
+  getTransitionSeq: () => getValue(TRANSITION_SEQ_DOCUMENT, 0),
   setTransitionSeq: seq => setValue(TRANSITION_SEQ_DOCUMENT, seq),
+  getBackgroundCleanupSeq: () => getValue(BACKGROUND_CLEANUP_SEQ_DOCUMENT, 0),
+  setBackgroundCleanupSeq: seq => setValue(BACKGROUND_CLEANUP_SEQ_DOCUMENT, seq),
+  _getValue: getValue,
+  _setValue: setValue
 };

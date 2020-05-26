@@ -9,8 +9,6 @@ const feed = require('../../../src/lib/feed');
 const metadata = require('../../../src/lib/metadata');
 const tombstoneUtils = require('@medic/tombstone-utils');
 
-const infodoc = config.getTransitionsLib().infodoc;
-
 describe('feed', () => {
 
   let handler;
@@ -236,76 +234,6 @@ describe('feed', () => {
 
   });
 
-  describe('deleteReadDocs', () => {
-
-    it('handles missing read doc', () => {
-      db.medicDbName = 'medic';
-      const given = { id: 'abc' };
-      const metaDb = {
-        remove: sinon.stub(),
-        allDocs: sinon.stub().resolves({
-          rows: [
-            { key: 'read:message:abc', error: 'notfound' },
-            { key: 'read:report:abc', error: 'notfound' }
-          ]
-        }),
-      };
-      sinon.stub(db, 'allDbs').resolves([`${db.medicDbName}-user-gareth-meta`]);
-      sinon.stub(db, 'get').returns(metaDb);
-      sinon.stub(db, 'close');
-      return feed._deleteReadDocs(given).then(() => {
-        assert.equal(db.allDbs.callCount, 1);
-        assert.equal(db.get.callCount, 1);
-        assert.deepEqual(db.get.args[0], [`${db.medicDbName}-user-gareth-meta`]);
-        assert.equal(metaDb.allDocs.callCount, 1);
-        assert.deepEqual(metaDb.allDocs.args[0], [{ keys: ['read:report:abc', 'read:message:abc'] }]);
-        assert.equal(metaDb.remove.callCount, 0);
-        assert.equal(db.close.callCount, 1);
-        assert.deepEqual(db.close.args[0], [metaDb]);
-      });
-    });
-
-    it('deletes read doc for all users', () => {
-      db.medicDbName = 'medic';
-      const given = { id: 'abc' };
-      const metaDb = {
-        allDocs: sinon.stub().resolves({
-          rows: [
-            { key: 'read:message:abc', error: 'notfound' },
-            { key: 'read:report:abc', id: 'read:report:abc', value: { rev: '1-rev' } }
-          ]
-        }),
-        remove: sinon.stub().resolves()
-      };
-      const list = sinon.stub(db, 'allDbs').resolves([
-        `${db.medicDbName}-user-gareth-meta`,
-        `${db.medicDbName}-user-jim-meta`,
-        db.medicDbName, // not a user db - must be ignored
-      ]);
-      const use = sinon.stub(db, 'get').returns(metaDb);
-      sinon.stub(db, 'close');
-      return feed._deleteReadDocs(given).then(() => {
-        assert.equal(list.callCount, 1);
-        assert.equal(use.callCount, 2);
-        assert.equal(use.args[0][0], `${db.medicDbName}-user-gareth-meta`);
-        assert.equal(use.args[1][0], `${db.medicDbName}-user-jim-meta`);
-        assert.equal(metaDb.allDocs.callCount, 2);
-        assert.equal(metaDb.allDocs.args[0][0].keys.length, 2);
-        assert.equal(metaDb.allDocs.args[0][0].keys[0], 'read:report:abc');
-        assert.equal(metaDb.allDocs.args[0][0].keys[1], 'read:message:abc');
-        assert.equal(metaDb.allDocs.args[1][0].keys.length, 2);
-        assert.equal(metaDb.allDocs.args[1][0].keys[0], 'read:report:abc');
-        assert.equal(metaDb.allDocs.args[1][0].keys[1], 'read:message:abc');
-        assert.equal(metaDb.remove.callCount, 2);
-        assert.deepEqual(metaDb.remove.args[0], ['read:report:abc', '1-rev']);
-        assert.deepEqual(metaDb.remove.args[1], ['read:report:abc', '1-rev']);
-        assert.equal(db.close.callCount, 2);
-        assert.deepEqual(db.close.args, [[metaDb], [metaDb]]);
-      });
-    });
-
-  });
-
   describe('changeQueue', () => {
     it('handles an empty change', done => {
       sinon.stub(feed._changeQueue, 'length').returns(0);
@@ -328,7 +256,6 @@ describe('feed', () => {
     it('processes deleted changes through TombstoneUtils to create tombstones', done => {
       sinon.stub(tombstoneUtils, 'processChange').resolves();
       sinon.stub(metadata, 'setTransitionSeq').resolves();
-      sinon.stub(infodoc, 'delete').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
 
       feed._enqueue({ id: 'somechange', seq: 55, deleted: true });
@@ -353,7 +280,6 @@ describe('feed', () => {
     it('does not advance metadata document if creating tombstone fails', done => {
       sinon.stub(tombstoneUtils, 'processChange').rejects();
       sinon.stub(metadata, 'setTransitionSeq').resolves();
-      sinon.stub(infodoc, 'delete').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
 
       feed._enqueue({ id: 'somechange', seq: 55, deleted: true });

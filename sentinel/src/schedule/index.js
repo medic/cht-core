@@ -9,7 +9,8 @@ const tasks = {
   reminders: require('./reminders'),
   replications: require('./replications'),
   outbound: require('./outbound'),
-  purging: require('./purging')
+  purging: require('./purging'),
+  background: require('./background-cleanup')
 };
 const ongoingTasks = new Set();
 
