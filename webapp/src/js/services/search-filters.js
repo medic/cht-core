@@ -14,26 +14,30 @@ const responsive = require('../modules/responsive');
     ) {
       'ngInject';
 
+      let search = () => {};
+
       const isEnter = function(e) {
         return e.which === ENTER_KEY_CODE;
       };
 
       const initFreetext = function(callback) {
+        search = () => callback(true);
+
         $('#search').on('click', function(e) {
           e.preventDefault();
-          callback();
+          search();
         });
         $('#freetext').on('keypress', function(e) {
           if (isEnter(e)) {
             e.preventDefault();
-            callback();
+            search();
           }
         });
 
         const performMobileSearch = function(e) {
           e.preventDefault();
           $(e.target).closest('.filter').removeClass('open');
-          callback();
+          search();
         };
         $('#mobile-search-go').on('click', performMobileSearch);
         $('#mobile-freetext').on('keypress', function(e) {
@@ -206,16 +210,25 @@ const responsive = require('../modules/responsive');
         $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
       };
 
+      const updateFreetextValue = val => {
+        $('#freetext,#mobile-freetext').val(val).trigger('change');
+      };
+
       return {
         freetext: initFreetext,
         formType: initFormType,
         status: initStatus,
         date: initDate,
         facility: initFacility,
+        freetextSearch: function(query) {
+          updateFreetextValue(query);
+          search();
+        },
         reset: function() {
           $('.filter.multidropdown:not(.no-reset)').each(function() {
             $(this).multiDropdown().reset();
           });
+          updateFreetextValue('');
         },
         destroy: function() {
           $('#date-filter').data('daterangepicker').remove();

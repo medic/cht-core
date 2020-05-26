@@ -117,8 +117,8 @@ describe('rules-emitter', () => {
     const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c }));`, { includeTasks: true });
     const settingsDoc = settingsWithRules(rules);
     const contactDoc = { _id: 'contact', patient_id: 'foo' };
-    const byPatientId = { _id: 'report', patient_id: 'foo' };
-    const byPatientUuid = { _id: 'report', fields: { patient_uuid: 'contact' } };
+    const byPatientId = { _id: 'report', type: 'data_record', patient_id: 'foo' };
+    const byPatientUuid = { _id: 'report', type: 'data_record', fields: { patient_uuid: 'contact' } };
 
     const initialized = rulesEmitter.initialize(settingsDoc);
     expect(initialized).to.be.true;

@@ -14,6 +14,7 @@ angular.module('inboxServices').factory('JsonForms',
           code: form.meta.code,
           name: form.meta.label,
           translation_key: form.meta.translation_key,
+          subject_key: form.meta.subject_key,
           icon: form.meta.icon
         };
       });

@@ -8,9 +8,15 @@
 /* eslint-disable no-console */
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
+const uniqBy = require('lodash/uniqBy');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
-const docsOf = query => query.then(result => result.rows.map(row => row.doc).filter(existing => existing));
+const docsOf = query => {
+  return query.then(result => {
+    const rows = uniqBy(result.rows, 'id');
+    return rows.map(row => row.doc).filter(existing => existing);
+  });
+};
 
 const medicPouchProvider = db => {
   const self = {
@@ -99,17 +105,26 @@ const medicPouchProvider = db => {
             return agg;
           }, new Set(contactIds));
 
-          const keys = Array.from(subjectIds).map(key => [key]);
+          const keys = Array.from(subjectIds);
           return Promise.all([
             docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
             self.tasksByRelation(contactIds, 'requester'),
           ])
-            .then(([reportDocs, taskDocs]) => ({
-              userSettingsId: userSettingsDoc && userSettingsDoc._id,
-              contactDocs,
-              reportDocs,
-              taskDocs,
-            }));
+            .then(([reportDocs, taskDocs]) => {
+              // tighten the connection between reports and contacts
+              // a report will only be allowed to generate tasks for a single contact!
+              reportDocs = reportDocs.filter(report => {
+                const subjectId = registrationUtils.getSubjectId(report);
+                return subjectIds.has(subjectId);
+              });
+
+              return {
+                userSettingsId: userSettingsDoc && userSettingsDoc._id,
+                contactDocs,
+                reportDocs,
+                taskDocs,
+              };
+            });
         });
     },
   };

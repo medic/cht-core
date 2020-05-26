@@ -131,7 +131,8 @@ describe('GetSummaries service', () => {
               name: 'jeff',
               value: 'f',
               type: 'reference'
-            }
+            },
+            case_id: undefined
           },
           {
             _id: 'b',
@@ -147,7 +148,8 @@ describe('GetSummaries service', () => {
             lineage: [],
             subject: {
               type: 'unknown'
-            }
+            },
+            case_id: undefined
           }
         ]);
       });

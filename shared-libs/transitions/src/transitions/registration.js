@@ -134,9 +134,9 @@ const getDaysSinceDOB = doc => {
 };
 
 /*
- * Given a doc get the LMP value as a number, including 0.  Supports three
+ * Given a doc get the LMP value as a number, including 0. Supports three
  * property names atm.
- * */
+ */
 const getWeeksSinceLMP = doc => {
   const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
   for (const prop of props) {
@@ -175,9 +175,9 @@ const getConfig = () => config.get('registrations');
 
 /*
  * Given a form code and config array, return config for that form.
- * */
-const getRegistrationConfig = (config, form_code) => {
-  return config.find(conf => utils.isFormCodeSame(form_code, conf.form));
+ */
+const getRegistrationConfig = (config, formCode) => {
+  return config.find(conf => utils.isFormCodeSame(formCode, conf.form));
 };
 
 const validate = (config, doc) => {
@@ -202,6 +202,9 @@ const triggers = {
 
     return setPlaceId(options).then(() => addPlace(options));
   },
+  add_case: (options) => {
+    return setCaseId(options).then(() => addPlaceId(options));
+  },
   add_patient_id: (options) => {
     // Deprecated name for add_patient
     logger.warn('Use of add_patient_id trigger. This is deprecated in favour of add_patient.');
@@ -224,11 +227,14 @@ const triggers = {
       silence_for: null,
     };
 
-    return utils
-      .getReportsBySubject({
-        ids: utils.getSubjectIds(options.doc.patient),
-        registrations: true
-      })
+    const subjectIds = utils.getSubjectIds(options.doc.patient);
+    const caseId = options.doc.case_id ||
+      (options.doc.fields && options.doc.fields.case_id);
+    if (caseId) {
+      subjectIds.push(caseId);
+    }
+
+    return utils.getReportsBySubject({ ids: subjectIds, registrations: true })
       .then(registrations => new Promise((resolve, reject) => {
         acceptPatientReports.silenceRegistrations(
           config,
@@ -255,11 +261,13 @@ const fireConfiguredTriggers = (registrationConfig, doc) => {
       }
 
       const options = {
-        doc: doc,
-        registrationConfig: registrationConfig,
+        doc,
+        registrationConfig,
         params: parseParams(event.params),
       };
-      logger.debug(`Parsed params for form "${options.form}", trigger "${event.trigger}, params: ${options.params}"`);
+      logger.debug(
+        `Parsed params for form "${doc.form}", trigger "${event.trigger}", params: "${JSON.stringify(options.params)}"`
+      );
       return () => trigger(options);
     })
     .filter(item => !!item);
@@ -322,8 +330,27 @@ const assignSchedule = (options) => {
   });
 };
 
-const setPlaceId = (options) => {
-  return transitionUtils.getUniqueId().then(id => options.doc.place_id = id);
+const generateId = (doc, key) => {
+  return transitionUtils.getUniqueId().then(id => doc[key] = id);
+};
+
+const setPlaceId = ({ doc }) => generateId(doc, 'place_id');
+const setCaseId = ({ doc }) => {
+  if (doc.case_id) {
+    return Promise.resolve();
+  }
+  return generateId(doc, 'case_id');
+};
+
+const addPlaceId = ({ doc }) => {
+  const placeId = doc.contact && doc.contact.parent && doc.contact.parent._id;
+  if (!placeId) {
+    return;
+  }
+  if (!doc.fields) {
+    doc.fields = {};
+  }
+  doc.fields.place_uuid = placeId;
 };
 
 const setPatientId = (options) => {
@@ -349,7 +376,7 @@ const setPatientId = (options) => {
         transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_patient_id_not_unique');
       });
   } else {
-    return transitionUtils.getUniqueId().then(id => doc.patient_id = id);
+    return generateId(doc, 'patient_id');
   }
 };
 

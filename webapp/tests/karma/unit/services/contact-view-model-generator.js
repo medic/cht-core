@@ -19,6 +19,7 @@ describe('ContactViewModelGenerator service', () => {
   let search;
   let GetDataRecords;
   let Session;
+  let forms;
 
   const childPlaceIcon = 'fa-mushroom';
 
@@ -99,6 +100,7 @@ describe('ContactViewModelGenerator service', () => {
         type: 'clinic',
         contact: { _id: contactId }
       };
+      forms = [];
     });
     inject(_ContactViewModelGenerator_ => service = _ContactViewModelGenerator_);
   });
@@ -112,7 +114,7 @@ describe('ContactViewModelGenerator service', () => {
       .loadChildren(model)
       .then(children => {
         model.children = children;
-        return service.loadReports(model);
+        return service.loadReports(model, forms);
       })
       .then(reports => {
         model.reports = reports;
@@ -478,9 +480,24 @@ describe('ContactViewModelGenerator service', () => {
       const dataRecord = { _id: 'ab', validSubject: 'ac', subject: { value: 'ad' } };
       stubSearch(null, [ report ]);
       stubGetDataRecords(null, [ dataRecord ]);
-      return runReportsTest([], (model) => {
-        chai.expect(model.reports[0].heading).to.equal(dataRecord.subject.value);
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports[0].heading).to.equal(dataRecord.subject.value);
+        });
+    });
+
+    it('adds heading to reports using form subject_key if available', () => {
+      const report = { _id: 'ab' };
+      const dataRecord = { _id: 'ab', form: 'a', validSubject: 'ac', subject: { value: 'ad' } };
+      forms = [ { code: 'a', subjectKey: 'some.key' } ];
+      stubSearch(null, [ report ]);
+      stubGetDataRecords(null, [ dataRecord ]);
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports[0].heading).to.equal('some.key');
+        });
     });
 
     it('does not add heading to reports when there are no valid subject', () => {
@@ -488,9 +505,11 @@ describe('ContactViewModelGenerator service', () => {
       const dataRecord = { _id: 'ab', subject: { value: 'ad' } };
       stubSearch(null, [ report ]);
       stubGetDataRecords(null, [ dataRecord ]);
-      return runReportsTest([], (model) => {
-        chai.expect(model.reports[0].heading).to.be.an('undefined');
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
+        });
     });
 
     it('does not add heading to reports when there are no valid subject value', () => {
@@ -498,18 +517,22 @@ describe('ContactViewModelGenerator service', () => {
       const dataRecord = { _id: 'ab', validSubject: 'ac' };
       stubSearch(null, [ report ]);
       stubGetDataRecords(null, [ dataRecord ]);
-      return runReportsTest([], (model) => {
-        chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
+        });
     });
 
     it('does not add heading to reports when no data record is found', () => {
       const report = { _id: 'ab' };
       stubSearch(null, [ report ]);
       stubGetDataRecords(null, [ ]);
-      return runReportsTest([], (model) => {
-        chai.expect(model.reports[0].heading).to.be.an('undefined');
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports[0].heading).to.be.an('undefined');
+        });
     });
 
     it('adds heading to reports when an array of data records is returned', () => {
@@ -518,9 +541,11 @@ describe('ContactViewModelGenerator service', () => {
       const dataRecordB = { _id: 'b', validSubject: 'bvs', subject: { value: 'bsv' } };
       stubSearch(null, [ report ]);
       stubGetDataRecords(null, [ dataRecordB, dataRecordA ]);
-      return runReportsTest([], (model) => {
-        chai.expect(model.reports[0].heading).to.equal(dataRecordA.subject.value);
-      });
+      return runReportsTest([])
+        .then(waitForModelToLoad)
+        .then(model => {
+          chai.expect(model.reports[0].heading).to.equal(dataRecordA.subject.value);
+        });
     });
   });
 

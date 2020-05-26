@@ -17,6 +17,7 @@ const _ = require('lodash/core');
       MessageState,
       Modal,
       ReportsActions,
+      SearchFilters,
       Selectors
     ) {
 
@@ -56,6 +57,10 @@ const _ = require('lodash/core');
       } else {
         ctrl.unsetSelected();
       }
+
+      ctrl.search = function(query) {
+        SearchFilters.freetextSearch(query);
+      };
 
       ctrl.canMute = function(group) {
         return MessageState.any(group, 'scheduled');

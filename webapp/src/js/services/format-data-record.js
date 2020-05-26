@@ -55,18 +55,23 @@ angular
 
     const fieldsToHtml = function(
       settings,
+      doc,
       keys,
       labels,
-      data_record,
-      def,
-      locale
+      locale,
+      data,
+      def
     ) {
-      if (!def && data_record && data_record.form) {
-        def = getForm(settings, data_record.form);
+      if (!def && doc && doc.form) {
+        def = getForm(settings, doc.form);
       }
 
       if (_.isString(def)) {
         def = getForm(settings, def);
+      }
+
+      if (!data) {
+        data = Object.assign({}, doc, doc.fields);
       }
 
       const fields = {
@@ -74,16 +79,12 @@ angular
         data: [],
       };
 
-      const data = Object.assign({}, data_record, data_record.fields);
-
       _.forEach(keys, function(key) {
         if (_.isArray(key)) {
+          const result = fieldsToHtml(settings, doc, key[1], labels, locale, data[key[0]], def);
+          result.isArray = true;
+          fields.data.push(result);
           fields.headers.push({ head: titleize(key[0]) });
-          fields.data.push(
-            Object.assign(fieldsToHtml(key[1], labels, data[key[0]], def, locale), {
-              isArray: true,
-            })
-          );
         } else {
           const label = labels.shift();
           fields.headers.push({ head: getMessage(settings, label) });
@@ -94,12 +95,27 @@ angular
             isArray: false,
             value: prettyVal(settings, data, key, def, locale),
             label: label,
-            hasUrl: patientFields.includes(key)
+            target: getClickTarget(key, doc)
           });
         }
       });
 
       return fields;
+    };
+
+    const getClickTarget = (key, doc) => {
+      if (patientFields.includes(key)) {
+        const id = (doc.patient && doc.patient._id) ||
+                   (doc.fields && doc.fields.patient_uuid);
+        if (id) {
+          return { url: { route: 'contacts.detail', params: { id } } };
+        }
+      } else if (key === 'case_id') {
+        const id = doc.case_id || doc.fields.case_id;
+        if (id) {
+          return { filter: `case_id:${id}` };
+        }
+      }
     };
 
     /*
@@ -277,12 +293,12 @@ angular
     };
 
     /*
-     * With some forms like ORPT (patient registration), we add additional data to
+     * With some forms like patient registration, we add additional data to
      * it based on other form submissions.  Form data from other reports is used to
      * create these fields and it is useful to show these new fields in the data
      * records screen/render even though they are not defined in the form.
      */
-    const includeNonFormFields = function(settings, doc, form_keys, locale) {
+    const includeNonFormFieldsJson = function(settings, doc, formKeys, locale) {
       const fields = [
         'mother_outcome',
         'child_birth_outcome',
@@ -291,34 +307,55 @@ angular
         'expected_date',
         'birth_date',
         'patient_id',
+        'case_id'
       ];
 
       const dateFields = ['child_birth_date', 'expected_date', 'birth_date'];
 
-      _.forEach(fields, function(field) {
-        const label = translate(settings, field, locale);
+      fields.forEach(function(field) {
         let value = doc[field];
 
         // Only include the property if we find it on the doc and not as a form
         // key since then it would be duplicated.
-        if (!value || form_keys.indexOf(field) !== -1) {
+        if (!value || formKeys.indexOf(field) !== -1) {
           return;
         }
 
+        const label = translate(settings, field, locale);
         if (dateFields.includes(field)) {
           value = formatDateField(value, field);
         }
 
         doc.fields.data.unshift({
-          label: label,
-          value: value,
+          label,
+          value,
           isArray: false,
           generated: true,
-          hasUrl: patientFields.includes(field)
+          target: getClickTarget(field, doc)
         });
 
         doc.fields.headers.unshift({
           head: label,
+        });
+      });
+    };
+
+    const includeNonFormFieldsXml = function(doc, fields) {
+      const generatedFields = [
+        'patient_id',
+        'case_id'
+      ];
+
+      generatedFields.forEach(function(field) {
+        const value = doc[field];
+        if (!value) {
+          return;
+        }
+        fields.unshift({
+          label: field,
+          value,
+          generated: true,
+          target: getClickTarget(field, doc)
         });
       });
     };
@@ -433,17 +470,14 @@ angular
         const value = values[key];
         const label = labelPrefix + '.' + key;
         if (_.isObject(value)) {
-          results.push({
-            label: label,
-            depth: depth
-          });
+          results.push({ label, depth });
           getFields(doc, results, value, label, depth + 1);
         } else {
           const result = {
-            label: label,
-            value: value,
-            depth: depth,
-            hasUrl: patientFields.includes(key)
+            label,
+            value,
+            depth,
+            target: getClickTarget(key, doc)
           };
 
           const filePath = 'user-file/' + label.split('.').slice(1).join('/');
@@ -468,6 +502,7 @@ angular
       }
       const label = 'report.' + doc.form;
       const fields = getFields(doc, [], doc.fields, label, 0);
+      includeNonFormFieldsXml(doc, fields);
       const hide = doc.hidden_fields || [];
       hide.push('inputs');
       return _.filter(fields, function(field) {
@@ -488,14 +523,8 @@ angular
       }
       const keys = getFormKeys(getForm(settings, doc.form));
       const labels = getLabels(settings, keys, doc.form, language);
-      doc.fields = fieldsToHtml(
-        settings,
-        keys,
-        labels,
-        doc,
-        language
-      );
-      includeNonFormFields(settings, doc, keys, language);
+      doc.fields = fieldsToHtml(settings, doc, keys, labels, language);
+      includeNonFormFieldsJson(settings, doc, keys, language);
     };
 
     const formatScheduledTasks = function(doc, settings, language, context) {
