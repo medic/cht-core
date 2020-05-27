@@ -965,8 +965,8 @@ describe('changes handler', () => {
     });
   });
 
-  it('should filter the changes to relevant ones', () =>
-    utils.saveDoc({ type:'clinic', parent:{ _id:'nowhere' } })
+  it('should filter the changes to relevant ones', () => {
+    return utils.saveDoc({ type:'clinic', parent:{ _id:'nowhere' } })
       .then(() => utils.saveDoc({ type:'clinic', _id:'very-relevant', parent:{ _id:'fixture:bobville' } }))
       .then(() => utils.saveDoc({ type:'clinic', parent:{ _id:'irrelevant-place' } }))
       .then(() => requestChanges('bob'))
@@ -975,7 +975,8 @@ describe('changes handler', () => {
           'org.couchdb.user:bob',
           'fixture:bobville',
           'fixture:user:bob',
-          'very-relevant')));
+          'very-relevant'));
+  }, 60 * 1000);
 
   describe('reports with no associated contact', () => {
     describe('can_view_unallocated_data_records permission', () => {
@@ -1010,6 +1011,7 @@ describe('changes handler', () => {
               'fixture:clareville')));
     });
   });
+
   describe('replication depth', () => {
 
     it('should show contacts to a user only if they are within the configured depth', () =>
