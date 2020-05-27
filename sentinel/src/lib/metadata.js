@@ -34,9 +34,9 @@ const setValue = (docId, value) =>
 
 
 module.exports = {
-  getTransitionSeq: () => getValue(TRANSITION_SEQ_DOCUMENT, 0),
+  getTransitionSeq: () => getValue(TRANSITION_SEQ_DOCUMENT, '0'),
   setTransitionSeq: seq => setValue(TRANSITION_SEQ_DOCUMENT, seq),
-  getBackgroundCleanupSeq: () => getValue(BACKGROUND_CLEANUP_SEQ_DOCUMENT, 0),
+  getBackgroundCleanupSeq: () => getValue(BACKGROUND_CLEANUP_SEQ_DOCUMENT, '0'),
   setBackgroundCleanupSeq: seq => setValue(BACKGROUND_CLEANUP_SEQ_DOCUMENT, seq),
   _getValue: getValue,
   _setValue: setValue

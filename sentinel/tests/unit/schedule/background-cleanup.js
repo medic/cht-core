@@ -19,7 +19,7 @@ describe('Background cleanup tasks', () => {
     });
 
     it('Gets seq, executes tasks and on success stores latest seq', (done) => {
-      schedule._getChanges.resolves([{change: 1}, '42-blah']);
+      schedule._getChanges.resolves({changes: [{change: 1}], checkpointSeq: '42-blah', more: false});
       schedule._deleteInfoDocs.resolves();
       schedule._deleteReadDocs.resolves();
       metadata.setBackgroundCleanupSeq.resolves();
@@ -32,6 +32,31 @@ describe('Background cleanup tasks', () => {
           assert.equal(schedule._deleteReadDocs.callCount, 1);
           assert.equal(metadata.setBackgroundCleanupSeq.callCount, 1);
           assert.equal(metadata.setBackgroundCleanupSeq.args[0][0], '42-blah');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+
+    it('Does multiple batches until it runs out of new changes', (done) => {
+      const roundOneChanges = [...Array(1000).keys()].map(i => ({change: i}));
+      const roundTwoChanges = [...Array(999).keys()].map(i => ({change: i}));
+      schedule._getChanges.onFirstCall().resolves({changes: roundOneChanges, checkpointSeq: '1000-blah', more: true});
+      schedule._getChanges.onSecondCall().resolves({changes: roundTwoChanges, checkpointSeq: '1999-blah', more: false});
+      schedule._deleteInfoDocs.resolves();
+      schedule._deleteReadDocs.resolves();
+      metadata.setBackgroundCleanupSeq.resolves();
+
+      schedule.execute(err => {
+        try {
+          assert.isUndefined(err);
+          assert.equal(schedule._getChanges.callCount, 2);
+          assert.equal(schedule._deleteInfoDocs.callCount, 2);
+          assert.equal(schedule._deleteReadDocs.callCount, 2);
+          assert.equal(metadata.setBackgroundCleanupSeq.callCount, 2);
+          assert.equal(metadata.setBackgroundCleanupSeq.args[0][0], '1000-blah');
+          assert.equal(metadata.setBackgroundCleanupSeq.args[1][0], '1999-blah');
           done();
         } catch (err) {
           done(err);
@@ -87,8 +112,8 @@ describe('Background cleanup tasks', () => {
           assert.equal(metadata.getBackgroundCleanupSeq.callCount, 1);
           assert.equal(db.medic.changes.callCount, 1);
 
-          assert.deepEqual(getChangesReturns, [
-            [{
+          assert.deepEqual(getChangesReturns, {
+            changes: [{
               id: 'doc1',
               changes: [{rev: '1-abc'}]
             }, {
@@ -96,8 +121,39 @@ describe('Background cleanup tasks', () => {
               changes: [{rev: '1-def'}],
               deleted: true
             }],
-            '99-morehashedstuff'
-          ]);
+            checkpointSeq: '99-morehashedstuff',
+            more: false
+          });
+        });
+    });
+
+    it('returns more: false if we didnt get BATCH changes back', () => {
+      sinon.stub(metadata, 'getBackgroundCleanupSeq').resolves('42-therealseqbuthashed');
+
+      const lessThanBatchChanges = [...Array(999).keys()].map(i => ({change: i}));
+      sinon.stub(db.medic, 'changes').resolves({
+        results: lessThanBatchChanges,
+        last_seq: '999-blah'
+      });
+
+      return schedule._getChanges()
+        .then(({more}) => {
+          assert.equal(more, false);
+        });
+    });
+
+    it('returns more: true if we didnt get BATCH changes back', () => {
+      sinon.stub(metadata, 'getBackgroundCleanupSeq').resolves('42-therealseqbuthashed');
+
+      const moreThanBatchChanges = [...Array(1000).keys()].map(i => ({change: i}));
+      sinon.stub(db.medic, 'changes').resolves({
+        results: moreThanBatchChanges,
+        last_seq: '1000-blah'
+      });
+
+      return schedule._getChanges()
+        .then(({more}) => {
+          assert.equal(more, true);
         });
     });
   });

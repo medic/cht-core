@@ -5,19 +5,27 @@
 //
 const db = require('../db');
 const metadata = require('../lib/metadata');
+const logger = require('../lib/logger');
 
 const BATCH = 1000;
 
 const getChanges = () => {
   return metadata.getBackgroundCleanupSeq()
-    .then(seq => db.medic.changes({
-      since: seq,
-      limit: BATCH
-    })).then(changes => {
-      return [
-        changes.results,
-        changes.last_seq
-      ];
+    .then(seq => {
+      return db.medic.changes({
+        since: seq,
+        limit: BATCH
+      }).then(changes => {
+        const readableSeq = seq.split('-')[0];
+        const readableLastSeq = changes.last_seq.split('-')[0];
+        logger.info(`Background cleanup batch: ${readableSeq} -> ${readableLastSeq} (${changes.results.length})`);
+
+        return {
+          changes: changes.results,
+          checkpointSeq: changes.last_seq,
+          more: changes.results.length === BATCH
+        };
+      });
     });
 };
 
@@ -91,18 +99,20 @@ const deleteReadDocs = changes => {
   });
 };
 
+const batchLoop = () => {
+  return module.exports._getChanges()
+    .then(({changes, checkpointSeq, more}) => {
+      return Promise.all([
+        module.exports._deleteInfoDocs(changes),
+        module.exports._deleteReadDocs(changes)
+      ])
+        .then(() => metadata.setBackgroundCleanupSeq(checkpointSeq))
+        .then(() => more && batchLoop());
+    });
+};
+
 module.exports = {
-  execute: cb => {
-    module.exports._getChanges()
-      .then(([changes, lastSeq]) => {
-        return Promise.all([
-          module.exports._deleteInfoDocs(changes),
-          module.exports._deleteReadDocs(changes)
-        ]).then(() => metadata.setBackgroundCleanupSeq(lastSeq));
-      })
-      .then(() => cb())
-      .catch(cb);
-  },
+  execute: cb => batchLoop().then(() => cb()).catch(cb),
   _getChanges: getChanges,
   _deleteInfoDocs: deleteInfoDocs,
   _deleteReadDocs: deleteReadDocs
