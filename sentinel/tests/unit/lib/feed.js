@@ -22,10 +22,10 @@ describe('feed', () => {
     handler.catch = sinon.stub().returns(handler);
     handler.on = sinon.stub().returns(handler);
     sinon.stub(db.medic, 'changes').returns(handler);
+    feed._changeQueue.resume();
   });
 
   afterEach(() => {
-    feed._changeQueue.kill();
     feed.cancel();
     sinon.restore();
   });

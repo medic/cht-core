@@ -140,6 +140,7 @@ changeQueue.drain(() => {
 });
 
 const listen = () => {
+  changeQueue.resume();
   if (!request) {
     logger.info('transitions: processing enabled');
     return getProcessedSeq().then(seq => registerFeed(seq));
@@ -159,7 +160,7 @@ module.exports = {
    * by calling listen.
    */
   cancel: () => {
-    changeQueue.kill();
+    changeQueue.pause();
     if (request) {
       request.cancel();
       request = null;
