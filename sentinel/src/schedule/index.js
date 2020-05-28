@@ -10,7 +10,7 @@ const tasks = {
   replications: require('./replications'),
   outbound: require('./outbound'),
   purging: require('./purging'),
-  background: require('./background-cleanup')
+  backgroundCleanup: require('./background-cleanup')
 };
 const ongoingJobs = new Set();
 

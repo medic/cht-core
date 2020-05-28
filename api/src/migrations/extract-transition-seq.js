@@ -64,7 +64,8 @@ module.exports = {
     return getExistingMetaDoc()
       .then(({doc, db} = {}) => {
         if (doc) {
-          logger.info(`Found existing ${doc._id} in ${db.name}`);
+          // Show the DB name not the whole url with credentials in it
+          logger.info(`Found existing ${doc._id} in ${db.name.substring(db.name.lastIndexOf('/'))}`);
           return deleteOldMetadataDoc(doc, db);
         }
 
