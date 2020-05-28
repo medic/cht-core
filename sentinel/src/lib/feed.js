@@ -14,7 +14,6 @@ const MAX_QUEUE_SIZE = 100;
 
 let request;
 let processed = 0;
-let lastSeq;
 
 const enqueue = change => changeQueue.push(change);
 
@@ -42,16 +41,14 @@ const registerFeed = seq => {
     .on('change', change => {
       if (!change.id.match(IDS_TO_IGNORE) &&
           !tombstoneUtils.isTombstoneId(change.id)) {
+        enqueue(change);
 
         const queueSize = changeQueue.length();
-        if (queueSize >= MAX_QUEUE_SIZE) {
+        if (queueSize >= MAX_QUEUE_SIZE && request) {
           logger.debug(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
-          lastSeq = change.seq;
           request.cancel();
           request = null;
         }
-
-        enqueue(change);
       }
     })
     .on('error', err => {
@@ -143,12 +140,10 @@ changeQueue.drain(() => {
 });
 
 const listen = () => {
+  changeQueue.resume();
   if (!request) {
-    if (lastSeq) {
-      return registerFeed(lastSeq);
-    } else {
-      return getProcessedSeq().then(seq => registerFeed(seq));
-    }
+    logger.info('transitions: processing enabled');
+    return getProcessedSeq().then(seq => registerFeed(seq));
   }
 };
 
@@ -157,19 +152,15 @@ module.exports = {
   /**
    * Start listening from the last processed seq. Will restart
    * automatically on error.
-   * @param {Function} callback Called with a change Object.
    */
-  listen: () => {
-    logger.info('transitions: processing enabled');
-    return listen();
-  },
+  listen,
 
   /**
    * Stops listening for changes. Must be restarted manually
    * by calling listen.
    */
   cancel: () => {
-    changeQueue.kill();
+    changeQueue.pause();
     if (request) {
       request.cancel();
       request = null;

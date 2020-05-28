@@ -22,10 +22,10 @@ describe('feed', () => {
     handler.catch = sinon.stub().returns(handler);
     handler.on = sinon.stub().returns(handler);
     sinon.stub(db.medic, 'changes').returns(handler);
+    feed._changeQueue.resume();
   });
 
   afterEach(() => {
-    feed._changeQueue.kill();
     feed.cancel();
     sinon.restore();
   });
@@ -60,15 +60,15 @@ describe('feed', () => {
         });
     });
 
-    it('restarts listener after db error', done => {
+    it('restarts listener after db error', () => {
       const clock = sinon.useFakeTimers();
       const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq')
         .onCall(0).resolves('123')
         .onCall(1).resolves('456');
-      sinon.stub(feed._changeQueue, 'length').returns(0);
+
       const push = sinon.stub(feed._changeQueue, 'push');
-      feed
+      return feed
         .listen()
         .then(() => {
           chai.expect(db.medic.changes.callCount).to.equal(1);
@@ -93,7 +93,6 @@ describe('feed', () => {
         .then(() => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(change);
-          done();
         });
     });
 
@@ -121,14 +120,14 @@ describe('feed', () => {
         });
     });
 
-    it('ignores ddocs', done => {
+    it('ignores ddocs', () => {
       const ddoc = { id: '_design/medic' };
       const edoc = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
       sinon.stub(feed._changeQueue, 'length').returns(0);
       const push = sinon.stub(feed._changeQueue, 'push');
-      feed
+      return feed
         .listen()
         .then(() => {
           const callbackFn = handler.on.args[0][1];
@@ -138,18 +137,17 @@ describe('feed', () => {
         .then(() => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(edoc);
-          done();
         });
     });
 
-    it('ignores info docs', done => {
+    it('ignores info docs', () => {
       const infodoc = { id: 'some-uuid-info' };
       const doc = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
-      sinon.stub(feed._changeQueue, 'length').returns(0);
+
       const push = sinon.stub(feed._changeQueue, 'push');
-      feed
+      return feed
         .listen()
         .then(() => {
           const callbackFn = handler.on.args[0][1];
@@ -159,20 +157,19 @@ describe('feed', () => {
         .then(() => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(doc);
-          done();
         });
     });
 
-    it('ignores tombstones', done => {
+    it('ignores tombstones', () => {
       const tombstone = { id: 'tombstone' };
       const doc = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId')
         .withArgs(tombstone.id).returns(true)
         .withArgs(doc.id).returns(false);
-      sinon.stub(feed._changeQueue, 'length').returns(0);
+
       const push = sinon.stub(feed._changeQueue, 'push');
-      feed
+      return feed
         .listen()
         .then(() => {
           const callbackFn = handler.on.args[0][1];
@@ -183,18 +180,18 @@ describe('feed', () => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(doc);
           chai.expect(tombstoneUtils.isTombstoneId.callCount).to.equal(2);
-          done();
         });
     });
 
-    it('stops listening when the number of changes in the queue is above the limit', done => {
+    it('stops listening when the number of changes in the queue is above the limit', () => {
       const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
+
       sinon.stub(feed._changeQueue, 'length').returns(101);
       const push = sinon.stub(feed._changeQueue, 'push');
 
-      feed
+      return feed
         .listen()
         .then(() => {
           const callbackFn = handler.on.args[0][1];
@@ -204,7 +201,6 @@ describe('feed', () => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(change);
           chai.expect(handler.cancel.callCount).to.equal(1);
-          done();
         });
     });
 
@@ -212,29 +208,27 @@ describe('feed', () => {
 
   describe('cancel', () => {
 
-    it('cancels the couch request', done => {
+    it('cancels the couch request', () => {
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
-      sinon.stub(feed._changeQueue, 'length').returns(0);
+
       const push = sinon.stub(feed._changeQueue, 'push');
-      feed
+      const change = { id: 'some-uuid' };
+
+      return feed
         .listen()
         .then(() => feed.cancel())
         .then(() => {
           chai.expect(handler.cancel.callCount).to.equal(1);
-
           // resume listening
-          const change = { id: 'some-uuid' };
-          feed
-            .listen()
-            .then(() => {
-              const callbackFn = handler.on.args[0][1];
-              callbackFn(change);
-            })
-            .then(() => {
-              chai.expect(push.callCount).to.equal(1);
-              chai.expect(push.args[0][0]).to.deep.equal(change);
-              done();
-            });
+          return feed.listen();
+        })
+        .then(() => {
+          const callbackFn = handler.on.args[0][1];
+          callbackFn(change);
+        })
+        .then(() => {
+          chai.expect(push.callCount).to.equal(1);
+          chai.expect(push.args[0][0]).to.deep.equal(change);
         });
     });
 
@@ -334,7 +328,7 @@ describe('feed', () => {
       sinon.stub(metadata, 'update').resolves();
       sinon.stub(infodoc, 'delete').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
-      
+
       feed._enqueue({ id: 'somechange', seq: 55, deleted: true });
 
       feed._changeQueue.drain(() => {
