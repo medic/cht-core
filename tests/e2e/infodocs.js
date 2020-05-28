@@ -234,7 +234,7 @@ describe('infodocs', () => {
           testDoc._rev = rev;
 
           // Skip the preceeding write in sentinel
-          return utils.setProcessedSeqToNow();
+          return utils.setTransitionSeqToNow();
         })
         .then(utils.startSentinel)
         .then(() => {
@@ -282,7 +282,7 @@ describe('infodocs', () => {
           return utils.db.put(legacyInfodoc);
         })
         // Skip the preceeding write in sentinel
-        .then(() => utils.setProcessedSeqToNow())
+        .then(() => utils.setTransitionSeqToNow())
         .then(utils.startSentinel)
         .then(() => {
           // Now update the document via api and with sentinel ready to roll

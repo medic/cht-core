@@ -9,7 +9,7 @@ const TRANSITION_SEQ_DOCUMENT = '_local/transitions-seq';
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';
 
-const migrateOldMetaDoc = doc => {
+const deleteOldMetadataDoc = doc => {
   const stub = {
     _id: doc._id,
     _rev: doc._rev,
@@ -19,67 +19,57 @@ const migrateOldMetaDoc = doc => {
   return db.medic
     .put(stub)
     .then(() => {
-      doc._id = METADATA_DOCUMENT;
-      delete doc._rev;
-      return doc;
-    })
-    .catch(err => {
-      throw err;
+      return doc.processed_seq;
     });
 };
 
-const getExistingMetaDataDoc = () => {
-  return db.sentinel.get(METADATA_DOCUMENT).catch(err => {
-    if (err.status !== 404) {
-      throw err;
-    }
-    return db.medic
-      .get(METADATA_DOCUMENT)
-      .then(doc => {
-        // Old doc exists, delete it and return the base doc to be saved later
-        return migrateOldMetaDoc(doc);
-      })
-      .catch(err => {
-        if (err.status !== 404) {
-          throw err;
-        }
-        // Doc doesn't exist.
-        // Maybe we have the doc in the old location?
-        return db.medic
-          .get(OLD_METADATA_DOCUMENT)
-          .then(doc => {
-            // Old doc exists, delete it and return the base doc to be saved later
-            return migrateOldMetaDoc(doc);
-          })
-          .catch(err => {
-            if (err.status !== 404) {
-              throw err;
-            }
-            // No doc at all, create and return default
-            return {
-              _id: METADATA_DOCUMENT,
-              processed_seq: 0,
-            };
-          });
-      });
-  });
+const getExistingMetaDoc = () => {
+  return db.sentinel.get(METADATA_DOCUMENT)
+    .then(doc => ({doc, db: db.sentinel}))
+    .catch(err => {
+      if (err.status !== 404) {
+        throw err;
+      }
+      return db.medic.get(METADATA_DOCUMENT)
+        .then(doc => ({doc, db: db.medic}))
+        .catch(err => {
+          if (err.status !== 404) {
+            throw err;
+          }
+          return db.medic.get(OLD_METADATA_DOCUMENT)
+            .then(doc => ({doc, db: db.medic}))
+            .catch(err => {
+              if (err.status !== 404) {
+                throw err;
+              }
+              // No doc at all
+            });
+        });
+    });
 };
 
-const convertToNewStyle = (metadataDoc) => {
-  metadataDoc._deleted = true;
+const convertToNewStyle = (transitionSeq = '0') => {
   const newMetaDoc = {
     _id: TRANSITION_SEQ_DOCUMENT,
-    value: metadataDoc.processed_seq
+    value: transitionSeq
   };
 
-  return db.sentinel.bulkDocs([metadataDoc, newMetaDoc]);
+  return db.sentinel.put(newMetaDoc);
 };
 
 module.exports = {
   name: 'extract-transition-seq',
   created: new Date('2020-06-01'),
   run: () => {
-    return getExistingMetaDataDoc()
+    return getExistingMetaDoc()
+      .then(({doc, db} = {}) => {
+        if (doc) {
+          logger.info(`Found existing ${doc._id} in ${db.name}`);
+          return deleteOldMetadataDoc(doc, db);
+        }
+
+        logger.info('No transition seq meta doc, creating new one');
+      })
       .then(convertToNewStyle);
   }
 };

@@ -481,8 +481,8 @@ describe('infodoc', () => {
 
   describe('recordDocumentWrites', () => {
     describe('update one', () => {
-      let sentinelGet; let
-        sentinelPut;
+      let sentinelGet;
+      let sentinelPut;
       beforeEach(() => {
         sentinelGet = sinon.stub(db.sentinel, 'get');
         sentinelPut = sinon.stub(db.sentinel, 'put');
@@ -561,8 +561,8 @@ describe('infodoc', () => {
     });
 
     describe('update many', () => {
-      let sentinelAllDocs; let
-        sentinelBulkDocs;
+      let sentinelAllDocs;
+      let sentinelBulkDocs;
       beforeEach(() => {
         sentinelAllDocs = sinon.stub(db.sentinel, 'allDocs');
         sentinelBulkDocs = sinon.stub(db.sentinel, 'bulkDocs');

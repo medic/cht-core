@@ -646,7 +646,7 @@ module.exports = {
     });
   },
 
-  setProcessedSeqToNow: () => {
+  setTransitionSeqToNow: () => {
     return Promise.all([
       sentinel.get('_local/transitions-seq').catch(() => ({_id: '_local/transitions-seq'})),
       db.info()

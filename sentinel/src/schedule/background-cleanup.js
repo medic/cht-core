@@ -30,14 +30,14 @@ const getChanges = () => {
 };
 
 const deleteInfoDocs = changes => {
-  const infodDocIds = changes.filter(c => c.deleted).map(c => c.id + '-info');
+  const infoDocIds = changes.filter(c => c.deleted).map(c => c.id + '-info');
 
-  if (!infodDocIds.length) {
+  if (!infoDocIds.length) {
     return Promise.resolve();
   }
 
   return db.sentinel.allDocs({
-    keys: infodDocIds
+    keys: infoDocIds
   }).then(results => {
     const deletedStubs = results.rows.filter(r => !r.error).map(r => ({
       _id: r.id,
