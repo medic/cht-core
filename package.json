@@ -79,6 +79,7 @@
     "semver": "^6.3.0",
     "sinon": "^7.5.0",
     "sw-precache": "^5.2.1",
+    "tail": "^2.0.3",
     "time-grunt": "^2.0.0"
   },
   "bundlesize": [

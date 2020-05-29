@@ -9,6 +9,7 @@ const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
+const Tail = require('tail').Tail;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -622,6 +623,43 @@ module.exports = {
     } else {
       return rpn.post('http://localhost:31337/sentinel/start');
     }
+  },
+
+  /**
+   * Collector that listens to the given logfile and collects lines that match at least one of the a
+   * given regular expressions
+   *
+   * To use, call before the action you wish to catch, and then execute the returned function after
+   * the action after the action should have taken place. The function will return a promise that
+   * will succeed with the list of captured lines, or fail if there have been any errors.
+   *
+   * @param      {string}    logFilename  filename of file in logs directory
+   * @param      {[RegExp]}  regex        matching expression(s) run against lines
+   * @return     {function}  fn that returns a promise
+   */
+  collectLogs: (logFilename, ...regex) => {
+    const lines = [];
+    const errors = [];
+    const tail = new Tail(`./tests/logs/${logFilename}`);
+    tail.on('line', data => {
+      if (regex.find(r => r.test(data))) {
+        lines.push(data);
+      }
+    });
+    tail.on('error', err => {
+      errors.push(err);
+    });
+    tail.watch();
+
+    return function() {
+      tail.unwatch();
+
+      if (errors.length) {
+        return Promise.reject({message: 'CollectLogs errored', errors: errors});
+      }
+
+      return Promise.resolve(lines);
+    };
   },
 
   // delays executing a function that returns a promise with the provided interval (in ms)

@@ -23,7 +23,7 @@ mockApp.post(WORKING_ENDPOINT, (req, res) => {
 
 mockApp.post(BROKEN_ENDPOINT, (req, res) => {
   brokenEndpointRequests.push(req.body);
-  res.status(500).end();
+  res.status(500).json({error: 500, some: 'error response'}).end();
 });
 
 const startMockApp = () => {
@@ -346,6 +346,113 @@ describe('mark_for_outbound', () => {
         .then(tasks => {
           expect(tasks.length).to.equal(1);
           expect(tasks[0].queue).to.deep.equal(['test']);
+        });
+    });
+  });
+
+  describe('error logging', () => {
+    // Doing this in an e2e test in case our request library changes in the future
+
+    beforeEach(done => startMockApp().then(done));
+    afterEach(done => { stopMockApp(); done(); });
+
+    it('logs an error if mapping errors', () => {
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            destination: {
+              base_url: `http://localhost:${server.address().port}`,
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._idddddddddddddddd',
+            }
+          }
+        }
+      };
+
+      let collect;
+
+      return utils
+        .updateSettings(config, true)
+        .then(() => utils.saveDoc(report))
+        .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Mapping error.+_idddddddddddddddd/))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(() => collect())
+        .then(logs => {
+          expect(logs.length).to.equal(1);
+        });
+    });
+
+    it('logs an error if the server returns !2xx', () => {
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            destination: {
+              base_url: `http://localhost:${server.address().port}`,
+              path: BROKEN_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+            }
+          }
+        }
+      };
+
+      let collect;
+
+      return utils
+        .updateSettings(config, true)
+        .then(() => utils.saveDoc(report))
+        .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push/, /Response body.+error response/))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(() => collect())
+        .then(logs => {
+          expect(logs.length).to.equal(2);
+        });
+    });
+
+    it('logs an error if the server cannot be found', () => {
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            destination: {
+              base_url: `http://localhost:${server.address().port}`,
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+            }
+          }
+        }
+      };
+
+      stopMockApp();
+      let collect;
+
+      return utils
+        .updateSettings(config, true)
+        .then(() => utils.saveDoc(report))
+        .then(() => collect = utils.collectLogs('sentinel.e2e.log', /Failed to push.+ECONNREFUSED/))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(() => collect())
+        .then(logs => {
+          expect(logs.length).to.equal(1);
         });
     });
   });
