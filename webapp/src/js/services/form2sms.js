@@ -20,13 +20,16 @@ angular
       return DB()
         .get(`form:${doc.form}`)
         .then(form => {
-          if(form.xml2sms) {
+          if (!form.xml2sms) {
+            $log.debug('Not sending SMS. `xml2sms` form property not defined or falsy.');
+            return;
+          }
+
+          if (typeof form.xml2sms === 'string') {
             return $parse(form.xml2sms)({ doc:doc.fields, concat, spaced, match });
           } else {
-            $log.debug('No xml2sms property defined on form doc. Checking for standard odk tags in form submission...');
-
-            return GetReportContent(doc)
-              .then(odkForm2sms);
+            $log.debug('Checking for standard odk tags in form submission...');
+            return GetReportContent(doc).then(odkForm2sms);
           }
         })
         .catch(function(err) {

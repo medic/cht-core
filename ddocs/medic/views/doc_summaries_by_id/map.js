@@ -71,7 +71,8 @@ function(doc) {
       reported_date: doc.reported_date,
       contact: doc.contact && doc.contact._id,
       lineage: getLineage(doc.contact && doc.contact.parent),
-      subject: getSubject(doc)
+      subject: getSubject(doc),
+      case_id: doc.case_id || (doc.fields && doc.fields.case_id)
     });
   } else if (doc.type === 'contact' ||
       doc.type === 'clinic' ||

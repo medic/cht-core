@@ -71,6 +71,9 @@ describe('Sentinel queue drain', () => {
   afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
 
   it('should drain queue, processing every doc', () => {
+    // This test takes 40s on my machine and it would be nice to know what's going on
+    console.log('Starting queue drain test, this may take awhile...');
+
     const settings = {
       transitions: {
         update_clinics: true,

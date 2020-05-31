@@ -116,7 +116,7 @@ describe('reports_by_freetext view', () => {
 
   it('indexes doc name', () => {
     // given
-    const map = utils.loadView('medic-client', 'reports_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'reports_by_freetext');
 
     // when
     const emitted = map(doc);
@@ -131,7 +131,7 @@ describe('reports_by_freetext view', () => {
 
   it('indexes non-ascii doc name', () => {
     // given
-    const map = utils.loadView('medic-client', 'reports_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'reports_by_freetext');
 
     // when
     doc.name = 'बुद्ध Élève';
@@ -146,7 +146,7 @@ describe('reports_by_freetext view', () => {
 
   it('does not index words of less than 3 chars', () => {
     // given
-    const map = utils.loadView('medic-client', 'reports_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'reports_by_freetext');
 
     // when
     const emitted = map(doc);
@@ -159,7 +159,7 @@ describe('reports_by_freetext view', () => {
 
   it('does not index non-reports docs', () => {
     // given
-    const map = utils.loadView('medic-client', 'reports_by_freetext');
+    const map = utils.loadView('medic-db', 'medic-client', 'reports_by_freetext');
 
     // when
     const emitted = map({

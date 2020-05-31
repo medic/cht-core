@@ -15,7 +15,6 @@ const DDOC_NAME = 'medic';
 
 let req;
 let res;
-let originalEnvironment;
 
 describe('login controller', () => {
 
@@ -34,28 +33,18 @@ describe('login controller', () => {
       cookie: () => {},
       clearCookie: () => {}
     };
-    originalEnvironment = Object.assign(environment);
 
-    environment.db = DB_NAME;
-    environment.ddoc = DDOC_NAME;
-    environment.protocol = 'http';
-    environment.host = 'test.com';
-    environment.port = 1234;
-    environment.pathname = 'sesh';
+    sinon.stub(environment, 'db').get(() => DB_NAME);
+    sinon.stub(environment, 'ddoc').get(() => DDOC_NAME);
+    sinon.stub(environment, 'protocol').get(() => 'http');
+    sinon.stub(environment, 'host').get(() => 'test.com');
+    sinon.stub(environment, 'port').get(() => 1234);
 
     sinon.stub(auth, 'isOnlineOnly').returns(false);
   });
 
   afterEach(() => {
-    environment.db = originalEnvironment.db;
-    environment.ddoc = originalEnvironment.ddoc;
-    environment.protocol = originalEnvironment.protocol;
-    environment.host = originalEnvironment.host;
-    environment.port = originalEnvironment.port;
-    environment.pathname = originalEnvironment.pathname;
-
     controller._reset();
-
     sinon.restore();
   });
 

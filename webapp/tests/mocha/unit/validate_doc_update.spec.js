@@ -38,13 +38,11 @@ describe('validate doc update', () => {
   };
 
   const clientValidateDocUpdate = function() {
-    /*jshint -W061 */
-    const fn = fs.readFileSync('./ddocs/medic-client/validate_doc_update.js');
+    const fn = fs.readFileSync('./ddocs/medic-db/medic-client/validate_doc_update.js');
     eval('(' + fn + ')').apply(null, arguments);
   };
 
   const serverValidateDocUpdate = function() {
-    /*jshint -W061 */
     const fn = fs.readFileSync('./ddocs/medic/validate_doc_update.js');
     eval('(' + fn + ')').apply(null, arguments);
   };

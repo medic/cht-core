@@ -1,3 +1,5 @@
+const uniq = require('lodash/uniq');
+
 const formCodeMatches = (conf, form) => {
   return (new RegExp('^[^a-z]*' + conf + '[^a-z]*$', 'i')).test(form);
 };
@@ -41,32 +43,46 @@ exports.isValidRegistration = (doc, settings) => {
 
 exports._formCodeMatches = formCodeMatches;
 
-const SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
-exports.getSubjectIds = (contact) => {
+const CONTACT_SUBJECT_PROPERTIES = ['_id', 'patient_id', 'place_id'];
+const REPORT_SUBJECT_PROPERTIES = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
+
+exports.getSubjectIds = (doc) => {
   const subjectIds = [];
 
-  if (!contact) {
+  if (!doc) {
     return subjectIds;
   }
 
-  SUBJECT_PROPERTIES.forEach((prop) => {
-    if (contact[prop]) {
-      subjectIds.push(contact[prop]);
-    }
-  });
+  if (doc.type === 'data_record') {
+    REPORT_SUBJECT_PROPERTIES.forEach(prop => {
+      if (doc[prop]) {
+        subjectIds.push(doc[prop]);
+      }
+      if (doc.fields && doc.fields[prop]) {
+        subjectIds.push(doc.fields[prop]);
+      }
+    });
+  } else {
+    CONTACT_SUBJECT_PROPERTIES.forEach(prop => {
+      if (doc[prop]) {
+        subjectIds.push(doc[prop]);
+      }
+    });
+  }
 
-  return subjectIds;
+  return uniq(subjectIds);
 };
-
-const getPatientId = report => report.patient_id ||
-                               (report.fields && (report.fields.patient_id || report.fields.patient_uuid));
-const getPlaceId   = report => report.place_id ||
-                               (report.fields && (report.fields.place_id));
 
 exports.getSubjectId = report => {
   if (!report) {
     return false;
   }
-
-  return getPatientId(report) || getPlaceId(report);
+  for (const prop of REPORT_SUBJECT_PROPERTIES) {
+    if (report[prop]) {
+      return report[prop];
+    }
+    if (report.fields && report.fields[prop]) {
+      return report.fields[prop];
+    }
+  }
 };

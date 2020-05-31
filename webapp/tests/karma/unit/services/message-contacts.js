@@ -29,26 +29,58 @@ describe('MessageContacts service', () => {
   describe('list', () => {
 
     it('builds list', () => {
-      query.returns(Promise.resolve({}));
-      getDataRecords.returns(Promise.resolve({}));
-      hydrateMessages.returns(Promise.resolve([]));
-      return service.list().then(() => {
+      query.resolves({
+        rows: [
+          { id: 'some_id1', value: { id: 'id1' } },
+          { id: 'some_id2', value: { id: 'id2' } },
+          { id: 'some_id3', value: { id: 'id3' } },
+          { id: 'some_id4', value: { id: 'id4' } },
+        ]
+      });
+      getDataRecords.resolves([
+        { _id: 'id1' },
+        { _id: 'id2' },
+        { _id: 'id3' },
+        { _id: 'id4' },
+      ]);
+      hydrateMessages.resolves([
+        { id: 'some_id1', hydrated: true },
+        { id: 'some_id2', hydrated: true },
+        { id: 'some_id3', hydrated: true },
+        { id: 'some_id4', hydrated: true },
+      ]);
+      return service.list().then(list => {
         chai.expect(query.args[0][1]).to.deep.equal({
           group_level: 1
         });
         chai.expect(addReadStatus.messages.callCount).to.equal(1);
+        chai.expect(getDataRecords.callCount).to.equal(1);
+        chai.expect(getDataRecords.args[0]).to.deep.equal([['id1', 'id2', 'id3', 'id4'], { include_docs: true }]);
+        chai.expect(hydrateMessages.callCount).to.equal(1);
+        chai.expect(hydrateMessages.args[0]).to.deep.equal([[
+          { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'id1' } },
+          { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'id2' } },
+          { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'id3' } },
+          { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'id4' } },
+        ]]);
+        chai.expect(list).to.deep.equal([
+          { id: 'some_id1', hydrated: true },
+          { id: 'some_id2', hydrated: true },
+          { id: 'some_id3', hydrated: true },
+          { id: 'some_id4', hydrated: true },
+        ]);
       });
     });
 
-    it('returns errors from db query', done => {
-      query.returns(Promise.reject('server error'));
-      service.list()
+    it('returns errors from db query', () => {
+      query.rejects('server error');
+      service
+        .list()
         .then(() => {
-          done(new Error('exception expected'));
+          chai.assert.fail('exception expected');
         })
         .catch(err => {
           chai.expect(err).to.equal('server error');
-          done();
         });
     });
 
@@ -57,10 +89,22 @@ describe('MessageContacts service', () => {
   describe('conversation', () => {
 
     it('builds conversation', () => {
-      query.returns(Promise.resolve({}));
-      getDataRecords.returns(Promise.resolve({}));
-      hydrateMessages.returns(Promise.resolve([]));
-      return service.conversation('abc').then(() => {
+      query.resolves({
+        rows: [
+          { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' } },
+          { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' } },
+          { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' } },
+          { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' } },
+        ]
+      });
+
+      hydrateMessages.resolves([
+        { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true },
+        { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true },
+        { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true },
+        { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' }, hydrated: true },
+      ]);
+      return service.conversation('abc').then(result => {
         chai.expect(query.args[0][1]).to.deep.equal({
           reduce: false,
           descending: true,
@@ -70,14 +114,28 @@ describe('MessageContacts service', () => {
           startkey: [ 'abc', {} ],
           endkey: [ 'abc' ]
         });
+
+        chai.expect(getDataRecords.callCount).to.equal(0);
+        chai.expect(hydrateMessages.callCount).to.equal(1);
+        chai.expect(hydrateMessages.args[0]).to.deep.equal([[
+          { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' } },
+          { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' } },
+          { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' } },
+          { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' } },
+        ]]);
+        chai.expect(result).to.deep.equal([
+          { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true },
+          { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true },
+          { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true },
+          { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' }, hydrated: true },
+        ]);
       });
     });
 
     it('builds conversation with skip', () => {
-      query.returns(Promise.resolve({}));
-      getDataRecords.returns(Promise.resolve({}));
-      hydrateMessages.returns(Promise.resolve([]));
-      return service.conversation('abc', 45).then(() => {
+      query.resolves({});
+      hydrateMessages.resolves([]);
+      return service.conversation('abc', 45).then(result => {
         chai.expect(query.args[0][1]).to.deep.equal({
           reduce: false,
           descending: true,
@@ -87,21 +145,102 @@ describe('MessageContacts service', () => {
           startkey: [ 'abc', {} ],
           endkey: [ 'abc' ]
         });
+        chai.expect(getDataRecords.callCount).to.deep.equal(0);
+        chai.expect(hydrateMessages.callCount).to.equal(1);
+        chai.expect(hydrateMessages.args[0]).to.deep.equal([[]]);
+        chai.expect(result).to.deep.equal([]);
       });
     });
 
-    it('returns errors from db query', done => {
-      query.returns(Promise.reject('server error'));
-      service.conversation('abc')
+    it('builds conversation with limit', () => {
+      query.resolves({});
+      hydrateMessages.resolves([]);
+      return service.conversation('abc', 45, 120).then(result => {
+        chai.expect(query.args[0][1]).to.deep.equal({
+          reduce: false,
+          descending: true,
+          include_docs: true,
+          skip: 45,
+          limit: 120,
+          startkey: [ 'abc', {} ],
+          endkey: [ 'abc' ]
+        });
+        chai.expect(getDataRecords.callCount).to.deep.equal(0);
+        chai.expect(hydrateMessages.callCount).to.equal(1);
+        chai.expect(hydrateMessages.args[0]).to.deep.equal([[]]);
+        chai.expect(result).to.deep.equal([]);
+      });
+    });
+
+    it('should build conversation with limit under default', () => {
+      query.resolves({});
+      hydrateMessages.resolves([]);
+      return service.conversation('abc', 45, 45).then(result => {
+        chai.expect(query.args[0][1]).to.deep.equal({
+          reduce: false,
+          descending: true,
+          include_docs: true,
+          skip: 45,
+          limit: 50,
+          startkey: [ 'abc', {} ],
+          endkey: [ 'abc' ]
+        });
+        chai.expect(getDataRecords.callCount).to.deep.equal(0);
+        chai.expect(hydrateMessages.callCount).to.equal(1);
+        chai.expect(hydrateMessages.args[0]).to.deep.equal([[]]);
+        chai.expect(result).to.deep.equal([]);
+      });
+    });
+
+    it('returns errors from db query', () => {
+      query.rejects('server error');
+      service
+        .conversation('abc')
         .then(() => {
-          done(new Error('expected exception'));
+          chai.assert.fail('expected exception');
         })
         .catch(err => {
           chai.expect(err).to.equal('server error');
-          done();
         });
     });
 
+  });
+
+  it('should return minimum limit', () => {
+    chai.expect(service.minLimit).to.equal(50);
+  });
+
+  describe('isRelevantChange', () => {
+    it('should return falsy when change is not relevant', () => {
+      chai.expect(!!service.isRelevantChange({})).to.equal(false);
+      chai.expect(!!service.isRelevantChange({ id: 'some' })).to.equal(false);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: {} })).to.equal(false);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: {}, delete: false })).to.equal(false);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: { kujua_message: false }, delete: false }))
+        .to.equal(false);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: { sms_message: false }, delete: false }))
+        .to.equal(false);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: {} }, {})).to.equal(false);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: {} }, { messages: [] })).to.equal(false);
+      const messages = [
+        { doc: { _id: 'one' } },
+        { doc: { _id: 'two' } },
+        { doc: { _id: 'three' } }
+      ];
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: {} }, { messages })).to.equal(false);
+    });
+
+    it('should return truthy when change is relevant', () => {
+      chai.expect(!!service.isRelevantChange({ deleted: true })).to.equal(true);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: { kujua_message: true } })).to.equal(true);
+      chai.expect(!!service.isRelevantChange({ id: 'some', doc: { sms_message: true } })).to.equal(true);
+      const messages = [
+        { doc: { _id: 'one' } },
+        { doc: { _id: 'two' } },
+        { doc: { _id: 'three' } }
+      ];
+      chai.expect(!!service.isRelevantChange({ id: 'one' }, { messages })).to.equal(true);
+    });
   });
 
 });

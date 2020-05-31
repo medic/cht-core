@@ -218,6 +218,7 @@ module.exports = function(Promise, DB) {
           })
           .then(function(contacts) {
             fillContactsInDocs(lineage, contacts);
+            fillContactsInDocs(patientLineage, contacts);
             return mergeLineagesIntoDoc(lineage, contacts, patientLineage);
           });
       })
@@ -358,6 +359,35 @@ module.exports = function(Promise, DB) {
       });
   };
 
+  const fetchHydratedDocs = docIds => {
+    if (!Array.isArray(docIds)) {
+      return Promise.reject(new Error('Invalid parameter: "docIds" must be an array'));
+    }
+
+    if (!docIds.length) {
+      return Promise.resolve([]);
+    }
+
+    if (docIds.length === 1) {
+      return fetchHydratedDoc(docIds[0])
+        .then(doc => [doc])
+        .catch(err => {
+          if (err.status === 404) {
+            return [];
+          }
+
+          throw err;
+        });
+    }
+
+    return DB
+      .allDocs({ keys: docIds, include_docs: true })
+      .then(result => {
+        const docs = result.rows.map(row => row.doc).filter(doc => doc);
+        return hydrateDocs(docs);
+      });
+  };
+
   return {
     /**
      * Given a doc id get a doc and all parents, contact (and parents) and patient (and parents)
@@ -368,6 +398,14 @@ module.exports = function(Promise, DB) {
      * @returns {Promise} A promise to return the hydrated doc.
      */
     fetchHydratedDoc: (id, options, callback) => fetchHydratedDoc(id, options, callback),
+
+    /**
+     * Given an array of ids, returns hydrated versions of every requested doc (using hydrateDocs or fetchHydratedDoc)
+     * If a doc is not found, it's simply excluded from the results list
+     * @param {Object[]} docs The array of docs to hydrate
+     * @returns {Promise} A promise to return the hydrated docs
+     */
+    fetchHydratedDocs: docIds => fetchHydratedDocs(docIds),
 
     /**
      * Given an array of docs bind the parents, contact (and parents) and patient (and parents)

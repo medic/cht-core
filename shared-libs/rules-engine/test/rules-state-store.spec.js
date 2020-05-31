@@ -58,7 +58,9 @@ describe('rules-state-store', () => {
   it('fresh contact but dirty hash', async () => {
     const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });
     state.rulesConfigHash = 'hash';
-    await rulesStateStore.load(state, {});
+    const needsBuilding = await rulesStateStore.load(state, {});
+    expect(needsBuilding).to.equal(true);
+    await rulesStateStore.build({});
 
     const isDirty = rulesStateStore.isDirty('a');
     expect(isDirty).to.be.true;
@@ -139,7 +141,10 @@ describe('rules-state-store', () => {
 
   it('rewinding clock makes contacts dirty', async () => {
     await rulesStateStore.build({});
-    await rulesStateStore.markFresh(Date.now() + 1000, 'a');
+    const now = Date.now();
+    clock = sinon.useFakeTimers(now);
+    await rulesStateStore.markFresh(now + 1000, 'a');
+    expect(rulesStateStore.stateLastUpdatedAt()).to.equal(now);
     expect(rulesStateStore.isDirty('a')).to.be.true;
   });
 
@@ -239,6 +244,29 @@ describe('rules-state-store', () => {
 
   });
 
+  describe('onChangeState', () => {
+    it('should update calculatedAt when making any change', async () => {
+      const one = moment('2020-04-12').valueOf();
+      clock = sinon.useFakeTimers(one);
+      await rulesStateStore.build({ monthStartDate: 25, targets: [{ id: 'target' }] });
+
+      await rulesStateStore.markDirty(['a']);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one);
+
+      clock.tick(5000);
+      await rulesStateStore.markFresh(one, ['a']);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000);
+
+      clock.tick(5000);
+      await rulesStateStore.markAllFresh(one, ['a']);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000 + 5000);
+
+      clock.tick(5000);
+      await rulesStateStore.storeTargetEmissions([], [{ type: 'target', contact: { _id: 'c' } }]);
+      expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000 + 5000 + 5000);
+    });
+  });
+
   describe('hashRulesConfig', () => {
     it('empty objects', () => {
       const actual = hashRulesConfig({});
@@ -249,6 +277,25 @@ describe('rules-state-store', () => {
       const settings = require('../../../config/default/app_settings.json');
       const actual = hashRulesConfig(settings);
       expect(actual).to.not.be.empty;
+    });
+  });
+
+  describe('getDirtyContacts', () => {
+    it('no contacts', async () => {
+      await rulesStateStore.build({});
+      expect(rulesStateStore.getDirtyContacts()).to.deep.equal([]);
+    });
+
+    it('some contacts', async () => {
+      const now = moment();
+      clock = sinon.useFakeTimers(now.valueOf());
+      await rulesStateStore.build({});
+      await rulesStateStore.markFresh(0, ['a', 'b', 'c', 'd']);
+      const tenDays = 10 * 24 * 60 * 60 * 1000;
+      clock.tick(tenDays); // 10 days
+      expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['a', 'b', 'c', 'd']);
+      await rulesStateStore.markFresh(now.add(10, 'days').valueOf(), ['a', 'b', 'c']);
+      expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['d']);
     });
   });
 });

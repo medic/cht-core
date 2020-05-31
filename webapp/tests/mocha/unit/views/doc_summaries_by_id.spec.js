@@ -72,6 +72,7 @@ const postNatalVisit = {
   form: 'postnatal_visit',
   type: 'data_record',
   content_type: 'xml',
+  case_id: '12345',
   reported_date: 1517392010413,
   contact: {
     _id: 'df28f38e-cd3c-475f-96b5-48080d863e34',
@@ -215,7 +216,7 @@ const jsonHouseholdBis = Object.assign({}, jsonHousehold, {
 
 describe('doc_summaries_by_id view', () => {
   it('indexes name, phone, type, contact, lineage, simprints, dod for non-data-records', () => {
-    const map = utils.loadView('medic', 'doc_summaries_by_id');
+    const map = utils.loadView('', 'medic', 'doc_summaries_by_id');
 
     const emitted = map(person, true) && map(personBis, true);
     assert.deepEqual(emitted[0], {
@@ -251,7 +252,7 @@ describe('doc_summaries_by_id view', () => {
   });
 
   it('indexes data-records summary and subject', () => {
-    const map = utils.loadView('medic', 'doc_summaries_by_id');
+    const map = utils.loadView('', 'medic', 'doc_summaries_by_id');
 
     const reportsList = [
       householdVisit,
@@ -289,7 +290,8 @@ describe('doc_summaries_by_id view', () => {
         subject: {
           type: 'id',
           value: '09f62048-ac69-4066-bf8b-bcaf534ef8b1'
-        }
+        },
+        case_id: undefined
       }
     });
 
@@ -306,7 +308,8 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517418915669,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
-        subject: { type: 'unknown'}
+        subject: { type: 'unknown'},
+        case_id: undefined
       }
     });
 
@@ -327,7 +330,8 @@ describe('doc_summaries_by_id view', () => {
           name: 'mother',
           type: 'reference',
           value: 'a29c933c-90cb-4cb0-9e25-36403499aee4'
-        }
+        },
+        case_id: '12345'
       }
     });
 
@@ -348,7 +352,8 @@ describe('doc_summaries_by_id view', () => {
           name: 'mother',
           type: 'name',
           value: 'mother'
-        }
+        },
+        case_id: '12345'
       }
     });
 
@@ -369,7 +374,8 @@ describe('doc_summaries_by_id view', () => {
           name: 'test',
           type: 'name',
           value: 'test'
-        }
+        },
+        case_id: undefined
       }
     });
 
@@ -386,7 +392,8 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517405737096,
         contact: undefined,
         lineage: [],
-        subject: { type: 'unknown' }
+        subject: { type: 'unknown' },
+        case_id: undefined
       }
     });
 
@@ -403,7 +410,8 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517491485049,
         contact: undefined,
         lineage: [],
-        subject: { }
+        subject: { },
+        case_id: undefined
       }
     });
 
@@ -420,7 +428,8 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517495666367,
         contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
-        subject: {}
+        subject: {},
+        case_id: undefined
       }
     });
 
@@ -440,7 +449,8 @@ describe('doc_summaries_by_id view', () => {
         subject: {
           type: 'reference',
           value: '22323'
-        }
+        },
+        case_id: undefined
       }
     });
 
@@ -457,7 +467,8 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],
-        subject: { type: 'unknown' }
+        subject: { type: 'unknown' },
+        case_id: undefined
       }
     });
 
@@ -477,7 +488,8 @@ describe('doc_summaries_by_id view', () => {
         subject: {
           type: 'reference',
           value: '111111'
-        }
+        },
+        case_id: undefined
       }
     });
 
@@ -494,7 +506,8 @@ describe('doc_summaries_by_id view', () => {
         reported_date: 1517408179956,
         contact: undefined,
         lineage: [],
-        subject: { type: 'unknown' }
+        subject: { type: 'unknown' },
+        case_id: undefined
       }
     });
 

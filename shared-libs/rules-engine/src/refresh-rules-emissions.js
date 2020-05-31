@@ -39,7 +39,10 @@ module.exports = (freshData = {}, calculationTimestamp = Date.now(), { enableTas
 
 const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
   const { taskDocs = [], userSettingsId } = freshData;
-  const emissionIdToLatestDocMap = mapEmissionIdToLatestTaskDoc(taskDocs, calculationTimestamp);
+  const { winners: emissionIdToLatestDocMap, duplicates: duplicateTaskDocs } = disambiguateTaskDocs(
+    taskDocs,
+    calculationTimestamp
+  );
 
   const timelyEmissions  = taskEmissions.filter(emission => TaskStates.isTimely(emission, calculationTimestamp));
   const taskTransforms = disambiguateEmissions(timelyEmissions, calculationTimestamp)
@@ -50,8 +53,9 @@ const getUpdatedTaskDocs = (taskEmissions, freshData, calculationTimestamp) => {
 
   const freshTaskDocs = taskTransforms.map(doc => doc.taskDoc);
   const cancelledDocs = getCancellationUpdates(freshTaskDocs, freshData.taskDocs, calculationTimestamp);
+  const cancelledDuplicatedDocs = getDeduplicationUpdates(duplicateTaskDocs, calculationTimestamp);
   const updatedTaskDocs = taskTransforms.filter(doc => doc.isUpdated).map(result => result.taskDoc);
-  return [...updatedTaskDocs, ...cancelledDocs];
+  return [...updatedTaskDocs, ...cancelledDocs, ...cancelledDuplicatedDocs];
 };
 
 /**
@@ -65,6 +69,18 @@ const getCancellationUpdates = (freshDocs, existingTaskDocs = [], calculatedAt) 
   return existingNonTerminalTaskDocs
     .filter(doc => !currentEmissionIds.has(doc.emission._id))
     .map(doc => TaskStates.setStateOnTaskDoc(doc, TaskStates.Cancelled, calculatedAt));
+};
+
+/**
+ * All duplicate task docs that are not in a terminal state are "Cancelled" with a "duplicate" reason
+ * @param {Array} duplicatedTaskDocs - array of task docs that exist in the local DB
+ * @param {number} calculatedAt - Timestamp for the round of rules calculations
+ * @returns {Array} - task docs with updated state
+ */
+const getDeduplicationUpdates = (duplicatedTaskDocs, calculatedAt) => {
+  return duplicatedTaskDocs
+    .filter(doc => !TaskStates.isTerminal(doc.state))
+    .map(doc => TaskStates.setStateOnTaskDoc(doc, TaskStates.Cancelled, calculatedAt, 'duplicate'));
 };
 
 /*
@@ -88,15 +104,58 @@ const disambiguateEmissions = (taskEmissions, forTime) => {
   return Object.keys(winners).map(key => winners[key]); // Object.values()
 };
 
-const mapEmissionIdToLatestTaskDoc = (taskDocs, maxTimestamp) => taskDocs
-  // mitigate the fallout of a user who rewinds their system-clock after creating task docs
-  .filter(doc => doc.authoredOn <= maxTimestamp)
+/**
+ * It's possible to have multiple task docs with the same emission id. (For example, when the same account logs in
+ * on multiple devices). When this happens, we pick the "most ready" most recent task. However, tasks that are authored
+ * in the future are discarded.
+ * @param {Array} taskDocs - An array of already exiting task documents
+ * @param {number} forTime - current calculation timestamp
+ * @returns {Object} result
+ * @returns {Object} result.winners - A map of emission id to task pairs
+ * @returns {Array} result.duplicates - A list of task documents that are duplicates and need to be cancelled
+ */
+const disambiguateTaskDocs = (taskDocs, forTime) => {
+  const duplicates = [];
+  const winners = {};
 
-  .reduce((agg, doc) => {
-    const emissionId = doc.emission._id;
-    if (!agg[emissionId] || agg[emissionId].authoredOn < doc.authoredOn) {
-      agg[emissionId] = doc;
-    }
+  const taskDocsByEmissionId = mapEmissionIdToTaskDocs(taskDocs, forTime);
 
-    return agg;
-  }, {});
+  Object.keys(taskDocsByEmissionId).forEach(emissionId => {
+    taskDocsByEmissionId[emissionId].forEach(taskDoc => {
+      if (!winners[emissionId]) {
+        winners[emissionId] = taskDoc;
+        return;
+      }
+
+      const stateComparison = TaskStates.compareState(taskDoc.state, winners[emissionId].state);
+      if (
+        // if taskDoc is more ready
+        stateComparison < 0 ||
+        // or taskDoc is more recent, when having the same state
+        (stateComparison === 0 && taskDoc.authoredOn > winners[emissionId].authoredOn)
+      ) {
+        duplicates.push(winners[emissionId]);
+        winners[emissionId] = taskDoc;
+      } else {
+        duplicates.push(taskDoc);
+      }
+    });
+  });
+
+  return { winners, duplicates };
+};
+
+const mapEmissionIdToTaskDocs = (taskDocs, maxTimestamp) => {
+  const tasksByEmission = {};
+  taskDocs
+    // mitigate the fallout of a user who rewinds their system-clock after creating task docs
+    .filter(doc => doc.authoredOn <= maxTimestamp)
+    .forEach(doc => {
+      const emissionId = doc.emission._id;
+      if (!tasksByEmission[emissionId]) {
+        tasksByEmission[emissionId] = [];
+      }
+      tasksByEmission[emissionId].push(doc);
+    });
+  return tasksByEmission;
+};

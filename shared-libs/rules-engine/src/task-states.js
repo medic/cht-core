@@ -11,7 +11,7 @@ const moment = require('moment');
  * to this rules-engine.
  * In order to purge task documents, we need to guarantee that they won't just be recreated after they are purged.
  * The two scenarios above are important for maintaining the client-side performance of the app.
- * 
+ *
  * Therefore, we only consider task emissions "timely" if they end within a fixed time period.
  * However, if this window is too short then users who don't login frequently may fail to create a task document at all.
  * Looking at time-between-reports for active projects, a time window of 60 days will ensure that 99.9% of tasks are
@@ -72,18 +72,18 @@ const getDisplayWindow = (taskEmission) => {
   };
 };
 
+const mostReadyOrder = [States.Ready, States.Draft, States.Completed, States.Failed, States.Cancelled];
+const orderOf = state => {
+  const order = mostReadyOrder.indexOf(state);
+  return order >= 0 ? order : mostReadyOrder.length;
+};
 
 module.exports = {
   isTerminal: state => [States.Cancelled, States.Completed, States.Failed].includes(state),
 
-  isMoreReadyThan: (stateA, stateB) => {
-    const mostReadyOrder = [States.Ready, States.Draft, States.Completed, States.Failed, States.Cancelled];
-    const orderOf = state => {
-      const order = mostReadyOrder.indexOf(state);
-      return order >= 0 ? order : mostReadyOrder.length;
-    };
-    return orderOf(stateA) < orderOf(stateB);
-  },
+  isMoreReadyThan: (stateA, stateB) => orderOf(stateA) < orderOf(stateB),
+
+  compareState: (stateA, stateB) => orderOf(stateA) - orderOf(stateB),
 
   calculateState: (taskEmission, timestamp) => {
     if (!taskEmission) {
@@ -127,7 +127,7 @@ module.exports = {
     return endDate > moment(timestamp).add(-TIMELY_WHEN_NEWER_THAN_DAYS, 'days').format(formatString);
   },
 
-  setStateOnTaskDoc: (taskDoc, updatedState, timestamp = Date.now()) => {
+  setStateOnTaskDoc: (taskDoc, updatedState, timestamp = Date.now(), reason = '') => {
     if (!taskDoc) {
       return;
     }
@@ -137,6 +137,9 @@ module.exports = {
       taskDoc.stateReason = 'invalid';
     } else {
       taskDoc.state = updatedState;
+      if (reason) {
+        taskDoc.stateReason = reason;
+      }
     }
 
     const stateHistory = taskDoc.stateHistory = taskDoc.stateHistory || [];

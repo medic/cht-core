@@ -79,6 +79,7 @@
   require('./simprints');
   require('./snackbar');
   require('./submit-form-by-sms');
+  require('./target-aggregates');
   require('./tasks-for-contact');
   require('./telemetry');
   require('./tour');

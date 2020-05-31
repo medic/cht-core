@@ -1215,16 +1215,24 @@ a.fa:hover {
 .analytics,
 .theme {
   .content {
-    .inner {
+    > .inner {
       /* allow the scrollable content to grow to full width */
       max-width: inherit;
-      .page {
+      .page:not(.target-aggregates) {
         max-width: inherit;
         /* set the max with and center all the children again */
         > div {
           max-width: @content-width;
           margin: 0 auto;
         }
+      }
+
+      .target-aggregates {
+        /* position this absolute div in the horizontal center */
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
       }
     }
   }
@@ -1487,21 +1495,17 @@ a.fa:hover {
     .tabs {
       padding-left: 2px;
       a {
-        padding-top: 5px;
         min-width: 40px;
-      }
-      .button-label {
-        display: none;
       }
       .configuration-tab {
         display: none;
       }
     }
     .mm-badge-overlay {
-      right: 3px;
+      right: 10%;
     }
     .inner {
-      height: 50px;
+      height: 60px;
     }
   }
   .action-container .actions {
@@ -1517,7 +1521,7 @@ a.fa:hover {
     }
   }
   .content .page {
-    top: 101px;
+    top: 111px;
   }
   .mobile-only {
     display: initial;
@@ -1529,6 +1533,17 @@ a.fa:hover {
   body.testing {
     .page {
       top: 55px;
+    }
+  }
+  body.hide-mobile-tab-labels {
+    .button-label {
+      display: none;
+    }
+    .header .inner {
+      height: 50px;
+    }
+    .content .page {
+      top: 101px;
     }
   }
 }

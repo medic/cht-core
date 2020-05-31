@@ -55,7 +55,7 @@ let map;
 
 describe('contacts_by_type_freetext view', () => {
 
-  beforeEach(() => map = utils.loadView('medic-client', 'contacts_by_type_freetext'));
+  beforeEach(() => map = utils.loadView('medic-db', 'medic-client', 'contacts_by_type_freetext'));
 
   it('indexes doc name and type', () => {
     // when

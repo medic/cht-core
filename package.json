@@ -23,6 +23,7 @@
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.0",
     "chai": "^4.2.0",
+    "chai-exclude": "^2.0.2",
     "chai-shallow-deep-equal": "^1.4.6",
     "eslint": "^6.5.1",
     "eslint-plugin-angular": "^4.0.1",

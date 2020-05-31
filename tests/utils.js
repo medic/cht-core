@@ -633,7 +633,7 @@ module.exports = {
 
   setProcessedSeqToNow: () => {
     return Promise.all([
-      sentinel.get('_local/sentinel-meta-data'),
+      sentinel.get('_local/sentinel-meta-data').catch(() => ({_id: '_local/sentinel-meta-data'})),
       db.info()
     ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
       sentinelMetadata.processed_seq = updateSeq;
@@ -645,4 +645,29 @@ module.exports = {
   waitForDocRev: waitForDocRev,
 
   getDefaultSettings: getDefaultSettings,
+
+  addTranslations: (languageCode, translations = {}) => {
+    const getTranslationsDoc = code => {
+      return db.get(`messages-${code}`).catch(err => {
+        if (err.status === 404) {
+          return {
+            _id: `messages-${code}`,
+            type: 'translations',
+            code: code,
+            name: code,
+            enabled: true,
+            generic: {}
+          };
+        }
+      });
+    };
+
+    return getTranslationsDoc(languageCode).then(translationsDoc => {
+      Object.assign(translationsDoc.generic, translations);
+      return db.put(translationsDoc);
+    });
+  },
+
+  getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
+
 };

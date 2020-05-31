@@ -25,9 +25,9 @@ process
   const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
-  
+
   const apiPort = process.env.API_PORT || 5988;
-  
+
   try
   {
     logger.info('Extracting ddoc…');
@@ -63,7 +63,7 @@ process
     logger.error('%o',err);
     process.exit(1);
   }
-  
+
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {
@@ -74,7 +74,7 @@ process
     }
     serverUtils.serverError(err, req, res);
   });
-  
+
   app.listen(apiPort, () => {
     logger.info('Medic API listening on port ' + apiPort);
   });

@@ -5,6 +5,7 @@ const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const purger = require('../bootstrapper/purger');
 
 angular
   .module('inboxServices')
@@ -16,6 +17,7 @@ angular
     Auth,
     DB,
     DBSyncRetry,
+    RulesEngine,
     Session
   ) {
     'use strict';
@@ -64,7 +66,8 @@ angular
           heartbeat: 10000, // 10 seconds
           timeout: 1000 * 60 * 10, // 10 minutes
         },
-        allowed: () => $q.resolve(true)
+        allowed: () => $q.resolve(true),
+        onChange: RulesEngine.monitorExternalChanges,
       }
     ];
 
@@ -73,6 +76,11 @@ angular
       const options = Object.assign({}, direction.options, { batch_size: batchSize });
       return DB()
         .replicate[direction.name](remote, options)
+        .on('change', replicationResult => {
+          if (direction.onChange) {
+            direction.onChange(replicationResult);
+          }
+        })
         .on('denied', function(err) {
           $log.error(`Denied replicating ${direction.name} remote server`, err);
           if (direction.onDenied) {
@@ -157,7 +165,12 @@ angular
     const syncMeta = function() {
       const remote = DB({ meta: true, remote: true });
       const local = DB({ meta: true });
-      local.sync(remote);
+      let currentSeq;
+      local
+        .info()
+        .then(info => currentSeq = info.update_seq)
+        .then(() => local.sync(remote))
+        .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
     };
 
     const sendUpdate = update => {

@@ -12,6 +12,13 @@ const chtDocs = {
     patient_id: 'patient_id',
   },
 
+  place: {
+    _id: 'place',
+    name: 'cht_mock_place',
+    type: 'health_center',
+    place_id: 'place_id',
+  },
+
   pregnancyReport: {
     _id: 'pregReport',
     type: 'data_record',

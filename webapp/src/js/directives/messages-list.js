@@ -8,7 +8,7 @@ angular.module('inboxDirectives').component('mmMessagesList', {
       return {
         loadingContent: Selectors.getLoadingContent(state),
         error: Selectors.getMessagesError(state),
-        selectedMessage: Selectors.getSelectedMessage(state)
+        selectedConversation: Selectors.getSelectedConversation(state)
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);

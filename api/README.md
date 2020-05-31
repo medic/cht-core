@@ -49,8 +49,13 @@ Node server to support the medic app.
   - [GET /api/v1/users-info](#get-apiv1users-info)
 - [Bulk Operations](#bulk-operations)
   - [POST /api/v1/bulk-delete](#post-apiv1bulk-delete)
+- [Monitoring](#monitoring)
+  - [GET /api/v1/monitoring](#get-apiv1monitoring)
 - [Upgrades](#upgrades)
   - [Example](#example)
+- [Hydrate](#hydrate)
+  - [Example GET](#get-apiv1hydrate)
+  - [Example POST](#post-apiv1hydrate)  
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1123,6 +1128,53 @@ Content-Type: application/json
 ]
 ```
 
+# Monitoring
+
+## GET /api/v1/monitoring
+
+Used to retrieve a range of metrics about the instance. While the output is human readable this is intended for automated monitoring allowing for tracking trends over time and alerting about potential issues.
+
+### Permissions
+
+No permissions required.
+
+### Examples
+
+#### JSON format
+
+```
+curl http://localhost:5988/api/v1/monitoring
+
+{"version":{"app":"3.9.0","node":"v10.16.0","couchdb":"2.3.1"},"couchdb":{"medic":{"name":"medic","update_sequence":5733,"doc_count":278,"doc_del_count":32,"fragmentation":1.0283517758420173}...
+```
+
+### Response content
+
+| JSON path | Type | Description |
+| --------- | ----------------- | ---- | ----------- |
+| `version.app` | String | The version of the webapp. |
+| `version.node` | String | The version of NodeJS. |
+| `version.couchdb` | String | The version of CouchDB. |
+| `couchdb.<dbname>.name` | String | The name of the db, usually one of "medic", "medic-sentinel", "medic-users-meta", "_users". |
+| `couchdb.<dbname>.update_sequence` | Number | The number of changes in the db. |
+| `couchdb.<dbname>.doc_count` | Number | The number of docs in the db. |
+| `couchdb.<dbname>.doc_del_count` | Number | The number of deleted docs in the db. |
+| `couchdb.<dbname>.fragmentation` |  Number | The fragmentation of the db, lower is better, "1" is no fragmentation. |
+| `date.current` | Number | The current server date in millis since the epoch, useful for ensuring the server time is correct. |
+| `date.uptime` | Number | How long API has been running. |
+| `sentinel.backlog` | Number | Number of changes yet to be processed by Sentinel. |
+| `messaging.outgoing.due` | Number | The number of messages due to be sent. |
+| `messaging.outgoing.scheduled` | Number | The number of messages scheduled to be sent in the future. |
+| `messaging.outgoing.muted` | Number | The number of messages that are muted and therefore will not be sent. |
+| `outbound_push.backlog` | Number | Number of changes yet to be processed by Outbound Push. |
+| `feedback.count` | Number | Number of feedback docs created usually indicative of client side errors. |
+| `conflict.count` | Number | Number of doc conflicts which need to be resolved manually. |
+
+### Errors
+
+- A metric of `""` (for string values) or `-1` (for numeric values) indicates an error occurred while querying the metric - check the API logs for details.
+- If no response or an error response is received the the instance is unreachable. Thus, this API can be used as an uptime monitoring endpoint.
+
 # Upgrades
 
 All of these endpoints require the `can_configure` permission.
@@ -1165,3 +1217,69 @@ You know that an upgrade has been staged when the `horti-upgrade` document in Co
 ## POST /api/v1/upgrade/complete
 
 Completes a staged upgrade. Throws a `404` if there is no upgrade in the staged position.
+
+# Hydrate
+
+Accepts a JSON array of document uuids and returns fully hydrated documents, in the same order in which they were requested. 
+When documents are not found, an entry with the missing uuid and an error is added instead.  
+Supports both GET and POST. 
+Only allowed for users with "online" roles. 
+
+## GET api/v1/hydrate
+
+#### Query parameters
+
+| Name | Required | Description |   
+| -----  | -------- | ------ | 
+| doc_ids | true | A JSON array of document uuids | 
+
+
+#### Example
+
+```
+GET /api/v1/hydrate?doc_ids=["id1","missingId","id3"]
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  { "id": "id1", "doc": { <...the hydrated document...> } },
+  { "id": "missingId1", "error": "not_found" },
+  { "id": "id3", "doc": { <...the hydrated document...> } },
+]
+```
+
+
+## POST api/v1/hydrate
+
+#### Parameters
+
+| Name | Required | Description |   
+| -----  | -------- | ------ | 
+| doc_ids | true | A JSON array of document uuids | 
+
+
+#### Example
+
+```
+POST /api/v1/hydrate
+Content-Type: application/json
+
+{
+  "doc_ids": ["id1","missingId","id3"]
+}
+
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  { "id": "id1", "doc": { <...the hydrated document...> } },
+  { "id": "missingId", "error": "not_found" },
+  { "id": "id3", "doc": { <...the hydrated document...> } },
+]
+```

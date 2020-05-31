@@ -41,193 +41,181 @@ describe('MessageQueueCtrl controller', () => {
   afterEach(() => sinon.restore());
 
   describe('init', () => {
-    it('queries settings and loads translations before querying, loads first page', done => {
+    it('queries settings and loads translations before querying, loads first page', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({ reported_date_format: 'my date format' });
 
-      createController('tab');
+      const controller = createController('tab');
       chai.expect(Settings.callCount).to.equal(1);
       chai.expect(MessageQueue.loadTranslations.callCount).to.equal(1);
       chai.expect(MessageQueue.query.callCount).to.equal(0);
       chai.expect(scope.loading).to.equal(true);
 
-      setTimeout(() => {
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(scope.dateFormat).to.equal('my date format');
         chai.expect(MessageQueue.query.callCount).to.equal(1);
         chai.expect(scope.pagination.page).to.equal(1);
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['tab', 0, 25, undefined]);
         chai.expect(scope.basePath).to.equal('some path');
-        done();
       });
     });
 
-    it('catches Settings errors', done => {
+    it('catches Settings errors', () => {
       MessageQueue.loadTranslations.resolves();
       Settings.rejects({ error: true });
 
-      createController('tab');
-      setTimeout(() => {
+      const controller = createController('tab');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.callCount).to.equal(0);
-        done();
       });
     });
 
-    it('catches loadTranslation errors', done => {
+    it('catches loadTranslation errors', () => {
       MessageQueue.loadTranslations.rejects();
       Settings.resolves({});
 
-      createController('tab');
-      setTimeout(() => {
+      const controller = createController('tab');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.callCount).to.equal(0);
-        done();
       });
     });
   });
 
   describe('$state', () => {
-    it('loads selected tab', done => {
+    it('loads selected tab', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [], total: 0 });
       Settings.resolves({ reported_date_format: 'a' });
 
-      createController('random string');
-      setTimeout(() => {
+      const controller = createController('random string');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0][0]).to.equal('random string');
         chai.expect(MessageQueue.query.args[0][3]).to.equal(undefined);
         chai.expect(scope.pagination.page).to.equal(1);
-        done();
       });
     });
 
-    it('queries MessageQueue with descending param if set', done => {
+    it('queries MessageQueue with descending param if set', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [], total: 0 });
       Settings.resolves({});
 
-      createController('my tab', 'descending');
-      setTimeout(() => {
+      const controller = createController('my tab', 'descending');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0][0]).to.equal('my tab');
         chai.expect(MessageQueue.query.args[0][3]).to.equal('descending');
         chai.expect(scope.pagination.page).to.equal(1);
-        done();
       });
     });
 
-    it('loads selected page', done => {
+    it('loads selected page', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({});
 
-      createController('some tab', false, 10);
-      setTimeout(() => {
+      const controller = createController('some tab', false, 10);
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(scope.pagination.page).to.equal(10);
         chai.expect(MessageQueue.query.args[0][1]).to.equal(225);
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 10 }, { notify: false }]);
-        done();
       });
     });
 
-    it('normalizes page param (objects)', done => {
+    it('normalizes page param (objects)', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({});
 
-      createController('c', false, { a: 1 });
-      setTimeout(() => {
+      const controller = createController('c', false, { a: 1 });
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['c', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
-        done();
       });
     });
 
-    it('normalizes page param (arrays)', done => {
+    it('normalizes page param (arrays)', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({});
 
-      createController('d', false, [ 1, 2, 3]);
-      setTimeout(() => {
+      const controller = createController('d', false, [ 1, 2, 3]);
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['d', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
-        done();
       });
     });
 
-    it('normalizes page param (strings)', done => {
+    it('normalizes page param (strings)', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({});
 
-      createController('e', false, 'whatever');
-      setTimeout(() => {
+      const controller = createController('e', false, 'whatever');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['e', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
-        done();
       });
     });
 
-    it('normalizes page param (strings)', done => {
+    it('normalizes page param (strings)', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({});
 
-      createController('f', false, '22');
-      setTimeout(() => {
+      const controller = createController('f', false, '22');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['f', 525, 25, false]);
         chai.expect(scope.pagination.page).to.equal(22);
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 22 }, { notify: false }]);
-        done();
       });
     });
 
-    it('normalizes page param (negative numbers)', done => {
+    it('normalizes page param (negative numbers)', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({});
 
-      createController('g', false, -200);
-      setTimeout(() => {
+      const controller = createController('g', false, -200);
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['g', 0, 25, false]);
         chai.expect(scope.pagination.page).to.equal(1);
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
-        done();
       });
     });
 
-    it('normalizes page param (floating point numbers)', done => {
+    it('normalizes page param (floating point numbers)', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [1], total: 1 });
       Settings.resolves({});
 
-      createController('h', false, 4.23);
-      setTimeout(() => {
+      const controller = createController('h', false, 4.23);
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['h', 75, 25, false]);
         chai.expect(scope.pagination.page).to.equal(4);
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 4 }, { notify: false }]);
-        done();
       });
     });
   });
 
   describe('display', () => {
-    it('assigns scope messages, updates pagination', done => {
+    it('assigns scope messages, updates pagination', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.resolves({ messages: [{ id: 1}, { id: 2 }, { id: 3 }, { id: 4 }], total: 210 });
       Settings.resolves({});
 
-      createController('tab', false, 5);
-      setTimeout(() => {
+      const controller = createController('tab', false, 5);
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(scope.pagination).to.deep.equal({
           page: 5,
           total: 210,
@@ -239,25 +227,24 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(scope.error).to.equal(false);
         chai.expect(scope.loading).to.equal(false);
         chai.expect(scope.displayLastUpdated).to.equal(true);
-        done();
+
       });
     });
 
-    it('catches query errors', done => {
+    it('catches query errors', () => {
       MessageQueue.loadTranslations.resolves();
       MessageQueue.query.rejects({ some: 'error' });
       Settings.resolves({});
 
-      createController('tab');
-      setTimeout(() => {
+      const controller = createController('tab');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(scope.error).to.equal(true);
         chai.expect(scope.loading).to.equal(false);
         chai.expect(scope.displayLastUpdated).to.equal(true);
-        done();
       });
     });
 
-    it('applies conditional styling params', done => {
+    it('applies conditional styling params', () => {
       const now = new Date().getTime();
       MessageQueue.loadTranslations.resolves();
       Settings.resolves({});
@@ -272,8 +259,8 @@ describe('MessageQueueCtrl controller', () => {
         ]
       });
 
-      createController('due');
-      setTimeout(() => {
+      const controller = createController('due');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(scope.displayLastUpdated).to.equal(true);
         chai.expect(scope.messages).to.deep.equal([
           { state: 'pending', stateHistory: { timestamp: 0 }, delayed: true },
@@ -282,11 +269,10 @@ describe('MessageQueueCtrl controller', () => {
           { state: 'forwarded-by-gateway', stateHistory: {}, delayed: false },
           { state: 'random', stateHistory: { timestamp: 0 } }
         ]);
-        done();
       });
     });
 
-    it('does not display last updated date for scheduled tab', done =>{
+    it('does not display last updated date for scheduled tab', () =>{
       MessageQueue.loadTranslations.resolves();
       Settings.resolves({});
       MessageQueue.query.resolves({
@@ -294,50 +280,52 @@ describe('MessageQueueCtrl controller', () => {
         messages: [ { state: 'scheduled', stateHistory: { timestamp: 0 } }]
       });
 
-      createController('scheduled');
-      setTimeout(() => {
+      const controller = createController('scheduled');
+      return controller.getSetupPromiseForTesting().then(() => {
         chai.expect(scope.displayLastUpdated).to.equal(false);
-        done();
       });
     });
   });
 
   describe('pagination', () => {
-    it('normalizes the page', done => {
+    it('normalizes the page', () => {
       MessageQueue.loadTranslations.resolves();
       Settings.resolves();
       MessageQueue.query.withArgs('sometab', 0).resolves({ messages: [{ id: 1 }], total: 5 });
 
-      createController('sometab');
-      setTimeout(() => {
-        chai.expect(scope.pagination.page).to.equal(1);
-        scope.loadPage('something');
-        chai.expect(MessageQueue.query.callCount).to.equal(2);
-        chai.expect(MessageQueue.query.args[1][1]).to.equal(0);
-        chai.expect(scope.pagination.page).to.equal(1);
-        setTimeout(() => {
-          scope.loadPage({ some: 'thing' });
+      const controller = createController('sometab');
+      return controller.getSetupPromiseForTesting()
+        .then(() => {
+          chai.expect(scope.pagination.page).to.equal(1);
+          const promise = scope.loadPage('something');
+          chai.expect(MessageQueue.query.callCount).to.equal(2);
+          chai.expect(MessageQueue.query.args[1][1]).to.equal(0);
+          chai.expect(scope.pagination.page).to.equal(1);
+          return promise;
+        })
+        .then(() => {
+          const promise = scope.loadPage({ some: 'thing' });
           chai.expect(MessageQueue.query.callCount).to.equal(3);
           chai.expect(MessageQueue.query.args[2][1]).to.equal(0);
           chai.expect(scope.pagination.page).to.equal(1);
-          setTimeout(() => {
-            scope.loadPage(false);
-            chai.expect(MessageQueue.query.callCount).to.equal(4);
-            chai.expect(MessageQueue.query.args[3][1]).to.equal(0);
-            chai.expect(scope.pagination.page).to.equal(1);
-            setTimeout(() => {
-              scope.loadPage(-200);
-              chai.expect(MessageQueue.query.callCount).to.equal(5);
-              chai.expect(MessageQueue.query.args[4][1]).to.equal(0);
-              chai.expect(scope.pagination.page).to.equal(1);
-              done();
-            });
-          });
+          return promise;
+        })
+        .then(() => {
+          const promise = scope.loadPage(false);
+          chai.expect(MessageQueue.query.callCount).to.equal(4);
+          chai.expect(MessageQueue.query.args[3][1]).to.equal(0);
+          chai.expect(scope.pagination.page).to.equal(1);
+          return promise;
+        })
+        .then(() => {
+          scope.loadPage(-200);
+          chai.expect(MessageQueue.query.callCount).to.equal(5);
+          chai.expect(MessageQueue.query.args[4][1]).to.equal(0);
+          chai.expect(scope.pagination.page).to.equal(1);
         });
-      });
     });
 
-    it('paginates correctly', done => {
+    it('paginates correctly', () => {
       MessageQueue.loadTranslations.resolves();
       Settings.resolves();
 
@@ -348,43 +336,43 @@ describe('MessageQueueCtrl controller', () => {
         .withArgs('sometab', 125).resolves({ messages: [{ id: 4 }], total: 482 })
         .withArgs('sometab', 275).resolves({ messages: [], total: 200 });
 
-      createController('sometab', false, 2);
-      setTimeout(() => {
-        chai.expect(scope.pagination.page).to.equal(2);
-        chai.expect(MessageQueue.query.args[0][1]).to.equal(25);
-        chai.expect(scope.messages).to.deep.equal([{ id: 2 }]);
-        chai.expect(scope.pagination.total).to.equal(497);
+      const controller = createController('sometab', false, 2);
+      return controller.getSetupPromiseForTesting()
+        .then(() => {
+          chai.expect(scope.pagination.page).to.equal(2);
+          chai.expect(MessageQueue.query.args[0][1]).to.equal(25);
+          chai.expect(scope.messages).to.deep.equal([{ id: 2 }]);
+          chai.expect(scope.pagination.total).to.equal(497);
 
-        scope.loadPage(4);
-        setTimeout(() => {
+          return scope.loadPage(4);
+        })
+        .then(() => {
           chai.expect(scope.pagination.page).to.equal(4);
           chai.expect(MessageQueue.query.args[1][1]).to.equal(75);
           chai.expect(scope.messages).to.deep.equal([{ id: 3 }]);
           chai.expect(scope.pagination.total).to.equal(512);
 
-          scope.loadPage(6);
-          setTimeout(() => {
-            chai.expect(scope.pagination.page).to.equal(6);
-            chai.expect(MessageQueue.query.args[2][1]).to.equal(125);
-            chai.expect(scope.messages).to.deep.equal([{ id: 4 }]);
-            chai.expect(scope.pagination.total).to.equal(482);
+          return scope.loadPage(6);
+        })
+        .then(() => {
+          chai.expect(scope.pagination.page).to.equal(6);
+          chai.expect(MessageQueue.query.args[2][1]).to.equal(125);
+          chai.expect(scope.messages).to.deep.equal([{ id: 4 }]);
+          chai.expect(scope.pagination.total).to.equal(482);
 
-            scope.loadPage(21);
-            setTimeout(() => {
-              chai.expect(MessageQueue.query.callCount).to.equal(3);
-              scope.loadPage(12);
+          return scope.loadPage(21);
+        })
+        .then(() => {
+          chai.expect(MessageQueue.query.callCount).to.equal(3);
 
-              setTimeout(() => {
-                chai.expect(scope.pagination.page).to.equal(1);
-                chai.expect(MessageQueue.query.callCount).to.equal(5);
-                chai.expect(MessageQueue.query.args[3][1]).to.equal(275);
-                chai.expect(MessageQueue.query.args[4][1]).to.equal(0);
-                done();
-              });
-            });
-          });
+          return scope.loadPage(12);
+        })
+        .then(() => {
+          chai.expect(scope.pagination.page).to.equal(1);
+          chai.expect(MessageQueue.query.callCount).to.equal(5);
+          chai.expect(MessageQueue.query.args[3][1]).to.equal(275);
+          chai.expect(MessageQueue.query.args[4][1]).to.equal(0);
         });
-      });
     });
   });
 

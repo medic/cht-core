@@ -48,12 +48,11 @@ angular
     };
 
     DB({ usersMeta: true })
-      .allDocs({
-        include_docs: true, 
-        endkey: 'feedback-', 
-        startkey: 'feedback-\ufff0',
+      .query('users-meta/feedback_by_date', {
+        include_docs: true,
         descending: true,
         limit: 20,
+        reduce: false
       })
       .then(function(data) {
         $scope.feedback = mapFeedback(data);

@@ -11,5 +11,8 @@
     "chai": "^4.2.0",
     "mocha": "^6.2.1",
     "sinon": "^7.5.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.15"
   }
 }

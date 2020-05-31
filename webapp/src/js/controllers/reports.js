@@ -138,14 +138,17 @@ angular
         });
     };
 
-    ctrl.search = function() {
+    /**
+     * @param {Boolean} force Show list even if viewing the content on mobile
+     */
+    ctrl.search = function(force) {
       // clears report selection for any text search or filter selection
       // does not clear selection when someone is editing a form
       if((ctrl.filters.search || Object.keys(ctrl.filters).length > 1) && !ctrl.enketoEdited) {
         $state.go('reports.detail', { id: null }, { notify: false });
         ctrl.clearSelection();
       }
-      if (responsive.isMobile() && ctrl.showContent) {
+      if (!force && responsive.isMobile() && ctrl.showContent) {
         // leave content shown
         return;
       }

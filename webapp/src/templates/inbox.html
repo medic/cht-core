@@ -13,7 +13,7 @@
     <link rel="manifest" href="/manifest.json">
     <title></title>
   </head>
-  <body class="inbox {{inboxCtrl.currentTab}}" ng-controller="InboxCtrl as inboxCtrl" ng-class="{'show-content': inboxCtrl.showContent, 'bootstrapped': inboxCtrl.dbWarmedUp, 'select-mode': inboxCtrl.selectMode}">
+  <body class="inbox {{inboxCtrl.currentTab}}" ng-controller="InboxCtrl as inboxCtrl" ng-class="{'show-content': inboxCtrl.showContent, 'bootstrapped': inboxCtrl.dbWarmedUp, 'select-mode': inboxCtrl.selectMode, 'hide-mobile-tab-labels': inboxCtrl.minimalTabs }">
     <div class="bootstrap-layer">
       <div>
         <div class="loader"></div>

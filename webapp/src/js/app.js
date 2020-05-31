@@ -88,7 +88,7 @@ const createReduxLoggerConfig = Selectors => ({
   },
   stateTransformer: function(state) {
     let loggableState = cloneDeep(state);
-    ['Analytics', 'Contact', 'Message', 'Reports', 'Task'].forEach(module => {
+    ['Analytics', 'Contact', 'Conversation', 'Reports', 'Task'].forEach(module => {
       const fnName = 'getSelected' + module;
       makeSelectedLoggable(Selectors[fnName](loggableState));
     });
@@ -189,6 +189,7 @@ const createReduxLoggerConfig = Selectors => ({
       'Accept': 'application/json'
     }
   };
+
   angular.module('inboxApp').constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
   if (window.location.href === 'http://localhost:9876/context.html') {

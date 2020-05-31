@@ -168,7 +168,7 @@ const initDb = content => {
   return _resetDb()
     .then(() => {
       const medicPath = path.join(__dirname, '../../../../build/ddocs/medic.json');
-      const compiledPath = path.join(__dirname, '../../../../build/ddocs/medic/_attachments/ddocs/compiled.json');
+      const compiledPath = path.join(__dirname, '../../../../build/ddocs/medic/_attachments/ddocs/medic.json');
       return Promise.all([ readFileAsync(medicPath), readFileAsync(compiledPath) ]);
     })
     .then(([medicString, compiledString]) => {

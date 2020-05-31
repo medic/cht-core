@@ -120,7 +120,7 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0].view).to.equal('medic-client/reports_by_subject');
     chai.expect(result[0].params).to.deep.equal({
-      keys: [ [ 'a' ], [ 'b' ], [ 'c' ] ]
+      keys: [ 'a', 'b', 'c' ]
     });
   });
 

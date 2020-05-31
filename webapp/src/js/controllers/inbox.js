@@ -76,6 +76,7 @@ const moment = require('moment');
         enketoEdited: Selectors.getEnketoEditedStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         forms: Selectors.getForms(state),
+        minimalTabs : Selectors.getMinimalTabs(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
         showContent: Selectors.getShowContent(state)
@@ -347,6 +348,7 @@ const moment = require('moment');
               code: jsonForm.code,
               title: translateTitle(jsonForm.translation_key, jsonForm.name),
               icon: jsonForm.icon,
+              subjectKey: jsonForm.subject_key
             };
           });
           XmlForms.listen(
@@ -361,6 +363,7 @@ const moment = require('moment');
                   code: xForm.internalId,
                   title: translateTitle(xForm.translation_key, xForm.title),
                   icon: xForm.icon,
+                  subjectKey: xForm.subject_key
                 };
               });
               const forms = xFormSummaries.concat(jsonFormSummaries);

@@ -230,6 +230,8 @@ const getAllTombstones = (ids) => {
 // replication keys are either contact shortcodes (`patient_id` or `place_id`) or doc ids
 // returns a list of corresponding contact docs
 const findContactsByReplicationKeys = (replicationKeys) => {
+  replicationKeys = _.without(replicationKeys, UNASSIGNED_KEY);
+
   if (!replicationKeys || !replicationKeys.length) {
     return Promise.resolve([]);
   }
@@ -320,6 +322,9 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
     });
 
     authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
+    if (hasAccessToUnassignedDocs(userCtx)) {
+      authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
+    }
 
     return authorizationCtx;
   });

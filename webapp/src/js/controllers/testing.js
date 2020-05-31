@@ -1,4 +1,5 @@
 const purger = require('../bootstrapper/purger');
+const uuid = require('uuid');
 
 angular.module('inboxControllers').controller('TestingCtrl',
   function(
@@ -7,6 +8,7 @@ angular.module('inboxControllers').controller('TestingCtrl',
     $window,
     DB,
     Debug,
+    Feedback,
     Session,
     ipCookie
   ) {
@@ -16,6 +18,7 @@ angular.module('inboxControllers').controller('TestingCtrl',
     const ctrl = this;
 
     ctrl.debugEnabled = Debug.get();
+    ctrl.amountFeedbackDocs = 5000;
 
     const setDebug = val => {
       Debug.set(val);
@@ -66,6 +69,20 @@ angular.module('inboxControllers').controller('TestingCtrl',
           DB({ remote: false, meta: true }).destroy()
         ])
         .catch(err => $log.error('Error wiping databases', err));
+    };
+
+    ctrl.generateFeedback = () => {
+      if (isNaN(ctrl.amountFeedbackDocs)) {
+        $log.error('Incorrect number of feedback docs', ctrl.amountFeedbackDocs);
+        return;
+      }
+
+      let p = $q.resolve();
+      ctrl.generatingFeedback = true;
+      for (let i = 0; i < parseInt(ctrl.amountFeedbackDocs); i++) {
+        p = p.then(() => Feedback.submit(uuid()));
+      }
+      p.then(() => ctrl.generatingFeedback = false);
     };
 
     const wipeCookies = () => {

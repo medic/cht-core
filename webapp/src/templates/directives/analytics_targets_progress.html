@@ -1,0 +1,20 @@
+<div class="target-progress">
+  <div class="progress" ng-class="{'placeholder': $ctrl.value.placeholder}">
+    <div class="progress-bar" ng-if="!$ctrl.aggregate" style="width:{{$ctrl.value.percent}}%" ng-class="{'ng-hide': $ctrl.value.percent === 0}"></div>
+    <div class="progress-bar" ng-if="$ctrl.aggregate" style="width:{{$ctrl.value.percent}}%" ng-class="{'no-border': $ctrl.value.percent === 0, 'ng-hide': $ctrl.value.placeholder}">
+      <span ng-if="$ctrl.target.type === 'percent'">{{$ctrl.value.percent}}%</span>
+      <span ng-if="$ctrl.target.type != 'percent'">{{$ctrl.value.pass}}</span>
+    </div>
+  </div>
+  <div class="goal" ng-if="$ctrl.target.goal > 0" style="padding-left:{{$ctrl.target.goal}}%">
+    <label ng-class="{ 'pin-left': !$ctrl.aggregate && $ctrl.target.goal < 15, 'pin-right': $ctrl.aggregate || $ctrl.target.goal > 85 }">
+      <span translate>analytics.target.monthly_goal</span>
+      {{$ctrl.target.goal}}<span ng-if="$ctrl.target.type === 'percent'">%</span>
+    </label>
+    <div class="bar" ng-if="$ctrl.target.type === 'percent'"></div>
+  </div>
+  <div class="number" ng-if="!$ctrl.aggregate">
+    <span class="value">{{$ctrl.value.percent}}%</span>
+    <span translate translate-values="$ctrl.value">{{$ctrl.target.percentage_count_translation_key || 'targets.count.default'}}</span>
+  </div>
+</div>

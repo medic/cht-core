@@ -68,12 +68,17 @@ describe('User DB service', () => {
         chai.expect(requestParams.body.members.names[0]).to.equal('gareth');
         chai.expect(dbPut.callCount).to.equal(1);
         const ddoc = dbPut.args[0][0];
+        chai.expect(ddoc).to.have.all.keys('_id', 'views', 'validate_doc_update');
         chai.expect(ddoc._id).to.equal('_design/medic-user');
         chai.expect(ddoc.views.read.map).to.equal(
           'function (doc) {\n  var parts = doc._id.split(\':\');\n  if (parts[0] === \'read\') ' +
           '{\n    emit(parts[1]);\n  }\n}'
         );
         chai.expect(ddoc.views.read.reduce).to.equal('_count');
+        chai.expect(ddoc.validate_doc_update).to.equal(
+          'function (newDoc) {\n  if (newDoc && newDoc._deleted && newDoc.purged) {\n    ' +
+          'throw({forbidden: \'Purged documents should not be written to CouchDB!\'});\n  }\n}'
+        );
         chai.expect(db.close.callCount).to.equal(1);
         chai.expect(db.close.args[0]).to.deep.equal([userDb]);
       });
@@ -96,6 +101,36 @@ describe('User DB service', () => {
           chai.expect(db.close.callCount).to.equal(1);
           chai.expect(db.close.args[0]).to.deep.equal([userDb]);
         });
+    });
+  });
+
+  describe('validateDocUpdate', () => {
+    it('should not throw an error for non-purge deletes', () => {
+      chai.expect(service.validateDocUpdate.bind(service, {})).not.to.throw();
+      chai.expect(service.validateDocUpdate.bind(service, { _id: 'test', _deleted: true })).not.to.throw();
+      chai.expect(service.validateDocUpdate.bind(service, { _id: 'test', some: 'thing' })).not.to.throw();
+      chai.expect(service.validateDocUpdate.bind(service, { _id: 'test', _purged: true })).not.to.throw();
+      chai.expect(service.validateDocUpdate.bind(service, { _id: 'test', purged: true })).not.to.throw();
+    });
+
+    it('should throw an error for purge deletes', () => {
+      chai.expect(service.validateDocUpdate.bind(service, { _id: 'test', purged: true, _deleted: true })).to.throw();
+    });
+  });
+
+  describe('isDbName', () => {
+    it('should return true for matching db names', () => {
+      chai.expect(service.isDbName(`${environment.db}-user-something-meta`)).to.equal(true);
+      chai.expect(service.isDbName(`${environment.db}-user-1233$$--+++!!!-meta`)).to.equal(true);
+      chai.expect(service.isDbName(`${environment.db}-user-medic-meta`)).to.equal(true);
+    });
+
+    it('should return false for not matching db names', () => {
+      chai.expect(service.isDbName(`${environment.db}`)).to.equal(false);
+      chai.expect(service.isDbName(`${environment.db}-sentinel`)).to.equal(false);
+      chai.expect(service.isDbName(`${environment.db}-users-meta`)).to.equal(false);
+      chai.expect(service.isDbName(`medic-users-meta`)).to.equal(false);
+      chai.expect(service.isDbName('some-other-db')).to.equal(false);
     });
   });
 

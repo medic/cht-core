@@ -8,7 +8,7 @@ const mockDb = (idFilterLogicFn) => {
   sinon.stub(db.medic, 'query').callsFake((view, options) => {
     const ids = options.keys.slice(0);
     const toReturn = {
-      rows: idFilterLogicFn(ids).map(id => {return {key: id};})
+      rows: idFilterLogicFn(ids).map(key => ({ key }))
     };
 
     return Promise.resolve(toReturn);
@@ -47,7 +47,7 @@ describe('ids', () => {
 
     return ids.generator(db).next().value.then(patientId => {
       assert(patientId, 'should return id');
-      assert(potentialIds.some(key => key[1] === patientId), 'id should come from the cached ids');
+      assert(potentialIds.includes(patientId), 'id should come from the cached ids');
     });
   });
 
@@ -60,14 +60,14 @@ describe('ids', () => {
     });
 
     return ids.generator(db).next().value.then(patientId => {
-      assert.equal(patientId, idToUse[1]);
+      assert.equal(patientId, idToUse);
     });
   });
 
   it('addUniqueId retries with a longer id if it only generates duplicates', () => {
     let potentialIds;
     const db = mockDb(ids => {
-      if (ids[0][1].length === 5) {
+      if (ids[0].length === 5) {
         return ids;
       }
       potentialIds = ids;
@@ -77,7 +77,7 @@ describe('ids', () => {
     return ids.generator(db).next().value.then(patientId => {
       assert(patientId, 'id should be generated');
       assert.equal(patientId.length, 6);
-      assert(potentialIds.some(key => key[1] === patientId), 'id should come from the cached ids');
+      assert(potentialIds.includes(patientId), 'id should come from the cached ids');
     });
   });
 

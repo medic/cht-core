@@ -212,13 +212,16 @@ const bulkUpdate = infoDocs => {
     if (conflictingInfoDocs.length > 0) {
       // Attempt an intelligent merge based on responsibilities: callers of this function own
       // everything *except* replication date metadata, which is managed by API on write (who calls
-      // recordDocumentWrite[s])
+      // recordDocumentWrite[s]), and completed_tasks which is managed by outbound callers manually
+      // for now (just via a db.sentinel.put)
       return findInfoDocs(db.sentinel, conflictingInfoDocs.map(d => d._id))
         .then(freshInfoDocs => {
           freshInfoDocs.forEach(({doc: freshInfoDoc}, idx) => {
             conflictingInfoDocs[idx]._rev = freshInfoDoc._rev;
             conflictingInfoDocs[idx].initial_replication_date = freshInfoDoc.initial_replication_date;
             conflictingInfoDocs[idx].latest_replication_date = freshInfoDoc.latest_replication_date;
+
+            conflictingInfoDocs[idx].completed_tasks = freshInfoDoc.completed_tasks;
           });
 
           return bulkUpdate(conflictingInfoDocs);

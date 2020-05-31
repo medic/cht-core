@@ -1,47 +1,35 @@
-const objectPath = require('object-path');
-const urlJoin = require('url-join');
-const request = require('request-promise-native');
-const vm = require('vm');
-
-const secureSettings = require('@medic/settings');
-
 const configService = require('../config');
 const db = require('../db');
 const logger = require('../lib/logger');
 const lineage = require('@medic/lineage')(Promise, db.medic);
+const outbound = require('@medic/outbound')(logger);
 
 const CONFIGURED_PUSHES = 'outbound';
-const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
+const BATCH_SIZE = 1000;
 
-const fetchPassword = key => {
-  return secureSettings.getCredentials(key).then(password => {
-    if (!password) {
-      throw new Error(
-        `CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`
-      );
-    }
-    return password;
-  });
-};
-
-// Returns an object containing:
-//   validTasks: an array of tasks and their hydrated docs as {task doc} objects
-//   invalidTasks: an array of tasks whose documents have been deleted
+//
+// Loads all queued tasks and splits them into valid tasks we can work on, and invalid tasks that
+// should be deleted (eg because they are about a document that doesn't exist anymore)
+//
+// @return     {<object>}  {validTasks, invalidTasks}, where a validTask is {task doc} and invalid
+//                         tasks are {task row}
+//
 const queuedTasks = () => {
   return db.sentinel.allDocs({
     startkey: 'task:outbound:',
     endkey: 'task:outbound:\ufff0',
-    include_docs: true
+    include_docs: true,
+    limit: BATCH_SIZE,
   })
-    .then(results => {
-      const outboundTaskDocs = results.rows.map(r => r.doc);
+    .then(taskResults => {
+      const outboundTaskDocs = taskResults.rows.map(r => r.doc);
       const associatedDocIds = outboundTaskDocs.map(q => q.doc_id);
 
       return db.medic.allDocs({
         keys: associatedDocIds,
         include_docs: true
-      }).then(results => {
-        const { validTasks, invalidTasks } = results.rows.reduce((acc, r, idx) => {
+      }).then(docResults => {
+        const { validTasks, invalidTasks } = docResults.rows.reduce((acc, r, idx) => {
           const task = outboundTaskDocs[idx];
           if (r.doc) {
             acc.validTasks.push({
@@ -76,151 +64,6 @@ const queuedTasks = () => {
     });
 };
 
-// Maps a source document to a destination format using the given push config
-const mapDocumentToPayload = (doc, config, key) => {
-  const normaliseSourceConfiguration = sourceConfiguration => {
-    if (typeof sourceConfiguration === 'string') {
-      return {
-        path: sourceConfiguration,
-        required: true
-      };
-    }
-
-    return {
-      path: sourceConfiguration.path,
-      expr: sourceConfiguration.expr,
-      required: !sourceConfiguration.optional
-    };
-  };
-
-  const toReturn = {};
-
-  // Mappings (conf.mapping) are key value pairs where the key is an object path string defining the
-  // resulting destination, and the value is either an object path string defining the source path, or
-  // an object with more in-depth config on how to map the value.
-  Object.keys(config.mapping).forEach(dest => {
-    const {
-      path, expr, required
-    } = normaliseSourceConfiguration(config.mapping[dest]);
-
-    let srcValue;
-
-    if (expr) {
-      try {
-        srcValue = vm.runInNewContext(expr, {doc});
-      } catch (err) {
-        throw Error(`Mapping error for '${key}/${dest}' JS error on source document: '${doc._id}': ${err}`);
-      }
-    } else {
-      srcValue = objectPath.get({doc}, path);
-    }
-
-    if (required && srcValue === undefined) {
-      const problem = expr ? 'expr evaluated to undefined' : `cannot find '${path}' on source document`;
-      throw Error(`Mapping error for '${key}/${dest}' on source document '${doc._id}': ${problem}`);
-    }
-
-    if (srcValue !== undefined) {
-      objectPath.set(toReturn, dest, srcValue);
-    }
-  });
-
-  return toReturn;
-};
-
-// Attempts to send a given payload using a given push config
-const send = (payload, config) => {
-  const sendOptions = {
-    url: urlJoin(config.destination.base_url, config.destination.path),
-    body: payload,
-    json: true,
-    timeout: OUTBOUND_REQ_TIMEOUT
-  };
-
-  const auth = () => {
-    const authConf = config.destination.auth;
-
-    if (!authConf) {
-      return Promise.resolve();
-    }
-
-    if (!authConf.type) {
-      return Promise.reject(Error('No auth.type, either declare the type or omit the auth property'));
-    }
-
-    if (authConf.type.toLowerCase() === 'basic') {
-      return fetchPassword(authConf['password_key'])
-        .then(password => {
-          sendOptions.auth = {
-            username: authConf.username,
-            password: password,
-            sendImmediately: true
-          };
-        });
-    }
-
-    if (authConf.type.toLowerCase() === 'header') {
-      if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
-        return fetchPassword(authConf['value_key'])
-          .then(value => {
-            sendOptions.headers = {
-              Authorization: value
-            };
-          });
-      } else {
-        logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
-        throw new Error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
-      }
-    }
-
-    if (authConf.type.toLowerCase() === 'muso-sih') {
-      return fetchPassword(authConf['password_key'])
-        .then(password => {
-          const authOptions = {
-            form: {
-              login: authConf.username,
-              password: password
-            },
-            url: urlJoin(config.destination.base_url, authConf.path),
-            json: true,
-            timeout: OUTBOUND_REQ_TIMEOUT
-          };
-
-          return request.post(authOptions)
-            .then(result => {
-              // No that's not a spelling mistake, this API is sometimes French!
-              if (result.statut !== 200) {
-                logger.error('Non-200 status from Muso auth', result);
-                throw new Error(`Got ${result.statut} when requesting auth`);
-              }
-
-              sendOptions.qs = {
-                token: result.data.username_token
-              };
-            });
-        });
-    }
-
-    // Misconfigured auth type
-    return Promise.reject(new Error(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`));
-  };
-
-  return auth().then(() => {
-    if (logger.isDebugEnabled()) {
-      logger.debug('About to send outbound request');
-      logger.debug(JSON.stringify(sendOptions, null, 2));
-    }
-
-    return request.post(sendOptions)
-      .then(result => {
-        if (logger.isDebugEnabled()) {
-          logger.debug('result from outbound request');
-          logger.debug(JSON.stringify(result, null, 2));
-        }
-      });
-  });
-};
-
 // Collects push configs to attempt out of the task's queue, given a global config
 const getConfigurationsToPush = (config, taskDoc) => {
   return taskDoc.queue.map(pushName => ([pushName, config[pushName]]));
@@ -244,21 +87,11 @@ const removeConfigKeyFromTask = (taskDoc, key) => {
     });
 };
 
-// Log a successful push to the info doc
-const logIntoInfoDoc = (medicDocId, key) => {
-  return db.sentinel.get(`${medicDocId}-info`)
-    .then(info => {
-      info.completed_tasks = info.completed_tasks || [];
-      info.completed_tasks.push({
-        type: 'outbound',
-        name: key,
-        timestamp: Date.now()
-      });
-      return db.sentinel.put(info);
-    });
-};
-
-const singlePush = (taskDoc, medicDoc, config, key) => Promise.resolve()
+/**
+ * Push a payload, cleanup afterwards if successful
+ *
+ */
+const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise.resolve()
   .then(() => {
     if (!config) {
       // The outbound config entry has been deleted / renamed / something!
@@ -268,19 +101,35 @@ const singlePush = (taskDoc, medicDoc, config, key) => Promise.resolve()
       return removeConfigKeyFromTask(taskDoc, key);
     }
 
-    const payload = mapDocumentToPayload(medicDoc, config, key);
-    return send(payload, config)
+    if (outbound.alreadySent(key, infoDoc)) {
+      // Don't send "duplicate" outbound pushes
+      logger.debug(`Skipping ${medicDoc._id} for ${key} because we've pushed this combination before`);
+      return removeConfigKeyFromTask(taskDoc, key);
+    }
+
+    return outbound.send(config, key, medicDoc, infoDoc)
       .then(() => {
-        // Worked, remove entry from queue and add link to info doc
-        logger.info(`Pushed ${medicDoc._id} to ${key}`);
-
+        // Worked, remove entry from queue and store infodoc that outbound service has updated
         return removeConfigKeyFromTask(taskDoc, key)
-          .then(() => logIntoInfoDoc(medicDoc._id, key));
-      });
-  }).catch(err => {
-    // Failed
-    logger.error(`Failed to push ${medicDoc._id} to ${key}: %o`, err);
+          .then(() => db.sentinel.put(infoDoc))
+          .catch(err => {
+            if (err.status !== 409) {
+              logger.error('Failed to save infodoc');
+              logger.error(err);
+              throw err;
+            }
 
+            // While we held the infodoc open something else wrote to it. Presume it wasn't
+            // anything task related, load a fresh version and overwrite
+            return db.sentinel.get(infoDoc._id)
+              .then(freshInfoDoc => {
+                freshInfoDoc.completed_tasks = infoDoc.completed_tasks;
+                return db.sentinel.put(freshInfoDoc);
+              });
+          });
+      });
+  }).catch(() => {
+    // Failed!
     // Don't remove the entry from the task's queue so it will be tried again next time
   });
 
@@ -302,6 +151,23 @@ const removeInvalidTasks = invalidTasks => {
   return db.sentinel.bulkDocs(toDelete);
 };
 
+//
+// Load and attach info docs for the records attached to the tasks
+//
+// @param      {<array>}  tasks array of {task, doc}
+// @return     {<array>}  { task, doc, info }
+//
+const attachInfoDocs = tasks => {
+  return db.sentinel.allDocs({
+    keys: tasks.map(({doc}) => `${doc._id}-info`),
+    include_docs: true
+  }).then(results => {
+    results.rows.forEach((row, idx) => tasks[idx].info = row.doc);
+
+    return tasks;
+  });
+};
+
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
   const configuredPushes = configService.get(CONFIGURED_PUSHES) || {};
@@ -311,27 +177,32 @@ const execute = () => {
 
   return queuedTasks()
     .then(({validTasks, invalidTasks}) => {
-      return removeInvalidTasks(invalidTasks)
-        .then(() => {
-          const pushes = validTasks.reduce((acc, {task, doc}) => {
-            const pushesForDoc =
-            getConfigurationsToPush(configuredPushes, task)
-              .map(([key, config]) => ({task, doc, config, key}));
+      if (invalidTasks.length) {
+        return removeInvalidTasks(invalidTasks).then(() => validTasks);
+      } else {
+        return validTasks;
+      }
+    })
+    .then(validTasks => attachInfoDocs(validTasks))
+    .then(validTasks => {
+      const pushes = validTasks.reduce((acc, {task, doc, info}) => {
+        const pushesForDoc =
+          getConfigurationsToPush(configuredPushes, task)
+            .map(([key, config]) => ({task, doc, info, config, key}));
 
-            return acc.concat(pushesForDoc);
-          }, []);
+        return acc.concat(pushesForDoc);
+      }, []);
 
-          // Attempts each push one by one. Written to be simple not efficient.
-          // There are lots of things we could do to make this faster / less fragile,
-          // such as scoping pushes by domain, as well as writing out successes before
-          // all pushes are complete
-          // For now we presume we aren't going to get much traffic against this and
-          // will probably only be doing one push per schedule call
-          return pushes.reduce(
-            (p, {task, doc, config, key}) => p.then(() => singlePush(task, doc, config, key)),
-            Promise.resolve()
-          );
-        });
+      // Attempts each push one by one. Written to be simple not efficient.
+      // There are lots of things we could do to make this faster / less fragile,
+      // such as scoping pushes by domain, as well as writing out successes before
+      // all pushes are complete
+      // For now we presume we aren't going to get much traffic against this and
+      // will probably only be doing one push per schedule call
+      return pushes.reduce(
+        (p, {task, doc, info, config, key}) => p.then(() => singlePush(task, doc, info, config, key)),
+        Promise.resolve()
+      );
     });
 };
 

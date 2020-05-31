@@ -23,8 +23,10 @@ infodoc.initLib(db.medic, db.sentinel);
  */
 const AVAILABLE_TRANSITIONS = [
   'update_clinics',
+  'self_report',
   'registration',
   'accept_patient_reports',
+  'accept_case_reports',
   'generate_shortcode_on_contacts',
   'generate_patient_id_on_people',
   'default_responses',

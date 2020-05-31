@@ -123,7 +123,7 @@ describe('utils util', () => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
         db.medic.query.args[0]
-          .should.deep.equal(['medic-client/reports_by_subject', { key: ['12345'], include_docs: true }]);
+          .should.deep.equal(['medic-client/reports_by_subject', { key: '12345', include_docs: true }]);
       });
     });
 
@@ -136,7 +136,7 @@ describe('utils util', () => {
         db.medic.query.callCount.should.equal(1);
         db.medic.query.args[0].should.deep.equal([
           'medic-client/reports_by_subject',
-          { keys: [['a'], ['b'], ['c'], ['d']], include_docs: true }
+          { keys: ['a', 'b', 'c', 'd'], include_docs: true }
         ]);
       });
     });

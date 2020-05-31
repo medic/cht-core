@@ -6,6 +6,8 @@
 
   require('./actionbar');
   require('./analytics-filters');
+  require('./analytics-targets-details');
+  require('./analytics-targets-progress');
   require('./auth');
   require('./contacts-list');
   require('./content-row');

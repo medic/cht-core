@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash/core');
+
 const registrationUtils = require('@medic/registration-utils');
 const rulesEngineCore = require('@medic/rules-engine');
 
@@ -17,6 +19,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
   RulesEngineCore,
   Session,
   Settings,
+  Telemetry,
   TranslateFrom,
   UHCSettings,
   UserContact,
@@ -27,6 +30,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
   let uhcMonthStartDate;
   let ensureTaskFreshness;
   let ensureTargetFreshness;
+  let ensureTaskFreshnessTelemetryData;
+  let ensureTargetFreshnessTelemetryData;
 
   const initialize = () => (
     Promise.all([Auth.has('can_view_tasks'), Auth.has('can_view_analytics')])
@@ -45,6 +50,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
               canViewTasks,
               canViewTargets
             );
+            const initializeTelemetryData = telemetryEntry('rules-engine:initialize', true);
             return RulesEngineCore.initialize(rulesSettings)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
@@ -54,18 +60,49 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
                   ensureTaskFreshness = Debounce(self.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTaskFreshness();
+                  ensureTaskFreshnessTelemetryData =
+                    telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true);
 
                   ensureTargetFreshness = Debounce(self.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
                   ensureTargetFreshness();
+                  ensureTargetFreshnessTelemetryData =
+                    telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true);
                 }
+
+                initializeTelemetryData.record();
               });
           });
       })
   );
   const initialized = initialize();
 
-  const cancelDebounce = debounce => {
+  const telemetryEntry = (entry, startNow = false) => {
+    const data = { entry };
+    const start = () => data.start = Date.now();
+    const record = () => {
+      data.end = Date.now();
+      Telemetry.record(data.entry, data.end - data.start);
+    };
+
+    if (startNow) {
+      start();
+    }
+
+    return {
+      start,
+      record,
+      passThrough: (result) => {
+        record();
+        return result;
+      },
+    };
+  };
+
+  const cancelDebounce = (debounce, telemetryDataEntry) => {
     if (debounce) {
+      if (!debounce.executed()) {
+        telemetryDataEntry.record();
+      }
       debounce.cancel();
     }
   };
@@ -93,8 +130,11 @@ angular.module('inboxServices').factory('RulesEngine', function(
       key: 'mark-contacts-dirty',
       filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc)),
       callback: change => {
-        const subjectId = isReport(change.doc) ? registrationUtils.getSubjectId(change.doc) : change.id;
-        RulesEngineCore.updateEmissionsFor(subjectId);
+        const subjectIds = isReport(change.doc) ? registrationUtils.getSubjectId(change.doc) : change.id;
+        const telemetryData = telemetryEntry('rules-engine:update-emissions', true);
+        return RulesEngineCore
+          .updateEmissionsFor(subjectIds)
+          .then(telemetryData.passThrough);
       },
     });
 
@@ -133,6 +173,17 @@ angular.module('inboxServices').factory('RulesEngine', function(
     });
   };
 
+  const monitorExternalChanges = (changedDocs) => {
+    const contactsWithUpdatedTasks = changedDocs
+      .filter(doc => doc.type === 'task')
+      .map(doc => doc.requester);
+    if (!contactsWithUpdatedTasks.length) {
+      return;
+    }
+
+    return RulesEngineCore.updateEmissionsFor(_.uniq(contactsWithUpdatedTasks));
+  };
+
   const translateTaskDocs = taskDocs => {
     const translateProperty = (property, task) => {
       if (typeof property === 'string') {
@@ -161,28 +212,51 @@ angular.module('inboxServices').factory('RulesEngine', function(
   const self = {
     isEnabled: () => initialized.then(RulesEngineCore.isEnabled),
 
-    fetchTaskDocsForAllContacts: () => (
-      initialized
+    fetchTaskDocsForAllContacts: () => {
+      const telemetryData = telemetryEntry('rules-engine:tasks:all-contacts');
+
+      return initialized
         .then(() => {
-          cancelDebounce(ensureTaskFreshness);
+          Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
+          cancelDebounce(ensureTaskFreshness, ensureTaskFreshnessTelemetryData);
+          telemetryData.start();
           return RulesEngineCore.fetchTasksFor();
         })
-        .then(translateTaskDocs)
-    ),
+        .then(telemetryData.passThrough)
+        .then(translateTaskDocs);
+    },
 
-    fetchTaskDocsFor: contactIds => (
-      initialized
-        .then(() => RulesEngineCore.fetchTasksFor(contactIds))
-        .then(translateTaskDocs)
-    ),
-
-    fetchTargets: () => (
-      initialized
+    fetchTaskDocsFor: contactIds => {
+      const telemetryData = telemetryEntry('rules-engine:tasks:some-contacts');
+      return initialized
         .then(() => {
-          cancelDebounce(ensureTargetFreshness);
+          Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
+          telemetryData.start();
+          return RulesEngineCore.fetchTasksFor(contactIds);
+        })
+        .then(telemetryData.passThrough)
+        .then(translateTaskDocs);
+    },
+
+    fetchTargets: () => {
+      const telemetryData = telemetryEntry('rules-engine:targets');
+      return initialized
+        .then(() => {
+          Telemetry.record('rules-engine:targets:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
+          cancelDebounce(ensureTargetFreshness, ensureTargetFreshnessTelemetryData);
           const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
+          telemetryData.start();
           return RulesEngineCore.fetchTargets(relevantInterval);
         })
+        .then(telemetryData.passThrough);
+    },
+
+    monitorExternalChanges: (replicationResult) => (
+      initialized.then(() => {
+        return replicationResult &&
+               replicationResult.docs &&
+               monitorExternalChanges(replicationResult.docs);
+      })
     ),
   };
 

@@ -1314,6 +1314,52 @@ describe('Authorization service', () => {
         });
     });
 
+    it('adds unassigned key if the user has required permissions', () => {
+      auth.hasAllPermissions.returns(true);
+      config.get.returns(true);
+
+      const docObjs = [
+        { // unallocated
+          doc: {
+            _id: 'unallocated', type: 'data_record',
+          },
+          viewResults: {
+            contactsByDepth: [],
+            replicationKeys: [['_unassigned', {}]]
+          },
+        },
+      ];
+
+      return service
+        .getScopedAuthorizationContext(userCtx, docObjs)
+        .then(result => {
+          result.subjectIds.should.have.members(['_all', '_unassigned', 'org.couchdb.user:user']);
+        });
+    });
+
+    it('shold not add unassigned key if the user does not have required permissions', () => {
+      auth.hasAllPermissions.returns(false);
+      config.get.returns(true);
+
+      const docObjs = [
+        { // unallocated
+          doc: {
+            _id: 'unallocated', type: 'data_record',
+          },
+          viewResults: {
+            contactsByDepth: [],
+            replicationKeys: [['_unassigned', {}]]
+          },
+        },
+      ];
+
+      return service
+        .getScopedAuthorizationContext(userCtx, docObjs)
+        .then(result => {
+          result.subjectIds.should.have.members(['_all', 'org.couchdb.user:user']);
+        });
+    });
+
     describe('should return correct subject ids when dealing with tombstones', () => {
       it('deleted contacts', () => {
         const docObjs = [

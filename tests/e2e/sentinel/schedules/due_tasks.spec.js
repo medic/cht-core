@@ -233,24 +233,21 @@ const settings = {
   schedule_evening_minutes: 59,
 };
 
-const messagesTest = {
-  _id: 'messages-test',
-  type: 'translations',
-  code: 'test',
-  name: 'test-language',
-  enabled: true,
-  generic: {
-    'messages.one': 'ONE. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). ' +
-      'Value {{fields.value}}',
-    'messages.two': 'TWO. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). ' +
-      'Value {{fields.value}}',
-  }
+const translations = {
+  'messages.one':
+    'ONE. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
+  'messages.two':
+    'TWO. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
 };
 
 const ids = reports.map(report => report._id);
 
 describe('Due Tasks', () => {
-  beforeAll(() => utils.saveDocs([...contacts, messagesTest]).then(() => utils.updateSettings(settings)));
+  beforeAll(() => utils
+    .saveDocs(contacts)
+    .then(() => utils.addTranslations('test', translations))
+    .then(() => utils.updateSettings(settings))
+  );
   afterAll(() => utils.revertDb());
 
   it('should process scheduled messages correctly', () => {

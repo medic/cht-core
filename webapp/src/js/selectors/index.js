@@ -15,6 +15,7 @@ const getForms = state => getGlobalState(state).forms;
 const getIsAdmin = state => getGlobalState(state).isAdmin;
 const getLoadingContent = state => getGlobalState(state).loadingContent;
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
+const getMinimalTabs = state => getGlobalState(state).minimalTabs;
 const getReplicationStatus = state => getGlobalState(state).replicationStatus;
 const getSelectMode = state => getGlobalState(state).selectMode;
 const getShowActionBar = state => getGlobalState(state).showActionBar;
@@ -40,7 +41,7 @@ const getSelectedContactDoc = reselect.createSelector(
 // Messages
 const getMessagesState = state => state.messages;
 const getMessagesError = state => getMessagesState(state).error;
-const getSelectedMessage = state => getMessagesState(state).selected;
+const getSelectedConversation = state => getMessagesState(state).selected;
 const getConversations = state => getMessagesState(state).conversations;
 
 // Reports
@@ -70,6 +71,13 @@ const getTasksState = state => state.tasks;
 const getSelectedTask = state => getTasksState(state).selected;
 const getLoadTasks = state => getTasksState(state).loaded;
 
+// Target Aggregates
+const getTargetAggregatesState = state => state.targetAggregates;
+const getTargetAggregates = state => getTargetAggregatesState(state).targetAggregates;
+const getSelectedTargetAggregate = state => getTargetAggregatesState(state).selected;
+const getTargetAggregatesError = state => getTargetAggregatesState(state).error;
+
+
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getActionBar,
@@ -85,6 +93,7 @@ angular.module('inboxServices').constant('Selectors', {
   getIsAdmin,
   getLoadingContent,
   getLoadingSubActionBar,
+  getMinimalTabs,
   getReplicationStatus,
   getSelectMode,
   getShowActionBar,
@@ -104,7 +113,7 @@ angular.module('inboxServices').constant('Selectors', {
 
   getMessagesState,
   getMessagesError,
-  getSelectedMessage,
+  getSelectedConversation,
   getConversations,
 
   getReportsState,
@@ -119,4 +128,8 @@ angular.module('inboxServices').constant('Selectors', {
   getTasksState,
   getSelectedTask,
   getLoadTasks,
+
+  getTargetAggregates,
+  getSelectedTargetAggregate,
+  getTargetAggregatesError,
 });

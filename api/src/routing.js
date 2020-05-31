@@ -30,9 +30,11 @@ const people = require('./controllers/people');
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
+const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const infodoc = require('./controllers/infodoc');
 const authorization = require('./middleware/authorization');
+const hydration = require('./controllers/hydration');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
 const staticResources = /\/(templates|static)\//;
@@ -317,6 +319,8 @@ app.get('/api/deploy-info', (req, res) => {
   res.json(environment.getDeployInfo());
 });
 
+app.get('/api/v1/monitoring', monitoring.get);
+
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req)
     .then(status => {
@@ -401,6 +405,10 @@ app.postJson('/api/v1/people', function(req, res) {
 });
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
+
+// offline users are not allowed to hydrate documents via the hydrate API
+app.get('/api/v1/hydrate', authorization.offlineUserFirewall, jsonQueryParser, hydration.hydrate);
+app.post('/api/v1/hydrate', authorization.offlineUserFirewall, jsonParser, jsonQueryParser, hydration.hydrate);
 
 app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);

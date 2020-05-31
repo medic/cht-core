@@ -139,6 +139,23 @@ describe('task-states', () => {
         ]
       });
     });
+
+    it('should save reason when provided', () => {
+      const actual = TaskStates.setStateOnTaskDoc(
+        { state: 'Ready', stateHistory: [{ state: 'Ready' }] },
+        TaskStates.Cancelled,
+        4,
+        'cancel reason'
+      );
+      expect(actual).to.deep.eq({
+        state: 'Cancelled',
+        stateReason: 'cancel reason',
+        stateHistory: [
+          { state: 'Ready' },
+          { state: 'Cancelled', timestamp: 4 },
+        ],
+      });
+    });
   });
 
   describe('isTimely', () => {
@@ -169,10 +186,21 @@ describe('task-states', () => {
       .to.be.false);
   });
 
+  describe('state Comparator', () => {
+    it('should return number comparator', () => {
+      expect(TaskStates.compareState(TaskStates.Ready, 'unknown')).to.be.below(0);
+      expect(TaskStates.compareState(TaskStates.Ready, TaskStates.Draft)).to.be.below(0);
+      expect(TaskStates.compareState(TaskStates.Draft, TaskStates.Ready)).to.be.above(0);
+      expect(TaskStates.compareState(TaskStates.Draft, TaskStates.Cancelled)).to.be.below(0);
+      expect(TaskStates.compareState(TaskStates.Draft, TaskStates.Draft)).to.equal(0);
+      expect(TaskStates.compareState(TaskStates.Ready, TaskStates.Ready)).to.equal(0);
+    });
+  });
+
   it('formatString is comparable', () => {
     const formatString = TaskStates.__get__('formatString');
     expect(formatString).to.not.be.undefined;
-    
+
     const larger = moment('20000101', 'YYYYMMDD');
     const smaller = larger.clone().subtract(1, 'day');
     for (let i = 0; i < 367; i++) {
