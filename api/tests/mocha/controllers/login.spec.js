@@ -220,6 +220,16 @@ describe('login controller', () => {
       });
     });
 
+    it('matches the request header locale to the supported locales', () => {
+      req.headers = { 'accept-language': 'xx, fr' }; // xx as fake locale
+      const send = sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ browserLocale }}');
+      sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. fr');
+      });
+    });
   });
 
   describe('post', () => {
