@@ -644,7 +644,7 @@ module.exports = {
     const lines = [];
     const errors = [];
 
-    const path = process.env.TRAVIS ? './tests/horti.log' : `./tests/logs/${logFilename}`;
+    const path = process.env.TRAVIS ? './tests/logs/horti.log' : `./tests/logs/${logFilename}`;
     const tail = new Tail(path);
     tail.on('line', data => {
       if (regex.find(r => r.test(data))) {
