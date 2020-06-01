@@ -224,14 +224,6 @@ const tasks = [
 const latestTargetInterval = moment().subtract(7, 'months').format('YYYY-MM');
 const targets = [
   {
-    _id: `target~${moment().subtract(8, 'months').format('YYYY-MM')}~org.couchdb.user:user2`,
-    type: 'target',
-    user: 'org.couchdb.user:user2',
-    owner: 'fixture:user:user2',
-    reporting_period: moment().subtract(8, 'months').format('YYYY-MM'),
-    targets: [],
-  },
-  {
     _id: `target~${moment().subtract(9, 'months').format('YYYY-MM')}~org.couchdb.user:user2`,
     type: 'target',
     user: 'org.couchdb.user:user2',
