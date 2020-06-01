@@ -633,14 +633,19 @@ module.exports = {
    * the action after the action should have taken place. The function will return a promise that
    * will succeed with the list of captured lines, or fail if there have been any errors.
    *
-   * @param      {string}    logFilename  filename of file in logs directory
+   * NB: currently on travis all api and sentinel logs gets smushed into the same log, so you can't
+   * necessarily know which log your output comes from.
+   *
+   * @param      {string}    logFilename  filename of file in local logs directory
    * @param      {[RegExp]}  regex        matching expression(s) run against lines
    * @return     {function}  fn that returns a promise
    */
   collectLogs: (logFilename, ...regex) => {
     const lines = [];
     const errors = [];
-    const tail = new Tail(`./tests/logs/${logFilename}`);
+
+    const path = process.env.TRAVIS ? './tests/horti.log' : `./tests/logs/${logFilename}`;
+    const tail = new Tail(path);
     tail.on('line', data => {
       if (regex.find(r => r.test(data))) {
         lines.push(data);
