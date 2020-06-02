@@ -3,7 +3,7 @@ describe('dhis2 export controller', () => {
 
   const dataSet = 'abc123';
   const dhisDataSets = [
-    { guid: dataSet, label: 'dataset label' },
+    { id: dataSet, translation_key: 'dataset label' },
   ];
 
   const NOW = moment('2000-01-15').valueOf();

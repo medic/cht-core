@@ -2,12 +2,11 @@
   <p translate>export.dhis.description</p>
   <p ng-show="!dataSets" class="text-warning" translate>export.dhis.unconfigured</p>
 
-
   <div ng-show="dataSets">
     <div class="form-group">
       <label for="dataset" translate>export.dhis.dataset.label</label>
       <select id="dataset" class="form-control medium" ng-model="selected.dataSet">
-        <option ng-repeat="option in dataSets" value="{{option.guid}}">{{option.label}}</option>
+        <option ng-repeat="option in dataSets" value="{{option.id}}" translate>{{option.translation_key}}</option>
       </select>
       <p class="help-block" translate>export.dhis.dataset.description</p>
     </div>
