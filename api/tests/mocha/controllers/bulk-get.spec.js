@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create();
+const sinon = require('sinon');
 require('chai').should();
 const controller = require('../../../src/controllers/bulk-get');
 const service = require('../../../src/services/bulk-get');

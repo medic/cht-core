@@ -30,6 +30,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       if (content) {
         result.export = {
           name: doc._id + '.properties',
+          // eslint-disable-next-line compat/compat
           url: Blob.text(content)
         };
       }

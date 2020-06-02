@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create();
+const sinon = require('sinon');
 require('chai').should();
 const middleware = require('../../../src/middleware/authorization');
 const auth = require('../../../src/auth');
