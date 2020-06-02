@@ -65,15 +65,16 @@ angular.module('inboxServices').service('Enketo',
 
     const replaceJavarosaMediaWithLoaders = function(formDoc, formHtml) {
       formHtml.find('[data-media-src]').each(function() {
-        $(this)
+        const $img = $(this);
+        const lang = $img.attr('lang');
+        const active = $img.is('.active') ? 'active' : '';
+        $img
           .css('visibility', 'hidden')
-          .wrap('<div class="loader">');
+          .wrap(() => '<div class="loader ' + active + '" lang="' + lang + '"></div>');
       });
     };
 
-    const replaceMediaLoaders = function(selector, formDoc) {
-      const wrapper = $(selector);
-      const formContainer = wrapper.find('.container').first();
+    const replaceMediaLoaders = function(formContainer, formDoc) {
       formContainer.find('[data-media-src]').each(function() {
         const elem = $(this);
         const src = elem.attr('data-media-src');
@@ -268,8 +269,7 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    const renderFromXmls = function(doc, selector, instanceData) {
-      const wrapper = $(selector);
+    const renderFromXmls = function(doc, wrapper, instanceData) {
       wrapper.find('.form-footer')
         .addClass('end')
         .find('.previous-page,.next-page')
@@ -346,29 +346,40 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    const registerEditedListener = function(selector, listener) {
+    const registerEditedListener = function($selector, listener) {
       if (listener) {
-        $(selector).on('edited.enketo', listener);
+        $selector.on('edited.enketo', listener);
       }
     };
 
-    const registerValuechangeListener = function(selector, listener) {
+    const registerValuechangeListener = function($selector, listener) {
       if (listener) {
-        $(selector).on('valuechange.enketo', listener);
+        $selector.on('valuechange.enketo', listener);
       }
+    };
+
+    const registerAddrepeatListener = function($selector, formDoc) {
+      $selector.on('addrepeat', function(ev) {
+        $timeout(() => { // timeout to allow enketo to finish first
+          replaceMediaLoaders($(ev.target), formDoc);
+        });
+      });
     };
 
     const renderForm = function(selector, formDoc, instanceData, editedListener, valuechangeListener) {
       return Language().then(language => {
+        const $selector = $(selector);
         return transformXml(formDoc, language)
           .then(doc => {
             replaceJavarosaMediaWithLoaders(formDoc, doc.html);
-            return renderFromXmls(doc, selector, instanceData, language);
+            return renderFromXmls(doc, $selector, instanceData, language);
           })
           .then(function(form) {
-            replaceMediaLoaders(selector, formDoc);
-            registerEditedListener(selector, editedListener);
-            registerValuechangeListener(selector, valuechangeListener);
+            const formContainer = $selector.find('.container').first();
+            replaceMediaLoaders(formContainer, formDoc);
+            registerAddrepeatListener($selector, formDoc);
+            registerEditedListener($selector, editedListener);
+            registerValuechangeListener($selector, valuechangeListener);
             $window.debugFormModel = () => form.model.getStr();
             return form;
           });
