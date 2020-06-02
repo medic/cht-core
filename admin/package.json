@@ -31,7 +31,7 @@
     "pouchdb-browser": "^7.2.1",
     "properties": "^1.2.1",
     "redux": "^4.0.5",
-    "select2": "^4.0.13",
+    "select2": "^4.0.3",
     "simple-password-tester": "^1.0.0"
   },
   "devDependencies": {},
