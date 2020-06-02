@@ -4,12 +4,10 @@ const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const sinon = require('sinon');
 
+const defaultSettings = require('../../../../../config/default/app_settings.json');
 const service = require('../../../../src/services/export/dhis');
+const config = require('../../../../src/config');
 const db = require('../../../../src/db');
-const defaultConfigSettings = {
-  _id: 'settings',
-  settings: require('../../../../../config/default/app_settings.json'),
-};
 
 const NOW = moment('2000-02-21');
 const dataSet = 'VMuFODsyWaO';
@@ -30,8 +28,9 @@ describe('dhis export service', () => {
     const chu2 = mockContact('chu2');
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
 
+    sinon.stub(config, 'get').returns(defaultSettings);
+
     await medic.bulkDocs([
-      defaultConfigSettings,
       chu1,
       chu2,
       chw,
@@ -84,7 +83,8 @@ describe('dhis export service', () => {
 
   it('yields 0s for an orgunit without any target docs', async () => {
     const chu = mockContact('chu');
-    await medic.bulkDocs([defaultConfigSettings, chu]);
+    sinon.stub(config, 'get').returns(defaultSettings);
+    await medic.bulkDocs([chu]);
     const actual = await service({
       date: {
         from: moment(NOW).valueOf(),
@@ -116,8 +116,8 @@ describe('dhis export service', () => {
   describe('human readable', () => {
     it('single dataSet, single orgUnit', async () => {
       const chu = mockContact('chu');
+      sinon.stub(config, 'get').returns(defaultSettings);
       await medic.bulkDocs([
-        defaultConfigSettings,
         chu,
         mockTargetDoc('chu', '2000-02'),
       ]);
@@ -149,8 +149,8 @@ describe('dhis export service', () => {
         { orgUnit: 'ou-1', dataSet: 'ds-1' },
         { orgUnit: 'ou-2', dataSet: 'ds-2' },
       ];
+      settingsWithMultipleDatasets();
       await medic.bulkDocs([
-        settingsWithMultipleDatasets,
         mockContact('chu', { dhis: dhisConfig }),
       ]);
 
@@ -184,8 +184,8 @@ describe('dhis export service', () => {
     const chu2 = mockContact('chu2');
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
 
+    sinon.stub(config, 'get').returns(defaultSettings);
     await medic.bulkDocs([
-      defaultConfigSettings,
       chu1,
       chu2,
       chw,
@@ -224,8 +224,8 @@ describe('dhis export service', () => {
   });
 
   it('filtered data is empty when placeid has no contacts', async () => {
+    sinon.stub(config, 'get').returns(defaultSettings);
     await medic.bulkDocs([
-      defaultConfigSettings,
       mockContact('chu', { dhis: { orgUnit: 'ou', dataSet: 'other' }}),
     ]);
     const actual = await service({
@@ -240,8 +240,8 @@ describe('dhis export service', () => {
   });
 
   it('filtered data does not include contact when matching dataSet is not included', async () => {
+    sinon.stub(config, 'get').returns(defaultSettings);
     await medic.bulkDocs([
-      defaultConfigSettings,
       mockContact('chu', { dhis: { orgUnit: 'ou', dataSet: 'other' }}),
     ]);
     const actual = await service({
@@ -260,8 +260,8 @@ describe('dhis export service', () => {
       { orgUnit: 'ou-1', dataSet: 'ds-1' },
       { orgUnit: 'ou-2', dataSet: 'ds-2' },
     ];
+    settingsWithMultipleDatasets();
     await medic.bulkDocs([
-      settingsWithMultipleDatasets,
       mockContact('chu', { dhis: dhisConfig }),
       mockTargetDoc('chu', '2000-02', { targets: [
         {
@@ -330,8 +330,8 @@ describe('dhis export service', () => {
     const chu = mockContact('chu', { parent: { _id: hc._id }});
     const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu._id, parent: chu.parent } });
 
+    sinon.stub(config, 'get').returns(defaultSettings);
     await medic.bulkDocs([
-      defaultConfigSettings,
       chw,
       chu,
       hc,
@@ -381,28 +381,26 @@ describe('dhis export service', () => {
 
   it('target definitions for other dataSets are not included', async () => {
     const dataSet = 'myDataSet';
-    await medic.bulkDocs([
-      mockSettingsDoc(
-        [{ guid: dataSet, label: 'my data set' }],
-        [
-          {
-            id: 'relevant',
-            dhis: {
-              dataSet,
-              dataElement: 'relevant',
-            }
-          },
-          {
-            id: 'irrelevant',
-            dhis: {
-              dataSet: 'other',
-              dataElement: 'irrelevant',
-            }
-          },
-        ],
-      ),
-      mockContact('chu'),
-    ]);
+    mockSettings(
+      [{ id: dataSet, translation_key: 'my data set' }],
+      [
+        {
+          id: 'relevant',
+          dhis: {
+            dataSet,
+            dataElement: 'relevant',
+          }
+        },
+        {
+          id: 'irrelevant',
+          dhis: {
+            dataSet: 'other',
+            dataElement: 'irrelevant',
+          }
+        },
+      ],
+    );
+    await medic.bulkDocs([ mockContact('chu') ]);
 
     const actual = await service({ dataSet, date: filterNow });
     expect(actual.dataValues).to.deep.eq([{
@@ -413,7 +411,7 @@ describe('dhis export service', () => {
   });
 
   it('throw on undefined dataset', async () => {
-    await medic.bulkDocs([defaultConfigSettings]);
+    sinon.stub(config, 'get').returns(defaultSettings);
     try {
       await service({
         dataSet: 'dne',
@@ -427,18 +425,16 @@ describe('dhis export service', () => {
   });
 
   it('throw on dataset without dataElements', async () => {
-    await medic.bulkDocs([
-      mockSettingsDoc(
-        [{ guid: 'myDataSet', label: 'my data set' }],
-        [{
-          id: 'target',
-          dhis: {
-            dataSet: 'other',
-            dataElement: 'de',
-          }
-        }]
-      )
-    ]);
+    mockSettings(
+      [{ id: 'myDataSet', translation_key: 'my data set' }],
+      [{
+        id: 'target',
+        dhis: {
+          dataSet: 'other',
+          dataElement: 'de',
+        }
+      }]
+    );
 
     try {
       await service({
@@ -453,10 +449,7 @@ describe('dhis export service', () => {
   });
 
   it('throw on absent target definitions', async () => {
-    const settings = mockSettingsDoc(
-      [{ guid: 'ds-1' }]
-    );
-    await medic.bulkDocs([settings]);
+    mockSettings([{ id: 'ds-1' }]);
     try {
       await service({ dataSet: 'ds-1', date: filterNow });
       expect.fail('should throw');
@@ -501,42 +494,43 @@ const mockTargetDoc = (username, interval, override) => Object.assign({
   ]
 }, override);
 
-const mockSettingsDoc = (dataSets, targets) => ({
-  _id: 'settings',
-  settings: {
+const mockSettings = (dataSets, targets) => {
+  sinon.stub(config, 'get').returns({
     dhisDataSets: dataSets,
     tasks: {
       targets: { items: targets }
     }
-  },
-});
+  });
+};
 
-const settingsWithMultipleDatasets = mockSettingsDoc(
-  [
-    { guid: 'ds-1', label: 'dataset 1' },
-    { guid: 'ds-2', label: 'dataset 2' },
-  ],
-  [
-    {
-      id: 'data element 1',
-      dhis: {
-        dataSet: 'ds-1',
-        dataElement: 'de-1',
-        arbitrary: 'yes',
-      }
-    },
-    {
-      id: 'data element 2',
-      dhis: {
-        dataSet: 'ds-2',
-        dataElement: 'de-2',
-      }
-    },
-    {
-      id: 'data element both',
-      dhis: {
-        dataElement: 'de-both',
-      }
-    },
-  ],
-);
+const settingsWithMultipleDatasets = () => {
+  mockSettings(
+    [
+      { id: 'ds-1', translation_key: 'dataset 1' },
+      { id: 'ds-2', translation_key: 'dataset 2' },
+    ],
+    [
+      {
+        id: 'data element 1',
+        dhis: {
+          dataSet: 'ds-1',
+          dataElement: 'de-1',
+          arbitrary: 'yes',
+        }
+      },
+      {
+        id: 'data element 2',
+        dhis: {
+          dataSet: 'ds-2',
+          dataElement: 'de-2',
+        }
+      },
+      {
+        id: 'data element both',
+        dhis: {
+          dataElement: 'de-both',
+        }
+      },
+    ]
+  );
+};
