@@ -2249,7 +2249,7 @@ describe('db-doc handler', () => {
     return utils
       .requestOnTestDb(offlineRequestOptions)
       .then(result => {
-        expect(_.omit(result, 'rev')).toEqual({ id: 'fb1', ok: true });
+        chai.expect(result).excludingEvery('rev').to.deep.equal({ id: 'fb1', ok: true });
         return utils.getDoc('fb1');
       })
       .then(result => {
