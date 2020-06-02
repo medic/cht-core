@@ -21,7 +21,7 @@ Node server to support the medic app.
 - [API Overview](#api-overview)
   - [Timestamps](#timestamps)
 - [Export](#export)
-  - [GET /api/v2/export/dhis](#get-apiv2dhis)
+  - [GET /api/v2/export/dhis](#get-apiv2exportdhis)
   - [GET /api/v2/export/reports](#get-apiv2exportreports)
   - [GET /api/v2/export/messages](#get-apiv2exportmessages)
   - [GET /api/v2/export/feedback](#get-apiv2exportfeedback)
@@ -220,7 +220,7 @@ Exports target data formatted as a DHIS2 dataValueSet. The data can be filtered 
 
 Parameter | Description
 -- | --
-dataSet | A DHIS2 dataSet GUID. Targets associated with this dataSet will have their data aggregated. (required)
+dataSet | A DHIS2 dataSet ID. Targets associated with this dataSet will have their data aggregated. (required)
 date.from | Filter the target data to be aggregated to be within the month of this timestamp. (required)
 orgUnit | Filter the target data to only that associated with contacts with attribute `{ dhis: { orgUnit } }`. (optional)
 

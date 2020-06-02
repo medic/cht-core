@@ -2,7 +2,7 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const db = require('../../db');
-const settings = require('../settings');
+const config = require('../../config');
 
 /**
  * @param {string} filters.dataSet
@@ -22,14 +22,14 @@ module.exports = async (filters, options = {}) => {
     throw { code: 400, message: 'filter "from" is required' };
   }
 
-  const settingsDoc = await settings.get();
-  const dataSetConfig = Array.isArray(settingsDoc.dhisDataSets) &&
-    settingsDoc.dhisDataSets.find(dhisDataSet => dhisDataSet.guid === dataSet);
+  const settings = config.get();
+  const dataSetConfig = Array.isArray(settings.dhisDataSets) &&
+    settings.dhisDataSets.find(dhisDataSet => dhisDataSet.id === dataSet);
   if (!dataSetConfig) {
     throw { code: 400, message: `dataSet "${dataSet}" is not defined` };
   }
 
-  const dhisTargetDefinitions = getDhisTargetDefinitions(dataSet, settingsDoc);
+  const dhisTargetDefinitions = getDhisTargetDefinitions(dataSet, settings);
   if (dhisTargetDefinitions.length === 0) {
     throw { code: 400, message: `dataSet "${dataSet}" has no dataElements` };
   }
@@ -83,11 +83,11 @@ const fetch = {
   },
 };
 
-const getDhisTargetDefinitions = (dataSet, settingsDoc) => {
-  const dhisTargets = settingsDoc.tasks &&
-    settingsDoc.tasks.targets &&
-    settingsDoc.tasks.targets.items &&
-    settingsDoc.tasks.targets.items.filter(target =>
+const getDhisTargetDefinitions = (dataSet, settings) => {
+  const dhisTargets = settings.tasks &&
+    settings.tasks.targets &&
+    settings.tasks.targets.items &&
+    settings.tasks.targets.items.filter(target =>
       target.dhis &&
       target.dhis.dataElement &&
       (!target.dhis.dataSet || target.dhis.dataSet === dataSet) // optional
@@ -192,7 +192,7 @@ const buildDataValues = (targetDefinitions, targetDocs, orgUnits) => {
  */
 const makeHumanReadable = (dhisResult, dataSetConfig, dhisTargetDefinitions, contacts) => {
   const { dataValues } = dhisResult;
-  dhisResult.dataSet = dataSetConfig.label;
+  dhisResult.dataSet = config.translate(dataSetConfig.translation_key);
 
   const mapOrgUnitsToContact = {};
   for (const contact of contacts) {
