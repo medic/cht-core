@@ -273,9 +273,6 @@ describe('bulk-docs handler', () => {
             chai.expect(result[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
             chai.expect(result[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
 
-            delete docs[5]._rev;
-            delete docs[7]._rev;
-            delete docs[7]._id;
             chai.expect(result[5]).excluding('_rev').to.deep.equal(docs[5]);
             chai.expect(result[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
             chai.expect(result[7]).excluding( ['_rev', '_id']).to.deep.equal(docs[7]);
@@ -575,11 +572,8 @@ describe('bulk-docs handler', () => {
         chai.expect(results[2]).excluding('_rev').to.deep.equal(existentDocs[2]);
         chai.expect(results[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
         chai.expect(results[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
-        delete docs[5]._rev;
         chai.expect(results[5]).excluding('_rev').to.deep.equal(docs[5]);
         chai.expect(results[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
-        delete docs[7]._rev;
-        delete docs[7]._id;
         chai.expect(results[7]).excluding(['_rev', '_id']).to.deep.equal(docs[7]);
       });
   });
