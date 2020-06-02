@@ -9,16 +9,16 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^6.2.1"
+    "mocha": "^7.2.0"
   },
   "dependencies": {
     "@medic/phone-number": "file:../phone-number",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "google-libphonenumber": "^3.2.5",
+    "google-libphonenumber": "^3.2.10",
     "gsm": "^0.1.4",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
-    "mustache": "^3.1.0",
+    "moment": "^2.26.0",
+    "mustache": "^4.0.1",
     "object-path": "^0.11.4"
   }
 }

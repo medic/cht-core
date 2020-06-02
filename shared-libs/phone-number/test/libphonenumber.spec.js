@@ -15,7 +15,7 @@ const settings = {
   default_country_code: COUNTRY_CODES.new_zealand
 };
 
-const settingsWithNoPhoneValidation = { 
+const settingsWithNoPhoneValidation = {
   default_country_code: COUNTRY_CODES.new_zealand,
   phone_validation: 'none'
 };
@@ -128,7 +128,8 @@ describe('libphonenumber', () => {
     // Default validation (full)
     assert.isFalse(phonenumber.validate(xsettings, '123'));
     xsettings.phone_validation = 'partial';
-    assert.isFalse(phonenumber.validate(xsettings, '123456'));
+    assert.isFalse(phonenumber.validate(xsettings, '1234'));
+    assert.isTrue(phonenumber.validate(xsettings, '123456'));
     assert.isTrue(phonenumber.validate(xsettings, '1234567'));
     xsettings.phone_validation = 'none';
     assert.isTrue(phonenumber.validate(xsettings, '123'));

@@ -9,12 +9,12 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.7"
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^6.2.1",
-    "sinon": "^7.5.0"
+    "mocha": "^7.2.0",
+    "sinon": "^8.1.1"
   }
 }

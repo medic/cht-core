@@ -10,10 +10,10 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^6.1.4",
-    "sinon": "^7.3.2"
+    "mocha": "^7.2.0",
+    "sinon": "^8.1.1"
   },
   "dependencies": {
-    "moment": "^2.24.0"
+    "moment": "^2.26.0"
   }
 }
