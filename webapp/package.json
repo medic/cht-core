@@ -54,7 +54,7 @@
   },
   "resolutions": {
     "**/jquery": "3.2.x",
-    "**/pouchdb-browser": "^7.0.0",
-    "**/moment": "^2.22.2"
+    "**/pouchdb-browser": "^7.2.1",
+    "**/moment": "^2.26.2"
   }
 }
