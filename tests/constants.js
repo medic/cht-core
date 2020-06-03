@@ -1,18 +1,18 @@
-const IS_TRAVIS = !!process.env.TEST_SUITE;
 
 module.exports = {
+  IS_TRAVIS: !!process.env.TEST_SUITE,
 
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
-  API_PORT: IS_TRAVIS ? 5988 : 4988,
+  API_PORT: module.exports.IS_TRAVIS ? 5988 : 4988,
   API_HOST: 'localhost',
 
   // connection information for the couchdb instance
   // locally we spin up a different CouchDB for e2e tests
-  COUCH_PORT: IS_TRAVIS ? 5984 : 4984,
+  COUCH_PORT: module.exports.IS_TRAVIS ? 5984 : 4984,
   COUCH_HOST: 'localhost',
-  COUCH_NODE_NAME: IS_TRAVIS ? process.env.COUCH_NODE_NAME : 'nonode@nohost',
+  COUCH_NODE_NAME: module.exports.IS_TRAVIS ? process.env.COUCH_NODE_NAME : 'nonode@nohost',
 
   // test database to avoid writing to the dev db
   // TODO: we don't need to do this anymore since it's in its own docker container

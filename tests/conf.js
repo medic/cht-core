@@ -40,6 +40,7 @@ const baseConfig = {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
     });
+
     return new Promise(function(resolve) {
       utils.reporter.beforeLaunch(resolve);
     });
@@ -47,7 +48,6 @@ const baseConfig = {
   afterLaunch: function(exitCode) {
     return new Promise(function(resolve) {
       return request.post('http://localhost:31337/die')
-        .catch(() => {}) // On travis this doesn't currently work: https://github.com/medic/medic/issues/5915
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     });
   },
@@ -58,7 +58,6 @@ const baseConfig = {
 
     // wait for startup to complete
     browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
-
 
     afterEach(() => {
       browser
@@ -85,7 +84,8 @@ const runAndLog = (msg, func) => {
 };
 
 const startApi = () =>
-  listenForApi()
+  request.post('http://localhost:31337/all/restart')
+    .then(() => listenForApi())
     .then(() => runAndLog('Settings setup', setupSettings))
     .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
 

@@ -350,7 +350,7 @@ describe('mark_for_outbound', () => {
     });
   });
 
-  fdescribe('error logging', () => {
+  describe('error logging', () => {
     // Doing this in an e2e test in case our request library changes in the future
 
     beforeEach(done => startMockApp().then(done));

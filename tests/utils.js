@@ -3,7 +3,6 @@
 const _ = require('lodash');
 const auth = require('./auth')();
 const constants = require('./constants');
-const { spawn } = require('child_process');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -599,31 +598,8 @@ module.exports = {
 
   setDebug: debug => e2eDebug = debug,
 
-  stopSentinel: () => {
-    if (process.env.TRAVIS) {
-      return new Promise(res => {
-        const pid = spawn('horti-svc-stop', ['medic-sentinel']);
-
-        pid.on('exit', res);
-      });
-    } else {
-      return rpn.post('http://localhost:31337/sentinel/stop');
-    }
-  },
-  startSentinel: () => {
-    if (process.env.TRAVIS) {
-      return new Promise(res => {
-        const pid = spawn('horti-svc-start', [
-          `${require('os').homedir()}/.horticulturalist/deployments`,
-          'medic-sentinel'
-        ]);
-
-        pid.on('exit', res);
-      });
-    } else {
-      return rpn.post('http://localhost:31337/sentinel/start');
-    }
-  },
+  stopSentinel: () => rpn.post('http://localhost:31337/sentinel/stop'),
+  startSentinel: () => rpn.post('http://localhost:31337/sentinel/start'),
 
   /**
    * Collector that listens to the given logfile and collects lines that match at least one of the a
