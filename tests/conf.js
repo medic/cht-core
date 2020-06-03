@@ -84,8 +84,10 @@ const runAndLog = (msg, func) => {
 };
 
 const prepServices = () => {
+  console.log(new Date(), 'Prepping services');
   let apiReady;
   if (constants.IS_TRAVIS) {
+    console.log(new Date(), 'We on travis, waiting for api ');
     // Travis' horti will be installing and then deploying api and sentinel, and those logs are
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
     // that the service processes get restarted with their logs separated and pointing to the
@@ -93,25 +95,31 @@ const prepServices = () => {
     apiReady = listenForApi().then(() => request.post('http://localhost:31337/all/restart'));
   } else {
     // Locally we just need to start them and can do so straight away
+    console.log(new Date(), 'We local, starting services');
     apiReady = request.post('http://localhost:31337/all/start');
   }
 
   return apiReady
+    .then(() => console.log(new Date(), 'Now we wait for api (again?)'))
     .then(() => listenForApi())
     .then(() => runAndLog('Settings setup', setupSettings))
     .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
 };
 
 const listenForApi = () => {
-  console.log('Checking API');
-  return utils.request({ path: '/api/info' }).catch(() => {
-    console.log('API check failed, trying again in 1 second');
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(listenForApi());
-      }, 1000);
+  console.log(new Date(), 'Checking API');
+  return utils.request({ path: '/api/info' })
+    .then(result => {
+      console.log(new Date(), 'API ready', result);
+    })
+    .catch(err => {
+      console.log(new Date(), 'API check failed, trying again in 1 second', err.statusCode);
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(listenForApi());
+        }, 1000);
+      });
     });
-  });
 };
 
 const getLoginUrl = () => {
