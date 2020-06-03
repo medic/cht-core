@@ -33,7 +33,7 @@ describe('auth directive', () => {
       chai.expect(Auth.has.callCount).to.equal(1);
       chai.expect(Auth.has.args[0][0]).to.deep.equal(['can_do_stuff']);
       done();
-    });
+    }, 10);
   });
 
   it('should be hidden when auth fails', done => {
@@ -45,7 +45,7 @@ describe('auth directive', () => {
       chai.expect(Auth.has.callCount).to.equal(1);
       chai.expect(Auth.has.args[0][0]).to.deep.equal(['can_do_stuff']);
       done();
-    });
+    }, 10);
   });
 
   it('splits comma separated permissions', done => {
@@ -57,7 +57,7 @@ describe('auth directive', () => {
       chai.expect(Auth.has.callCount).to.equal(1);
       chai.expect(Auth.has.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
       done();
-    });
+    }, 10);
   });
 
   describe('mmAuthOnline', () => {
@@ -70,7 +70,7 @@ describe('auth directive', () => {
         chai.expect(Auth.online.callCount).to.equal(1);
         chai.expect(Auth.online.args[0]).to.deep.equal([true]);
         done();
-      });
+      }, 10);
     });
 
     it('should be hidden when auth errors', (done) => {
@@ -82,7 +82,7 @@ describe('auth directive', () => {
         chai.expect(Auth.online.callCount).to.equal(1);
         chai.expect(Auth.online.args[0]).to.deep.equal([false]);
         done();
-      });
+      }, 10);
     });
 
     it('parses the attribute value', (done) => {
@@ -94,7 +94,7 @@ describe('auth directive', () => {
         chai.expect(Auth.online.callCount).to.equal(1);
         chai.expect(Auth.online.args[0]).to.deep.equal([6]);
         done();
-      });
+      }, 10);
     });
   });
 
@@ -112,7 +112,7 @@ describe('auth directive', () => {
         chai.expect(Auth.has.callCount).to.equal(1);
         chai.expect(Auth.has.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
-      });
+      }, 10);
     });
 
     it('should be hidden when online succeeds and permissions err', (done) => {
@@ -128,7 +128,7 @@ describe('auth directive', () => {
         chai.expect(Auth.has.callCount).to.equal(1);
         chai.expect(Auth.has.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
-      });
+      }, 10);
     });
 
     it('should be hidden when online fails and permissions succeed', (done) => {
@@ -144,7 +144,7 @@ describe('auth directive', () => {
         chai.expect(Auth.has.callCount).to.equal(1);
         chai.expect(Auth.has.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
-      });
+      }, 10);
     });
 
     it('should be hidden when online fails and auth any succeeds', (done) => {
@@ -158,7 +158,7 @@ describe('auth directive', () => {
       setTimeout(() => {
         chai.expect(element.hasClass('hidden')).to.equal(true);
         done();
-      });
+      }, 10);
     });
 
     it('should be hidden when both fail', (done) => {
@@ -174,7 +174,7 @@ describe('auth directive', () => {
         chai.expect(Auth.has.callCount).to.equal(1);
         chai.expect(Auth.has.args[0][0]).to.deep.equal(['permission_to_have']);
         done();
-      });
+      }, 10);
     });
   });
 
@@ -188,7 +188,7 @@ describe('auth directive', () => {
         chai.expect(element2.hasClass('hidden')).to.equal(true);
         chai.expect(Auth.any.callCount).to.equal(0);
         done();
-      });
+      }, 10);
     });
 
     it('should be shown with true parameter(s)', (done) => {
@@ -200,7 +200,7 @@ describe('auth directive', () => {
         chai.expect(element2.hasClass('hidden')).to.equal(false);
         chai.expect(Auth.any.callCount).to.equal(0);
         done();
-      });
+      }, 10);
     });
 
     it('should be shown with at least one allowed permission', (done) => {
@@ -213,7 +213,7 @@ describe('auth directive', () => {
         chai.expect(Auth.any.callCount).to.equal(1);
         chai.expect(Auth.any.args[0][0]).to.deep.equal([['perm1'], ['perm2']]);
         done();
-      });
+      }, 10);
     });
 
     it('should be hidden with no allowed permissions', (done) => {
@@ -225,7 +225,7 @@ describe('auth directive', () => {
         chai.expect(Auth.any.callCount).to.equal(1);
         chai.expect(Auth.any.args[0][0]).to.deep.equal([['perm1'], ['perm2']]);
         done();
-      });
+      }, 10);
     });
 
     it('should work with stacked permissions', (done) => {
@@ -239,7 +239,7 @@ describe('auth directive', () => {
         chai.expect(Auth.any.callCount).to.equal(1);
         chai.expect(Auth.any.args[0][0]).to.deep.equal([['a', 'b'], ['c', 'd'], ['e', 'f'], ['g']]);
         done();
-      });
+      }, 10);
     });
 
     it('should work with expressions ', (done) => {
@@ -253,7 +253,7 @@ describe('auth directive', () => {
         chai.expect(Auth.any.callCount).to.equal(1);
         chai.expect(Auth.any.args[0][0]).to.deep.equal([['a', 'b'], ['f']]);
         done();
-      });
+      }, 10);
     });
   });
 
