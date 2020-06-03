@@ -113,7 +113,7 @@ const listenForApi = () => {
       console.log(new Date(), 'API ready', result);
     })
     .catch(err => {
-      console.log(new Date(), 'API check failed, trying again in 1 second', err.statusCode);
+      console.log(new Date(), 'API check failed, trying again in 1 second', err);
       return new Promise(resolve => {
         setTimeout(() => {
           resolve(listenForApi());
