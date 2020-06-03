@@ -25,10 +25,6 @@ const writeToStream = (stream, data) => {
 const processes = {};
 
 const startServer = (serviceName, append) => new Promise((resolve, reject) => {
-  if(!fs.existsSync('tests/logs')) {
-    fs.mkdirSync('tests/logs');
-  }
-
   try {
     const logStream = fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
 
@@ -81,35 +77,39 @@ const stopServer = (serviceName) => new Promise(res => {
   delete processes[serviceName];
 });
 
+if(!fs.existsSync('tests/logs')) {
+  fs.mkdirSync('tests/logs');
+}
+
 const app = express();
 
 app.post('/:server/:action', (req, res) => {
   const { server, action } = req.params;
-  const promises = [];
+  let p = Promise.resolve();
 
   if (['stop', 'restart'].includes(action)) {
     if (['sentinel', 'all'].includes(server)) {
       console.log('Stopping Sentinel...');
-      promises.push(stopServer('sentinel'));
+      p = p.then(() => stopServer('sentinel'));
     }
     if (['api', 'all'].includes(server)) {
       console.log('Stopping API...');
-      promises.push(stopServer('api'));
+      p = p.then(() => stopServer('api'));
     }
   }
 
   if (['start', 'restart'].includes(action)) {
     if (['api', 'all'].includes(server)) {
       console.log('Starting API...');
-      promises.push(startServer('api', true));
+      p = p.then(() => startServer('api', true));
     }
     if (['sentinel', 'all'].includes(server)) {
       console.log('Starting Sentinel...');
-      promises.push(startServer('sentinel', true));
+      p = p.then(() => startServer('sentinel', true));
     }
   }
 
-  return Promise.all(promises).then(res.status(200).end());
+  return p.then(res.status(200).end());
 });
 
 app.post('/die', (req, res) => {
