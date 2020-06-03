@@ -57,7 +57,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete
-    browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
+    browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       browser
@@ -83,11 +83,24 @@ const runAndLog = (msg, func) => {
   return func();
 };
 
-const startApi = () =>
-  request.post('http://localhost:31337/all/restart')
+const prepServices = () => {
+  let apiReady;
+  if (constants.IS_TRAVIS) {
+    // Travis' horti will be installing and then deploying api and sentinel, and those logs are
+    // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
+    // that the service processes get restarted with their logs separated and pointing to the
+    // correct logs for testing
+    apiReady = listenForApi().then(() => request.post('http://localhost:31337/all/restart'));
+  } else {
+    // Locally we just need to start them and can do so straight away
+    apiReady = request.post('http://localhost:31337/all/start');
+  }
+
+  return apiReady
     .then(() => listenForApi())
     .then(() => runAndLog('Settings setup', setupSettings))
     .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
+};
 
 const listenForApi = () => {
   console.log('Checking API');

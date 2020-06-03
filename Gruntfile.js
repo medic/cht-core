@@ -1109,6 +1109,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
+    'exec:e2e-servers',
     'protractor:performance-tests-and-services',
   ]);
 
