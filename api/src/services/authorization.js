@@ -33,9 +33,10 @@ const getDepth = (userCtx) => {
     // find the role with the deepest depth
     const setting = settings.find(setting => setting.role === role);
     const settingDepth = setting && parseInt(setting.depth, 10);
-    const settingsReportDepth = setting && parseInt(setting.report_depth);
-    if (!isNaN(depth.contactDepth) && settingDepth > depth.contactDepth) {
+    if (!isNaN(settingDepth) && settingDepth > depth.contactDepth) {
       depth.contactDepth = settingDepth;
+
+      const settingsReportDepth = setting && parseInt(setting.report_depth);
       depth.reportDepth = !isNaN(settingsReportDepth) ? settingsReportDepth : -1;
     }
   });
@@ -50,25 +51,23 @@ const hasAccessToUnassignedDocs = (userCtx) => {
          auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 };
 
-const include = ({ subjectIds, subjectsDepth }, values, valueDepth) => {
-  let newValues = 0;
-  values.forEach(value => {
-    if (!value) {
+const includeSubjects = (authorizationContext, newSubjects, depth) => {
+  const initialSubjectsCount = authorizationContext.subjectIds.length;
+  newSubjects.forEach(subject => {
+    if (!subject) {
       return;
     }
 
-    subjectsDepth[value] = valueDepth;
-    if (!subjectIds.includes(value)) {
-      subjectIds.push(value);
-      newValues++;
-    }
+    authorizationContext.subjectsDepth[subject] = depth;
+    authorizationContext.subjectIds.push(subject);
   });
+  authorizationContext.subjectIds = _.uniq(authorizationContext.subjectIds);
 
-  return newValues;
+  return authorizationContext.subjectIds.length !== initialSubjectsCount;
 };
 
-const exclude = (array, ...values) => {
-  return array.filter(value => values.indexOf(value) === -1);
+const excludeSubjects = (authorizationContext, ...subjectIds) => {
+  authorizationContext.subjectIds = _.without(authorizationContext.subjectIds, ...subjectIds);
 };
 
 // gets the depth of a contact, relative to the user's facility
@@ -87,19 +86,19 @@ const getContactDepth = (authorizationContext, contactsByDepth) => {
 // @param   {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @returns {Boolean} whether new subjectIds were added to authorizationContext
 const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
-  if (contactsByDepth && contactsByDepth.length) {
-    //first element of `contactsByDepth` contains both `subjectId` and `docID`
-    const [[[ docId ], subjectId ]] = contactsByDepth;
-
-    if (allowed) {
-      const contactDepth = getContactDepth(authorizationContext, contactsByDepth);
-      return !!include(authorizationContext, [subjectId, docId], contactDepth);
-    }
-
-    authorizationContext.subjectIds = exclude(authorizationContext.subjectIds, subjectId, docId);
+  if (!contactsByDepth || !contactsByDepth.length) {
     return false;
   }
 
+  //first element of `contactsByDepth` contains both `subjectId` and `docID`
+  const [[[ docId ], subjectId ]] = contactsByDepth;
+
+  if (allowed) {
+    const contactDepth = getContactDepth(authorizationContext, contactsByDepth);
+    return includeSubjects(authorizationContext, [subjectId, docId], contactDepth);
+  }
+
+  excludeSubjects(authorizationContext, subjectId, docId);
   return false;
 };
 
@@ -238,7 +237,7 @@ const getAuthorizationContext = (userCtx) => {
       const subjects = getContactSubjects(row);
       authorizationCtx.subjectIds.push(...subjects);
 
-      if (authorizationCtx.reportDepth >= 0) {
+      if (usesReportDepth(authorizationCtx)) {
         const subjectDepth = row.key[1];
         subjects.forEach(subject => authorizationCtx.subjectsDepth[subject] = subjectDepth);
       }
@@ -372,18 +371,13 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
         return;
       }
 
-      const contactDepth = getContactDepth(authorizationCtx, viewResults.contactsByDepth);
       const contactUuid = getContactUuid(viewResults);
-      authorizationCtx.subjectIds.push(contactUuid);
-      authorizationCtx.subjectsDepth[contactUuid] = contactDepth;
+      const contactDepth = getContactDepth(authorizationCtx, viewResults.contactsByDepth);
       const shortcode = getContactShortcode(viewResults);
-      if (shortcode) {
-        authorizationCtx.subjectIds.push(shortcode);
-        authorizationCtx.subjectsDepth[shortcode] = contactDepth;
-      }
+
+      includeSubjects(authorizationCtx, [contactUuid, shortcode], contactDepth);
     });
 
-    authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
     if (hasAccessToUnassignedDocs(userCtx)) {
       authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
     }
@@ -441,27 +435,27 @@ const isAllowedDepth = (authorizationContext, replicationKeys) => {
   });
 };
 
-const getViewResultsById = (viewResult) => {
-  const mapById = {};
-  viewResult.rows.forEach(row => {
-    if (!mapById[row.id]) {
-      mapById[row.id] = [];
-    }
+const groupViewResultsById = (authorizationContext, viewResults) => {
+  const viewResultsById = {};
+  if (!usesReportDepth(authorizationContext)) {
+    return viewResultsById;
+  }
 
-    mapById[row.id].push([row.key, row.value]);
+  viewResults.rows.forEach(row => {
+    if (!viewResultsById[row.id]) {
+      viewResultsById[row.id] = [];
+    }
+    viewResultsById[row.id].push([row.key, row.value]);
   });
-  return mapById;
+
+  return viewResultsById;
 };
 
 const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
   return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
     const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(feed.userCtx.name)];
     const tombstoneIds = [];
-
-    let viewResultsById = {};
-    if (usesReportDepth(feed)) {
-      viewResultsById = getViewResultsById(results);
-    }
+    const viewResultsById = groupViewResultsById(feed, results);
 
     results.rows.forEach(row => {
       if (isSensitive(feed.userCtx, row.key, row.value.submitter, feed.subjectIds.includes(row.value.submitter))) {
@@ -472,7 +466,7 @@ const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
         return includeTombstones && tombstoneIds.push(row.id);
       }
 
-      if (!usesReportDepth(feed) || isAllowedDepth(feed, viewResultsById[row.id])) {
+      if (isAllowedDepth(feed, viewResultsById[row.id])) {
         validatedIds.push(row.id);
       }
     });
