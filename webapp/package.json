@@ -39,7 +39,7 @@
     "ng-redux": "^4.4.1",
     "object-path": "^0.11.4",
     "odk-xform-compact-record-representation-for-sms": "^1.0.1",
-    "openrosa-xpath-evaluator": "^1.5.0",
+    "openrosa-xpath-evaluator": "^1.5.1",
     "partial-json-parser": "^1.2.2",
     "pojo2xml": "^1.7.2",
     "pouchdb-browser": "^7.2.1",
