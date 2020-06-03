@@ -5,12 +5,12 @@
   "author": "SCdF",
   "license": "Apache-2.0",
   "dependencies": {
-    "json-diff": "^0.5.2",
+    "json-diff": "^0.5.4",
     "just-diff": "^2.0.2",
-    "minimist": "^1.2.0",
-    "pouchdb-adapter-http": "^6.2.0",
-    "pouchdb-core": "^6.2.0",
-    "pouchdb-mapreduce": "^6.2.0",
-    "underscore": "^1.8.3"
+    "minimist": "^1.2.5",
+    "pouchdb-adapter-http": "^7.2.1",
+    "pouchdb-core": "^7.2.1",
+    "pouchdb-mapreduce": "^7.2.1",
+    "underscore": "^1.10.2"
   }
 }

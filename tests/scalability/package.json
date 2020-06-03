@@ -3,7 +3,7 @@
   "author": "garethbowen",
   "private": true,
   "dependencies": {
-    "pouchdb": "^6.2.0",
-    "pouchdb-adapter-memory": "^6.4.3"
+    "pouchdb": "^7.2.1",
+    "pouchdb-adapter-memory": "^7.2.1"
   }
 }
