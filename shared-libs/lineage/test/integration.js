@@ -307,6 +307,42 @@ const sms_doc = {
     form: 'D'
   }
 };
+const placeWithLinks = {
+  _id: 'placeWithLinks',
+  name: 'place_name',
+  type: 'clinic',
+  contact: { _id: place_contact._id },
+  parent: {
+    _id: place_parent._id,
+    parent: {
+      _id: place_grandparent._id
+    }
+  },
+  linked_contacts: {
+    contact_tag_1: report_parent._id,
+    contact_tag_2: { _id: report_contact._id },
+    contact_tag_3: { _id: '404' },
+  },
+};
+const personWithLinks = {
+  _id: 'personWithLinks',
+  name: 'person_name',
+  type: 'person',
+  parent: {
+    _id: placeWithLinks._id,
+    parent: {
+      _id: place_parent._id,
+      parent: {
+        _id: place_grandparent._id
+      }
+    },
+  },
+  linked_contacts: {
+    one_tag: { _id: person_with_circular_ids._id },
+    other_tag: report_grandparent._id,
+    no_tag: 'not_found',
+  },
+};
 
 const fixtures = [
   child_is_great_grandparent,
@@ -344,7 +380,9 @@ const fixtures = [
   report4,
   stub_contacts,
   stub_parents,
-  sms_doc
+  sms_doc,
+  placeWithLinks,
+  personWithLinks,
 ];
 const deleteDocs = ids => {
   return db.allDocs({
@@ -644,6 +682,32 @@ describe('Lineage', function() {
         });
       });
     });
+
+    it('should hydrate linked contacts', () => {
+      return lineage.fetchHydratedDoc(placeWithLinks._id).then(actual => {
+        expect(actual).excludingEvery('_rev').to.deep.equal({
+          _id: placeWithLinks._id,
+          type: placeWithLinks.type,
+          contact: place_contact,
+          name: placeWithLinks.name,
+          parent: {
+            _id: place_parent._id,
+            name: place_parent.name,
+            contact: place_parentContact,
+            parent: {
+              name: place_grandparent.name,
+              _id: place_grandparent._id,
+              contact: place_grandparentContact,
+            }
+          },
+          linked_contacts: {
+            contact_tag_1: report_parent,
+            contact_tag_2: report_contact,
+            contact_tag_3: { _id: '404' },
+          },
+        });
+      });
+    });
   });
 
   describe('hydrateDocs', function() {
@@ -897,6 +961,67 @@ describe('Lineage', function() {
         });
       });
     });
+
+    it('should hydrate linked contacts', () => {
+      const docs = [ cloneDeep(placeWithLinks),  cloneDeep(personWithLinks)];
+
+      return lineage.hydrateDocs(docs).then(actual => {
+        expect(actual).excludingEvery('_rev').to.deep.equal([
+          {
+            _id: placeWithLinks._id,
+            type: placeWithLinks.type,
+            contact: place_contact,
+            name: placeWithLinks.name,
+            parent: {
+              _id: place_parent._id,
+              name: place_parent.name,
+              contact: place_parentContact,
+              parent: {
+                name: place_grandparent.name,
+                _id: place_grandparent._id,
+                contact: place_grandparentContact,
+              }
+            },
+            linked_contacts: {
+              contact_tag_1: report_parent,
+              contact_tag_2: report_contact,
+              contact_tag_3: { _id: '404' },
+            },
+          },
+          {
+            _id: personWithLinks._id,
+            name: personWithLinks.name,
+            type: personWithLinks.type,
+            parent: {
+              _id: placeWithLinks._id,
+              type: placeWithLinks.type,
+              contact: place_contact,
+              name: placeWithLinks.name,
+              parent: {
+                _id: place_parent._id,
+                name: place_parent.name,
+                contact: place_parentContact,
+                parent: {
+                  name: place_grandparent.name,
+                  _id: place_grandparent._id,
+                  contact: place_grandparentContact,
+                }
+              },
+              linked_contacts: {
+                contact_tag_1: report_parent,
+                contact_tag_2: report_contact,
+                contact_tag_3: { _id: '404' },
+              },
+            },
+            linked_contacts: {
+              one_tag: person_with_circular_ids,
+              other_tag: report_grandparent,
+              no_tag: 'not_found',
+            },
+          }
+        ]);
+      });
+    });
   });
 
   describe('fetchHydratedDocs', () => {
@@ -1051,6 +1176,64 @@ describe('Lineage', function() {
               }
             }
           }
+        });
+      });
+    });
+
+    it('should hydrate linked contacts', () => {
+      it('should hydrate linked contacts', () => {
+        return lineage.fetchHydratedDocs([ personWithLinks._id, placeWithLinks._id ]).then(actual => {
+          expect(actual).excludingEvery('_rev').to.deep.equal([
+            {
+              _id: personWithLinks._id,
+              name: personWithLinks.name,
+              type: personWithLinks.type,
+              parent: {
+                _id: placeWithLinks._id,
+                type: placeWithLinks.type,
+                contact: place_contact,
+                name: placeWithLinks.name,
+                parent: {
+                  _id: place_parent._id,
+                  name: place_parent.name,
+                  contact: place_parentContact,
+                  parent: {
+                    name: place_grandparent.name,
+                    _id: place_grandparent._id,
+                    contact: place_grandparentContact,
+                  }
+                },
+                linked_contacts: {
+                  contact_tag_1: report_parent,
+                  contact_tag_2: report_contact,
+                },
+              },
+              linked_contacts: {
+                one_tag: person_with_circular_ids,
+                other_tag: report_grandparent,
+              },
+            },
+            {
+              _id: placeWithLinks._id,
+              type: placeWithLinks.type,
+              contact: place_contact,
+              name: placeWithLinks.name,
+              parent: {
+                _id: place_parent._id,
+                name: place_parent.name,
+                contact: place_parentContact,
+                parent: {
+                  name: place_grandparent.name,
+                  _id: place_grandparent._id,
+                  contact: place_grandparentContact,
+                }
+              },
+              linked_contacts: {
+                contact_tag_1: report_parent,
+                contact_tag_2: report_contact,
+              },
+            },
+          ]);
         });
       });
     });

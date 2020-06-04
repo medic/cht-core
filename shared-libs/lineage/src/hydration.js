@@ -21,6 +21,10 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
+const getId = (item) => {
+  return item && (typeof item === 'string' ? item : item._id);
+};
+
 module.exports = function(Promise, DB) {
   const fillParentsInDocs = function(doc, lineage) {
     if (!doc || !lineage.length) {
@@ -51,19 +55,24 @@ module.exports = function(Promise, DB) {
     }
 
     docs.forEach(function(doc) {
-      const id = doc && doc.contact && doc.contact._id;
+      if (!doc) {
+        return;
+      }
+      const id = doc.contact && doc.contact._id;
       const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
       if (contactDoc) {
         doc.contact = deepCopy(contactDoc);
       }
-      if (!doc.contacts) {
+
+      if (!doc.linked_contacts) {
         return;
       }
-      Object.keys(doc.contacts).forEach((key) => {
-        const id = doc.contacts[key] && doc.contacts[key]._id;
+
+      Object.keys(doc.linked_contacts).forEach((key) => {
+        const id = getId(doc.linked_contacts[key]);
         const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
         if (contactDoc) {
-          doc.contacts[key] = deepCopy(contactDoc);
+          doc.linked_contacts[key] = deepCopy(contactDoc);
         }
       });
     });
@@ -76,9 +85,15 @@ module.exports = function(Promise, DB) {
         return;
       }
 
-      ids.push(doc.contact && doc.contact._id);
-      doc.contacts && Object.keys(doc.contacts).forEach((key) => {
-        ids.push(doc.contacts[key] && doc.contacts[key]._id);
+      const id = getId(doc.contact);
+      id && ids.push(id);
+
+      if (!doc.linked_contacts) {
+        return;
+      }
+      Object.keys(doc.linked_contacts).forEach((key) => {
+        const id = getId(doc.linked_contacts[key]);
+        id && ids.push(id);
       });
     });
 
@@ -257,7 +272,7 @@ module.exports = function(Promise, DB) {
     docs.forEach(function(doc) {
       let parent = doc.parent;
       if (doc.type === 'data_record') {
-        const contactId = doc.contact && doc.contact._id;
+        const contactId = getId(doc.contact);
         if (!contactId) {
           return;
         }
@@ -275,20 +290,22 @@ module.exports = function(Promise, DB) {
     const ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
       const startLineageFrom = doc.type === 'data_record' ? doc.contact : doc;
-      const contactIds = [];
       selfAndParents(startLineageFrom).forEach(doc => {
-        const id = doc.contact && doc.contact._id;
+        const id = getId(doc.contact);
         id && ids.push(id);
-        doc.contacts && Object.keys(doc.contacts).forEach(key => {
-          const id = doc.contacts[key] && doc.contacts[key]._id;
+
+        if (!doc.linked_contacts) {
+          return;
+        }
+
+        Object.keys(doc.linked_contacts).forEach(key => {
+          const id = getId(doc.linked_contacts[key]);
           id && ids.push(id);
         });
       });
-
-      ids.push(...contactIds);
     });
 
-    return _.uniq(ids);
+    return _.compact(_.uniq(ids));
   };
 
   const fetchDocs = function(ids) {

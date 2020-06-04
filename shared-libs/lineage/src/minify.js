@@ -25,6 +25,10 @@ function minifyLineage(parent) {
   return result;
 }
 
+const getId = (item) => {
+  return item && (typeof item === 'string' ? item : item._id);
+};
+
 /**
  * Remove all hyrdrated items and leave just the ids
  * @param {Object} doc The doc to minify
@@ -46,6 +50,11 @@ function minify(doc) {
   if (doc.type === 'data_record') {
     delete doc.patient;
     delete doc.place;
+  }
+  if (doc.linked_contacts) {
+    Object.keys(doc.linked_contacts).forEach(key => {
+      doc.linked_contacts[key] = getId(doc.linked_contacts[key]);
+    });
   }
 }
 
