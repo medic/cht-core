@@ -56,19 +56,33 @@ module.exports = function(Promise, DB) {
       if (contactDoc) {
         doc.contact = deepCopy(contactDoc);
       }
+      if (!doc.contacts) {
+        return;
+      }
+      Object.keys(doc.contacts).forEach((key) => {
+        const id = doc.contacts[key] && doc.contacts[key]._id;
+        const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
+        if (contactDoc) {
+          doc.contacts[key] = deepCopy(contactDoc);
+        }
+      });
     });
   };
 
   const fetchContacts = function(lineage) {
-    const contactIds = _.uniq(
-      lineage
-        .map(function(doc) {
-          return doc && doc.contact && doc.contact._id;
-        })
-        .filter(function(id) {
-          return !!id;
-        })
-    );
+    const ids = [];
+    lineage.forEach(doc => {
+      if (!doc) {
+        return;
+      }
+
+      ids.push(doc.contact && doc.contact._id);
+      doc.contacts && Object.keys(doc.contacts).forEach((key) => {
+        ids.push(doc.contacts[key] && doc.contacts[key]._id);
+      });
+    });
+
+    const contactIds = _.uniq(ids);
 
     // Only fetch docs that are new to us
     const lineageContacts = [];
@@ -261,9 +275,15 @@ module.exports = function(Promise, DB) {
     const ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
       const startLineageFrom = doc.type === 'data_record' ? doc.contact : doc;
-      const contactIds = selfAndParents(startLineageFrom)
-        .map(parent => parent.contact && parent.contact._id)
-        .filter(id => id);
+      const contactIds = [];
+      selfAndParents(startLineageFrom).forEach(doc => {
+        const id = doc.contact && doc.contact._id;
+        id && ids.push(id);
+        doc.contacts && Object.keys(doc.contacts).forEach(key => {
+          const id = doc.contacts[key] && doc.contacts[key]._id;
+          id && ids.push(id);
+        });
+      });
 
       ids.push(...contactIds);
     });

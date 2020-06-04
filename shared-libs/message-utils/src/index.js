@@ -84,6 +84,8 @@ const getRecipient = function(context, recipient) {
     return;
   }
   recipient = recipient && recipient.trim();
+  console.log(recipient);
+  console.log(context);
   const from = context.from || (context.contact && context.contact.phone);
   if (!recipient) {
     return from;
