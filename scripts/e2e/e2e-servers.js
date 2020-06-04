@@ -109,7 +109,7 @@ app.post('/:server/:action', (req, res) => {
     }
   }
 
-  return p.then(res.status(200).end());
+  return p.then(() => res.status(200).end());
 });
 
 app.post('/die', (req, res) => {
