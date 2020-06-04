@@ -107,19 +107,15 @@ const prepServices = () => {
 };
 
 const listenForApi = () => {
-  console.log(new Date(), 'Checking API');
-  return utils.request({ path: '/api/info' })
-    .then(result => {
-      console.log(new Date(), 'API ready', result);
-    })
-    .catch(err => {
-      console.log(new Date(), 'API check failed, trying again in 1 second', err);
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve(listenForApi());
-        }, 1000);
-      });
+  console.log('Checking API');
+  return utils.request({ path: '/api/info' }).catch(() => {
+    console.log('API check failed, trying again in 1 second');
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(listenForApi());
+      }, 1000);
     });
+  });
 };
 
 const getLoginUrl = () => {
