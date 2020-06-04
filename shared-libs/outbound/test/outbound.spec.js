@@ -15,6 +15,7 @@ describe('outbound shared library', () => {
   describe('send', () => {
     let restores;
     let mapDocumentToPayload;
+    let alreadySent;
     let sendPayload;
 
     beforeEach(() => {
@@ -22,6 +23,9 @@ describe('outbound shared library', () => {
 
       mapDocumentToPayload = sinon.stub();
       restores.push(outbound.__set__('mapDocumentToPayload', mapDocumentToPayload));
+
+      alreadySent = sinon.stub();
+      restores.push(outbound.__set__('alreadySent', alreadySent));
 
       sendPayload = sinon.stub();
       restores.push(outbound.__set__('sendPayload', sendPayload));
@@ -66,9 +70,10 @@ describe('outbound shared library', () => {
 
     it('Propagates a sending error', () => {
       mapDocumentToPayload.resolves(payload);
+      alreadySent.returns(false);
       sendPayload.rejects(error);
 
-      return service.send(config, configName, record)
+      return service.send(config, configName, record, recordInfo)
         .catch(err => err)
         .then(err => {
           assert.equal(mapDocumentToPayload.callCount, 1);
@@ -213,7 +218,7 @@ describe('outbound shared library', () => {
         completed_tasks: []
       };
 
-      outbound.__get__('updateInfo')(info, 'test-config');
+      outbound.__get__('updateInfo')({some: 'payload'}, info, 'test-config');
 
       assert.equal(info.completed_tasks.length, 1);
       assert.equal(info.completed_tasks[0].type, 'outbound');
@@ -225,7 +230,7 @@ describe('outbound shared library', () => {
         _id: 'some-info',
       };
 
-      outbound.__get__('updateInfo')(info, 'test-config');
+      outbound.__get__('updateInfo')({some: 'payload'}, info, 'test-config');
 
       assert.equal(info.completed_tasks.length, 1);
       assert.equal(info.completed_tasks[0].type, 'outbound');
@@ -409,12 +414,12 @@ describe('outbound shared library', () => {
   });
 
   describe('alreadySent', () => {
-    it('returns false if this record has never been sent anywhere before', () => {
-      assert.isNotOk(service.alreadySent('foo', {_id: 'some-record-info'}));
+    it('returns false if this record has never been sent anywhere', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {_id: 'some-record-info'}));
     });
 
-    it('returns false if this record has been sent outbound before, but not for this configuration', () => {
-      assert.isNotOk(service.alreadySent('foo', {
+    it('returns false if this record has been sent outbound, but not for this config', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
         _id: 'some-record-info',
         completed_tasks: [{
           type: 'outbound',
@@ -424,8 +429,8 @@ describe('outbound shared library', () => {
       }));
     });
 
-    it('returns true if this record has been sent outbound before, for this configuration', () => {
-      assert.isOk(service.alreadySent('foo', {
+    it('returns false if this record has been sent outbound, for this config with a different payload', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
         _id: 'some-record-info',
         completed_tasks: [{
           type: 'outbound',
@@ -434,6 +439,44 @@ describe('outbound shared library', () => {
         }, {
           type: 'outbound',
           name: 'foo',
+          hash: 'somehashthatisnotright',
+          timestamp: Date.now()
+        }]
+      }));
+    });
+
+    it('returns false if this record has been sent outbound, for this config and payload (not most recently)', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
+        _id: 'some-record-info',
+        completed_tasks: [{
+          type: 'outbound',
+          name: 'bar',
+          timestamp: Date.now()
+        }, {
+          type: 'outbound',
+          name: 'foo',
+          hash: '5d8d96384c4f20565803d386aef2328e35928bb97e6883e241005b4bab868488',
+          timestamp: Date.now()
+        }, {
+          type: 'outbound',
+          name: 'foo',
+          hash: 'somehashthatisnotright',
+          timestamp: Date.now()
+        }]
+      }));
+    });
+
+    it('returns true if this record has been sent outbound, for this config and payload (most recently)', () => {
+      assert.isOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
+        _id: 'some-record-info',
+        completed_tasks: [{
+          type: 'outbound',
+          name: 'bar',
+          timestamp: Date.now()
+        }, {
+          type: 'outbound',
+          name: 'foo',
+          hash: '5d8d96384c4f20565803d386aef2328e35928bb97e6883e241005b4bab868488',
           timestamp: Date.now()
         }]
       }));

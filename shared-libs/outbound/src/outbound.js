@@ -9,6 +9,8 @@
  * destination. Background management of retries and so on is done in schedules, and the initial
  * requester of an outbound push is the outbound transition.
  */
+const _ = require('lodash');
+const crypto = require('crypto');
 const objectPath = require('object-path');
 const urlJoin = require('url-join');
 const request = require('request-promise-native');
@@ -184,12 +186,18 @@ const sendPayload = (payload, config) => {
   });
 };
 
-const updateInfo = (recordInfo, configName) => {
+// Never change this hashing algorithm or how we stringify, otherwise you will invalidate all existing hashes
+const hash = payload => crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+
+const updateInfo = (payload, recordInfo, configName) => {
+  const hashedPayload = hash(payload);
+
   recordInfo.completed_tasks = recordInfo.completed_tasks || [];
   recordInfo.completed_tasks.push({
     type: 'outbound',
     name: configName,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    hash: hashedPayload
   });
 };
 
@@ -226,6 +234,24 @@ const logSendError = (configName, recordId, error) => {
   }
 };
 
+/**
+ * Returns a boolean indicating if this combination of config and record has already been sent.
+ *
+ * @param      {<object>}  payload     The payload that would be sent
+ * @param      {<string>}  configName  key used for this config in our app-settings (for logging)
+ * @param      {<object>}  recordInfo  the couchdb record's info doc
+ * @return     {<boolean>}  whether we think it's been sent out before
+ */
+const alreadySent = (payload, configName, recordInfo) => {
+  if (!recordInfo.completed_tasks) {
+    return false;
+  }
+
+  const lastTask = _.findLast(recordInfo.completed_tasks, t => t.type === 'outbound' && t.name === configName);
+
+  return lastTask && lastTask.hash && lastTask.hash === hash(payload);
+};
+
 module.exports = theLogger => {
   logger = theLogger;
 
@@ -238,34 +264,29 @@ module.exports = theLogger => {
      * @param      {<string>}  configName  key used for this config in our app-settings (for logging)
      * @param      {<object>}  record      the couchdb record (ie report) to use
      * @param      {<object>}  recordInfo  the couchdb record's info doc
-     * @return     {<promise>} a promise which is successful if the record was converted and send
-     *                         successfully. Can definitely fail.
+     * @return     {<promise>} a promise which can:
+     *      - resolve with true: outbound was successful and sent
+     *      - resolve with false: outbound didn't error, but wasn't sent out (because it's a duplicate of prior send)
+     *      - reject with error: something went wrong
      */
     send: (config, configName, record, recordInfo) => {
       return Promise.resolve()
         .then(() => mapDocumentToPayload(record, config, configName))
-        .then(payload => sendPayload(payload, config))
-        .then(() => updateInfo(recordInfo, configName))
-        .then(() => logger.info(`Pushed ${record._id} to ${configName}`))
+        .then(payload => {
+          if (alreadySent(payload, configName, recordInfo)) {
+            logger.info(`Not pushing ${record._id} to ${configName} as payload is identical to previous push`);
+            return false;
+          } else {
+            return sendPayload(payload, config)
+              .then(() => updateInfo(payload, recordInfo, configName))
+              .then(() => logger.info(`Pushed ${record._id} to ${configName}`))
+              .then(() => true);
+          }
+        })
         .catch(err => {
           logSendError(configName, record._id, err);
           throw err;
         });
     },
-
-    /**
-     * Returns a boolean indicating if this combination of config and record has already been sent.
-     *
-     * @param      {<string>}  configName  key used for this config in our app-settings (for logging)
-     * @param      {<object>}  recordInfo  the couchdb record's info doc
-     * @return     {<boolean>} whether we think it's been sent out before
-     */
-    alreadySent: (configName, recordInfo) => {
-      // For now for simplicity we're going to say that a particular config should only be sent once
-      // It would be completely acceptable for this logic to change to be more flexible or correct
-      // in the future.
-      return recordInfo.completed_tasks &&
-             recordInfo.completed_tasks.find(t => t.type === 'outbound' && t.name === configName);
-    }
   };
 };
