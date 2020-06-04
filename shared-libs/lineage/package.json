@@ -14,12 +14,12 @@
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.0.2",
     "chai-shallow-deep-equal": "^1.4.6",
-    "mocha": "^6.2.1",
-    "pouchdb-adapter-memory": "^7.1.1",
-    "pouchdb-core": "^7.1.1",
-    "pouchdb-mapreduce": "^7.1.1",
-    "sinon": "^7.5.0",
-    "uuid": "^3.3.3"
+    "mocha": "^7.2.0",
+    "pouchdb-adapter-memory": "^7.2.1",
+    "pouchdb-core": "^7.2.1",
+    "pouchdb-mapreduce": "^7.2.1",
+    "sinon": "^8.1.1",
+    "uuid": "^3.4.0"
   },
   "dependencies": {
     "lodash": "^4.17.15"

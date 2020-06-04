@@ -11,8 +11,8 @@
     "chai": "^4.2.0",
     "chai-exclude": "^2.0.2",
     "jsverify": "^0.8.4",
-    "mocha": "^6.2.1",
-    "sinon": "^7.5.0"
+    "mocha": "^7.2.0",
+    "sinon": "^8.1.1"
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
@@ -23,14 +23,14 @@
     "@medic/phone-number": "file:../phone-number",
     "@medic/registration-utils": "file:../registration-utils",
     "@medic/task-utils": "file:../task-utils",
-    "async": "^3.1.0",
+    "async": "^3.2.0",
     "bikram-sambat": "^1.6.0",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "google-libphonenumber": "^3.2.5",
+    "google-libphonenumber": "^3.2.10",
     "gsm": "^0.1.4",
     "lodash": "^4.17.15",
-    "moment": "^2.22.2",
-    "mustache": "^3.1.0",
+    "moment": "^2.26.0",
+    "mustache": "^4.0.1",
     "object-path": "^0.11.4"
   }
 }

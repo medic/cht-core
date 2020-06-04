@@ -1,4 +1,4 @@
-const sinon = require('sinon').sandbox.create();
+const sinon = require('sinon');
 require('chai').should();
 const rewire = require('rewire');
 const authorization = require('../../../src/services/authorization');
