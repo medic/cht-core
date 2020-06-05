@@ -620,8 +620,7 @@ module.exports = {
     const lines = [];
     const errors = [];
 
-    const path = constants.IS_TRAVIS ? './tests/logs/horti.log' : `./tests/logs/${logFilename}`;
-    const tail = new Tail(path);
+    const tail = new Tail(`./tests/logs/${logFilename}`);
     tail.on('line', data => {
       if (regex.find(r => r.test(data))) {
         lines.push(data);
