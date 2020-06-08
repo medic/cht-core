@@ -606,11 +606,8 @@ module.exports = {
    * given regular expressions
    *
    * To use, call before the action you wish to catch, and then execute the returned function after
-   * the action after the action should have taken place. The function will return a promise that
-   * will succeed with the list of captured lines, or fail if there have been any errors.
-   *
-   * NB: currently on travis all api and sentinel logs gets smushed into the same log, so you can't
-   * necessarily know which log your output comes from.
+   * the action should have taken place. The function will return a promise that will succeed with
+   * the list of captured lines, or fail if there have been any errors with log capturing.
    *
    * @param      {string}    logFilename  filename of file in local logs directory
    * @param      {[RegExp]}  regex        matching expression(s) run against lines
