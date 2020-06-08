@@ -1,0 +1,195 @@
+@import "variables";
+@import "badge";
+@import "button";
+@import "dropdown";
+@import "panel";
+@import "icon";
+@import "modal";
+
+.tooltip .tooltip-inner {
+  text-align: left;
+}
+
+a {
+  cursor: pointer;
+}
+.btn-primary {
+  background-color: @button-color;
+}
+
+.nav-tabs {
+  padding: 0 10px;
+  a {
+    outline: 0;
+  }
+}
+
+.tab-content {
+  padding: 10px;
+}
+
+.form-control {
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+  &.medium {
+    max-width: 400px;
+  }
+  &.small {
+    max-width: 180px;
+  }
+  &.tiny {
+    max-width: 80px;
+  }
+  &.inline {
+    display: inline-block;
+  }
+}
+
+.action-list .btn {
+  .fa, .fa-stack {
+    margin-right: 5px;
+  }
+}
+
+.btn-link {
+  color: @text-link-color;
+  
+  &:hover,
+  &:focus {
+    color: @text-link-active-color;
+  }
+  
+  &.btn-danger {
+    color: @error-color;
+  }
+}
+
+.select2-chosen,
+.select2-choice > span:first-child,
+.select2-container .select2-choices .select2-search-field input {
+  padding: 5px;
+}
+
+.select2-container .select2-selection--single {
+  height: 34px;
+}
+
+.select2-container--default .select2-selection--single {
+  border: 1px solid #ccc;
+  .select2-selection__arrow b {
+    margin-top: 0;
+  }
+}
+
+.select2-container .select2-selection--single {
+  height: 34px;
+}
+
+.select2-container--default .select2-selection--single {
+  border: 1px solid #ccc;
+  .select2-selection__arrow b {
+    margin-top: 0;
+  }
+}
+
+.popover .popover-title {
+  background-color: @background-color;
+}
+.popover.tour {
+  border-color: #000000;
+  border-width: 2px;
+  padding: 0;
+  .popover-title {
+    font-weight: bold;
+  }
+  &.right > .arrow {
+    border-right-color: #000000;
+    &::after {
+      left: 2px;
+    }
+  }
+  &.left > .arrow {
+    border-left-color: #000000;
+    &::after {
+      right: 2px;
+    }
+  }
+  &.bottom > .arrow {
+    border-bottom-color: #000000;
+    &::after {
+      border-bottom-color: @background-color;
+      top: 2px;
+    }
+  }
+  &.top > .arrow {
+    border-top-color: #000000;
+    &::after {
+      bottom: 2px;
+    }
+  }
+}
+
+.item-summary {
+  padding: 10px;
+  .icon {
+    float: left;
+    img,
+    svg {
+      width: @icon-small;
+      height: @icon-small;
+    }
+  }
+  .detail {
+    overflow: auto;
+    .status {
+      float: right;
+      text-align: right;
+      clear: right;
+      margin-left: 10px;
+    }
+    .time .full-date {
+      color: @label-color;
+    }
+    .name {
+      font-weight: bold;
+    }
+  }
+}
+
+.progress {
+  background-color: @separator-color;
+  box-shadow: none;
+  margin: 20px 0;
+  .progress-bar {
+    box-shadow: none;
+    border-right: 2px solid #FFFFFF;
+  }
+}
+
+dl.horizontal {
+  dt {
+    width: 200px;
+    float: left;
+    text-align: right;
+    margin-bottom: 5px;
+  }
+  dd {
+    margin-left: 0;
+    padding-left: 220px;
+  }
+  dd:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}
+
+.weeks-pregnant {
+  &.upcoming-edd {
+    color: @ok-color;
+  }
+  &.approximate:before {
+    content: '~';
+  }
+}

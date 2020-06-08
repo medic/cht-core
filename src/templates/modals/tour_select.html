@@ -1,0 +1,16 @@
+<div role="document" class="tour-select">
+  <div class="modal-header">
+    <button type="button" class="cancel close" ng-click="tourSelectCtrl.cancel()">&times;</button>
+    <h3 translate>tour.select</h3>
+  </div>
+  <div class="modal-body">
+    <p translate>tour.select.description</p>
+    <a ng-repeat="tour in tourSelectCtrl.tours | orderBy:'order' track by tour.id" class="btn tour-option" ng-click="tourSelectCtrl.start(tour.id)" ng-class="'tour-option-' + tour.id">
+      <div class="fa" ng-class="tour.icon"></div>
+      <div class="button-label" translate="{{tour.name}}"></div>
+    </a>
+  </div>
+  <div class="modal-footer">
+    <a class="btn cancel" ng-click="tourSelectCtrl.cancel()" translate>Cancel</a>
+  </div>
+</div>

@@ -1,0 +1,38 @@
+<div class="filters">
+  <div class="inner">
+    <div class="basic-filters left-pane">
+      <mm-freetext-filter
+        search="contactsCtrl.search"
+        selected="contactsCtrl.selectedContact"
+      ></mm-freetext-filter>
+      <mm-simprints-filter
+        simprints-enabled="contactsCtrl.simprintsEnabled"
+        simprints-identify="contactsCtrl.simprintsIdentify"
+      ></mm-simprints-filter>
+      <mm-reset-filter
+        reset-filter-model="contactsCtrl.resetFilterModel"
+        selected="contactsCtrl.selectedContact"
+      ></mm-reset-filter>
+      <mm-sort-filter
+        last-visited-date-extras="contactsCtrl.lastVisitedDateExtras"
+        sort="contactsCtrl.sort"
+        sort-direction="contactsCtrl.sortDirection"
+      ></mm-sort-filter>
+    </div>
+    <mm-navigation></mm-navigation>
+  </div>
+</div>
+
+<div class="inner">
+  <div class="inbox page">
+    <mm-contacts-list
+      appending="contactsCtrl.appending"
+      error="contactsCtrl.error"
+      filtered="contactsCtrl.filtered"
+      has-contacts="contactsCtrl.hasContacts"
+      loading="contactsCtrl.loading"
+      more-items="contactsCtrl.moreItems"
+    ></mm-contacts-list>
+    <ui-view name="content"/>
+  </div>
+</div>

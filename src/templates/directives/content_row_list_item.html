@@ -1,0 +1,62 @@
+<!--
+This code is used in different places with different rendering abilities. Make
+sure your changes work in both, as required.
+
+When this is rendered on the LHS (i.e. people / report / task lists) it is
+consumed by LiveList, which deals with raw HTML, with only the `ng-bind-html`
+property and `{{...}}` blocks being consumed and executed inside an angular
+context.
+
+When this is rendered elsewhere (e.g. as the list of people on a contact summary
+page) it is consumed by Angular, and so everything you'd expect angular to be
+able to do you can do here.
+
+Note: because it's used in both places, you cannot rely on `ng-if` or `ng-hide`,
+as they will be ignored by LiveList, causing LHS output to render incorrectly.
+
+Places of interest
+ - content-row.js contains the scope for this file
+ - live-list.js:renderTemplate is where this is consumed by livelist
+-->
+<li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}} {{unread ? 'unread' : ''}} {{dod ? 'deceased' : ''}} {{visits ? 'visit-count' : ''}} {{muted  ? 'muted': '' }} {{overdue ? 'overdue' : ''}}">
+  <a href="#{{route}}/{{id}}">
+    <div><input type="checkbox"></div>
+    <div class="icon {{icon ? '' : 'ng-hide'}}" ng-bind-html="icon | resourceIcon"></div>
+    <div class="content">
+      <div class="heading">
+        <h4>
+          <i class="fa fa-star primary {{primaryContact ? '' : 'ng-hide'}}" translate translate-attr-title="Primary contact"></i>
+          <span>{{heading}}</span>
+        </h4>
+        <div class="date">
+          <span class="{{dateFormat === 'taskDueDate' ? '' : 'ng-hide'}}" ng-bind-html="date | taskDueDate"></span>
+          <span class="{{dateFormat === 'taskDueDate' ? 'ng-hide' : ''}}" ng-bind-html="date | relativeDate"></span>
+          <span ng-if="!date && dod" ng-bind-html="dod | dateOfDeath"></span>
+        </div>
+        <div class="status tasks-count {{taskCount ? '' : 'ng-hide'}}">
+          <span class="badge">{{taskCount}}</span>
+        </div>
+        <div class="visits {{visits ? '' : 'ng-hide'}} {{visits.status === 'pending' ? 'danger': ''}} {{visits.status === 'started' ? 'warning' : ''}} {{visits.status === 'done' ? 'success': ''}}">
+          <span>{{visits && visits.count}}</span>
+        </div>
+        <div class="aggregate-status {{aggregate ? '' : 'ng-hide'}}" ng-if="aggregate" ng-class="{ 'error': aggregate.hasGoal && !aggregate.goalMet, 'success': aggregate.hasGoal && aggregate.goalMet }">
+          <span>{{aggregate.summary}}</span>
+        </div>
+      </div>
+      <div class="summary">
+        <p>{{summary}}</p>
+        <div class="status {{(valid && verified === undefined) ? 'ng-hide' : ''}}">
+          <span class="verification-badge {{(valid && verified) ? 'verified' : 'error'}}" ng-bind-html="statusIcon | safeHtml"/>
+        </div>
+        <div class="visits {{visits ? '' : 'ng-hide'}}  {{visits.status === 'pending' ? 'danger': ''}} {{visits.status === 'started' ? 'warning' : ''}} {{visits.status === 'done' ? 'success': ''}}">
+          <span>{{visits.summary}}</span>
+        </div>
+      </div>
+      <p ng-bind-html="dob | age:dod"></p>
+      <span class="{{muted && displayMuted ? '' : 'ng-hide' }}" ng-bind-html="'contact.muted' | translate"></span>
+      <div class="simprints-stars tier-{{simprintsTier}} {{simprintsTier ? '' : 'ng-hide'}}"></div>
+      <div class="detail {{lineage && lineage.length ? '' : 'ng-hide'}}" ng-bind-html="lineage | lineage"></div>
+      <div class="warning">{{warning}}</div>
+    </div>
+  </a>
+</li>

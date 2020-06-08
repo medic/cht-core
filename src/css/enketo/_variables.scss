@@ -1,0 +1,16 @@
+// load this before the core/variables
+
+$font-size-base: 15px !default;
+$brand-primary-color: #337ab7 !default;
+$brand-secondary-color: lighten($brand-primary-color, 50%) !default;
+
+$repeat-bg: lighten($brand-primary-color, 55%) !default;
+
+$radiocheck-unchecked-color: #cccccc !default;
+$radiocheck-checked-color: lighten($brand-primary-color, 10%) !default;
+
+$note-bg: white !default;
+$note-border: 1px solid #e1e1e1 !default;
+$note-border-radius: 0 !default;
+$input-border-focus: #66afe9 !default;
+$input-border-focus-shadow: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), 0.6) !default;

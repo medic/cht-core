@@ -1,0 +1,11 @@
+<div id="tasks-list" class="col-sm-4 inbox-items left-pane">
+  <ul ng-show="!tasksListCtrl.error && tasksListCtrl.hasTasks"></ul>
+  <p ng-show="tasksListCtrl.error" class="alert alert-danger" role="alert">
+    <span translate>Error fetching tasks</span>
+    <a class="btn btn-link" ng-click="tasksListCtrl.refreshTaskList()" translate>Reload</a>
+  </p>
+  <p class="loading-status" ng-show="!tasksListCtrl.error && !tasksListCtrl.loading && !tasksListCtrl.hasTasks && !tasksListCtrl.tasksDisabled" translate>No tasks found</p>
+  <p class="loading-status" ng-show="!tasksListCtrl.error && !tasksListCtrl.loading && tasksListCtrl.hasTasks && !tasksListCtrl.tasksDisabled" translate>task.list.complete</p>
+  <p class="loading-status" ng-show="tasksListCtrl.tasksDisabled" translate>tasks.disabled</p>
+  <div class="loader" ng-show="tasksListCtrl.loading && !tasksListCtrl.tasksDisabled && !tasksListCtrl.error"></div>
+</div>

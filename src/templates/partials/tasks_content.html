@@ -1,0 +1,55 @@
+<div class="content-pane right-pane">
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="tasksContentCtrl.loadingContent || tasksContentCtrl.loadingForm">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="!tasksContentCtrl.selectedTask && !tasksContentCtrl.loadingContent">
+    <div translate>No task selected</div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="!tasksContentCtrl.loadingContent && !tasksContentCtrl.loadingForm && tasksContentCtrl.contentError">
+    <div translate>{{ tasksContentCtrl.errorTranslationKey }}</div>
+  </div>
+
+  <div class="col-sm-8 item-content" ng-show="tasksContentCtrl.selectedTask && !tasksContentCtrl.form && !tasksContentCtrl.loadingContent && !tasksContentCtrl.loadingForm && !tasksContentCtrl.contentError">
+    <div class="body">
+      <div>
+        <ul>
+          <li>
+            <h2>{{tasksContentCtrl.selectedTask.title | translateFrom:selected}}</h2>
+          </li>
+          <li>
+            <label translate>task.date</label>
+            <p ng-bind-html="tasksContentCtrl.selectedTask.date | simpleDate"></p>
+          </li>
+          <li ng-if="tasksContentCtrl.selectedTask.priority">
+            <label translate>task.priority</label>
+            <p ng-class="{'high-priority': tasksContentCtrl.selectedTask.priority === 'high', 'medium-priority': tasksContentCtrl.selectedTask.priority === 'medium'}">
+              <span class="priority">
+                <i class="fa fa-exclamation-triangle high-priority-icon"></i>
+                <i class="fa fa-info-circle medium-priority-icon"></i>
+              </span>
+              {{tasksContentCtrl.selectedTask.priorityLabel | translateFrom:selected}}
+            </p>
+          </li>
+          <li ng-repeat="field in tasksContentCtrl.selectedTask.fields">
+            <label>{{field.label | translateFrom:selected}}</label>
+            <p>{{field.value | translateFrom:selected}}</p>
+          </li>
+          <li class="actions" ng-if="tasksContentCtrl.selectedTask.actions.length">
+            <a class="btn btn-primary" ng-click="tasksContentCtrl.performAction(action)" ng-repeat="action in tasksContentCtrl.selectedTask.actions">{{action.label | translateFrom:selected}}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content" ng-show="tasksContentCtrl.selectedTask && tasksContentCtrl.form && !tasksContentCtrl.loadingContent && !tasksContentCtrl.loadingForm">
+    <div class="body">
+      <mm-enketo id="'task-report'" status="tasksContentCtrl.enketoStatus" on-submit="tasksContentCtrl.save()" on-cancel="tasksContentCtrl.navigationCancel()" />
+    </div>
+  </div>
+</div>

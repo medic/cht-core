@@ -1,0 +1,21 @@
+<mm-modal
+  status="status"
+  title-key="'welcome'"
+  submit-key="'Start'"
+  on-cancel="welcomeModalCtrl.start()"
+  on-submit="welcomeModalCtrl.start()"
+>
+  <div class="row">
+    <div class="col-sm-6">
+      <h4 translate>welcome.setup.title</h4>
+      <p translate>welcome.setup.description</p>
+    </div>
+    <div class="col-sm-6">
+      <h4 translate>welcome.tour.title</h4>
+      <p translate>welcome.tour.description</p>
+    </div>
+  </div>
+  <div class="screenshot">
+    <img src="/img/setup-wizard-demo.png" width="614" height="262" />
+  </div>
+</mm-modal>

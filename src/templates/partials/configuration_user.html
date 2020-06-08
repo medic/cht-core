@@ -1,0 +1,21 @@
+<div class="filters">
+  <div class="inner"></div>
+</div>
+
+<div class="inner" ng-cloak>
+  <div class="col-sm-12 page configuration" ui-view="content">
+    <div>
+      <a ng-click="configurationUserCtrl.updatePassword()" class="btn btn-link">
+        <i class="fa fa-fw fa-key"></i>
+        <span translate>password.update</span>
+      </a>
+    </div>
+
+    <div>
+      <a ng-click="configurationUserCtrl.editSettings()" class="btn btn-link">
+        <i class="fa fa-fw fa-user"></i>
+        <span translate>Edit User Profile</span>
+      </a>
+    </div>
+  </div>
+</div>

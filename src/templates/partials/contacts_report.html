@@ -1,0 +1,17 @@
+<div class="content-pane right-pane">
+  <div class="col-sm-8 item-content empty-selection" ng-show="contactsReportCtrl.loadingForm">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="!contactsReportCtrl.loadingForm && contactsReportCtrl.contentError">
+    <div translate>{{ contactsReportCtrl.errorTranslationKey }}</div>
+  </div>
+
+  <div class="col-sm-8 item-content material" ng-show="contactsReportCtrl.selectedContact && contactsReportCtrl.form && !contactsReportCtrl.loadingForm">
+    <div class="card">
+      <mm-enketo id="'contact-report'" status="contactsReportCtrl.enketoStatus" on-submit="contactsReportCtrl.save()" on-cancel="contactsReportCtrl.navigationCancel()" />
+    </div>
+  </div>
+</div>

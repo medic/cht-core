@@ -1,0 +1,143 @@
+<div class="content-pane right-pane">
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="reportsContentCtrl.loadingContent && !reportsContentCtrl.selectMode">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection" ng-show="!reportsContentCtrl.loadingContent && !reportsContentCtrl.selectedReports.length">
+    <div translate>No report selected</div>
+  </div>
+
+  <div id="reports-content" class="col-sm-8 item-content" ng-show="reportsContentCtrl.selectMode || (!reportsContentCtrl.loadingContent && reportsContentCtrl.selectedReports.length && reportsContentCtrl.selectedReports[0].doc.form !== undefined)">
+
+    <div class="selection-count" ng-show="reportsContentCtrl.selectMode && reportsContentCtrl.selectedReports.length">
+      <span ng-show="reportsContentCtrl.selectedReports.length === 1" translate>select.mode.count.singular</span>
+      <span ng-show="reportsContentCtrl.selectedReports.length !== 1" translate translate-values="{ number: {{reportsContentCtrl.selectedReports.length || 0}} }">select.mode.count.plural</span>
+    </div>
+
+    <div ng-repeat="selection in reportsContentCtrl.selectedReports track by selection._id" class="body report-body">
+
+      <div class="item-summary" ng-click="reportsContentCtrl.toggleExpand(selection)">
+        <span class="icon" ng-bind-html="reportsContentCtrl.summaries[$index] | formIcon:reportsContentCtrl.forms"></span>
+        <a class="deselect" ng-show="reportsContentCtrl.selectMode" ng-click="reportsContentCtrl.deselect(reportsContentCtrl.summaries[$index], $event)">
+          <i class="fa fa-minus-circle"></i>
+        </a>
+        <div class="detail">
+          <div class="status" ng-hide="reportsContentCtrl.validChecks[$index] && reportsContentCtrl.summaries[$index].verified === undefined">
+            <span ng-if="reportsContentCtrl.validChecks[$index] && reportsContentCtrl.summaries[$index].verified" class="verification-badge verified">
+              <ng-include src="'templates/partials/svg-icons/report-verify-valid-icon.html'"/>
+            </span>
+            <span ng-if="!(reportsContentCtrl.validChecks[$index] && reportsContentCtrl.summaries[$index].verified)" class="verification-badge error">
+              <ng-include src="'templates/partials/svg-icons/report-verify-invalid-icon.html'"/>
+            </span>
+          </div>
+
+          <div ng-if="reportsContentCtrl.summaries[$index].subject.type" class="subject">
+              <a class="name" ng-if="reportsContentCtrl.summaries[$index].subject._id || reportsContentCtrl.summaries[$index].fields.patient_uuid" ui-sref="contacts.detail({ id: reportsContentCtrl.summaries[$index].subject._id || reportsContentCtrl.summaries[$index].fields.patient_uuid })"
+                ng-bind="(reportsContentCtrl.summaries[$index].subject.type === 'name' && reportsContentCtrl.summaries[$index].subject.value) || reportsContentCtrl.summaries[$index].subject.name || ('report.subject.unknown' | translate)">
+              </a>
+              <span class="name" ng-if="!reportsContentCtrl.summaries[$index].subject._id && !reportsContentCtrl.summaries[$index].fields.patient_uuid"
+                ng-bind="(reportsContentCtrl.summaries[$index].subject.type === 'name' && reportsContentCtrl.summaries[$index].subject.value) || reportsContentCtrl.summaries[$index].subject.name || ('report.subject.unknown' | translate)">
+              </span>
+          </div>
+          <mm-sender ng-if="!reportsContentCtrl.summaries[$index].subject.type" message="selection" hide-lineage="true"></mm-sender>
+          <div>{{reportsContentCtrl.summaries[$index] | title:reportsContentCtrl.forms}}</div>
+          <div class="position small-font"
+               ng-if="reportsContentCtrl.summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place || (!selection.form && selection.name)"
+               ng-bind-html="reportsContentCtrl.summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place | lineage">
+          </div>
+          <mm-sender ng-if="reportsContentCtrl.summaries[$index].subject.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>
+          <div class="time small-font" ng-bind-html="reportsContentCtrl.summaries[$index].reported_date | relativeDate"></div>
+        </div>
+      </div>
+
+      <div ng-show="selection.loading">
+        <div class="loader"></div>
+      </div>
+
+      <div class="details" ng-show="selection.expanded">
+        <ul>
+          <li ng-if="selection.formatted.form" ng-repeat="field in selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data" class="indent-{{field.depth || 0}}">
+            <label>
+              <span ng-if="selection.formatted.content_type === 'xml'" translate>{{field.label}}</span>
+              <span ng-if="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
+              <span class="fa fa-cogs" ng-if="field.generated" translate translate-attr-title="Generated report field"></span>
+            </label>
+            <p ng-if="!field.imagePath">
+              <span ng-if="field.target && field.target.filter"><a ng-click="reportsContentCtrl.search(field.target.filter)">{{field.value}}</a></span>
+              <span ng-if="field.target && field.target.url"><a ui-sref="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
+              <span ng-if="!field.target">{{field.value}}</span>
+            </p>
+            <report-image ng-if="field.imagePath" report="{{selection.formatted._id}}" path="{{field.imagePath}}"/>
+          </li>
+          <li ng-if="selection.formatted.errors.length">
+            <label translate>Errors</label>
+            <ul>
+              <li ng-repeat="error in selection.formatted.errors">
+                <p>{{error.message}}</p>
+              </li>
+            </ul>
+          </li>
+          <li ng-if="selection.formatted.sms_message.message">
+            <label translate>selection.doc.content.raw</label>
+            <p>{{selection.formatted.sms_message.message}}</p>
+          </li>
+          <li ng-if="selection.formatted.tasks.length">
+            <label ng-if="selection.formatted.kujua_message" translate>tasks.0.messages.0.to</label>
+            <label ng-if="!selection.formatted.kujua_message" translate>Automated Reply</label>
+            <ul class="task-list">
+              <li ng-repeat="task in selection.formatted.tasks">
+                <ul>
+                  <li ng-repeat="message in task.messages">
+                    <p>{{selection.formatted.kujua_message ? message.to : message.message}}</p>
+                  </li>
+                </ul>
+                <span class="task-state" ng-bind-html="task | state"></span>
+              </li>
+              <li class="clear"></li>
+            </ul>
+          </li>
+        </ul>
+        <div class="scheduled-tasks" ng-if="selection.formatted.scheduled_tasks_by_group.length">
+          <h2 translate>tasks</h2>
+          <ul>
+            <li ng-repeat="group in selection.formatted.scheduled_tasks_by_group">
+              <h3>{{group.name}}</h3>
+              <p>
+                <span ng-hide="group.loading">
+                  <a class="btn btn-link" ng-click="reportsContentCtrl.edit(selection, group)" translate>Edit</a>
+                  <a class="btn btn-link" ng-click="reportsContentCtrl.mute(selection, group)" ng-show="reportsContentCtrl.canMute(group)" translate>Mute</a>
+                  <a class="btn btn-link" ng-click="reportsContentCtrl.schedule(selection, group)" ng-show="reportsContentCtrl.canSchedule(group)" translate>Schedule</a>
+                </span>
+                <span class="inline loader" ng-show="group.loading"></span>
+              </p>
+              <ul class="task-list">
+                <li ng-repeat="task in group.rows | orderBy:'timestamp'">
+                  <ul>
+                    <li ng-repeat="message in task.messages">
+                      <p>{{message.message}}</p>
+                      <div class="message-error" ng-if="message.error">
+                        <span translate>messages.errors.invalid</span>
+                        <span translate>{{message.error}}</span>
+                      </div>
+                    </li>
+                  </ul>
+                  <span class="task-state {{ task.error ? 'has-error' : ''}}" ng-bind-html="task | state"></span>
+                </li>
+                <li class="clear"></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div ng-show="reportsContentCtrl.loadingContent && reportsContentCtrl.selectMode">
+      <div class="loader"></div>
+    </div>
+
+    <div class="padding"></div>
+  </div>
+</div>

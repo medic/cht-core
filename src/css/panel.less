@@ -1,0 +1,91 @@
+@import "variables";
+
+.panel-group {
+
+  margin-bottom: 0;
+
+  .panel {
+    box-shadow: none;
+    &.disabled .panel-heading {
+      color: @muted-state-color;
+    }
+    + .panel {
+      border-top: 1px solid @separator-color;
+      clear: right;
+    }
+  }
+  .panel-default > .panel-heading {
+    background-color: inherit;
+  }
+  .panel-default {
+    border: 0;
+  }
+  .panel-heading + .panel-collapse > .panel-body {
+    border: 0;
+  }
+  .panel-body {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .panel-heading {
+    padding: 0;
+    .panel-title a {
+      cursor: pointer;
+      width: 100%;
+      display: block;
+      padding-top: 3px;
+      outline: 0;
+      font-size: @font-extra-large;
+      &:hover, &:focus {
+        text-decoration: none;
+      }
+      &:hover .count {
+        background-color: @separator-color;
+      }
+    }
+    a:before {
+      content: '\f0d7'; // https://fontawesome.com/v4.7.0/icon/caret-down/
+      color: @top-header-color;
+      font-family: FontAwesome;
+      display: inline-block;
+      transition: all .5s ease;
+    }
+    .collapsed:before {
+      transform: rotate(-90deg);
+    }
+
+    .count {
+      box-sizing: border-box;
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      line-height: 15px;
+      border-radius: 10px;
+      border: 2px solid @separator-color;
+      text-align: center;
+      margin-right: 5px;
+      .fa {
+        display: none;
+      }
+    }
+    .value {
+      float: right;
+      font-size: @font-small;
+      line-height: 20px;
+      text-align: right;
+    }
+  }
+  .panel-complete .panel-heading {
+    .count {
+      .number {
+        display: none;
+      }
+      .fa {
+        display: inline;
+      }
+    }
+    .value, .count .fa {
+      color: @ok-color;
+    }
+  }
+}

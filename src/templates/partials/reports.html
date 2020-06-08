@@ -1,0 +1,46 @@
+<div class="filters">
+  <div class="inner">
+    <div class="basic-filters left-pane">
+      <mm-form-type-filter
+        search="reportsCtrl.search"
+        selected="reportsCtrl.selectedReports"
+      ></mm-form-type-filter>
+      <mm-facility-filter
+        search="reportsCtrl.search"
+        selected="reportsCtrl.selectedReports"
+      ></mm-facility-filter>
+      <mm-date-filter
+        search="reportsCtrl.search"
+        selected="reportsCtrl.selectedReports"
+      ></mm-date-filter>
+      <mm-status-filter
+        search="reportsCtrl.search"
+        selected="reportsCtrl.selectedReports"
+      ></mm-status-filter>
+      <mm-freetext-filter
+        search="reportsCtrl.search"
+        selected="reportsCtrl.selectedReports"
+      ></mm-freetext-filter>
+      <mm-reset-filter
+        reset-filter-model="reportsCtrl.resetFilterModel"
+        selected="reportsCtrl.selectedReports"
+      ></mm-reset-filter>
+    </div>
+    <mm-navigation></mm-navigation>
+  </div>
+</div>
+
+<div class="inner">
+  <div class="inbox page">
+    <mm-reports-list
+      appending="reportsCtrl.appending"
+      error="reportsCtrl.error"
+      error-syntax="reportsCtrl.errorSyntax"
+      filtered="reportsCtrl.filtered"
+      has-reports="reportsCtrl.hasReports"
+      loading="reportsCtrl.loading"
+      more-items="reportsCtrl.moreItems"
+    ></mm-reports-list>
+    <ui-view name="content"/>
+  </div>
+</div>

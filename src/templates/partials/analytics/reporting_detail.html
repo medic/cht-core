@@ -1,0 +1,156 @@
+<div class="filter" ng-show="analyticsReportingDetailCtrl.place">
+  <label translate>analytics.reporting.date_range</label>
+  <a class="btn btn-link"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 1 }"
+    ng-click="analyticsReportingDetailCtrl.setTimeQuantity(1)"
+    translate="analytics.reporting.last_time_unit"
+    translate-values="{
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit) | translate }}'
+    }"
+  ></a>
+  <a class="btn btn-link"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 3 }"
+    ng-click="analyticsReportingDetailCtrl.setTimeQuantity(3)"
+    translate="analytics.reporting.last_time_unit"
+    translate-values="{
+      quantity: 3,
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit, true) | translate }}'
+    }"
+  ></a>
+  <a class="btn btn-link"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 6 }"
+    ng-click="analyticsReportingDetailCtrl.setTimeQuantity(6)"
+    translate="analytics.reporting.last_time_unit"
+    translate-values="{
+      quantity: 6,
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit, true) | translate }}'
+    }"
+  ></a>
+  <a class="btn btn-link"
+    ng-class="{ 'disabled': analyticsReportingDetailCtrl.filters.quantity === 12 }"
+    ng-click="analyticsReportingDetailCtrl.setTimeQuantity(12)"
+    translate="analytics.reporting.last_time_unit"
+    translate-values="{
+      quantity: 12,
+      time_unit: '{{ analyticsReportingDetailCtrl.getTranslationKey(analyticsReportingDetailCtrl.filters.time_unit, true) | translate }}'
+    }"
+  ></a>
+  <div class="btn-group">
+    <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+      <span translate>analytics.reporting.change_time_unit</span> <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a ng-show="analyticsReportingDetailCtrl.filters.reporting_freq === 'weekly'"
+        ng-click="analyticsReportingDetailCtrl.setTimeUnit('week')" translate>week</a></li>
+      <li><a ng-click="analyticsReportingDetailCtrl.setTimeUnit('month')" translate>month</a></li>
+      <li><a ng-click="analyticsReportingDetailCtrl.setTimeUnit('quarter')" translate>quarter</a></li>
+      <li><a ng-click="analyticsReportingDetailCtrl.setTimeUnit('year')" translate>year</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="loader" ng-show="analyticsReportingDetailCtrl.loadingTotals"></div>
+
+<div ng-show="analyticsReportingDetailCtrl.place && !analyticsReportingDetailCtrl.loadingTotals" class="district-totals">
+  <div class="alert alert-danger" role="alert" ng-show="analyticsReportingDetailCtrl.error" translate>analytics.connection.error</div>
+  <div class="row" ng-hide="analyticsReportingDetailCtrl.error">
+    <div class="col-sm-2 col-xs-6">
+      <i class="fa fa-hospital-o"></i>
+      <h4>{{analyticsReportingDetailCtrl.totals.health_centers_size}}</h4>
+      <h3 translate>analytics.reporting.health_centers_size</h3>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+      <i class="fa fa-medkit"></i>
+      <h4>{{analyticsReportingDetailCtrl.totals.clinics_size}}</h4>
+      <h3 translate>analytics.reporting.clinics_size</h3>
+    </div>
+    <div class="col-sm-4 col-xs-12">
+      <div class="large-pie">
+        <nvd3 options="analyticsReportingDetailCtrl.pieChartOptions" data="analyticsReportingDetailCtrl.chart"></nvd3>
+      </div>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+      <i class="fa fa-file-o"></i>
+      <h4>{{analyticsReportingDetailCtrl.totals.not_submitted}}</h4>
+      <h3 translate>analytics.reporting.not_submitted</h3>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+      <i class="fa fa-exclamation-triangle"></i>
+      <h4>{{analyticsReportingDetailCtrl.totals.incomplete}}</h4>
+      <h3 translate>analytics.reporting.incomplete</h3>
+    </div>
+  </div>
+</div>
+
+<div class="facility-select" ng-show="analyticsReportingDetailCtrl.place && !analyticsReportingDetailCtrl.place.parent && !analyticsReportingDetailCtrl.loadingTotals">
+  <div class="row title" ng-show="analyticsReportingDetailCtrl.facilities.length">
+    <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
+    <div class="col-sm-1" translate>analytics.reporting.reports</div>
+    <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
+  </div>
+  <a ui-sref="analytics.reporting.detail({ form: analyticsReportingDetailCtrl.filters.form, place: facility.id })" class="row facility" ng-repeat="facility in analyticsReportingDetailCtrl.facilities">
+    <div class="col-sm-4">
+      {{facility.name}} ({{facility.clinics.length}})
+    </div>
+    <div class="col-sm-1">{{facility.valid}}</div>
+    <div class="col-sm-1">{{facility.valid_percent}}%</div>
+    <div class="col-sm-1">
+      <div class="mini-pie">
+        <nvd3 options="analyticsReportingDetailCtrl.miniPieChartOptions" data="facility.chart"></nvd3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="facility-select" ng-show="analyticsReportingDetailCtrl.place && !analyticsReportingDetailCtrl.loadingTotals">
+  <div class="row title" ng-show="analyticsReportingDetailCtrl.clinics.length">
+    <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
+    <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
+  </div>
+  <div ng-repeat="clinic in analyticsReportingDetailCtrl.clinics | orderBy:'name' track by clinic.id">
+    <div class="row facility" ng-click="analyticsReportingDetailCtrl.expandClinic(clinic.id)">
+      <div class="col-sm-4">
+        <i class="fa fa-caret-down" ng-show="analyticsReportingDetailCtrl.expandedClinic === clinic.id"></i>
+        <i class="fa fa-caret-right" ng-show="analyticsReportingDetailCtrl.expandedClinic !== clinic.id"></i>
+        {{clinic.name}}
+        <button class="btn btn-link btn-sm send-message" ng-attr-data-send-to="{{clinic.id}}" ng-if="clinic.phone"><i class="fa fa-envelope"></i></button>
+      </div>
+      <div class="col-sm-1">{{clinic.valid_percent}}%</div>
+      <div class="col-sm-1">
+        <div class="mini-pie">
+          <nvd3 options="analyticsReportingDetailCtrl.miniPieChartOptions" data="clinic.chart"></nvd3>
+        </div>
+      </div>
+    </div>
+    <div class="records" ng-if="analyticsReportingDetailCtrl.expandedClinic === clinic.id">
+      <div ng-repeat="record in clinic.records">
+        <div class="row" ng-class="{ 'valid': record.is_valid }" ng-click="analyticsReportingDetailCtrl.expandRecord(record.id)">
+          <div class="col-sm-8">
+            <i class="fa fa-caret-down" ng-show="record.id && analyticsReportingDetailCtrl.expandedRecord === record.id"></i><i class="fa fa-caret-right" ng-show="record.id && analyticsReportingDetailCtrl.expandedRecord !== record.id"></i>{{record.name}}
+          </div>
+        </div>
+        <div class="loader" ng-show="record.id && analyticsReportingDetailCtrl.loadingloadingRecord === record.id"></div>
+        <div class="fields" ng-if="analyticsReportingDetailCtrl.expandedRecord && analyticsReportingDetailCtrl.expandedRecord === record.id">
+          <div class="row">
+            <div class="col-sm-12"><label translate>fields</label></div>
+          </div>
+          <div class="row" ng-repeat="field in analyticsReportingDetailCtrl.formattedRecord.fields.data">
+            <div class="col-sm-2">{{field.label}}</div>
+            <div class="col-sm-10">{{field.value}}</div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12"><label translate>metadata</label></div>
+          </div>
+          <div class="row">
+            <div class="col-sm-2" translate>reported_date</div>
+            <div class="col-sm-10">{{analyticsReportingDetailCtrl.formattedRecord.reported_date | simpleDateTime}}</div>
+          </div>
+          <div class="row">
+            <div class="col-sm-2" translate>tasks.0.messages.0.message</div>
+            <div class="col-sm-10">{{analyticsReportingDetailCtrl.formattedRecord.sms_message.message}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

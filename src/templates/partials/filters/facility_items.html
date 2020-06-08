@@ -1,0 +1,4 @@
+<a role="menuitem" tabindex="-1" data-value="{{::facility.doc._id}}" class="{{:: 'indent-' + facilityDepth}}">{{::facility.doc.name || ((facilityFilterCtrl.isAdmin ? 'place.deleted' : 'place.unavailable') | translate)}}</a>
+<ul class="mm-dropdown-submenu">
+  <li role="presentation" ng-repeat="facility in ::facility.children | orderBy:'doc.name' track by facility.doc._id" ng-include="::'templates/partials/filters/facility_items.html'" ng-init="facilityDepth = facilityDepth + 1"></li>
+</ul>

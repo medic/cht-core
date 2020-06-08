@@ -1,0 +1,18 @@
+<div class="filters">
+  <div class="inner">
+    <mm-navigation></mm-navigation>
+  </div>
+</div>
+
+<div class="inner">
+  <div class="inbox page">
+    <mm-tasks-list
+      error="tasksCtrl.error"
+      has-tasks="tasksCtrl.hasTasks"
+      loading="tasksCtrl.loading"
+      refresh-task-list="tasksCtrl.refreshTaskList"
+      tasks-disabled="tasksCtrl.tasksDisabled"
+    ></mm-tasks-list>
+    <ui-view name="content"/>
+  </div>
+</div>

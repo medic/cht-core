@@ -1,0 +1,45 @@
+<div class="page reporting">
+  <div class="reporting-rates">
+
+    <div class="loader" ng-hide="analyticsReportingCtrl.districts && analyticsReportingCtrl.forms"></div>
+
+    <div class="dropdown filter" ng-show="analyticsReportingCtrl.districts && analyticsReportingCtrl.forms">
+      <label translate>analytics.reporting.form</label>
+      <button class="btn btn-default dropdown-toggle" type="button" id="form-select" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <span ng-repeat="form in analyticsReportingCtrl.forms track by form.meta.code" ng-if="analyticsReportingCtrl.filters.form === form.meta.code">
+          <span ng-if="form.meta.translation_key" translate>{{form.meta.translation_key}}</span>
+          <span ng-if="!form.meta.translation_key">{{form.meta.label | translateFrom}}</span>
+        </span>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="form-select">
+        <li ng-class="{ disabled: analyticsReportingCtrl.filters.form === form.meta.code }" ng-repeat="form in analyticsReportingCtrl.forms track by form.meta.code">
+          <a ui-sref="analytics.reporting.detail({ form: form.meta.code, place: analyticsReportingCtrl.filters.place })">
+            <span ng-if="form.meta.translation_key" translate>{{form.meta.translation_key}}</span>
+            <span ng-if="!form.meta.translation_key">{{form.meta.label | translateFrom}}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="dropdown filter" ng-show="analyticsReportingCtrl.districts && analyticsReportingCtrl.forms">
+      <label translate>analytics.reporting.district</label>
+      <button class="btn btn-default dropdown-toggle" type="button" id="facility-select" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <span ng-repeat="district in analyticsReportingCtrl.districts track by district._id" ng-if="analyticsReportingCtrl.filters.district._id === district._id">
+          {{district.name}}
+        </span>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="facility-select">
+        <li ng-class="{ disabled: analyticsReportingCtrl.filters.place === district._id }" ng-repeat="district in analyticsReportingCtrl.districts | orderBy:'name' track by district._id">
+          <a ui-sref="analytics.reporting.detail({ form: analyticsReportingCtrl.filters.form, place: district._id })">
+            {{district.name}}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <ui-view name="detail"/>
+
+  </div>
+</div>

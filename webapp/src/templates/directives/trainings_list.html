@@ -1,0 +1,18 @@
+<div id="trainings-list" class="col-sm-4 inbox-items left-pane">
+  <div class="selection-count" ng-show="trainingsListCtrl.selectMode">
+    <span ng-show="trainingsListCtrl.selectedtrainings.length === 1" translate>select.mode.count.singular</span>
+    <span ng-show="trainingsListCtrl.selectedtrainings.length !== 1" translate translate-values="{ number: {{trainingsListCtrl.selectedtrainings.length || 0}} }">select.mode.count.plural</span>
+  </div>
+  <ul class="unfiltered" ng-show="(!trainingsListCtrl.loading || trainingsListCtrl.appending) && !trainingsListCtrl.filtered"></ul>
+  <ul class="filtered" ng-show="(!trainingsListCtrl.loading || trainingsListCtrl.appending) && trainingsListCtrl.filtered"></ul>
+  <p ng-show="trainingsListCtrl.error" class="alert alert-danger" role="alert">
+    <span ng-show="trainingsListCtrl.errorSyntax">
+      <span translate>invalid.query</span>
+    </span>
+    <span ng-hide="trainingsListCtrl.errorSyntax" translate>Error fetching trainings</span>
+  </p>
+  <p class="loading-status" ng-show="!trainingsListCtrl.error && !trainingsListCtrl.loading && !trainingsListCtrl.hastrainings" translate>trainings.none</p>
+  <p class="loading-status" ng-show="!trainingsListCtrl.loading && trainingsListCtrl.hastrainings && !trainingsListCtrl.moreItems" translate>No more trainings</p>
+  <div class="loader" ng-show="trainingsListCtrl.loading"></div>
+  <div class="padding"></div>
+</div>

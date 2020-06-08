@@ -1,0 +1,22 @@
+<div class="basic-filters left-pane">
+
+  <span class="filter dropdown mm-dropdown analytics-module" ng-show="$ctrl.analyticsModules.length > 1">
+    <span id="module" class="mm-button" data-toggle="dropdown">
+      <span class="mm-button-icon">
+        <span class="fa fa-bar-chart-o"></span>
+      </span>
+      <span class="mm-button-dropdown">
+        <span class="fa fa-chevron-down"></span>
+      </span>
+      <span class="mm-button-text" ng-repeat="module in $ctrl.analyticsModules" ng-if="module.state | isState">
+        {{module.label | translate}}
+      </span>
+    </span>
+    <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
+      <li role="presentation" ng-repeat="module in $ctrl.analyticsModules">
+        <a ui-sref="{{module.state}}" role="menuitem" tabindex="-1">{{module.label | translate}}</a>
+      </li>
+    </ul>
+  </span>
+
+</div>
