@@ -39,6 +39,10 @@ describe('messageUtils', () => {
       const fieldsPhone = 'fieldsPhone';
       const inlinePhone = 'inlinePhone';
       const complexInlinePhone = 'complexInlinePhone';
+      const linkedPhone1 = 'linkedPhone1';
+      const linkedPhone2 = 'linkedPhone2';
+      const linkedPhone3 = 'linkedPhone3';
+      const linkedPhone4 = 'linkedPhone4';
       const doc = {
         form: 'x',
         from: fromPhone,
@@ -101,6 +105,104 @@ describe('messageUtils', () => {
         },
       };
 
+      const linkedDoc = {
+        form: 'x',
+        from: fromPhone,
+        fields: {
+          phone: fieldsPhone,
+        },
+        phone: inlinePhone,
+        contact: {
+          parent: {
+            type: 'contact',
+            contact_type: 'clinic',
+            contact: {
+              phone: clinicPhone
+            },
+            parent: {
+              type: 'contact',
+              contact_type: 'health_center',
+              contact: {
+                phone: parentPhone
+              },
+              parent: {
+                type: 'contact',
+                contact_type: 'district_hospital',
+                contact: {
+                  phone: grandparentPhone
+                }
+              },
+              linked_contacts: {
+                chw4: {
+                  phone: linkedPhone4,
+                },
+              }
+            },
+            linked_contacts: {
+              chw2: {
+                phone: linkedPhone2,
+              },
+              chw3: {
+                phone: linkedPhone3,
+              }
+            }
+          },
+          linked_contacts: {
+            chw1: {
+              phone: linkedPhone1,
+            },
+            random: 'unknown',
+            random2: { _id: 'unknown' },
+          },
+        },
+      };
+
+      const linkedDocWithPatient = {
+        form: 'x',
+        from: fromPhone,
+        fields: {
+          phone: fieldsPhone,
+        },
+        phone: inlinePhone,
+        patient: {
+          linked_contacts: {
+            tag1: {
+              phone: linkedPhone1,
+            },
+            tag2: 'aaaa'
+          },
+          phone: 'patientPhone',
+          parent: {
+            type: 'clinic',
+            contact: {
+              phone: clinicPhone,
+            },
+            parent: {
+              type: 'health_center',
+              contact: {
+                phone: parentPhone,
+              },
+              linked_contacts: {
+                tag4: { phone: linkedPhone4 },
+              }
+            },
+            linked_contacts: {
+              tag3: { phone: linkedPhone3 },
+              tagtag: { phone: '' },
+            }
+          },
+        },
+        contact: {
+          phone: 'otherphone',
+          linked_contacts: {
+            tag1: { phone: 'otherphone' },
+            tag2: { phone: linkedPhone2 },
+            tag3: { phone: 'otherphone' },
+            tag4: { phone: 'otherphone' },
+          }
+        }
+      };
+
       it('resolves reporting_unit correctly', () => {
         utils._getRecipient(doc, 'reporting_unit')
           .should.equal(fromPhone);
@@ -124,6 +226,10 @@ describe('messageUtils', () => {
           .should.equal(parentPhone);
         utils._getRecipient(flexibleDoc, 'ancestor:health_center')
           .should.equal(parentPhone);
+        utils._getRecipient(doc, 'ancestor:clinic')
+          .should.equal(clinicPhone);
+        utils._getRecipient(flexibleDoc, 'ancestor:clinic')
+          .should.equal(clinicPhone);
       });
       it('resolves clinic based on patient if given', () => {
         const context = {
@@ -164,6 +270,90 @@ describe('messageUtils', () => {
           .should.equal('111');
         utils._getRecipient(contextFlexible, 'clinic')
           .should.equal('111');
+      });
+
+      it('should resolve contact: correctly', () => {
+        utils._getRecipient(linkedDoc, 'contact:chw1').should.equal(linkedPhone1);
+        utils._getRecipient(linkedDoc, 'contact:chw2').should.equal(linkedPhone2);
+        utils._getRecipient(linkedDoc, 'contact:chw3').should.equal(linkedPhone3);
+        utils._getRecipient(linkedDoc, 'contact:chw4').should.equal(linkedPhone4);
+        utils._getRecipient(linkedDoc, 'contact:nothing').should.equal(fromPhone);
+        utils._getRecipient(linkedDoc, 'contact:random').should.equal(fromPhone);
+
+        utils._getRecipient(doc, 'contact:health_center').should.equal(parentPhone);
+        utils._getRecipient(flexibleDoc, 'contact:health_center').should.equal(parentPhone);
+        utils._getRecipient(doc, 'contact:clinic').should.equal(clinicPhone);
+        utils._getRecipient(flexibleDoc, 'contact:clinic').should.equal(clinicPhone);
+      });
+
+      it('should resolve contact: correctly based on patient', () => {
+        utils._getRecipient(linkedDocWithPatient, 'contact:tag1').should.equal(linkedPhone1);
+        // this resolve from contact instead of patient! patient:tag2 is 'aaa'
+        utils._getRecipient(linkedDocWithPatient, 'contact:tag2').should.equal(linkedPhone2);
+        utils._getRecipient(linkedDocWithPatient, 'contact:tag3').should.equal(linkedPhone3);
+        utils._getRecipient(linkedDocWithPatient, 'contact:tag4').should.equal(linkedPhone4);
+        utils._getRecipient(linkedDocWithPatient, 'contact:nonexisting').should.equal(fromPhone);
+        utils._getRecipient(linkedDocWithPatient, 'contact:tagtag').should.equal(fromPhone);
+      });
+
+      it('should resolve contact: on 1st match', () => {
+        const context = {
+          contact: {
+            phone: 'a',
+            linked_contacts: {
+              one: { phone: 'one' },
+              two: { phone: 'two' },
+              three: { phone: 'three' },
+            },
+            parent: {
+              linked_contacts: {
+                one: { phone: 'not-one' },
+                two: { phone: 'not-two' },
+                three: { phone: 'not-three' },
+                four: { phone: 'yes-four' },
+              },
+              contact: { phone: 'random' },
+            },
+          },
+        };
+
+        utils._getRecipient(context, 'contact:one').should.equal('one');
+        utils._getRecipient(context, 'contact:two').should.equal('two');
+        utils._getRecipient(context, 'contact:three').should.equal('three');
+        utils._getRecipient(context, 'contact:four').should.equal('yes-four');
+      });
+
+      it('should resolve contact: tag 1st, contact type 2nd', () => {
+        const context = {
+          contact: {
+            type: 'contact',
+            contact_type: 'person',
+            phone: '000000',
+            linked_contacts: {
+              person: { phone: 'one' },
+            },
+            parent: {
+              type: 'contact',
+              contact_type: 'clinic',
+              contact: { phone: '111111' },
+              linked_contacts: {
+                clinic: { phone: 'two' },
+              },
+              parent: {
+                type: 'contact',
+                contact_type: 'health_center',
+                contact: { phone: '22222' },
+                linked_contacts: {
+                  health_center: { phone: 'three' },
+                },
+              }
+            },
+          },
+        };
+
+        utils._getRecipient(context, 'contact:person').should.equal('one');
+        utils._getRecipient(context, 'contact:clinic').should.equal('two');
+        utils._getRecipient(context, 'contact:health_center').should.equal('three');
       });
     });
     it('tries to resolve the value from the fields property', () => {

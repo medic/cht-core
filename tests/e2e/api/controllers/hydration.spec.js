@@ -133,6 +133,63 @@ const contacts = [
     name: 'patient4',
     parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
   },
+  {
+    _id: 'center_with_linked_contacts',
+    type: 'health_center',
+    parent: { _id: 'PARENT_PLACE' },
+    name: 'center_with_linked_contacts',
+    contact: { _id: 'chw_with_linked_contacts' },
+    linked_contacts: {
+      a: 'patient3',
+      b: 'hc2',
+    }
+  },
+  {
+    _id: 'clinic_with_linked_contacts',
+    type: 'clinic',
+    parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
+    contact: { _id: 'chw_with_linked_contacts' },
+    linked_contacts: {
+      first: 'chw_with_linked_contacts',
+      second: { _id: 'patient4' },
+    }
+  },
+  {
+    _id: 'chw_with_linked_contacts',
+    type: 'person',
+    parent: {
+      _id: 'clinic_with_linked_contacts',
+      parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
+    },
+    name: 'chw_with_linked_contacts',
+    linked_contacts: {
+      one: { _id: 'patient_with_linked_contacts' },
+      three: false,
+      four: [],
+    },
+  },
+  {
+    _id: 'patient_with_linked_contacts',
+    type: 'person',
+    parent: {
+      _id: 'clinic_with_linked_contacts',
+      parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
+    },
+    name: 'patient_with_linked_contacts',
+    linked_contacts: {
+      _id: 'center_with_linked_contacts',
+    },
+  },
+  {
+    _id: 'patient_with_empty_linked_contacts',
+    type: 'person',
+    parent: {
+      _id: 'clinic_with_linked_contacts',
+      parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
+    },
+    name: 'patient_with_linked_contacts',
+    linked_contacts: {},
+  }
 ];
 
 const reports = [
@@ -157,6 +214,20 @@ const hydrateContact = doc => {
   }
   if (hydrated.contact) {
     hydrated.contact = _.cloneDeep(findDoc(doc.contact._id));
+  }
+  if (hydrated.linked_contacts) {
+    Object.keys(hydrated.linked_contacts).forEach(key => {
+      const linkedContact = hydrated.linked_contacts[key];
+      if (!linkedContact) {
+        return;
+      }
+      const id = typeof linkedContact === 'string' ? linkedContact : linkedContact._id;
+      if (!id) {
+        return;
+      }
+
+      hydrated.linked_contacts[key] = _.cloneDeep(findDoc(id));
+    });
   }
   return hydrated;
 };
@@ -324,6 +395,67 @@ describe('Hydration API', () => {
           {
             id: 'hc1',
             doc: hydrateContact(findDoc('hc1')),
+          },
+        ]);
+      });
+    });
+
+    it('should correctly hydrate single linked contact', () => {
+      onlineRequestOptions.qs = { doc_ids: ['clinic_with_linked_contacts'] };
+      return utils.request(onlineRequestOptions).then(result => {
+        chai.expect(result).excludingEvery('_rev').to.deep.equal([
+          {
+            id: 'clinic_with_linked_contacts',
+            doc: hydrateContact(findDoc('clinic_with_linked_contacts')),
+          },
+        ]);
+      });
+    });
+
+    it('should correctly hydrate single linked contact', () => {
+      onlineRequestOptions.qs = { doc_ids: ['patient_with_linked_contacts'] };
+      return utils.request(onlineRequestOptions).then(result => {
+        chai.expect(result).excludingEvery('_rev').to.deep.equal([
+          {
+            id: 'patient_with_linked_contacts',
+            doc: hydrateContact(findDoc('patient_with_linked_contacts')),
+          },
+        ]);
+      });
+    });
+
+    it('should correctly hydrate single linked contacts with null values', () => {
+      onlineRequestOptions.qs = { doc_ids: ['chw_with_linked_contacts'] };
+      return utils.request(onlineRequestOptions).then(result => {
+        chai.expect(result).excludingEvery('_rev').to.deep.equal([
+          {
+            id: 'chw_with_linked_contacts',
+            doc: hydrateContact(findDoc('chw_with_linked_contacts')),
+          },
+        ]);
+      });
+    });
+
+    it('should correctly hydrate multiple linked contacts', () => {
+      onlineRequestOptions.qs = { doc_ids: [
+        'patient_with_empty_linked_contacts',
+        'center_with_linked_contacts',
+        'clinic_with_linked_contacts',
+      ]};
+
+      return utils.request(onlineRequestOptions).then(result => {
+        chai.expect(result).excludingEvery('_rev').to.deep.equal([
+          {
+            id: 'patient_with_empty_linked_contacts',
+            doc: hydrateContact(findDoc('patient_with_empty_linked_contacts')),
+          },
+          {
+            id: 'center_with_linked_contacts',
+            doc: hydrateContact(findDoc('center_with_linked_contacts')),
+          },
+          {
+            id: 'clinic_with_linked_contacts',
+            doc: hydrateContact(findDoc('clinic_with_linked_contacts')),
           },
         ]);
       });

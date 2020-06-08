@@ -20,6 +20,18 @@ const getParent = function(doc, type) {
   return facility || undefined;
 };
 
+const getLinkedContact = (doc, tag) => {
+  let facility = doc.parent ? doc : doc.contact;
+  let linkedContact;
+  while (facility && !linkedContact){
+    if (facility.linked_contacts && facility.linked_contacts[tag]){
+      linkedContact = facility.linked_contacts[tag];
+    }
+    facility = facility.parent;
+  }
+  return linkedContact;
+};
+
 const getClinic = function(doc) {
   return doc && getParent(doc, 'clinic');
 };
@@ -50,6 +62,11 @@ const getDistrictPhone = function(doc) {
 const getParentPhone = function(doc, type) {
   const parent = doc && getParent(doc, type);
   return parent && parent.contact && parent.contact.phone;
+};
+
+const getLinkedPhone = (doc, tag) => {
+  const linkedContact = doc && getLinkedContact(doc, tag);
+  return linkedContact && linkedContact.phone;
 };
 
 const applyPhoneReplacement = function(config, phone) {
@@ -84,8 +101,6 @@ const getRecipient = function(context, recipient) {
     return;
   }
   recipient = recipient && recipient.trim();
-  console.log(recipient);
-  console.log(context);
   const from = context.from || (context.contact && context.contact.phone);
   if (!recipient) {
     return from;
@@ -97,6 +112,12 @@ const getRecipient = function(context, recipient) {
     const type = recipient.split(':')[1];
     phone = getParentPhone(context.patient, type) ||
             getParentPhone(context, type);
+  } else if (recipient.startsWith('contact:')) {
+    const tag = recipient.split(':')[1];
+    phone = getLinkedPhone(context.patient, tag) ||
+            getLinkedPhone(context, tag) ||
+            getParentPhone(context.patient, tag) ||
+            getParentPhone(context, tag);
   } else if (recipient === 'parent') {
     const patient = context.patient || context;
     const facility = patient.parent ? patient : patient.contact;
