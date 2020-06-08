@@ -194,6 +194,7 @@ describe('messageUtils', () => {
         },
         contact: {
           phone: 'otherphone',
+          parent: {},
           linked_contacts: {
             tag1: { phone: 'otherphone' },
             tag2: { phone: linkedPhone2 },
