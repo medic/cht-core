@@ -1151,7 +1151,7 @@ curl http://localhost:5988/api/v1/monitoring
 ### Response content
 
 | JSON path | Type | Description |
-| --------- | ----------------- | ---- | ----------- |
+| --------- | ----------------- | ---- |
 | `version.app` | String | The version of the webapp. |
 | `version.node` | String | The version of NodeJS. |
 | `version.couchdb` | String | The version of CouchDB. |
