@@ -240,7 +240,7 @@ angular.module('inboxServices').factory('TrainingsActions',
 
           const promptUserToConfirmVerification = () => {
             const verificationTranslationKey = trainingIsVerified ?
-             'trainings.verify.valid' : 'trainings.verify.invalid';
+              'trainings.verify.valid' : 'trainings.verify.invalid';
             return Modal({
               templateUrl: 'templates/modals/verify_confirm.html',
               controller: 'VerifyTrainingModalCtrl',
