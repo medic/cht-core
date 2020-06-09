@@ -9,8 +9,20 @@ describe('Contact summary info', () => {
     if (contact.type === "person") {
       fields = [
         { label: "test.pid", value: contact.patient_id, width: 3 },
-        { label: "test.sex", value: contact.sex, width: 3 }
+        { label: "test.sex", value: contact.sex, width: 3 },
       ];
+      Object.keys(contact.linked_contacts).forEach(key => {
+        const linkedContact = contact.linked_contacts[key];
+        if (!linkedContact) {
+          return;
+        }
+        
+        fields.push({
+          label: key,
+          value: linkedContact.name + ' ' + linkedContact.phone,
+          width: 3,
+        });
+      });
       let pregnancy;
       let pregnancyDate;
       reports.forEach(report=> {
@@ -61,16 +73,6 @@ describe('Contact summary info', () => {
     type: 'clinic',
     name: 'Bob Place',
   };
-  const CAROL = {
-    _id: 'carol-contact',
-    reported_date: 1,
-    type: 'person',
-    name: 'Carol Carolina',
-    parent: BOB_PLACE,
-    patient_id: '05946',
-    sex: 'f',
-    date_of_birth: 1462333250374,
-  };
   const DAVID = {
     _id: 'david-contact',
     reported_date: 1,
@@ -78,6 +80,20 @@ describe('Contact summary info', () => {
     name: 'David Davidson',
     phone: '+447765902002',
     parent: BOB_PLACE,
+  };
+  const CAROL = {
+    _id: 'carol-contact',
+    reported_date: 1,
+    type: 'person',
+    name: 'Carol Carolina',
+    parent: { _id: BOB_PLACE._id },
+    patient_id: '05946',
+    sex: 'f',
+    date_of_birth: 1462333250374,
+    linked_contacts: {
+      aliceTag: ALICE._id,
+      davidTag: { _id: DAVID._id },
+    },
   };
 
   // reports
@@ -179,6 +195,16 @@ describe('Contact summary info', () => {
         element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p'))
       )
     ).toBe(CAROL.sex);
+
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(3) label'))))
+      .toBe('aliceTag');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(3) p'))))
+      .toBe(ALICE.name + ' ' + ALICE.phone);
+
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(4) label'))))
+      .toBe('davidTag');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(4) p'))))
+      .toBe(DAVID.name + ' ' + DAVID.phone);
 
     // assert that the pregnancy card exists and has the right fields.
     expect(

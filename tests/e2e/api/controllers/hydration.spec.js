@@ -210,10 +210,10 @@ const findDoc = id => docs.find(d => d._id === id);
 const hydrateContact = doc => {
   const hydrated = _.cloneDeep(doc);
   if (hydrated.parent) {
-    hydrated.parent = hydrateContact(_.cloneDeep(findDoc(doc.parent._id)));
+    hydrated.parent = hydrateContact(_.cloneDeep(findDoc(hydrated.parent._id)));
   }
   if (hydrated.contact) {
-    hydrated.contact = _.cloneDeep(findDoc(doc.contact._id));
+    hydrated.contact = _.cloneDeep(findDoc(hydrated.contact._id));
   }
   if (hydrated.linked_contacts) {
     Object.keys(hydrated.linked_contacts).forEach(key => {
@@ -235,7 +235,7 @@ const hydrateContact = doc => {
 const hydrateReport = doc => {
   const hydrated = _.cloneDeep(doc);
   if (hydrated.contact) {
-    hydrated.contact = hydrateContact(_.cloneDeep(findDoc(doc.contact._id)));
+    hydrated.contact = hydrateContact(_.cloneDeep(findDoc(hydrated.contact._id)));
   }
   if (hydrated.fields.patient_id) {
     hydrated.patient = hydrateContact(_.cloneDeep(findDoc(hydrated.fields.patient_id)));
