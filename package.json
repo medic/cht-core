@@ -25,6 +25,7 @@
     "chai": "^4.2.0",
     "chai-exclude": "^2.0.2",
     "chai-shallow-deep-equal": "^1.4.6",
+    "doctoc": "^1.4.0",
     "es-abstract": "^1.17.5",
     "es-to-primitive": "^1.2.1",
     "eslint": "^7.2.0",
