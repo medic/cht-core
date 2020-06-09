@@ -18,14 +18,16 @@
   "devDependencies": {
     "@medic/eslint-config": "^1.1.0",
     "angular-jsdoc": "^1.5.1",
-    "angular-mocks": "^1.7.9",
+    "angular-mocks": "^1.8.0",
     "autoprefixer": "^9.8.0",
     "browserify-ngannotate": "^2.0.0",
     "bundlesize": "^0.18.0",
     "chai": "^4.2.0",
     "chai-exclude": "^2.0.2",
     "chai-shallow-deep-equal": "^1.4.6",
-    "eslint": "^7.1.0",
+    "es-abstract": "^1.17.5",
+    "es-to-primitive": "^1.2.1",
+    "eslint": "^7.2.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-compat": "^3.7.0",
     "eslint-plugin-couchdb": "^0.2.0",
@@ -53,6 +55,7 @@
     "grunt-protractor-runner": "^5.0.0",
     "grunt-sass": "^3.1.0",
     "grunt-text-replace": "^0.4.0",
+    "has-symbols": "^1.0.1",
     "jasmine-spec-reporter": "^5.0.2",
     "jit-grunt": "^0.10.0",
     "karma": "^5.0.9",
@@ -68,18 +71,24 @@
     "moment": "^2.26.0",
     "node-sass": "^4.14.1",
     "nodemon": "^2.0.4",
+    "object.getownpropertydescriptors": "^2.1.0",
+    "object.values": "^1.1.1",
     "pouchdb-adapter-http": "^7.2.1",
     "pouchdb-core": "^7.2.1",
     "pouchdb-mapreduce": "^7.2.1",
-    "protractor": "^5.4.4",
+    "protractor": "^7.0.0",
     "protractor-jasmine2-screenshot-reporter": "^0.5.0",
+    "qs": "^6.9.4",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
+    "resolve": "^1.17.0",
     "rewire": "^5.0.0",
     "semver": "^7.3.2",
     "sinon": "^8.1.1",
     "sw-precache": "^5.2.1",
-    "time-grunt": "^2.0.0"
+    "time-grunt": "^2.0.0",
+    "tiny-lr": "^1.1.1",
+    "util.promisify": "^1.0.1"
   },
   "bundlesize": [
     {
@@ -95,5 +104,8 @@
       "maxSize": "70 kB"
     }
   ],
-  "dependencies": {}
+  "dependencies": {
+    "acorn": "^7.2.0",
+    "ajv": "^6.12.2"
+  }
 }
