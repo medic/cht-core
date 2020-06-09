@@ -340,6 +340,135 @@ angular.module('inboxServices').service('Tour',
         ]
       },
       {
+        name: 'trainings',
+        route: 'trainings.detail',
+        orphan: true,
+        debug: true,
+        steps: [
+          {
+            element: '#trainings-tab',
+            placement: 'bottom',
+            title: 'tour.trainings.forms.title',
+            content: 'tour.trainings.forms.description',
+            onShow: mmShowTrainingList
+          },
+          {
+            element: '#formTypeDropdown',
+            placement: 'right',
+            mobilePlacement: 'bottom',
+            title: 'tour.trainings.types-filter.title',
+            content: 'tour.trainings.types-filter.description',
+            onShow: mmShowTrainingList,
+            onShown: function() {
+              mmOpenDropdown('#formTypeDropdown');
+            },
+            onHide: function() {
+              $('#formTypeDropdown').removeClass('open');
+            }
+          },
+          {
+            element: '#facilityDropdown',
+            placement: 'right',
+            mobilePlacement: 'bottom',
+            title: 'tour.trainings.facilities-filter.title',
+            content: 'tour.trainings.facilities-filter.description',
+            onShow: mmShowTrainingList,
+            onShown: function() {
+              mmOpenDropdown('#facilityDropdown');
+            },
+            onHide: function() {
+              $('#facilityDropdown').removeClass('open');
+            }
+          },
+          {
+            element: '#dateRangeDropdown',
+            placement: 'left',
+            mobilePlacement: 'bottom',
+            title: 'tour.trainings.date-filter.title',
+            content: 'tour.trainings.date-filter.description',
+            onShow: mmShowTrainingList,
+            onShown: function() {
+              if (!responsive.isMobile()) {
+                $('#date-filter').trigger('click');
+              }
+            },
+            onHide: function() {
+              $('#date-filter').trigger('hide.daterangepicker');
+            }
+          },
+          {
+            element: '#statusDropdown',
+            placement: 'left',
+            mobilePlacement: 'bottom',
+            title: 'tour.trainings.status-filter.title',
+            content: 'tour.trainings.status-filter.description',
+            onShow: mmShowTrainingList,
+            onShown: function() {
+              mmOpenDropdown('#statusDropdown');
+            },
+            onHide: function() {
+              $('#statusDropdown').removeClass('open');
+            }
+          },
+          {
+            element: '#freetext',
+            mobileElement: '#mobile-search',
+            placement: 'left',
+            mobilePlacement: 'bottom',
+            title: 'tour.trainings.freetext-filter.title',
+            content: 'tour.trainings.freetext-filter.description',
+            onShow: mmShowTrainingList
+          },
+          {
+            element: '#trainings-list',
+            placement: 'right',
+            mobilePlacement: 'orphan',
+            title: 'tour.trainings.list.title',
+            content: 'tour.trainings.list.description',
+            onShow: mmShowTrainingList
+          },
+          {
+            element: '#trainings-list li:first-child .status',
+            placement: 'right',
+            mobilePlacement: 'bottom',
+            title: 'tour.trainings.status.title',
+            content: 'tour.trainings.status.description',
+            onShow: mmShowTrainingList
+          },
+          {
+            element: '#trainings-content',
+            placement: 'left',
+            mobilePlacement: 'orphan',
+            title: 'tour.trainings.details.title',
+            content: 'tour.trainings.details.description',
+            onShow: mmShowTrainingContent
+          },
+          {
+            element: '#trainings-content .item-summary',
+            placement: 'left',
+            mobilePlacement: 'bottom',
+            title: 'tour.trainings.information.title',
+            content: 'tour.trainings.information.description',
+            onShow: mmShowTrainingContent
+          },
+          {
+            element: '#trainings-content .training-body',
+            placement: 'left',
+            mobilePlacement: 'top',
+            title: 'tour.trainings.content.title',
+            content: 'tour.trainings.content.description',
+            onShow: mmShowTrainingContent
+          },
+          {
+            element: '.detail-actions:not(.ng-hide)',
+            placement: 'top',
+            title: 'tour.trainings.actions.title',
+            content: 'tour.trainings.actions.description',
+            onShow: mmShowTrainingContent
+          }
+        ]
+      },
+      {
         name: 'contacts',
         route: 'contacts.detail',
         orphan: true,
@@ -533,11 +662,11 @@ angular.module('inboxServices').service('Tour',
     };
 
     const getReportsTour = () => {
-      return Auth.has('can_view_reports_tab')
+      return Auth.has('can_view_trainings_tab')
         .then(canView => {
           return canView && {
             order: 3,
-            id: 'reports',
+            id: 'trainings',
             icon: 'fa-list-alt',
             name: 'Reports'
           };

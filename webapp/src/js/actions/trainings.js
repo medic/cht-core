@@ -14,10 +14,10 @@ angular.module('inboxServices').factory('TrainingsActions',
     LiveList,
     MarkRead,
     Modal,
-    TrainingViewModelGenerator,
     Search,
     Selectors,
-    ServicesActions
+    ServicesActions,    
+    TrainingViewModelGenerator
   ) {
     'use strict';
     'ngInject';
@@ -239,7 +239,8 @@ angular.module('inboxServices').factory('TrainingsActions',
           globalActions.setLoadingSubActionBar(true);
 
           const promptUserToConfirmVerification = () => {
-            const verificationTranslationKey = trainingIsVerified ? 'trainings.verify.valid' : 'trainings.verify.invalid';
+            const verificationTranslationKey = trainingIsVerified ?
+             'trainings.verify.valid' : 'trainings.verify.invalid';
             return Modal({
               templateUrl: 'templates/modals/verify_confirm.html',
               controller: 'VerifyTrainingModalCtrl',
