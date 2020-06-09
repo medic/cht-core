@@ -1,9 +1,0 @@
-{
-  "icon": "child",
-  "title": "Child Nutrition Screening",
-  "context": {
-    "person": true,
-    "place": false,
-    "expression": "contact.type === 'person' && contact.date_of_birth && ageInYears(contact) <= 5 && !summary.treatment_program"
-  }
-}

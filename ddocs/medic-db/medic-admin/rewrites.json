@@ -1,6 +1,0 @@
-[
-  {"from": "/",             "to": "index.html"},
-  {"from": "/css/*",        "to": "css/*"},
-  {"from": "/fonts/*",      "to": "fonts/*"},
-  {"from": "/js/*",         "to": "js/*"}
-]

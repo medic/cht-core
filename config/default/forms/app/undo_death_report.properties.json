@@ -1,9 +1,0 @@
-{
-    "icon": "icon-person",
-    "title": "Undo death report",
-    "context": {
-        "person": true,
-        "place": false,
-        "expression": "!summary.alive"
-    }
-}

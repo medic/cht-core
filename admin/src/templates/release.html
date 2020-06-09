@@ -1,8 +1,0 @@
-<div class="col-xs-5"><span class="label label-info">{{release | buildVersion}}</span></div>
-<div class="col-xs-4" ng-if="!dateFormat" ng-bind-html="release.time | date"></div>
-<div class="col-xs-4" ng-if="dateFormat === 'medium'" ng-bind-html="release.time | date:'medium'"></div>
-<div class="col-xs-1">
-  <i ng-if="potentiallyIncompatible(release)" class="fa fa-exclamation-triangle" translate translate-attr-title="instance.upgrade.potentiallyIncompatible"></i>
-</div>
-<div class="col-xs-1"><button ng-click="upgrade(release.version, 'stage')" class="btn btn-secondary" translate>instance.upgrade.stage</button></div>
-<div class="col-xs-1"><button ng-click="upgrade(release.version)" class="btn btn-primary" translate>instance.upgrade.install</button></div>

@@ -1,9 +1,0 @@
-{
-  "name": "scalability",
-  "author": "garethbowen",
-  "private": true,
-  "dependencies": {
-    "pouchdb": "^7.2.1",
-    "pouchdb-adapter-memory": "^7.2.1"
-  }
-}

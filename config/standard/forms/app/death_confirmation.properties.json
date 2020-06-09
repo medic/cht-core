@@ -1,9 +1,0 @@
-{
-    "icon": "icon-death-general",
-    "title": "Confirm death",
-    "context": {
-        "person": false,
-        "place": false,
-        "expression": ""
-    }
-}

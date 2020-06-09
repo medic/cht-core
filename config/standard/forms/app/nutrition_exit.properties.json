@@ -1,9 +1,0 @@
-{
-  "icon": "medic-health-center",
-  "title": "Nutrition Treatment Exit",
-  "context": {
-    "person": false,
-    "place": false,
-    "expression": ""
-  }
-}
