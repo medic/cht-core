@@ -5,7 +5,7 @@ const KNOWN_EXPORTS = [
   'dhis',
   'feedback',
   'messages',
-  'trainings',
+  /* 'trainings', */
   'reports',
 ];
 

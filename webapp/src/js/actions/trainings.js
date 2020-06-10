@@ -40,7 +40,7 @@ angular.module('inboxServices').factory('TrainingsActions',
 
       function setFirstSelectedTrainingDocProperty(doc) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FIRST_SELECTED_TRAINING_DOC_PROPERTY, 'doc', doc));
-      }
+      } 
 
       function setFirstSelectedTrainingFormattedProperty(formatted) {
         dispatch(ActionUtils.createSingleValueAction(
@@ -52,11 +52,11 @@ angular.module('inboxServices').factory('TrainingsActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_TRAININGS, 'selected', selected));
       }
 
-      function setVerifyingTraining(verifyingTraining) {
+      /* function setVerifyingTraining(verifyingTraining) {
         dispatch(ActionUtils.createSingleValueAction(
           actionTypes.SET_VERIFYING_TRAINING, 'verifyingTraining', verifyingTraining
         ));
-      }
+      } */
 
       function updateSelectedTrainingItem(id, selected) {
         dispatch({
@@ -173,7 +173,7 @@ angular.module('inboxServices').factory('TrainingsActions',
           });
       };
 
-      function deselectAll() {
+      /* function deselectAll() {
         dispatch(() => {
           setSelectedTrainings([]);
           setRightActionBar();
@@ -187,7 +187,7 @@ angular.module('inboxServices').factory('TrainingsActions',
           setVerifyingTraining(!verifyingTraining);
           setRightActionBar();
         });
-      }
+      } */
 
       function clearSelection() {
         setSelectedTrainings([]);
@@ -197,7 +197,7 @@ angular.module('inboxServices').factory('TrainingsActions',
         setCheckboxElements(false);
       }
 
-      function selectAll() {
+      /* function selectAll() {
         dispatch((dispatch, getState) => {
           globalActions.setLoadingShowContent(true);
           const filters = Selectors.getFilters(getState());
@@ -219,7 +219,7 @@ angular.module('inboxServices').factory('TrainingsActions',
             })
             .catch(err => $log.error('Error selecting all', err));
         });
-      }
+      } */
 
       function setSelect(value) {
         globalActions.setSelectMode(value);
@@ -227,7 +227,7 @@ angular.module('inboxServices').factory('TrainingsActions',
         $state.go('trainings.detail', { id: null });
       }
 
-      function verifyTraining(trainingIsVerified) {
+      /* function verifyTraining(trainingIsVerified) {
         dispatch((dispatch, getState) => {
 
           const getFirstSelected = () => Selectors.getSelectedTrainings(getState())[0];
@@ -326,7 +326,7 @@ angular.module('inboxServices').factory('TrainingsActions',
             model: { training: selectedTrainings[0].doc },
           });
         });
-      }
+      } */
 
       const setCheckboxElements = value => {
         $('#trainings-list input[type="checkbox"]').prop('checked', value);
@@ -335,10 +335,10 @@ angular.module('inboxServices').factory('TrainingsActions',
       return {
         addSelectedTraining,
         clearSelection,
-        deselectAll,
+        /* deselectAll, */
         removeSelectedTraining,
-        launchEditFacilityDialog,
-        selectAll,
+        /* launchEditFacilityDialog, 
+        selectAll, */
         selectTraining,
         setFirstSelectedTrainingDocProperty,
         setFirstSelectedTrainingFormattedProperty,
@@ -347,10 +347,10 @@ angular.module('inboxServices').factory('TrainingsActions',
         setSelected,
         setSelectedTrainings,
         setTitle,
-        setVerifyingTraining,
-        toggleVerifyingTraining,
+        /* setVerifyingTraining,
+        toggleVerifyingTraining, */
         updateSelectedTrainingItem,
-        verifyTraining,
+        /* verifyTraining, */
       };
     };
   }

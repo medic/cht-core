@@ -204,7 +204,7 @@ const createReduxLoggerConfig = Selectors => ({
     analytics: 'can_view_analytics',
     reports: 'can_view_reports',
     trainings: 'can_view_trainings',
-    'reports.edit': ['can_update_reports', 'can_view_reports'],
+    'reports.edit': ['can_update_reports', 'can_view_reports'] ,
     'trainings.edit': ['can_update_trainings', 'can_view_trainings']
   };
 

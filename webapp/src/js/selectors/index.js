@@ -32,7 +32,7 @@ const getContactsState = state => state.contacts;
 const getContactsLoadingSummary = state => getContactsState(state).loadingSummary;
 const getLoadingSelectedContactChildren = state => getContactsState(state).loadingSelectedChildren;
 const getLoadingSelectedContactReports = state => getContactsState(state).loadingSelectedReports;
-const getLoadingSelectedContactTrainings = state => getContactsState(state).loadingSelectedTrainings;
+/* const getLoadingSelectedContactTrainings = state => getContactsState(state).loadingSelectedTrainings; */
 
 const getSelectedContact = state => getContactsState(state).selected;
 const getSelectedContactDoc = reselect.createSelector(
@@ -71,16 +71,16 @@ const getSelectedTrainingsSummaries = reselect.createSelector(
   getSelectedTrainings,
   selected => selected.map(item => item.formatted || item.summary)
 );
-const getSelectedTrainingsValidChecks = reselect.createSelector(
+/* const getSelectedTrainingsValidChecks = reselect.createSelector(
   getSelectedTrainings,
   selected => selected.map(item => item.summary && item.summary.valid || item.formatted &&
     !(item.formatted.errors && item.formatted.errors.length))
-);
+);*/
 const getSelectedTrainingsDocs = reselect.createSelector(
   getSelectedTrainings,
   selected => selected.map(item => item.doc || item.summary)
 );
-const getVerifyingTraining = state => getTrainingsState(state).verifyingTraining;
+/* const getVerifyingTraining = state => getTrainingsState(state).verifyingTraining;  */
 
 
 // Services
@@ -129,7 +129,7 @@ angular.module('inboxServices').constant('Selectors', {
   getContactsLoadingSummary,
   getLoadingSelectedContactChildren,
   getLoadingSelectedContactReports,  
-  getLoadingSelectedContactTrainings,
+  /* getLoadingSelectedContactTrainings, */
   getSelectedContact,
   getSelectedContactDoc,
 
@@ -149,9 +149,9 @@ angular.module('inboxServices').constant('Selectors', {
   getTrainingsState,
   getSelectedTrainings,
   getSelectedTrainingsSummaries,
-  getSelectedTrainingsValidChecks,
+  /* getSelectedTrainingsValidChecks,
   getSelectedTrainingsDocs,
-  getVerifyingTraining,
+  getVerifyingTraining, */
 
   getLastChangedDoc,
 

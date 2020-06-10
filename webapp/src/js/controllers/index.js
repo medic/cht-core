@@ -25,7 +25,7 @@
   require('./delete-doc-confirm');
   require('./edit-message-group');
   require('./edit-report');
-  require('./edit-training');
+  /* require('./edit-training'); */
   require('./edit-user');
   require('./error');
   require('./feedback');

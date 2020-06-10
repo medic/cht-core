@@ -237,6 +237,7 @@ angular.module('inboxServices').service('Tour',
               $('#formTypeDropdown').removeClass('open');
             }
           },
+          /* 
           {
             element: '#facilityDropdown',
             placement: 'right',
@@ -250,7 +251,7 @@ angular.module('inboxServices').service('Tour',
             onHide: function() {
               $('#facilityDropdown').removeClass('open');
             }
-          },
+          }, */
           {
             element: '#dateRangeDropdown',
             placement: 'left',

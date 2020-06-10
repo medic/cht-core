@@ -49,9 +49,9 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
           /*  deselectAll: trainingsActions.deselectAll,
           launchEditFacilityDialog: trainingsActions.launchEditFacilityDialog,
           selectAll: trainingsActions.selectAll,
-          setSelect: trainingsActions.setSelect, */
+          setSelect: trainingsActions.setSelect, 
           toggleVerifyingTraining: trainingsActions.toggleVerifyingTraining,
-          verifyTraining: trainingsActions.verifyTraining,
+          verifyTraining: trainingsActions.verifyTraining,*/
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

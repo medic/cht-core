@@ -144,7 +144,7 @@ angular.module('inboxServices').factory('LiveListConfig',
       });
 
     
-      /*
+      
       const getTraining = function(form, training) {
         if (form && form.subjectKey) {
           return $translate.instant(form.subjectKey, training);
@@ -212,7 +212,7 @@ angular.module('inboxServices').factory('LiveListConfig',
         orderBy: trainings_config.orderBy,
         listItem: trainings_config.listItem,
       });
-      */
+      
 
 
       const getHeading = function(form, report) {

@@ -37,8 +37,8 @@ angular
       selectedTrainings: Selectors.getSelectedTrainings(state),
       selectedTrainingsDocs: Selectors.getSelectedTrainingsDocs(state),
       showContent: Selectors.getShowContent(state),
-      unreadCount: Selectors.getUnreadCount(state),
-      verifyingTraining: Selectors.getVerifyingTraining(state)
+      unreadCount: Selectors.getUnreadCount(state)/* ,
+      verifyingTraining: Selectors.getVerifyingTraining(state) */
     });
     const mapDispatchToTarget = function(dispatch) {
       const globalActions = GlobalActions(dispatch);

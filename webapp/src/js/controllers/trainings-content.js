@@ -30,8 +30,8 @@ const _ = require('lodash/core');
           loadingContent: Selectors.getLoadingContent(state),
           selectMode: Selectors.getSelectMode(state),
           selectedTrainings: Selectors.getSelectedTrainings(state),
-          summaries: Selectors.getSelectedTrainingsSummaries(state),
-          validChecks: Selectors.getSelectedTrainingsValidChecks(state)
+          summaries: Selectors.getSelectedTrainingsSummaries(state)/* ,
+          validChecks: Selectors.getSelectedTrainingsValidChecks(state) */
         };
       };
       const mapDispatchToTarget = function(dispatch) {
@@ -116,7 +116,7 @@ const _ = require('lodash/core');
         }
       };
 
-      ctrl.edit = (training, group) => {
+      /* ctrl.edit = (training, group) => {
         Modal({
           templateUrl: 'templates/modals/edit_message_group.html',
           controller: 'EditMessageGroupCtrl',
@@ -126,7 +126,7 @@ const _ = require('lodash/core');
             group: angular.copy(group),
           },
         }).catch(() => {}); // dismissed
-      };
+      }; */
 
       const changeListener = Changes({
         key: 'trainings-content',
