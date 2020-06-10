@@ -189,13 +189,13 @@ angular.module('inboxServices').factory('TrainingsActions',
         });
       } */
 
-      function clearSelection() {
+      /* function clearSelection() {
         setSelectedTrainings([]);
-        /* setVerifyingTraining(false); */
+        // setVerifyingTraining(false); 
         LiveList.trainings.clearSelected();
         LiveList['training-search'].clearSelected();
         setCheckboxElements(false);
-      }
+      } */
 
       /* function selectAll() {
         dispatch((dispatch, getState) => {
@@ -334,8 +334,8 @@ angular.module('inboxServices').factory('TrainingsActions',
 
       return {
         addSelectedTraining,
-        clearSelection,
-        /* deselectAll, */
+        /* clearSelection,
+        deselectAll, */
         removeSelectedTraining,
         /* launchEditFacilityDialog, 
         selectAll, */
