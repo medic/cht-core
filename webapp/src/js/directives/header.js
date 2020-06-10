@@ -56,6 +56,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         permissions:['can_view_messages','can_view_messages_tab'],typeName:'message'},
       {name:'tasks',state:'tasks.detail',icon:'fa-flag',translation:'Tasks',
         permissions:['can_view_tasks','can_view_tasks_tab']},
+      {name:'trainings',state:'trainings.detail',icon:'fa-teach',translation:'Trainings',
+        permissions:['can_view_trainings','can_view_trainings_tab'],typeName:'training'}, 
       {name:'reports',state:'reports.detail',icon:'fa-list-alt',translation:'Reports',
         permissions:['can_view_reports','can_view_reports_tab'],typeName:'report'},
       {name:'contacts',state:'contacts.detail',icon:'fa-user',translation:'Contacts',

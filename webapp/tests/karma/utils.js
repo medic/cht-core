@@ -42,6 +42,8 @@ window.KarmaUtils = {
     const mockLiveList = _.merge({
       contacts: liveListStub,
       'contact-search': liveListStub,
+      trainings: liveListStub,
+      'trainings-search': liveListStub,
       reports: liveListStub,
       'report-search': liveListStub
     }, mocks.LiveList);
@@ -51,6 +53,7 @@ window.KarmaUtils = {
       // If actual DB is run it causes a full page refresh which causes karma to error
       $provide.value('DB', mockDB);
       $provide.value('ContactViewModelGenerator', () => {});
+      $provide.value('TrainingViewModelGenerator', () => {});
       $provide.value('ReportViewModelGenerator', () => {});
       $provide.value('LiveList', mockLiveList);
       $provide.value('Session', {

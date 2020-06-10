@@ -30,6 +30,12 @@
               <span translate>Tasks</span>
             </a>
           </li>
+          <li role="presentation" mm-auth="can_view_trainings,!can_view_trainings_tab">
+            <a role="menuitem" tabindex="-1" ui-sref="trainings.detail">
+              <i class="fa fa-fw fa-list-alt"></i>
+              <span translate>Trainings</span>
+            </a>
+          </li>
           <li role="presentation" mm-auth="can_view_reports,!can_view_reports_tab">
             <a role="menuitem" tabindex="-1" ui-sref="reports.detail">
               <i class="fa fa-fw fa-list-alt"></i>

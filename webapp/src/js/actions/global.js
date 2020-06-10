@@ -170,7 +170,12 @@ angular.module('inboxServices').factory('GlobalActions',
         LiveList['contact-search'].clearSelected();
         LiveList['reports'].clearSelected();
         LiveList['report-search'].clearSelected();
+        LiveList['trainings'].clearSelected();
+        LiveList['training-search'].clearSelected();
         $('#reports-list input[type="checkbox"]').prop('checked', false);
+        
+        //added trainings
+        $('#trainings-list input[type="checkbox"]').prop('checked', false);
       }
 
       // User wants to cancel current flow, or pressed back button, etc.
@@ -238,7 +243,7 @@ angular.module('inboxServices').factory('GlobalActions',
               const selectMode = Selectors.getSelectMode(getState());
               if (
                 !selectMode &&
-                ($state.includes('contacts') || $state.includes('reports'))
+                ($state.includes('contacts') || $state.includes('reports') ||  $state.includes('trainings'))
               ) {
                 $state.go($state.current.name, { id: null });
               }

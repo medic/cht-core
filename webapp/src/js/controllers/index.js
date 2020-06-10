@@ -25,6 +25,7 @@
   require('./delete-doc-confirm');
   require('./edit-message-group');
   require('./edit-report');
+  require('./edit-training');
   require('./edit-user');
   require('./error');
   require('./feedback');
@@ -45,6 +46,9 @@
   require('./testing');
   require('./theme');
   require('./tour-select');
+  require('./trainings');
+  require('./trainings-add');
+  require('./trainings-content');
   require('./verify-report-modal');
   require('./welcome-modal');
 

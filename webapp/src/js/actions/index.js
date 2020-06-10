@@ -7,6 +7,7 @@
   require('./contacts');
   require('./messages');
   require('./reports');
+  require('./trainings');
   require('./services');
   require('./target-aggregates');
   require('./tasks');

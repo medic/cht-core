@@ -143,6 +143,78 @@ angular.module('inboxServices').factory('LiveListConfig',
         listItem: contacts_config.listItem,
       });
 
+    
+      /*
+      const getTraining = function(form, training) {
+        if (form && form.subjectKey) {
+          return $translate.instant(form.subjectKey, training);
+        }
+        if (training.validSubject) {
+          return training.subject.value;
+        }
+        if (training.subject.name) {
+          return training.subject.name;
+        }
+        return $translate.instant('training.subject.unknown');
+      };
+
+      const trainings_config = {
+        orderBy: function(r1, r2) {
+          const lhs = r1 && r1.training_date;
+          const rhs = r2 && r2.training_date;
+          if (!lhs && !rhs) {
+            return 0;
+          }
+          if (!lhs) {
+            return 1;
+          }
+          if (!rhs) {
+            return -1;
+          }
+          return r2.training_date - r1.training_date;
+        },
+        listItem: function(training, contactTypes, removedDomElement) {
+          const scope = {};
+          scope.id = training._id;
+          const form = _.find(ctrl.forms, { code: training.form });
+          scope.route = 'trainings';
+          scope.icon = form && form.icon;
+          scope.heading = getHeading(form, training);
+          scope.date = training.training_date;
+          scope.summary = form ? form.title : training.form;
+          scope.showStatus = true;
+          scope.valid = training.valid;
+          scope.verified = training.verified;
+          const statusIcon = (training.valid && training.verified) ?
+            'training-verify-valid-icon.html' : 'training-verify-invalid-icon.html';
+          scope.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon);
+          scope.lineage = training.subject && training.subject.lineage || training.lineage;
+          scope.unread = !training.read;
+          let element = renderTemplate(scope);
+          if (removedDomElement &&
+              removedDomElement.find('input[type="checkbox"]').is(':checked')) {
+            // updating an item that was selected in select mode
+            element = $(element);
+            element.find('input[type="checkbox"]').prop('checked', true);
+          }
+          return element;
+        },
+      };
+
+      LiveList.$listFor('trainings', {
+        selector: '#trainings-list ul.unfiltered',
+        orderBy: trainings_config.orderBy,
+        listItem: trainings_config.listItem,
+      });
+
+      LiveList.$listFor('training-search', {
+        selector: '#trainings-list ul.filtered',
+        orderBy: trainings_config.orderBy,
+        listItem: trainings_config.listItem,
+      });
+      */
+
+
       const getHeading = function(form, report) {
         if (form && form.subjectKey) {
           return $translate.instant(form.subjectKey, report);

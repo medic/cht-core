@@ -9,6 +9,7 @@
   const services = require('./services');
   const targetAggregates = require('./target-aggregates');
   const tasks = require('./tasks');
+  const trainings = require('./trainings');
 
   const rootReducer = redux.combineReducers({
     global,
@@ -19,6 +20,7 @@
     services,
     targetAggregates,
     tasks,
+    trainings,
   });
 
   angular.module('inboxServices').constant('RootReducer', rootReducer);

@@ -300,7 +300,7 @@ const moment = require('moment');
     });
 
     $transitions.onStart({}, function(trans) {
-      const statesToUnsetSelected = ['contacts', 'messages', 'reports', 'tasks'];
+      const statesToUnsetSelected = ['contacts', 'messages', 'trainings' , 'reports', 'tasks'];
       const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
       // unset selected when states have different base state and only when source state has selected property
       if (parentState && !trans.to().name.startsWith(parentState)) {
@@ -370,6 +370,19 @@ const moment = require('moment');
               ctrl.setForms(forms);
             }
           );
+          // get the forms for the Add Training menu
+          XmlForms.listen('AddTrainingMenu', { contactForms: false }, function(err, xForms) {
+            if (err) {
+              return $log.error('Error fetching form definitions', err);
+            }
+            ctrl.nonContactForms = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                icon: xForm.icon,
+                title: translateTitle(xForm.translation_key, xForm.title),
+              };
+            });
+          });
           // get the forms for the Add Report menu
           XmlForms.listen('AddReportMenu', { contactForms: false }, function(err, xForms) {
             if (err) {

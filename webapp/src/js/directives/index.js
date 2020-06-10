@@ -30,5 +30,6 @@
   require('./sort-filter');
   require('./status-filter');
   require('./tasks-list');
+  require('./trainings-list');
 
 }());

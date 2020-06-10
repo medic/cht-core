@@ -62,6 +62,25 @@ const getSelectedReportsDocs = reselect.createSelector(
 );
 const getVerifyingReport = state => getReportsState(state).verifyingReport;
 
+// Trainings
+const getTrainingsState = state => state.trainings;
+const getSelectedTrainings = state => getTrainingsState(state).selected;
+const getSelectedTrainingsSummaries = reselect.createSelector(
+  getSelectedTrainings,
+  selected => selected.map(item => item.formatted || item.summary)
+);
+const getSelectedTrainingsValidChecks = reselect.createSelector(
+  getSelectedTrainings,
+  selected => selected.map(item => item.summary && item.summary.valid || item.formatted &&
+    !(item.formatted.errors && item.formatted.errors.length))
+);
+const getSelectedTrainingsDocs = reselect.createSelector(
+  getSelectedTrainings,
+  selected => selected.map(item => item.doc || item.summary)
+);
+const getVerifyingTraining = state => getTrainingsState(state).verifyingTraining;
+
+
 // Services
 const getServicesState = state => state.services;
 const getLastChangedDoc = state => getServicesState(state).lastChangedDoc;
