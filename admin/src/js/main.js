@@ -32,6 +32,7 @@ require('./controllers/export-dhis');
 require('./controllers/export-feedback');
 require('./controllers/export-messages');
 require('./controllers/export-reports');
+require('./controllers/export-trainings');
 require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/images-branding');
@@ -228,6 +229,15 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'ExportReportsCtrl',
           templateUrl: 'templates/export_reports.html'
+        }
+      }
+    })
+    .state('export.trainings', {
+      url: '/trainings',
+      views: {
+        tab: {
+          controller: 'ExportTrainingsCtrl',
+          templateUrl: 'templates/export_trainings.html'
         }
       }
     })

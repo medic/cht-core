@@ -28,39 +28,39 @@ angular.module('inboxServices').factory('TrainingsActions',
       const servicesActions = ServicesActions(dispatch);
 
       function addSelectedTraining(selected) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.ADD_SELECTED_REPORT, 'selected', selected));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.ADD_SELECTED_TRAINING, 'selected', selected));
       }
 
       function removeSelectedTraining(id) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.REMOVE_SELECTED_REPORT, 'id', id));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.REMOVE_SELECTED_TRAINING, 'id', id));
         setRightActionBar();
         globalActions.settingSelected(true);
         $(`#trainings-list li[data-record-id="${id}"] input[type="checkbox"]`).prop('checked', false);
       }
 
       function setFirstSelectedTrainingDocProperty(doc) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY, 'doc', doc));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FIRST_SELECTED_TRAINING_DOC_PROPERTY, 'doc', doc));
       }
 
       function setFirstSelectedTrainingFormattedProperty(formatted) {
         dispatch(ActionUtils.createSingleValueAction(
-          actionTypes.SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY, 'formatted', formatted
+          actionTypes.SET_FIRST_SELECTED_TRAINING_FORMATTED_PROPERTY, 'formatted', formatted
         ));
       }
 
       function setSelectedTrainings(selected) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_REPORTS, 'selected', selected));
+        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_TRAININGS, 'selected', selected));
       }
 
       function setVerifyingTraining(verifyingTraining) {
         dispatch(ActionUtils.createSingleValueAction(
-          actionTypes.SET_VERIFYING_REPORT, 'verifyingTraining', verifyingTraining
+          actionTypes.SET_VERIFYING_TRAINING, 'verifyingTraining', verifyingTraining
         ));
       }
 
       function updateSelectedTrainingItem(id, selected) {
         dispatch({
-          type: actionTypes.UPDATE_SELECTED_REPORT_ITEM,
+          type: actionTypes.UPDATE_SELECTED_TRAINING_ITEM,
           payload: { id, selected }
         });
       }

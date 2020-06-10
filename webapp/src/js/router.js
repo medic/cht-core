@@ -89,52 +89,52 @@
         }
       })
 
-    // trainings
-    .state('trainings', {
-      url: '/trainings?tour&query',
-      controller: 'TrainingsCtrl',
-      controllerAs: 'trainingsCtrl',
-      templateUrl: 'templates/partials/trainings.html'
-    })
-    .state('trainings.add', {
-      url: '/add/:formId',
-      params: {
-        formId: null
-      },
-      views: {
-        content: {
-          controller: 'TrainingsAddCtrl',
-          controllerAs: 'trainingsAddCtrl',
-          templateUrl: 'templates/partials/trainings_add.html'
+      // trainings
+      .state('trainings', {
+        url: '/trainings?tour&query',
+        controller: 'TrainingsCtrl',
+        controllerAs: 'trainingsCtrl',
+        templateUrl: 'templates/partials/trainings.html'
+      })
+      .state('trainings.add', {
+        url: '/add/:formId',
+        params: {
+          formId: null
+        },
+        views: {
+          content: {
+            controller: 'TrainingsAddCtrl',
+            controllerAs: 'trainingsAddCtrl',
+            templateUrl: 'templates/partials/trainings_add.html'
+          }
         }
-      }
-    })
-    .state('trainings.edit', {
+      })
+      .state('trainings.edit', {
       url: '/edit/:trainingId',
       params: {
         trainingId: null
       },
       views: {
         content: {
-          controller: 'TrainingsAddCtrl',
-          controllerAs: 'trainingsAddCtrl',
-          templateUrl: 'templates/partials/trainings_add.html'
+            controller: 'TrainingsAddCtrl',
+            controllerAs: 'trainingsAddCtrl',
+            templateUrl: 'templates/partials/trainings_add.html'
+          }
         }
-      }
-    })
-    .state('trainings.detail', {
-      url: '/:id',
-      params: {
-        id: null
-      },
-      views: {
-        content: {
-          controller: 'TrainingsContentCtrl',
-          controllerAs: 'trainingsContentCtrl',
-          templateUrl: 'templates/partials/trainings_content.html'
+      })
+      .state('trainings.detail', {
+        url: '/:id',
+        params: {
+          id: null
+        },
+        views: {
+          content: {
+            controller: 'TrainingsContentCtrl',
+            controllerAs: 'trainingsContentCtrl',
+            templateUrl: 'templates/partials/trainings_content.html'
+          }
         }
-      }
-    })
+      })
 
       // analytics
       .state('analytics', {

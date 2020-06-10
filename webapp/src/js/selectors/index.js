@@ -32,6 +32,8 @@ const getContactsState = state => state.contacts;
 const getContactsLoadingSummary = state => getContactsState(state).loadingSummary;
 const getLoadingSelectedContactChildren = state => getContactsState(state).loadingSelectedChildren;
 const getLoadingSelectedContactReports = state => getContactsState(state).loadingSelectedReports;
+const getLoadingSelectedContactTrainings = state => getContactsState(state).loadingSelectedTrainings;
+
 const getSelectedContact = state => getContactsState(state).selected;
 const getSelectedContactDoc = reselect.createSelector(
   getSelectedContact,
@@ -126,7 +128,8 @@ angular.module('inboxServices').constant('Selectors', {
   getContactsState,
   getContactsLoadingSummary,
   getLoadingSelectedContactChildren,
-  getLoadingSelectedContactReports,
+  getLoadingSelectedContactReports,  
+  getLoadingSelectedContactTrainings,
   getSelectedContact,
   getSelectedContactDoc,
 
@@ -141,6 +144,14 @@ angular.module('inboxServices').constant('Selectors', {
   getSelectedReportsValidChecks,
   getSelectedReportsDocs,
   getVerifyingReport,
+
+  
+  getTrainingsState,
+  getSelectedTrainings,
+  getSelectedTrainingsSummaries,
+  getSelectedTrainingsValidChecks,
+  getSelectedTrainingsDocs,
+  getVerifyingTraining,
 
   getLastChangedDoc,
 

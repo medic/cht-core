@@ -11,6 +11,7 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
       GlobalActions,
       Modal,
       ReportsActions,
+      TrainingsActions,
       Selectors
     ) {
       'ngInject';
@@ -28,12 +29,15 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
           selectedContactDoc: Selectors.getSelectedContactDoc(state),
           selectedReports: Selectors.getSelectedReports(state),
           selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
+          selectedTrainings: Selectors.getSelectedTrainings(state),
+          selectedTrainingsDocs: Selectors.getSelectedTrainingsDocs(state),
           showActionBar: Selectors.getShowActionBar(state),
         };
       };
       const mapDispatchToTarget = dispatch => {
         const globalActions = GlobalActions(dispatch);
         const reportsActions = ReportsActions(dispatch);
+        const trainingsActions = TrainingsActions(dispatch);
         return {
           deleteDoc: globalActions.deleteDoc,
           deselectAll: reportsActions.deselectAll,
@@ -42,6 +46,12 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
           setSelect: reportsActions.setSelect,
           toggleVerifyingReport: reportsActions.toggleVerifyingReport,
           verifyReport: reportsActions.verifyReport,
+          deselectAll: trainingsActions.deselectAll,
+          launchEditFacilityDialog: trainingsActions.launchEditFacilityDialog,
+          selectAll: trainingsActions.selectAll,
+          setSelect: trainingsActions.setSelect,
+          toggleVerifyingTraining: trainingsActions.toggleVerifyingTraining,
+          verifyTraining: trainingsActions.verifyTraining,
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
