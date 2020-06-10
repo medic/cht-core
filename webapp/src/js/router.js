@@ -110,12 +110,12 @@
         }
       })
       .state('trainings.edit', {
-      url: '/edit/:trainingId',
-      params: {
-        trainingId: null
-      },
-      views: {
-        content: {
+        url: '/edit/:trainingId',
+        params: {
+          trainingId: null
+        },
+        views: {
+          content: {
             controller: 'TrainingsAddCtrl',
             controllerAs: 'trainingsAddCtrl',
             templateUrl: 'templates/partials/trainings_add.html'
