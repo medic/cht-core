@@ -132,13 +132,13 @@ describe('messageUtils', () => {
                   phone: grandparentPhone
                 }
               },
-              linked_contacts: {
+              linked_docs: {
                 chw4: {
                   phone: linkedPhone4,
                 },
               }
             },
-            linked_contacts: {
+            linked_docs: {
               chw2: {
                 phone: linkedPhone2,
               },
@@ -147,7 +147,7 @@ describe('messageUtils', () => {
               }
             }
           },
-          linked_contacts: {
+          linked_docs: {
             chw1: {
               phone: linkedPhone1,
             },
@@ -165,7 +165,7 @@ describe('messageUtils', () => {
         },
         phone: inlinePhone,
         patient: {
-          linked_contacts: {
+          linked_docs: {
             tag1: {
               phone: linkedPhone1,
             },
@@ -182,11 +182,11 @@ describe('messageUtils', () => {
               contact: {
                 phone: parentPhone,
               },
-              linked_contacts: {
+              linked_docs: {
                 tag4: { phone: linkedPhone4 },
               }
             },
-            linked_contacts: {
+            linked_docs: {
               tag3: { phone: linkedPhone3 },
               tagtag: { phone: '' },
             }
@@ -195,7 +195,7 @@ describe('messageUtils', () => {
         contact: {
           phone: 'otherphone',
           parent: {},
-          linked_contacts: {
+          linked_docs: {
             tag1: { phone: 'otherphone' },
             tag2: { phone: linkedPhone2 },
             tag3: { phone: 'otherphone' },
@@ -301,13 +301,13 @@ describe('messageUtils', () => {
         const context = {
           contact: {
             phone: 'a',
-            linked_contacts: {
+            linked_docs: {
               one: { phone: 'one' },
               two: { phone: 'two' },
               three: { phone: 'three' },
             },
             parent: {
-              linked_contacts: {
+              linked_docs: {
                 one: { phone: 'not-one' },
                 two: { phone: 'not-two' },
                 three: { phone: 'not-three' },
@@ -330,21 +330,21 @@ describe('messageUtils', () => {
             type: 'contact',
             contact_type: 'person',
             phone: '000000',
-            linked_contacts: {
+            linked_docs: {
               person: { phone: 'one' },
             },
             parent: {
               type: 'contact',
               contact_type: 'clinic',
               contact: { phone: '111111' },
-              linked_contacts: {
+              linked_docs: {
                 clinic: { phone: 'two' },
               },
               parent: {
                 type: 'contact',
                 contact_type: 'health_center',
                 contact: { phone: '22222' },
-                linked_contacts: {
+                linked_docs: {
                   health_center: { phone: 'three' },
                 },
               }

@@ -24,8 +24,8 @@ const getLinkedContact = (doc, tag) => {
   let facility = doc.parent ? doc : doc.contact;
   let linkedContact;
   while (facility && !linkedContact) {
-    if (facility.linked_contacts && facility.linked_contacts[tag]){
-      linkedContact = facility.linked_contacts[tag];
+    if (facility.linked_docs && facility.linked_docs[tag]){
+      linkedContact = facility.linked_docs[tag];
     }
     facility = facility.parent;
   }

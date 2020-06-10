@@ -51,9 +51,9 @@ function minify(doc) {
     delete doc.patient;
     delete doc.place;
   }
-  if (doc.linked_contacts) {
-    Object.keys(doc.linked_contacts).forEach(key => {
-      doc.linked_contacts[key] = getId(doc.linked_contacts[key]);
+  if (doc.linked_docs) {
+    Object.keys(doc.linked_docs).forEach(key => {
+      doc.linked_docs[key] = getId(doc.linked_docs[key]);
     });
   }
 }

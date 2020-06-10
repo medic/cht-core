@@ -318,10 +318,11 @@ const placeWithLinks = {
       _id: place_grandparent._id
     }
   },
-  linked_contacts: {
+  linked_docs: {
     contact_tag_1: report_parent._id,
     contact_tag_2: { _id: report_contact._id },
     contact_tag_3: { _id: '404' },
+    report_tag_1: sms_doc._id,
   },
 };
 const personWithLinks = {
@@ -337,7 +338,7 @@ const personWithLinks = {
       }
     },
   },
-  linked_contacts: {
+  linked_docs: {
     one_tag: { _id: person_with_circular_ids._id },
     other_tag: report_grandparent._id,
     no_tag: 'not_found',
@@ -700,10 +701,11 @@ describe('Lineage', function() {
               contact: place_grandparentContact,
             }
           },
-          linked_contacts: {
+          linked_docs: {
             contact_tag_1: report_parent,
             contact_tag_2: report_contact,
             contact_tag_3: { _id: '404' },
+            report_tag_1: sms_doc,
           },
         });
       });
@@ -982,10 +984,11 @@ describe('Lineage', function() {
                 contact: place_grandparentContact,
               }
             },
-            linked_contacts: {
+            linked_docs: {
               contact_tag_1: report_parent,
               contact_tag_2: report_contact,
               contact_tag_3: { _id: '404' },
+              report_tag_1: sms_doc,
             },
           },
           {
@@ -1007,13 +1010,14 @@ describe('Lineage', function() {
                   contact: place_grandparentContact,
                 }
               },
-              linked_contacts: {
+              linked_docs: {
                 contact_tag_1: report_parent,
                 contact_tag_2: report_contact,
                 contact_tag_3: { _id: '404' },
+                report_tag_1: sms_doc,
               },
             },
-            linked_contacts: {
+            linked_docs: {
               one_tag: person_with_circular_ids,
               other_tag: report_grandparent,
               no_tag: 'not_found',
@@ -1181,39 +1185,13 @@ describe('Lineage', function() {
     });
 
     it('should hydrate linked contacts', () => {
-      it('should hydrate linked contacts', () => {
-        return lineage.fetchHydratedDocs([ personWithLinks._id, placeWithLinks._id ]).then(actual => {
-          expect(actual).excludingEvery('_rev').to.deep.equal([
-            {
-              _id: personWithLinks._id,
-              name: personWithLinks.name,
-              type: personWithLinks.type,
-              parent: {
-                _id: placeWithLinks._id,
-                type: placeWithLinks.type,
-                contact: place_contact,
-                name: placeWithLinks.name,
-                parent: {
-                  _id: place_parent._id,
-                  name: place_parent.name,
-                  contact: place_parentContact,
-                  parent: {
-                    name: place_grandparent.name,
-                    _id: place_grandparent._id,
-                    contact: place_grandparentContact,
-                  }
-                },
-                linked_contacts: {
-                  contact_tag_1: report_parent,
-                  contact_tag_2: report_contact,
-                },
-              },
-              linked_contacts: {
-                one_tag: person_with_circular_ids,
-                other_tag: report_grandparent,
-              },
-            },
-            {
+      return lineage.fetchHydratedDocs([ personWithLinks._id, placeWithLinks._id ]).then(actual => {
+        expect(actual).excludingEvery('_rev').to.deep.equal([
+          {
+            _id: personWithLinks._id,
+            name: personWithLinks.name,
+            type: personWithLinks.type,
+            parent: {
               _id: placeWithLinks._id,
               type: placeWithLinks.type,
               contact: place_contact,
@@ -1228,13 +1206,42 @@ describe('Lineage', function() {
                   contact: place_grandparentContact,
                 }
               },
-              linked_contacts: {
+              linked_docs: {
                 contact_tag_1: report_parent,
                 contact_tag_2: report_contact,
+                contact_tag_3: { _id: '404' },
+                report_tag_1: sms_doc,
               },
             },
-          ]);
-        });
+            linked_docs: {
+              no_tag: 'not_found',
+              one_tag: person_with_circular_ids,
+              other_tag: report_grandparent,
+            },
+          },
+          {
+            _id: placeWithLinks._id,
+            type: placeWithLinks.type,
+            contact: place_contact,
+            name: placeWithLinks.name,
+            parent: {
+              _id: place_parent._id,
+              name: place_parent.name,
+              contact: place_parentContact,
+              parent: {
+                name: place_grandparent.name,
+                _id: place_grandparent._id,
+                contact: place_grandparentContact,
+              }
+            },
+            linked_docs: {
+              contact_tag_1: report_parent,
+              contact_tag_2: report_contact,
+              contact_tag_3: { _id: '404' },
+              report_tag_1: sms_doc,
+            },
+          },
+        ]);
       });
     });
   });

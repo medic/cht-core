@@ -11,7 +11,7 @@ const contacts = [
     name: 'District hospital',
     type: 'district_hospital',
     contact: { _id: 'chw3' },
-    linked_contacts: {
+    linked_docs: {
       some_tag1: 'chw1',
       some_tag2: 'chw2',
       some_tag3: { _id: 'chw3' },
@@ -24,7 +24,7 @@ const contacts = [
     type: 'health_center',
     parent: { _id: 'district_hospital' },
     contact: { _id: 'chw2' },
-    linked_contacts: {},
+    linked_docs: {},
   },
   {
     _id: 'clinic1',
@@ -32,7 +32,7 @@ const contacts = [
     type: 'clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: { _id: 'chw1' },
-    linked_contacts: {
+    linked_docs: {
       some_tag4: { _id: 'chw4' },
       missing1: { _id: 'non-existent' },
       missing2: 'non-existent',
@@ -45,7 +45,7 @@ const contacts = [
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
-    linked_contacts: {
+    linked_docs: {
       sibling: 'chw5',
     },
   },
@@ -73,7 +73,7 @@ const contacts = [
     type: 'person',
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone5',
-    linked_contacts: {
+    linked_docs: {
       sibling: 'chw6',
     },
   },

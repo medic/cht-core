@@ -193,7 +193,7 @@ describe('Minify', function() {
             name: 'parent'
           }
         },
-        linked_contacts: {
+        linked_docs: {
           tag1: 'not_found',
           tag2: false,
           tag3: { _id: 'the_id', name: 'the_name', other: 'field' },
@@ -208,7 +208,7 @@ describe('Minify', function() {
           _id: 'contact_id',
           parent: { _id: 'parent_id' },
         },
-        linked_contacts: {
+        linked_docs: {
           tag1: 'not_found',
           tag2: false,
           tag3: 'the_id',

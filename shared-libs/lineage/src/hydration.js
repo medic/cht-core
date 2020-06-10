@@ -64,15 +64,15 @@ module.exports = function(Promise, DB) {
         doc.contact = deepCopy(contactDoc);
       }
 
-      if (!doc.linked_contacts) {
+      if (!doc.linked_docs) {
         return;
       }
 
-      Object.keys(doc.linked_contacts).forEach((key) => {
-        const id = getId(doc.linked_contacts[key]);
+      Object.keys(doc.linked_docs).forEach((key) => {
+        const id = getId(doc.linked_docs[key]);
         const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
         if (contactDoc) {
-          doc.linked_contacts[key] = deepCopy(contactDoc);
+          doc.linked_docs[key] = deepCopy(contactDoc);
         }
       });
     });
@@ -88,11 +88,11 @@ module.exports = function(Promise, DB) {
       const id = getId(doc.contact);
       id && ids.push(id);
 
-      if (!doc.linked_contacts) {
+      if (!doc.linked_docs) {
         return;
       }
-      Object.keys(doc.linked_contacts).forEach((key) => {
-        const id = getId(doc.linked_contacts[key]);
+      Object.keys(doc.linked_docs).forEach((key) => {
+        const id = getId(doc.linked_docs[key]);
         id && ids.push(id);
       });
     });
@@ -294,12 +294,12 @@ module.exports = function(Promise, DB) {
         const id = getId(doc.contact);
         id && ids.push(id);
 
-        if (!doc.linked_contacts) {
+        if (!doc.linked_docs) {
           return;
         }
 
-        Object.keys(doc.linked_contacts).forEach(key => {
-          const id = getId(doc.linked_contacts[key]);
+        Object.keys(doc.linked_docs).forEach(key => {
+          const id = getId(doc.linked_docs[key]);
           id && ids.push(id);
         });
       });

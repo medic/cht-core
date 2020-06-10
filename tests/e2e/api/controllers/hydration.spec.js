@@ -134,61 +134,62 @@ const contacts = [
     parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
   },
   {
-    _id: 'center_with_linked_contacts',
+    _id: 'center_with_linked_docs',
     type: 'health_center',
     parent: { _id: 'PARENT_PLACE' },
-    name: 'center_with_linked_contacts',
-    contact: { _id: 'chw_with_linked_contacts' },
-    linked_contacts: {
+    name: 'center_with_linked_docs',
+    contact: { _id: 'chw_with_linked_docs' },
+    linked_docs: {
       a: 'patient3',
       b: 'hc2',
     }
   },
   {
-    _id: 'clinic_with_linked_contacts',
+    _id: 'clinic_with_linked_docs',
     type: 'clinic',
-    parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
-    contact: { _id: 'chw_with_linked_contacts' },
-    linked_contacts: {
-      first: 'chw_with_linked_contacts',
+    parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
+    contact: { _id: 'chw_with_linked_docs' },
+    linked_docs: {
+      first: 'chw_with_linked_docs',
       second: { _id: 'patient4' },
+      report: 'report1'
     }
   },
   {
-    _id: 'chw_with_linked_contacts',
+    _id: 'chw_with_linked_docs',
     type: 'person',
     parent: {
-      _id: 'clinic_with_linked_contacts',
-      parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
+      _id: 'clinic_with_linked_docs',
+      parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
     },
-    name: 'chw_with_linked_contacts',
-    linked_contacts: {
-      one: { _id: 'patient_with_linked_contacts' },
+    name: 'chw_with_linked_docs',
+    linked_docs: {
+      one: { _id: 'patient_with_linked_docs' },
       three: false,
       four: [],
     },
   },
   {
-    _id: 'patient_with_linked_contacts',
+    _id: 'patient_with_linked_docs',
     type: 'person',
     parent: {
-      _id: 'clinic_with_linked_contacts',
-      parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
+      _id: 'clinic_with_linked_docs',
+      parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
     },
-    name: 'patient_with_linked_contacts',
-    linked_contacts: {
-      _id: 'center_with_linked_contacts',
+    name: 'patient_with_linked_docs',
+    linked_docs: {
+      _id: 'center_with_linked_docs',
     },
   },
   {
-    _id: 'patient_with_empty_linked_contacts',
+    _id: 'patient_with_empty_linked_docs',
     type: 'person',
     parent: {
-      _id: 'clinic_with_linked_contacts',
-      parent: { _id: 'center_with_linked_contacts', parent: { _id: 'PARENT_PLACE' } },
+      _id: 'clinic_with_linked_docs',
+      parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
     },
-    name: 'patient_with_linked_contacts',
-    linked_contacts: {},
+    name: 'patient_with_linked_docs',
+    linked_docs: {},
   }
 ];
 
@@ -215,9 +216,9 @@ const hydrateContact = doc => {
   if (hydrated.contact) {
     hydrated.contact = _.cloneDeep(findDoc(hydrated.contact._id));
   }
-  if (hydrated.linked_contacts) {
-    Object.keys(hydrated.linked_contacts).forEach(key => {
-      const linkedContact = hydrated.linked_contacts[key];
+  if (hydrated.linked_docs) {
+    Object.keys(hydrated.linked_docs).forEach(key => {
+      const linkedContact = hydrated.linked_docs[key];
       if (!linkedContact) {
         return;
       }
@@ -226,7 +227,7 @@ const hydrateContact = doc => {
         return;
       }
 
-      hydrated.linked_contacts[key] = _.cloneDeep(findDoc(id));
+      hydrated.linked_docs[key] = _.cloneDeep(findDoc(id));
     });
   }
   return hydrated;
@@ -400,62 +401,62 @@ describe('Hydration API', () => {
       });
     });
 
-    it('should correctly hydrate single linked contact', () => {
-      onlineRequestOptions.qs = { doc_ids: ['clinic_with_linked_contacts'] };
+    it('should correctly hydrate single linked doc', () => {
+      onlineRequestOptions.qs = { doc_ids: ['clinic_with_linked_docs'] };
       return utils.request(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
-            id: 'clinic_with_linked_contacts',
-            doc: hydrateContact(findDoc('clinic_with_linked_contacts')),
+            id: 'clinic_with_linked_docs',
+            doc: hydrateContact(findDoc('clinic_with_linked_docs')),
           },
         ]);
       });
     });
 
-    it('should correctly hydrate single linked contact', () => {
-      onlineRequestOptions.qs = { doc_ids: ['patient_with_linked_contacts'] };
+    it('should correctly hydrate single linked doc', () => {
+      onlineRequestOptions.qs = { doc_ids: ['patient_with_linked_docs'] };
       return utils.request(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
-            id: 'patient_with_linked_contacts',
-            doc: hydrateContact(findDoc('patient_with_linked_contacts')),
+            id: 'patient_with_linked_docs',
+            doc: hydrateContact(findDoc('patient_with_linked_docs')),
           },
         ]);
       });
     });
 
-    it('should correctly hydrate single linked contacts with null values', () => {
-      onlineRequestOptions.qs = { doc_ids: ['chw_with_linked_contacts'] };
+    it('should correctly hydrate single linked docs with null values', () => {
+      onlineRequestOptions.qs = { doc_ids: ['chw_with_linked_docs'] };
       return utils.request(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
-            id: 'chw_with_linked_contacts',
-            doc: hydrateContact(findDoc('chw_with_linked_contacts')),
+            id: 'chw_with_linked_docs',
+            doc: hydrateContact(findDoc('chw_with_linked_docs')),
           },
         ]);
       });
     });
 
-    it('should correctly hydrate multiple linked contacts', () => {
+    it('should correctly hydrate multiple linked docs', () => {
       onlineRequestOptions.qs = { doc_ids: [
-        'patient_with_empty_linked_contacts',
-        'center_with_linked_contacts',
-        'clinic_with_linked_contacts',
+        'patient_with_empty_linked_docs',
+        'center_with_linked_docs',
+        'clinic_with_linked_docs',
       ]};
 
       return utils.request(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
-            id: 'patient_with_empty_linked_contacts',
-            doc: hydrateContact(findDoc('patient_with_empty_linked_contacts')),
+            id: 'patient_with_empty_linked_docs',
+            doc: hydrateContact(findDoc('patient_with_empty_linked_docs')),
           },
           {
-            id: 'center_with_linked_contacts',
-            doc: hydrateContact(findDoc('center_with_linked_contacts')),
+            id: 'center_with_linked_docs',
+            doc: hydrateContact(findDoc('center_with_linked_docs')),
           },
           {
-            id: 'clinic_with_linked_contacts',
-            doc: hydrateContact(findDoc('clinic_with_linked_contacts')),
+            id: 'clinic_with_linked_docs',
+            doc: hydrateContact(findDoc('clinic_with_linked_docs')),
           },
         ]);
       });
