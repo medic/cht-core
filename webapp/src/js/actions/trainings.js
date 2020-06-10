@@ -326,11 +326,11 @@ angular.module('inboxServices').factory('TrainingsActions',
             model: { training: selectedTrainings[0].doc },
           });
         });
-      } */
+      }
 
       const setCheckboxElements = value => {
         $('#trainings-list input[type="checkbox"]').prop('checked', value);
-      };
+      };  */
 
       return {
         addSelectedTraining,
