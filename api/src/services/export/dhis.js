@@ -3,6 +3,7 @@ const moment = require('moment');
 
 const db = require('../../db');
 const config = require('../../config');
+const logger = require('../../logger');
 
 /**
  * @param {string} filters.dataSet
@@ -15,23 +16,23 @@ module.exports = async (filters, options = {}) => {
   const { dataSet, orgUnit } = filters;
   const { from } = filters.date || {};
   if (!dataSet) {
-    throw { code: 400, message: 'filter "dataSet" is required' };
+    throw err('filter "dataSet" is required');
   }
 
   if (!from) {
-    throw { code: 400, message: 'filter "from" is required' };
+    throw err('filter "from" is required');
   }
 
   const settings = config.get();
-  const dataSetConfig = Array.isArray(settings.dhisDataSets) &&
-    settings.dhisDataSets.find(dhisDataSet => dhisDataSet.id === dataSet);
+  const dataSetConfig = Array.isArray(settings.dhis_data_sets) &&
+    settings.dhis_data_sets.find(dhisDataSet => dhisDataSet.id === dataSet);
   if (!dataSetConfig) {
-    throw { code: 400, message: `dataSet "${dataSet}" is not defined` };
+    throw err(`dataSet "${dataSet}" is not defined`);
   }
 
   const dhisTargetDefinitions = getDhisTargetDefinitions(dataSet, settings);
   if (dhisTargetDefinitions.length === 0) {
-    throw { code: 400, message: `dataSet "${dataSet}" has no dataElements` };
+    throw err(`dataSet "${dataSet}" has no dataElements`);
   }
 
   const targetDocsInMonth = await fetch.targetDocsInMonth(from);
@@ -58,6 +59,11 @@ module.exports = async (filters, options = {}) => {
   }
 
   return result;
+};
+
+const err = message => {
+  logger.error(message);
+  return { code: 400, message };
 };
 
 const fetch = {

@@ -16,7 +16,7 @@ describe('dhis2 export controller', () => {
   beforeEach(() => {
     module('adminApp');
     sinon.useFakeTimers(NOW);
-    Settings = sinon.stub().resolves({ dhisDataSets });
+    Settings = sinon.stub().resolves({ dhis_data_sets: dhisDataSets });
     query = sinon.stub().resolves({ rows: [
       mockContact('p1'),
       mockContact('p2', { dhis: { orgUnit: 'ou-p2'}}),

@@ -43,7 +43,7 @@
       "reporting_freq": "weekly"
     }
   ],
-  "dhisDataSets": [
+  "dhis_data_sets": [
     {
       "id": "VMuFODsyWaO",
       "translation_key": "dhis.dataset.monthly.integration"
