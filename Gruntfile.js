@@ -8,7 +8,7 @@ const path = require('path');
 const {
   TRAVIS_TAG,
   TRAVIS_BRANCH,
-  COUCH_URL,
+  COUCH_URL="http://medic:password@localhost:5984/medic",
   COUCH_NODE_NAME,
   UPLOAD_URL,
   STAGING_SERVER,

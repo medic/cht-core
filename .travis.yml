@@ -19,7 +19,7 @@ env:
     - TEST_SUITE=integration NODE_VERSION=12
     - TEST_SUITE=performance NODE_VERSION=12
   global:
-    - COUCH_URL=http://medic:password@localhost:5984/medic-test
+    - COUCH_URL=http://admin:pass@localhost:5984/medic-test
     - COUCH_NODE_NAME=nonode@nohost
     - BUILDS_SERVER=_couch/builds_testing
     - STAGING_SERVER=_couch/builds
