@@ -15,7 +15,7 @@ const _ = require('lodash/core');
       Changes,
       GlobalActions,
       MessageState,
-      Modal,
+      /* Modal, */
       SearchFilters,
       Selectors,
       TrainingsActions

@@ -2,7 +2,7 @@
  * This controller is used for editing non-enketo Trainings.
  */
 
- /* 
+/* 
 angular.module('inboxControllers').controller('EditTrainingCtrl',
   function (
     $log,
@@ -60,4 +60,4 @@ angular.module('inboxControllers').controller('EditTrainingCtrl',
     };
   }
 );
- */
+ */ 

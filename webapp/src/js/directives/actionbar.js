@@ -37,7 +37,7 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
       const mapDispatchToTarget = dispatch => {
         const globalActions = GlobalActions(dispatch);
         const reportsActions = ReportsActions(dispatch);
-        const trainingsActions = TrainingsActions(dispatch);
+        /* const trainingsActions = TrainingsActions(dispatch); */
         return {
           deleteDoc: globalActions.deleteDoc,
           deselectAll: reportsActions.deselectAll,

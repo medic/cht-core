@@ -6,15 +6,15 @@ angular.module('inboxServices').factory('TrainingsActions',
   function(
     $log,
     $state,
-    $translate,
+    /* $translate, */
     ActionUtils,
-    Auth,
+    /* Auth, */
     DB,
     GlobalActions,
     LiveList,
     MarkRead,
-    Modal,
-    Search,
+    /* Modal,
+    Search, */
     Selectors,
     ServicesActions,    
     TrainingViewModelGenerator
@@ -25,7 +25,7 @@ angular.module('inboxServices').factory('TrainingsActions',
     return function(dispatch) {
 
       const globalActions = GlobalActions(dispatch);
-      const servicesActions = ServicesActions(dispatch);
+      /* const servicesActions = ServicesActions(dispatch); */
 
       function addSelectedTraining(selected) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.ADD_SELECTED_TRAINING, 'selected', selected));
@@ -96,8 +96,8 @@ angular.module('inboxServices').factory('TrainingsActions',
           }
           model.verified = doc.verified;
           model.type = doc.content_type;
-          const verifyingTraining = Selectors.getVerifyingTraining(getState());
-          model.verifyingTraining = verifyingTraining;
+          /* const verifyingTraining = Selectors.getVerifyingTraining(getState());
+          model.verifyingTraining = verifyingTraining; */
           if (!doc.contact || !doc.contact._id) {
             return globalActions.setRightActionBar(model);
           }
@@ -131,9 +131,9 @@ angular.module('inboxServices').factory('TrainingsActions',
               model.doc &&
               selectedTrainings.length &&
               selectedTrainings[0]._id === model.doc._id;
-            if (!refreshing) {
+            /* if (!refreshing) {
               setVerifyingTraining(false);
-            }
+            } */
 
             model.expanded = true;
             setSelectedTrainings([model]);
@@ -191,7 +191,7 @@ angular.module('inboxServices').factory('TrainingsActions',
 
       function clearSelection() {
         setSelectedTrainings([]);
-        setVerifyingTraining(false);
+        /* setVerifyingTraining(false); */
         LiveList.trainings.clearSelected();
         LiveList['training-search'].clearSelected();
         setCheckboxElements(false);

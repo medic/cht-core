@@ -149,9 +149,9 @@ angular.module('inboxServices').constant('Selectors', {
   getTrainingsState,
   getSelectedTrainings,
   getSelectedTrainingsSummaries,
-  /* getSelectedTrainingsValidChecks,
+  /* getSelectedTrainingsValidChecks,*/
   getSelectedTrainingsDocs,
-  getVerifyingTraining, */
+  /* getVerifyingTraining, */
 
   getLastChangedDoc,
 
