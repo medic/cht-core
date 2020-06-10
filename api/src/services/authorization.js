@@ -54,14 +54,13 @@ const hasAccessToUnassignedDocs = (userCtx) => {
 const includeSubjects = (authorizationContext, newSubjects, depth) => {
   const initialSubjectsCount = authorizationContext.subjectIds.length;
   newSubjects.forEach(subject => {
-    if (!subject) {
+    if (!subject || authorizationContext.subjectIds.includes(subject)) {
       return;
     }
 
     authorizationContext.subjectsDepth[subject] = depth;
     authorizationContext.subjectIds.push(subject);
   });
-  authorizationContext.subjectIds = _.uniq(authorizationContext.subjectIds);
 
   return authorizationContext.subjectIds.length !== initialSubjectsCount;
 };

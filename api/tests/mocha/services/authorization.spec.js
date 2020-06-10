@@ -452,10 +452,6 @@ describe('Authorization service', () => {
     });
   });
 
-  describe('allowedDepth', () => {
-    // todo
-  });
-
   describe('getViewResults', () => {
     it('initializes view map functions if needed and returns view results', () => {
       const contactsByDepthStub = sinon.stub().returns('contactsByDepthStubResult');
