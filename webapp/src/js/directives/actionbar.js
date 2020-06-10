@@ -46,7 +46,7 @@ angular.module('inboxDirectives').directive('mmActionbar', function() {
           setSelect: reportsActions.setSelect,
           toggleVerifyingReport: reportsActions.toggleVerifyingReport,
           verifyReport: reportsActions.verifyReport,
-      /*  deselectAll: trainingsActions.deselectAll,
+          /*  deselectAll: trainingsActions.deselectAll,
           launchEditFacilityDialog: trainingsActions.launchEditFacilityDialog,
           selectAll: trainingsActions.selectAll,
           setSelect: trainingsActions.setSelect, */
