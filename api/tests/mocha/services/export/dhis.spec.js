@@ -496,7 +496,7 @@ const mockTargetDoc = (username, interval, override) => Object.assign({
 
 const mockSettings = (dataSets, targets) => {
   sinon.stub(config, 'get').returns({
-    dhisDataSets: dataSets,
+    dhis_data_sets: dataSets,
     tasks: {
       targets: { items: targets }
     }
