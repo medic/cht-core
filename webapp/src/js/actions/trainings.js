@@ -1,6 +1,6 @@
 const _ = require('lodash/core');
 const actionTypes = require('./actionTypes');
-const lineageFactory = require('@medic/lineage');
+/* const lineageFactory = require('@medic/lineage'); */
 
 angular.module('inboxServices').factory('TrainingsActions',
   function(
@@ -16,7 +16,7 @@ angular.module('inboxServices').factory('TrainingsActions',
     /* Modal,
     Search, */
     Selectors,
-    ServicesActions,    
+    /* ServicesActions, */    
     TrainingViewModelGenerator
   ) {
     'use strict';
