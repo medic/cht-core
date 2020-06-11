@@ -90,7 +90,7 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
   }
 
   //first element of `contactsByDepth` contains both `subjectId` and `docID`
-  const { key: [ docId ], value: subjectId } = contactsByDepth[0];
+  const [{ key: [ docId ], value: subjectId }] = contactsByDepth;
 
   if (allowed) {
     const contactDepth = getContactDepth(authorizationContext, contactsByDepth);
@@ -417,7 +417,7 @@ const isAllowedDepth = (authorizationContext, replicationKeys) => {
     return true;
   }
 
-  const docType = replicationKeys[0].value.type;
+  const [{ value: { type: docType } = {} }] = replicationKeys;
   if (docType !== 'data_record') {
     // allow everything that's not a data_record through (f.e. targets)
     return true;
