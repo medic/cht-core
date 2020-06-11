@@ -72,10 +72,10 @@ const excludeSubjects = (authorizationContext, ...subjectIds) => {
 // gets the depth of a contact, relative to the user's facility
 const getContactDepth = (authorizationContext, contactsByDepth) => {
   const depthEntry = contactsByDepth.find(entry =>
-    entry[0].length === 2 &&
-    entry[0][0] === authorizationContext.userCtx.facility_id
+    entry.key.length === 2 &&
+    entry.key[0] === authorizationContext.userCtx.facility_id
   );
-  return depthEntry && depthEntry[0][1];
+  return depthEntry && depthEntry.key[1];
 };
 
 // Updates authorizationContext.subjectIds, including or excluding tested contact `subjectId` and `docId`
@@ -90,7 +90,7 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
   }
 
   //first element of `contactsByDepth` contains both `subjectId` and `docID`
-  const [[[ docId ], subjectId ]] = contactsByDepth;
+  const { key: [ docId ], value: subjectId } = contactsByDepth[0];
 
   if (allowed) {
     const contactDepth = getContactDepth(authorizationContext, contactsByDepth);
@@ -118,7 +118,7 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
     return false;
   }
 
-  if (replicationKeys[0][0] === ALL_KEY) {
+  if (replicationKeys[0].key === ALL_KEY) {
     return true;
   }
 
@@ -130,7 +130,7 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
   //it's a report, task or target
   const allowedDepth = isAllowedDepth(authorizationContext, replicationKeys);
   return replicationKeys.some(replicationKey => {
-    const [ subjectId, { submitter: submitterId } ] = replicationKey;
+    const { key: subjectId, value: { submitter: submitterId } = {} } = replicationKey;
     const allowedSubmitter = submitterId && authorizationContext.subjectIds.indexOf(submitterId) !== -1;
     if (!subjectId && allowedSubmitter) {
       return true;
@@ -195,7 +195,7 @@ const getContactsByDepthKeys = (userCtx, depth) => {
 
 // checks whether there is at least one common contactsByDepthKey
 const allowedContact = (contactsByDepth, userContactsByDepthKeys) => {
-  const viewResultKeys = contactsByDepth.map(result => result[0]);
+  const viewResultKeys = contactsByDepth.map(result => result.key);
   return viewResultKeys.some(viewResult => userContactsByDepthKeys.some(generated => _.isEqual(viewResult, generated)));
 };
 
@@ -257,7 +257,7 @@ const getReplicationKeys = (viewResults) => {
     return replicationKeys;
   }
 
-  viewResults.replicationKeys.forEach(([ subjectId, { submitter: submitterId } ]) => {
+  viewResults.replicationKeys.forEach(({ key: subjectId, value: { submitter: submitterId } = {}}) => {
     replicationKeys.push(subjectId);
     if (submitterId) {
       replicationKeys.push(submitterId);
@@ -331,13 +331,13 @@ const findContactsByReplicationKeys = (replicationKeys) => {
 const getContactShortcode = (viewResults) => viewResults &&
                                              viewResults.contactsByDepth &&
                                              viewResults.contactsByDepth[0] &&
-                                             viewResults.contactsByDepth[0][1];
+                                             viewResults.contactsByDepth[0].value;
 
 const getContactUuid = (viewResults) => viewResults &&
                                         viewResults.contactsByDepth &&
                                         viewResults.contactsByDepth[0] &&
-                                        viewResults.contactsByDepth[0][0] &&
-                                        viewResults.contactsByDepth[0][0][0];
+                                        viewResults.contactsByDepth[0].key &&
+                                        viewResults.contactsByDepth[0].key[0];
 
 // in case we want to determine whether a user has access to a small set of docs (for example, during a GET attachment
 // request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, we run the view queries
@@ -417,14 +417,14 @@ const isAllowedDepth = (authorizationContext, replicationKeys) => {
     return true;
   }
 
-  const docType = replicationKeys[0][1].type;
+  const docType = replicationKeys[0].value.type;
   if (docType !== 'data_record') {
     // allow everything that's not a data_record through (f.e. targets)
     return true;
   }
 
   return replicationKeys.some(replicationKey => {
-    const [ subject, { submitter } ] = replicationKey;
+    const { key: subject, value: { submitter } = {} } = replicationKey;
     if (submitter === authorizationContext.userCtx.contact_id) {
       // current user is the submitter
       return true;
@@ -435,19 +435,11 @@ const isAllowedDepth = (authorizationContext, replicationKeys) => {
 };
 
 const groupViewResultsById = (authorizationContext, viewResults) => {
-  const viewResultsById = {};
   if (!usesReportDepth(authorizationContext)) {
-    return viewResultsById;
+    return {};
   }
 
-  viewResults.rows.forEach(row => {
-    if (!viewResultsById[row.id]) {
-      viewResultsById[row.id] = [];
-    }
-    viewResultsById[row.id].push([row.key, row.value]);
-  });
-
-  return viewResultsById;
+  return _.groupBy(viewResults.rows, 'id');
 };
 
 const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
