@@ -21,8 +21,30 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
-const getId = (item) => {
-  return item && (typeof item === 'string' ? item : item._id);
+const getId = (item) => item && (typeof item === 'string' ? item : item._id);
+
+const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
+
+const getContactIds = (contacts) => {
+  const ids = [];
+  contacts.forEach(doc => {
+    if (!doc) {
+      return;
+    }
+
+    const id = getId(doc.contact);
+    id && ids.push(id);
+
+    if (doc.type === 'data_record' || !doc.linked_docs) {
+      return;
+    }
+    Object.keys(doc.linked_docs).forEach(key => {
+      const id = getId(doc.linked_docs[key]);
+      id && ids.push(id);
+    });
+  });
+
+  return _.uniq(ids);
 };
 
 module.exports = function(Promise, DB) {
@@ -58,19 +80,19 @@ module.exports = function(Promise, DB) {
       if (!doc) {
         return;
       }
-      const id = doc.contact && doc.contact._id;
-      const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
+      const id = getId(doc.contact);
+      const contactDoc = getContactById(contacts, id);
       if (contactDoc) {
         doc.contact = deepCopy(contactDoc);
       }
 
-      if (!doc.linked_docs) {
+      if (doc.type === 'data_record' || !doc.linked_docs) {
         return;
       }
 
-      Object.keys(doc.linked_docs).forEach((key) => {
+      Object.keys(doc.linked_docs).forEach(key => {
         const id = getId(doc.linked_docs[key]);
-        const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
+        const contactDoc = getContactById(contacts, id);
         if (contactDoc) {
           doc.linked_docs[key] = deepCopy(contactDoc);
         }
@@ -79,33 +101,13 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchContacts = function(lineage) {
-    const ids = [];
-    lineage.forEach(doc => {
-      if (!doc) {
-        return;
-      }
-
-      const id = getId(doc.contact);
-      id && ids.push(id);
-
-      if (!doc.linked_docs) {
-        return;
-      }
-      Object.keys(doc.linked_docs).forEach((key) => {
-        const id = getId(doc.linked_docs[key]);
-        id && ids.push(id);
-      });
-    });
-
-    const contactIds = _.uniq(ids);
+    const contactIds = getContactIds(lineage);
 
     // Only fetch docs that are new to us
     const lineageContacts = [];
     const contactsToFetch = [];
     contactIds.forEach(function(id) {
-      const contact = lineage.find(function(doc) {
-        return doc && doc._id === id;
-      });
+      const contact = getContactById(lineage, id);
       if (contact) {
         lineageContacts.push(deepCopy(contact));
       } else {
@@ -290,22 +292,10 @@ module.exports = function(Promise, DB) {
     const ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
       const startLineageFrom = doc.type === 'data_record' ? doc.contact : doc;
-      selfAndParents(startLineageFrom).forEach(doc => {
-        const id = getId(doc.contact);
-        id && ids.push(id);
-
-        if (!doc.linked_docs) {
-          return;
-        }
-
-        Object.keys(doc.linked_docs).forEach(key => {
-          const id = getId(doc.linked_docs[key]);
-          id && ids.push(id);
-        });
-      });
+      ids.push(...getContactIds(selfAndParents(startLineageFrom)));
     });
 
-    return _.compact(_.uniq(ids));
+    return _.uniq(ids);
   };
 
   const fetchDocs = function(ids) {
@@ -374,7 +364,7 @@ module.exports = function(Promise, DB) {
             const parentIds = extractParentIds(docWithLineage);
             return parentIds.map(id => {
               // how can we use hashmaps?
-              return parents.find(doc => doc._id === id);
+              return getContactById(parents, id);
             });
           };
 
@@ -386,7 +376,7 @@ module.exports = function(Promise, DB) {
             lineage.unshift(doc);
           }
 
-          const patientDoc = patientUuids[i] && patientDocs.find(known => known._id === patientUuids[i]);
+          const patientDoc = getContactById(patientDocs, patientUuids[i]);
           const patientLineage = reconstructLineage(patientDoc, knownDocs);
 
           mergeLineagesIntoDoc(lineage, knownDocs, patientLineage);

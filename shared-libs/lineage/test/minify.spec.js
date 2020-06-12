@@ -181,7 +181,7 @@ describe('Minify', function() {
       chai.expect(() => lineage.minify(doc)).to.throw();
     });
 
-    it('should minify linked contacts', () => {
+    it('should minify linked docs for contacts', () => {
       const actual = {
         _id: 'c',
         type: 'place',
@@ -213,6 +213,46 @@ describe('Minify', function() {
           tag2: false,
           tag3: 'the_id',
           tag4: 'other_id',
+        }
+      };
+      lineage.minify(actual);
+      chai.expect(actual).to.deep.equal(expected);
+    });
+
+    it('should not minify linked docs for reports', () => {
+      const actual = {
+        _id: 'r',
+        type: 'data_record',
+        contact: {
+          _id: 'contact_id',
+          name: 'contact',
+          parent: {
+            _id: 'parent_id',
+            name: 'parent'
+          }
+        },
+        linked_docs: {
+          tag1: 'not_found',
+          tag2: false,
+          tag3: { _id: 'the_id', name: 'the_name', other: 'field' },
+          tag4: { _id: 'other_id', name: 'other_name', parent: { _id: 'aaa', name: 'bbb' } },
+          tag5: { this: 'is an object' },
+        }
+      };
+
+      const expected = {
+        _id: 'r',
+        type: 'data_record',
+        contact: {
+          _id: 'contact_id',
+          parent: { _id: 'parent_id' },
+        },
+        linked_docs: {
+          tag1: 'not_found',
+          tag2: false,
+          tag3: { _id: 'the_id', name: 'the_name', other: 'field' },
+          tag4: { _id: 'other_id', name: 'other_name', parent: { _id: 'aaa', name: 'bbb' } },
+          tag5: { this: 'is an object' },
         }
       };
       lineage.minify(actual);

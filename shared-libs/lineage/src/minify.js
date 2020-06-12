@@ -50,11 +50,12 @@ function minify(doc) {
   if (doc.type === 'data_record') {
     delete doc.patient;
     delete doc.place;
-  }
-  if (doc.linked_docs) {
-    Object.keys(doc.linked_docs).forEach(key => {
-      doc.linked_docs[key] = getId(doc.linked_docs[key]);
-    });
+  } else {
+    if (doc.linked_docs) {
+      Object.keys(doc.linked_docs).forEach(key => {
+        doc.linked_docs[key] = getId(doc.linked_docs[key]);
+      });
+    }
   }
 }
 

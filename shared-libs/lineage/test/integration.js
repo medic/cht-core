@@ -345,6 +345,29 @@ const personWithLinks = {
   },
 };
 
+const reportWithLinks = {
+  _id: 'reportWithLinks',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    patient_id: 'something'
+  },
+  linked_docs: {
+    a: { _id: report_grandparent._id },
+    b: report_parent._id,
+    c: { this: 'is an object', that: 'will remain unchanged' },
+  },
+};
+
 const fixtures = [
   child_is_great_grandparent,
   cigg_parent,
@@ -384,6 +407,7 @@ const fixtures = [
   sms_doc,
   placeWithLinks,
   personWithLinks,
+  reportWithLinks,
 ];
 const deleteDocs = ids => {
   return db.allDocs({
@@ -684,7 +708,7 @@ describe('Lineage', function() {
       });
     });
 
-    it('should hydrate linked contacts', () => {
+    it('should hydrate linked docs from contacts', () => {
       return lineage.fetchHydratedDoc(placeWithLinks._id).then(actual => {
         expect(actual).excludingEvery('_rev').to.deep.equal({
           _id: placeWithLinks._id,
@@ -708,6 +732,12 @@ describe('Lineage', function() {
             report_tag_1: sms_doc,
           },
         });
+      });
+    });
+
+    it('should not hydrate linked docs from reports ', () => {
+      return lineage.fetchHydratedDoc(reportWithLinks._id).then(actual => {
+        expect(actual.linked_docs).to.deep.equal(reportWithLinks.linked_docs);
       });
     });
   });
@@ -964,8 +994,8 @@ describe('Lineage', function() {
       });
     });
 
-    it('should hydrate linked contacts', () => {
-      const docs = [ cloneDeep(placeWithLinks),  cloneDeep(personWithLinks)];
+    it('should hydrate linked docs from contacts, but not from reports', () => {
+      const docs = [ cloneDeep(placeWithLinks),  cloneDeep(personWithLinks), cloneDeep(reportWithLinks)];
 
       return lineage.hydrateDocs(docs).then(actual => {
         expect(actual).excludingEvery('_rev').to.deep.equal([
@@ -1021,6 +1051,41 @@ describe('Lineage', function() {
               one_tag: person_with_circular_ids,
               other_tag: report_grandparent,
               no_tag: 'not_found',
+            },
+          },
+          {
+            _id: reportWithLinks._id,
+            form: reportWithLinks.form,
+            type: reportWithLinks.type,
+            fields: reportWithLinks.fields,
+            linked_docs: reportWithLinks.linked_docs,
+            contact: {
+              _id: report_contact._id,
+              name: report_contact.name,
+              type: report_contact.type,
+              reported_date: report_contact.reported_date,
+              parent: {
+                _id: report_parent._id,
+                name: report_parent.name,
+                contact: {
+                  _id: report_parentContact._id,
+                  type: report_parentContact.type,
+                  reported_date: report_parentContact.reported_date,
+                  phone: '+123',
+                  name: report_parentContact.name,
+                },
+                parent: {
+                  _id: report_grandparent._id,
+                  name: report_grandparent.name,
+                  contact: {
+                    _id: report_grandparentContact._id,
+                    type: report_grandparentContact.type,
+                    reported_date: report_grandparentContact.reported_date,
+                    phone: '+456',
+                    name: report_grandparentContact.name,
+                  }
+                }
+              }
             },
           }
         ]);
