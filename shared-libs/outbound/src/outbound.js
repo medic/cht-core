@@ -186,8 +186,33 @@ const sendPayload = (payload, config) => {
   });
 };
 
+const orderedStringify = thing => {
+  if (Object.prototype.toString.call(thing) === '[object Object]') {
+    const output = [];
+
+    const keys = Object.keys(thing).sort();
+    for (const k of keys) {
+      output.push(`"${k}":${orderedStringify(thing[k])}`);
+    }
+
+    return `{${output.join(',')}}`;
+  } else {
+    return JSON.stringify(thing);
+  }
+};
+
 // Never change this hashing algorithm or how we stringify, otherwise you will invalidate all existing hashes
-const hash = payload => crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+const hash = payload => {
+  // Sanitise the passed payload by running it through stringify logic as described here:
+  //   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#Description
+  // So we don't have to care about this in our orderedStringify later
+  const sanitisedJson = JSON.parse(JSON.stringify(payload));
+
+  // Stringify it again, but this time with consistent key ordering.
+  const consistentJsonString = orderedStringify(sanitisedJson);
+
+  return crypto.createHash('sha256').update(consistentJsonString).digest('hex');
+};
 
 const updateInfo = (payload, recordInfo, configName) => {
   const hashedPayload = hash(payload);

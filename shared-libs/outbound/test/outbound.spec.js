@@ -455,7 +455,7 @@ describe('outbound shared library', () => {
         }, {
           type: 'outbound',
           name: 'foo',
-          hash: '5d8d96384c4f20565803d386aef2328e35928bb97e6883e241005b4bab868488',
+          hash: '69b2c6f726b3c4be45ecee8370f1e05754557595aa930c5c6e6cd6c51a123d3b',
           timestamp: Date.now()
         }, {
           type: 'outbound',
@@ -480,6 +480,79 @@ describe('outbound shared library', () => {
           timestamp: Date.now()
         }]
       }));
+    });
+  });
+
+  describe('consistent hash', () => {
+    it('generates a consistent hash regardless of object item ordering', () => {
+      // This is the problem our custom code solves
+      assert.notEqual(
+        JSON.stringify({a: 'a', b: 'b'}),
+        JSON.stringify({b: 'b', a: 'a'}),
+      );
+
+      // We are also testing for exact hash strings to detect if refactors cause the hashes to change
+
+      // Simple reordering tests
+      assert.equal(
+        outbound.__get__('hash')({b: 'b', a: 'a'}),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+      assert.equal(
+        outbound.__get__('hash')({a: 'a', b: 'b'}),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+
+      // Recursive reordering tests
+      assert.equal(outbound.__get__('hash')({
+        a: {
+          b: 'ab',
+          a: 'aa'
+        },
+        b: {
+          a: 'ba',
+          b: 'bb'
+        }
+      }), '4c48e262921875e73d2529d5f6bcc578dd2f747feb61ac5d2018bb985350420a');
+      assert.equal(outbound.__get__('hash')({
+        b: {
+          b: 'bb',
+          a: 'ba'
+        },
+        a: {
+          a: 'aa',
+          b: 'ab'
+        }
+      }), '4c48e262921875e73d2529d5f6bcc578dd2f747feb61ac5d2018bb985350420a');
+
+      // Built ordering tests
+      const builtOrderOne = {};
+      builtOrderOne.b = 'b';
+      builtOrderOne.a = 'a';
+      assert.equal(
+        outbound.__get__('hash')(builtOrderOne),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+
+      const builtOrderTwo = {};
+      builtOrderTwo.a = 'a';
+      builtOrderTwo.b = 'b';
+      assert.equal(
+        outbound.__get__('hash')(builtOrderTwo),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+    });
+
+    it('preserves array item ordering', () => {
+      assert.equal(
+        outbound.__get__('hash')({foos: ['b', 'a']}),
+        '379ad62f0fe91c34ef9d3dcc7302990fdb31bbeee7862a2718e5358dd7c8d152');
+
+      assert.equal(
+        outbound.__get__('hash')({foos: ['a', 'b']}),
+        '34b5f1c4698211dcbee90707ac204c80e90cc581e590ede5c530a7a0df05f9dc');
+    });
+
+    it('doesnt mess up numbers or dates', () => {
+      assert.equal(
+        outbound.__get__('orderedStringify')({blah: new Date(2020, 1, 1)}),
+        '{"blah":"2020-02-01T00:00:00.000Z"}');
     });
   });
 });
