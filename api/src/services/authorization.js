@@ -449,8 +449,8 @@ const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
     const viewResultsById = groupViewResultsById(feed, results);
 
     results.rows.forEach(row => {
-      const { key: subject, value:{ submitter, private } } = row;
-      if (isSensitive(feed.userCtx, subject, submitter, private, feed.subjectIds.includes(row.value.submitter))) {
+      const { key: subject, value: { submitter, private } = {} } = row;
+      if (isSensitive(feed.userCtx, subject, submitter, private, feed.subjectIds.includes(submitter))) {
         return;
       }
 
