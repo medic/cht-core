@@ -35,7 +35,7 @@ const getContactIds = (contacts) => {
     const id = getId(doc.contact);
     id && ids.push(id);
 
-    if (doc.type === 'data_record' || !doc.linked_docs) {
+    if (!validLinkedDocs(doc)) {
       return;
     }
     Object.keys(doc.linked_docs).forEach(key => {
@@ -45,6 +45,16 @@ const getContactIds = (contacts) => {
   });
 
   return _.uniq(ids);
+};
+
+// don't process linked docs for reports
+// linked_docs property should be a key-value object
+const validLinkedDocs = doc => {
+  if (!doc || doc.type === 'data_record' || !doc.linked_docs) {
+    return;
+  }
+
+  return _.isObject(doc.linked_docs) && !_.isArray(doc.linked_docs);
 };
 
 module.exports = function(Promise, DB) {
@@ -86,7 +96,7 @@ module.exports = function(Promise, DB) {
         doc.contact = deepCopy(contactDoc);
       }
 
-      if (doc.type === 'data_record' || !doc.linked_docs) {
+      if (!validLinkedDocs(doc)) {
         return;
       }
 

@@ -17,8 +17,6 @@ describe('Contact summary info', () => {
           return;
         }
         
-        console.log(linkedDoc);
-        
         if (linkedDoc.type === 'data_record') {
           fields.push({
             label: key,

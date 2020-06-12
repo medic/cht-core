@@ -1,3 +1,4 @@
+const _ = require('lodash/core');
 const RECURSION_LIMIT = 50;
 
 // Minifies things you would attach to another doc:
@@ -25,8 +26,14 @@ function minifyLineage(parent) {
   return result;
 }
 
-const getId = (item) => {
-  return item && (typeof item === 'string' ? item : item._id);
+const getId = (item) => item && (typeof item === 'string' ? item : item._id);
+
+const validLinkedDocs = doc => {
+  if (!doc || doc.type === 'data_record' || !doc.linked_docs) {
+    return;
+  }
+
+  return _.isObject(doc.linked_docs) && !_.isArray(doc.linked_docs);
 };
 
 /**
@@ -50,12 +57,12 @@ function minify(doc) {
   if (doc.type === 'data_record') {
     delete doc.patient;
     delete doc.place;
-  } else {
-    if (doc.linked_docs) {
-      Object.keys(doc.linked_docs).forEach(key => {
-        doc.linked_docs[key] = getId(doc.linked_docs[key]);
-      });
-    }
+  }
+
+  if (validLinkedDocs(doc)) {
+    Object.keys(doc.linked_docs).forEach(key => {
+      doc.linked_docs[key] = getId(doc.linked_docs[key]);
+    });
   }
 }
 

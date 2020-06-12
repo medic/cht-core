@@ -258,5 +258,60 @@ describe('Minify', function() {
       lineage.minify(actual);
       chai.expect(actual).to.deep.equal(expected);
     });
+
+    it('should only minify linked docs if valid', () => {
+      const linkedDocsAreAString = {
+        _id: 'c',
+        type: 'contact',
+        contact: {
+          _id: 'contact_id',
+          name: 'contact',
+          parent: {
+            _id: 'parent_id',
+            name: 'parent'
+          }
+        },
+        linked_docs: 'this is a string',
+      };
+      lineage.minify(linkedDocsAreAString);
+      chai.expect(linkedDocsAreAString).to.deep.equal({
+        _id: 'c',
+        type: 'contact',
+        contact: {
+          _id: 'contact_id',
+          parent: {
+            _id: 'parent_id',
+          }
+        },
+        linked_docs: 'this is a string',
+      });
+
+      const linkedDocsAreAnArray = {
+        _id: 'c',
+        type: 'contact',
+        contact: {
+          _id: 'contact_id',
+          name: 'contact',
+          parent: {
+            _id: 'parent_id',
+            name: 'parent'
+          }
+        },
+        linked_docs: [{ _id: 'aaa', name: 'bbb' }, 'a string', 123],
+      };
+      lineage.minify(linkedDocsAreAnArray);
+      chai.expect(linkedDocsAreAnArray).to.deep.equal({
+        _id: 'c',
+        type: 'contact',
+        contact: {
+          _id: 'contact_id',
+          parent: {
+            _id: 'parent_id',
+          }
+        },
+        linked_docs: [{ _id: 'aaa', name: 'bbb' }, 'a string', 123],
+      });
+
+    });
   });
 });
