@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.1 r1853635">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -35,6 +35,7 @@
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
         <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="sync" enabled="true">
@@ -60,7 +61,7 @@
           </elementProp>
           <stringProp name="SystemSampler.directory">${working_dir}</stringProp>
           <longProp name="SystemSampler.timeout">-1</longProp>
-          <stringProp name="SystemSampler.stderr">/home/newtewt/dev/medic-webapp/tests/scalability/stderr</stringProp>
+          <stringProp name="SystemSampler.stderr">./stderr</stringProp>
         </SystemSampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
@@ -163,7 +164,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">/home/newtewt/dev/medic-webapp/tests/scalability/combined/3.7.0-combined</stringProp>
+        <stringProp name="filename">./combined/3.9.0-combined</stringProp>
         <longProp name="interval_grouping">500</longProp>
         <boolProp name="graph_aggregated">false</boolProp>
         <stringProp name="include_sample_labels"></stringProp>
@@ -173,8 +174,8 @@
         <boolProp name="include_checkbox_state">false</boolProp>
         <boolProp name="exclude_checkbox_state">false</boolProp>
         <collectionProp name="MergeResultsControlGui.data">
-          <collectionProp name="-2052329023">
-            <stringProp name="1902143994">/home/newtewt/dev/medic-webapp/tests/scalability/previous_results/3.3.0.jtl</stringProp>
+          <collectionProp name="-1177909821">
+            <stringProp name="1453241806">./previous_results/3.3.0.jtl</stringProp>
             <stringProp name="1504133747">3.3.0-</stringProp>
             <stringProp name="0"></stringProp>
             <stringProp name="0"></stringProp>
@@ -183,8 +184,8 @@
             <stringProp name="0"></stringProp>
             <stringProp name="1237">false</stringProp>
           </collectionProp>
-          <collectionProp name="1930092548">
-            <stringProp name="-1505319621">/home/newtewt/dev/medic-webapp/tests/scalability/previous_results/3.4.0.jtl</stringProp>
+          <collectionProp name="-694285044">
+            <stringProp name="-1954221809">./previous_results/3.4.0.jtl</stringProp>
             <stringProp name="1504163538">3.4.0-</stringProp>
             <stringProp name="0"></stringProp>
             <stringProp name="0"></stringProp>
@@ -193,8 +194,8 @@
             <stringProp name="0"></stringProp>
             <stringProp name="1237">false</stringProp>
           </collectionProp>
-          <collectionProp name="1891585241">
-            <stringProp name="-617815940">/home/newtewt/dev/medic-webapp/tests/scalability/previous_results/3.5.0.jtl</stringProp>
+          <collectionProp name="1934204180">
+            <stringProp name="-1066718128">./previous_results/3.5.0.jtl</stringProp>
             <stringProp name="1504193329">3.5.0-</stringProp>
             <stringProp name="0"></stringProp>
             <stringProp name="0"></stringProp>
@@ -203,8 +204,8 @@
             <stringProp name="0"></stringProp>
             <stringProp name="1237">false</stringProp>
           </collectionProp>
-          <collectionProp name="-1933494884">
-            <stringProp name="269687741">/home/newtewt/dev/medic-webapp/tests/scalability/previous_results/3.6.0.jtl</stringProp>
+          <collectionProp name="-711382140">
+            <stringProp name="-179214447">./previous_results/3.6.0.jtl</stringProp>
             <stringProp name="1504223120">3.6.0-</stringProp>
             <stringProp name="0"></stringProp>
             <stringProp name="0"></stringProp>
@@ -213,8 +214,8 @@
             <stringProp name="0"></stringProp>
             <stringProp name="1237">false</stringProp>
           </collectionProp>
-          <collectionProp name="-201385981">
-            <stringProp name="1157191422">/home/newtewt/dev/medic-webapp/tests/scalability/previous_results/3.7.0.jtl</stringProp>
+          <collectionProp name="-1223875403">
+            <stringProp name="708289234">./previous_results/3.7.0.jtl</stringProp>
             <stringProp name="1504252911">3.7.0-</stringProp>
             <stringProp name="0"></stringProp>
             <stringProp name="0"></stringProp>
@@ -223,8 +224,18 @@
             <stringProp name="0"></stringProp>
             <stringProp name="1237">false</stringProp>
           </collectionProp>
+          <collectionProp name="-951168624">
+            <stringProp name="-1811670700">./previous_results/3.9.0.jtl</stringProp>
+            <stringProp name="1504312493">3.9.0-</stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="1237">false</stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="1237">false</stringProp>
+          </collectionProp>
         </collectionProp>
-        <stringProp name="prefix_label">3.7.0-</stringProp>
+        <stringProp name="prefix_label">3.9.0-</stringProp>
       </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
       <hashTree/>
     </hashTree>
