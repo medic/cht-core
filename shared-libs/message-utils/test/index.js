@@ -273,31 +273,31 @@ describe('messageUtils', () => {
           .should.equal('111');
       });
 
-      it('should resolve contact: correctly', () => {
-        utils._getRecipient(linkedDoc, 'contact:chw1').should.equal(linkedPhone1);
-        utils._getRecipient(linkedDoc, 'contact:chw2').should.equal(linkedPhone2);
-        utils._getRecipient(linkedDoc, 'contact:chw3').should.equal(linkedPhone3);
-        utils._getRecipient(linkedDoc, 'contact:chw4').should.equal(linkedPhone4);
-        utils._getRecipient(linkedDoc, 'contact:nothing').should.equal(fromPhone);
-        utils._getRecipient(linkedDoc, 'contact:random').should.equal(fromPhone);
+      it('should resolve link: correctly', () => {
+        utils._getRecipient(linkedDoc, 'link:chw1').should.equal(linkedPhone1);
+        utils._getRecipient(linkedDoc, 'link:chw2').should.equal(linkedPhone2);
+        utils._getRecipient(linkedDoc, 'link:chw3').should.equal(linkedPhone3);
+        utils._getRecipient(linkedDoc, 'link:chw4').should.equal(linkedPhone4);
+        utils._getRecipient(linkedDoc, 'link:nothing').should.equal(fromPhone);
+        utils._getRecipient(linkedDoc, 'link:random').should.equal(fromPhone);
 
-        utils._getRecipient(doc, 'contact:health_center').should.equal(parentPhone);
-        utils._getRecipient(flexibleDoc, 'contact:health_center').should.equal(parentPhone);
-        utils._getRecipient(doc, 'contact:clinic').should.equal(clinicPhone);
-        utils._getRecipient(flexibleDoc, 'contact:clinic').should.equal(clinicPhone);
+        utils._getRecipient(doc, 'link:health_center').should.equal(parentPhone);
+        utils._getRecipient(flexibleDoc, 'link:health_center').should.equal(parentPhone);
+        utils._getRecipient(doc, 'link:clinic').should.equal(clinicPhone);
+        utils._getRecipient(flexibleDoc, 'link:clinic').should.equal(clinicPhone);
       });
 
-      it('should resolve contact: correctly based on patient', () => {
-        utils._getRecipient(linkedDocWithPatient, 'contact:tag1').should.equal(linkedPhone1);
+      it('should resolve link: correctly based on patient', () => {
+        utils._getRecipient(linkedDocWithPatient, 'link:tag1').should.equal(linkedPhone1);
         // this resolve from contact instead of patient! patient:tag2 is 'aaa'
-        utils._getRecipient(linkedDocWithPatient, 'contact:tag2').should.equal(linkedPhone2);
-        utils._getRecipient(linkedDocWithPatient, 'contact:tag3').should.equal(linkedPhone3);
-        utils._getRecipient(linkedDocWithPatient, 'contact:tag4').should.equal(linkedPhone4);
-        utils._getRecipient(linkedDocWithPatient, 'contact:nonexisting').should.equal(fromPhone);
-        utils._getRecipient(linkedDocWithPatient, 'contact:tagtag').should.equal(fromPhone);
+        utils._getRecipient(linkedDocWithPatient, 'link:tag2').should.equal(linkedPhone2);
+        utils._getRecipient(linkedDocWithPatient, 'link:tag3').should.equal(linkedPhone3);
+        utils._getRecipient(linkedDocWithPatient, 'link:tag4').should.equal(linkedPhone4);
+        utils._getRecipient(linkedDocWithPatient, 'link:nonexisting').should.equal(fromPhone);
+        utils._getRecipient(linkedDocWithPatient, 'link:tagtag').should.equal(fromPhone);
       });
 
-      it('should resolve contact: on 1st match', () => {
+      it('should resolve link: on 1st match', () => {
         const context = {
           contact: {
             phone: 'a',
@@ -318,13 +318,13 @@ describe('messageUtils', () => {
           },
         };
 
-        utils._getRecipient(context, 'contact:one').should.equal('one');
-        utils._getRecipient(context, 'contact:two').should.equal('two');
-        utils._getRecipient(context, 'contact:three').should.equal('three');
-        utils._getRecipient(context, 'contact:four').should.equal('yes-four');
+        utils._getRecipient(context, 'link:one').should.equal('one');
+        utils._getRecipient(context, 'link:two').should.equal('two');
+        utils._getRecipient(context, 'link:three').should.equal('three');
+        utils._getRecipient(context, 'link:four').should.equal('yes-four');
       });
 
-      it('should resolve contact: tag 1st, contact type 2nd', () => {
+      it('should resolve link: tag 1st, contact type 2nd', () => {
         const context = {
           contact: {
             type: 'contact',
@@ -352,9 +352,9 @@ describe('messageUtils', () => {
           },
         };
 
-        utils._getRecipient(context, 'contact:person').should.equal('one');
-        utils._getRecipient(context, 'contact:clinic').should.equal('two');
-        utils._getRecipient(context, 'contact:health_center').should.equal('three');
+        utils._getRecipient(context, 'link:person').should.equal('one');
+        utils._getRecipient(context, 'link:clinic').should.equal('two');
+        utils._getRecipient(context, 'link:health_center').should.equal('three');
       });
     });
     it('tries to resolve the value from the fields property', () => {

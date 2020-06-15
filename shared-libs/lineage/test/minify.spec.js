@@ -184,7 +184,8 @@ describe('Minify', function() {
     it('should minify linked docs for contacts', () => {
       const actual = {
         _id: 'c',
-        type: 'place',
+        type: 'contact',
+        contact_type: 'place',
         contact: {
           _id: 'contact_id',
           name: 'contact',
@@ -203,7 +204,8 @@ describe('Minify', function() {
 
       const expected = {
         _id: 'c',
-        type: 'place',
+        type: 'contact',
+        contact_type: 'place',
         contact: {
           _id: 'contact_id',
           parent: { _id: 'parent_id' },
@@ -263,6 +265,7 @@ describe('Minify', function() {
       const linkedDocsAreAString = {
         _id: 'c',
         type: 'contact',
+        contact_type: 'person',
         contact: {
           _id: 'contact_id',
           name: 'contact',
@@ -277,6 +280,7 @@ describe('Minify', function() {
       chai.expect(linkedDocsAreAString).to.deep.equal({
         _id: 'c',
         type: 'contact',
+        contact_type: 'person',
         contact: {
           _id: 'contact_id',
           parent: {
@@ -289,6 +293,7 @@ describe('Minify', function() {
       const linkedDocsAreAnArray = {
         _id: 'c',
         type: 'contact',
+        contact_type: 'person',
         contact: {
           _id: 'contact_id',
           name: 'contact',
@@ -303,6 +308,7 @@ describe('Minify', function() {
       chai.expect(linkedDocsAreAnArray).to.deep.equal({
         _id: 'c',
         type: 'contact',
+        contact_type: 'person',
         contact: {
           _id: 'contact_id',
           parent: {

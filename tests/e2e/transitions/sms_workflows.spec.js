@@ -475,37 +475,37 @@ describe('SMS workflows', () => {
             messages: [
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:some_tag1',
+                recipient: 'link:some_tag1',
                 message: [{ content: 'to some_tag1' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:some_tag3',
+                recipient: 'link:some_tag3',
                 message: [{ content: 'to some_tag3' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:some_tag4',
+                recipient: 'link:some_tag4',
                 message: [{ content: 'to some_tag4' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:missing1',
+                recipient: 'link:missing1',
                 message: [{ content: 'to missing1' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:missing_tag',
+                recipient: 'link:missing_tag',
                 message: [{ content: 'to missing_tag' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:sibling',
+                recipient: 'link:sibling',
                 message: [{ content: 'to sibling' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:same_tag',
+                recipient: 'link:same_tag',
                 message: [{ content: 'to same_tag' }],
               },
             ]
@@ -598,31 +598,31 @@ describe('SMS workflows', () => {
             form: 'FORM',
             condition: 'true',
             message: 'to some_tag1',
-            recipient: 'contact:some_tag1'
+            recipient: 'link:some_tag1'
           },
           {
             form: 'FORM',
             condition: 'true',
             message: 'to some_tag3',
-            recipient: 'contact:some_tag3'
+            recipient: 'link:some_tag3'
           },
           {
             form: 'FORM',
             condition: 'true',
             message: 'to some_tag4',
-            recipient: 'contact:some_tag4'
+            recipient: 'link:some_tag4'
           },
           {
             form: 'FORM',
             condition: 'true',
             message: 'to sibling',
-            recipient: 'contact:sibling'
+            recipient: 'link:sibling'
           },
           {
             form: 'FORM',
             condition: 'true',
             message: 'to same_tag',
-            recipient: 'contact:same_tag'
+            recipient: 'link:same_tag'
           },
         ],
         forms: { FORM: { } }
@@ -697,17 +697,17 @@ describe('SMS workflows', () => {
             messages: [
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:clinic',
+                recipient: 'link:clinic',
                 message: [{ content: 'to clinic' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:health_center',
+                recipient: 'link:health_center',
                 message: [{ content: 'to health_center' }],
               },
               {
                 event_type: 'report_accepted',
-                recipient: 'contact:district_hospital',
+                recipient: 'link:district_hospital',
                 message: [{ content: 'to district' }],
               },
             ]
@@ -788,19 +788,19 @@ describe('SMS workflows', () => {
             form: 'FORM',
             condition: 'true',
             message: 'to clinic',
-            recipient: 'contact:clinic'
+            recipient: 'link:clinic'
           },
           {
             form: 'FORM',
             condition: 'true',
             message: 'to health_center',
-            recipient: 'contact:health_center'
+            recipient: 'link:health_center'
           },
           {
             form: 'FORM',
             condition: 'true',
             message: 'to district',
-            recipient: 'contact:district_hospital'
+            recipient: 'link:district_hospital'
           },
         ],
         forms: { FORM: { } }

@@ -1,5 +1,6 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
+const utils = require('./utils');
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
@@ -21,8 +22,6 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
-const getId = (item) => item && (typeof item === 'string' ? item : item._id);
-
 const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
 
 const getContactIds = (contacts) => {
@@ -32,29 +31,19 @@ const getContactIds = (contacts) => {
       return;
     }
 
-    const id = getId(doc.contact);
+    const id = utils.getId(doc.contact);
     id && ids.push(id);
 
-    if (!validLinkedDocs(doc)) {
+    if (!utils.validLinkedDocs(doc)) {
       return;
     }
     Object.keys(doc.linked_docs).forEach(key => {
-      const id = getId(doc.linked_docs[key]);
+      const id = utils.getId(doc.linked_docs[key]);
       id && ids.push(id);
     });
   });
 
   return _.uniq(ids);
-};
-
-// don't process linked docs for reports
-// linked_docs property should be a key-value object
-const validLinkedDocs = doc => {
-  if (!doc || doc.type === 'data_record' || !doc.linked_docs) {
-    return;
-  }
-
-  return _.isObject(doc.linked_docs) && !_.isArray(doc.linked_docs);
 };
 
 module.exports = function(Promise, DB) {
@@ -90,18 +79,18 @@ module.exports = function(Promise, DB) {
       if (!doc) {
         return;
       }
-      const id = getId(doc.contact);
+      const id = utils.getId(doc.contact);
       const contactDoc = getContactById(contacts, id);
       if (contactDoc) {
         doc.contact = deepCopy(contactDoc);
       }
 
-      if (!validLinkedDocs(doc)) {
+      if (!utils.validLinkedDocs(doc)) {
         return;
       }
 
       Object.keys(doc.linked_docs).forEach(key => {
-        const id = getId(doc.linked_docs[key]);
+        const id = utils.getId(doc.linked_docs[key]);
         const contactDoc = getContactById(contacts, id);
         if (contactDoc) {
           doc.linked_docs[key] = deepCopy(contactDoc);
@@ -284,7 +273,7 @@ module.exports = function(Promise, DB) {
     docs.forEach(function(doc) {
       let parent = doc.parent;
       if (doc.type === 'data_record') {
-        const contactId = getId(doc.contact);
+        const contactId = utils.getId(doc.contact);
         if (!contactId) {
           return;
         }

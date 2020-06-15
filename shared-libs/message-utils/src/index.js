@@ -20,16 +20,14 @@ const getParent = function(doc, type) {
   return facility || undefined;
 };
 
-const getLinkedContact = (doc, tag) => {
+const getLinkedDoc = (doc, tag) => {
   let facility = doc.parent ? doc : doc.contact;
-  let linkedContact;
-  while (facility && !linkedContact) {
-    if (facility.linked_docs && facility.linked_docs[tag]){
-      linkedContact = facility.linked_docs[tag];
+  while (facility) {
+    if (facility.linked_docs && facility.linked_docs[tag]) {
+      return facility.linked_docs[tag];
     }
     facility = facility.parent;
   }
-  return linkedContact;
 };
 
 const getClinic = function(doc) {
@@ -65,7 +63,7 @@ const getParentPhone = function(doc, type) {
 };
 
 const getLinkedPhone = (doc, tag) => {
-  const linkedContact = doc && getLinkedContact(doc, tag);
+  const linkedContact = doc && getLinkedDoc(doc, tag);
   return linkedContact && linkedContact.phone;
 };
 
@@ -112,7 +110,7 @@ const getRecipient = function(context, recipient) {
     const type = recipient.split(':')[1];
     phone = getParentPhone(context.patient, type) ||
             getParentPhone(context, type);
-  } else if (recipient.startsWith('contact:')) {
+  } else if (recipient.startsWith('link:')) {
     const tag = recipient.split(':')[1];
     phone = getLinkedPhone(context.patient, tag) ||
             getLinkedPhone(context.contact, tag) ||
