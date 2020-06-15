@@ -107,7 +107,7 @@
           <li role="presentation disabled" ng-if="!headerCtrl.replicationStatus.disabled && headerCtrl.replicationStatus.lastSuccessTo" class="sync-status">
             <a class="no-click">
               <span translate>sync.last_success</span>
-              <span ng-bind-html="headerCtrl.replicationStatus.lastSuccessTo | relativeDate">
+              <span ng-bind-html="headerCtrl.replicationStatus.lastSuccessTo | relativeDate"/>
             </a>
           </li>
         </ul>
@@ -117,7 +117,8 @@
     <div class="tabs small-font">
       <a ng-repeat="tab in headerCtrl.permittedTabs track by $index" ui-sref="{{tab.state}}" id="{{tab.name}}-tab" class="{{tab.name}}-tab" ng-class="{'selected': headerCtrl.currentTab === '{{tab.name}}'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': headerCtrl.currentTab !== '{{tab.name}}'}">
-          <span class="fa {{tab.icon}}"></span>
+          <span ng-if="!tab.resourceIcon" class="fa {{tab.icon}}"></span>
+          <span ng-if="tab.resourceIcon" ng-bind-html="tab.resourceIcon | resourceIcon:tab.icon"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="headerCtrl.unreadCount[tab.typeName] <= 0">
             <span class="mm-badge mm-badge-red mm-badge-border" ng-show="headerCtrl.unreadCount[tab.typeName] < 100">{{headerCtrl.unreadCount[tab.typeName]}}</span>
             <span class="mm-badge mm-badge-red mm-badge-border" ng-show="headerCtrl.unreadCount[tab.typeName] >= 100">100+</span>

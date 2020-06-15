@@ -36,6 +36,7 @@ require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/images-branding');
 require('./controllers/images-partners');
+require('./controllers/images-tabs');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
 require('./controllers/sms-forms');
@@ -93,6 +94,7 @@ require('../../../webapp/src/js/services/file-reader');
 require('../../../webapp/src/js/services/get-data-records');
 require('../../../webapp/src/js/services/get-subject-summaries');
 require('../../../webapp/src/js/services/get-summaries');
+require('../../../webapp/src/js/services/header-tabs');
 require('../../../webapp/src/js/services/hydrate-contact-names');
 require('../../../webapp/src/js/services/json-parse');
 require('../../../webapp/src/js/services/language');
@@ -322,6 +324,15 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'ImagesPartnersCtrl',
           templateUrl: 'templates/images_partners.html'
+        }
+      }
+    })
+    .state('images.tabs', {
+      url: '/tabs',
+      views: {
+        tab: {
+          controller: 'ImagesTabsCtrl',
+          templateUrl: 'templates/images_tabs.html'
         }
       }
     })

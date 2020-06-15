@@ -221,54 +221,79 @@ body {
       padding-left: 5px;
       padding-right: 5px;
 
+      .mm-icon {
+        display: flex;
+        height: 34px;
+        justify-content: center;
+        align-items: center;
+
+        svg {
+          display: block;
+          height: 24px;
+          width: 24px;
+          filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+        }
+      }
+
       &.selected {
         .button-label,
         .mm-icon:hover {
           .button-text;
         }
+
+
+        .resource-icon svg {
+          filter: drop-shadow(1px 1px 2px rgba(255, 255, 255, 0.5));
+          * {
+            fill: @gray-ultra-dark;
+          }
+        }
       }
 
-      &:hover {
+      &:hover:not(.selected) {
         &.messages-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @messages-color;
+            fill: @messages-color;
           }
         }
         &.tasks-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @tasks-color;
+            fill: @tasks-color;
           }
         }
         &.reports-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @reports-color;
+            fill: @reports-color;
           }
         }
         &.analytics-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @analytics-color;
+            fill: @analytics-color;
           }
         }
         &.contacts-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @contacts-color;
-          }
-        }
-        &.configuration-tab {
-          &,
-          .mm-icon-inverse,
-          .mm-icon-inverse:hover {
-            color: @admin-color;
+            fill: @contacts-color;
           }
         }
       }

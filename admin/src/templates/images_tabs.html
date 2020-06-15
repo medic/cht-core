@@ -1,0 +1,57 @@
+<div>
+  <p translate>images.header.tabs.description</p>
+</div>
+<div ng-if="tabs" class="col-xs-12">
+  <div class="row selection-heading">
+    <div class="col-sm-3" translate>images.header.tabs.tab</div>
+    <div class="col-sm-3" translate>images.header.tabs.default</div>
+    <div class="col-sm-3" translate>images.header.tabs.fa.icon</div>
+    <div class="col-sm-3" translate>images.header.tabs.resource.icon</div>
+  </div>
+  <div class="loader" ng-show="loading"></div>
+  <form id="tabs-icons">
+    <ul class="list">
+      <li ng-repeat="tab in tabs" class="row">
+        <div class="col-sm-3">
+          <span translate>{{tab.translation}}</span>
+        </div>
+        <div class="col-sm-3">
+          <div class="input-group">
+            <input type="text" readonly value="{{tab.icon}}" class="form-control"/>
+            <span class="input-group-addon">
+              <span class="fa {{tab.icon}}"></span>
+            </span>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="input-group">
+            <input type="text" ng-model="tabsConfig[tab.name].icon" class="form-control"/>
+            <span class="input-group-addon">
+              <span class="fa {{tabsConfig[tab.name].icon}}"></span>
+            </span>
+          </div>
+
+        </div>
+        <div class="col-sm-3">
+          <div class="input-group">
+            <select ng-model="tabsConfig[tab.name].resource_icon"  class="form-control">
+              <option value="">-</option>
+              <option ng-repeat="resourceIcon in resourceIcons" value="{{resourceIcon}}" ng-selected="tabsConfig[tab.name].resource_icon === resourceIcon">
+                {{resourceIcon}}
+              </option>
+            </select>
+            <span class="input-group-addon">
+              <span class="resource-icon-preview" ng-bind-html="tabsConfig[tab.name].resource_icon | resourceIcon"></span>
+            </span>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <br/>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+      <div class="loader inline small" ng-show="submitting"></div>
+      <p class="error">{{error}}</p>
+    </div>
+  </form>
+</div>

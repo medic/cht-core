@@ -32,12 +32,12 @@ angular.module('inboxServices').factory('ResourceIcons',
              cache[i].doc._attachments[cache[i].doc.resources[name]];
     };
 
-    const getHtmlContent = (name, i) => {
+    const getHtmlContent = (name, i, faPlaceholder) => {
       try {
         if (!cache[i].htmlContent[name]) {
           const icon = getAttachment(name, i);
           if (!icon) {
-            return '';
+            return faPlaceholder ? `<span class="fa ${faPlaceholder}"/>` : '';
           }
           let content;
           if (icon.content_type === 'image/svg+xml' && i === 'resources') {
@@ -55,13 +55,14 @@ angular.module('inboxServices').factory('ResourceIcons',
       }
     };
 
-    const getHtml = (name, docId) => {
-      const image = getHtmlContent(name, docId);
+    const getHtml = (name, docId, faPlaceholder) => {
+      const image = getHtmlContent(name, docId, faPlaceholder);
       // Handle title attribute for branding doc specially
       // https://github.com/medic/medic/issues/5531
       const className = CSS_CLASS[DOC_IDS.indexOf(docId)];
-      const titleAttribute = docId === DOC_IDS[1] ? 'data-title' : 'title';
-      return `<span class="${className}" ${titleAttribute}="${name}">${image}</span>`;
+      const titleAttribute = `${docId === DOC_IDS[1] ? 'data-title' : 'title'}="${name}"`;
+      const faPlaceholderAttribute = `data-fa-placeholder="${faPlaceholder}"`;
+      return `<span class="${className}" ${titleAttribute} ${faPlaceholderAttribute}>${image}</span>`;
     };
 
     const updateDom = ($elem, doc) => {
@@ -69,8 +70,9 @@ angular.module('inboxServices').factory('ResourceIcons',
       const css = CSS_CLASS[DOC_IDS.indexOf(doc)];
       $elem.find(`.${css}`).each((i, child) => {
         const $this = $(child);
-        const name = $this.attr('data-title') || $this.attr('title');
-        $this.html(getHtmlContent(name, doc));
+        const name = $this.data('title') || $this.attr('title');
+        const faPlaceholder = $this.data('faPlaceholder');
+        $this.html(getHtmlContent(name, doc, faPlaceholder));
       });
     };
 
@@ -88,7 +90,7 @@ angular.module('inboxServices').factory('ResourceIcons',
           }
         });
     };
-    
+
     DOC_IDS.slice(1).forEach(doc => updateResources(doc));
 
     const initResources = updateResources(DOC_IDS[0]);
@@ -100,11 +102,11 @@ angular.module('inboxServices').factory('ResourceIcons',
     });
 
     return {
-      getImg: (name, docId) => {
+      getImg: (name, docId, faPlaceholder) => {
         if (!name || !docId) {
           return '';
         }
-        return getHtml(name, docId);
+        return getHtml(name, docId, faPlaceholder);
       },
       getDocResources: doc => {
         return DB().get(doc).then(res => Object.keys(res.resources));
@@ -114,7 +116,15 @@ angular.module('inboxServices').factory('ResourceIcons',
         initResources.then(function() {
           updateDom($elem, DOC_IDS[0]);
         });
-      }
+      },
+      getDocResourcesByMimeType: (doc, mimeType) => {
+        return DB().get(doc).then(res => {
+          return Object.keys(res.resources).filter(resource => {
+            const attachment = res._attachments[res.resources[resource]];
+            return attachment && attachment.content_type === mimeType;
+          });
+        });
+      },
     };
 
   }

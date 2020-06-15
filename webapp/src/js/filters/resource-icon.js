@@ -5,8 +5,8 @@ angular.module('inboxFilters').filter('resourceIcon',
   ) {
     'use strict';
     'ngInject';
-    return name => {
-      return $sce.trustAsHtml(ResourceIcons.getImg(name, 'resources'));
+    return (name, fallback = '') => {
+      return $sce.trustAsHtml(ResourceIcons.getImg(name, 'resources', fallback));
     };
   }
 );
