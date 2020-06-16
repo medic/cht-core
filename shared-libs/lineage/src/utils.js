@@ -14,11 +14,7 @@ const getId = (item) => item && (typeof item === 'string' ? item : item._id);
 // don't process linked docs for non-contact types
 // linked_docs property should be a key-value object
 const validLinkedDocs = doc => {
-  if (!doc || !isContact(doc) || !doc.linked_docs) {
-    return;
-  }
-
-  return _.isObject(doc.linked_docs) && !_.isArray(doc.linked_docs);
+  return isContact(doc) && _.isObject(doc.linked_docs) && !_.isArray(doc.linked_docs);
 };
 
 module.exports = {
