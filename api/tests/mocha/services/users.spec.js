@@ -392,10 +392,15 @@ describe('Users service', () => {
     });
 
     it('sets _deleted on the user doc', () => {
-      const expected = {
-        _id: 'foo',
+      const userExpected = {
+        _id: 'foo_1',
         starsign: 'aries',
-        _deleted: true
+        _deleted: true,
+      };
+      const medicUserExpected = {
+        _id: 'foo_2',
+        starsign: 'taurus',
+        inactive: true
       };
       sinon.stub(db.users, 'get').resolves({
         _id: 'foo_1',
@@ -403,13 +408,15 @@ describe('Users service', () => {
       });
       sinon.stub(db.medic, 'get').resolves({
         _id: 'foo_2',
-        starsign: 'aries',
+        starsign: 'taurus',
       });
       const usersInsert = sinon.stub(db.users, 'put').resolves();
-      sinon.stub(db.medic, 'put').resolves();
+      const medicUsersInsert = sinon.stub(db.medic, 'put').resolves();
       return service.deleteUser('foo').then(() => {
         chai.expect(usersInsert.callCount).to.equal(1);
-        chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(expected); // ToDo: expecting this to fail, finish ut
+        chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(userExpected);
+        chai.expect(medicUsersInsert.firstCall.args[0]).to.include(medicUserExpected);
+        chai.expect(medicUsersInsert.firstCall.args[0]).to.have.property('deletion_date');
       });
     });
 
