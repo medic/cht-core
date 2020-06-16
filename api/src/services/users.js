@@ -395,7 +395,7 @@ const deleteUser = id => {
   });
   const medicDbPromise = db.medic.get(id).then(user => {
     user.inactive = true;
-    user.deletion_date = moment().utc().valueOf();
+    user.deletion_date = moment().valueOf();
     return db.medic.put(user);
   });
   return Promise.all([ usersDbPromise, medicDbPromise ]);

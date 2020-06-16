@@ -13,6 +13,7 @@ const facilityb = { _id: 'b', name: 'brian' };
 const facilityc = { _id: 'c', name: 'cathy' };
 
 let userData;
+let clock;
 
 describe('Users service', () => {
 
@@ -29,10 +30,12 @@ describe('Users service', () => {
       contact: { 'parent': 'x' },
       type: 'national-manager'
     };
+    clock = sinon.useFakeTimers();
   });
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
   });
 
   describe('getSettingsUpdates', () => {
@@ -392,6 +395,7 @@ describe('Users service', () => {
     });
 
     it('sets _deleted on the user doc', () => {
+      const currentDateTime = new Date();
       const userExpected = {
         _id: 'foo_1',
         starsign: 'aries',
@@ -400,7 +404,8 @@ describe('Users service', () => {
       const medicUserExpected = {
         _id: 'foo_2',
         starsign: 'taurus',
-        inactive: true
+        inactive: true,
+        deletion_date: currentDateTime.valueOf()
       };
       sinon.stub(db.users, 'get').resolves({
         _id: 'foo_1',
@@ -415,8 +420,7 @@ describe('Users service', () => {
       return service.deleteUser('foo').then(() => {
         chai.expect(usersInsert.callCount).to.equal(1);
         chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(userExpected);
-        chai.expect(medicUsersInsert.firstCall.args[0]).to.include(medicUserExpected);
-        chai.expect(medicUsersInsert.firstCall.args[0]).to.have.property('deletion_date');
+        chai.expect(medicUsersInsert.firstCall.args[0]).to.deep.equal(medicUserExpected);
       });
     });
 
