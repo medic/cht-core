@@ -398,15 +398,18 @@ describe('Users service', () => {
         _deleted: true
       };
       sinon.stub(db.users, 'get').resolves({
-        _id: 'foo',
+        _id: 'foo_1',
         starsign: 'aries',
       });
-      sinon.stub(db.medic, 'get').resolves({});
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'foo_2',
+        starsign: 'aries',
+      });
       const usersInsert = sinon.stub(db.users, 'put').resolves();
       sinon.stub(db.medic, 'put').resolves();
       return service.deleteUser('foo').then(() => {
         chai.expect(usersInsert.callCount).to.equal(1);
-        chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(expected);
+        chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(expected); // ToDo: expecting this to fail, finish ut
       });
     });
 

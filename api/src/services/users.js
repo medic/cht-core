@@ -6,6 +6,7 @@ const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const getRoles = require('./types-and-roles');
 const auth = require('../auth');
+const moment = require('moment');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const ONLINE_ROLE = 'mm-online';
@@ -393,7 +394,8 @@ const deleteUser = id => {
     return db.users.put(user);
   });
   const medicDbPromise = db.medic.get(id).then(user => {
-    user._deleted = true;
+    user.inactive = true;
+    user.deletion_date = moment().utc().valueOf();
     return db.medic.put(user);
   });
   return Promise.all([ usersDbPromise, medicDbPromise ]);
