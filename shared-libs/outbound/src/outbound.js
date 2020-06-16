@@ -196,9 +196,9 @@ const orderedStringify = thing => {
     }
 
     return `{${output.join(',')}}`;
-  } else {
-    return JSON.stringify(thing);
   }
+
+  return JSON.stringify(thing);
 };
 
 // Never change this hashing algorithm or how we stringify, otherwise you will invalidate all existing hashes
@@ -301,12 +301,12 @@ module.exports = theLogger => {
           if (alreadySent(payload, configName, recordInfo)) {
             logger.info(`Not pushing ${record._id} to ${configName} as payload is identical to previous push`);
             return false;
-          } else {
-            return sendPayload(payload, config)
-              .then(() => updateInfo(payload, recordInfo, configName))
-              .then(() => logger.info(`Pushed ${record._id} to ${configName}`))
-              .then(() => true);
           }
+
+          return sendPayload(payload, config)
+            .then(() => updateInfo(payload, recordInfo, configName))
+            .then(() => logger.info(`Pushed ${record._id} to ${configName}`))
+            .then(() => true);
         })
         .catch(err => {
           logSendError(configName, record._id, err);
