@@ -224,6 +224,16 @@
             <stringProp name="0"></stringProp>
             <stringProp name="1237">false</stringProp>
           </collectionProp>
+          <collectionProp name="141778236">
+            <stringProp name="1595792915">./previous_results/3.8.0.jtl</stringProp>
+            <stringProp name="1504282702">3.8.0-</stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="1237">false</stringProp>
+            <stringProp name="0"></stringProp>
+            <stringProp name="1237">false</stringProp>
+          </collectionProp>
           <collectionProp name="-951168624">
             <stringProp name="-1811670700">./previous_results/3.9.0.jtl</stringProp>
             <stringProp name="1504312493">3.9.0-</stringProp>
