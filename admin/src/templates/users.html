@@ -33,7 +33,7 @@
         <div class="col-xs-1"><i class="fa fa-check" ng-if="user.facility_id"></i></div>
         <div class="col-xs-1"><i class="fa fa-check" ng-if="user.contact_id"></i></div>
         <div class="col-xs-1 delete">
-          <a class="btn btn-sm btn-danger" ng-click="deleteUserPrepare(user, $event)"><i class="fa fa-trash-o"></i></a>
+          <a class="btn btn-sm btn-danger" ng-if="!user.inactive" ng-click="deleteUserPrepare(user, $event)"><i class="fa fa-trash-o"></i></a>
         </div>
       </div>
     </div>
