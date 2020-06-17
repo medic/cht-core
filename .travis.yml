@@ -81,6 +81,9 @@ jobs:
   include:
     - stage: docs
       env: NODE_VERSION=12
+      script: echo 'docs build'
+      after_failure: # overwrite default
+      after_script: echo 'complete'
     - stage: compile
       env: NODE_VERSION=12
       before_script:
