@@ -18,14 +18,17 @@ angular.module('controllers').controller('ImagesTabsCtrl',
     $scope.tabs = HeaderTabs();
     $scope.tabsConfig = null;
 
+    $scope.submitting = false;
+    $scope.submitError = false;
+
     const setupPromise = $q
       .all([
-        ResourceIcons.getDocResourcesByMimeType('resources', 'image/svg+xml'),
+        ResourceIcons.getDocResources('resources'),
         Settings(),
       ])
-      .then(([ resourceIcons, settings ]) => {
+      .then(([ resourceIcons = [], { header_tabs = {} } = {} ]) => {
         $scope.resourceIcons = resourceIcons;
-        $scope.tabsConfig = settings.header_tabs || {};
+        $scope.tabsConfig = header_tabs;
       })
       .catch(err => {
         $scope.error = true;
@@ -36,8 +39,12 @@ angular.module('controllers').controller('ImagesTabsCtrl',
     $scope.submit = () => {
       $scope.submitting = true;
       return UpdateSettings({ header_tabs: $scope.tabsConfig })
+        .then(() => {
+          $scope.submitError = false;
+          $scope.submitted = true;
+        })
         .catch(err => {
-          $scope.error = true;
+          $scope.submitError = true;
           $log.error('Error updating settings', err);
         })
         .finally(() => $scope.submitting = false);

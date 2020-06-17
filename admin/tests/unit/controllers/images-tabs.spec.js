@@ -1,7 +1,6 @@
 describe('Images header-tabs controller', () => {
   let scope;
-  let getService;
-  let query;
+  let getController;
   let Settings;
   let HeaderTabs;
   let ResourceIcons;
@@ -10,9 +9,9 @@ describe('Images header-tabs controller', () => {
   beforeEach(() => {
     module('adminApp');
 
-    Settings = sinon.stub().resolves({ });
+    Settings = sinon.stub().resolves();
     HeaderTabs = sinon.stub();
-    ResourceIcons = { getDocResourcesByMimeType: sinon.stub() };
+    ResourceIcons = { getDocResources: sinon.stub().resolves() };
     UpdateSettings = sinon.stub();
 
     module($provide => {
@@ -25,62 +24,153 @@ describe('Images header-tabs controller', () => {
 
     inject(($controller, _$rootScope_) => {
       scope = _$rootScope_.$new();
-      getService = async () => {
+      getController = () => {
         const result = $controller('ImagesTabsCtrl', {
+          $q: Q,
           $scope: scope,
-          DB: () => ({ query }),
+          ResourceIcons,
+          HeaderTabs,
+          UpdateSettings,
         });
-        await Settings.returnValues[0];
-        await query.returnValues[0];
 
-        return result;
+        return result.getSetupPromiseForTesting();
       };
     });
   });
   afterEach(() => { sinon.restore(); });
 
-  it('loads scope for valid config', async () => {
-    await getService();
-    expect(scope.dataSets).to.deep.eq(dhisDataSets);
-    expect(scope.periods.map(period => period.description)).to.deep.eq([
-      'January, 2000',
-      'December, 1999',
-      'November, 1999',
-      'October, 1999',
-      'September, 1999',
-      'August, 1999',
-    ]);
+  it('should load settings, tabs and resource icons', () => {
+    const tabs = [
+      { name: 'tab1', icon: 'fa-1' },
+      { name: 'tab2', icon: 'fa-2' },
+      { name: 'tab3', icon: 'fa-3' },
+      { name: 'tab4', icon: 'fa-4' },
+      { name: 'tab5', icon: 'fa-5' },
+    ];
+    const icons = ['icon1', 'icon2', 'icon3', 'icon4'];
+    const headerTabsSettings = {
+      header_tabs: {
+        'tab2': { },
+        'tab3': { icon: 'fa-33' },
+        'tab4': { resource_icon: 'icon3' },
+        'tab5': { icon: 'fa-55', resource_icon: 'icon3' },
+      }
+    };
+    ResourceIcons.getDocResources.resolves(icons);
+    Settings.resolves(headerTabsSettings);
+    HeaderTabs.returns(tabs);
+    return getController().then(() => {
+      chai.expect(scope.resourceIcons).to.deep.equal(icons);
+      chai.expect(scope.tabs).to.deep.equal(tabs);
+      chai.expect(scope.tabsConfig).to.deep.equal(headerTabsSettings.header_tabs);
 
-    expect(scope.places).to.deep.eq({
-      '_all_': [{ id: 'ou-p2', name: 'p2' }],
-      [dataSet]: [
-        { id: 'ou-p1', name: 'p1' },
-        { id: 'ou-p3', name: 'p3' }
-      ],
-      other: [{ id: 'ou-p3-other', name: 'p3' }],
+      chai.expect(HeaderTabs.callCount).to.equal(1);
+      chai.expect(HeaderTabs.args[0]).to.deep.equal([]);
+
+      chai.expect(ResourceIcons.getDocResources.callCount).to.equal(1);
+      chai.expect(ResourceIcons.getDocResources.args[0]).to.deep.equal(['resources']);
+
+      chai.expect(Settings.callCount).to.equal(1);
+
+      chai.expect(scope.loading).to.equal(false);
+      chai.expect(scope.error).to.equal(null);
     });
-
-    expect(scope.selected).to.deep.eq({ dataSet });
   });
 
-  it('loads defaults when there is no dhis configuration', async () => {
-    Settings.resolves({});
-    await getService();
-    expect(!!scope.dataSets).to.be.false;
+  it('should have correct default values', () => {
+    ResourceIcons.getDocResources.resolves();
+    Settings.resolves();
+    HeaderTabs.returns([]);
+
+    return getController().then(() => {
+      chai.expect(scope.resourceIcons).to.deep.equal([]);
+      chai.expect(scope.tabs).to.deep.equal([]);
+      chai.expect(scope.tabsConfig).to.deep.equal({});
+    });
   });
 
-  const mockContact = (name, assign) => ({
-    id: `contact-${name}`,
-    doc: Object.assign({
-      _id: `contact-${name}`,
-      type: 'contact',
-      contact_type: 'person',
-      name,
-      dhis: {
-        dataSet,
-        orgUnit: `ou-${name}`,
-      },
-    }, assign),
+  it('should catch Settings errors', () => {
+    ResourceIcons.getDocResources.resolves(['icon']);
+    Settings.rejects({ err: 'omg' });
+    HeaderTabs.returns([{ name: 'tab' }]);
+
+    return getController().then(() => {
+      chai.expect(scope.resourceIcons).to.deep.equal(null);
+      chai.expect(scope.tabs).to.deep.equal([{ name: 'tab' }]);
+      chai.expect(scope.tabsConfig).to.deep.equal(null);
+
+      chai.expect(scope.error).to.equal(true);
+      chai.expect(scope.loading).to.equal(false);
+    });
   });
 
+  it('should catch resource icons errors', () => {
+    ResourceIcons.getDocResources.rejects({ err: 'omg' });
+    Settings.resolves({ });
+    HeaderTabs.returns([{ name: 'tab' }]);
+
+    return getController().then(() => {
+      chai.expect(scope.resourceIcons).to.deep.equal(null);
+      chai.expect(scope.tabs).to.deep.equal([{ name: 'tab' }]);
+      chai.expect(scope.tabsConfig).to.deep.equal(null);
+
+      chai.expect(scope.error).to.equal(true);
+      chai.expect(scope.loading).to.equal(false);
+    });
+  });
+
+  it('should submit settings correctly', () => {
+    ResourceIcons.getDocResources.resolves(['icon']);
+    Settings.resolves({ header_tabs: { 'tab': { icon: 'fa-test' } }});
+    HeaderTabs.returns([{ name: 'tab' }]);
+    UpdateSettings.resolves();
+
+    return getController()
+      .then(() => {
+        chai.expect(UpdateSettings.callCount).to.equal(0);
+        chai.expect(scope.tabsConfig).to.deep.equal({ 'tab': { icon: 'fa-test' }});
+        chai.expect(scope.submitted).to.equal(undefined);
+        chai.expect(scope.submitting).to.equal(false);
+        chai.expect(scope.submitError).to.equal(false);
+
+        scope.tabsConfig.tab.resource_icon = 'icon';
+        const promise = scope.submit();
+        chai.expect(scope.submitted).to.equal(undefined);
+        chai.expect(scope.submitting).to.equal(true);
+        chai.expect(scope.submitError).to.equal(false);
+        return promise;
+      })
+      .then(() => {
+        chai.expect(scope.submitted).to.equal(true);
+        chai.expect(scope.submitting).to.equal(false);
+        chai.expect(scope.submitError).to.equal(false);
+
+        chai.expect(UpdateSettings.callCount).to.equal(1);
+        chai.expect(UpdateSettings.args[0]).to.deep.equal([{
+          header_tabs: { 'tab': { icon: 'fa-test', resource_icon: 'icon' }}
+        }]);
+        chai.expect(UpdateSettings.args[0]).to.deep.equal([{ header_tabs: scope.tabsConfig }]);
+      });
+  });
+
+  it('should catch submit errors correctly', () => {
+    ResourceIcons.getDocResources.resolves(['icon']);
+    Settings.resolves({ header_tabs: { 'tab': { icon: 'fa-test' } }});
+    HeaderTabs.returns([{ name: 'tab' }]);
+    UpdateSettings.rejects({});
+
+    return getController()
+      .then(() => {
+        const promise = scope.submit();
+        chai.expect(scope.submitted).to.equal(undefined);
+        chai.expect(scope.submitting).to.equal(true);
+        chai.expect(scope.submitError).to.equal(false);
+        return promise;
+      })
+      .then(() => {
+        chai.expect(scope.submitted).to.equal(undefined);
+        chai.expect(scope.submitting).to.equal(false);
+        chai.expect(scope.submitError).to.equal(true);
+      });
+  });
 });

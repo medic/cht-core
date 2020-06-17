@@ -9,8 +9,9 @@
     <div class="col-sm-3" translate>images.header.tabs.resource.icon</div>
   </div>
   <div class="loader" ng-show="loading"></div>
-  <form id="tabs-icons">
-    <ul class="list">
+  <form id="tabs-icons" ng-hide="loading">
+    <p ng-show="error" class="alert alert-danger" role="alert" translate>images.header.tabs.request.error</p>
+    <ul class="list" ng-hide="error">
       <li ng-repeat="tab in tabs" class="row">
         <div class="col-sm-3">
           <span translate>{{tab.translation}}</span>
@@ -51,7 +52,8 @@
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
       <div class="loader inline small" ng-show="submitting"></div>
-      <p class="error">{{error}}</p>
+      <span translate ng-if="submitted && !submitError">images.header.tabs.submit.success</span>
+      <span translate ng-if="submitError">images.header.tabs.submit.failure</span>
     </div>
   </form>
 </div>
