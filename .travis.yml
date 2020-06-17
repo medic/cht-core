@@ -69,11 +69,13 @@ script:
 
 stages:
   - name: compile
-    if: branch = master
+    if: commit_message !~ /(documentation)/
   - name: test
-    if: branch = master
+    if: commit_message !~ /(documentation)/
   - name: publish
-    if: branch = master
+    if: commit_message !~ /(documentation)/
+  - name: docs
+    if: commit_message =~ /(documentation)/
 
 jobs:
   include:
