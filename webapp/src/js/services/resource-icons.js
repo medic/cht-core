@@ -61,7 +61,7 @@ angular.module('inboxServices').factory('ResourceIcons',
       // https://github.com/medic/medic/issues/5531
       const className = CSS_CLASS[DOC_IDS.indexOf(docId)];
       const titleAttribute = `${docId === DOC_IDS[1] ? 'data-title' : 'title'}="${name}"`;
-      const faPlaceholderAttribute = `data-fa-placeholder="${faPlaceholder}"`;
+      const faPlaceholderAttribute = faPlaceholder ? `data-fa-placeholder="${faPlaceholder}"` : '';
       return `<span class="${className}" ${titleAttribute} ${faPlaceholderAttribute}>${image}</span>`;
     };
 
