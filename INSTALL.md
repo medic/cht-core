@@ -1,5 +1,7 @@
 # Local Installation
 
+Small doc change
+
 The following are instructions on how to install the Core Framework on your local machine, allowing you to develop or edit applications using the Core Framework. These are not instructions for a production-ready deployment.
 
 These instructions should work on Windows, MacOS and Linux.
