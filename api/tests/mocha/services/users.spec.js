@@ -395,7 +395,6 @@ describe('Users service', () => {
     });
 
     it('sets _deleted on the user doc', () => {
-      const currentDateTime = new Date();
       const userExpected = {
         _id: 'foo_1',
         starsign: 'aries',
@@ -405,7 +404,7 @@ describe('Users service', () => {
         _id: 'foo_2',
         starsign: 'taurus',
         inactive: true,
-        deletion_date: currentDateTime.valueOf()
+        deletion_date: (new Date()).valueOf()
       };
       sinon.stub(db.users, 'get').resolves({
         _id: 'foo_1',
@@ -425,21 +424,31 @@ describe('Users service', () => {
     });
 
     it('sets _deleted on the user-settings doc', () => {
-      const expected = {
-        _id: 'foo',
+      const userExpected = {
+        _id: 'foo_1',
         starsign: 'aries',
-        _deleted: true
+        _deleted: true,
+      };
+      const medicUserExpected = {
+        _id: 'foo_2',
+        starsign: 'taurus',
+        inactive: true,
+        deletion_date: (new Date()).valueOf()
       };
       sinon.stub(db.users, 'get').resolves({
-        _id: 'foo',
+        _id: 'foo_1',
         starsign: 'aries',
       });
-      sinon.stub(db.medic, 'get').resolves({});
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'foo_2',
+        starsign: 'taurus',
+      });
       const usersInsert = sinon.stub(db.users, 'put').resolves();
-      sinon.stub(db.medic, 'put').resolves();
+      const medicUsersInsert = sinon.stub(db.medic, 'put').resolves();
       return service.deleteUser('org.couchdb.user:gareth').then(() => {
         chai.expect(usersInsert.callCount).to.equal(1);
-        chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(expected);
+        chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(userExpected);
+        chai.expect(medicUsersInsert.firstCall.args[0]).to.deep.equal(medicUserExpected);
       });
     });
 

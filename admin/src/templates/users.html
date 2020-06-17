@@ -25,7 +25,7 @@
         <div class="col-xs-1"></div>
       </div>
 
-      <div class="row selection" ng-repeat="user in users" ng-click="editUser(user)">
+      <div class="row selection" ng-repeat="user in users" ng-click="editUser(user)" ng-class="{'inactive': user.inactive}">
         <div class="col-xs-2">{{user.name}}</div>
         <div class="col-xs-2">{{user.fullname}}</div>
         <div class="col-xs-3"><span ng-if="user.roles[0]" translate>{{(roles[user.roles[0]].name) || ('usertype.' + user.roles[0])}}</span></div>
