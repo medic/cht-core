@@ -61,6 +61,8 @@ describe('feed', () => {
     });
 
     it('restarts listener after db error', () => {
+      const realSetTimeout = setTimeout;
+      const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
       const clock = sinon.useFakeTimers();
       const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq')
@@ -81,7 +83,7 @@ describe('feed', () => {
         })
         .then(() => {
           clock.tick(65000);
-          return Promise.resolve();
+          return nextTick();
         })
         .then(() => {
           // the feed is recreated later
