@@ -101,7 +101,7 @@ module.exports = {
             .then(obj => res.json(obj));
         }
 
-        
+
         // To respond as quickly to the request as possible
         res.flushHeaders();
 
