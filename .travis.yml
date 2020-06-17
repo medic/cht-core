@@ -5,7 +5,7 @@ sudo: true
 jdk: oraclejdk9
 dist: xenial
 
-if: commit_message =~ (documentation)
+if: commit_message =~ documentation
 
 addons:
   chrome: 'stable'
