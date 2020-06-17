@@ -69,11 +69,11 @@ script:
 
 stages:
   - name: compile
-    if: commit_message =~ /(documentation)/
+    if: branch = master
   - name: test
-    if: commit_message =~ /(documentation)/
+    if: branch = master
   - name: publish
-    if: commit_message =~ /(documentation)/
+    if: branch = master
 
 jobs:
   include:
