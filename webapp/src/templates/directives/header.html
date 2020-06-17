@@ -98,14 +98,12 @@
               <span translate>sync.now</span>
             </a>
           </li>
-          <li role="presentation disabled" ng-if="!headerCtrl.replicationStatus.disabled && headerCtrl.replicationStatus.current" class="sync-status">
-            <a class="no-click" ng-class="headerCtrl.replicationStatus.current.className">
+          <li role="presentation disabled" ng-if="!headerCtrl.replicationStatus.disabled" class="sync-status">
+            <a class="no-click" ng-class="headerCtrl.replicationStatus.current.className" ng-if="headerCtrl.replicationStatus.current">
               <i class="fa fa-fw" ng-class="headerCtrl.replicationStatus.current.icon"></i>
               <span translate>{{headerCtrl.replicationStatus.current.key}}</span>
             </a>
-          </li>
-          <li role="presentation disabled" ng-if="!headerCtrl.replicationStatus.disabled && headerCtrl.replicationStatus.lastSuccessTo" class="sync-status">
-            <a class="no-click">
+            <a class="no-click" ng-if="headerCtrl.replicationStatus.lastSuccessTo">
               <span translate>sync.last_success</span>
               <span ng-bind-html="headerCtrl.replicationStatus.lastSuccessTo | relativeDate">
             </a>

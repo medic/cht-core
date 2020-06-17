@@ -189,19 +189,41 @@ body {
   }
 
   .options .dropdown-menu {
+    width: 250px;
+    left: auto;
+    margin-top: 30px;
+    font-size: 0;
     a {
       text-shadow: none;
-      padding: 3px 20px;
+      padding: 10px 20px;
       color: #262626;
       margin-top: 0;
       white-space: normal;
-      &.no-click:hover {
-        background-color: transparent;
-        cursor: default;
-      }
+      font-size: 1rem;
     }
     .disabled a {
       color: #999999;
+    }
+    .divider {
+      margin: 0;
+    }
+    .sync-status {
+      margin-top: 10px;
+      a {
+        padding-top: 0;
+        padding-bottom: 0;
+        color: @label-color;
+        &:hover {
+          background-color: transparent;
+          cursor: default;
+        }
+      }
+      .success {
+        color: @ok-color;
+      }
+      .required {
+        color: @error-color;
+      }
     }
   }
 
@@ -281,29 +303,11 @@ body {
   }
 }
 
-.header .dropdown-menu .sync-status {
-  .no-click {
-    color: @label-color;
-  }
-  .success {
-    color: @ok-color;
-  }
-  .required {
-    color: @error-color;
-  }
-}
-
 .configuration-form {
   margin-bottom: 20px;
   .delete {
     float: right;
   }
-}
-
-.header .options .dropdown-menu {
-  width: 250px;
-  left: auto;
-  margin-top: 30px;
 }
 
 .filters {
