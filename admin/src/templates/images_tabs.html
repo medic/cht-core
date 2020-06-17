@@ -1,59 +1,60 @@
-<div>
+<div class="header-tabs">
   <p translate>images.header.tabs.description</p>
-</div>
-<div ng-if="tabs" class="col-xs-12">
-  <div class="row selection-heading">
-    <div class="col-sm-3" translate>images.header.tabs.tab</div>
-    <div class="col-sm-3" translate>images.header.tabs.default</div>
-    <div class="col-sm-3" translate>images.header.tabs.fa.icon</div>
-    <div class="col-sm-3" translate>images.header.tabs.resource.icon</div>
-  </div>
-  <div class="loader" ng-show="loading"></div>
-  <form id="tabs-icons" ng-hide="loading">
-    <p ng-show="error" class="alert alert-danger" role="alert" translate>images.header.tabs.request.error</p>
-    <ul class="list" ng-hide="error">
-      <li ng-repeat="tab in tabs" class="row">
-        <div class="col-sm-3">
-          <span translate>{{tab.translation}}</span>
-        </div>
-        <div class="col-sm-3">
-          <div class="input-group">
-            <input type="text" readonly value="{{tab.icon}}" class="form-control"/>
-            <span class="input-group-addon">
+  <a href="https://fontawesome.com/v4.7.0/" target="_blank" rel="noopener noreferrer" translate>images.header.tabs.fontawesome.link</a>
+  <p ng-show="error" class="alert alert-danger" role="alert" translate>images.header.tabs.request.error</p>
+  <div class="col-xs-12">
+    <div class="row selection-heading" ng-hide="error">
+      <div class="col-sm-3" translate>images.header.tabs.tab</div>
+      <div class="col-sm-3" translate>images.header.tabs.default</div>
+      <div class="col-sm-3" translate>images.header.tabs.fa.icon</div>
+      <div class="col-sm-3" translate>images.header.tabs.resource.icon</div>
+    </div>
+    <div class="loader" ng-show="loading"></div>
+    <form ng-hide="loading || error">
+      <ul class="list">
+        <li ng-repeat="tab in tabs" class="row">
+          <div class="col-sm-3">
+            <span translate>{{tab.translation}}</span>
+          </div>
+          <div class="col-sm-3">
+            <div class="input-group">
+              <input type="text" readonly value="{{tab.icon}}" class="form-control"/>
+              <span class="input-group-addon">
               <span class="fa {{tab.icon}}"></span>
             </span>
+            </div>
           </div>
-        </div>
-        <div class="col-sm-3">
-          <div class="input-group">
-            <input type="text" ng-model="tabsConfig[tab.name].icon" class="form-control"/>
-            <span class="input-group-addon">
-              <span class="fa {{tabsConfig[tab.name].icon}}"></span>
-            </span>
-          </div>
+          <div class="col-sm-3">
+            <div class="input-group">
+              <input type="text" ng-model="tabsConfig[tab.name].icon" class="form-control"/>
+              <span class="input-group-addon">
+                <span ng-if="tabsConfig[tab.name].icon" class="fa {{tabsConfig[tab.name].icon}}"></span>
+              </span>
+            </div>
 
-        </div>
-        <div class="col-sm-3">
-          <div class="input-group">
-            <select ng-model="tabsConfig[tab.name].resource_icon"  class="form-control">
-              <option value="">-</option>
-              <option ng-repeat="resourceIcon in resourceIcons" value="{{resourceIcon}}" ng-selected="tabsConfig[tab.name].resource_icon === resourceIcon">
-                {{resourceIcon}}
-              </option>
-            </select>
-            <span class="input-group-addon">
-              <span class="resource-icon-preview" ng-bind-html="tabsConfig[tab.name].resource_icon | resourceIcon"></span>
-            </span>
           </div>
-        </div>
-      </li>
-    </ul>
-    <br/>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
-      <div class="loader inline small" ng-show="submitting"></div>
-      <span translate ng-if="submitted && !submitError">images.header.tabs.submit.success</span>
-      <span translate ng-if="submitError">images.header.tabs.submit.failure</span>
-    </div>
-  </form>
+          <div class="col-sm-3">
+            <div class="input-group">
+              <select ng-model="tabsConfig[tab.name].resource_icon"  class="form-control">
+                <option value="">-</option>
+                <option ng-repeat="resourceIcon in resourceIcons" value="{{resourceIcon}}" ng-selected="tabsConfig[tab.name].resource_icon === resourceIcon">
+                  {{resourceIcon}}
+                </option>
+              </select>
+              <span class="input-group-addon">
+                <span class="resource-icon-preview" ng-bind-html="tabsConfig[tab.name].resource_icon | resourceIcon"></span>
+              </span>
+            </div>
+          </div>
+        </li>
+      </ul>
+      <br/>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+        <span class="loader inline small" ng-show="submitting"></span>
+        <span translate ng-if="submitted && !submitError">images.header.tabs.submit.success</span>
+        <span class="error" translate ng-if="submitError">images.header.tabs.submit.failure</span>
+      </div>
+    </form>
+  </div>
 </div>
