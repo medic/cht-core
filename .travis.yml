@@ -5,7 +5,6 @@ sudo: true
 jdk: oraclejdk9
 dist: xenial
 
-if: commit_message =~ documentation
 
 addons:
   chrome: 'stable'
@@ -69,9 +68,12 @@ script:
     fi
 
 stages:
-  - compile
-  - test
-  - publish
+  - name: compile
+    if: commit_message =~ documentation
+  - name: test
+    if: commit_message =~ documentation
+  - name: publish
+    if: commit_message =~ documentation
 
 jobs:
   include:
