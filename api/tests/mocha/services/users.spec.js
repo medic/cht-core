@@ -394,35 +394,6 @@ describe('Users service', () => {
       });
     });
 
-    it('sets _deleted on the user doc', () => {
-      const userExpected = {
-        _id: 'foo_1',
-        starsign: 'aries',
-        _deleted: true,
-      };
-      const medicUserExpected = {
-        _id: 'foo_2',
-        starsign: 'taurus',
-        inactive: true,
-        deletion_date: (new Date()).valueOf()
-      };
-      sinon.stub(db.users, 'get').resolves({
-        _id: 'foo_1',
-        starsign: 'aries',
-      });
-      sinon.stub(db.medic, 'get').resolves({
-        _id: 'foo_2',
-        starsign: 'taurus',
-      });
-      const usersInsert = sinon.stub(db.users, 'put').resolves();
-      const medicUsersInsert = sinon.stub(db.medic, 'put').resolves();
-      return service.deleteUser('foo').then(() => {
-        chai.expect(usersInsert.callCount).to.equal(1);
-        chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(userExpected);
-        chai.expect(medicUsersInsert.firstCall.args[0]).to.deep.equal(medicUserExpected);
-      });
-    });
-
     it('sets _deleted on the user-settings doc', () => {
       const userExpected = {
         _id: 'foo_1',
