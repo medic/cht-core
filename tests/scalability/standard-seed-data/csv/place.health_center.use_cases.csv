@@ -1,0 +1,18 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,is_name_generated,name,reported_date,imported_date,contact,generated_name,use_cases,vaccines
+use_case_HC_1,district_3,FALSE,Health Center With Immunizations 1,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_2,district_3,FALSE,Health Center With Immunizations 2,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_3,district_3,FALSE,Health Center With Immunizations 3,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_4,district_3,FALSE,Health Center With Immunizations 4,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_5,district_3,FALSE,Health Center With Immunizations 5,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_6,district_3,FALSE,Health Center With Immunizations 6,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_7,district_3,FALSE,Health Center With Immunizations 7,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_8,district_3,FALSE,Health Center With Immunizations 8,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_9,district_3,FALSE,Health Center With Immunizations 9,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_10,district_3,FALSE,Health Center With Immunizations 10,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_11,district_3,FALSE,Health Center With Immunizations 11,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_12,district_3,FALSE,Health Center With Immunizations 12,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_13,district_3,FALSE,Health Center With Immunizations 13,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_14,district_3,FALSE,Health Center With Immunizations 14,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_15,district_3,FALSE,Health Center With Immunizations 15,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_16,district_3,FALSE,Health Center With Immunizations 16,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
+use_case_HC_17,district_3,FALSE,Health Center With Immunizations 17,1544031155715,2018-12-11T15:41:42.751Z,{},,anc pnc imm,bcg flu polio typhoid
