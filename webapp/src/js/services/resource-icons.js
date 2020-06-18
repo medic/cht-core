@@ -119,6 +119,10 @@ angular.module('inboxServices').factory('ResourceIcons',
       },
       getDocResourcesByMimeType: (doc, mimeType) => {
         return DB().get(doc).then(res => {
+          if (!res || !res.resources || !res._attachments) {
+            return [];
+          }
+
           return Object.keys(res.resources).filter(resource => {
             const attachment = res._attachments[res.resources[resource]];
             return attachment && attachment.content_type === mimeType;

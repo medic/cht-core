@@ -23,7 +23,7 @@ angular.module('controllers').controller('ImagesTabsCtrl',
 
     const setupPromise = $q
       .all([
-        ResourceIcons.getDocResources('resources'),
+        ResourceIcons.getDocResourcesByMimeType('resources', 'image/svg+xml'),
         Settings(),
       ])
       .then(([ resourceIcons = [], { header_tabs = {} } = {} ]) => {

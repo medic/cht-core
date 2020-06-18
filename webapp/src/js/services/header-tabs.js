@@ -54,10 +54,11 @@ angular.module('inboxServices').factory('HeaderTabs',
           return;
         }
 
+        if (settings.header_tabs[tab.name].icon && settings.header_tabs[tab.name].icon.startsWith('fa-')) {
+          tab.icon = settings.header_tabs[tab.name].icon;
+        }
         if (settings.header_tabs[tab.name].resource_icon) {
           tab.resourceIcon = settings.header_tabs[tab.name].resource_icon;
-        } else if (settings.header_tabs[tab.name].icon && settings.header_tabs[tab.name].icon.startsWith('fa-')) {
-          tab.icon = settings.header_tabs[tab.name].icon;
         }
       });
 

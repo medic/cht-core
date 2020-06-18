@@ -11,7 +11,7 @@ describe('Images header-tabs controller', () => {
 
     Settings = sinon.stub().resolves();
     HeaderTabs = sinon.stub();
-    ResourceIcons = { getDocResources: sinon.stub().resolves() };
+    ResourceIcons = { getDocResourcesByMimeType: sinon.stub().resolves() };
     UpdateSettings = sinon.stub();
 
     module($provide => {
@@ -56,7 +56,7 @@ describe('Images header-tabs controller', () => {
         'tab5': { icon: 'fa-55', resource_icon: 'icon3' },
       }
     };
-    ResourceIcons.getDocResources.resolves(icons);
+    ResourceIcons.getDocResourcesByMimeType.resolves(icons);
     Settings.resolves(headerTabsSettings);
     HeaderTabs.returns(tabs);
     return getController().then(() => {
@@ -67,8 +67,8 @@ describe('Images header-tabs controller', () => {
       chai.expect(HeaderTabs.callCount).to.equal(1);
       chai.expect(HeaderTabs.args[0]).to.deep.equal([]);
 
-      chai.expect(ResourceIcons.getDocResources.callCount).to.equal(1);
-      chai.expect(ResourceIcons.getDocResources.args[0]).to.deep.equal(['resources']);
+      chai.expect(ResourceIcons.getDocResourcesByMimeType.callCount).to.equal(1);
+      chai.expect(ResourceIcons.getDocResourcesByMimeType.args[0]).to.deep.equal(['resources', 'image/svg+xml']);
 
       chai.expect(Settings.callCount).to.equal(1);
 
@@ -78,7 +78,7 @@ describe('Images header-tabs controller', () => {
   });
 
   it('should have correct default values', () => {
-    ResourceIcons.getDocResources.resolves();
+    ResourceIcons.getDocResourcesByMimeType.resolves();
     Settings.resolves();
     HeaderTabs.returns([]);
 
@@ -90,7 +90,7 @@ describe('Images header-tabs controller', () => {
   });
 
   it('should catch Settings errors', () => {
-    ResourceIcons.getDocResources.resolves(['icon']);
+    ResourceIcons.getDocResourcesByMimeType.resolves(['icon']);
     Settings.rejects({ err: 'omg' });
     HeaderTabs.returns([{ name: 'tab' }]);
 
@@ -105,7 +105,7 @@ describe('Images header-tabs controller', () => {
   });
 
   it('should catch resource icons errors', () => {
-    ResourceIcons.getDocResources.rejects({ err: 'omg' });
+    ResourceIcons.getDocResourcesByMimeType.rejects({ err: 'omg' });
     Settings.resolves({ });
     HeaderTabs.returns([{ name: 'tab' }]);
 
@@ -120,7 +120,7 @@ describe('Images header-tabs controller', () => {
   });
 
   it('should submit settings correctly', () => {
-    ResourceIcons.getDocResources.resolves(['icon']);
+    ResourceIcons.getDocResourcesByMimeType.resolves(['icon']);
     Settings.resolves({ header_tabs: { 'tab': { icon: 'fa-test' } }});
     HeaderTabs.returns([{ name: 'tab' }]);
     UpdateSettings.resolves();
@@ -154,7 +154,7 @@ describe('Images header-tabs controller', () => {
   });
 
   it('should catch submit errors correctly', () => {
-    ResourceIcons.getDocResources.resolves(['icon']);
+    ResourceIcons.getDocResourcesByMimeType.resolves(['icon']);
     Settings.resolves({ header_tabs: { 'tab': { icon: 'fa-test' } }});
     HeaderTabs.returns([{ name: 'tab' }]);
     UpdateSettings.rejects({});

@@ -370,4 +370,117 @@ describe('ResourceIcons service', () => {
 
   });
 
+  describe('getDocResources', () => {
+    it('should return resources by name', () => {
+      get.resolves({
+        _id: 'thedoc',
+        _rev: 'therev',
+        resources: {
+          one: 'one.png',
+          two: 'two.png',
+          three: 'three.png',
+        },
+        _attachments: {
+          'one.png': {},
+          'tho.png': {},
+          'three.png': {},
+        },
+      });
+
+      const service = injector.get('ResourceIcons');
+      return service.getDocResources('thedoc').then(result => {
+        chai.expect(result).to.have.members(['one', 'two', 'three']);
+        chai.expect(get.callCount).to.equal(4); // initializing the service does 3 calls
+        chai.expect(get.args[3]).to.deep.equal(['thedoc']);
+      });
+    });
+
+    it('should throw on error', () => {
+      get.rejects({ err: 'omg' });
+      const service = injector.get('ResourceIcons');
+      return service
+        .getDocResources('id')
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => chai.expect(err).to.deep.equal({ err: 'omg' }));
+    });
+  });
+
+  describe('getDocResourcesByMimeType', () => {
+    it('should only return resources with requested mimetype', () => {
+      get.resolves({
+        _id: 'doc',
+        _rev: 'doc',
+        resources: {
+          one: 'one.png',
+          two: 'two.svg',
+          three: 'three.fakepng', // actually just a png
+          four: 'four.whatever', // secretly a jpg
+          five: 'five.jpg', // secretly a svg
+        },
+        _attachments: {
+          'one.png': { content_type: 'image/png' },
+          'two.svg': { content_type: 'image/svg+xml' },
+          'three.fakepng': { content_type: 'image/png' },
+          'four.whatever': { content_type: 'image/jpeg' },
+          'five.jpg': { content_type: 'image/svg+xml' },
+        },
+      });
+      const service = injector.get('ResourceIcons');
+
+      return Promise
+        .all([
+          service.getDocResourcesByMimeType('doc', 'image/png'),
+          service.getDocResourcesByMimeType('doc', 'image/svg+xml'),
+          service.getDocResourcesByMimeType('doc', 'image/jpeg'),
+          service.getDocResourcesByMimeType('doc', 'something/else'),
+          service.getDocResourcesByMimeType('doc'),
+        ])
+        .then(([ pngs, svgs, jpegs, somethingElses, noMime ]) => {
+          chai.expect(get.callCount).to.equal(8); // initializing the service does 3 calls
+          chai.expect(get.args.slice(3, 8)).to.deep.equal([['doc'], ['doc'], ['doc'], ['doc'], ['doc']]);
+          chai.expect(pngs).to.have.members(['one', 'three']);
+          chai.expect(svgs).to.have.members(['two', 'five']);
+          chai.expect(jpegs).to.have.members(['four']);
+          chai.expect(somethingElses).to.deep.equal([]);
+          chai.expect(noMime).to.deep.equal([]);
+        });
+    });
+
+    it('should return nothing when no resources', () => {
+      const noResources = {
+        _id: 'doc',
+        _rev: 'doc',
+        somefield: 'aaa',
+        _attachments: { a : { content_type: 'xml' }, b : { content_type: 'png' }, c : { content_type: 'jpg' } },
+      };
+      const noAttachments = {
+        _id: 'doc',
+        _rev: 'doc',
+        resources: { a : 'a.jpg', b: 'b.png', c: 'c.xml' }
+      };
+
+      get.onCall(3).resolves(noResources);
+      get.onCall(4).resolves(noAttachments);
+      const service = injector.get('ResourceIcons');
+
+      return Promise
+        .all([
+          service.getDocResourcesByMimeType('doc', 'xml'),
+          service.getDocResourcesByMimeType('doc', 'jpg'),
+        ])
+        .then(([ noResourcesResult, noAttachmentsResult ]) => {
+          chai.expect(noResourcesResult).to.deep.equal([]);
+          chai.expect(noAttachmentsResult).to.deep.equal([]);
+        });
+    });
+
+    it('should throw on error', () => {
+      get.rejects({ err: 'omg' });
+      const service = injector.get('ResourceIcons');
+      return service
+        .getDocResourcesByMimeType('id', 'something')
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => chai.expect(err).to.deep.equal({ err: 'omg' }));
+    });
+  });
 });
