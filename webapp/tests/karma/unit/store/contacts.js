@@ -191,7 +191,7 @@ describe('Contacts store', () => {
 
           chai.expect(xmlForms.listen.callCount).to.equal(2);
           const listenCallback = xmlForms.listen.args[1][2];
-          listenCallback(null, [{ internalId: 'contact:person:create' }]);
+          listenCallback(null, [{ _id: 'form:contact:person:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([]);
         });
@@ -201,7 +201,7 @@ describe('Contacts store', () => {
         getChildren.resolves([{
           id: 'childType',
           icon: 'fa-la-la-la-la',
-          create_form: 'contact:childType:create',
+          create_form: 'form:contact:childType:create',
         }]);
         getContact.resolves({
           doc: { _id: '123' },
@@ -213,7 +213,7 @@ describe('Contacts store', () => {
 
           chai.expect(xmlForms.listen.callCount).to.equal(2);
           const listenCallback = xmlForms.listen.args[1][2];
-          listenCallback(null, [{ internalId: 'contact:childType:create' }]);
+          listenCallback(null, [{ internalId: 'contact:childType:create', _id: 'form:contact:childType:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([{
             menu_key: 'Add place',
@@ -222,7 +222,7 @@ describe('Contacts store', () => {
             types: [{
               id: 'childType',
               icon: 'fa-la-la-la-la',
-              create_form: 'contact:childType:create',
+              create_form: 'form:contact:childType:create',
             }],
           }]);
         });
@@ -233,7 +233,7 @@ describe('Contacts store', () => {
           id: 'childType',
           icon: 'fa-la-la-la-la',
           person: true,
-          create_form: 'contact:childType:create',
+          create_form: 'form:contact:childType:create',
         }]);
         getContact.resolves({
           doc: { _id: '123' },
@@ -245,7 +245,7 @@ describe('Contacts store', () => {
 
           chai.expect(xmlForms.listen.callCount).to.equal(2);
           const listenCallback = xmlForms.listen.args[1][2];
-          listenCallback(null, [{ internalId: 'contact:childType:create' }]);
+          listenCallback(null, [{ _id: 'form:contact:childType:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([{
             menu_key: 'Add person',
@@ -255,7 +255,7 @@ describe('Contacts store', () => {
               id: 'childType',
               icon: 'fa-la-la-la-la',
               person: true,
-              create_form: 'contact:childType:create',
+              create_form: 'form:contact:childType:create',
             }],
           }]);
         });
@@ -263,10 +263,10 @@ describe('Contacts store', () => {
 
       it('should show no buttons when there are child type but no forms allowed', () => {
         getChildren.resolves([
-          { id: 'personType1', person: true, create_form: 'contact:personType1:create'},
-          { id: 'personType2', person: true, create_form: 'contact:personType2:create'},
-          { id: 'placeType1', person: true, create_form: 'contact:placeType1:create'},
-          { id: 'placeType2', person: true, create_form: 'contact:placeType2:create'},
+          { id: 'personType1', person: true, create_form: 'form:contact:personType1:create'},
+          { id: 'personType2', person: true, create_form: 'form:contact:personType2:create'},
+          { id: 'placeType1', person: true, create_form: 'form:contact:placeType1:create'},
+          { id: 'placeType2', person: true, create_form: 'form:contact:placeType2:create'},
         ]);
         getContact.resolves({
           doc: { _id: '123' },
@@ -279,7 +279,7 @@ describe('Contacts store', () => {
 
           chai.expect(xmlForms.listen.callCount).to.equal(2);
           const listenCallback = xmlForms.listen.args[1][2];
-          listenCallback(null, [{ internalId: 'contact:type1:create' }, { internalId: 'contact:type2:create' }]);
+          listenCallback(null, [{ _id: 'form:contact:type1:create' }, { _id: 'form:contact:type2:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([]);
         });
@@ -287,29 +287,29 @@ describe('Contacts store', () => {
 
       it('should filter place and person types to add to allowed ones', () => {
         getChildren.resolves([
-          { id: 'personType1', person: true, create_form: 'contact:personType1:create'},
-          { id: 'personType2', person: true, create_form: 'contact:personType2:create'},
-          { id: 'personType3', person: true, create_form: 'contact:personType3:create'},
-          { id: 'placeType1', create_form: 'contact:placeType1:create'},
-          { id: 'placeType2', create_form: 'contact:placeType2:create'},
-          { id: 'placeType3', create_form: 'contact:placeType3:create'},
+          { id: 'personType1', person: true, create_form: 'form:contact:personType1:create'},
+          { id: 'personType2', person: true, create_form: 'form:contact:personType2:create'},
+          { id: 'personType3', person: true, create_form: 'form:contact:personType3:create'},
+          { id: 'placeType1', create_form: 'form:contact:placeType1:create'},
+          { id: 'placeType2', create_form: 'form:contact:placeType2:create'},
+          { id: 'placeType3', create_form: 'form:contact:placeType3:create'},
         ]);
         getContact.resolves({
           doc: { _id: '123' },
           type: { id: 'person', person: true }
         });
         const forms = [
-          { internalId: 'contact:type1:create' },
-          { internalId: 'contact:personType2:create' },
-          { internalId: 'contact:placeType2:create' },
-          { internalId: 'contact:personType3:create' },
+          { _id: 'form:contact:type1:create' },
+          { _id: 'form:contact:personType2:create' },
+          { _id: 'form:contact:placeType2:create' },
+          { _id: 'form:contact:personType3:create' },
         ];
 
         const forms2 = [
-          { internalId: 'contact:type2:create' },
-          { internalId: 'contact:personType1:create' },
-          { internalId: 'contact:placeType1:create' },
-          { internalId: 'contact:placeType3:create' },
+          { _id: 'form:contact:type2:create' },
+          { _id: 'form:contact:personType1:create' },
+          { _id: 'form:contact:placeType1:create' },
+          { _id: 'form:contact:placeType3:create' },
         ];
 
         return contactsActions.setSelectedContact('123').then(() => {
@@ -326,7 +326,7 @@ describe('Contacts store', () => {
               menu_icon: 'fa-building',
               permission: 'can_create_places',
               types: [
-                { id: 'placeType2', create_form: 'contact:placeType2:create'},
+                { id: 'placeType2', create_form: 'form:contact:placeType2:create'},
               ]
             },
             {
@@ -334,8 +334,8 @@ describe('Contacts store', () => {
               menu_icon: 'fa-user',
               permission: 'can_create_people',
               types: [
-                { id: 'personType2', person: true, create_form: 'contact:personType2:create'},
-                { id: 'personType3', person: true, create_form: 'contact:personType3:create'},
+                { id: 'personType2', person: true, create_form: 'form:contact:personType2:create'},
+                { id: 'personType3', person: true, create_form: 'form:contact:personType3:create'},
               ]
             },
           ]);
@@ -349,8 +349,8 @@ describe('Contacts store', () => {
               menu_icon: 'fa-building',
               permission: 'can_create_places',
               types: [
-                { id: 'placeType1', create_form: 'contact:placeType1:create'},
-                { id: 'placeType3', create_form: 'contact:placeType3:create'},
+                { id: 'placeType1', create_form: 'form:contact:placeType1:create'},
+                { id: 'placeType3', create_form: 'form:contact:placeType3:create'},
               ]
             },
             {
@@ -358,7 +358,7 @@ describe('Contacts store', () => {
               menu_icon: 'fa-user',
               permission: 'can_create_people',
               types: [
-                { id: 'personType1', person: true, create_form: 'contact:personType1:create'},
+                { id: 'personType1', person: true, create_form: 'form:contact:personType1:create'},
               ]
             },
           ]);
@@ -499,7 +499,6 @@ describe('Contacts store', () => {
             chai.expect(setRightActionBar.args[2][0].relevantForms[0].title).to.equal('a.form.key');
           });
         });
-
       });
 
       describe('muted contacts modal', () => {

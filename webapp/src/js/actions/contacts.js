@@ -81,7 +81,7 @@ angular.module('inboxServices').factory('ContactsActions',
       };
 
       const filterAllowedContactTypes = (contactTypes, allowedContactForms) => {
-        return contactTypes.filter(type => allowedContactForms.find(form => form.internalId === type.create_form));
+        return contactTypes.filter(type => allowedContactForms.find(form => form._id === type.create_form));
       };
 
       const getGroupedChildTypes = childTypes => {
