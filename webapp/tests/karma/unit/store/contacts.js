@@ -12,7 +12,7 @@ describe('Contacts store', () => {
   let settings;
   let hasAuth;
   let tasksForContact;
-  let listen;
+  let xmlForms;
   let settingSelected;
   let clearCancelCallback;
   let setTitle;
@@ -37,7 +37,7 @@ describe('Contacts store', () => {
     settings = sinon.stub();
     hasAuth = sinon.stub();
     tasksForContact = sinon.stub();
-    listen = sinon.stub();
+    xmlForms = { listen: sinon.stub() };
     settingSelected = sinon.stub();
     clearCancelCallback = sinon.stub();
     setTitle = sinon.stub();
@@ -63,7 +63,7 @@ describe('Contacts store', () => {
       $provide.value('Settings', settings);
       $provide.value('Auth', { has: hasAuth });
       $provide.value('TasksForContact', tasksForContact);
-      $provide.value('XmlForms', { listen });
+      $provide.value('XmlForms', xmlForms);
       $provide.value('GlobalActions', () => ({ settingSelected, clearCancelCallback, setTitle, setRightActionBar }));
       $provide.value('TranslateFrom', translateFrom);
       $provide.value('TargetAggregates', targetAggregates);
@@ -116,14 +116,14 @@ describe('Contacts store', () => {
         });
         chai.expect(setTitle.callCount).to.equal(1);
         chai.expect(setTitle.args[0][0]).to.equal('label.peeps');
-        chai.expect(setRightActionBar.callCount).to.equal(1);
+        chai.expect(setRightActionBar.callCount).to.equal(2);
         chai.expect(setRightActionBar.args[0][0]).to.deep.equal({
           relevantForms: [],
           sendTo: { _id: '123' },
           canDelete: false,
-          canEdit: true,
-          childTypes: []
+          canEdit: true
         });
+        chai.expect(setRightActionBar.args[1][0]).to.deep.equal({ canDelete: true });
         chai.expect(tasksForContact.callCount).to.equal(1);
       });
     });
@@ -185,28 +185,188 @@ describe('Contacts store', () => {
           type: { id: 'person', person: true }
         });
         return contactsActions.setSelectedContact('123').then(() => {
-          chai.expect(setRightActionBar.callCount).to.equal(1);
-          chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal([]);
+          chai.expect(setRightActionBar.callCount).to.equal(2);
+          chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
+          chai.expect(setRightActionBar.args[1][0].childTypes).to.deep.equal(undefined);
+
+          chai.expect(xmlForms.listen.callCount).to.equal(2);
+          const listenCallback = xmlForms.listen.args[1][2];
+          listenCallback(null, [{ internalId: 'contact:person:create' }]);
+          chai.expect(setRightActionBar.callCount).to.equal(3);
+          chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([]);
         });
       });
 
       it('for the New Place button', () => {
         getChildren.resolves([{
           id: 'childType',
-          icon: 'fa-la-la-la-la'
+          icon: 'fa-la-la-la-la',
+          create_form: 'contact:childType:create',
         }]);
         getContact.resolves({
           doc: { _id: '123' },
           type: { id: 'person', person: true }
         });
         return contactsActions.setSelectedContact('123').then(() => {
-          chai.expect(setRightActionBar.callCount).to.equal(1);
-          chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal([{
-            menu_icon: 'fa-building',
+          chai.expect(setRightActionBar.callCount).to.equal(2);
+          chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
+
+          chai.expect(xmlForms.listen.callCount).to.equal(2);
+          const listenCallback = xmlForms.listen.args[1][2];
+          listenCallback(null, [{ internalId: 'contact:childType:create' }]);
+          chai.expect(setRightActionBar.callCount).to.equal(3);
+          chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([{
             menu_key: 'Add place',
+            menu_icon: 'fa-building',
             permission: 'can_create_places',
-            types: [ { id: 'childType', icon: 'fa-la-la-la-la' } ]
+            types: [{
+              id: 'childType',
+              icon: 'fa-la-la-la-la',
+              create_form: 'contact:childType:create',
+            }],
           }]);
+        });
+      });
+
+      it('for the New Person button', () => {
+        getChildren.resolves([{
+          id: 'childType',
+          icon: 'fa-la-la-la-la',
+          person: true,
+          create_form: 'contact:childType:create',
+        }]);
+        getContact.resolves({
+          doc: { _id: '123' },
+          type: { id: 'person', person: true }
+        });
+        return contactsActions.setSelectedContact('123').then(() => {
+          chai.expect(setRightActionBar.callCount).to.equal(2);
+          chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
+
+          chai.expect(xmlForms.listen.callCount).to.equal(2);
+          const listenCallback = xmlForms.listen.args[1][2];
+          listenCallback(null, [{ internalId: 'contact:childType:create' }]);
+          chai.expect(setRightActionBar.callCount).to.equal(3);
+          chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([{
+            menu_key: 'Add person',
+            menu_icon: 'fa-user',
+            permission: 'can_create_people',
+            types: [{
+              id: 'childType',
+              icon: 'fa-la-la-la-la',
+              person: true,
+              create_form: 'contact:childType:create',
+            }],
+          }]);
+        });
+      });
+
+      it('should show no buttons when there are child type but no forms allowed', () => {
+        getChildren.resolves([
+          { id: 'personType1', person: true, create_form: 'contact:personType1:create'},
+          { id: 'personType2', person: true, create_form: 'contact:personType2:create'},
+          { id: 'placeType1', person: true, create_form: 'contact:placeType1:create'},
+          { id: 'placeType2', person: true, create_form: 'contact:placeType2:create'},
+        ]);
+        getContact.resolves({
+          doc: { _id: '123' },
+          type: { id: 'person', person: true }
+        });
+
+        return contactsActions.setSelectedContact('123').then(() => {
+          chai.expect(setRightActionBar.callCount).to.equal(2);
+          chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
+
+          chai.expect(xmlForms.listen.callCount).to.equal(2);
+          const listenCallback = xmlForms.listen.args[1][2];
+          listenCallback(null, [{ internalId: 'contact:type1:create' }, { internalId: 'contact:type2:create' }]);
+          chai.expect(setRightActionBar.callCount).to.equal(3);
+          chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([]);
+        });
+      });
+
+      it('should filter place and person types to add to allowed ones', () => {
+        getChildren.resolves([
+          { id: 'personType1', person: true, create_form: 'contact:personType1:create'},
+          { id: 'personType2', person: true, create_form: 'contact:personType2:create'},
+          { id: 'personType3', person: true, create_form: 'contact:personType3:create'},
+          { id: 'placeType1', create_form: 'contact:placeType1:create'},
+          { id: 'placeType2', create_form: 'contact:placeType2:create'},
+          { id: 'placeType3', create_form: 'contact:placeType3:create'},
+        ]);
+        getContact.resolves({
+          doc: { _id: '123' },
+          type: { id: 'person', person: true }
+        });
+        const forms = [
+          { internalId: 'contact:type1:create' },
+          { internalId: 'contact:personType2:create' },
+          { internalId: 'contact:placeType2:create' },
+          { internalId: 'contact:personType3:create' },
+        ];
+
+        const forms2 = [
+          { internalId: 'contact:type2:create' },
+          { internalId: 'contact:personType1:create' },
+          { internalId: 'contact:placeType1:create' },
+          { internalId: 'contact:placeType3:create' },
+        ];
+
+        return contactsActions.setSelectedContact('123').then(() => {
+          chai.expect(setRightActionBar.callCount).to.equal(2);
+          chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
+
+          chai.expect(xmlForms.listen.callCount).to.equal(2);
+          const listenCallback = xmlForms.listen.args[1][2];
+          listenCallback(null, forms);
+          chai.expect(setRightActionBar.callCount).to.equal(3);
+          chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([
+            {
+              menu_key: 'Add place',
+              menu_icon: 'fa-building',
+              permission: 'can_create_places',
+              types: [
+                { id: 'placeType2', create_form: 'contact:placeType2:create'},
+              ]
+            },
+            {
+              menu_key: 'Add person',
+              menu_icon: 'fa-user',
+              permission: 'can_create_people',
+              types: [
+                { id: 'personType2', person: true, create_form: 'contact:personType2:create'},
+                { id: 'personType3', person: true, create_form: 'contact:personType3:create'},
+              ]
+            },
+          ]);
+
+          // form changes
+          listenCallback(null, forms2);
+          chai.expect(setRightActionBar.callCount).to.equal(4);
+          chai.expect(setRightActionBar.args[3][0].childTypes).to.deep.equal([
+            {
+              menu_key: 'Add place',
+              menu_icon: 'fa-building',
+              permission: 'can_create_places',
+              types: [
+                { id: 'placeType1', create_form: 'contact:placeType1:create'},
+                { id: 'placeType3', create_form: 'contact:placeType3:create'},
+              ]
+            },
+            {
+              menu_key: 'Add person',
+              menu_icon: 'fa-user',
+              permission: 'can_create_people',
+              types: [
+                { id: 'personType1', person: true, create_form: 'contact:personType1:create'},
+              ]
+            },
+          ]);
+
+          // forms change again
+          listenCallback(null, []);
+          chai.expect(setRightActionBar.callCount).to.equal(5);
+          chai.expect(setRightActionBar.args[4][0].childTypes).to.deep.equal([]);
         });
       });
 
@@ -217,8 +377,9 @@ describe('Contacts store', () => {
           type: { id: 'person', person: true }
         });
         return contactsActions.setSelectedContact('123').then(() => {
-          chai.expect(setRightActionBar.callCount).to.equal(1);
+          chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].sendTo).to.deep.equal({ _id: '123' });
+          chai.expect(setRightActionBar.args[1][0].sendTo).to.equal(undefined);
         });
       });
 
@@ -229,33 +390,35 @@ describe('Contacts store', () => {
           type: { id: 'district', person: false }
         });
         return contactsActions.setSelectedContact('123').then(() => {
-          chai.expect(setRightActionBar.callCount).to.equal(1);
+          chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].sendTo).to.equal('');
+          chai.expect(setRightActionBar.args[1][0].sendTo).to.equal(undefined);
         });
       });
 
       it('for the New Action button', () => {
         return contactsActions.setSelectedContact('123').then(() => {
-          chai.expect(setRightActionBar.callCount).to.equal(1);
-          chai.expect(setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
-          chai.expect(listen.callCount).to.equal(1);
-          const listenCallback = listen.args[0][2];
-          listenCallback(null, [{ internalId: 'a-form' }]);
           chai.expect(setRightActionBar.callCount).to.equal(2);
-          chai.expect(setRightActionBar.args[1][0].relevantForms.length).to.equal(1);
-          chai.expect(setRightActionBar.args[1][0].relevantForms[0].code).to.equal('a-form');
+          chai.expect(setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
+          chai.expect(setRightActionBar.args[1][0].relevantForms).to.equal(undefined);
+          chai.expect(xmlForms.listen.callCount).to.equal(2);
+          const listenCallback = xmlForms.listen.args[0][2];
+          listenCallback(null, [{ internalId: 'a-form' }]);
+          chai.expect(setRightActionBar.callCount).to.equal(3);
+          chai.expect(setRightActionBar.args[2][0].relevantForms.length).to.equal(1);
+          chai.expect(setRightActionBar.args[2][0].relevantForms[0].code).to.equal('a-form');
         });
       });
 
       it('sets the actionbar partially if it could not get forms', () => {
         return contactsActions.setSelectedContact('123').then(() => {
-          chai.expect(setRightActionBar.callCount).to.equal(1);
+          chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
-          chai.expect(listen.callCount).to.equal(1);
-          const listenCallback = listen.args[0][2];
+          chai.expect(setRightActionBar.args[1][0].relevantForms).to.equal(undefined);
+          chai.expect(xmlForms.listen.callCount).to.equal(2);
+          const listenCallback = xmlForms.listen.args[0][2];
           listenCallback(new Error('no forms brew'));
           chai.expect(setRightActionBar.callCount).to.equal(2);
-          chai.expect(setRightActionBar.args[1][0].relevantForms).to.equal(undefined);
         });
       });
 
@@ -276,23 +439,21 @@ describe('Contacts store', () => {
       });
 
       it('disables deleting for places with children', () => {
-        getContact.resolves({
-          doc: { _id: '111' },
-          children: [ { contacts: [ { _id: '222' } ] } ]
-        });
+        getContact.resolves({ doc: { _id: '111' } });
+        loadChildren.resolves([ { contacts: [ { _id: '222' } ] } ]);
         return contactsActions.setSelectedContact('111').then(() => {
           chai.expect(setRightActionBar.args[0][0].canDelete).to.equal(false);
+          chai.expect(setRightActionBar.args[1][0].canDelete).to.equal(false);
         });
       });
 
       it('enables deleting for leaf nodes', () => {
         getContact.resolves({
           doc: { _id: '111' },
-          children: []
         });
+        loadChildren.resolves([]);
         return contactsActions.setSelectedContact('111').then(() => {
-          const listenCallback = listen.args[0][2];
-          listenCallback(null, []);
+          chai.expect(setRightActionBar.args[0][0].canDelete).to.equal(false);
           chai.expect(setRightActionBar.args[1][0].canDelete).to.equal(true);
         });
       });
@@ -303,8 +464,6 @@ describe('Contacts store', () => {
           children: [ { contacts: [] } ]
         });
         return contactsActions.setSelectedContact('111').then(() => {
-          const listenCallback = listen.args[0][2];
-          listenCallback(null, []);
           chai.expect(setRightActionBar.args[1][0].canDelete).to.equal(true);
         });
       });
@@ -313,31 +472,31 @@ describe('Contacts store', () => {
 
         it('uses the translation_key', () => {
           return contactsActions.setSelectedContact('111').then(() => {
-            const listenCallback = listen.args[0][2];
+            const listenCallback = xmlForms.listen.args[0][2];
             listenCallback(null, [{ internalId: 'a', icon: 'a-icon', translation_key: 'a.form.key' }]);
-            chai.expect(setRightActionBar.args[1][0].relevantForms[0].title).to.equal('a.form.key');
+            chai.expect(setRightActionBar.args[2][0].relevantForms[0].title).to.equal('a.form.key');
           });
         });
 
         it('uses the title', () => {
           translateFrom.returns('translate title');
           return contactsActions.setSelectedContact('111').then(() => {
-            const listenCallback = listen.args[0][2];
+            const listenCallback = xmlForms.listen.args[0][2];
             listenCallback(null, [{ internalId: 'a', icon: 'a-icon', title: 'My Form' }]);
             chai.expect(translateFrom.args[0][0]).to.equal('My Form');
-            chai.expect(setRightActionBar.args[1][0].relevantForms[0].title).to.equal('translate title');
+            chai.expect(setRightActionBar.args[2][0].relevantForms[0].title).to.equal('translate title');
           });
         });
 
         it('uses the title', () => {
           return contactsActions.setSelectedContact('111').then(() => {
-            const listenCallback = listen.args[0][2];
+            const listenCallback = xmlForms.listen.args[0][2];
             listenCallback(
               null,
               [{ internalId: 'a', icon: 'a-icon', title: 'My Form', translation_key: 'a.form.key' }]
             );
             chai.expect(translateFrom.callCount).to.equal(0);
-            chai.expect(setRightActionBar.args[1][0].relevantForms[0].title).to.equal('a.form.key');
+            chai.expect(setRightActionBar.args[2][0].relevantForms[0].title).to.equal('a.form.key');
           });
         });
 
@@ -358,9 +517,9 @@ describe('Contacts store', () => {
               { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
               { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
             ];
-            const listenCallback = listen.args[0][2];
+            const listenCallback = xmlForms.listen.args[0][2];
             listenCallback(null, forms);
-            assert.deepEqual(setRightActionBar.args[1][0].relevantForms, [
+            assert.deepEqual(setRightActionBar.args[2][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmute', showUnmuteModal: false },
               { code: 'mute', icon: 'icon', title: 'form.mute', showUnmuteModal: false },
               { code: 'visit', icon: 'icon', title: 'form.visit', showUnmuteModal: false }
@@ -382,9 +541,9 @@ describe('Contacts store', () => {
               { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
               { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
             ];
-            const listenCallback = listen.args[0][2];
+            const listenCallback = xmlForms.listen.args[0][2];
             listenCallback(null, forms);
-            assert.deepEqual(setRightActionBar.args[1][0].relevantForms, [
+            assert.deepEqual(setRightActionBar.args[2][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmute', showUnmuteModal: false },
               { code: 'mute', icon: 'icon', title: 'form.mute', showUnmuteModal: true },
               { code: 'visit', icon: 'icon', title: 'form.visit', showUnmuteModal: true }
