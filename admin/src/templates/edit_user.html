@@ -11,7 +11,7 @@
 
     <div class="form-group required" ng-class="{'has-error': errors.username}">
       <label for="username" translate>User Name</label>
-      <input id="username" type="text" class="form-control" ng-model="editUserModel.username" ng-disabled="editUserModel.id" />
+      <input id="username" type="text" class="form-control" autocomplete="off" ng-model="editUserModel.username" ng-disabled="editUserModel.id" />
       <span class="help-block" translate>user.username.help</span>
       <span class="help-block">{{errors.username}}</span>
     </div>
