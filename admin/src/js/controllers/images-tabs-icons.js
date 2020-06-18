@@ -1,4 +1,4 @@
-angular.module('controllers').controller('ImagesTabsCtrl',
+angular.module('controllers').controller('ImagesTabsIconsCtrl',
   function(
     $log,
     $q,
@@ -28,6 +28,15 @@ angular.module('controllers').controller('ImagesTabsCtrl',
       ])
       .then(([ resourceIcons = [], { header_tabs = {} } = {} ]) => {
         $scope.resourceIcons = resourceIcons;
+
+        // remove configs referencing mismatched (other mime type) or missing resource icons
+        Object.keys(header_tabs).forEach(tab => {
+          const tabConfig = header_tabs[tab];
+          if (tabConfig.resource_icon && !resourceIcons.includes(tabConfig.resource_icon)) {
+            // using an empty string so the settings api overwrites the property
+            tabConfig.resource_icon = '';
+          }
+        });
         $scope.tabsConfig = header_tabs;
       })
       .catch(err => {

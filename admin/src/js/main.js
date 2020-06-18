@@ -36,7 +36,7 @@ require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/images-branding');
 require('./controllers/images-partners');
-require('./controllers/images-tabs');
+require('./controllers/images-tabs-icons');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
 require('./controllers/sms-forms');
@@ -327,12 +327,12 @@ angular.module('adminApp').config(function(
         }
       }
     })
-    .state('images.tabs', {
-      url: '/tabs',
+    .state('images.tabs-icons', {
+      url: '/tabs-icons',
       views: {
         tab: {
-          controller: 'ImagesTabsCtrl',
-          templateUrl: 'templates/images_tabs.html'
+          controller: 'ImagesTabsIconsCtrl',
+          templateUrl: 'templates/images_tabs_icons.html'
         }
       }
     })

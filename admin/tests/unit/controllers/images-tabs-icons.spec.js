@@ -25,7 +25,7 @@ describe('Images header-tabs controller', () => {
     inject(($controller, _$rootScope_) => {
       scope = _$rootScope_.$new();
       getController = () => {
-        const result = $controller('ImagesTabsCtrl', {
+        const result = $controller('ImagesTabsIconsCtrl', {
           $q: Q,
           $scope: scope,
           ResourceIcons,
@@ -50,10 +50,10 @@ describe('Images header-tabs controller', () => {
     const icons = ['icon1', 'icon2', 'icon3', 'icon4'];
     const headerTabsSettings = {
       header_tabs: {
-        'tab2': { },
-        'tab3': { icon: 'fa-33' },
-        'tab4': { resource_icon: 'icon3' },
-        'tab5': { icon: 'fa-55', resource_icon: 'icon3' },
+        tab2: { },
+        tab3: { icon: 'fa-33' },
+        tab4: { resource_icon: 'icon3' },
+        tab5: { icon: 'fa-55', resource_icon: 'icon3' },
       }
     };
     ResourceIcons.getDocResourcesByMimeType.resolves(icons);
@@ -86,6 +86,49 @@ describe('Images header-tabs controller', () => {
       chai.expect(scope.resourceIcons).to.deep.equal([]);
       chai.expect(scope.tabs).to.deep.equal([]);
       chai.expect(scope.tabsConfig).to.deep.equal({});
+    });
+  });
+
+  it('should remove configs with invalid resource icons', () => {
+    const tabs = [
+      { name: 'tab1', icon: 'fa-1' },
+      { name: 'tab2', icon: 'fa-2' },
+      { name: 'tab3', icon: 'fa-3' },
+      { name: 'tab4', icon: 'fa-4' },
+      { name: 'tab5', icon: 'fa-5' },
+    ];
+    const icons = ['icon1', 'icon2', 'icon3', 'icon4'];
+    const headerTabsSettings = {
+      header_tabs: {
+        tab2: { },
+        tab3: { icon: 'fa-33' },
+        tab4: { resource_icon: 'icon44' },
+        tab5: { icon: 'fa-55', resource_icon: 'icon55' },
+      }
+    };
+    ResourceIcons.getDocResourcesByMimeType.resolves(icons);
+    Settings.resolves(headerTabsSettings);
+    HeaderTabs.returns(tabs);
+    return getController().then(() => {
+      chai.expect(scope.resourceIcons).to.deep.equal(icons);
+      chai.expect(scope.tabs).to.deep.equal(tabs);
+      chai.expect(scope.tabsConfig).to.deep.equal({
+        tab2: { },
+        tab3: { icon: 'fa-33' },
+        tab4: { resource_icon: '' },
+        tab5: { icon: 'fa-55', resource_icon: '' },
+      });
+
+      chai.expect(HeaderTabs.callCount).to.equal(1);
+      chai.expect(HeaderTabs.args[0]).to.deep.equal([]);
+
+      chai.expect(ResourceIcons.getDocResourcesByMimeType.callCount).to.equal(1);
+      chai.expect(ResourceIcons.getDocResourcesByMimeType.args[0]).to.deep.equal(['resources', 'image/svg+xml']);
+
+      chai.expect(Settings.callCount).to.equal(1);
+
+      chai.expect(scope.loading).to.equal(false);
+      chai.expect(scope.error).to.equal(null);
     });
   });
 

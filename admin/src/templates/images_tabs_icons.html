@@ -1,13 +1,13 @@
 <div class="header-tabs">
-  <p translate>images.header.tabs.description</p>
-  <a href="https://fontawesome.com/v4.7.0/" target="_blank" rel="noopener noreferrer" translate>images.header.tabs.fontawesome.link</a>
-  <p ng-show="error" class="alert alert-danger" role="alert" translate>images.header.tabs.request.error</p>
+  <p translate>images.header.tabs.icons.description</p>
+  <a href="https://fontawesome.com/v4.7.0/" target="_blank" rel="noopener noreferrer" translate>images.header.tabs.icons.fontawesome.link</a>
+  <p ng-show="error" class="alert alert-danger" role="alert" translate>images.header.tabs.icons.request.error</p>
   <div class="col-xs-12">
     <div class="row selection-heading" ng-hide="error">
-      <div class="col-sm-3" translate>images.header.tabs.tab</div>
-      <div class="col-sm-3" translate>images.header.tabs.default</div>
-      <div class="col-sm-3" translate>images.header.tabs.fa.icon</div>
-      <div class="col-sm-3" translate>images.header.tabs.resource.icon</div>
+      <div class="col-sm-3" translate>images.header.tabs.icons.tab</div>
+      <div class="col-sm-3" translate>images.header.tabs.icons.default</div>
+      <div class="col-sm-3" translate>images.header.tabs.icons.fa.icon</div>
+      <div class="col-sm-3" translate>images.header.tabs.icons.resource.icon</div>
     </div>
     <div class="loader" ng-show="loading"></div>
     <form ng-hide="loading || error">
@@ -35,7 +35,7 @@
           </div>
           <div class="col-sm-3">
             <div class="input-group">
-              <select ng-model="tabsConfig[tab.name].resource_icon"  class="form-control">
+              <select ng-model="tabsConfig[tab.name].resource_icon" class="form-control">
                 <option value="">-</option>
                 <option ng-repeat="resourceIcon in resourceIcons" value="{{resourceIcon}}" ng-selected="tabsConfig[tab.name].resource_icon === resourceIcon">
                   {{resourceIcon}}
@@ -52,8 +52,8 @@
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
         <span class="loader inline small" ng-show="submitting"></span>
-        <span translate ng-if="submitted && !submitError">images.header.tabs.submit.success</span>
-        <span class="error" translate ng-if="submitError">images.header.tabs.submit.failure</span>
+        <span translate ng-if="submitted && !submitError">images.header.tabs.icons.submit.success</span>
+        <span class="error" translate ng-if="submitError">images.header.tabs.icons.submit.failure</span>
       </div>
     </form>
   </div>
