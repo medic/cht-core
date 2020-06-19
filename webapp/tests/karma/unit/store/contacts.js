@@ -12,7 +12,7 @@ describe('Contacts store', () => {
   let settings;
   let hasAuth;
   let tasksForContact;
-  let xmlForms;
+  let listen;
   let settingSelected;
   let clearCancelCallback;
   let setTitle;
@@ -37,7 +37,7 @@ describe('Contacts store', () => {
     settings = sinon.stub();
     hasAuth = sinon.stub();
     tasksForContact = sinon.stub();
-    xmlForms = { listen: sinon.stub() };
+    listen = sinon.stub();
     settingSelected = sinon.stub();
     clearCancelCallback = sinon.stub();
     setTitle = sinon.stub();
@@ -63,7 +63,7 @@ describe('Contacts store', () => {
       $provide.value('Settings', settings);
       $provide.value('Auth', { has: hasAuth });
       $provide.value('TasksForContact', tasksForContact);
-      $provide.value('XmlForms', xmlForms);
+      $provide.value('XmlForms', { listen });
       $provide.value('GlobalActions', () => ({ settingSelected, clearCancelCallback, setTitle, setRightActionBar }));
       $provide.value('TranslateFrom', translateFrom);
       $provide.value('TargetAggregates', targetAggregates);
@@ -121,7 +121,7 @@ describe('Contacts store', () => {
           relevantForms: [],
           sendTo: { _id: '123' },
           canDelete: false,
-          canEdit: true
+          canEdit: true,
         });
         chai.expect(setRightActionBar.args[1][0]).to.deep.equal({ canDelete: true });
         chai.expect(tasksForContact.callCount).to.equal(1);
@@ -189,8 +189,8 @@ describe('Contacts store', () => {
           chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
           chai.expect(setRightActionBar.args[1][0].childTypes).to.deep.equal(undefined);
 
-          chai.expect(xmlForms.listen.callCount).to.equal(2);
-          const listenCallback = xmlForms.listen.args[1][2];
+          chai.expect(listen.callCount).to.equal(2);
+          const listenCallback = listen.args[1][2];
           listenCallback(null, [{ _id: 'form:contact:person:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([]);
@@ -211,8 +211,8 @@ describe('Contacts store', () => {
           chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
 
-          chai.expect(xmlForms.listen.callCount).to.equal(2);
-          const listenCallback = xmlForms.listen.args[1][2];
+          chai.expect(listen.callCount).to.equal(2);
+          const listenCallback = listen.args[1][2];
           listenCallback(null, [{ internalId: 'contact:childType:create', _id: 'form:contact:childType:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([{
@@ -243,8 +243,8 @@ describe('Contacts store', () => {
           chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
 
-          chai.expect(xmlForms.listen.callCount).to.equal(2);
-          const listenCallback = xmlForms.listen.args[1][2];
+          chai.expect(listen.callCount).to.equal(2);
+          const listenCallback = listen.args[1][2];
           listenCallback(null, [{ _id: 'form:contact:childType:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([{
@@ -277,8 +277,8 @@ describe('Contacts store', () => {
           chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
 
-          chai.expect(xmlForms.listen.callCount).to.equal(2);
-          const listenCallback = xmlForms.listen.args[1][2];
+          chai.expect(listen.callCount).to.equal(2);
+          const listenCallback = listen.args[1][2];
           listenCallback(null, [{ _id: 'form:contact:type1:create' }, { _id: 'form:contact:type2:create' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([]);
@@ -316,8 +316,8 @@ describe('Contacts store', () => {
           chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].childTypes).to.deep.equal(undefined);
 
-          chai.expect(xmlForms.listen.callCount).to.equal(2);
-          const listenCallback = xmlForms.listen.args[1][2];
+          chai.expect(listen.callCount).to.equal(2);
+          const listenCallback = listen.args[1][2];
           listenCallback(null, forms);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].childTypes).to.deep.equal([
@@ -401,8 +401,8 @@ describe('Contacts store', () => {
           chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
           chai.expect(setRightActionBar.args[1][0].relevantForms).to.equal(undefined);
-          chai.expect(xmlForms.listen.callCount).to.equal(2);
-          const listenCallback = xmlForms.listen.args[0][2];
+          chai.expect(listen.callCount).to.equal(2);
+          const listenCallback = listen.args[0][2];
           listenCallback(null, [{ internalId: 'a-form' }]);
           chai.expect(setRightActionBar.callCount).to.equal(3);
           chai.expect(setRightActionBar.args[2][0].relevantForms.length).to.equal(1);
@@ -415,10 +415,25 @@ describe('Contacts store', () => {
           chai.expect(setRightActionBar.callCount).to.equal(2);
           chai.expect(setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
           chai.expect(setRightActionBar.args[1][0].relevantForms).to.equal(undefined);
-          chai.expect(xmlForms.listen.callCount).to.equal(2);
-          const listenCallback = xmlForms.listen.args[0][2];
+          chai.expect(listen.callCount).to.equal(2);
+          const listenCallback = listen.args[0][2];
           listenCallback(new Error('no forms brew'));
           chai.expect(setRightActionBar.callCount).to.equal(2);
+        });
+      });
+
+      it('should listen to forms changes correctly', () => {
+        return contactsActions.setSelectedContact('123').then(() => {
+          chai.expect(setRightActionBar.callCount).to.equal(2);
+          chai.expect(setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
+          chai.expect(setRightActionBar.args[1][0].relevantForms).to.equal(undefined);
+          chai.expect(listen.callCount).to.equal(2);
+          chai.expect(listen.args[0][1]).to.deep.equal({
+            doc: { _id: '123' },
+            contactSummary: undefined,
+            contactForms: false,
+          });
+          chai.expect(listen.args[1][1]).to.deep.equal({ contactForms: true });
         });
       });
 
@@ -459,11 +474,10 @@ describe('Contacts store', () => {
       });
 
       it('enables deleting for nodes with no children', () => {
-        getContact.resolves({
-          doc: { _id: '111' },
-          children: [ { contacts: [] } ]
-        });
+        getContact.resolves({ doc: { _id: '111' } });
+        loadChildren.resolves([ { contacts: [] } ]);
         return contactsActions.setSelectedContact('111').then(() => {
+          chai.expect(setRightActionBar.args[0][0].canDelete).to.equal(false);
           chai.expect(setRightActionBar.args[1][0].canDelete).to.equal(true);
         });
       });
@@ -472,7 +486,7 @@ describe('Contacts store', () => {
 
         it('uses the translation_key', () => {
           return contactsActions.setSelectedContact('111').then(() => {
-            const listenCallback = xmlForms.listen.args[0][2];
+            const listenCallback = listen.args[0][2];
             listenCallback(null, [{ internalId: 'a', icon: 'a-icon', translation_key: 'a.form.key' }]);
             chai.expect(setRightActionBar.args[2][0].relevantForms[0].title).to.equal('a.form.key');
           });
@@ -481,7 +495,7 @@ describe('Contacts store', () => {
         it('uses the title', () => {
           translateFrom.returns('translate title');
           return contactsActions.setSelectedContact('111').then(() => {
-            const listenCallback = xmlForms.listen.args[0][2];
+            const listenCallback = listen.args[0][2];
             listenCallback(null, [{ internalId: 'a', icon: 'a-icon', title: 'My Form' }]);
             chai.expect(translateFrom.args[0][0]).to.equal('My Form');
             chai.expect(setRightActionBar.args[2][0].relevantForms[0].title).to.equal('translate title');
@@ -490,7 +504,7 @@ describe('Contacts store', () => {
 
         it('uses the title', () => {
           return contactsActions.setSelectedContact('111').then(() => {
-            const listenCallback = xmlForms.listen.args[0][2];
+            const listenCallback = listen.args[0][2];
             listenCallback(
               null,
               [{ internalId: 'a', icon: 'a-icon', title: 'My Form', translation_key: 'a.form.key' }]
@@ -499,6 +513,7 @@ describe('Contacts store', () => {
             chai.expect(setRightActionBar.args[2][0].relevantForms[0].title).to.equal('a.form.key');
           });
         });
+
       });
 
       describe('muted contacts modal', () => {
@@ -516,7 +531,7 @@ describe('Contacts store', () => {
               { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
               { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
             ];
-            const listenCallback = xmlForms.listen.args[0][2];
+            const listenCallback = listen.args[0][2];
             listenCallback(null, forms);
             assert.deepEqual(setRightActionBar.args[2][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmute', showUnmuteModal: false },
@@ -540,7 +555,7 @@ describe('Contacts store', () => {
               { internalId: 'mute', icon: 'icon', translation_key: 'form.mute', title: 'mute'},
               { internalId: 'visit', icon: 'icon', translation_key: 'form.visit', title: 'visit'}
             ];
-            const listenCallback = xmlForms.listen.args[0][2];
+            const listenCallback = listen.args[0][2];
             listenCallback(null, forms);
             assert.deepEqual(setRightActionBar.args[2][0].relevantForms, [
               { code: 'unmute', icon: 'icon', title: 'form.unmute', showUnmuteModal: false },

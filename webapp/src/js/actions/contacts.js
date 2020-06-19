@@ -80,11 +80,16 @@ angular.module('inboxServices').factory('ContactsActions',
           });
       };
 
-      const filterAllowedContactTypes = (contactTypes, allowedContactForms) => {
-        return contactTypes.filter(type => allowedContactForms.find(form => form._id === type.create_form));
+      const getChildTypes = selected => {
+        if (!selected.type) {
+          const type = selected.doc.contact_type || selected.doc.type;
+          $log.error(`Unknown contact type "${type}" for contact "${selected.doc._id}"`);
+          return [];
+        }
+        return ContactTypes.getChildren(selected.type.id);
       };
 
-      const getGroupedChildTypes = childTypes => {
+      const getGroupedChildTypes = (childTypes) => {
         const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
         const models = [];
         if (grouped.places) {
@@ -103,16 +108,8 @@ angular.module('inboxServices').factory('ContactsActions',
             types: grouped.persons
           });
         }
-        return models;
-      };
 
-      const getChildTypes = selected => {
-        if (!selected.type) {
-          const type = selected.doc.contact_type || selected.doc.type;
-          $log.error(`Unknown contact type "${type}" for contact "${selected.doc._id}"`);
-          return [];
-        }
-        return ContactTypes.getChildren(selected.type.id);
+        return models;
       };
 
       function loadSelectedContactChildren(options) {
@@ -236,9 +233,10 @@ angular.module('inboxServices').factory('ContactsActions',
                           return;
                         }
 
-                        const allowedChildTypes = filterAllowedContactTypes(childTypes, forms);
-                        const groupedChildTypes = getGroupedChildTypes(allowedChildTypes);
-                        globalActions.setRightActionBar({ childTypes: groupedChildTypes });
+                        const allowCreateLink = contactType => forms.find(form => form._id === contactType.create_form);
+                        const allowedChildTypes = childTypes.filter(allowCreateLink);
+
+                        globalActions.setRightActionBar({ childTypes: getGroupedChildTypes(allowedChildTypes) });
                       });
                     });
                 });
