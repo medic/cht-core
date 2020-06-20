@@ -1,7 +1,7 @@
 const helper = require('../../helper');
 
 const getUsernameField = () => {
-  return element(by.id('username'));
+  return element(by.id('edit-username'));
 };
 
 const getFullNameField = () => {
@@ -24,11 +24,11 @@ const getRoleField = () => {
 };
 
 const getPasswordField = () => {
-  return element(by.id('password'));
+  return element(by.id('edit-password'));
 };
 
 const getConfirmPasswordField = () => {
-  return element(by.id('password-confirm'));
+  return element(by.id('edit-password-confirm'));
 };
 const getSubmitButton = () => {
   return element(by.css('.btn.submit.btn-primary:not(.ng-hide)'));
