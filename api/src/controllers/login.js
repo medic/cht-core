@@ -226,7 +226,15 @@ module.exports = {
   get: (req, res, next) => {
     return getBranding()
       .then(branding => renderLogin(req, branding))
-      .then(body => res.send(body))
+      .then(body => {
+        res.setHeader(
+          'Link',
+          '</login/style.css>; rel=preload; as=stylesheet; crossorigin=use-credentials, '
+          + '</favicon.ico>; rel=preload; as=image; crossorigin=use-credentials, '
+          + '</login/script.js>; rel=preload; as=script; crossorigin=use-credentials'
+        );
+        res.send(body);
+      })
       .catch(next);
   },
   post: (req, res) => {
