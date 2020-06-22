@@ -1,0 +1,9 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,name,phone,sex,role,reported_date,patient_id
+p_hc1,health_center_1,Bob Johnson 1,+16143291527,male,manager,1552494835669,60951
+p_hc2,health_center_1,Bob Johnson 2,+16143291528,male,manager,1552494835669,60951
+p_hc3,health_center_1,Bob Johnson 3,+16143291529,male,manager,1552494835669,60951
+p_hc4,health_center_1,Bob Johnson 4,+16143291530,male,manager,1552494835669,60951
+p_hc5,health_center_1,Bob Johnson 5,+16143291531,male,manager,1552494835669,60951
+p_hc6,health_center_1,Bob Johnson 6,+16143291532,male,manager,1552494835669,60951
+p_hc7,health_center_1,Bob Johnson 7,+16143291533,male,manager,1552494835669,60951
+p_hc8,health_center_1,Bob Johnson 8,+16143291534,male,manager,1552494835669,60951
