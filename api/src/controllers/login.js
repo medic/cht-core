@@ -229,9 +229,8 @@ module.exports = {
       .then(body => {
         res.setHeader(
           'Link',
-          '</login/style.css>; rel=preload; as=stylesheet; crossorigin=use-credentials, '
-          + '</favicon.ico>; rel=preload; as=image; crossorigin=use-credentials, '
-          + '</login/script.js>; rel=preload; as=script; crossorigin=use-credentials'
+          '</login/style.css>; rel=preload; as=style, '
+          + '</login/script.js>; rel=preload; as=script'
         );
         res.send(body);
       })
