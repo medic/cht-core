@@ -1,5 +1,0 @@
-username,password,roles,phone,contact:person WHERE reference_id=COL_VAL,place:GET _id OF place WHERE reference_id=COL_VAL
-ac1,Secret_1,district_admin:red1,+123456789,p_hc1,health_center_1
-ac2,Secret_1,district_admin:supervisor,+123456789,p_hc2,health_center_1
-ac3,Secret_1,district_admin,+123456789,p_hc3,health_center_1
-ac4,Secret_1,district_admin,+123456789,p_hc4,health_center_1
