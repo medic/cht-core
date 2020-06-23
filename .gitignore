@@ -20,9 +20,13 @@ dist
 /static
 .vscode/
 /build/
-config/standard/.gdrive.*.json
-config/*/backups/*
 api/src/extracted-resources/**/*
 api/build/**/*
 jsdocs
 config/*/.gdrive.*.json
+config/*/.snapshots/*
+config/*/backups/*
+config/*/json_docs/*
+config/*/upload-docs.*
+config/*/users.csv
+
