@@ -226,10 +226,13 @@ body {
         padding: 5px 0;
 
         svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
-          display: block;
-          margin: auto;
-          height: 24px;
-          width: 24px;
+          &, &:before {
+            display: block;
+            margin: auto;
+            height: 24px;
+            max-width: 24px;
+            overflow: hidden;
+          }
         }
       }
 
