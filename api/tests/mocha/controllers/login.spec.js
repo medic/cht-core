@@ -31,7 +31,8 @@ describe('login controller', () => {
       status: () => {},
       json: () => {},
       cookie: () => {},
-      clearCookie: () => {}
+      clearCookie: () => {},
+      setHeader: () => {}
     };
 
     sinon.stub(environment, 'db').get(() => DB_NAME);
@@ -126,6 +127,7 @@ describe('login controller', () => {
 
     it('send login page', () => {
       const query = sinon.stub(db, 'query').resolves({ rows: [] });
+      const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
       const getDoc = sinon.stub(db, 'get').resolves({
         _id: 'branding',
         resources: {
@@ -139,6 +141,7 @@ describe('login controller', () => {
         }
       });
       const send = sinon.stub(res, 'send');
+      const setHeader = sinon.stub(res, 'setHeader');
       const readFile = sinon.stub(fs, 'readFile')
         .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }}');
       sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
@@ -147,26 +150,35 @@ describe('login controller', () => {
         chai.expect(send.callCount).to.equal(1);
         chai.expect(send.args[0][0])
           .to.equal('LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D');
+        chai.expect(setHeader.callCount).to.equal(1);
+        chai.expect(setHeader.args[0][0]).to.equal('Link');
+        chai.expect(setHeader.args[0][1]).to.equal(linkResources);
         chai.expect(readFile.callCount).to.equal(1);
         chai.expect(query.callCount).to.equal(1);
       });
     });
 
     it('when branding doc missing send login page', () => {
+      const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
       const getDoc = sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       sinon.stub(db, 'query').resolves({ rows: [] });
       const send = sinon.stub(res, 'send');
+      const setHeader = sinon.stub(res, 'setHeader');
       sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE.');
       sinon.stub(config, 'getTranslationValues').returns({});
       return controller.get(req, res).then(() => {
         chai.expect(getDoc.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE.');
+        chai.expect(setHeader.callCount).to.equal(1);
+        chai.expect(setHeader.args[0][0]).to.equal('Link');
+        chai.expect(setHeader.args[0][1]).to.equal(linkResources);
       });
     });
 
     it('caches the login page template for performance', () => {
       sinon.stub(res, 'send');
+      sinon.stub(res, 'setHeader');
       sinon.stub(db, 'query').resolves({ rows: [] });
       sinon.stub(res, 'cookie').returns(res);
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'file content');
@@ -198,6 +210,8 @@ describe('login controller', () => {
     });
 
     it('hides locale selector when there is only one option', () => {
+      const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
+      const setHeader = sinon.stub(res, 'setHeader');
       sinon.stub(db, 'query').resolves({ rows: [ { doc: { code: 'en', name: 'English' } } ] });
       sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       const send = sinon.stub(res, 'send');
@@ -206,6 +220,9 @@ describe('login controller', () => {
       sinon.stub(cookie, 'get').returns('en');
       return controller.get(req, res).then(() => {
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. 0'); // one locale is dropped
+        chai.expect(setHeader.callCount).to.equal(1);
+        chai.expect(setHeader.args[0][0]).to.equal('Link');
+        chai.expect(setHeader.args[0][1]).to.equal(linkResources);
       });
     });
 
