@@ -13,6 +13,7 @@ const ONE_YEAR = 31536000000;
 const logger = require('../logger');
 const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
+const localeUtils = require('locale');
 
 let loginTemplate;
 
@@ -75,6 +76,12 @@ const getTranslationsString = () => {
   ])));
 };
 
+const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
+  const headerLocales = new localeUtils.Locales(acceptedLanguages);
+  const supportedLocales = new localeUtils.Locales(locales.map(locale => locale.key), defaultLocale);
+  return headerLocales.best(supportedLocales).language;
+};
+
 const renderLogin = (req, branding) => {
   return Promise.all([
     getLoginTemplate(),
@@ -83,7 +90,7 @@ const renderLogin = (req, branding) => {
     .then(([ template, locales ]) => {
       return template({
         branding: branding,
-        defaultLocale: config.get('locale'),
+        defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
         locales: locales,
         translations: getTranslationsString()
       });

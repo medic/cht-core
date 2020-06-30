@@ -209,6 +209,45 @@ describe('login controller', () => {
       });
     });
 
+    it('uses application default locale if accept-language header is undefined', () => {
+      req.headers = { 'accept-language': undefined };
+      sinon.stub(db, 'query').resolves({ rows: [ 
+        { doc: { code: 'fr', name: 'French'  } } 
+      ]});
+      const send = sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
+      sinon.stub(config, 'get').withArgs('locale').returns('de');
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. de');
+      });
+    });
+
+    it('uses application default locale if none of the accept-language headers match', () => {
+      req.headers = { 'accept-language': 'en' };
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      const send = sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
+      sinon.stub(config, 'get').withArgs('locale').returns('de');
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. de');
+      });
+    });
+    
+    it('uses best request header locale available', () => {
+      req.headers = { 'accept-language': 'fr_CA, en' };
+      sinon.stub(db, 'query').resolves({ rows: [ 
+        { doc: { code: 'en', name: 'English' } },
+        { doc: { code: 'fr', name: 'French'  } } 
+      ]});
+      const send = sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. fr');
+      });
+    });
   });
 
   describe('post', () => {
