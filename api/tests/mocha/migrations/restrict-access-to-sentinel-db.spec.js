@@ -10,7 +10,7 @@ describe('restrict-access-to-sentinel-db migration', () => {
   });
 
   it('should create migration with basic properties', () => {
-    const expectedCreationDate = new Date(2020, 6, 29).toDateString();
+    const expectedCreationDate = new Date(2020, 5, 29).toDateString();
 
     chai.expect(migration.name).to.equal('restrict-access-to-sentinel-db');
     chai.expect(migration.created).to.exist;

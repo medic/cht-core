@@ -26,7 +26,7 @@ const addSecurityToDb = () => {
 
 module.exports = {
   name: 'restrict-access-to-sentinel-db',
-  created: new Date(2020, 6, 29),
+  created: new Date(2020, 5, 29),
   run: () => {
     return addSecurityToDb()
       .catch(err => {
