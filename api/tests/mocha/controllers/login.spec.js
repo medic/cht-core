@@ -253,6 +253,92 @@ describe('login controller', () => {
     });
   });
 
+  describe('get login/token', () => {
+    it('should send token page when token incorrect', () => {
+      sinon.stub(users, 'getUserByToken').resolves(false);
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
+      sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'TOKEN PAGE GOES HERE. {{ translations }}');
+      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      req.params = { token: 'my_token', hash: 'my_hash' };
+      return controller.token(req, res).then(() => {
+        chai.expect(db.get.callCount).to.equal(1);
+        chai.expect(res.send.callCount).to.equal(1);
+        chai.expect(res.send.args[0][0])
+          .to.equal('TOKEN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D');
+        chai.expect(fs.readFile.callCount).to.equal(1);
+        chai.expect(db.query.callCount).to.equal(1);
+        chai.expect(users.getUserByToken.callCount).to.equal(1);
+        chai.expect(users.getUserByToken.args[0]).to.deep.equal( [ 'my_token', 'my_hash' ]);
+      });
+    });
+
+    it('should send token page when error is thrown while validating token', () => {
+      sinon.stub(users, 'getUserByToken').rejects({ some: 'err' });
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
+      sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'TOKEN PAGE GOES HERE. {{ translations }}');
+      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      req.params = { token: 'a', hash: 'b' };
+      return controller.token(req, res).then(() => {
+        chai.expect(db.get.callCount).to.equal(1);
+        chai.expect(res.send.callCount).to.equal(1);
+        chai.expect(res.send.args[0][0])
+          .to.equal('TOKEN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D');
+        chai.expect(fs.readFile.callCount).to.equal(1);
+        chai.expect(db.query.callCount).to.equal(1);
+        chai.expect(users.getUserByToken.callCount).to.equal(1);
+      });
+    });
+
+    it('should login the user when token is valid', () => {
+      sinon.stub(users, 'getUserByToken').resolves('userId');
+      sinon.stub(users, 'tokenLogin').resolves({ user: 'user_name', password: 'secret' });
+      sinon.stub(request, 'post').resolves({ statusCode: 200, headers: { 'set-cookie': [ 'AuthSession=abc;' ] } });
+      sinon.stub(res, 'redirect');
+      sinon.stub(res, 'cookie');
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
+      const userCtx = { name: 'user_name', roles: [ 'project-stuff' ] };
+      sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      req.params = { token: 'a', hash: 'b' };
+      return controller.token(req, res).then(() => {
+        chai.expect(users.getUserByToken.callCount).to.equal(1);
+        chai.expect(users.tokenLogin.callCount).to.equal(1);
+        chai.expect(users.tokenLogin.args[0]).to.deep.equal(['userId']);
+        chai.expect(res.cookie.callCount).to.equal(3);
+        chai.expect(res.cookie.args[0].slice(0, 2)).to.deep.equal(['AuthSession', 'abc']);
+        chai.expect(res.cookie.args[1].slice(0, 2)).to.deep.equal(['userCtx', JSON.stringify(userCtx) ]);
+        chai.expect(res.cookie.args[2].slice(0, 2)).to.deep.equal(['locale', 'es']);
+        chai.expect(res.redirect.callCount).to.equal(1);
+        chai.expect(res.redirect.args[0]).to.deep.equal([302, '/']);
+      });
+    });
+  });
+
   describe('post', () => {
 
     it('returns errors from session create', () => {

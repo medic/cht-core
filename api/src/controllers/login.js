@@ -15,7 +15,16 @@ const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
 const localeUtils = require('locale');
 
-let loginTemplate;
+const templates = {
+  login: {
+    content: null,
+    file: 'index.html',
+  },
+  tokenLogin: {
+    content: null,
+    file: 'token-login.html',
+  },
+};
 
 const getHomeUrl = userCtx => {
   // https://github.com/medic/medic/issues/5035
@@ -55,25 +64,35 @@ const getEnabledLocales = () => {
     });
 };
 
-const getLoginTemplate = () => {
-  if (loginTemplate) {
-    return loginTemplate;
+const getTemplate = (page) => {
+  if (templates[page].content) {
+    return templates[page].content;
   }
-  const filepath = path.join(__dirname, '..', 'templates', 'login', 'index.html');
-  loginTemplate = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
+  const filepath = path.join(__dirname, '..', 'templates', 'login', templates[page].file);
+  templates[page].content = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
     .then(file => _.template(file));
-  return loginTemplate;
+  return templates[page].content;
 };
 
-const getTranslationsString = () => {
-  return encodeURIComponent(JSON.stringify(config.getTranslationValues([
-    'login',
-    'login.error',
-    'login.incorrect',
-    'online.action.message',
-    'User Name',
-    'Password'
-  ])));
+const getTranslationsString = page => {
+  const pages = {
+    login: [
+      'login',
+      'login.error',
+      'login.incorrect',
+      'online.action.message',
+      'User Name',
+      'Password'
+    ],
+    tokenLogin: [
+      'login.token.missing.expired.invalid',
+      'login.token.general.error',
+      'login.token.redirect.login.info',
+      'login.token.redirect.login',
+    ],
+  };
+
+  return encodeURIComponent(JSON.stringify(config.getTranslationValues(pages[page])));
 };
 
 const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
@@ -82,18 +101,24 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
   return headerLocales.best(supportedLocales).language;
 };
 
-const renderLogin = (req, branding) => {
-  return Promise.all([
-    getLoginTemplate(),
-    getEnabledLocales()
-  ])
+const render = (page, req, branding, extras = {}) => {
+  return Promise
+    .all([
+      getTemplate(page),
+      getEnabledLocales(),
+    ])
     .then(([ template, locales ]) => {
-      return template({
-        branding: branding,
-        defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
-        locales: locales,
-        translations: getTranslationsString()
-      });
+      const options = Object.assign(
+        {
+          branding: branding,
+          defaultLocale: config.get('locale'),
+          locales: locales,
+          defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
+          translations: getTranslationsString(page)
+        },
+        extras
+      );
+      return template(options);
     });
 };
 
@@ -166,7 +191,7 @@ const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
     res.status(401).json({ error: 'Not logged in' });
-    return;
+    throw { code: 401 };
   }
   const options = { headers: { Cookie: sessionCookie } };
   return auth
@@ -192,12 +217,13 @@ const setCookies = (req, res, sessionRes) => {
           return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
         })
         .then(() => {
-          res.status(302).send(getRedirectUrl(userCtx, req.body.redirect));
+          return getRedirectUrl(userCtx, req.body.redirect);
         });
     })
     .catch(err => {
       logger.error(`Error getting authCtx %o`, err);
       res.status(401).json({ error: 'Error getting authCtx' });
+      throw { code: 401 };
     });
 };
 
@@ -229,10 +255,41 @@ const getBranding = () => {
     });
 };
 
+const renderTokenLogin = (req, res, error) => {
+  return getBranding()
+    .then(branding => render('tokenLogin', req, branding, { errorClass: error }))
+    .then(body => res.send(body));
+};
+
+const tokenLogin = (req, res) => {
+  if (!req.params || !req.params.token || !req.params.hash) {
+    return renderTokenLogin(req, res,'tokeninvalid');
+  }
+
+  return users
+    .getUserByToken(req.params.token, req.params.hash)
+    .then(userId => {
+      if (!userId) {
+        return renderTokenLogin(req, res,'tokeninvalid');
+      }
+
+      return users.tokenLogin(userId).then(({ user, password }) => {
+        req.body = { user, password };
+        req.redirect = true;
+        console.log(req.body);
+        return module.exports.post(req, res);
+      });
+    })
+    .catch(err => {
+      logger.error('Error while logging in with token', err);
+      return renderTokenLogin(req, res,'tokenerror');
+    });
+};
+
 module.exports = {
   get: (req, res, next) => {
     return getBranding()
-      .then(branding => renderLogin(req, branding))
+      .then(branding => render('login', req, branding))
       .then(body => res.send(body))
       .catch(next);
   },
@@ -240,10 +297,24 @@ module.exports = {
     return createSession(req)
       .then(sessionRes => {
         if (sessionRes.statusCode !== 200) {
+          console.log('login failure');
           res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
           return;
         }
-        return setCookies(req, res, sessionRes);
+        return setCookies(req, res, sessionRes)
+          .then(redirectUrl => {
+            if (req.redirect) {
+              res.redirect(302, redirectUrl);
+              return;
+            }
+
+            res.status(302).send(redirectUrl);
+          })
+          .catch(err => {
+            if (err.code !== 401) {
+              throw err;
+            }
+          });
       })
       .catch(err => {
         logger.error('Error logging in: %o', err);
@@ -263,7 +334,13 @@ module.exports = {
         return res.send();
       });
   },
+
+  token: (req, res, next) => tokenLogin(req, res).catch(next),
+
   // exposed for testing
   _safePath: getRedirectUrl,
-  _reset: () => { loginTemplate = null; }
+  _reset: () => {
+    templates.login.content = null;
+    templates.tokenLogin.content = null;
+  },
 };

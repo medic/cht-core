@@ -39,7 +39,8 @@ const request = (options, { debug } = {}) => {
 
   options.transform = (body, response, resolveWithFullResponse) => {
     // we might get a json response for a non-json request.
-    if (response.headers['content-type'].startsWith('application/json') && !options.json) {
+    const contentType = response.headers['content-type'];
+    if (contentType && contentType.startsWith('application/json') && !options.json) {
       response.body = JSON.parse(response.body);
     }
     // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
@@ -351,7 +352,7 @@ module.exports = {
 
   specReporter: new specReporter({
     spec: {
-      displayStacktrace: 'pretty',
+      displayStacktrace: 'raw',
       displayDuration: true
     }
   }),

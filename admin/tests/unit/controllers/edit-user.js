@@ -173,6 +173,7 @@ describe('EditUserCtrl controller', () => {
           language: { code: userToEdit.language },
           contactSelect: userToEdit.contact_id,
           contact: userToEdit.contact_id,
+          tokenLoginEnabled: undefined,
         });
         done();
       });
@@ -563,6 +564,211 @@ describe('EditUserCtrl controller', () => {
 
             done();
           });
+        });
+      });
+    });
+
+    it('should require phone when token_login is enabled for new user', done => {
+      Settings = sinon.stub().resolves({
+        roles: {
+          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+          supervisor: { name: 'qrt', offline: true },
+          'national-manager': { name: 'national-manager', offline: false }
+        },
+        token_login: {
+          translation_key: 'key',
+          app_url: 'url',
+        }
+      });
+
+      mockCreateNewUser();
+
+      setTimeout(() => {
+        scope.editUserModel.username = 'newuser';
+        scope.editUserModel.role = 'data-entry';
+        scope.editUserModel.token_login = true;
+
+        translate.withArgs('configuration.enable.token.login.phone').resolves('phone required');
+
+        setTimeout(() => {
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(scope.errors.phone).to.equal('phone required');
+            done();
+          });
+        });
+      });
+    });
+
+    it('should require phone when token_login is enabled for existent user', (done) => {
+      Settings = sinon.stub().resolves({
+        roles: {
+          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+          supervisor: { name: 'qrt', offline: true },
+          'national-manager': { name: 'national-manager', offline: false }
+        },
+        token_login: {
+          translation_key: 'key',
+          app_url: 'url',
+        }
+      });
+
+      mockEditAUser(userToEdit);
+
+      setTimeout(() => {
+        scope.editUserModel.username = 'newuser';
+        scope.editUserModel.role = 'data-entry';
+        scope.editUserModel.token_login = true;
+        scope.editUserModel.phone = '';
+
+        translate.withArgs('configuration.enable.token.login.phone').resolves('phone required');
+
+        setTimeout(() => {
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(scope.errors.phone).to.equal('phone required');
+            done();
+          });
+        });
+      });
+    });
+
+    it('should require valid phone when token_login is enabled', (done) => {
+      Settings = sinon.stub().resolves({
+        roles: {
+          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+          supervisor: { name: 'qrt', offline: true },
+          'national-manager': { name: 'national-manager', offline: false }
+        },
+        token_login: {
+          translation_key: 'key',
+          app_url: 'url',
+        }
+      });
+
+      mockEditAUser(userToEdit);
+
+      setTimeout(() => {
+        scope.editUserModel.username = 'newuser';
+        scope.editUserModel.role = 'data-entry';
+        scope.editUserModel.token_login = true;
+        scope.editUserModel.phone = 'gfdkjlg';
+
+        translate.withArgs('configuration.enable.token.login.phone').resolves('phone required');
+
+        setTimeout(() => {
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(scope.errors.phone).to.equal('phone required');
+            done();
+          });
+        });
+      });
+    });
+
+    it('should not require password when token_login is enabled for new users', (done) => {
+      Settings = sinon.stub().resolves({
+        roles: {
+          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+          supervisor: { name: 'qrt', offline: true },
+          'national-manager': { name: 'national-manager', offline: false }
+        },
+        token_login: {
+          translation_key: 'key',
+          app_url: 'url',
+        }
+      });
+
+      mockCreateNewUser();
+      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: false, total_docs: 100, limit: 10000 } });
+
+      setTimeout(() => {
+        scope.editUserModel.username = 'newuser';
+        scope.editUserModel.role = 'data-entry';
+        scope.editUserModel.token_login = true;
+        scope.editUserModel.phone = '+40755696969';
+
+        setTimeout(() => {
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(CreateUser.callCount).to.equal(1);
+            chai.expect(CreateUser.args[0][0]).to.deep.include({
+              username: 'newuser',
+              phone: '+40755696969',
+              roles: ['data-entry'],
+              token_login: true,
+            });
+            done();
+          }, 10);
+        });
+      });
+    });
+
+    it('should not overwrite token_login when editing and making no changes', (done) => {
+      Settings = sinon.stub().resolves({
+        roles: {
+          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+          supervisor: { name: 'qrt', offline: true },
+          'national-manager': { name: 'national-manager', offline: false }
+        },
+        token_login: {
+          translation_key: 'key',
+          app_url: 'url',
+        }
+      });
+      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: false, total_docs: 100, limit: 10000 } });
+      Translate.fieldIsRequired.resolves('Facility field is a required field');
+
+      userToEdit.token_login = true;
+      mockEditAUser(userToEdit);
+      setTimeout(() => {
+        scope.editUserModel.phone = '+40755696969';
+        scope.editUserModel.role = 'data-entry';
+
+        setTimeout(() => {
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(UpdateUser.callCount).to.equal(1);
+            chai.expect(UpdateUser.args[0][1]).to.deep.include({
+              phone: '+40755696969',
+              roles: ['data-entry']
+            });
+            done();
+          }, 10);
+        });
+      });
+    });
+
+    it('should require password when disabling token_login', (done) => {
+      Settings = sinon.stub().resolves({
+        roles: {
+          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+          supervisor: { name: 'qrt', offline: true },
+          'national-manager': { name: 'national-manager', offline: false }
+        },
+        token_login: {
+          translation_key: 'key',
+          app_url: 'url',
+        }
+      });
+      http.get.withArgs('/api/v1/users-info').resolves({ data: { warn: false, total_docs: 100, limit: 10000 } });
+      Translate.fieldIsRequired.withArgs('Password').resolves('password required');
+
+      userToEdit.token_login = true;
+      mockEditAUser(userToEdit);
+      setTimeout(() => {
+        scope.editUserModel.token_login = false;
+        scope.editUserModel.phone = '';
+        scope.editUserModel.role = 'data-entry';
+
+
+        setTimeout(() => {
+          scope.editUser();
+          setTimeout(() => {
+            chai.expect(UpdateUser.callCount).to.equal(0);
+            chai.expect(scope.errors.password).to.equal('password required');
+            done();
+          }, 10);
         });
       });
     });

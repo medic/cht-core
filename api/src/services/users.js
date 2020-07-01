@@ -1,15 +1,21 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
+const crypto = require('crypto');
 const people  = require('../controllers/people');
 const places = require('../controllers/places');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const getRoles = require('./types-and-roles');
 const auth = require('../auth');
+const config = require('../config');
+const phoneNumber = require('@medic/phone-number');
+const taskUtils = require('@medic/task-utils');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const ONLINE_ROLE = 'mm-online';
 const DOC_IDS_WARN_LIMIT = 10000;
+
+const LOGIN_TOKEN_EXPIRE_TIME = 24 * 60 * 60 * 1000; // 24 hours
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -44,8 +50,10 @@ const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
   'roles',
 ]);
 
+const META_FIELDS = ['token_login'];
+
 const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
-  RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS);
+  RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS, META_FIELDS);
 
 const illegalDataModificationAttempts = data =>
   Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.includes(k));
@@ -100,7 +108,7 @@ const validateContact = (id, placeID) => {
       if (!people.isAPerson(doc)) {
         return Promise.reject(error400('Wrong type, contact is not a person.','contact.type.wrong'));
       }
-      if (!module.exports._hasParent(doc, placeID)) {
+      if (!hasParent(doc, placeID)) {
         return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
       }
       return doc;
@@ -252,7 +260,7 @@ const setContactParent = data => {
     // contact parent must exist
     return places.getPlace(data.contact.parent)
       .then(place => {
-        if (!module.exports._hasParent(place, data.place)) {
+        if (!hasParent(place, data.place)) {
           return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
         }
         // save result to contact object
@@ -399,7 +407,17 @@ const deleteUser = id => {
   return Promise.all([ usersDbPromise, medicDbPromise ]);
 };
 
-const validatePassword = password => {
+const genPassword = (length = PASSWORD_MINIMUM_LENGTH) => {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let password;
+  do {
+    password = Array.from({ length }).map(() => _.sample(chars)).join('');
+  } while (passwordTester(password) < PASSWORD_MINIMUM_SCORE);
+
+  return password;
+};
+
+const validatePassword = (password) => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
       `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
@@ -415,8 +433,27 @@ const validatePassword = password => {
   }
 };
 
+const validateAndNormalizePhone = (data) => {
+  const settings = config.get();
+  if (!phoneNumber.validate(settings, data.phone)) {
+    return error400(
+      'A valid phone number is required for SMS login.',
+      'configuration.enable.token.login.phone'
+    );
+  }
+
+  data.phone = phoneNumber.normalize(settings, data.phone);
+};
+
 const missingFields = data => {
-  const required = ['username', 'password'];
+  const required = ['username'];
+
+  if (!shouldEnableTokenLogin(data)) {
+    required.push('password');
+  } else {
+    required.push('phone');
+  }
+
   if (data.roles && auth.isOffline(data.roles)) {
     required.push('place', 'contact');
   }
@@ -432,8 +469,8 @@ const missingFields = data => {
 
 const getUpdatedUserDoc = (username, data) => {
   const userID = createID(username);
-  return module.exports._validateUser(userID).then(doc => {
-    const user = Object.assign(doc, module.exports._getUserUpdates(username, data));
+  return validateUser(userID).then(doc => {
+    const user = Object.assign(doc, getUserUpdates(username, data));
     user._id = userID;
     return user;
   });
@@ -441,11 +478,193 @@ const getUpdatedUserDoc = (username, data) => {
 
 const getUpdatedSettingsDoc = (username, data) => {
   const userID = createID(username);
-  return module.exports._validateUserSettings(userID).then(doc => {
-    const settings = Object.assign(doc, module.exports._getSettingsUpdates(username, data));
+  return validateUserSettings(userID).then(doc => {
+    const settings = Object.assign(doc, getSettingsUpdates(username, data));
     settings._id = userID;
     return settings;
   });
+};
+
+const shouldEnableTokenLogin = data => {
+  const tokenLoginConfig = config.get('token_login');
+  const isValidConfig = tokenLoginConfig &&
+                        (tokenLoginConfig.translation_key || tokenLoginConfig.message) &&
+                        tokenLoginConfig.app_url;
+  if (!isValidConfig) {
+    return false;
+  }
+
+  return data.token_login;
+};
+const shouldDisableTokenLogin = data => data.token_login === false;
+
+const getHash = string => crypto.createHash('sha1').update(string, 'utf8').digest('hex');
+
+/**
+ * Clears pending tasks in the currently assigned `token_login_sms` doc
+ * Used to either disable or refresh token-login
+ *
+ * @param {Object} user - the _users doc
+ * @param {Object} user.token_login - token-login information
+ * @param {Boolean} user.token_login.active - whether the token-login is active or not
+ * @param {String} user.token_login.doc_id - the id of the current `token_login_sms`
+ * @returns {Promise<void>|*}
+ */
+const clearOldLoginSms = (user) => {
+  if (!user.token_login || !user.token_login.active || !user.token_login.doc_id) {
+    return Promise.resolve();
+  }
+
+  return db.medic
+    .get(user.token_login.doc_id)
+    .then(doc => {
+      if (doc && doc.tasks) {
+        const pendingTasks = doc.tasks.filter(task => task.state === 'pending');
+        if (!pendingTasks.length) {
+          return;
+        }
+
+        pendingTasks.forEach(task => taskUtils.setTaskState(task, 'cleared'));
+        return db.medic.put(doc);
+      }
+    })
+    .catch(err => {
+      if (err.status === 404) {
+        return;
+      }
+      throw err;
+    });
+};
+
+/**
+ * Generates a doc of type `token_login_sms` that contains the two tasks required for token login: one reserved
+ * for the URL and one containing instructions for the user.
+ * If the user already had token-login activated, the pending tasks of the existent `token_login_sms` doc are cleared.
+ * @param {Object} user - the _users document
+ * @param {Object} userSettings - the user-settings document from the main database
+ * @param {String} token - the randomly generated token
+ * @param {String} userHash - sha1 hash of the user's document id
+ * @param {Object} tokenLoginConfig - the token_login config section that contains the translation_key used to generate
+ *                                    the instructions sms message
+ * @returns {Promise<Object>} - returns the result of saving the new token_login_sms document
+ */
+const generateLoginSms = (user, userSettings, token, userHash, tokenLoginConfig) => {
+  return clearOldLoginSms(user).then(() => {
+    const doc = {
+      type: 'token_login_sms',
+      reported_date: new Date().getTime(),
+      user: user._id,
+      tasks: [],
+    };
+    const userHash = getHash(user._id);
+    const url = `${tokenLoginConfig.app_url}/medic/login/token/${token}/${userHash}`;
+
+    const messagesLib = config.getTransitionsLib().messages;
+
+    const context = { templateContext: Object.assign({}, userSettings, user) };
+    messagesLib.addMessage(doc, tokenLoginConfig, userSettings.phone, context);
+    messagesLib.addMessage(doc, { message: url }, userSettings.phone);
+
+    return db.medic.post(doc);
+  });
+};
+
+/**
+ * Enables or disables token-login for a user
+ * When enabling, if `token-login` configuration is missing or invalid, no changes are made.
+ * @param {Object} response - the response of previous actions
+ * @returns {Promise<{Object}>} - updated response to be sent to the client
+ */
+const manageTokenLogin = (data, response) => {
+  if (shouldDisableTokenLogin(data)) {
+    return disableTokenLogin(response);
+  }
+
+  if (!shouldEnableTokenLogin(data)) {
+    return Promise.resolve(response);
+  }
+
+  return enableTokenLogin(response);
+};
+
+/**
+ * Enables token-login for a user
+ * - a new document is created in the `medic` database that contains tasks (SMSs) to be sent to the phone number
+ *   belonging to the current user (userSettings.phone) that contain instructions and a url to login in the app
+ * - if the user already had token-login enabled, the previous sms document's tasks are cleared
+ * - updates the user document to contain information about the active `token-login` context for the user
+ * - updates the user-settings document to contain some information to be displayed in the admin page
+ * @param {Object} response - the response of previous actions
+ * @returns {Promise<{Object}>} - updated response to be sent to the client
+ */
+const enableTokenLogin = (response) => {
+  const tokenLoginConfig = config.get('token_login');
+
+  return Promise
+    .all([
+      validateUser(response.user.id),
+      validateUserSettings(response['user-settings'].id),
+    ])
+    .then(([ user, userSettings ]) => {
+      const token = genPassword(50);
+      const hash = getHash(user._id);
+
+      return generateLoginSms(user, userSettings, token, hash, tokenLoginConfig)
+        .then(result => {
+          user.token_login = {
+            active: true,
+            token,
+            hash,
+            expiration_date: new Date().getTime() + LOGIN_TOKEN_EXPIRE_TIME,
+            doc_id: result.id
+          };
+
+          userSettings.token_login = {
+            active: true,
+            expiration_date: user.token_login.expiration_date,
+          };
+
+          response.token_login = {
+            id: result.id,
+            expiration_date: user.token_login.expiration_date,
+          };
+
+          return Promise.all([ db.users.put(user), db.medic.put(userSettings) ]);
+        });
+    })
+    .then(() => response);
+};
+
+/**
+ * Disables token-login for a user.
+ * Deletes the `token_login` properties from the user and userSettings doc.
+ * Clears pending tasks in existent SMSs
+ *
+ * @param {Object} response - the response of previous actions
+ * @returns {Promise<{Object}>} - updated response to be sent to the client
+ */
+const disableTokenLogin = (response) => {
+  return Promise
+    .all([
+      validateUser(response.user.id),
+      validateUserSettings(response['user-settings'].id),
+    ])
+    .then(([ user, userSettings ]) => {
+      if (!user.token_login) {
+        return;
+      }
+
+      return clearOldLoginSms(user).then(() => {
+        delete user.token_login;
+        delete userSettings.token_login;
+
+        return Promise.all([
+          db.medic.put(userSettings),
+          db.users.put(user),
+        ]);
+      });
+    })
+    .then(() => response);
 };
 
 /*
@@ -453,30 +672,12 @@ const getUpdatedSettingsDoc = (username, data) => {
  * to export functions needed for testing.
  */
 module.exports = {
-  _createUser: createUser,
-  _createContact: createContact,
-  _createPlace: createPlace,
-  _createUserSettings: createUserSettings,
-  _getType : getType,
-  _getAllUsers: getAllUsers,
-  _getAllUserSettings: getAllUserSettings,
-  _getFacilities: getFacilities,
-  _getSettingsUpdates: getSettingsUpdates,
-  _getUserUpdates: getUserUpdates,
-  _hasParent: hasParent,
-  _lineage: lineage,
-  _setContactParent: setContactParent,
-  _storeUpdatedPlace: storeUpdatedPlace,
-  _validateContact: validateContact,
-  _validateNewUsername: validateNewUsername,
-  _validateUser: validateUser,
-  _validateUserSettings: validateUserSettings,
   deleteUser: username => deleteUser(createID(username)),
   getList: () => {
     return Promise.all([
-      module.exports._getAllUsers(),
-      module.exports._getAllUserSettings(),
-      module.exports._getFacilities()
+      getAllUsers(),
+      getAllUserSettings(),
+      getFacilities()
     ])
       .then(([ users, settings, facilities ]) => {
         return mapUsers(users, settings, facilities);
@@ -498,18 +699,27 @@ module.exports = {
         { 'fields': missing.join(', ') }
       ));
     }
+    if (shouldEnableTokenLogin(data)) {
+      // if token-login is requested, we will need to send sms-s to the user's phone number.
+      const phoneError = validateAndNormalizePhone(data);
+      if (phoneError) {
+        return Promise.reject(phoneError);
+      }
+      data.password = genPassword(20);
+    }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
       return Promise.reject(passwordError);
     }
     const response = {};
-    return module.exports._validateNewUsername(data.username)
-      .then(() => module.exports._createPlace(data))
-      .then(() => module.exports._setContactParent(data))
-      .then(() => module.exports._createContact(data, response))
-      .then(() => module.exports._storeUpdatedPlace(data))
-      .then(() => module.exports._createUser(data, response))
-      .then(() => module.exports._createUserSettings(data, response))
+    return validateNewUsername(data.username)
+      .then(() => createPlace(data))
+      .then(() => setContactParent(data))
+      .then(() => createContact(data, response))
+      .then(() => storeUpdatedPlace(data))
+      .then(() => createUser(data, response))
+      .then(() => createUserSettings(data, response))
+      .then(() => manageTokenLogin(data, response))
       .then(() => response);
   },
 
@@ -518,10 +728,9 @@ module.exports = {
   */
   createAdmin: userCtx => {
     const data = { username: userCtx.name, roles: ['admin'] };
-    return module.exports
-      ._validateNewUsername(userCtx.name)
-      .then(() => module.exports._createUser(data, {}))
-      .then(() => module.exports._createUserSettings(data, {}));
+    return validateNewUsername(userCtx.name)
+      .then(() => createUser(data, {}))
+      .then(() => createUserSettings(data, {}));
   },
 
   /**
@@ -551,7 +760,7 @@ module.exports = {
       }
     }
 
-    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
+    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS));
 
     // Online users can remove place or contact
     if (!_.isNull(data.place) &&
@@ -564,6 +773,11 @@ module.exports = {
         { 'fields': props.join(', ') }
       ));
     }
+
+    if (shouldEnableTokenLogin(data)) {
+      data.password = genPassword(20);
+    }
+
     if (data.password) {
       const passwordError = validatePassword(data.password);
       if (passwordError) {
@@ -571,11 +785,25 @@ module.exports = {
       }
     }
 
-    return Promise.all([
-      getUpdatedUserDoc(username, data),
-      getUpdatedSettingsDoc(username, data),
-    ])
+    return Promise
+      .all([
+        getUpdatedUserDoc(username, data),
+        getUpdatedSettingsDoc(username, data),
+      ])
       .then(([ user, settings ]) => {
+        // when disabling token login for a user that had it enabled, setting a password is required
+        if (shouldDisableTokenLogin(data) && user.token_login && !data.password) {
+          return Promise.reject(validatePassword(''));
+        }
+
+        if (shouldEnableTokenLogin(data)) {
+          // if token-login is requested, we will need to send sms-s to the user's phone number.
+          const phoneError = validateAndNormalizePhone(settings);
+          if (phoneError) {
+            return Promise.reject(phoneError);
+          }
+        }
+
         const response = {};
 
         return Promise.resolve()
@@ -583,7 +811,9 @@ module.exports = {
             if (data.place) {
               settings.facility_id = user.facility_id;
               return places.getPlace(user.facility_id);
-            } else if (_.isNull(data.place)) {
+            }
+
+            if (_.isNull(data.place)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
                 return Promise.reject(error400(
                   'Place field is required for offline users',
@@ -597,8 +827,10 @@ module.exports = {
           })
           .then(() => {
             if (data.contact) {
-              return module.exports._validateContact(settings.contact_id, user.facility_id);
-            } else if (_.isNull(data.contact)) {
+              return validateContact(settings.contact_id, user.facility_id);
+            }
+
+            if (_.isNull(data.contact)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
                 return Promise.reject(error400(
                   'Contact field is required for offline users',
@@ -623,9 +855,72 @@ module.exports = {
               rev: resp.rev
             };
           })
+          .then(() => manageTokenLogin(data, response))
           .then(() => response);
       });
   },
 
-  DOC_IDS_WARN_LIMIT
+  DOC_IDS_WARN_LIMIT,
+
+  /**
+   * Searches for a user with active, not expired token-login that matches the requested token and hash.
+   *
+   * @param {String} token
+   * @param {String} hash
+   * @returns {Promise<string>} the id of the matched user
+   */
+  getUserByToken: (token, hash) => {
+    if (!token || !hash) {
+      return Promise.resolve(false);
+    }
+
+    return db.users.query('token-login/users-by-token', { key: [token, hash] }).then(response => {
+      if (!response || !response.rows || !response.rows.length) {
+        return false;
+      }
+
+      const row = response.rows[0];
+      if (row.value.token_expiration_date <= new Date().getTime()) {
+        return false;
+      }
+
+      return row.id;
+    });
+  },
+
+  /**
+   * Updates the user and userSettings docs when the token login link is accessed
+   * Generates a new random password for the user.
+   * @param {String} userId - the user's id to login via token link
+   * @returns {*}
+   */
+  tokenLogin: userId => {
+    return Promise
+      .all([
+        validateUser(userId),
+        validateUserSettings(userId),
+      ])
+      .then(([ user, userSettings ]) => {
+        if (!user.token_login || !user.token_login.active) {
+          return Promise.reject({ code: 400, message: 'invalid user' });
+        }
+
+        const updates = {
+          active: false,
+          login_date: new Date().getTime(),
+        };
+        user.token_login = Object.assign(user.token_login, updates);
+        userSettings.token_login = Object.assign(userSettings.token_login, updates);
+
+        user.password = genPassword();
+        console.log('generated password', user.password);
+
+        return Promise
+          .all([
+            db.medic.put(userSettings),
+            db.users.put(user),
+          ])
+          .then(() => ({ user: user.name, password: user.password }));
+      });
+  },
 };

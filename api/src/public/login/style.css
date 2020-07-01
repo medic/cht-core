@@ -40,10 +40,11 @@ input {
   line-height: 1.42857;
   border-radius: 4px;
   display: block;
-  margin-top: 2em;
+  margin: 2em auto;
   font-size: 1em;
   width: 302px;
   padding: 6px 10px;
+  text-decoration: none;
 }
 .loading .btn {
   cursor: not-allowed;
@@ -82,7 +83,10 @@ form {
 .loading .loader,
 .loginoffline .error.offline,
 .loginincorrect .error.incorrect,
-.loginerror .error.unknown {
+.loginerror .error.unknown,
+.tokeninvalid .missing-invalid-expired,
+.tokenerror .error.unknown
+{
   display: block;
 }
 .loader {

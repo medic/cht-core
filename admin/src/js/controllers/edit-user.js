@@ -1,4 +1,5 @@
 const passwordTester = require('simple-password-tester');
+const phoneNumber = require('@medic/phone-number');
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
@@ -17,6 +18,7 @@ angular
     ContactTypes,
     CreateUser,
     DB,
+    FormatDate,
     Languages,
     Select2Search,
     Settings,
@@ -26,15 +28,11 @@ angular
     'use strict';
     'ngInject';
 
-    $scope.cancel = function() {
-      $uibModalInstance.dismiss();
-    };
+    $scope.cancel = () => $uibModalInstance.dismiss();
 
-    Languages().then(function(languages) {
-      $scope.enabledLocales = languages;
-    });
+    Languages().then(languages => $scope.enabledLocales = languages);
 
-    const getRole = function(roles) {
+    const getRole = roles => {
       if (!roles || !roles.length) {
         return;
       }
@@ -62,9 +60,26 @@ angular
       // Edit a user that's not the current user.
       // $scope.model is the user object passed in by controller creating the Modal.
       // If $scope.model === {}, we're creating a new user.
-      if ($scope.model) {
-        return Settings().then(function(settings) {
+      return Settings()
+        .then(settings => {
           $scope.roles = settings.roles;
+          $scope.allowTokenLogin = settings.token_login &&
+                                   settings.token_login.translation_key &&
+                                   settings.token_login.app_url;
+
+          if (!$scope.model) {
+            return $q.resolve({});
+          }
+
+          const tokenLoginData = $scope.model.token_login;
+          const tokenLoginEnabled = tokenLoginData &&
+            {
+              expirationDate: FormatDate.datetime(tokenLoginData.expiration_date),
+              active: tokenLoginData.active,
+              loginDate: tokenLoginData.login_date && FormatDate.datetime(tokenLoginData.login_date),
+              expired: tokenLoginData.expiration_date <= new Date().getTime(),
+            };
+
           return $q.resolve({
             id: $scope.model._id,
             username: $scope.model.name,
@@ -80,24 +95,22 @@ angular
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
+            tokenLoginEnabled: tokenLoginEnabled,
           });
         });
-      } else {
-        return $q.resolve({});
-      }
     };
 
     determineEditUserModel()
-      .then(function(model) {
+      .then(model => {
         $scope.editUserModel = model;
       })
-      .catch(function(err) {
+      .catch(err => {
         $log.error('Error determining user model', err);
       });
 
     $uibModalInstance.rendered
       .then(() => ContactTypes.getAll())
-      .then(function(contactTypes) {
+      .then(contactTypes => {
         // only the #edit-user-profile modal has these fields
         const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
         Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
@@ -105,7 +118,7 @@ angular
         Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes);
       });
 
-    const validateRequired = function(fieldName, fieldDisplayName) {
+    const validateRequired = (fieldName, fieldDisplayName) => {
       if (!$scope.editUserModel[fieldName]) {
         Translate.fieldIsRequired(fieldDisplayName)
           .then(function(value) {
@@ -116,9 +129,37 @@ angular
       return true;
     };
 
-    const validatePasswordForEditUser = function() {
+    const validateTokenLogin = () => {
+      const tokenLogin = $scope.editUserModel.token_login;
+      if (!tokenLogin) {
+        return $q.resolve(true);
+      }
+
+      return Settings().then(settings => {
+        const phone = $scope.editUserModel.phone;
+        if (!phoneNumber.validate(settings, phone)) {
+          $translate('configuration.enable.token.login.phone').then(value => {
+            $scope.errors.phone = value;
+          });
+          return false;
+        }
+
+        // remove assigned password
+        $scope.editUserModel.password = '';
+        $scope.editUserModel.passwordConfirm = '';
+
+        return true;
+      });
+    };
+
+    const validatePasswordForEditUser = () => {
       const newUser = !$scope.editUserModel.id;
-      if (newUser) {
+      const tokenLogin = $scope.editUserModel.token_login;
+      if (tokenLogin) {
+        return true;
+      }
+
+      if (newUser || tokenLogin === false) {
         return validatePasswordFields();
       }
 
@@ -132,7 +173,7 @@ angular
       return true;
     };
 
-    const validateConfirmPasswordMatches = function() {
+    const validateConfirmPasswordMatches = () => {
       if (
         $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm
       ) {
@@ -144,18 +185,18 @@ angular
       return true;
     };
 
-    const validatePasswordStrength = function() {
+    const validatePasswordStrength = () => {
       const password = $scope.editUserModel.password || '';
       if (password.length < PASSWORD_MINIMUM_LENGTH) {
         $translate('password.length.minimum', {
           minimum: PASSWORD_MINIMUM_LENGTH,
-        }).then(function(value) {
+        }).then(value => {
           $scope.errors.password = value;
         });
         return false;
       }
       if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-        $translate('password.weak').then(function(value) {
+        $translate('password.weak').then(value => {
           $scope.errors.password = value;
         });
         return false;
@@ -163,7 +204,7 @@ angular
       return true;
     };
 
-    const validatePasswordFields = function() {
+    const validatePasswordFields = () => {
       return (
         validateRequired('password', 'Password') &&
         (!$scope.editUserModel.currentPassword ||
@@ -173,7 +214,7 @@ angular
       );
     };
 
-    const validateName = function() {
+    const validateName = () => {
       if ($scope.editUserModel.id) {
         // username is readonly when editing so ignore it
         return true;
@@ -182,7 +223,7 @@ angular
         return false;
       }
       if (!USERNAME_WHITELIST.test($scope.editUserModel.username)) {
-        $translate('username.invalid').then(function(value) {
+        $translate('username.invalid').then(value => {
           $scope.errors.username = value;
         });
         return false;
@@ -190,7 +231,7 @@ angular
       return true;
     };
 
-    const validateContactAndFacility = function() {
+    const validateContactAndFacility = () => {
       const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
       if (!role || !role.offline) {
         return !$scope.editUserModel.contact || validateRequired('place', 'Facility');
@@ -200,7 +241,7 @@ angular
       return hasPlace && hasContact;
     };
 
-    const validateContactIsInPlace = function() {
+    const validateContactIsInPlace = () => {
       const placeId = $scope.editUserModel.place;
       const contactId = $scope.editUserModel.contact;
       if (!placeId || !contactId) {
@@ -219,13 +260,13 @@ angular
             parent = parent.parent;
           }
           if (!valid) {
-            $translate('configuration.user.place.contact').then(function(value) {
+            $translate('configuration.user.place.contact').then(value => {
               $scope.errors.contact = value;
             });
           }
           return valid;
         })
-        .catch(function(err) {
+        .catch(err => {
           $log.error(
             'Error trying to validate contact. Trying to save anyway.',
             err
@@ -234,50 +275,50 @@ angular
         });
     };
 
-    const validateRole = function() {
-      return validateRequired('role', 'configuration.role');
-    };
+    const validateRole = () => validateRequired('role', 'configuration.role');
 
-    const changedUpdates = function(model) {
-      return determineEditUserModel().then(function(existingModel) {
-        const updates = {};
-        Object.keys(model)
-          .filter(function(k) {
-            if (k === 'id') {
-              return false;
-            }
-            if (k === 'language') {
-              return existingModel[k].code !== (model[k] && model[k].code);
-            }
-            if (k === 'password') {
-              return model[k] && model[k] !== '';
-            }
-            if (
-              [
+    const changedUpdates = model => {
+      return determineEditUserModel()
+        .then(existingModel => {
+          const updates = {};
+          Object
+            .keys(model)
+            .filter(key => {
+              if (key === 'id') {
+                return false;
+              }
+              if (key === 'language') {
+                return existingModel[key].code !== (model[key] && model[key].code);
+              }
+              if (key === 'password') {
+                return model[key] && model[key] !== '';
+              }
+              const metaFields = [
                 'currentPassword',
                 'passwordConfirm',
                 'facilitySelect',
                 'contactSelect',
-              ].indexOf(k) !== -1
-            ) {
-              // We don't want to return these 'meta' fields
-              return false;
-            }
+                'tokenLoginEnabled',
+              ];
+              if (metaFields.includes(key)) {
+                // We don't want to return these 'meta' fields
+                return false;
+              }
 
-            return existingModel[k] !== model[k];
-          })
-          .forEach(function(k) {
-            if (k === 'language') {
-              updates[k] = model[k].code;
-            } else if (k === 'role') {
-              updates.roles = [model[k]];
-            } else {
-              updates[k] = model[k];
-            }
-          });
+              return existingModel[key] !== model[key];
+            })
+            .forEach(key => {
+              if (key === 'language') {
+                updates[key] = model[key].code;
+              } else if (key === 'role') {
+                updates.roles = [model[key]];
+              } else {
+                updates[key] = model[key];
+              }
+            });
 
-        return updates;
-      });
+          return updates;
+        });
     };
 
     let previousQuery;
@@ -313,7 +354,7 @@ angular
         });
     };
 
-    const computeFields = function() {
+    const computeFields = () => {
       $scope.editUserModel.place = $(
         '#edit-user-profile [name=facilitySelect]'
       ).val();
@@ -322,82 +363,82 @@ angular
       ).val();
     };
 
-    const haveUpdates = function(updates) {
-      return Object.keys(updates).length;
-    };
+    const haveUpdates = updates => Object.keys(updates).length;
 
-    const validateEmailAddress = function(){
+    const validateEmailAddress = () => {
       if (!$scope.editUserModel.email){
         return true;
       }
 
       if (!isEmailValid($scope.editUserModel.email)){
-        $translate('email.invalid').then(function(value) {
-          $scope.errors.email = value;
-        });
+        $translate('email.invalid').then(value => $scope.errors.email = value);
         return false;
       }
 
       return true;
     };
 
-    const isEmailValid = function(email){
-      return email.match(/.+@.+/);
-    };
+    const isEmailValid = email => email.match(/.+@.+/);
 
     // #edit-user-profile is the admin view, which has additional fields.
-    $scope.editUser = function() {
+    $scope.editUser = () => {
       $scope.setProcessing();
       $scope.errors = {};
       computeFields();
-      if (
-        validateName() &&
-        validateRole() &&
-        validateContactAndFacility() &&
-        validatePasswordForEditUser() &&
-        validateEmailAddress()
-      ) {
-        validateContactIsInPlace()
-          .then(function(valid) {
+
+      const synchronousValidations = validateName() &&
+                                     validateRole() &&
+                                     validateContactAndFacility() &&
+                                     validatePasswordForEditUser() &&
+                                     validateEmailAddress();
+
+      if (synchronousValidations) {
+        const asynchronousValidations = $q
+          .all([
+            validateContactIsInPlace(),
+            validateTokenLogin(),
+          ])
+          .then(responses => responses.every(response => response));
+        return asynchronousValidations
+          .then(valid => {
             if (!valid) {
               $scope.setError();
               return;
             }
-            return validateReplicationLimit().then(() => {
-              changedUpdates($scope.editUserModel).then(function(updates) {
-                $q.resolve()
-                  .then(function() {
-                    if (!haveUpdates(updates)) {
-                      return;
-                    } else if ($scope.editUserModel.id) {
-                      return UpdateUser($scope.editUserModel.username, updates);
-                    } else {
-                      return CreateUser(updates);
-                    }
-                  })
-                  .then(function() {
-                    $scope.setFinished();
-                    // TODO: change this from a broadcast to a changes watcher
-                    //       https://github.com/medic/medic/issues/4094
-                    $rootScope.$broadcast(
-                      'UsersUpdated',
-                      $scope.editUserModel.id
-                    );
-                    $uibModalInstance.close();
-                  })
-                  .catch(function(err) {
-                    if (err && err.data && err.data.error && err.data.error.translationKey) {
-                      $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
-                        $scope.setError(err, value);
-                      });
-                    } else {
-                      $scope.setError(err, 'Error updating user');
-                    }
+            return validateReplicationLimit()
+              .then(() => changedUpdates($scope.editUserModel))
+              .then(updates => {
+                if (!haveUpdates(updates)) {
+                  return;
+                }
+
+                if ($scope.editUserModel.id) {
+                  return UpdateUser($scope.editUserModel.username, updates);
+                }
+
+                return CreateUser(updates);
+              })
+              .then(() => {
+                $scope.setFinished();
+                // TODO: change this from a broadcast to a changes watcher
+                //       https://github.com/medic/medic/issues/4094
+                $rootScope.$broadcast(
+                  'UsersUpdated',
+                  $scope.editUserModel.id
+                );
+                $uibModalInstance.close();
+              })
+              .catch(err => {
+                if (err && err.data && err.data.error && err.data.error.translationKey) {
+                  $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+                    $scope.setError(err, value);
                   });
+                } else {
+                  $scope.setError(err, 'Error updating user');
+                }
               });
-            });
           })
-          .catch(function(err) {
+          .catch(err => {
             if (err.key) {
               $translate(err.key, err.params).then(value => $scope.setError(err, value, err.severity));
             } else {

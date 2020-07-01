@@ -189,16 +189,18 @@ const getOrCreatePlace = place => {
   if (_.isString(place)) {
     // fetch place
     return self.getPlace(place);
-  } else if (_.isObject(place) && !place._rev) {
+  }
+
+  if (_.isObject(place) && !place._rev) {
     // create and return place
     return self._createPlaces(place)
       .then(resp => self.getPlace(resp.id));
-  } else {
-    return Promise.reject({
-      code:400,
-      message: 'Place must be a new object or string identifier (UUID).'
-    });
   }
+
+  return Promise.reject({
+    code:400,
+    message: 'Place must be a new object or string identifier (UUID).'
+  });
 };
 
 module.exports = {

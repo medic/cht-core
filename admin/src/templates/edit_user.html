@@ -28,10 +28,11 @@
       <span class="help-block">{{errors.email}}</span>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" ng-class="{'has-error': errors.phone, 'required': editUserModel.token_login }">
       <label for="phone" translate>Phone Number</label>
       <input id="phone" type="text" class="form-control" ng-model="editUserModel.phone"/>
       <span class="help-block" translate>user.phone.help</span>
+      <span class="help-block">{{errors.phone}}</span>
     </div>
 
     <div class="form-group">
@@ -64,13 +65,37 @@
       <span class="help-block">{{errors.contact}}</span>
     </div>
 
-    <div class="form-group" ng-class="{'has-error': errors.password, 'required': !editUserModel.id}">
+    <div class="form-group" ng-if="allowTokenLogin && !editUserModel.tokenLoginEnabled">
+      <input type="checkbox" id="tokenLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.token_login">
+      <label for="tokenLogin" translate class="form-check-label">configuration.enable.token.login</label>
+      <div class="help-block" translate>configuration.enable.token.login.help</div>
+    </div>
+
+    <div class="form-group" ng-if="allowTokenLogin && editUserModel.tokenLoginEnabled">
+      <p>
+        <label class="form-check-label">
+          <span ng-if="editUserModel.tokenLoginEnabled.active && !editUserModel.tokenLoginEnabled.expired" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.expirationDate}}' }">configuration.enable.token.login.enabled.active</span>
+          <span ng-if="editUserModel.tokenLoginEnabled.active && editUserModel.tokenLoginEnabled.expired" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.expirationDate}}' }">configuration.enable.token.login.enabled.expired</span>
+          <span ng-if="!editUserModel.tokenLoginEnabled.active" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.loginDate}}' }">configuration.enable.token.login.enabled.inactive</span>
+        </label>
+      </p>
+      <div>
+        <input type="checkbox" id="disabletokenLogin" ng-true-value="false" ng-false-value="" ng-model="editUserModel.token_login">
+        <label for="disabletokenLogin" translate class="form-check-label">configuration.enable.token.login.disable</label>
+      </div>
+      <div>
+        <input type="checkbox" id="refreshTokenLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.token_login">
+        <label for="refreshTokenLogin" translate class="form-check-label">configuration.enable.token.login.refresh</label>
+      </div>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled) }">
       <label for="edit-password" translate>Password</label>
       <input id="edit-password" name="edit-password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
       <span class="help-block">{{errors.password}}</span>
     </div>
 
-    <div class="form-group" ng-class="{'required': !editUserModel.id}">
+    <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled) }">
       <label for="edit-password-confirm" translate>Confirm Password</label>
       <input id="edit-password-confirm" name="edit-password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
     </div>

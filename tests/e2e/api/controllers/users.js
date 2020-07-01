@@ -4,16 +4,17 @@ const utils = require('../../../utils');
 const uuid = require('uuid');
 const querystring = require('querystring');
 const chai = require('chai');
+chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('../../sentinel/utils');
 
-const user = n => `org.couchdb.user:${n}`;
+const getUserId = n => `org.couchdb.user:${n}`;
 
 describe('Users API', () => {
   describe('POST /api/v1/users/{username}', () => {
     const username = 'test' + new Date().getTime();
     const password = 'pass1234!';
     const _usersUser = {
-      _id: user(username),
+      _id: getUserId(username),
       type: 'user',
       name: username,
       password: password,
@@ -30,7 +31,7 @@ describe('Users API', () => {
 
     const medicData = [
       {
-        _id: user(username),
+        _id: getUserId(username),
         facility_id: null,
         contact_id: null,
         name: username,
@@ -99,12 +100,12 @@ describe('Users API', () => {
         }));
 
     afterAll(() =>
-      utils.request(`/_users/${user(username)}`)
+      utils.request(`/_users/${getUserId(username)}`)
         .then(({_rev}) => utils.request({
-          path: `/_users/${user(username)}`,
+          path: `/_users/${getUserId(username)}`,
           method: 'PUT',
           body: {
-            _id: user(username),
+            _id: getUserId(username),
             _rev: _rev,
             _deleted: true
           }
@@ -119,7 +120,7 @@ describe('Users API', () => {
           place: newPlaceId
         }
       })
-        .then(() => utils.getDoc(user(username)))
+        .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
           expect(doc.facility_id).toBe(newPlaceId);
         }));
@@ -164,7 +165,7 @@ describe('Users API', () => {
         },
         auth: { username, password},
       })
-        .then(() => utils.getDoc(user(username)))
+        .then(() => utils.getDoc(getUserId(username)))
         .then(doc => {
           expect(doc.fullname).toBe('Awesome Guy');
         }));
@@ -448,4 +449,609 @@ describe('Users API', () => {
         });
     });
   });
-}) ;
+
+  describe('token-login', () => {
+    let user;
+    const password = 'passwordSUP3RS3CR37!';
+
+    const getUser = (user) => {
+      const opts = { path: `/_users/${getUserId(user.username)}` };
+      return utils.request(opts);
+    };
+    const getUserSettings = (user) => {
+      return utils.requestOnMedicDb({ path: `/${getUserId(user.username)}` });
+    };
+
+    const parentPlace = {
+      _id: 'PARENT_PLACE',
+      type: 'district_hospital',
+      name: 'Big Parent Hostpital'
+    };
+
+    beforeAll(() => utils.saveDoc(parentPlace));
+    afterAll(() => utils.revertDb());
+
+    beforeEach(() => {
+      user = {
+        username: 'testuser',
+        password,
+        roles: ['district_admin'],
+        place: {
+          _id: 'fixture:test',
+          type: 'health_center',
+          name: 'TestVille',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:testuser',
+          name: 'Bob'
+        },
+      };
+    });
+    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'])));
+
+    const expectCorrectUser = (user, extra = {}) => {
+      const defaultProps = {
+        name: 'testuser',
+        type: 'user',
+        roles: ['district_admin'],
+        facility_id: 'fixture:test',
+      };
+      chai.expect(user).to.shallowDeepEqual(Object.assign(defaultProps, extra));
+    };
+    const expectCorrectUserSettings = (userSettings, extra = {}) => {
+      const defaultProps = {
+        name: 'testuser',
+        type: 'user-settings',
+        roles: ['district_admin'],
+        facility_id: 'fixture:test',
+        contact_id: 'fixture:user:testuser',
+      };
+      chai.expect(userSettings).to.shallowDeepEqual(Object.assign(defaultProps, extra));
+    };
+
+    const expectPasswordLoginToWork = (user) => {
+      const opts = {
+        path: '/login',
+        method: 'POST',
+        simple: false,
+        noAuth: true,
+        body: { user: user.username, password: user.password },
+        followRedirect: false,
+      };
+
+      return utils
+        .requestOnMedicDb(opts)
+        .then(response => {
+          chai.expect(response).to.include({
+            statusCode: 302,
+            body: '/',
+          });
+          chai.expect(response.headers['set-cookie']).to.be.an('array');
+          chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+          chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+        });
+    };
+
+    const expectPasswordLoginToFail = (user) => {
+      const opts = {
+        path: '/login',
+        method: 'POST',
+        simple: false,
+        noAuth: true,
+        body: { user: user.username, password: user.password },
+      };
+
+      return utils
+        .requestOnMedicDb(opts)
+        .then(response => {
+          chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
+        });
+    };
+
+    const expectTokenLoginToSucceed = (url) => {
+      const opts = {
+        uri: url,
+        simple: false,
+        resolveWithFullResponse: true,
+        noAuth: true,
+        followRedirect: false,
+      };
+      return utils.request(opts).then(response => {
+        chai.expect(response).to.include({ statusCode: 302 });
+        chai.expect(response.headers['set-cookie']).to.be.an('array');
+        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+        chai.expect(response.headers['location']).to.equal('/');
+      });
+    };
+
+    const expectTokenLoginToFail = (url) => {
+      const opts = {
+        uri: url,
+        simple: false,
+        noAuth: true,
+        followRedirect: false,
+        resolveWithFullResponse: true,
+      };
+      return utils.request(opts).then(response => {
+        chai.expect(response.headers['set-cookie']).to.be.undefined;
+        chai.expect(response.headers['content-type']).to.match(/^text\/html/);
+      })
+        .catch(err => {
+          console.log(err.message);
+        });
+    };
+
+    const expectSendableSms = (doc) => {
+      const opts = {
+        path: '/api/sms',
+        method: 'POST',
+        body: {},
+      };
+
+      const viewifyMessage = ({ uuid, message, to }) => ({ to, id: uuid, content: message });
+
+      return utils.request(opts).then(response => {
+        chai.expect(response.messages).to.be.an('array');
+        chai.expect(response.messages.length).to.equal(doc.tasks.length);
+        chai.expect(response.messages).to.have.deep.members(doc.tasks.map(task => viewifyMessage(task.messages[0])));
+      });
+    };
+
+    describe('when token-login configuration is missing', () => {
+      it('should create and update a user correctly w/o token_login', () => {
+        return utils
+          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+              contact: { id: 'fixture:user:testuser' },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+          })
+          .then(() => expectPasswordLoginToWork(user))
+          .then(() => {
+            const updates = {
+              roles: ['new_role'],
+              phone: '12345',
+            };
+
+            const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
+            return utils.request(opts);
+          })
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user, { roles: ['new_role'] });
+            expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+          })
+          .then(() => expectPasswordLoginToWork(user));
+      });
+
+      it('should create and update a user correctly with token_login', () => {
+        user.token_login = true;
+
+        return utils
+          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+              contact: { id: 'fixture:user:testuser' },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+            chai.expect(user.token_login).to.be.undefined;
+            chai.expect(userSettings.token_login).to.be.undefined;
+          })
+          .then(() => expectPasswordLoginToWork(user))
+          .then(() => {
+            const updates = {
+              roles: ['new_role'],
+              phone: '12345',
+              token_login: true,
+            };
+
+            const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
+            return utils.request(opts);
+          })
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user, { roles: ['new_role'] });
+            expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+            chai.expect(user.token_login).to.be.undefined;
+            chai.expect(userSettings.token_login).to.be.undefined;
+          })
+          .then(() => expectPasswordLoginToWork(user));
+      });
+    });
+
+    describe('when token-login is configured', () => {
+      it('should create and update a user correctly w/o token_login', () => {
+        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+              contact: { id: 'fixture:user:testuser' },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+            chai.expect(user.token_login).to.be.undefined;
+            chai.expect(userSettings.token_login).to.be.undefined;
+          })
+          .then(() => expectPasswordLoginToWork(user))
+          .then(() => {
+            const updates = {
+              roles: ['new_role'],
+              phone: '12345',
+            };
+
+            return utils.request({ path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' });
+          })
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user, { roles: ['new_role'] });
+            expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+            chai.expect(user.token_login).to.be.undefined;
+            chai.expect(userSettings.token_login).to.be.undefined;
+          })
+          .then(() => expectPasswordLoginToWork(user));
+      });
+
+      it('should throw an error when phone is missing when creating a user with token_login', () => {
+        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => {
+            user.token_login = true;
+            return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
+          })
+          .then(() => chai.assert.fail('should have thrown'))
+          .catch(err => {
+            chai.expect(err.response).to.shallowDeepEqual({
+              statusCode: 400,
+              body: { code: 400, error: { message: 'Missing required fields: phone' }}
+            });
+          });
+      });
+
+      it('should throw an error when phone is missing when updating a user with token_login', () => {
+        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => {
+            user.token_login = true;
+            user.roles = ['whatever'];
+            return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
+          })
+          .then(() => chai.assert.fail('should have thrown'))
+          .catch(err => {
+            chai.expect(err.response).to.shallowDeepEqual({
+              statusCode: 400,
+              body: { code: 400, error: { message: 'Missing required fields: phone' }}
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+            chai.expect(user.token_login).to.be.undefined;
+            chai.expect(userSettings.token_login).to.be.undefined;
+          })
+          .then(() => expectPasswordLoginToWork(user));
+      });
+
+      it('should create a user correctly with token_login', () => {
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        user.token_login = true;
+        user.phone = '+40755898989';
+
+        let tokenUrl;
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+              contact: { id: 'fixture:user:testuser' },
+            });
+            chai.expect(response.token_login).to.have.keys('id', 'expiration_date');
+            return Promise.all([
+              getUser(user),
+              getUserSettings(user),
+              utils.getDoc(response.token_login.id),
+            ]);
+          })
+          .then(([ user, userSettings, smsDoc ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+
+            chai.expect(user.token_login).to.be.ok;
+            chai.expect(user.token_login).to.have.keys(['active', 'token', 'hash', 'expiration_date', 'doc_id']);
+            chai.expect(user.token_login).to.include({ active: true, doc_id: smsDoc._id });
+
+            chai.expect(userSettings.token_login).to.be.ok;
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date' ]);
+
+            chai.expect(smsDoc).to.include({
+              type: 'token_login_sms',
+              user: user._id,
+            });
+            chai.expect(smsDoc.tasks).to.be.ok;
+            chai.expect(smsDoc.tasks.length).to.equal(2);
+            tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${user.token_login.hash}`;
+            chai.expect(smsDoc.tasks).to.shallowDeepEqual([
+              {
+                messages: [{ to: '+40755898989', message: 'Instructions sms' }],
+                state: 'pending',
+              },
+              {
+                messages: [{ to: '+40755898989', message: tokenUrl }],
+                state: 'pending',
+              }
+            ]);
+
+            return expectSendableSms(smsDoc);
+          })
+          .then(() => expectPasswordLoginToFail(user))
+          .then(() => expectTokenLoginToSucceed(tokenUrl))
+          .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+
+            chai.expect(user.token_login).to.be.ok;
+            chai.expect(user.token_login).to.have.keys([
+              'active', 'token', 'hash', 'expiration_date', 'doc_id', 'login_date'
+            ]);
+            chai.expect(user.token_login.active).to.equal(false);
+
+            chai.expect(userSettings.token_login).to.be.ok;
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date' ]);
+            chai.expect(userSettings.token_login.active).to.equal(false);
+          })
+          .then(() => expectTokenLoginToFail(tokenUrl)); // fails the 2nd time!
+      });
+
+      it('should update a user correctly with token_login', () => {
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        let tokenUrl;
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => {
+            const updates = {
+              phone: '+40755696969',
+              token_login: true,
+            };
+            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+          })
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+            });
+            chai.expect(response.token_login).to.have.keys('id', 'expiration_date');
+            return Promise.all([
+              getUser(user),
+              getUserSettings(user),
+              utils.getDoc(response.token_login.id),
+            ]);
+          })
+          .then(([ user, userSettings, smsDoc ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+
+            chai.expect(user.token_login).to.be.ok;
+            chai.expect(user.token_login).to.have.keys(['active', 'token', 'hash', 'expiration_date', 'doc_id']);
+            chai.expect(user.token_login).to.include({ active: true, doc_id: smsDoc._id });
+
+            chai.expect(userSettings.token_login).to.be.ok;
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date' ]);
+
+            chai.expect(smsDoc).to.include({
+              type: 'token_login_sms',
+              user: user._id,
+            });
+            chai.expect(smsDoc.tasks).to.be.ok;
+            chai.expect(smsDoc.tasks.length).to.equal(2);
+            tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${user.token_login.hash}`;
+            chai.expect(smsDoc.tasks).to.shallowDeepEqual([
+              {
+                messages: [{ to: '+40755696969', message: 'Instructions sms' }],
+                state: 'pending',
+              },
+              {
+                messages: [{ to: '+40755696969', message: tokenUrl }],
+                state: 'pending',
+              }
+            ]);
+
+            return expectSendableSms(smsDoc);
+          })
+          .then(() => expectPasswordLoginToFail(user))
+          .then(() => expectTokenLoginToSucceed(tokenUrl))
+          .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+
+            chai.expect(user.token_login).to.be.ok;
+            chai.expect(user.token_login).to.have.keys([
+              'active', 'token', 'hash', 'expiration_date', 'doc_id', 'login_date'
+            ]);
+            chai.expect(user.token_login.active).to.equal(false);
+
+            chai.expect(userSettings.token_login).to.be.ok;
+            chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date' ]);
+            chai.expect(userSettings.token_login.active).to.equal(false);
+          })
+          .then(() => expectTokenLoginToFail(tokenUrl)); // fails the 2nd time!
+      });
+
+      it('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        user.token_login = true;
+        user.phone = '+40755232323';
+        let tokenLogin;
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => getUser(user))
+          .then(user => tokenLogin = user.token_login)
+          .then(() => {
+            const updates = { roles: ['whatever'] };
+            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+          })
+          .then(response => {
+            chai.expect(response.token_login).to.be.undefined;
+          })
+          .then(() => expectPasswordLoginToFail(user))
+          .then(() => Promise.all([ getUser(user), getUserSettings(user), utils.getDoc(tokenLogin.doc_id) ]))
+          .then(([ user, userSettings, smsDoc ]) => {
+            chai.expect(user.token_login).to.deep.equal(tokenLogin);
+            chai.expect(userSettings.token_login)
+              .to.deep.equal({ active: true, expiration_date: tokenLogin.expiration_date });
+
+            return expectTokenLoginToSucceed(smsDoc.tasks[1].messages[0].message);
+          });
+
+      });
+
+      it('should clear the old SMS tasks when token is re-generated', () => {
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        user.token_login = true;
+        user.phone = '+40755242424';
+        let firstTokenLogin;
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => getUser(user))
+          .then(user => firstTokenLogin = user.token_login)
+          .then(() => {
+            const updates = { phone: '+40755989898', token_login: true };
+            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+          })
+          .then(response => {
+            chai.expect(response.token_login).to.have.keys('id', 'expiration_date');
+            return Promise.all([
+              getUser(user),
+              getUserSettings(user),
+              utils.getDoc(firstTokenLogin.doc_id),
+              utils.getDoc(response.token_login.id),
+            ]);
+          })
+          .then(([ user, userSettings, firstSmsDoc, secondSmsDoc ]) => {
+            chai.expect(user.token_login).not.to.deep.equal(firstTokenLogin);
+            chai.expect(userSettings.token_login)
+              .to.deep.equal({ active: true, expiration_date: user.token_login.expiration_date });
+
+            const firstUrl = `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}/${firstTokenLogin.hash}`;
+            const secondUrl =
+                    `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${user.token_login.hash}`;
+
+            chai.expect(firstSmsDoc.tasks).to.shallowDeepEqual([
+              { state: 'cleared', messages: [{ to: '+40755242424', message: 'Instructions sms' }] },
+              { state: 'cleared', messages: [{ to: '+40755242424', message: firstUrl }] },
+            ]);
+            chai.expect(secondSmsDoc.tasks).to.shallowDeepEqual([
+              { state: 'pending', messages: [{ to: '+40755989898', message: 'Instructions sms' }] },
+              { state: 'pending', messages: [{ to: '+40755989898', message: secondUrl }] },
+            ]);
+
+            return Promise.all([
+              expectTokenLoginToFail(firstUrl),
+              expectTokenLoginToSucceed(secondUrl),
+            ]);
+          });
+      });
+
+      it('should disable token_login for a user when requested', () => {
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        user.token_login = true;
+        user.phone = '+40755969696';
+        let firstTokenLogin;
+        return utils
+          .updateSettings(settings)
+          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => getUser(user))
+          .then(user => firstTokenLogin = user.token_login)
+          .then(() => {
+            const updates = { token_login: false, password };
+            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+          })
+          .then(response => {
+            chai.expect(response.token_login).to.be.undefined;
+            return Promise.all([
+              getUser(user),
+              getUserSettings(user),
+              utils.getDoc(firstTokenLogin.doc_id)
+            ]);
+          })
+          .then(([ user, userSettings, smsDoc]) => {
+            chai.expect(user.token_login).to.be.undefined;
+            chai.expect(userSettings.token_login).to.be.undefined;
+
+            const tokenUrl = `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}/${firstTokenLogin.hash}`;
+            chai.expect(smsDoc.tasks).to.shallowDeepEqual([
+              { state: 'cleared', messages: [{ to: '+40755969696', message: 'Instructions sms' }] },
+              { state: 'cleared', messages: [{ to: '+40755969696', message: tokenUrl }] },
+            ]);
+
+            return expectTokenLoginToFail(tokenUrl);
+          })
+          .then(() => expectPasswordLoginToWork(user));
+      });
+    });
+  });
+});
