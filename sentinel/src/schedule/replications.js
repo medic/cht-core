@@ -114,11 +114,10 @@ function replicateDb(sourceDb, targetDb) {
 
 module.exports = {
   execute: () => {
-    if (timer) {
-      timer.clear();
+    if (!timer) {
+      const schedule = later.parse.cron(CRON_EXPRESSION);
+      timer = later.setInterval(() => module.exports.runReplication(), schedule);
     }
-    const schedule = later.parse.cron(CRON_EXPRESSION);
-    timer = later.setInterval(() => module.exports.runReplication(), schedule);
     return Promise.resolve();
   },
   runReplication: () => {

@@ -1,12 +1,18 @@
 const later = require('later');
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const replications = require('../../../src/schedule/replications');
-const db = require('../../../src/db');
 const rpn = require('request-promise-native');
+const rewire = require('rewire');
+
+const db = require('../../../src/db');
+const replications = rewire('../../../src/schedule/replications');
 
 describe('replications', () => {
-  afterEach(() => sinon.restore());
+
+  afterEach(() => {
+    replications.__set__('timer', undefined);
+    sinon.restore();
+  });
 
   it('calls runReplication', () => {
     sinon.stub(later, 'setInterval').callsArgWith(0).returns({ clear: sinon.stub() });
