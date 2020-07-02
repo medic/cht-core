@@ -77,7 +77,7 @@ describe('TasksContentCtrl', () => {
       expect(ctrl.formId).to.equal('A');
 
       expect(render.callCount).to.equal(1);
-      expect(render.getCall(0).args.length).to.equal(4);
+      expect(render.getCall(0).args.length).to.equal(5);
       expect(render.getCall(0).args[0]).to.equal('#task-report');
       expect(render.getCall(0).args[1]).to.deep.equal(form);
       expect(render.getCall(0).args[2]).to.equal('nothing');
