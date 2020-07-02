@@ -214,6 +214,7 @@ describe('login controller', () => {
       sinon.stub(db, 'query').resolves({ rows: [ 
         { doc: { code: 'fr', name: 'French'  } } 
       ]});
+      sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       const send = sinon.stub(res, 'send');
       sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
       sinon.stub(config, 'get').withArgs('locale').returns('de');
@@ -226,6 +227,7 @@ describe('login controller', () => {
     it('uses application default locale if none of the accept-language headers match', () => {
       req.headers = { 'accept-language': 'en' };
       sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       const send = sinon.stub(res, 'send');
       sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
       sinon.stub(config, 'get').withArgs('locale').returns('de');
@@ -241,6 +243,7 @@ describe('login controller', () => {
         { doc: { code: 'en', name: 'English' } },
         { doc: { code: 'fr', name: 'French'  } } 
       ]});
+      sinon.stub(db, 'get').rejects({ error: 'not_found', docId: 'branding'});
       const send = sinon.stub(res, 'send');
       sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
 
