@@ -21,7 +21,6 @@ describe('reminders', () => {
     db.couchUrl = 'someURL';
   });
   beforeEach(() => {
-    process.env.TEST_ENV = true; // TODO remove?
     clock = sinon.useFakeTimers();
     reminders = rewire('../../../src/schedule/reminders');
   });
