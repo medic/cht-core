@@ -207,5 +207,5 @@ const execute = () => {
 };
 
 module.exports = {
-  execute: cb => execute().then(() => cb()).catch(cb)
+  execute: () => execute()
 };

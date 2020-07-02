@@ -1,4 +1,3 @@
-const async = require('async');
 const moment = require('moment');
 const config = require('../config');
 const transitionsLib = config.getTransitionsLib();
@@ -13,60 +12,13 @@ const tasks = {
   purging: require('./purging')
 };
 
-function getTime(_hour, _minute) {
+function getTime(hour, minute) {
   return moment(0)
-    .hours(_hour)
-    .minutes(_minute);
+    .hours(hour)
+    .minutes(minute);
 }
 
-/*
- * Return true if within time window to set outgoing/pending tasks/messages.
- */
-exports.sendable = function(config, now) {
-  const afterHours = config.get('schedule_morning_hours') || 0;
-  const afterMinutes = config.get('schedule_morning_minutes') || 0;
-  const untilHours = config.get('schedule_evening_hours') || 23;
-  const untilMinutes = config.get('schedule_evening_minutes') || 0;
-
-  now = getTime(now.hours(), now.minutes());
-  const after = getTime(afterHours, afterMinutes);
-  const until = getTime(untilHours, untilMinutes);
-
-  return now >= after && now <= until;
-};
-
-
-exports.checkSchedule = function() {
-  const now = moment(date.getDate());
-
-  async.series(
-    [
-      cb => {
-        tasks.reminders.execute(cb);
-      },
-      cb => {
-        if (exports.sendable(config, now)) {
-          tasks.dueTasks.execute(cb);
-        } else {
-          cb();
-        }
-      },
-      cb => {
-        tasks.replications.execute(cb);
-      },
-      tasks.outbound.execute,
-      tasks.purging.execute
-    ],
-    err => {
-      if (err) {
-        logger.error('Error running tasks: %o', err);
-      }
-      _reschedule();
-    }
-  );
-};
-
-function _reschedule() {
+function reschedule() {
   const now = moment();
   const heartbeat = now
     .clone()
@@ -77,3 +29,37 @@ function _reschedule() {
   logger.info(`checking schedule again in ${moment.duration(duration).humanize()}`);
   setTimeout(exports.checkSchedule, duration.asMilliseconds());
 }
+
+const executeIfSendable = task => {
+  if (!exports.sendable()) {
+    return Promise.resolve();
+  }
+  return task.execute();
+};
+
+/*
+ * Return true if within time window to set outgoing/pending tasks/messages.
+ */
+exports.sendable = function() {
+  const afterHours = config.get('schedule_morning_hours') || 0;
+  const afterMinutes = config.get('schedule_morning_minutes') || 0;
+  const untilHours = config.get('schedule_evening_hours') || 23;
+  const untilMinutes = config.get('schedule_evening_minutes') || 0;
+
+  const today = moment(date.getDate());
+  const now = getTime(today.hours(), today.minutes());
+  const after = getTime(afterHours, afterMinutes);
+  const until = getTime(untilHours, untilMinutes);
+
+  return now >= after && now <= until;
+};
+
+exports.checkSchedule = function() {
+  tasks.reminders.execute()
+    .then(() => executeIfSendable(tasks.dueTasks))
+    .then(() => tasks.replications.execute())
+    .then(() => tasks.outbound.execute())
+    .then(() => tasks.purging.execute())
+    .catch(err => logger.error('Error running tasks: %o', err))
+    .then(() => reschedule());
+};

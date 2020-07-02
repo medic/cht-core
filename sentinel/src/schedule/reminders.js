@@ -287,7 +287,7 @@ const runReminder = (reminder = {}) => {
 
 module.exports = {
   // called from schedule/index.js every 5 minutes, for now
-  execute: callback => {
+  execute: () => {
     const reminders = config.get('reminders') || [];
     return reminders
       .filter(reminder => {
@@ -296,8 +296,6 @@ module.exports = {
         }
         logger.warn('Reminder configuration invalid: %o', reminder);
       })
-      .reduce((p, reminder) => p.then(() => runReminder(reminder)), Promise.resolve())
-      .then(() => callback())
-      .catch(callback);
+      .reduce((p, reminder) => p.then(() => runReminder(reminder)), Promise.resolve());
   },
 };

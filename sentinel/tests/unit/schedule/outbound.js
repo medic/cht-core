@@ -544,16 +544,15 @@ describe('outbound schedule', () => {
 
       singlePush.resolves();
 
-      return outbound.__get__('execute')()
-        .then(() => {
-          assert.equal(configGet.callCount, 1);
-          assert.equal(removeInvalidTasks.callCount, 1);
-          assert.equal(singlePush.callCount, 2);
+      return outbound.execute().then(() => {
+        assert.equal(configGet.callCount, 1);
+        assert.equal(removeInvalidTasks.callCount, 1);
+        assert.equal(singlePush.callCount, 2);
 
-          assert.deepEqual(removeInvalidTasks.args[0][0], [{task: task3, row: error3}]);
-          assert.deepEqual(singlePush.args[0], [task1, doc1, doc1Info, {some: 'config'}, 'test-push-1']);
-          assert.deepEqual(singlePush.args[1], [task2, doc2, doc2Info, {other: 'config'}, 'test-push-2']);
-        });
+        assert.deepEqual(removeInvalidTasks.args[0][0], [{task: task3, row: error3}]);
+        assert.deepEqual(singlePush.args[0], [task1, doc1, doc1Info, {some: 'config'}, 'test-push-1']);
+        assert.deepEqual(singlePush.args[1], [task2, doc2, doc2Info, {other: 'config'}, 'test-push-2']);
+      });
     });
   });
 });
