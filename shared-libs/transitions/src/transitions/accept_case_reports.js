@@ -5,8 +5,6 @@ const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const acceptPatientReports = require('./accept_patient_reports');
 
-const NAME = 'accept_case_reports';
-
 const getConfig = form => {
   const fullConfig = config.get('accept_case_reports') || [];
   return fullConfig.find(config => config.form === form);
@@ -81,13 +79,21 @@ const updatePlaceUuid = (doc, registrations) => {
 };
 
 module.exports = {
+  name: 'accept_case_reports',
+  deprecated: false,
+  deprecatedIn: '',
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
+  },
   filter: function(doc, info = {}) {
+    const self = module.exports;
     return Boolean(
       doc &&
       doc.type === 'data_record' &&
       doc.form &&
       doc.reported_date &&
-      !transitionUtils.hasRun(info, NAME) &&
+      !transitionUtils.hasRun(info, self.name) &&
       getConfig(doc.form) &&
       utils.isValidSubmission(doc) // requires either an xform, a public sms form or a known submitter
     );

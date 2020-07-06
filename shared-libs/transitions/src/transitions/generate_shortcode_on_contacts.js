@@ -3,6 +3,14 @@ const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 module.exports = {
+  name: 'generate_shortcode_on_contacts',
+  asynchronousOnly: true,
+  deprecated: false,
+  deprecatedIn: '',
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
+  },
   filter: doc => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (!contactType) {
@@ -19,7 +27,6 @@ module.exports = {
 
     return true;
   },
-
   onMatch: change => {
     return transitionUtils
       .getUniqueId()
@@ -29,7 +36,5 @@ module.exports = {
         change.doc[prop] = id;
         return true;
       });
-  },
-
-  asynchronousOnly: true
+  }
 };

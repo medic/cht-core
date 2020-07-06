@@ -2,7 +2,6 @@ const db = require('../db');
 const config = require('../config');
 const logger = require('../lib/logger');
 const transitionUtils = require('./utils');
-const NAME = 'update_scheduled_reports';
 
 const getLeafPlaceTypeIds = () => {
   const types = config.get('contact_types') || [];
@@ -29,14 +28,22 @@ const getParentId = contact => {
 };
 
 module.exports = {
+  name: 'update_scheduled_reports',
+  deprecated: false,
+  deprecatedIn: '',
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
+  },
   filter: (doc, info = {}) => {
+    const self = module.exports;
     return Boolean(
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
       (doc.errors ? doc.errors.length === 0 : true) &&
       module.exports._isFormScheduled(doc) &&
-      !transitionUtils.hasRun(info, NAME)
+      !transitionUtils.hasRun(info, self.name)
     );
   },
   /**

@@ -47,6 +47,13 @@ const setStateOnTasks = function(tasks, state) {
 };
 
 module.exports = {
+  name: 'resolve_pending',
+  deprecated: false,
+  deprecatedIn: '',
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
+  },
   filter: doc => Boolean(getAllPendingTasks(doc).length),
   onMatch: change => {
     return Promise.resolve(setStateOnTasks(getAllPendingTasks(change.doc)));

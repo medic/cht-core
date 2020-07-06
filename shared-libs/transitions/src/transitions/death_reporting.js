@@ -4,7 +4,6 @@ const utils = require('../lib/utils');
 const objectPath = require('object-path');
 const transitionUtils = require('./utils');
 const db = require('../db');
-const TRANSITION_NAME = 'death_reporting';
 const CONFIG_NAME = 'death_reporting';
 const MARK_PROPERTY_NAME = 'mark_deceased_forms';
 const UNDO_PROPERTY_NAME = 'undo_deceased_forms';
@@ -37,20 +36,28 @@ const updatePatient = (patient, doc) => {
 };
 
 module.exports = {
+  name: 'death_reporting',
+  deprecated: false,
+  deprecatedIn: '',
   init: () => {
     const forms = getConfirmFormCodes();
     if (!forms || !_.isArray(forms) || !forms.length) {
       throw new Error(`Configuration error. Config must have a '${CONFIG_NAME}.${MARK_PROPERTY_NAME}' array defined.`);
     }
   },
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
+  },
   filter: (doc, info = {}) => {
+    const self = module.exports;
     return Boolean(
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
       (isConfirmForm(doc.form) || isUndoForm(doc.form)) &&
       doc.patient &&
-      !transitionUtils.hasRun(info, TRANSITION_NAME) &&
+      !transitionUtils.hasRun(info, self.name) &&
       utils.isValidSubmission(doc)
     );
   },

@@ -94,5 +94,9 @@ module.exports = {
         info('Not updating settings - the existing settings are already up to date');
         return Promise.resolve(false);
       });
+  },
+  getDeprecatedTransitions: () => {
+    const config = require('../config');
+    return config.getDeprecatedTransitions();
   }
 };

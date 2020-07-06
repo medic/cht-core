@@ -2,6 +2,13 @@ const assert = require('chai').assert;
 const transition = require('../../src/transitions/resolve_pending');
 
 describe('reminders', () => {
+  it('should have properties defined and return deprecation message', () => {
+    assert.equal(transition.name, 'resolve_pending');
+    assert.equal(transition.deprecated, false);
+    assert.equal(transition.deprecatedIn, '');
+    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
+  });
+
   it('filter fails on undefined tasks or scheduled_tasks', () => {
     assert.equal(transition.filter({}), false);
   });

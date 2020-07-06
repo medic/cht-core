@@ -4,11 +4,18 @@ const config = require('../../src/config');
 const messages = require('../../src/lib/messages');
 const transition = require('../../src/transitions/default_responses');
 
-describe('conditional alerts', () => {
+describe('default responses', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
     sinon.stub(transition, '_isReportedAfterStartDate').returns(true);
+  });
+
+  it('should have properties defined and return deprecation message', () => {
+    assert.equal(transition.name, 'default_responses');
+    assert.equal(transition.deprecated, false);
+    assert.equal(transition.deprecatedIn, '');
+    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
   });
 
   it('when document type is unknown do not pass filter', () => {

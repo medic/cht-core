@@ -80,6 +80,13 @@ const markForOutbound = (change) => {
 };
 
 module.exports = {
+  name: 'mark_for_outbound',
+  deprecated: false,
+  deprecatedIn: '',
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
+  },
   filter: change => Object.keys(config.get(CONFIGURED_PUSHES) || {}).length > 0, // eslint-disable-line no-unused-vars
   onMatch: change => Promise.resolve().then(() => markForOutbound(change))
 };

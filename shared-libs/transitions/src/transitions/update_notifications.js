@@ -4,7 +4,6 @@ const utils = require('../lib/utils');
 const messages = require('../lib/messages');
 const validation = require('../lib/validation');
 const transitionUtils = require('./utils');
-const NAME = 'update_notifications';
 const mutingUtils = require('../lib/muting_utils');
 const logger = require('../lib/logger');
 
@@ -29,10 +28,23 @@ const getEventType = function(config, doc) {
 const getEventName = mute => mute.mute ? 'on_mute': 'on_unmute';
 
 module.exports = {
+  name: 'update_notifications',
+  asynchronousOnly: true,
+  deprecated: true,
+  deprecatedIn: '3.2.x',
   init: () => {
-    logger.info('`update_notifications` transitions is deprecated. Please use `muting` transition instead');
-  },
+    const self = module.exports;
 
+    if (self.deprecated) {
+      logger.warn(self.getDeprecationMessage());
+    }
+  },
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    const deprecatedExtraInfo = 'Please use "muting" transition instead.';
+
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}. ${deprecatedExtraInfo}`;
+  },
   _addErr: function(event_type, config, doc) {
     const locale = utils.getLocale(doc);
     const evConf = _.find(config.messages, { event_type: event_type });
@@ -56,11 +68,12 @@ module.exports = {
     }
   },
   filter: function(doc, info = {}) {
+    const self = module.exports;
     return Boolean(
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
-      !transitionUtils.hasRun(info, NAME) &&
+      !transitionUtils.hasRun(info, self.name) &&
       utils.isValidSubmission(doc)
     );
   },
@@ -116,6 +129,5 @@ module.exports = {
           });
       });
     });
-  },
-  asynchronousOnly: true
+  }
 };

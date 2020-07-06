@@ -1,8 +1,14 @@
 const transitionUtils = require('./utils');
 const db = require('../db');
-const NAME = 'update_sent_by';
 
 module.exports = {
+  name: 'update_sent_by',
+  deprecated: false,
+  deprecatedIn: '',
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
+  },
   filter: function(doc, info={}) {
     const self = module.exports;
     return Boolean(
@@ -14,9 +20,10 @@ module.exports = {
     );
   },
   _hasRun: function(doc) {
+    const self = module.exports;
     return Boolean(
-      transitionUtils.hasRun(doc, NAME) &&
-            doc.transitions[NAME].ok
+      transitionUtils.hasRun(doc, self.name) &&
+            doc.transitions[self.name].ok
     );
   },
   onMatch: change => {

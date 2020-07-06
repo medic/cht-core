@@ -11,6 +11,13 @@ describe('accept_case_reports', () => {
     done();
   });
 
+  it('should have properties defined and return deprecation message', () => {
+    transition.name.should.equal('accept_case_reports');
+    transition.deprecated.should.equal(false);
+    transition.deprecatedIn.should.equal('');
+    transition.getDeprecationMessage().includes(transition.name).should.equal(true);
+  });
+
   describe('filter', () => {
     it('empty doc returns false', () => {
       transition.filter({}).should.equal(false);

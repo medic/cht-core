@@ -13,6 +13,14 @@ module.exports = {
         serverUtils.error(err, req, res, true);
       });
   },
+  getDeprecatedTransitions: (req, res) => {
+    return auth.getUserCtx(req)
+      .then(() => settingsService.getDeprecatedTransitions())
+      .then(transitions => res.json(transitions))
+      .catch(err => {
+        serverUtils.error(err, req, res, true);
+      });
+  },
   // deprecated - used by medic-conf, medic-reporter, etc
   getV0: (req, res) => {
     return doGet(req, res)
