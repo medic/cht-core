@@ -75,20 +75,6 @@ const initTransitionLib = () => {
   }
 };
 
-const getDeprecatedTransitions = () => {
-  const transitions = require('@medic/transitions')(db, settings, translationCache, logger);
-
-  return transitions.getDeprecatedTransitions()
-    .map(transition => {
-      return {
-        name: transition.name,
-        deprecated: transition.deprecated,
-        deprecatedIn: transition.deprecatedIn,
-        deprecationMessage: transition.getDeprecationMessage()
-      };
-    });
-};
-
 const loadTranslations = () => {
   const options = { key: ['translations', true], include_docs: true };
   return db.medic
@@ -202,6 +188,5 @@ module.exports = {
       });
   },
   initTransitionLib: initTransitionLib,
-  getTransitionsLib: () => transitionsLib,
-  getDeprecatedTransitions: getDeprecatedTransitions
+  getTransitionsLib: () => transitionsLib
 };
