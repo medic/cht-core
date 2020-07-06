@@ -1,7 +1,7 @@
 const utils = require('../../utils');
 
 const getApiSmsChanges = (messages) => {
-  const expectedMessages = messages.map(message => message.message);
+  const expectedMessages = messages.map(message => message.content);
   const changes = [];
   const ids = [];
   const listener = utils.db.changes({
@@ -19,6 +19,7 @@ const getApiSmsChanges = (messages) => {
         const idx = expectedMessages.findIndex(message => message === change.doc.sms_message.message);
         changes.push(change);
         expectedMessages.splice(idx, 1);
+
         ids.push(change.id);
         if (!expectedMessages.length) {
           listener.cancel();
