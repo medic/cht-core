@@ -15,10 +15,9 @@ module.exports = {
     );
   },
   _hasRun: function(doc) {
-    const self = module.exports;
     return Boolean(
-      transitionUtils.hasRun(doc, self.name) &&
-            doc.transitions[self.name].ok
+      transitionUtils.hasRun(doc, NAME) &&
+            doc.transitions[NAME].ok
     );
   },
   onMatch: change => {

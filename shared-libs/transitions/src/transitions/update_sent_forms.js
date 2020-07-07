@@ -4,6 +4,7 @@ const config = require('../config');
 const logger = require('../lib/logger');
 const db = require('../db');
 const transitionUtils = require('./utils');
+const NAME = 'update_sent_forms';
 
 /*
  * Update sent_forms property on facilities so we can setup reminders for
@@ -12,7 +13,7 @@ const transitionUtils = require('./utils');
 // to be removed this in 4.0, this is rendered useless by the updates to reminders.
 // https://github.com/medic/medic/issues/5939
 module.exports = {
-  name: 'update_sent_forms',
+  name: NAME,
   asynchronousOnly: true,
   deprecated: true,
   deprecatedIn: '3.7.x',
@@ -41,7 +42,7 @@ module.exports = {
         doc.contact.parent._id &&
         doc.type === 'data_record' &&
         self._hasConfig(doc) &&
-        !transitionUtils.hasRun(info, self.name)
+        !transitionUtils.hasRun(info, NAME)
     );
   },
   _getConfig: function() {

@@ -632,7 +632,6 @@ module.exports = {
     });
   },
   filter: (doc, info = {}) => {
-    const self = module.exports;
     return Boolean(
       doc.type === 'data_record' &&
       getRegistrationConfig(getConfig(), doc.form) &&

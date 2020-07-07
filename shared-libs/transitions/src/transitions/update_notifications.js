@@ -6,6 +6,7 @@ const validation = require('../lib/validation');
 const transitionUtils = require('./utils');
 const mutingUtils = require('../lib/muting_utils');
 const logger = require('../lib/logger');
+const NAME = 'update_notifications';
 
 const getEventType = function(config, doc) {
   if (!config.on_form && !config.off_form) {
@@ -28,7 +29,7 @@ const getEventType = function(config, doc) {
 const getEventName = mute => mute.mute ? 'on_mute': 'on_unmute';
 
 module.exports = {
-  name: 'update_notifications',
+  name: NAME,
   asynchronousOnly: true,
   deprecated: true,
   deprecatedIn: '3.2.x',
@@ -68,12 +69,11 @@ module.exports = {
     }
   },
   filter: function(doc, info = {}) {
-    const self = module.exports;
     return Boolean(
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
-      !transitionUtils.hasRun(info, self.name) &&
+      !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc)
     );
   },
