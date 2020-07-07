@@ -5,7 +5,7 @@ const db = require('../../../src/db');
 const logger = require('../../../src/lib/logger');
 const transition = require('../../../src/transitions/update_sent_forms');
 
-describe('update sent from', () => {
+describe('update sent forms', () => {
   beforeEach(() => {
     process.env.TEST_ENV = true;
   });
