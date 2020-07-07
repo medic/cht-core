@@ -1,8 +1,8 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const config = require('../../src/config');
-const transitionUtils = require('../../src/transitions/utils');
-const transition = require('../../src/transitions/generate_shortcode_on_contacts');
+const config = require('../../../src/config');
+const transitionUtils = require('../../../src/transitions/utils');
+const transition = require('../../../src/transitions/generate_shortcode_on_contacts');
 
 const types = [
   { id: 'person', person: true },

@@ -1,11 +1,11 @@
 const moment = require('moment');
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const db = require('../../src/db');
-const logger = require('../../src/lib/logger');
-const transition = require('../../src/transitions/update_sent_forms');
+const db = require('../../../src/db');
+const logger = require('../../../src/lib/logger');
+const transition = require('../../../src/transitions/update_sent_forms');
 
-describe('update sent by', () => {
+describe('update sent from', () => {
   beforeEach(() => {
     process.env.TEST_ENV = true;
   });
