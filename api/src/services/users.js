@@ -407,8 +407,13 @@ const deleteUser = id => {
   return Promise.all([ usersDbPromise, medicDbPromise ]);
 };
 
-const genPassword = (length = PASSWORD_MINIMUM_LENGTH) => {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+/**
+ * Generates a complex enough password with a given length
+ * @param {Number} length
+ * @returns {string} - the generated password
+ */
+const generatePassword = (length = PASSWORD_MINIMUM_LENGTH) => {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!$^()-=';
   let password;
   do {
     password = Array.from({ length }).map(() => _.sample(chars)).join('');
@@ -433,6 +438,13 @@ const validatePassword = (password) => {
   }
 };
 
+/**
+ * Given user data, validates whether the phone field is filled with a valid phone number.
+ * Throws an error if the phone number field is empty or value is not valid.
+ * If valid, normalizes the field value.
+ * @param {Object} data - the user data
+ * @param {String} data.phone - the phone number to validate
+ */
 const validateAndNormalizePhone = (data) => {
   const settings = config.get();
   if (!phoneNumber.validate(settings, data.phone)) {
@@ -508,7 +520,7 @@ const getHash = string => crypto.createHash('sha1').update(string, 'utf8').diges
  * @param {Object} user.token_login - token-login information
  * @param {Boolean} user.token_login.active - whether the token-login is active or not
  * @param {String} user.token_login.doc_id - the id of the current `token_login_sms`
- * @returns {Promise<void>|*}
+ * @returns {Promise}
  */
 const clearOldLoginSms = (user) => {
   if (!user.token_login || !user.token_login.active || !user.token_login.doc_id) {
@@ -606,7 +618,7 @@ const enableTokenLogin = (response) => {
       validateUserSettings(response['user-settings'].id),
     ])
     .then(([ user, userSettings ]) => {
-      const token = genPassword(50);
+      const token = generatePassword(50);
       const hash = getHash(user._id);
 
       return generateLoginSms(user, userSettings, token, hash, tokenLoginConfig)
@@ -705,7 +717,7 @@ module.exports = {
       if (phoneError) {
         return Promise.reject(phoneError);
       }
-      data.password = genPassword(20);
+      data.password = generatePassword(20);
     }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -775,7 +787,7 @@ module.exports = {
     }
 
     if (shouldEnableTokenLogin(data)) {
-      data.password = genPassword(20);
+      data.password = generatePassword(20);
     }
 
     if (data.password) {
@@ -912,8 +924,7 @@ module.exports = {
         user.token_login = Object.assign(user.token_login, updates);
         userSettings.token_login = Object.assign(userSettings.token_login, updates);
 
-        user.password = genPassword();
-        console.log('generated password', user.password);
+        user.password = generatePassword();
 
         return Promise
           .all([

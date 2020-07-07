@@ -190,8 +190,8 @@ const updateUserLanguageIfRequired = (user, current, selected) => {
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
-    res.status(401).json({ error: 'Not logged in' });
-    throw { code: 401 };
+    //res.status(401).json({ error:  });
+    throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
   return auth
@@ -216,14 +216,12 @@ const setCookies = (req, res, sessionRes) => {
           setLocaleCookie(res, selectedLocale);
           return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
         })
-        .then(() => {
-          return getRedirectUrl(userCtx, req.body.redirect);
-        });
+        .then(() => getRedirectUrl(userCtx, req.body.redirect));
     })
     .catch(err => {
       logger.error(`Error getting authCtx %o`, err);
-      res.status(401).json({ error: 'Error getting authCtx' });
-      throw { code: 401 };
+      //res.status(401).json({ error: 'Error getting authCtx' });
+      throw { status: 401, error: 'Error getting authCtx' };
     });
 };
 
@@ -261,6 +259,21 @@ const renderTokenLogin = (req, res, error) => {
     .then(body => res.send(body));
 };
 
+const createSessionRetry = (req, retry= 4) => {
+  return createSession(req).then(sessionRes => {
+    if (sessionRes.statusCode === 200) {
+      return sessionRes;
+    }
+
+    if (retry > 0) {
+
+      return createSessionRetry(req, retry - 1);
+    }
+
+    throw { status: 401, message: 'cannot log in' };
+  });
+};
+
 const tokenLogin = (req, res) => {
   if (!req.params || !req.params.token || !req.params.hash) {
     return renderTokenLogin(req, res,'tokeninvalid');
@@ -275,9 +288,10 @@ const tokenLogin = (req, res) => {
 
       return users.tokenLogin(userId).then(({ user, password }) => {
         req.body = { user, password };
-        req.redirect = true;
-        console.log(req.body);
-        return module.exports.post(req, res);
+
+        return createSessionRetry(req)
+          .then(sessionRes => setCookies(req, res, sessionRes))
+          .then(redirectUrl => res.redirect(302, redirectUrl));
       });
     })
     .catch(err => {
@@ -297,23 +311,16 @@ module.exports = {
     return createSession(req)
       .then(sessionRes => {
         if (sessionRes.statusCode !== 200) {
-          console.log('login failure');
           res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
           return;
         }
         return setCookies(req, res, sessionRes)
-          .then(redirectUrl => {
-            if (req.redirect) {
-              res.redirect(302, redirectUrl);
-              return;
-            }
-
-            res.status(302).send(redirectUrl);
-          })
+          .then(redirectUrl => res.status(302).send(redirectUrl))
           .catch(err => {
-            if (err.code !== 401) {
-              throw err;
+            if (err.status === 401) {
+              return res.status(err.status).json({ error: err.error });
             }
+            throw err;
           });
       })
       .catch(err => {

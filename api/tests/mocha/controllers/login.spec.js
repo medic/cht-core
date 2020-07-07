@@ -337,6 +337,71 @@ describe('login controller', () => {
         chai.expect(res.redirect.args[0]).to.deep.equal([302, '/']);
       });
     });
+
+    it('should retry logging in 5 times when login fails', () => {
+      sinon.stub(users, 'getUserByToken').resolves('userId');
+      sinon.stub(users, 'tokenLogin').resolves({ user: 'user_name', password: 'secret' });
+      sinon.stub(request, 'post')
+        .onCall(0).resolves({ statusCode: 401 })
+        .onCall(1).resolves({ statusCode: 401 })
+        .onCall(2).resolves({ statusCode: 401 })
+        .onCall(3).resolves({ statusCode: 401 })
+        .resolves({ statusCode: 200, headers: { 'set-cookie': [ 'AuthSession=cde;' ] } });
+
+      sinon.stub(res, 'redirect');
+      sinon.stub(res, 'cookie');
+      sinon.stub(auth, 'getUserSettings').resolves({ language: 'hi' });
+      const userCtx = { name: 'user_name', roles: [ 'roles' ] };
+      sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      req.params = { token: 'a', hash: 'b' };
+      return controller.token(req, res).then(() => {
+        chai.expect(users.getUserByToken.callCount).to.equal(1);
+        chai.expect(users.tokenLogin.callCount).to.equal(1);
+        chai.expect(users.tokenLogin.args[0]).to.deep.equal(['userId']);
+        chai.expect(request.post.callCount).to.equal(5);
+        chai.expect(res.cookie.callCount).to.equal(3);
+        chai.expect(res.cookie.args[0].slice(0, 2)).to.deep.equal(['AuthSession', 'cde']);
+        chai.expect(res.cookie.args[1].slice(0, 2)).to.deep.equal(['userCtx', JSON.stringify(userCtx) ]);
+        chai.expect(res.cookie.args[2].slice(0, 2)).to.deep.equal(['locale', 'hi']);
+        chai.expect(res.redirect.callCount).to.equal(1);
+        chai.expect(res.redirect.args[0]).to.deep.equal([302, '/']);
+      });
+    });
+
+    it('should abandon loggin in after retrying 5 times', () => {
+      sinon.stub(users, 'getUserByToken').resolves('userId');
+      sinon.stub(users, 'tokenLogin').resolves({ user: 'user_name', password: 'secret' });
+      sinon.stub(request, 'post').resolves({ statusCode: 401 });
+      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(db, 'get').resolves({
+        _id: 'branding',
+        resources: {
+          logo: 'xyz'
+        },
+        _attachments: {
+          xyz: {
+            content_type: 'zes',
+            data: 'xsd'
+          }
+        }
+      });
+      sinon.stub(res, 'send');
+      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'TOKEN PAGE GOES HERE. {{ translations }}');
+      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      req.params = { token: 'a', hash: 'b' };
+      return controller.token(req, res).then(() => {
+        chai.expect(db.get.callCount).to.equal(1);
+        chai.expect(res.send.callCount).to.equal(1);
+        chai.expect(res.send.args[0][0])
+          .to.equal('TOKEN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D');
+        chai.expect(fs.readFile.callCount).to.equal(1);
+        chai.expect(db.query.callCount).to.equal(1);
+        chai.expect(users.getUserByToken.callCount).to.equal(1);
+        chai.expect(users.tokenLogin.callCount).to.equal(1);
+        chai.expect(users.tokenLogin.args[0]).to.deep.equal(['userId']);
+        chai.expect(request.post.callCount).to.equal(5);
+      });
+    });
   });
 
   describe('post', () => {

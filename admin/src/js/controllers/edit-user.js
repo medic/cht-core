@@ -56,6 +56,10 @@ angular
       }
     };
 
+    const validTokenLoginSettings = settings => settings.token_login &&
+                                                settings.token_login.app_url &&
+                                                (settings.token_login.translation_key || settings.token_login.message);
+
     const determineEditUserModel = function() {
       // Edit a user that's not the current user.
       // $scope.model is the user object passed in by controller creating the Modal.
@@ -63,10 +67,7 @@ angular
       return Settings()
         .then(settings => {
           $scope.roles = settings.roles;
-          $scope.allowTokenLogin = settings.token_login &&
-                                   settings.token_login.translation_key &&
-                                   settings.token_login.app_url;
-
+          $scope.allowTokenLogin = validTokenLoginSettings(settings);
           if (!$scope.model) {
             return $q.resolve({});
           }
@@ -392,61 +393,64 @@ angular
                                      validatePasswordForEditUser() &&
                                      validateEmailAddress();
 
-      if (synchronousValidations) {
-        const asynchronousValidations = $q
-          .all([
-            validateContactIsInPlace(),
-            validateTokenLogin(),
-          ])
-          .then(responses => responses.every(response => response));
-        return asynchronousValidations
-          .then(valid => {
-            if (!valid) {
-              $scope.setError();
-              return;
-            }
-            return validateReplicationLimit()
-              .then(() => changedUpdates($scope.editUserModel))
-              .then(updates => {
-                if (!haveUpdates(updates)) {
-                  return;
-                }
-
-                if ($scope.editUserModel.id) {
-                  return UpdateUser($scope.editUserModel.username, updates);
-                }
-
-                return CreateUser(updates);
-              })
-              .then(() => {
-                $scope.setFinished();
-                // TODO: change this from a broadcast to a changes watcher
-                //       https://github.com/medic/medic/issues/4094
-                $rootScope.$broadcast(
-                  'UsersUpdated',
-                  $scope.editUserModel.id
-                );
-                $uibModalInstance.close();
-              })
-              .catch(err => {
-                if (err && err.data && err.data.error && err.data.error.translationKey) {
-                  $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
-                    $scope.setError(err, value);
-                  });
-                } else {
-                  $scope.setError(err, 'Error updating user');
-                }
-              });
-          })
-          .catch(err => {
-            if (err.key) {
-              $translate(err.key, err.params).then(value => $scope.setError(err, value, err.severity));
-            } else {
-              $scope.setError(err, 'Error validating user');
-            }
-          });
-      } else {
+      if (!synchronousValidations) {
         $scope.setError();
+        return;
       }
+
+      const asynchronousValidations = $q
+        .all([
+          validateContactIsInPlace(),
+          validateTokenLogin(),
+        ])
+        .then(responses => responses.every(response => response));
+
+      return asynchronousValidations
+        .then(valid => {
+          if (!valid) {
+            $scope.setError();
+            return;
+          }
+          return validateReplicationLimit()
+            .then(() => changedUpdates($scope.editUserModel))
+            .then(updates => {
+              if (!haveUpdates(updates)) {
+                return;
+              }
+
+              if ($scope.editUserModel.id) {
+                return UpdateUser($scope.editUserModel.username, updates);
+              }
+
+              return CreateUser(updates);
+            })
+            .then(() => {
+              $scope.setFinished();
+              // TODO: change this from a broadcast to a changes watcher
+              //       https://github.com/medic/medic/issues/4094
+              $rootScope.$broadcast(
+                'UsersUpdated',
+                $scope.editUserModel.id
+              );
+              $uibModalInstance.close();
+            })
+            .catch(err => {
+              if (err && err.data && err.data.error && err.data.error.translationKey) {
+                $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+                  $scope.setError(err, value);
+                });
+              } else {
+                $scope.setError(err, 'Error updating user');
+              }
+            });
+        })
+        .catch(err => {
+          if (err.key) {
+            $translate(err.key, err.params).then(value => $scope.setError(err, value, err.severity));
+          } else {
+            $scope.setError(err, 'Error validating user');
+          }
+        });
+
     };
   });
