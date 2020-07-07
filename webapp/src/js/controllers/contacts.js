@@ -299,6 +299,12 @@ const PAGE_SIZE = 50;
         };
         setActionBarData();
         return ctrl.search();
+      })
+      .catch(err => {
+        $log.error('Error initializing contacts controller', err);
+        ctrl.error = true;
+        ctrl.loading = false;
+        ctrl.appending = false;
       });
 
     this.getSetupPromiseForTesting = function(options) {
