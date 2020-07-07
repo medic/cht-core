@@ -39,7 +39,7 @@ const getDeprecatedTransitions = () => {
         name: transition.name,
         deprecated: transition.deprecated,
         deprecatedIn: transition.deprecatedIn,
-        deprecationMessage: transition.getDeprecationMessage()
+        deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
       };
     });
 };

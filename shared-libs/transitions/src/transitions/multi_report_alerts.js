@@ -363,25 +363,18 @@ const onMatch = change => {
 
 module.exports = {
   name: TRANSITION_NAME,
-  _lineage: lineage,
   asynchronousOnly: true,
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
   filter: (doc, info = {}) => {
-    const self = module.exports;
     return !!(
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
-      !transitionUtils.hasRun(info, self.name) &&
+      !transitionUtils.hasRun(info, TRANSITION_NAME) &&
       utils.isValidSubmission(doc)
     );
   },
   onMatch: onMatch,
   init: validateConfig,
-  _getCountedReportsAndPhones: getCountedReportsAndPhones
+  _getCountedReportsAndPhones: getCountedReportsAndPhones,
+  _lineage: lineage
 };

@@ -28,13 +28,6 @@ describe('registration', () => {
     done();
   });
 
-  it('should have properties defined and return deprecation message', () => {
-    transition.name.should.equal('registration');
-    transition.deprecated.should.equal(false);
-    transition.deprecatedIn.should.equal('');
-    transition.getDeprecationMessage().includes(transition.name).should.equal(true);
-  });
-
   describe('booleanExpressionFails', () => {
     beforeEach(() => {
       transition.booleanExpressionFails = transition.__get__('booleanExpressionFails');

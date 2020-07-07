@@ -1,14 +1,9 @@
 const transitionUtils = require('./utils');
 const db = require('../db');
+const NAME = 'update_sent_by';
 
 module.exports = {
-  name: 'update_sent_by',
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
+  name: NAME,
   filter: function(doc, info={}) {
     const self = module.exports;
     return Boolean(

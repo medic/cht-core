@@ -13,13 +13,6 @@ describe('generate_shortcode_on_contacts transition', () => {
   beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: types }));
   afterEach(() => sinon.restore());
 
-  it('should have properties defined and return deprecation message', () => {
-    assert.equal(transition.name, 'generate_shortcode_on_contacts');
-    assert.equal(transition.deprecated, false);
-    assert.equal(transition.deprecatedIn, '');
-    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
-  });
-
   it('adds patient_id to people', () => {
     sinon.stub(transitionUtils, 'getUniqueId').resolves('something');
     transition.onMatch({});

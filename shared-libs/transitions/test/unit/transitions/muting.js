@@ -22,13 +22,6 @@ describe('Muting transition', () => {
     sinon.stub(utils, 'getSubjectIds');
   });
 
-  it('should have properties defined and return deprecation message', () => {
-    chai.expect(transition.name).to.equal('muting');
-    chai.expect(transition.deprecated).to.equal(false);
-    chai.expect(transition.deprecatedIn).to.equal('');
-    chai.expect(transition.getDeprecationMessage().includes(transition.name)).to.equal(true);
-  });
-
   describe('init', () => {
     it('should throw an error when config is incorrect', () => {
       config.get.returns({});

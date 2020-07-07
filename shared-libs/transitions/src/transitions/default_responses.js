@@ -4,15 +4,10 @@ const config = require('../config');
 const logger = require('../lib/logger');
 const messages = require('../lib/messages');
 const transitionUtils = require('./utils');
+const NAME = 'default_responses';
 
 module.exports = {
-  name: 'default_responses',
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
+  name: NAME,
   filter: function(doc, info = {}) {
     const self = module.exports;
     return Boolean(
@@ -21,7 +16,7 @@ module.exports = {
         doc.type === 'data_record' &&
         !doc.kujua_message &&
         self._isReportedAfterStartDate(doc) &&
-        !transitionUtils.hasRun(info, self.name) &&
+        !transitionUtils.hasRun(info, NAME) &&
         !self._isMessageFromGateway(doc)
     );
   },
@@ -37,7 +32,7 @@ module.exports = {
   },
   _isReportedAfterStartDate: function(doc) {
     const self = module.exports;
-    const config = self._getConfig(self.name);
+    const config = self._getConfig(NAME);
     let start_date;
 
     function isEmpty() {

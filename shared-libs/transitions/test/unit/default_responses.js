@@ -11,13 +11,6 @@ describe('default responses', () => {
     sinon.stub(transition, '_isReportedAfterStartDate').returns(true);
   });
 
-  it('should have properties defined and return deprecation message', () => {
-    assert.equal(transition.name, 'default_responses');
-    assert.equal(transition.deprecated, false);
-    assert.equal(transition.deprecatedIn, '');
-    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
-  });
-
   it('when document type is unknown do not pass filter', () => {
     assert.equal(transition.filter({}), false);
   });

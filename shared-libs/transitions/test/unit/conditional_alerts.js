@@ -7,13 +7,6 @@ const transition = require('../../src/transitions/conditional_alerts');
 describe('conditional alerts', () => {
   afterEach(() => sinon.restore());
 
-  it('should have properties defined and return deprecation message', () => {
-    assert.equal(transition.name, 'conditional_alerts');
-    assert.equal(transition.deprecated, false);
-    assert.equal(transition.deprecatedIn, '');
-    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
-  });
-
   it('when document type is unknown do not pass filter', () => {
     assert.equal(transition.filter({}), false);
   });

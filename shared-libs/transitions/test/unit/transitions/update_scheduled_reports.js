@@ -16,13 +16,6 @@ describe('update_scheduled_reports', () => {
   });
   afterEach(() => sinon.restore());
 
-  it('should have properties defined and return deprecation message', () => {
-    assert.equal(transition.name, 'update_scheduled_reports');
-    assert.equal(transition.deprecated, false);
-    assert.equal(transition.deprecatedIn, '');
-    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
-  });
-
   describe('filter', () => {
     it('fails when scheduled form not present', () => {
       assert.equal(transition.filter({ patient_id: 'x' }), false);

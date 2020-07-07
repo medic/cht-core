@@ -11,7 +11,7 @@ const config = require('../config');
 const db = require('../db');
 const logger = require('../lib/logger');
 const outbound = require('@medic/outbound')(logger);
-
+const NAME = 'mark_for_outbound';
 const CONFIGURED_PUSHES = 'outbound';
 
 const relevantTo = (doc, infodoc) => {
@@ -80,13 +80,7 @@ const markForOutbound = (change) => {
 };
 
 module.exports = {
-  name: 'mark_for_outbound',
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
+  name: NAME,
   filter: change => Object.keys(config.get(CONFIGURED_PUSHES) || {}).length > 0, // eslint-disable-line no-unused-vars
   onMatch: change => Promise.resolve().then(() => markForOutbound(change))
 };

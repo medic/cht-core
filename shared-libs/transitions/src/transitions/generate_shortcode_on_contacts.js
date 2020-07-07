@@ -1,16 +1,11 @@
 const config = require('../config');
 const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
+const NAME = 'generate_shortcode_on_contacts';
 
 module.exports = {
-  name: 'generate_shortcode_on_contacts',
+  name: NAME,
   asynchronousOnly: true,
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
   filter: doc => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (!contactType) {

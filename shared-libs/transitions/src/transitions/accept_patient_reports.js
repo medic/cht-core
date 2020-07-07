@@ -8,6 +8,7 @@ const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const date = require('../date');
 const db = require('../db');
+const NAME = 'accept_patient_reports';
 
 const _hasConfig = doc => {
   return Boolean(getConfig(doc.form));
@@ -253,21 +254,14 @@ const handleReport = (doc, config, callback) => {
 };
 
 module.exports = {
-  name: 'accept_patient_reports',
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
+  name: NAME,
   filter: function(doc, info = {}) {
-    const self = module.exports;
     return Boolean(
       doc &&
       doc.type === 'data_record' &&
       doc.form &&
       doc.reported_date &&
-      !transitionUtils.hasRun(info, self.name) &&
+      !transitionUtils.hasRun(info, NAME) &&
       _hasConfig(doc) &&
       utils.isValidSubmission(doc) // requires either an xform, a public sms form or a known submitter
     );

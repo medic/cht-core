@@ -11,13 +11,6 @@ describe('death_reporting', () => {
     done();
   });
 
-  it('should have properties defined and return deprecation message', () => {
-    transition.name.should.equal('death_reporting');
-    transition.deprecated.should.equal(false);
-    transition.deprecatedIn.should.equal('');
-    transition.getDeprecationMessage().includes(transition.name).should.equal(true);
-  });
-
   describe('onMatch', () => {
     it('marks a patient deceased with uuid', () => {
       const patientId = 'some-uuid';

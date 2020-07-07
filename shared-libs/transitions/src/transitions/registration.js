@@ -14,6 +14,7 @@ const date = require('../date');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
 
+const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
 const PARENT_FIELD_NOT_PROVIDED = 'parent_field_not_provided';
 const PARENT_INVALID = 'parent_invalid';
@@ -547,9 +548,7 @@ const addPlace = (options) => {
 };
 
 module.exports = {
-  name: 'registration',
-  deprecated: false,
-  deprecatedIn: '',
+  name: NAME,
   init: () => {
     const registrations = getConfig();
     registrations.forEach(registration => {
@@ -632,16 +631,12 @@ module.exports = {
       }
     });
   },
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
   filter: (doc, info = {}) => {
     const self = module.exports;
     return Boolean(
       doc.type === 'data_record' &&
       getRegistrationConfig(getConfig(), doc.form) &&
-      !transitionUtils.hasRun(info, self.name) &&
+      !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc) // requires either an xform, a known submitter or public form for SMS
     );
   },

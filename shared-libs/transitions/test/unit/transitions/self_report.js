@@ -19,13 +19,6 @@ describe('self_report transition', () => {
     sinon.restore();
   });
 
-  it('should have properties defined and return deprecation message', () => {
-    chai.expect(transition.name).to.equal('self_report');
-    chai.expect(transition.deprecated).to.equal(false);
-    chai.expect(transition.deprecatedIn).to.equal('');
-    chai.expect(transition.getDeprecationMessage().includes(transition.name)).to.equal(true);
-  });
-
   describe('filter', () => {
     it('should not crash when no doc, no info and generally bad input', () => {
       chai.expect(transition.filter()).to.equal(false);

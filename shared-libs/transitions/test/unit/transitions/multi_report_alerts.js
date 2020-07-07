@@ -49,13 +49,6 @@ describe('multi report alerts', () => {
     { _id: 'docC', form: 'A' }
   ];
 
-  it('should have properties defined and return deprecation message', () => {
-    assert.equal(transition.name, 'multi_report_alerts');
-    assert.equal(transition.deprecated, false);
-    assert.equal(transition.deprecatedIn, '');
-    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
-  });
-
   it('filter validation', () => {
     sinon.stub(utils, 'isValidSubmission').returns(false);
 

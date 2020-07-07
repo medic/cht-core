@@ -4,6 +4,7 @@ const messages = require('../lib/messages');
 const utils = require('../lib/utils');
 const async = require('async');
 const transitionUtils = require('./utils');
+const NAME = 'conditional_alerts';
 
 const runCondition = (condition, context) => {
   try {
@@ -42,23 +43,16 @@ const evaluateCondition = (doc, alert) => {
 };
 
 module.exports = {
-  name: 'conditional_alerts',
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
+  name: NAME,
   _getConfig: function() {
     return Object.assign({}, config.get('alerts'));
   },
   filter: function(doc, info={}) {
-    const self = module.exports;
     return Boolean(
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
-      !transitionUtils.hasRun(info, self.name) &&
+      !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc)
     );
   },

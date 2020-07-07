@@ -60,8 +60,7 @@ const isRelevantContact = (doc, infoDoc = {}) =>
 module.exports = {
   name: TRANSITION_NAME,
   asynchronousOnly: true,
-  deprecated: false,
-  deprecatedIn: '',
+
   init: () => {
     const forms = getConfig()[MUTE_PROPERTY];
     if (!forms || !_.isArray(forms) || !forms.length) {
@@ -69,11 +68,6 @@ module.exports = {
         `Configuration error. Config must define have a '${CONFIG_NAME}.${MUTE_PROPERTY}' array defined.`
       );
     }
-  },
-
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
   },
 
   filter: (doc, info = {}) => isRelevantReport(doc, info) || isRelevantContact(doc, info),

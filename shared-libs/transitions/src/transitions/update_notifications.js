@@ -43,7 +43,7 @@ module.exports = {
     const self = module.exports;
     const deprecatedExtraInfo = 'Please use "muting" transition instead.';
 
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}. ${deprecatedExtraInfo}`;
+    return transitionUtils.getDeprecationMessage(self.name, self.deprecatedIn, deprecatedExtraInfo);
   },
   _addErr: function(event_type, config, doc) {
     const locale = utils.getLocale(doc);

@@ -28,7 +28,7 @@ module.exports = {
     const deprecatedExtraInfo = 'It will be removed in next major version. '
     + 'Consider updating your configuration to disable it.';
 
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}. ${deprecatedExtraInfo}`;
+    return transitionUtils.getDeprecationMessage(self.name, self.deprecatedIn, deprecatedExtraInfo);
   },
   filter: function(doc, info = {}) {
     const self = module.exports;

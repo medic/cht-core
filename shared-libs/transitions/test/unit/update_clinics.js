@@ -15,13 +15,6 @@ describe('update clinic', () => {
 
   afterEach(() => sinon.restore());
 
-  it('should have properties defined and return deprecation message', () => {
-    assert.equal(transition.name, 'update_clinics');
-    assert.equal(transition.deprecated, false);
-    assert.equal(transition.deprecatedIn, '');
-    assert.equal(transition.getDeprecationMessage().includes(transition.name), true);
-  });
-
   it('filter includes docs with no clinic', () => {
     const doc = {
       type: 'data_record',

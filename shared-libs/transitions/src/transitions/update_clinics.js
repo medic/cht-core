@@ -2,6 +2,7 @@ const transitionUtils = require('./utils');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const utils = require('../lib/utils');
+const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
 const config = require('../config');
@@ -82,20 +83,13 @@ const getContact = doc => {
  * phone number.
  */
 module.exports = {
-  name: 'update_clinics',
-  deprecated: false,
-  deprecatedIn: '',
-  getDeprecationMessage: () => {
-    const self = module.exports;
-    return `"${self.name}" transition is deprecated in ${self.deprecatedIn}.`;
-  },
+  name: NAME,
   filter: (doc, info = {}) => {
-    const self = module.exports;
     return Boolean(
       doc &&
       doc.type === 'data_record' &&
       !doc.contact &&
-      !transitionUtils.hasRun(info, self.name)
+      !transitionUtils.hasRun(info, NAME)
     );
   },
   onMatch: change => {
