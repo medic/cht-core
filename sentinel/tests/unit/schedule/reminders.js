@@ -400,7 +400,7 @@ describe('reminders', () => {
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
-          .__get__('getValidPlacesBatch')({ form: 'frm' }, moment(5000), ['clinic'])
+          .__get__('getValidPlacesBatch')({ form: 'frm' }, moment(5000), JSON.stringify([['clinic']]))
           .then(({places, nextDocId}) => {
             assert(Array.isArray(places));
             assert.equal(nextDocId, 'xxx');
@@ -409,7 +409,7 @@ describe('reminders', () => {
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [
               'someURL/_design/medic-client/_view/contacts_by_type',
-              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]) }, json: true },
+              { qs: { limit: 1000, keys: '[["clinic"]]' }, json: true },
             ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(
@@ -449,7 +449,7 @@ describe('reminders', () => {
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().callsFake(d => d) });
 
         return reminders
-          .__get__('getValidPlacesBatch')({ form: 'frm' }, now, ['clinic'])
+          .__get__('getValidPlacesBatch')({ form: 'frm' }, now, JSON.stringify([['clinic']]))
           .then(({places, nextDocId}) => {
             assert.deepEqual(places.map(place => place._id), ['xxx', 'yyy', 'yyz']);
             assert.equal(nextDocId, 'yyz');
@@ -467,7 +467,7 @@ describe('reminders', () => {
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
-          .__get__('getValidPlacesBatch')({ form: 'frm' }, moment(5000), ['clinic'], 'somedocid')
+          .__get__('getValidPlacesBatch')({ form: 'frm' }, moment(5000), JSON.stringify([['clinic']]), 'somedocid')
           .then(({places, nextDocId}) => {
             assert(Array.isArray(places));
             assert.equal(nextDocId, 'xxx');
@@ -476,7 +476,7 @@ describe('reminders', () => {
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [
               'someURL/_design/medic-client/_view/contacts_by_type',
-              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]), start_key_doc_id: 'somedocid' }, json: true },
+              { qs: { limit: 1000, keys: '[["clinic"]]', start_key_doc_id: 'somedocid' }, json: true },
             ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(
