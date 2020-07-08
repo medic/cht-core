@@ -54,7 +54,7 @@ const registerFeed = seq => {
     .on('error', err => {
       logger.error('transitions: error from changes feed: %o', err);
       request = null;
-      setTimeout(() => listen(), RETRY_TIMEOUT);
+      setTimeout(() => resumeProcessing(), RETRY_TIMEOUT);
     });
   return request;
 };
@@ -136,15 +136,20 @@ const changeQueue = async.queue((change, callback) => {
 
 changeQueue.drain(() => {
   logger.debug(`transitions: queue drained`);
-  listen();
+  resumeProcessing();
 });
+
+const resumeProcessing = () => {
+  if (request || changeQueue.paused) {
+    return;
+  }
+  logger.info('transitions: processing enabled');
+  return getProcessedSeq().then(seq => registerFeed(seq));
+};
 
 const listen = () => {
   changeQueue.resume();
-  if (!request) {
-    logger.info('transitions: processing enabled');
-    return getProcessedSeq().then(seq => registerFeed(seq));
-  }
+  return resumeProcessing();
 };
 
 module.exports = {
