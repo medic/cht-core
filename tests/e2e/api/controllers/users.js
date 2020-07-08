@@ -352,7 +352,7 @@ describe('Users API', () => {
 
     afterAll(done =>
       utils
-        .revertDb()
+        .revertDb([], false)
         .then(() => utils.deleteUsers(users))
         .then(done)
     );
@@ -469,7 +469,7 @@ describe('Users API', () => {
     };
 
     beforeAll(() => utils.saveDoc(parentPlace));
-    afterAll(() => utils.revertDb());
+    afterAll(() => utils.revertDb([], false));
 
     beforeEach(() => {
       user = {

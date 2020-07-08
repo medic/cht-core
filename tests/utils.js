@@ -201,8 +201,7 @@ const deleteAll = (except = []) => {
     });
 };
 
-const refreshToGetNewSettings = () => {
-  // wait for the updates to replicate
+const waitForNewSettingsAndRefresh = () => {
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
     .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
@@ -252,9 +251,13 @@ const setUserContactDoc = () => {
 const revertDb = (except, ignoreRefresh) => {
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
-      // only need to refresh if the settings were changed
-      if (!ignoreRefresh && needsRefresh && needsRefresh.updated) {
-        return refreshToGetNewSettings();
+      // only need to refresh if the settings were changed or if we're forcing the refresh
+      if (!ignoreRefresh && ((needsRefresh && needsRefresh.updated) || ignoreRefresh === false)) {
+        return waitForNewSettingsAndRefresh();
+      }
+
+      if (element(by.css('#update-available')).isPresent()) {
+        $('body').sendKeys(protractor.Key.ENTER);
       }
     }).then(setUserContactDoc);
   });
@@ -499,7 +502,7 @@ module.exports = {
       .then(result => waitForServicesToUpdateSettings(result, serviceLogTails))
       .then(() => {
         if (!ignoreRefresh) {
-          return refreshToGetNewSettings();
+          return waitForNewSettingsAndRefresh();
         }
       });
   },
@@ -516,7 +519,7 @@ module.exports = {
       .then(result => waitForServicesToUpdateSettings(result, serviceLogTails))
       .then(() => {
         if (!ignoreRefresh) {
-          return refreshToGetNewSettings();
+          return waitForNewSettingsAndRefresh();
         }
       });
   },
@@ -715,7 +718,7 @@ module.exports = {
       return sentinel.put(sentinelMetadata);
     });
   },
-  refreshToGetNewSettings: refreshToGetNewSettings,
+  refreshToGetNewSettings: waitForNewSettingsAndRefresh,
 
   waitForDocRev: waitForDocRev,
 

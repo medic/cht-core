@@ -259,7 +259,7 @@ describe('changes handler', () => {
       .then(done));
 
   beforeEach(done => getCurrentSeq().then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
+  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
 
   describe('requests', () => {
     it('should allow DB admins to POST to _changes', () => {

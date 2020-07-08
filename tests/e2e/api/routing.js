@@ -731,10 +731,7 @@ describe('routing', () => {
           expect(settings.settings.medic_api_v0).toEqual('my value 1');
           expect(settings.settings.test_api_v0_offline).not.toBeDefined();
           expect(settings.settings.medic_api_v0_offline).not.toBeDefined();
-        })
-        .catch(err => {
-          console.log(err);
-        })
+        });
     });
   });
 });
