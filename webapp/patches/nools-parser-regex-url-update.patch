@@ -1,5 +1,5 @@
-*** nool.parser.js	Mon Jul  6 12:01:37 2020
---- nool.parser-copy.js	Mon Jul  6 11:52:27 2020
+*** nool.parser.js	Wed Jul  8 13:05:00 2020
+--- nool.parser-copy.js	Wed Jul  8 13:06:01 2020
 ***************
 *** 7,13 ****
   
@@ -9,13 +9,11 @@
   
       var blockTypes = new RegExp("^(" + keys(keywords).join("|") + ")"), index;
       while (src && (index = utils.findNextTokenIndex(src)) !== -1) {
---- 7,15 ----
+--- 7,13 ----
   
   var parse = function (src, keywords, context) {
       var orig = src;
-!     src = src.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, " "+/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm)
-!     .replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, " ")
-!     .replace(/\r\n|\r|\n/g, " ");
+!     src = src.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, " ").replace(/\r\n|\r|\n/g, " ");
   
       var blockTypes = new RegExp("^(" + keys(keywords).join("|") + ")"), index;
       while (src && (index = utils.findNextTokenIndex(src)) !== -1) {
