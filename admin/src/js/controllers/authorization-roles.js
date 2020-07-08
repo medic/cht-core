@@ -87,7 +87,6 @@ angular.module('controllers').controller('AuthorizationRolesCtrl',
       };
       save(changes).then(function() {
         $scope.submitting = false;
-        $translate.refresh();
       });
     };
 
