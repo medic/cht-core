@@ -18,6 +18,6 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2a
+          aws-region: eu-west-2
       - name: Start E2 and Medic
         run: cd tests/scalability && aws ec2 request-spot-instances --spot-price "0.222" --instance-count 1 --type "one-time" --launch-specification file://launch-specification.json --block-duration-minutes 60
