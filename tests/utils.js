@@ -202,6 +202,7 @@ const deleteAll = (except = []) => {
 };
 
 const waitForNewSettingsAndRefresh = () => {
+  // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
     .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
@@ -251,11 +252,12 @@ const setUserContactDoc = () => {
 const revertDb = (except, ignoreRefresh) => {
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
-      // only need to refresh if the settings were changed or if we're forcing the refresh
-      if (!ignoreRefresh && ((needsRefresh && needsRefresh.updated) || ignoreRefresh === false)) {
+      if (!ignoreRefresh && (needsRefresh && needsRefresh.updated)) {
+        // only need to refresh if the settings were changed
         return waitForNewSettingsAndRefresh();
       }
 
+      // if the popup already exists, click!
       if (element(by.css('#update-available')).isPresent()) {
         $('body').sendKeys(protractor.Key.ENTER);
       }
