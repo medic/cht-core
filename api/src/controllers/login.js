@@ -87,6 +87,7 @@ const getTranslationsString = page => {
     tokenLogin: [
       'login.token.missing.expired.invalid',
       'login.token.general.error',
+      'login.token.loading',
       'login.token.redirect.login.info',
       'login.token.redirect.login',
     ],
@@ -111,7 +112,6 @@ const render = (page, req, branding, extras = {}) => {
       const options = Object.assign(
         {
           branding: branding,
-          defaultLocale: config.get('locale'),
           locales: locales,
           defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
           translations: getTranslationsString(page)
@@ -190,7 +190,6 @@ const updateUserLanguageIfRequired = (user, current, selected) => {
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
-    //res.status(401).json({ error:  });
     throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
@@ -220,7 +219,6 @@ const setCookies = (req, res, sessionRes) => {
     })
     .catch(err => {
       logger.error(`Error getting authCtx %o`, err);
-      //res.status(401).json({ error: 'Error getting authCtx' });
       throw { status: 401, error: 'Error getting authCtx' };
     });
 };
@@ -253,50 +251,57 @@ const getBranding = () => {
     });
 };
 
-const renderTokenLogin = (req, res, error) => {
+const renderTokenLogin = (req, res) => {
   return getBranding()
-    .then(branding => render('tokenLogin', req, branding, { errorClass: error }))
+    .then(branding => render('tokenLogin', req, branding, { tokenUrl: req.url }))
     .then(body => res.send(body));
 };
 
-const createSessionRetry = (req, retry= 4) => {
+const createSessionRetry = (req, retry= 10) => {
   return createSession(req).then(sessionRes => {
     if (sessionRes.statusCode === 200) {
       return sessionRes;
     }
 
-    if (retry > 0) {
-
+    if (retry) {
       return createSessionRetry(req, retry - 1);
     }
 
-    throw { status: 401, message: 'cannot log in' };
+    throw { status: 449, message: 'Login failed after 10 retries' };
   });
 };
 
+/**
+ * Generates a session cookie for a user identified by supplied token and hash request params.
+ * The user's password is reset in the process.
+ */
 const tokenLogin = (req, res) => {
   if (!req.params || !req.params.token || !req.params.hash) {
-    return renderTokenLogin(req, res,'tokeninvalid');
+    return res.status(400).json({ error: 'Missing required params' });
   }
 
   return users
     .getUserByToken(req.params.token, req.params.hash)
     .then(userId => {
       if (!userId) {
-        return renderTokenLogin(req, res,'tokeninvalid');
+        return res.status(401).json({ error: 'Token invalid / expired' });
       }
 
-      return users.tokenLogin(userId).then(({ user, password }) => {
+      return users.resetPassword(userId).then(({ user, password }) => {
         req.body = { user, password };
 
         return createSessionRetry(req)
           .then(sessionRes => setCookies(req, res, sessionRes))
-          .then(redirectUrl => res.redirect(302, redirectUrl));
+          .then(redirectUrl => {
+            return users.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
+          });
       });
     })
-    .catch(err => {
+    .catch((err = {}) => {
       logger.error('Error while logging in with token', err);
-      return renderTokenLogin(req, res,'tokenerror');
+      const status = err.status || err.code || 400;
+      const message = err.message || 'Unexpected error logging in';
+      res.status(status).json({ error: message });
     });
 };
 
@@ -342,7 +347,8 @@ module.exports = {
       });
   },
 
-  token: (req, res, next) => tokenLogin(req, res).catch(next),
+  tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
+  tokenPost: (req, res, next) => tokenLogin(req, res).catch(next),
 
   // exposed for testing
   _safePath: getRedirectUrl,

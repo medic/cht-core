@@ -552,35 +552,35 @@ describe('Users API', () => {
     const expectTokenLoginToSucceed = (url) => {
       const opts = {
         uri: url,
+        method: 'POST',
         simple: false,
         resolveWithFullResponse: true,
         noAuth: true,
         followRedirect: false,
+        body: {},
       };
       return utils.request(opts).then(response => {
-        chai.expect(response).to.include({ statusCode: 302 });
+        chai.expect(response).to.include({ statusCode: 302, body: '/' });
         chai.expect(response.headers['set-cookie']).to.be.an('array');
         chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
         chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
-        chai.expect(response.headers['location']).to.equal('/');
       });
     };
 
     const expectTokenLoginToFail = (url) => {
       const opts = {
         uri: url,
+        method: 'POST',
         simple: false,
         noAuth: true,
         followRedirect: false,
         resolveWithFullResponse: true,
+        body: {},
       };
       return utils.request(opts).then(response => {
         chai.expect(response.headers['set-cookie']).to.be.undefined;
-        chai.expect(response.headers['content-type']).to.match(/^text\/html/);
-      })
-        .catch(err => {
-          console.log(err.message);
-        });
+        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Token invalid / expired' } });
+      });
     };
 
     const expectSendableSms = (doc) => {

@@ -7,19 +7,29 @@
   <link rel="shortcut icon" href="/favicon.ico">
 </head>
 <body data-default-locale="{{ defaultLocale }}" data-translations="{{ translations }}">
-<div class="center {{ errorClass }}">
-  <div class="locale-wrapper">
-    <p class="error missing-invalid-expired" translate="login.token.missing.expired.invalid"></p>
-    <p class="error unknown" translate="login.token.general.error"></p>
-    <p translate="login.token.redirect.login.info"></p>
-    <a href="/medic/login" class="btn"><span translate="login.token.redirect.login"></span></a>
-  </div>
-  <div id="locale" class="locale-wrapper">
-    <% locales.forEach(function(locale) { %>
-    <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
-    <% }); %>
+<div class="center">
+  <div id="wrapper">
+    <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
+    <div class="locale-wrapper">
+      <div class="loading">
+        <p translate="login.token.loading"></p>
+        <div class="loader"></div>
+      </div>
+      <div class="errors">
+        <p class="error invalid" translate="login.token.missing.expired.invalid"></p>
+        <p class="error unknown" translate="login.token.general.error"></p>
+        <p translate="login.token.redirect.login.info"></p>
+        <a href="/medic/login" class="btn"><span translate="login.token.redirect.login"></span></a>
+      </div>
+    </div>
+    <div id="locale" class="locale-wrapper">
+      <% locales.forEach(function(locale) { %>
+      <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
+      <% }); %>
+    </div>
   </div>
 </div>
+<form id="tokenLogin" action="{{tokenUrl}}"></form>
 <script src="/login/script.js"></script>
 </body>
 </html>

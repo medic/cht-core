@@ -1467,13 +1467,90 @@ describe('Users service', () => {
     });
   });
 
-  describe('tokenLogin', () => {
+  describe('resetPassword', () => {
     it('should throw an error when user not found', () => {
       sinon.stub(db.users, 'get').rejects({ status: 404 });
-      sinon.stub(db.medic, 'get').resolves({});
 
       return service
-        .tokenLogin('userId')
+        .resetPassword('userId')
+        .then(() => chai.assert.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.include({ status: 404 });
+        });
+    });
+
+    it('should throw an error when user is invalid', () => {
+      sinon.stub(db.users, 'get').resolves({ name: 'user' });
+      return service
+        .resetPassword('userId')
+        .then(() => chai.assert.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ code: 400, message: 'invalid user' });
+        });
+    });
+
+    it('should throw an error when user token not active', () => {
+      sinon.stub(db.users, 'get').resolves({ name: 'user', token_login: { active: false } });
+      return service
+        .resetPassword('userId')
+        .then(() => chai.assert.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ code: 400, message: 'invalid user' });
+        });
+    });
+
+    it('should update the users password', () => {
+      const user = {
+        name: 'sally',
+        roles: ['a', 'b'],
+        facilty_id: 'c',
+        type: 'user',
+        token_login: {
+          active: true,
+          token: 'aaaa',
+          hash: 'bbb',
+          expiration_date: 0,
+        },
+      };
+
+      sinon.stub(db.users, 'get').resolves(user);
+      sinon.stub(db.users, 'put').resolves();
+
+      return service.resetPassword('userID').then(response => {
+        chai.expect(response).to.deep.equal({
+          password: user.password,
+          user: 'sally'
+        });
+        chai.expect(user.password.length).to.equal(8);
+
+        chai.expect(db.users.get.callCount).to.equal(1);
+        chai.expect(db.users.get.args[0]).to.deep.equal(['userID']);
+
+        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(db.users.put.args[0]).to.deep.equal([{
+          name: 'sally',
+          roles: ['a', 'b'],
+          facilty_id: 'c',
+          type: 'user',
+          token_login: {
+            active: true,
+            token: 'aaaa',
+            hash: 'bbb',
+            expiration_date: 0,
+          },
+          password: user.password,
+        }]);
+      });
+    });
+  });
+
+  describe('deactivate token login', () => {
+    it('should throw an error when user not found', () => {
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+
+      return service
+        .deactivateTokenLogin('userId')
         .then(() => chai.assert.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.include({ status: 404 });
@@ -1484,7 +1561,7 @@ describe('Users service', () => {
       sinon.stub(db.users, 'get').resolves({ name: 'user' });
       sinon.stub(db.medic, 'get').resolves({ name: 'user' });
       return service
-        .tokenLogin('userId')
+        .deactivateTokenLogin('userId')
         .then(() => chai.assert.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ code: 400, message: 'invalid user' });
@@ -1493,16 +1570,16 @@ describe('Users service', () => {
 
     it('should throw an error when user token not active', () => {
       sinon.stub(db.users, 'get').resolves({ name: 'user', token_login: { active: false } });
-      sinon.stub(db.medic, 'get').resolves({ name: 'user' });
+      sinon.stub(db.medic, 'get').resolves({ name: 'user', token_login: { active: false } });
       return service
-        .tokenLogin('userId')
+        .deactivateTokenLogin('userId')
         .then(() => chai.assert.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ code: 400, message: 'invalid user' });
         });
     });
 
-    it('should update the users password and de-activate token login', () => {
+    it('should de-activate token login', () => {
       const user = {
         name: 'sally',
         roles: ['a', 'b'],
@@ -1529,13 +1606,7 @@ describe('Users service', () => {
       sinon.stub(db.medic, 'put').resolves();
       clock.tick(123);
 
-      return service.tokenLogin('userID').then(response => {
-        chai.expect(response).to.deep.equal({
-          password: user.password,
-          user: 'sally'
-        });
-        chai.expect(user.password.length).to.equal(8);
-
+      return service.deactivateTokenLogin('userID').then(() => {
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.args[0]).to.deep.equal(['userID']);
         chai.expect(db.medic.get.callCount).to.equal(1);
@@ -1554,7 +1625,6 @@ describe('Users service', () => {
             hash: 'bbb',
             expiration_date: 0,
           },
-          password: user.password,
         }]);
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0]).to.deep.equal([{

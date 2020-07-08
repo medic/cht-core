@@ -569,7 +569,7 @@ const generateLoginSms = (user, userSettings, token, userHash, tokenLoginConfig)
       tasks: [],
     };
     const userHash = getHash(user._id);
-    const url = `${tokenLoginConfig.app_url}/medic/login/token/${token}/${userHash}`;
+    const url = `${tokenLoginConfig.app_url.replace(/\/+$/, '')}/medic/login/token/${token}/${userHash}`;
 
     const messagesLib = config.getTransitionsLib().messages;
 
@@ -901,12 +901,27 @@ module.exports = {
   },
 
   /**
-   * Updates the user and userSettings docs when the token login link is accessed
-   * Generates a new random password for the user.
-   * @param {String} userId - the user's id to login via token link
-   * @returns {*}
+   * Generates a new random password for the user. Returns this password to be used to generate a session for this user.
+   * @param userId
+   * @returns {Promise<Object>} - object containing the user's name and the new password
    */
-  tokenLogin: userId => {
+  resetPassword: userId => {
+    return validateUser(userId).then(user => {
+      if (!user.token_login || !user.token_login.active) {
+        return Promise.reject({ code: 400, message: 'invalid user' });
+      }
+
+      user.password = generatePassword();
+      return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
+    });
+  },
+
+  /**
+   * Updates the user and userSettings docs when the token login link is accessed successfully.
+   * @param {String} userId - the user's id to login via token link
+   * @returns {Promise}
+   */
+  deactivateTokenLogin: userId => {
     return Promise
       .all([
         validateUser(userId),
@@ -924,14 +939,10 @@ module.exports = {
         user.token_login = Object.assign(user.token_login, updates);
         userSettings.token_login = Object.assign(userSettings.token_login, updates);
 
-        user.password = generatePassword();
-
-        return Promise
-          .all([
-            db.medic.put(userSettings),
-            db.users.put(user),
-          ])
-          .then(() => ({ user: user.name, password: user.password }));
+        return Promise.all([
+          db.medic.put(userSettings),
+          db.users.put(user),
+        ]);
       });
   },
 };

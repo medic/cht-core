@@ -80,14 +80,24 @@ form {
   color: #DA4548;
   display: none;
 }
+.errors {
+  display: none;
+}
 .loading .loader,
 .loginoffline .error.offline,
 .loginincorrect .error.incorrect,
 .loginerror .error.unknown,
-.tokeninvalid .missing-invalid-expired,
-.tokenerror .error.unknown
+.tokeninvalid .errors,
+.tokenerror .errors,
+.tokeninvalid .errors .error.invalid,
+.tokenerror .errors .error.unknown
 {
   display: block;
+}
+.tokeninvalid .loading,
+.tokenerror .loading
+{
+  display: none;
 }
 .loader {
   display: none;

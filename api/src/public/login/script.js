@@ -5,6 +5,10 @@ const setState = function(className) {
   document.getElementById('form').className = className;
 };
 
+const setTokenState = className => {
+  document.getElementById('wrapper').className = className;
+};
+
 const request = function(method, url, payload, callback) {
   const xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
@@ -42,6 +46,28 @@ const submit = function(e) {
       // unknown error
       setState('loginerror');
       console.error('Error logging in', xmlhttp.response);
+    }
+  });
+};
+
+const requestTokenLogin = (retry = 20) => {
+  const url = document.getElementById('tokenLogin').action;
+  request('POST', url, '', xmlhttp => {
+    switch (xmlhttp.status) {
+    case 302:
+      window.location = xmlhttp.response;
+      break;
+    case 401:
+      setTokenState('tokeninvalid');
+      break;
+    case 449:
+      if (!retry) {
+        return setTokenState('tokenerror');
+      }
+      requestTokenLogin(retry - 1);
+      break;
+    default:
+      setTokenState('tokenerror');
     }
   });
 };
@@ -153,15 +179,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   translate();
 
-  document.getElementById('login').addEventListener('click', submit, false);
-
-  const user = document.getElementById('user');
-  user.addEventListener('keydown', focusOnPassword, false);
-  user.focus();
-
-  document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
-  
   document.getElementById('locale').addEventListener('click', handleLocaleSelection, false);
+
+  if (document.getElementById('tokenLogin')) {
+    requestTokenLogin();
+  } else {
+    document.getElementById('login').addEventListener('click', submit, false);
+
+    const user = document.getElementById('user');
+    user.addEventListener('keydown', focusOnPassword, false);
+    user.focus();
+
+    document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
+  }
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js');

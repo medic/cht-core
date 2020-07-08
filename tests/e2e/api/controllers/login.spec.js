@@ -25,33 +25,27 @@ const loginWithData = data => {
 const loginWithTokenLink = (token = '', hash = '') => {
   const opts = {
     path: `/medic/login/token/${token}/${hash}`,
+    method: 'POST',
     simple: false,
     resolveWithFullResponse: true,
     noAuth: true,
     followRedirect: false,
+    body: {},
   };
   return utils.request(opts);
 };
 
-const expectLoginToWork = (response, token = false) => {
+const expectLoginToWork = (response) => {
   chai.expect(response).to.include({ statusCode: 302 });
   chai.expect(response.headers['set-cookie']).to.be.an('array');
   chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
   chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
-  if (token) {
-    chai.expect(response.headers['location']).to.equal('/');
-  } else {
-    chai.expect(response.body).to.equal('/');
-  }
+  chai.expect(response.body).to.equal('/');
 };
 
-const expectLoginToFail = (response, token = false) => {
+const expectLoginToFail = (response) => {
   chai.expect(response.headers['set-cookie']).to.be.undefined;
-  if (token) {
-    chai.expect(response.headers['content-type']).to.match(/^text\/html/);
-  } else {
-    chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
-  }
+  chai.expect(response.statusCode).to.equal(401);
 };
 
 const getUser = (user) => {
@@ -136,7 +130,7 @@ describe('login', () => {
     it('should fail with invalid data', () => {
       return setupTokenLoginSettings()
         .then(() => loginWithTokenLink('token', 'hash'))
-        .then(response => expectLoginToFail(response, true));
+        .then(response => expectLoginToFail(response));
     });
 
     it('should fail with mismatched data', () => {
@@ -153,7 +147,7 @@ describe('login', () => {
         .then(response => expectLoginToFail(response))
         .then(() => getUser(user))
         .then(user => loginWithTokenLink(user.token_login.token, 'randomHash'))
-        .then(response => expectLoginToFail(response, true));
+        .then(response => expectLoginToFail(response));
     });
 
     it('should fail with expired data', () => {
@@ -175,7 +169,7 @@ describe('login', () => {
           return utils.request({ method: 'PUT', path: `/_users/${user._id}`, body: user });
         })
         .then(() => loginWithTokenLink(tokenLogin.token, tokenLogin.hash))
-        .then(response => expectLoginToFail(response, true));
+        .then(response => expectLoginToFail(response));
     });
 
     it('should succeed with correct data', () => {
@@ -192,9 +186,9 @@ describe('login', () => {
         .then(() => getUser(user))
         .then(user => tokenLogin = user.token_login)
         .then(() => loginWithTokenLink(tokenLogin.token, tokenLogin.hash))
-        .then(response => expectLoginToWork(response, true))
+        .then(response => expectLoginToWork(response))
         .then(() => loginWithTokenLink(tokenLogin.token, tokenLogin.hash))
-        .then(response => expectLoginToFail(response, true)); // fails after being activated the 1st time
+        .then(response => expectLoginToFail(response)); // fails after being activated the 1st time
     });
   });
 });
