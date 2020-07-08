@@ -155,9 +155,9 @@ describe('unit transition utils', () => {
 
   it('getDeprecationMessage() should return message based on information provided', () => {
     assert.equal(transitionUtils.getDeprecationMessage(), undefined);
-    assert.equal(transitionUtils.getDeprecationMessage('ABC'), '"ABC" transition is deprecated');
-    assert.equal(transitionUtils.getDeprecationMessage('ABC', '3.2.x'), '"ABC" transition is deprecated in 3.2.x');
-    const expectedMsg = '"ABC" transition is deprecated in 3.2.x. Some extra info.';
+    assert.equal(transitionUtils.getDeprecationMessage('ABC'), 'ABC transition is deprecated');
+    assert.equal(transitionUtils.getDeprecationMessage('ABC', '3.2.x'), 'ABC transition is deprecated since 3.2.x');
+    const expectedMsg = 'ABC transition is deprecated since 3.2.x. Some extra info.';
     assert.equal(transitionUtils.getDeprecationMessage('ABC', '3.2.x', 'Some extra info.'), expectedMsg);
   });
 });

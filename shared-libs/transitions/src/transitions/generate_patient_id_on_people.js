@@ -11,10 +11,7 @@ module.exports = {
   deprecatedIn: '3.8.x',
   init: () => {
     const self = module.exports;
-
-    if (self.deprecated) {
-      logger.warn(self.getDeprecationMessage());
-    }
+    logger.warn(self.getDeprecationMessage());
   },
   getDeprecationMessage: () => {
     const self = module.exports;

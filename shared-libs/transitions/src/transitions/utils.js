@@ -72,12 +72,16 @@ module.exports = {
       return;
     }
 
-    let message = `"${name}" transition is deprecated`;
+    let message = name + ' transition is deprecated';
 
     if (deprecatedIn) {
-      message += ` in ${deprecatedIn}`;
+      message += ' since ' + deprecatedIn;
     }
 
-    return extraInfo ? message + `. ${extraInfo}` : message;
+    if (extraInfo) {
+      message += '. ' + extraInfo;
+    }
+
+    return message;
   }
 };

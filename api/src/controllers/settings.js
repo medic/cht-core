@@ -14,7 +14,8 @@ module.exports = {
       });
   },
   getDeprecatedTransitions: (req, res) => {
-    return auth.getUserCtx(req)
+    return auth
+      .getUserCtx(req)
       .then(() => settingsService.getDeprecatedTransitions())
       .then(transitions => res.json(transitions))
       .catch(err => {
@@ -39,7 +40,8 @@ module.exports = {
       });
   },
   put: (req, res) => {
-    return auth.getUserCtx(req)
+    return auth
+      .getUserCtx(req)
       .then(userCtx => {
         if (!auth.hasAllPermissions(userCtx, 'can_configure')) {
           throw {

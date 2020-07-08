@@ -33,7 +33,8 @@ const doExtend = (target, source) => {
 const getDeprecatedTransitions = () => {
   const transitions = require('@medic/transitions')();
 
-  return transitions.getDeprecatedTransitions()
+  return transitions
+    .getDeprecatedTransitions()
     .map(transition => {
       return {
         name: transition.name,

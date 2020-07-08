@@ -19,10 +19,7 @@ module.exports = {
   deprecatedIn: '3.7.x',
   init: () => {
     const self = module.exports;
-
-    if (self.deprecated) {
-      logger.warn(self.getDeprecationMessage());
-    }
+    logger.warn(self.getDeprecationMessage());
   },
   getDeprecationMessage: () => {
     const self = module.exports;
