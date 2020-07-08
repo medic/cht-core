@@ -5,20 +5,19 @@ on:
     branches: 
       - scalability-automation
       
-
 jobs:
   build:
-    # Job name is Greeting
-    name: Greeting
-    # This job runs on Linux
+    name: Setting up EC2 Instance
     runs-on: ubuntu-latest
     steps:
-      # This step uses GitHub's hello-world-javascript-action: https://github.com/actions/hello-world-javascript-action
-      - name: Hello world
-        uses: actions/hello-world-javascript-action@v1
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          who-to-greet: 'Mona the Octocat'
-        id: hello
-      # This step prints an output (time) from the previous step's action.
-      - name: Echo the greeting's time
-        run: echo 'The time was ${{ steps.hello.outputs.time }}.'
+          aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Start E2 and Medic
+        run: cd tests/scalability && aws ec2 request-spot-instances --spot-price "0.222" --instance-count 1 --type "one-time" --launch-specification file://launch-specification.json --block-duration-minutes 60
