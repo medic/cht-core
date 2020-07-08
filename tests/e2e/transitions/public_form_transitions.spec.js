@@ -251,7 +251,7 @@ describe('Transitions public_form', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages }))
@@ -341,7 +341,7 @@ describe('Transitions public_form', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages }))
@@ -434,7 +434,7 @@ describe('Transitions public_form', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages: messages }))

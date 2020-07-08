@@ -344,7 +344,7 @@ describe('transitions', () => {
     let ids;
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => Promise.all([
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),

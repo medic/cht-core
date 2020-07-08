@@ -222,7 +222,7 @@ describe('Users API', () => {
         reported_date: new Date().getTime()
       };
       return utils
-        .updateSettings({ transitions: { generate_patient_id_on_people: true }})
+        .updateSettings({ transitions: { generate_patient_id_on_people: true }}, true)
         .then(() => utils.saveDoc(parentPlace))
         .then(() => {
           const opts = {
@@ -694,7 +694,7 @@ describe('Users API', () => {
       it('should create and update a user correctly w/o token_login', () => {
         const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(response => {
@@ -741,7 +741,7 @@ describe('Users API', () => {
       it('should throw an error when phone is missing when creating a user with token_login', () => {
         const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => {
             user.token_login = true;
@@ -759,7 +759,7 @@ describe('Users API', () => {
       it('should throw an error when phone is missing when updating a user with token_login', () => {
         const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => {
@@ -792,7 +792,7 @@ describe('Users API', () => {
 
         let tokenUrl;
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(response => {
@@ -863,7 +863,7 @@ describe('Users API', () => {
         const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
         let tokenUrl;
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => {
@@ -942,7 +942,7 @@ describe('Users API', () => {
         user.phone = '+40755232323';
         let tokenLogin;
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
@@ -972,7 +972,7 @@ describe('Users API', () => {
         user.phone = '+40755242424';
         let firstTokenLogin;
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
@@ -1021,7 +1021,7 @@ describe('Users API', () => {
         user.phone = '+40755969696';
         let firstTokenLogin;
         return utils
-          .updateSettings(settings)
+          .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))

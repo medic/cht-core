@@ -23,7 +23,7 @@ module.exports = {
     getLoginButton().click();
     browser.waitForAngular();
     if (shouldFail) {
-      expect(helper.isTextDisplayed(incorrectCredentialsText));
+      expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
   },
 };

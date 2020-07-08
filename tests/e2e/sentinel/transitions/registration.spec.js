@@ -605,7 +605,7 @@ describe('registration', () => {
     const ids = [chwNoParent._id, chwNonExistingParent._id, invalidParent1._id, invalidParent2._id, invalidParent3._id];
 
     return utils
-      .updateSettings(settings)
+      .updateSettings(settings, true)
       .then(() => utils.saveDocs([chwNoParent, chwNonExistingParent, invalidParent1, invalidParent2, invalidParent3]))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))

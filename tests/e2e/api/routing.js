@@ -656,12 +656,12 @@ describe('routing', () => {
   });
 
   describe('legacy endpoints', () => {
-    afterEach(done => utils.revertSettings().then(done));
+    afterEach(done => utils.revertSettings(true).then(done));
 
     it('should still route to deprecate apiV0 settings endpoints', () => {
       let settings;
       return utils
-        .updateSettings({}) // this test will update settings that we want successfully reverted afterwards
+        .updateSettings({}, true) // this test will update settings that we want successfully reverted afterwards
         .then(() => utils.getDoc('settings'))
         .then(result => settings = result.settings)
         .then(() => Promise.all([
@@ -731,7 +731,10 @@ describe('routing', () => {
           expect(settings.settings.medic_api_v0).toEqual('my value 1');
           expect(settings.settings.test_api_v0_offline).not.toBeDefined();
           expect(settings.settings.medic_api_v0_offline).not.toBeDefined();
-        });
+        })
+        .catch(err => {
+          console.log(err);
+        })
     });
   });
 });

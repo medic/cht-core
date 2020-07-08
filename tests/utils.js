@@ -89,17 +89,31 @@ const updateSettings = updates => {
 };
 
 const revertSettings = () => {
-  if (!originalSettings) {
+  if (!originalSettings || !Object.keys(originalSettings).length) {
     return Promise.resolve(false);
   }
   return request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
-  }).then(() => {
+  }).then(response => {
     originalSettings = null;
-    return true;
+    return response;
   });
+};
+
+const tailServicesLogsForSettingsUpdates = () => {
+  return [
+    module.exports.waitForLogs('api.e2e.log', /Settings updated/),
+    module.exports.waitForLogs('sentinel.e2e.log', /Reminder messages allowed between/),
+  ];
+};
+
+const waitForServicesToUpdateSettings = (updateSettingsResponse, serviceLogTails) => {
+  if (!updateSettingsResponse || !updateSettingsResponse.updated) {
+    return serviceLogTails.forEach(logTail => logTail.cancel());
+  }
+  return Promise.all(serviceLogTails.map(logtail => logtail.promise));
 };
 
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
@@ -239,7 +253,7 @@ const revertDb = (except, ignoreRefresh) => {
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
       // only need to refresh if the settings were changed
-      if (!ignoreRefresh && needsRefresh) {
+      if (!ignoreRefresh && needsRefresh && needsRefresh.updated) {
         return refreshToGetNewSettings();
       }
     }).then(setUserContactDoc);
@@ -479,12 +493,16 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) =>
-    updateSettings(updates).then(() => {
-      if (!ignoreRefresh) {
-        return refreshToGetNewSettings();
-      }
-    }),
+  updateSettings: (updates, ignoreRefresh = false) => {
+    const serviceLogTails = tailServicesLogsForSettingsUpdates();
+    return updateSettings(updates)
+      .then(result => waitForServicesToUpdateSettings(result, serviceLogTails))
+      .then(() => {
+        if (!ignoreRefresh) {
+          return refreshToGetNewSettings();
+        }
+      });
+  },
 
   /**
    * Revert settings and refresh if required
@@ -492,12 +510,16 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  revertSettings: ignoreRefresh =>
-    revertSettings().then(() => {
-      if (!ignoreRefresh) {
-        return refreshToGetNewSettings();
-      }
-    }),
+  revertSettings: ignoreRefresh => {
+    const serviceLogTails = tailServicesLogsForSettingsUpdates();
+    return revertSettings()
+      .then(result => waitForServicesToUpdateSettings(result, serviceLogTails))
+      .then(() => {
+        if (!ignoreRefresh) {
+          return refreshToGetNewSettings();
+        }
+      });
+  },
 
   seedTestData: (done, userContactDoc, documents) => {
     protractor.promise
@@ -637,6 +659,43 @@ module.exports = {
       }
 
       return Promise.resolve(lines);
+    };
+  },
+
+  /**
+   * Watches a given logfile until at least one line matches one of the given regular expressions.
+   * Watch expires after 10 seconds.
+   * @param {String} logFilename - filename of file in local logs directory
+   * @param {[RegExp]} regex - matching expression(s) run against lines
+   * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
+   */
+  waitForLogs: (logFilename, ...regex) => {
+    const tail = new Tail(`./tests/logs/${logFilename}`);
+    let timeout;
+    const promise = new Promise((resolve, reject) => {
+      tail.on('line', data => {
+        if (regex.find(r => r.test(data))) {
+          tail.unwatch();
+          resolve();
+        }
+      });
+      tail.on('error', err => {
+        tail.unwatch();
+        reject(err);
+      });
+
+      timeout = setTimeout(() => {
+        tail.unwatch();
+        reject({ message: 'timeout exceeded' });
+      }, 10000);
+    });
+
+    return {
+      promise,
+      cancel: () => {
+        clearTimeout(timeout);
+        tail.unwatch();
+      },
     };
   },
 
