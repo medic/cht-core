@@ -413,7 +413,7 @@ const deleteUser = id => {
  * @returns {string} - the generated password
  */
 const generatePassword = (length = PASSWORD_MINIMUM_LENGTH) => {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!$^()-=';
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!$-=';
   let password;
   do {
     password = Array.from({ length }).map(() => _.sample(chars)).join('');
@@ -530,15 +530,17 @@ const clearOldLoginSms = (user) => {
   return db.medic
     .get(user.token_login.doc_id)
     .then(doc => {
-      if (doc && doc.tasks) {
-        const pendingTasks = doc.tasks.filter(task => task.state === 'pending');
-        if (!pendingTasks.length) {
-          return;
-        }
-
-        pendingTasks.forEach(task => taskUtils.setTaskState(task, 'cleared'));
-        return db.medic.put(doc);
+      if (!doc || !doc.tasks) {
+        return;
       }
+
+      const pendingTasks = doc.tasks.filter(task => task.state === 'pending');
+      if (!pendingTasks.length) {
+        return;
+      }
+
+      pendingTasks.forEach(task => taskUtils.setTaskState(task, 'cleared'));
+      return db.medic.put(doc);
     })
     .catch(err => {
       if (err.status === 404) {
@@ -610,14 +612,13 @@ const manageTokenLogin = (data, response) => {
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
 const enableTokenLogin = (response) => {
-  const tokenLoginConfig = config.get('token_login');
-
   return Promise
     .all([
       validateUser(response.user.id),
       validateUserSettings(response['user-settings'].id),
     ])
     .then(([ user, userSettings ]) => {
+      const tokenLoginConfig = config.get('token_login');
       const token = generatePassword(50);
       const hash = getHash(user._id);
 

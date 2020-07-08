@@ -191,9 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
     user.focus();
 
     document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
-  }
-
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js');
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js');
+    }
   }
 });

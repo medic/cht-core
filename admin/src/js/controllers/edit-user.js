@@ -131,8 +131,7 @@ angular
     };
 
     const validateTokenLogin = () => {
-      const tokenLogin = $scope.editUserModel.token_login;
-      if (!tokenLogin) {
+      if (!$scope.editUserModel.token_login) {
         return $q.resolve(true);
       }
 
@@ -157,10 +156,12 @@ angular
       const newUser = !$scope.editUserModel.id;
       const tokenLogin = $scope.editUserModel.token_login;
       if (tokenLogin) {
+        // when enabling token_login, password is not required
         return true;
       }
 
       if (newUser || tokenLogin === false) {
+        // for new users or when disabling token_login for users who have it enabled
         return validatePasswordFields();
       }
 
@@ -278,45 +279,46 @@ angular
 
     const validateRole = () => validateRequired('role', 'configuration.role');
 
+    const getUpdatedKeys = (model, existingModel) => {
+      return Object.keys(model).filter(key => {
+        if (key === 'id') {
+          return false;
+        }
+        if (key === 'language') {
+          return existingModel[key].code !== (model[key] && model[key].code);
+        }
+        if (key === 'password') {
+          return model[key] && model[key] !== '';
+        }
+        const metaFields = [
+          'currentPassword',
+          'passwordConfirm',
+          'facilitySelect',
+          'contactSelect',
+          'tokenLoginEnabled',
+        ];
+        if (metaFields.includes(key)) {
+          // We don't want to return these 'meta' fields
+          return false;
+        }
+
+        return existingModel[key] !== model[key];
+      });
+    };
+
     const changedUpdates = model => {
       return determineEditUserModel()
         .then(existingModel => {
           const updates = {};
-          Object
-            .keys(model)
-            .filter(key => {
-              if (key === 'id') {
-                return false;
-              }
-              if (key === 'language') {
-                return existingModel[key].code !== (model[key] && model[key].code);
-              }
-              if (key === 'password') {
-                return model[key] && model[key] !== '';
-              }
-              const metaFields = [
-                'currentPassword',
-                'passwordConfirm',
-                'facilitySelect',
-                'contactSelect',
-                'tokenLoginEnabled',
-              ];
-              if (metaFields.includes(key)) {
-                // We don't want to return these 'meta' fields
-                return false;
-              }
-
-              return existingModel[key] !== model[key];
-            })
-            .forEach(key => {
-              if (key === 'language') {
-                updates[key] = model[key].code;
-              } else if (key === 'role') {
-                updates.roles = [model[key]];
-              } else {
-                updates[key] = model[key];
-              }
-            });
+          getUpdatedKeys(model, existingModel).forEach(key => {
+            if (key === 'language') {
+              updates[key] = model[key].code;
+            } else if (key === 'role') {
+              updates.roles = [model[key]];
+            } else {
+              updates[key] = model[key];
+            }
+          });
 
           return updates;
         });

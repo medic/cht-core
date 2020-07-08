@@ -34,11 +34,6 @@ describe('login controller', () => {
       clearCookie: () => {}
     };
 
-    req = {
-      on: sinon.stub(),
-      headers: {},
-    };
-
     sinon.stub(environment, 'db').get(() => DB_NAME);
     sinon.stub(environment, 'ddoc').get(() => DDOC_NAME);
     sinon.stub(environment, 'protocol').get(() => 'http');
@@ -347,7 +342,7 @@ describe('login controller', () => {
       });
     });
 
-    it('should retry logging in 5 times when login fails', () => {
+    it('should retry logging in when login fails', () => {
       sinon.stub(users, 'getUserByToken').resolves('userId');
       sinon.stub(users, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(users, 'deactivateTokenLogin').resolves();

@@ -1,7 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const service = rewire('../../../src/services/users');
+
 const people = require('../../../src/controllers/people');
 const places = require('../../../src/controllers/places');
 const config = require('../../../src/config');
@@ -14,18 +14,19 @@ const facilityb = { _id: 'b', name: 'brian' };
 const facilityc = { _id: 'c', name: 'cathy' };
 
 let userData;
-let reverts;
 let clock;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
+let service;
+
 describe('Users service', () => {
   beforeEach(() => {
-    reverts = [];
-    reverts.push(service.__set__('getFacilities', sinon.stub().returns([
+    service = rewire('../../../src/services/users');
+    service.__set__('getFacilities', sinon.stub().returns([
       facilitya,
       facilityb,
       facilityc,
-    ])));
+    ]));
     userData = {
       username: 'x',
       password: COMPLEX_PASSWORD,
@@ -37,7 +38,6 @@ describe('Users service', () => {
   });
 
   afterEach(() => {
-    reverts.forEach(revert => revert());
     sinon.restore();
     clock.restore();
   });
@@ -228,8 +228,8 @@ describe('Users service', () => {
           external_id: 'LTT093'
         }
       ];
-      reverts.push(service.__set__('getAllUsers', sinon.stub().resolves(allUsers)));
-      reverts.push(service.__set__('getAllUserSettings', sinon.stub().resolves(allUsersSettings)));
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves(allUsersSettings));
       return service.getList().then(data => {
         chai.expect(data.length).to.equal(2);
         const lucas = data[0];
@@ -293,8 +293,8 @@ describe('Users service', () => {
           phone: '987654321'
         }
       ];
-      reverts.push(service.__set__('getAllUsers', sinon.stub().resolves(allUsers)));
-      reverts.push(service.__set__('getAllUserSettings', sinon.stub().resolves(allUserSettings)));
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves(allUserSettings));
 
       return service.getList().then(data => {
         chai.expect(data.length).to.equal(1);
@@ -319,8 +319,8 @@ describe('Users service', () => {
           }
         }
       ];
-      reverts.push(service.__set__('getAllUsers', sinon.stub().resolves(allUsers)));
-      reverts.push(service.__set__('getAllUserSettings', sinon.stub().resolves([])));
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves([]));
       return service.getList().then(data => {
         chai.expect(data.length).to.equal(1);
         const lucas = data[0];
@@ -335,8 +335,8 @@ describe('Users service', () => {
     });
 
     it('returns errors from users service', () => {
-      reverts.push(service.__set__('getAllUsers', sinon.stub().rejects('not found')));
-      reverts.push(service.__set__('getAllUserSettings', sinon.stub().rejects('not found')));
+      service.__set__('getAllUsers', sinon.stub().rejects('not found'));
+      service.__set__('getAllUserSettings', sinon.stub().rejects('not found'));
       return service.getList().catch(err => {
         chai.expect(err.name).to.equal('not found');
       });
@@ -367,9 +367,9 @@ describe('Users service', () => {
           }
         }
       ];
-      reverts.push(service.__set__('getAllUsers', sinon.stub().resolves(allUsers)));
-      reverts.push(service.__set__('getAllUserSettings', sinon.stub().resolves([])));
-      reverts.push(service.__set__('getFacilities', sinon.stub().rejects('BOOM')));
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves([]));
+      service.__set__('getFacilities', sinon.stub().rejects('BOOM'));
       return service.getList().catch(err => {
         chai.expect(err.name).to.equal('BOOM');
       });
@@ -573,25 +573,25 @@ describe('Users service', () => {
     });
 
     it('returns error if contact.parent lookup fails', () => {
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('setContactParent', sinon.stub().rejects('kablooey')));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('setContactParent', sinon.stub().rejects('kablooey'));
       return service.createUser(userData).catch(err => {
         chai.expect(err.name).to.equal('kablooey');
       });
     });
 
     it('returns error if place lookup fails', () => {
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().rejects('fail')));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().rejects('fail'));
       return service.createUser(userData).catch(err => {
         chai.expect(err.name).to.equal('fail');
       });
     });
 
     it('returns error if place is not within contact', () => {
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({
         _id: 'miami',
         parent: {
@@ -607,24 +607,24 @@ describe('Users service', () => {
     });
 
     it('succeeds if contact and place are the same', () => {
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createContact', sinon.stub().resolves()));
-      reverts.push(service.__set__('storeUpdatedPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       userData.place = 'foo';
       return service.createUser(userData);
     });
 
     it('succeeds if contact is within place', () => {
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createContact', sinon.stub().resolves()));
-      reverts.push(service.__set__('storeUpdatedPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({
         _id: 'miami',
         parent: {
@@ -638,7 +638,7 @@ describe('Users service', () => {
     });
 
     it('fails if new username does not validate', () => {
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().rejects('sorry')));
+      service.__set__('validateNewUsername', sinon.stub().rejects('sorry'));
       const insert = sinon.stub(db.medic, 'put');
       return service.createUser(userData).catch(err => {
         chai.expect(err.name).to.equal('sorry');
@@ -677,13 +677,13 @@ describe('Users service', () => {
   describe('setContactParent', () => {
 
     it('resolves contact parent in waterfall', () => {
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('hasParent', sinon.stub().resolves()));
-      reverts.push(service.__set__('createContact', sinon.stub().resolves()));
-      reverts.push(service.__set__('storeUpdatedPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('hasParent', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
 
       sinon.stub(places, 'getPlace').resolves({
         _id: 'a',
@@ -702,8 +702,8 @@ describe('Users service', () => {
         contact: 'def',
         type: 'national-manager'
       };
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
       sinon.stub(db.medic, 'get').resolves({
         _id: 'def',
         type: 'person',
@@ -728,8 +728,8 @@ describe('Users service', () => {
         contact: 'def',
         type: 'national-manager'
       };
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
-      reverts.push(service.__set__('createPlace', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
       sinon.stub(db.medic, 'get').resolves({
         _id: 'def',
         type: 'person',
@@ -739,10 +739,10 @@ describe('Users service', () => {
         }
       });
       sinon.stub(people, 'isAPerson').returns(true);
-      reverts.push(service.__set__('createContact', sinon.stub().resolves()));
-      reverts.push(service.__set__('storeUpdatedPlace', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service.createUser(userData).then(() => {
         chai.expect(service.__get__('createContact').args[0][0].contact).to.equal('def');
       });
@@ -760,7 +760,7 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(places, 'getOrCreatePlace').resolves({
         _id: 'place_id',
         _rev: 1,
@@ -775,8 +775,8 @@ describe('Users service', () => {
       });
       sinon.stub(db.medic, 'get').resolves(place);
       sinon.stub(db.medic, 'put').resolves();
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
@@ -798,7 +798,7 @@ describe('Users service', () => {
         type: 'national-manager'
       };
 
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
@@ -814,8 +814,8 @@ describe('Users service', () => {
       sinon.stub(db.medic, 'put')
         .onCall(0).rejects({ status: 409, reason: 'conflict' })
         .onCall(1).resolves();
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
 
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
@@ -840,7 +840,7 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
@@ -859,8 +859,8 @@ describe('Users service', () => {
         .onCall(1).rejects({ status: 409, reason: 'conflict' })
         .onCall(2).rejects({ status: 409, reason: 'conflict' })
         .onCall(3).resolves();
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
@@ -885,7 +885,7 @@ describe('Users service', () => {
         type: 'national-manager'
       };
 
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
@@ -909,8 +909,8 @@ describe('Users service', () => {
         .onCall(2).rejects(conflictErr)
         .onCall(3).rejects(conflictErr)
         .onCall(4).resolves();
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
         .then(() => { throw 'should have thrown'; })
@@ -937,7 +937,7 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      reverts.push(service.__set__('validateNewUsername', sinon.stub().resolves()));
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const place = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
@@ -948,8 +948,8 @@ describe('Users service', () => {
       });
       sinon.stub(db.medic, 'get').resolves(place);
       sinon.stub(db.medic, 'put').rejects({ status: 400, reason: 'not-a-conflict' });
-      reverts.push(service.__set__('createUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('createUserSettings', sinon.stub().resolves()));
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
         .then(() => { throw 'should have thrown'; })
@@ -985,8 +985,8 @@ describe('Users service', () => {
       const data = {
         place: 'x'
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves()));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves()));
+      service.__set__('validateUser', sinon.stub().resolves());
+      service.__set__('validateUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').rejects('Not today pal.');
       const update = sinon.stub(db.medic, 'put');
       return service.updateUser('paul', data, true).catch(() => {
@@ -998,8 +998,8 @@ describe('Users service', () => {
       const data = {
         type: 'x'
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().rejects('not found')));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().rejects('not found'));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       const update = sinon.stub(db.medic, 'put');
       return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
@@ -1010,8 +1010,8 @@ describe('Users service', () => {
       const data = {
         type: 'x'
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().rejects('too rainy today')));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().rejects('too rainy today'));
       const update = sinon.stub(db.medic, 'put');
       return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
@@ -1019,8 +1019,8 @@ describe('Users service', () => {
     });
 
     it('fails if users db insert fails', () => {
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves();
       sinon.stub(db.users, 'put').returns(Promise.reject('shiva was here'));
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
@@ -1029,8 +1029,8 @@ describe('Users service', () => {
     });
 
     it('fails if medic db insert fails', () => {
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').returns(Promise.reject('shiva strikes again'));
       sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
@@ -1042,8 +1042,8 @@ describe('Users service', () => {
       const data = {
         type: 'x'
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -1056,8 +1056,8 @@ describe('Users service', () => {
       const data = {
         password: COMPLEX_PASSWORD
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -1070,8 +1070,8 @@ describe('Users service', () => {
       const data = {
         place: 'x'
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1085,8 +1085,8 @@ describe('Users service', () => {
       const data = {
         roles: [ 'rebel' ]
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(false);
@@ -1102,8 +1102,8 @@ describe('Users service', () => {
       const data = {
         roles: [ 'rebel' ]
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(true);
@@ -1119,8 +1119,8 @@ describe('Users service', () => {
       const data = {
         password: COMPLEX_PASSWORD
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1167,8 +1167,8 @@ describe('Users service', () => {
       const data = {
         place: 'paris'
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({ facility_id: 'maine' })));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({ facility_id: 'maine' })));
+      service.__set__('validateUser', sinon.stub().resolves({ facility_id: 'maine' }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({ facility_id: 'maine' }));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1185,14 +1185,14 @@ describe('Users service', () => {
         place: null,
         contact: null
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({
+      service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
         roles: ['mm-online']
-      })));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({
+      }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({
         facility_id: 'maine',
         contact_id: 1
-      })));
+      }));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -1213,16 +1213,16 @@ describe('Users service', () => {
         type: 'rambler',
         password: COMPLEX_PASSWORD
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({
+      service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
         roles: ['bartender'],
         shoes: 'dusty boots'
-      })));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({
+      }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({
         facility_id: 'maine',
         phone: '123',
         known: false
-      })));
+      }));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1252,16 +1252,16 @@ describe('Users service', () => {
         roles: ['chp'],
         password: COMPLEX_PASSWORD
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({
+      service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
         roles: ['chp'],
         shoes: 'dusty boots'
-      })));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({
+      }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({
         facility_id: 'maine',
         phone: '123',
         known: false
-      })));
+      }));
       sinon.stub(config, 'get').returns({ chp: { offline: true } });
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
@@ -1281,8 +1281,8 @@ describe('Users service', () => {
       const data = {
         fullname: 'George'
       };
-      reverts.push(service.__set__('validateUser', sinon.stub().resolves({})));
-      reverts.push(service.__set__('validateUserSettings', sinon.stub().resolves({})));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({ id: 'abc', rev: '1-xyz' });
       sinon.stub(db.users, 'put').resolves({ id: 'def', rev: '1-uvw' });
       return service.updateUser('georgi', data, true).then(resp => {

@@ -30,9 +30,9 @@
             </a>
           </div>
         </td>
-        <td class="break-word">
+        <td class="break">
           <p ng-if="message.task"><strong>{{message.task}}</strong></p>
-          <span style="word-wrap: break-word">{{message.content}}</span>
+          <span>{{message.content}}</span>
           <div class="message-error" ng-if="message.error">
             <span translate>messages.errors.invalid</span>
             <span translate>{{message.error}}</span>

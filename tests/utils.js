@@ -678,28 +678,30 @@ module.exports = {
     const tail = new Tail(`./tests/logs/${logFilename}`);
     let timeout;
     const promise = new Promise((resolve, reject) => {
+      timeout = setTimeout(() => {
+        tail.unwatch();
+        reject({ message: 'timeout exceeded' });
+      }, 10000);
+
       tail.on('line', data => {
         if (regex.find(r => r.test(data))) {
           tail.unwatch();
+          clearTimeout(timeout);
           resolve();
         }
       });
       tail.on('error', err => {
         tail.unwatch();
+        clearTimeout(timeout);
         reject(err);
       });
-
-      timeout = setTimeout(() => {
-        tail.unwatch();
-        reject({ message: 'timeout exceeded' });
-      }, 10000);
     });
 
     return {
       promise,
       cancel: () => {
-        clearTimeout(timeout);
         tail.unwatch();
+        clearTimeout(timeout);
       },
     };
   },

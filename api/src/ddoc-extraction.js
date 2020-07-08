@@ -7,6 +7,7 @@ const BUNDLED_DDOCS = [
   { attachmentId: 'ddocs/medic.json', targetDb: db.medic },
   { attachmentId: 'ddocs/sentinel.json', targetDb: db.sentinel },
   { attachmentId: 'ddocs/users-meta.json', targetDb: db.medicUsersMeta },
+  { attachmentId: 'ddocs/_users.json', targetDb: db.users },
 ];
 const SERVICEWORKER_ATTACHMENT_NAME = 'js/service-worker.js';
 const SWMETA_DOC_ID = 'service-worker-meta';

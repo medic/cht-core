@@ -43,6 +43,7 @@ input {
   margin: 2em auto;
   font-size: 1em;
   width: 302px;
+  max-width: calc(100% - 20px);
   padding: 6px 10px;
   text-decoration: none;
 }
