@@ -469,7 +469,7 @@ describe('Users API', () => {
     };
 
     beforeAll(() => utils.saveDoc(parentPlace));
-    afterAll(() => utils.revertDb([], false));
+    afterAll(() => utils.revertDb());
 
     beforeEach(() => {
       user = {
