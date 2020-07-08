@@ -88,7 +88,7 @@ angular
         $log.error('Error fetching contact', err);
         ctrl.loading = false;
         ctrl.conversations = [];
-        ctrl.error = 'Error fetching contact';
+        ctrl.error = true;
       });
 
     const changeListener = Changes({
