@@ -19,17 +19,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
       - name: Start EC2 and Medic
-        run: cd tests/scalability && echo "::set-env name=SpotInstanceRequestId::$(aws ec2 request-spot-instances --spot-price '0.222' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)"      
-      - name: Get EC2 Instance ID
-        run: |
-          echo "::set-env name=InstanceId::$( \
-          id=aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r 
-          while [ "id" = null]
-          do
-          aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r)" 
-          done 
-          id)
-      - name: Get EC2 Public IP
-        run: echo "::set-env name=publicIP::$(aws ec2 describe-instances --instance-ids $InstanceId | jq .Reservations[0].Instances[0]. -r)"
-      - name: Wait for Api to be up
-        run: ./scripts/curl_api_info.sh https://$publicIP
+        run: cd tests/scalability && ./start_ec2_medic.sh $GITHUB_REF
