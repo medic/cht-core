@@ -1,4 +1,7 @@
-# echo  Running Suite 
+#!/bin/bash
+
+ 
+echo  Running Suite 
 
 git clone https://github.com/medic/cht-core.git;
 cd cht-core
