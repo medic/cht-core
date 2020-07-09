@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
-const crypto = require('crypto');
 const people  = require('../controllers/people');
 const places = require('../controllers/places');
 const db = require('../db');
@@ -64,6 +63,21 @@ const illegalDataModificationAttempts = data =>
 const error400 = (msg, key, params) => ({
   code: 400, message: { message: msg, translationKey: key, translationParams: params }
 });
+
+/**
+ * Generates a complex enough password with a given length
+ * @param {Number} length
+ * @returns {string} - the generated password
+ */
+const generatePassword = (length = PASSWORD_MINIMUM_LENGTH) => {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!$-=';
+  let password;
+  do {
+    password = Array.from({ length }).map(() => _.sample(chars)).join('');
+  } while (passwordTester(password) < PASSWORD_MINIMUM_SCORE);
+
+  return password;
+};
 
 const getType = user => {
   if (user.roles && user.roles.length) {
@@ -407,21 +421,6 @@ const deleteUser = id => {
   return Promise.all([ usersDbPromise, medicDbPromise ]);
 };
 
-/**
- * Generates a complex enough password with a given length
- * @param {Number} length
- * @returns {string} - the generated password
- */
-const generatePassword = (length = PASSWORD_MINIMUM_LENGTH) => {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!$-=';
-  let password;
-  do {
-    password = Array.from({ length }).map(() => _.sample(chars)).join('');
-  } while (passwordTester(password) < PASSWORD_MINIMUM_SCORE);
-
-  return password;
-};
-
 const validatePassword = (password) => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
@@ -460,10 +459,10 @@ const validateAndNormalizePhone = (data) => {
 const missingFields = data => {
   const required = ['username'];
 
-  if (!shouldEnableTokenLogin(data)) {
-    required.push('password');
-  } else {
+  if (shouldEnableTokenLogin(data)) {
     required.push('phone');
+  } else {
+    required.push('password');
   }
 
   if (data.roles && auth.isOffline(data.roles)) {
@@ -497,20 +496,25 @@ const getUpdatedSettingsDoc = (username, data) => {
   });
 };
 
-const shouldEnableTokenLogin = data => {
+const validTokenLoginConfig = () => {
   const tokenLoginConfig = config.get('token_login');
   const isValidConfig = tokenLoginConfig &&
+                        tokenLoginConfig.enabled &&
                         (tokenLoginConfig.translation_key || tokenLoginConfig.message) &&
                         tokenLoginConfig.app_url;
-  if (!isValidConfig) {
-    return false;
-  }
-
-  return data.token_login;
+  return isValidConfig;
 };
+
+const shouldEnableTokenLogin = data => validTokenLoginConfig() && data.token_login;
 const shouldDisableTokenLogin = data => data.token_login === false;
 
-const getHash = string => crypto.createHash('sha1').update(string, 'utf8').digest('hex');
+// this is not meant to be secure, just consistent!
+const encodeUsername = username => {
+  return Buffer.from(username).toString('base64');
+};
+const decodeUsername = encoded => {
+  return Buffer.from(encoded, 'base64').toString('utf8');
+};
 
 /**
  * Clears pending tasks in the currently assigned `token_login_sms` doc
@@ -557,12 +561,11 @@ const clearOldLoginSms = (user) => {
  * @param {Object} user - the _users document
  * @param {Object} userSettings - the user-settings document from the main database
  * @param {String} token - the randomly generated token
- * @param {String} userHash - sha1 hash of the user's document id
  * @param {Object} tokenLoginConfig - the token_login config section that contains the translation_key used to generate
  *                                    the instructions sms message
  * @returns {Promise<Object>} - returns the result of saving the new token_login_sms document
  */
-const generateLoginSms = (user, userSettings, token, userHash, tokenLoginConfig) => {
+const generateLoginSms = (user, userSettings, token, tokenLoginConfig) => {
   return clearOldLoginSms(user).then(() => {
     const doc = {
       type: 'token_login_sms',
@@ -570,8 +573,8 @@ const generateLoginSms = (user, userSettings, token, userHash, tokenLoginConfig)
       user: user._id,
       tasks: [],
     };
-    const userHash = getHash(user._id);
-    const url = `${tokenLoginConfig.app_url.replace(/\/+$/, '')}/medic/login/token/${token}/${userHash}`;
+    const encoded = encodeUsername(user.name);
+    const url = `${tokenLoginConfig.app_url.replace(/\/+$/, '')}/medic/login/token/${token}/${encoded}`;
 
     const messagesLib = config.getTransitionsLib().messages;
 
@@ -620,14 +623,12 @@ const enableTokenLogin = (response) => {
     .then(([ user, userSettings ]) => {
       const tokenLoginConfig = config.get('token_login');
       const token = generatePassword(50);
-      const hash = getHash(user._id);
 
-      return generateLoginSms(user, userSettings, token, hash, tokenLoginConfig)
+      return generateLoginSms(user, userSettings, token, tokenLoginConfig)
         .then(result => {
           user.token_login = {
             active: true,
             token,
-            hash,
             expiration_date: new Date().getTime() + LOGIN_TOKEN_EXPIRE_TIME,
             doc_id: result.id
           };
@@ -876,29 +877,47 @@ module.exports = {
   DOC_IDS_WARN_LIMIT,
 
   /**
-   * Searches for a user with active, not expired token-login that matches the requested token and hash.
+   * Searches for a user with active, not expired token-login that matches the requested token and user.
    *
    * @param {String} token
-   * @param {String} hash
-   * @returns {Promise<string>} the id of the matched user
+   * @param {String} encryptedUsername
+   * @returns {Promise<Object>} the id of the matched user
    */
-  getUserByToken: (token, hash) => {
-    if (!token || !hash) {
-      return Promise.resolve(false);
+  getUserByToken: (token, encoded) => {
+    const invalid = { status: 401, error: 'invalid' };
+    const expired = { status: 401, error: 'expired' };
+    if (!token || !encoded) {
+      return Promise.reject(invalid);
     }
 
-    return db.users.query('token-login/users-by-token', { key: [token, hash] }).then(response => {
-      if (!response || !response.rows || !response.rows.length) {
-        return false;
-      }
+    const username = decodeUsername(encoded);
+    if (!username) {
+      return Promise.reject(invalid);
+    }
 
-      const row = response.rows[0];
-      if (row.value.token_expiration_date <= new Date().getTime()) {
-        return false;
-      }
+    return db.users
+      .get(createID(username))
+      .then(user => {
+        if (!user.token_login || !user.token_login.active) {
+          throw invalid;
+        }
 
-      return row.id;
-    });
+        if (user.token_login.token !== token) {
+          throw invalid;
+        }
+
+        if (user.token_login.expiration_date <= new Date().getTime()) {
+          throw expired;
+        }
+
+        return user._id;
+      })
+      .catch(err => {
+        if (err.status === 404) {
+          throw invalid;
+        }
+        throw err;
+      });
   },
 
   /**
@@ -946,4 +965,6 @@ module.exports = {
         ]);
       });
   },
+
+  validTokenLoginConfig,
 };

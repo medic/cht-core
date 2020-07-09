@@ -55,11 +55,13 @@ const getUser = (user) => {
 };
 
 const setupTokenLoginSettings = () => {
-  const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+  const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
   return utils
     .updateSettings(settings, true)
-    .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }));
+    .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
+
+const base64Encode = string => Buffer.from(string).toString('base64');
 
 describe('login', () => {
   beforeAll(() => utils.saveDoc(parentPlace));
@@ -168,7 +170,7 @@ describe('login', () => {
           tokenLogin = user.token_login;
           return utils.request({ method: 'PUT', path: `/_users/${user._id}`, body: user });
         })
-        .then(() => loginWithTokenLink(tokenLogin.token, tokenLogin.hash))
+        .then(() => loginWithTokenLink(tokenLogin.token, base64Encode(user.username)))
         .then(response => expectLoginToFail(response));
     });
 
@@ -185,9 +187,9 @@ describe('login', () => {
         .then(() => utils.request(opts))
         .then(() => getUser(user))
         .then(user => tokenLogin = user.token_login)
-        .then(() => loginWithTokenLink(tokenLogin.token, tokenLogin.hash))
+        .then(() => loginWithTokenLink(tokenLogin.token, base64Encode(user.username)))
         .then(response => expectLoginToWork(response))
-        .then(() => loginWithTokenLink(tokenLogin.token, tokenLogin.hash))
+        .then(() => loginWithTokenLink(tokenLogin.token, base64Encode(user.username)))
         .then(response => expectLoginToFail(response)); // fails after being activated the 1st time
     });
   });

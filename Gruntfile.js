@@ -99,7 +99,6 @@ module.exports = function(grunt) {
           'build/ddocs/medic/_attachments/ddocs/medic.json': 'build/ddocs/medic-db/*',
           'build/ddocs/medic/_attachments/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
           'build/ddocs/medic/_attachments/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
-          'build/ddocs/medic/_attachments/ddocs/_users.json': 'build/ddocs/_users-db/*',
         },
       },
     },
@@ -123,7 +122,6 @@ module.exports = function(grunt) {
           [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
           [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
           [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
-          [couchConfig.withPathNoAuth('_users')]: 'build/ddocs/medic/_attachments/ddocs/_users.json',
         }
       },
       test: {
@@ -133,8 +131,6 @@ module.exports = function(grunt) {
         },
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
-          ['http://admin:pass@localhost:4984/medic-test-sentinel']: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
-          ['http://admin:pass@localhost:4984/_users']: 'build/ddocs/medic/_attachments/ddocs/_users.json',
         },
       },
       staging: {

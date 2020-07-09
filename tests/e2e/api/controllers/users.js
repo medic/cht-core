@@ -567,7 +567,7 @@ describe('Users API', () => {
       });
     };
 
-    const expectTokenLoginToFail = (url) => {
+    const expectTokenLoginToFail = (url, expired = false) => {
       const opts = {
         uri: url,
         method: 'POST',
@@ -579,7 +579,7 @@ describe('Users API', () => {
       };
       return utils.request(opts).then(response => {
         chai.expect(response.headers['set-cookie']).to.be.undefined;
-        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Token invalid / expired' } });
+        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: expired ? 'expired': 'invalid' } });
       });
     };
 
@@ -598,6 +598,8 @@ describe('Users API', () => {
         chai.expect(response.messages).to.have.deep.members(doc.tasks.map(task => viewifyMessage(task.messages[0])));
       });
     };
+
+    const base64Encode = string => Buffer.from(string).toString('base64');
 
     describe('when token-login configuration is missing', () => {
       it('should create and update a user correctly w/o token_login', () => {
@@ -692,7 +694,7 @@ describe('Users API', () => {
 
     describe('when token-login is configured', () => {
       it('should create and update a user correctly w/o token_login', () => {
-        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
+        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms', enabled: true } };
         return utils
           .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
@@ -739,7 +741,7 @@ describe('Users API', () => {
       });
 
       it('should throw an error when phone is missing when creating a user with token_login', () => {
-        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
+        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms', enabled: true } };
         return utils
           .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
@@ -757,7 +759,7 @@ describe('Users API', () => {
       });
 
       it('should throw an error when phone is missing when updating a user with token_login', () => {
-        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms' } };
+        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms', enabled: true } };
         return utils
           .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
@@ -786,7 +788,13 @@ describe('Users API', () => {
       });
 
       it('should create a user correctly with token_login', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        const settings = {
+          token_login: {
+            app_url: utils.getOrigin(),
+            translation_key: 'token_login_sms',
+            enabled: true,
+          }
+        };
         user.token_login = true;
         user.phone = '+40755898989';
 
@@ -813,7 +821,7 @@ describe('Users API', () => {
             expectCorrectUserSettings(userSettings);
 
             chai.expect(user.token_login).to.be.ok;
-            chai.expect(user.token_login).to.have.keys(['active', 'token', 'hash', 'expiration_date', 'doc_id']);
+            chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date', 'doc_id']);
             chai.expect(user.token_login).to.include({ active: true, doc_id: smsDoc._id });
 
             chai.expect(userSettings.token_login).to.be.ok;
@@ -825,7 +833,7 @@ describe('Users API', () => {
             });
             chai.expect(smsDoc.tasks).to.be.ok;
             chai.expect(smsDoc.tasks.length).to.equal(2);
-            tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${user.token_login.hash}`;
+            tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${base64Encode(user.name)}`;
             chai.expect(smsDoc.tasks).to.shallowDeepEqual([
               {
                 messages: [{ to: '+40755898989', message: 'Instructions sms' }],
@@ -848,7 +856,7 @@ describe('Users API', () => {
 
             chai.expect(user.token_login).to.be.ok;
             chai.expect(user.token_login).to.have.keys([
-              'active', 'token', 'hash', 'expiration_date', 'doc_id', 'login_date'
+              'active', 'token', 'expiration_date', 'doc_id', 'login_date'
             ]);
             chai.expect(user.token_login.active).to.equal(false);
 
@@ -860,11 +868,11 @@ describe('Users API', () => {
       });
 
       it('should update a user correctly with token_login', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'sms_text', enabled: true } };
         let tokenUrl;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.addTranslations('en', { sms_text: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => {
             const updates = {
@@ -890,7 +898,7 @@ describe('Users API', () => {
             expectCorrectUserSettings(userSettings);
 
             chai.expect(user.token_login).to.be.ok;
-            chai.expect(user.token_login).to.have.keys(['active', 'token', 'hash', 'expiration_date', 'doc_id']);
+            chai.expect(user.token_login).to.have.keys(['active', 'token', 'expiration_date', 'doc_id']);
             chai.expect(user.token_login).to.include({ active: true, doc_id: smsDoc._id });
 
             chai.expect(userSettings.token_login).to.be.ok;
@@ -902,7 +910,7 @@ describe('Users API', () => {
             });
             chai.expect(smsDoc.tasks).to.be.ok;
             chai.expect(smsDoc.tasks.length).to.equal(2);
-            tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${user.token_login.hash}`;
+            tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${base64Encode(user.name)}`;
             chai.expect(smsDoc.tasks).to.shallowDeepEqual([
               {
                 messages: [{ to: '+40755696969', message: 'Instructions sms' }],
@@ -925,7 +933,7 @@ describe('Users API', () => {
 
             chai.expect(user.token_login).to.be.ok;
             chai.expect(user.token_login).to.have.keys([
-              'active', 'token', 'hash', 'expiration_date', 'doc_id', 'login_date'
+              'active', 'token', 'expiration_date', 'doc_id', 'login_date'
             ]);
             chai.expect(user.token_login.active).to.equal(false);
 
@@ -937,13 +945,13 @@ describe('Users API', () => {
       });
 
       it('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
         user.token_login = true;
         user.phone = '+40755232323';
         let tokenLogin;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
           .then(user => tokenLogin = user.token_login)
@@ -967,13 +975,13 @@ describe('Users API', () => {
       });
 
       it('should clear the old SMS tasks when token is re-generated', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
         user.token_login = true;
         user.phone = '+40755242424';
         let firstTokenLogin;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
@@ -995,9 +1003,10 @@ describe('Users API', () => {
             chai.expect(userSettings.token_login)
               .to.deep.equal({ active: true, expiration_date: user.token_login.expiration_date });
 
-            const firstUrl = `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}/${firstTokenLogin.hash}`;
+            const firstUrl =
+                    `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}/${base64Encode(user.name)}`;
             const secondUrl =
-                    `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${user.token_login.hash}`;
+                    `${utils.getOrigin()}/medic/login/token/${user.token_login.token}/${base64Encode(user.name)}`;
 
             chai.expect(firstSmsDoc.tasks).to.shallowDeepEqual([
               { state: 'cleared', messages: [{ to: '+40755242424', message: 'Instructions sms' }] },
@@ -1016,13 +1025,13 @@ describe('Users API', () => {
       });
 
       it('should disable token_login for a user when requested', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'token_login_sms' } };
+        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
         user.token_login = true;
         user.phone = '+40755969696';
         let firstTokenLogin;
         return utils
           .updateSettings(settings, true)
-          .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
+          .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
           .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
@@ -1042,7 +1051,8 @@ describe('Users API', () => {
             chai.expect(user.token_login).to.be.undefined;
             chai.expect(userSettings.token_login).to.be.undefined;
 
-            const tokenUrl = `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}/${firstTokenLogin.hash}`;
+            const tokenUrl =
+                    `${utils.getOrigin()}/medic/login/token/${firstTokenLogin.token}/${base64Encode(user.name)}`;
             chai.expect(smsDoc.tasks).to.shallowDeepEqual([
               { state: 'cleared', messages: [{ to: '+40755969696', message: 'Instructions sms' }] },
               { state: 'cleared', messages: [{ to: '+40755969696', message: tokenUrl }] },

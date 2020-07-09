@@ -4,12 +4,14 @@ const loginPage = require('../../page-objects/login/login.po.js');
 const utils = require('../../utils');
 const helper = require('../../helper');
 
-const INVALID = 'Your link is missing required information or has expired. Contact admin to receive a new link.';
+const INVALID = 'Your link is invalid.';
+const EXPIRED = 'Your link has expired.';
+const MISSING = 'Your link is missing required information';
 const TOLOGIN = 'If you know your username and password, click on the following link to load the login page.';
 
 let user;
 
-const getUrl = (token, hash) => `${utils.getOrigin()}/medic/login/token/${token}/${hash}`;
+const getUrl = (token, encrypt) => `${utils.getOrigin()}/medic/login/token/${token}/${encrypt}`;
 const setupTokenLoginSettings = () => {
   const settings = { token_login: { app_url: utils.getOrigin(), message: 'token_login_sms' } };
   return utils.updateSettings(settings, true);
@@ -52,8 +54,16 @@ describe('token login', () => {
     return utils.revertDb();
   });
 
+  it('should display an error with incorrect url', () => {
+    browser.driver.get(getUrl('this is a', ''));
+    helper.waitElementToDisappear(by.css('.loader'));
+    expect(helper.isTextDisplayed(MISSING)).toBe(true);
+    expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
+    expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
+  });
+
   it('should display an error when accessing with random strings', () => {
-    browser.driver.get(getUrl('this is a', 'random hash'));
+    browser.driver.get(getUrl('this is a', 'random string'));
     helper.waitElementToDisappear(by.css('.loader'));
     expect(helper.isTextDisplayed(INVALID)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
@@ -72,7 +82,7 @@ describe('token login', () => {
         .then(() => true);
     });
     helper.waitElementToDisappear(by.css('.loader'));
-    expect(helper.isTextDisplayed(INVALID)).toBe(true);
+    expect(helper.isTextDisplayed(EXPIRED)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
   });

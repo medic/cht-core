@@ -6,7 +6,7 @@ const setState = function(className) {
 };
 
 const setTokenState = className => {
-  document.getElementById('wrapper').className = className;
+  document.getElementById('wrapper').className = `has-error ${className}`;
 };
 
 const request = function(method, url, payload, callback) {
@@ -53,18 +53,28 @@ const submit = function(e) {
 const requestTokenLogin = (retry = 20) => {
   const url = document.getElementById('tokenLogin').action;
   request('POST', url, '', xmlhttp => {
+    console.log(xmlhttp);
+    let response = {};
+    try {
+      response = JSON.parse(xmlhttp.responseText);
+    } catch (err) {
+      // no body
+    }
     switch (xmlhttp.status) {
     case 302:
       window.location = xmlhttp.response;
       break;
     case 401:
-      setTokenState('tokeninvalid');
+      setTokenState(response && response.error === 'expired' ? 'tokenexpired' : 'tokeninvalid');
       break;
-    case 449:
-      if (!retry) {
-        return setTokenState('tokenerror');
+    case 408:
+      if (retry <= 0) {
+        return setTokenState('tokentimeout');
       }
       requestTokenLogin(retry - 1);
+      break;
+    case 400:
+      setTokenState(response && response.error === 'missing' ? 'tokenmissing' : 'tokenerror');
       break;
     default:
       setTokenState('tokenerror');

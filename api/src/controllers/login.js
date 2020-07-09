@@ -19,10 +19,28 @@ const templates = {
   login: {
     content: null,
     file: 'index.html',
+    translationStrings: [
+      'login',
+      'login.error',
+      'login.incorrect',
+      'online.action.message',
+      'User Name',
+      'Password'
+    ],
   },
   tokenLogin: {
     content: null,
     file: 'token-login.html',
+    translationStrings: [
+      'login.token.missing',
+      'login.token.expired',
+      'login.token.invalid',
+      'login.token.timeout',
+      'login.token.general.error',
+      'login.token.loading',
+      'login.token.redirect.login.info',
+      'login.token.redirect.login',
+    ],
   },
 };
 
@@ -75,25 +93,8 @@ const getTemplate = (page) => {
 };
 
 const getTranslationsString = page => {
-  const pages = {
-    login: [
-      'login',
-      'login.error',
-      'login.incorrect',
-      'online.action.message',
-      'User Name',
-      'Password'
-    ],
-    tokenLogin: [
-      'login.token.missing.expired.invalid',
-      'login.token.general.error',
-      'login.token.loading',
-      'login.token.redirect.login.info',
-      'login.token.redirect.login',
-    ],
-  };
-
-  return encodeURIComponent(JSON.stringify(config.getTranslationValues(pages[page])));
+  const translationStrings = templates[page].translationStrings;
+  return encodeURIComponent(JSON.stringify(config.getTranslationValues(translationStrings)));
 };
 
 const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
@@ -263,11 +264,15 @@ const createSessionRetry = (req, retry= 10) => {
       return sessionRes;
     }
 
-    if (retry) {
-      return createSessionRetry(req, retry - 1);
+    if (retry > 0) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          createSessionRetry(req, retry - 1).then(resolve).catch(reject);
+        }, 10);
+      });
     }
 
-    throw { status: 449, message: 'Login failed after 10 retries' };
+    throw { status: 408, message: 'Login failed after 10 retries' };
   });
 };
 
@@ -276,15 +281,19 @@ const createSessionRetry = (req, retry= 10) => {
  * The user's password is reset in the process.
  */
 const tokenLogin = (req, res) => {
-  if (!req.params || !req.params.token || !req.params.hash) {
-    return res.status(400).json({ error: 'Missing required params' });
+  if (!users.validTokenLoginConfig()) {
+    return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
+  }
+
+  if (!req.params || !req.params.token || !req.params.userId) {
+    return res.status(400).json({ error: 'missing', reason: 'Missing required params' });
   }
 
   return users
-    .getUserByToken(req.params.token, req.params.hash)
+    .getUserByToken(req.params.token, req.params.userId)
     .then(userId => {
       if (!userId) {
-        return res.status(401).json({ error: 'Token invalid / expired' });
+        throw { status: 401, error: 'invalid' };
       }
 
       return users.resetPassword(userId).then(({ user, password }) => {
@@ -300,7 +309,7 @@ const tokenLogin = (req, res) => {
     .catch((err = {}) => {
       logger.error('Error while logging in with token', err);
       const status = err.status || err.code || 400;
-      const message = err.message || 'Unexpected error logging in';
+      const message = err.error || err.message || 'Unexpected error logging in';
       res.status(status).json({ error: message });
     });
 };
@@ -348,7 +357,7 @@ module.exports = {
   },
 
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
-  tokenPost: (req, res, next) => tokenLogin(req, res).catch(next),
+  tokenPost: (req, res) => tokenLogin(req, res),
 
   // exposed for testing
   _safePath: getRedirectUrl,

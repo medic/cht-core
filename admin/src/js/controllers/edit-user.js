@@ -57,6 +57,7 @@ angular
     };
 
     const validTokenLoginSettings = settings => settings.token_login &&
+                                                settings.token_login.enabled &&
                                                 settings.token_login.app_url &&
                                                 (settings.token_login.translation_key || settings.token_login.message);
 

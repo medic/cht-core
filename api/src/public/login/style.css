@@ -81,25 +81,23 @@ form {
   color: #DA4548;
   display: none;
 }
-.errors {
+.has-error .loading {
   display: none;
 }
+
 .loading .loader,
 .loginoffline .error.offline,
 .loginincorrect .error.incorrect,
 .loginerror .error.unknown,
-.tokeninvalid .errors,
-.tokenerror .errors,
-.tokeninvalid .errors .error.invalid,
-.tokenerror .errors .error.unknown
+.tokeninvalid .error.invalid,
+.tokenmissing .error.missing,
+.tokentimeout .error.timeout,
+.tokenexpired .error.expired,
+.tokenerror .error.unknown
 {
   display: block;
 }
-.tokeninvalid .loading,
-.tokenerror .loading
-{
-  display: none;
-}
+
 .loader {
   display: none;
   margin: 1em auto;
