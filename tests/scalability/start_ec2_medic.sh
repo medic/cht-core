@@ -28,7 +28,7 @@ echo Did not get public dns name. Exiting now.
 exit 1
 fi
 
-url=https://$PublicDnsName
+export url=https://$PublicDnsName
 
 echo Begin Checking $url/api/info is up
 version=$(curl -s $url/api/info -k  | jq .version -r)
