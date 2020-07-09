@@ -28,7 +28,9 @@ echo Did not get public dns name. Exiting now.
 exit 1
 fi
 
-export url=https://$PublicDnsName
+url=https://$PublicDnsName
+
+echo "::set-env name=MEDIC_URL::$1"
 
 echo Begin Checking $url/api/info is up
 version=$(curl -s $url/api/info -k  | jq .version -r)
