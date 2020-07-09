@@ -80,6 +80,7 @@ angular.module('controllers').controller('AuthorizationRolesCtrl',
       Object.keys($scope.roles).forEach(function(key) {
         changes[key] = $scope.roles[key];
       });
+
       changes[$scope.newRole.key] = {
         name: $scope.newRole.name,
         offline: $scope.newRole.offline
