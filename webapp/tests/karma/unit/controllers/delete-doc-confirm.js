@@ -1,4 +1,4 @@
-describe.only('DeleteDocConfirm controller', () => {
+describe('DeleteDocConfirm controller', () => {
   'use strict';
 
   let createController;
