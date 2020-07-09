@@ -10,19 +10,23 @@ jobs:
     name: Setting up EC2 Instance
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2
-      - name: Start EC2 and Medic
-        run: cd tests/scalability && ::set-env name=SpotInstanceRequestId::$(aws ec2 request-spot-instances --spot-price "0.222" --instance-count 1 --type "one-time" --launch-specification file://launch-specification.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)
-      - name: Get EC2 Instance ID
-        run: ::set-env name=InstanceId::$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r)
-      - name: Get EC2 Public IP
-        run: ::set-env name=publicIP::$(aws ec2 describe-instances --instance-ids $InstanceId | jq .Reservations[0].Instances[0]. -r)
-      - name: Wait for Api to be up
-        run: ./scripts/curl_api_info.sh https://$publicIP
+      - name: Set ENV Var
+        run: ::set-env name=SpotInstanceRequestId::test
+      - name: Print VAR
+        run: echo $SpotInstanceRequestId
+      # - name: Checkout
+      #   uses: actions/checkout@v2
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
+      #     aws-region: eu-west-2
+      # - name: Start EC2 and Medic
+      #   run: cd tests/scalability && "::set-env name=SpotInstanceRequestId::$(aws ec2 request-spot-instances --spot-price '0.222' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)"      
+      # - name: Get EC2 Instance ID
+      #   run: "::set-env name=InstanceId::$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r)"
+      # - name: Get EC2 Public IP
+      #   run: ::set-env name=publicIP::$(aws ec2 describe-instances --instance-ids $InstanceId | jq .Reservations[0].Instances[0]. -r)
+      # - name: Wait for Api to be up
+      #   run: ./scripts/curl_api_info.sh https://$publicIP
