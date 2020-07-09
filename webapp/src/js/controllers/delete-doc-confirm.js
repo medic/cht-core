@@ -20,6 +20,10 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
       if (doc.type === 'data_record' && doc.contact) {
         doc.contact = ExtractLineage(doc.contact);
       }
+      
+      if (doc.type === 'data_record') {
+        delete doc.patient;
+      }
 
       DB().put(doc)
         .then(function() {
