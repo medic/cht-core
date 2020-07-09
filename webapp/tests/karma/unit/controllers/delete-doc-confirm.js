@@ -43,7 +43,7 @@ describe.only('DeleteDocConfirm controller', () => {
     };
   }));
 
-  describe('controller', () => {
+  describe('minify', () => {
     it('minifies reports when they deleted', () => {
       const ctrl = createController();
       const minifiedContact = {
