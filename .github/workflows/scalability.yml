@@ -21,4 +21,4 @@ jobs:
       - name: Start EC2 and Medic
         run: cd tests/scalability && ./start_ec2_medic.sh ${GITHUB_REF#refs/heads/}
       - name: testing env var scope
-        run: echo pub dns is $url
+        run: echo pub dns is $MEDIC_URL
