@@ -1,10 +1,10 @@
 #!/bin/bash
 
- 
+echo $MEDIC_URL
 echo  Running Suite 
 
 git clone https://github.com/medic/cht-core.git;
-cd cht-core
+cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 suite_dir=$(pwd)
 
@@ -12,9 +12,12 @@ cp -r ./csv ../../config/standard/
 
 cd ../../config/standard/
 
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
 npm install medic-conf -g
 
- medic-conf --url=$1 backup-app-settings \
+ medic-conf --url=$MEDIC_URL backup-app-settings \
     upload-app-settings \
     convert-app-forms \
     convert-collect-forms \
