@@ -1,18 +1,15 @@
-echo  Running Suite 
+# echo  Running Suite 
+
+git clone https://github.com/medic/cht-core.git;
+cd cht-core
 export NODE_TLS_REJECT_UNAUTHORIZED=0
-resp=$(curl --write-out %{http_code} --silent --output /dev/null $1/api/info -k --head) 
-
-if [ $resp != '200' ]
-  then
-    echo "The instance provided did not respond with 200 at $1/api/info"
-    exit 1
-fi
-
 suite_dir=$(pwd)
 
 cp -r ./csv ../../config/standard/
 
 cd ../../config/standard/
+
+npm install medic-conf -g
 
  medic-conf --url=$1 backup-app-settings \
     upload-app-settings \
@@ -30,16 +27,12 @@ cd ../../config/standard/
     upload-docs \
     create-users \
 
-# Can be removed when finished since server will tear down
-
-rm -rf ./csv
-
 cd $suite_dir
 
 echo "Changing config to match url arg"
-node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$1/medic'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});" 
-# echo "npm install"
-# npm install
+node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL/medic'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});" 
+echo "npm install"
+npm install
 echo "jmeter install"
 wget http://www.gtlib.gatech.edu/pub/apache//jmeter/binaries/apache-jmeter-5.3.tgz -q && 
 mkdir ./jmeter && tar -xf apache-jmeter-5.3.tgz -C ./jmeter --strip-components=1
