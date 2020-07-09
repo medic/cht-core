@@ -1,10 +1,12 @@
+const lineageFactory = require('@medic/lineage');
+
 angular.module('inboxControllers').controller('DeleteDocConfirm',
   function (
+    $q,
     $scope,
     $translate,
     $uibModalInstance,
     DB,
-    ExtractLineage,
     Snackbar
   ) {
 
@@ -12,18 +14,13 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
     'ngInject';
 
     const ctrl = this;
+    const lineage = lineageFactory($q, DB());
 
     ctrl.submit = function() {
       const doc = $scope.model.doc;
 
       doc._deleted = true;
-      if (doc.type === 'data_record' && doc.contact) {
-        doc.contact = ExtractLineage(doc.contact);
-      }
-      
-      if (doc.type === 'data_record') {
-        delete doc.patient;
-      }
+      lineage.minify(doc);
 
       DB().put(doc)
         .then(function() {
