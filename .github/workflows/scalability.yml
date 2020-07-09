@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set ENV Var
-        run: "::set-env name=SpotInstanceRequestId::test"
+        run: echo '::set-env name=SELECTED_COLOR::green'
       - name: Print VAR
-        run: echo $SpotInstanceRequestId
+        run: echo $SELECTED_COLOR
       # - name: Checkout
       #   uses: actions/checkout@v2
       # - name: Configure AWS Credentials
