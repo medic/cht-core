@@ -53,7 +53,6 @@ const submit = function(e) {
 const requestTokenLogin = (retry = 20) => {
   const url = document.getElementById('tokenLogin').action;
   request('POST', url, '', xmlhttp => {
-    console.log(xmlhttp);
     let response = {};
     try {
       response = JSON.parse(xmlhttp.responseText);

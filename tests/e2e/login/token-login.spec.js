@@ -8,12 +8,13 @@ const INVALID = 'Your link is invalid.';
 const EXPIRED = 'Your link has expired.';
 const MISSING = 'Your link is missing required information';
 const TOLOGIN = 'If you know your username and password, click on the following link to load the login page.';
+const ERROR = 'Something went wrong when processing your request';
 
 let user;
 
 const getUrl = (token, encrypt) => `${utils.getOrigin()}/medic/login/token/${token}/${encrypt}`;
 const setupTokenLoginSettings = () => {
-  const settings = { token_login: { app_url: utils.getOrigin(), message: 'token_login_sms' } };
+  const settings = { token_login: { app_url: utils.getOrigin(), message: 'token_login_sms', enabled: true } };
   return utils.updateSettings(settings, true);
 };
 
@@ -54,8 +55,17 @@ describe('token login', () => {
     return utils.revertDb();
   });
 
+  it('should display an error when token login is disabled', () => {
+    browser.driver.get(getUrl('this is a', 'random string'));
+    helper.waitElementToDisappear(by.css('.loader'));
+    expect(helper.isTextDisplayed(ERROR)).toBe(true);
+    expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
+    expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
+  });
+
   it('should display an error with incorrect url', () => {
-    browser.driver.get(getUrl('this is a', ''));
+    browser.wait(() => setupTokenLoginSettings().then(() => true));
+    browser.driver.get(`${utils.getOrigin()}/medic/login/token/justtoken`);
     helper.waitElementToDisappear(by.css('.loader'));
     expect(helper.isTextDisplayed(MISSING)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
@@ -63,6 +73,7 @@ describe('token login', () => {
   });
 
   it('should display an error when accessing with random strings', () => {
+    browser.wait(() => setupTokenLoginSettings().then(() => true));
     browser.driver.get(getUrl('this is a', 'random string'));
     helper.waitElementToDisappear(by.css('.loader'));
     expect(helper.isTextDisplayed(INVALID)).toBe(true);
