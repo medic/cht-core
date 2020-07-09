@@ -233,15 +233,6 @@ describe('ReportsCtrl controller', () => {
       });
     });
 
-    it('minifies deleted reports', () => {
-      createController();
-
-      return Promise.resolve().then(() => {
-        changesCallback({ deleted: true, id: 'id', patient: {} });
-        chai.expect(LiveList.reports.remove.args[0]).to.not.have.key('patient');
-      });
-    });
-
     it('refreshes list', () => {
       createController();
       const searchBaseline = Search.callCount;
