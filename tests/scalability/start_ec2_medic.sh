@@ -30,7 +30,7 @@ fi
 
 url=https://$PublicDnsName
 
-echo "::set-env name=MEDIC_URL::$1"
+echo "::set-env name=MEDIC_URL::$url"
 
 echo Begin Checking $url/api/info is up
 version=$(curl -s $url/api/info -k  | jq .version -r)
