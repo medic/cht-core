@@ -19,4 +19,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
       - name: Start EC2 and Medic
-        run: cd tests/scalability && ./start_ec2_medic.sh $GITHUB_REF
+        run: cd tests/scalability && ./start_ec2_medic.sh ${GITHUB_REF#refs/heads/}
