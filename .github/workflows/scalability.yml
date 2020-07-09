@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set ENV Var
-        run: ::set-env name=SpotInstanceRequestId::test
+        run: "::set-env name=SpotInstanceRequestId::test"
       - name: Print VAR
         run: echo $SpotInstanceRequestId
       # - name: Checkout
