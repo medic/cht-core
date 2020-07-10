@@ -86,7 +86,7 @@ describe('Outbound', () => {
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
     return utils
-      .updateSettings({ outbound: outboundConfig(server.address().port) }, true)
+      .updateSettings({ outbound: outboundConfig(server.address().port) })
       .then(() => utils.stopSentinel())
       .then(() => utils.saveDocs(docs))
       .then(() => utils.sentinelDb.bulkDocs(tasks))

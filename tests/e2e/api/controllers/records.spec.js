@@ -4,7 +4,7 @@ const utils = require('../../../utils');
 
 describe('Import Records', () => {
 
-  afterAll(() => utils.revertDb());
+  afterAll(() => utils.deleteAllDocs().then(() => utils.revertSettings()));
 
   beforeAll(() => utils.updateSettings({
     forms: {

@@ -587,7 +587,7 @@ describe('bulk-get handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {

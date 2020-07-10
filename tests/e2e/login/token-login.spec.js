@@ -15,7 +15,8 @@ let user;
 const getUrl = (token, encrypt) => `${utils.getOrigin()}/medic/login/token/${token}/${encrypt}`;
 const setupTokenLoginSettings = () => {
   const settings = { token_login: { app_url: utils.getOrigin(), message: 'token_login_sms', enabled: true } };
-  return utils.updateSettings(settings, true);
+  const waitForApiUpdate = utils.waitForLogs('api.e2e.log', /Settings updated/);
+  return utils.updateSettings(settings, 'api').then(() => waitForApiUpdate.promise);
 };
 
 const createUser = (user) => {
@@ -47,7 +48,7 @@ describe('token login', () => {
     };
     browser.manage().deleteAllCookies();
   });
-  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb([], true)));
+  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb([], [])));
 
   afterAll(() => {
     commonElements.goToLoginPage();

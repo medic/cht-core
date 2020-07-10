@@ -446,7 +446,7 @@ describe('db-doc handler', () => {
       ];
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
-        .updateSettings({ replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
@@ -730,7 +730,7 @@ describe('db-doc handler', () => {
 
         const docs = reportScenarios.map(scenario => scenario.doc);
         return utils
-          .updateSettings({ replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+          .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
           .then(()=> utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
             _.defaults({ path: `/${patient._id}` }, offlineRequestOptions)
@@ -1091,7 +1091,7 @@ describe('db-doc handler', () => {
       };
 
       return utils
-        .updateSettings({ replication_depth: [{ role:'district_admin', depth: 2 }]}, true)
+        .updateSettings({ replication_depth: [{ role:'district_admin', depth: 2 }]})
         .then(() => utils.saveDocs([ allowedTask, deniedTask, allowedTarget, deniedTarget ]))
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/task1' }, offlineRequestOptions)),
@@ -1164,7 +1164,7 @@ describe('db-doc handler', () => {
           // user can't see the unallocated report without permissions
           chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         })
-        .then(() => utils.updateSettings(settings, true))
+        .then(() => utils.updateSettings(settings))
         .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
         .then(result => {
           // user can see the unallocated report with permissions
@@ -1311,7 +1311,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({ replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))
@@ -1619,7 +1619,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({ replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}`, body:scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))

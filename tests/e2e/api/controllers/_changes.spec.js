@@ -259,7 +259,7 @@ describe('changes handler', () => {
       .then(done));
 
   beforeEach(done => getCurrentSeq().then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
 
   describe('requests', () => {
     it('should allow DB admins to POST to _changes', () => {
@@ -1013,7 +1013,7 @@ describe('changes handler', () => {
   describe('replication depth', () => {
 
     it('should show contacts to a user only if they are within the configured depth', () =>
-      utils.updateSettings({ replication_depth: [{ role:'district_admin', depth:1 }] }, true)
+      utils.updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
         .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
         .then(() => utils.saveDoc({
           _id:'should-be-hidden', reported_date: 1, type:'person',
@@ -1127,7 +1127,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({ replication_depth: [{ role:'district_admin', depth: 1 }] }, true)
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
@@ -1217,7 +1217,7 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({ replication_depth: [{ role:'district_admin', depth: 1 }]}, true)
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
           .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place

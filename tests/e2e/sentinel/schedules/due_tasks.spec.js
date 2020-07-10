@@ -246,7 +246,7 @@ describe('Due Tasks', () => {
   beforeAll(() => utils
     .saveDocs(contacts)
     .then(() => utils.addTranslations('test', translations))
-    .then(() => utils.updateSettings(settings, true))
+    .then(() => utils.updateSettings(settings))
   );
   afterAll(() => utils.revertDb());
 

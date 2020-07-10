@@ -89,31 +89,17 @@ const updateSettings = updates => {
 };
 
 const revertSettings = () => {
-  if (!originalSettings || !Object.keys(originalSettings).length) {
+  if (!originalSettings) {
     return Promise.resolve(false);
   }
   return request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
-  }).then(response => {
+  }).then(() => {
     originalSettings = null;
-    return response;
+    return true;
   });
-};
-
-const tailServicesLogsForSettingsUpdates = () => {
-  return [
-    module.exports.waitForLogs('api.e2e.log', /Settings updated/),
-    module.exports.waitForLogs('sentinel.e2e.log', /Reminder messages allowed between/),
-  ];
-};
-
-const waitForServicesToUpdateSettings = (updateSettingsResponse, serviceLogTails) => {
-  if (!updateSettingsResponse || !updateSettingsResponse.updated) {
-    return serviceLogTails.forEach(logTail => logTail.cancel());
-  }
-  return Promise.all(serviceLogTails.map(logtail => logtail.promise));
 };
 
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
@@ -201,7 +187,7 @@ const deleteAll = (except = []) => {
     });
 };
 
-const waitForNewSettingsAndRefresh = () => {
+const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
@@ -252,14 +238,9 @@ const setUserContactDoc = () => {
 const revertDb = (except, ignoreRefresh) => {
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
-      if (!ignoreRefresh && (needsRefresh && needsRefresh.updated)) {
-        // only need to refresh if the settings were changed
-        return waitForNewSettingsAndRefresh();
-      }
-
-      // if the popup already exists, click!
-      if (element(by.css('#update-available')).isPresent()) {
-        $('body').sendKeys(protractor.Key.ENTER);
+      // only need to refresh if the settings were changed
+      if (!ignoreRefresh && needsRefresh) {
+        return refreshToGetNewSettings();
       }
     }).then(setUserContactDoc);
   });
@@ -498,16 +479,12 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) => {
-    const serviceLogTails = tailServicesLogsForSettingsUpdates();
-    return updateSettings(updates)
-      .then(result => waitForServicesToUpdateSettings(result, serviceLogTails))
-      .then(() => {
-        if (!ignoreRefresh) {
-          return waitForNewSettingsAndRefresh();
-        }
-      });
-  },
+  updateSettings: (updates, ignoreRefresh = false) =>
+    updateSettings(updates).then(() => {
+      if (!ignoreRefresh) {
+        return refreshToGetNewSettings();
+      }
+    }),
 
   /**
    * Revert settings and refresh if required
@@ -515,16 +492,12 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  revertSettings: ignoreRefresh => {
-    const serviceLogTails = tailServicesLogsForSettingsUpdates();
-    return revertSettings()
-      .then(result => waitForServicesToUpdateSettings(result, serviceLogTails))
-      .then(() => {
-        if (!ignoreRefresh) {
-          return waitForNewSettingsAndRefresh();
-        }
-      });
-  },
+  revertSettings: ignoreRefresh =>
+    revertSettings().then(() => {
+      if (!ignoreRefresh) {
+        return refreshToGetNewSettings();
+      }
+    }),
 
   seedTestData: (done, userContactDoc, documents) => {
     protractor.promise
@@ -722,7 +695,7 @@ module.exports = {
       return sentinel.put(sentinelMetadata);
     });
   },
-  refreshToGetNewSettings: waitForNewSettingsAndRefresh,
+  refreshToGetNewSettings: refreshToGetNewSettings,
 
   waitForDocRev: waitForDocRev,
 

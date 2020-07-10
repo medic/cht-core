@@ -57,7 +57,7 @@ const getUser = (user) => {
 const setupTokenLoginSettings = () => {
   const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
   return utils
-    .updateSettings(settings, true)
+    .updateSettings(settings, 'api')
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
 
@@ -84,7 +84,7 @@ describe('login', () => {
       },
     };
   });
-  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'])));
+  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], [])));
 
   describe('default login', () => {
     it('should fail with no data', () => {

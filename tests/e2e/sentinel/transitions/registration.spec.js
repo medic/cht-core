@@ -605,7 +605,7 @@ describe('registration', () => {
     const ids = [chwNoParent._id, chwNonExistingParent._id, invalidParent1._id, invalidParent2._id, invalidParent3._id];
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs([chwNoParent, chwNonExistingParent, invalidParent1, invalidParent2, invalidParent3]))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
@@ -1040,7 +1040,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDoc(createPlace))
       // Sentinel won't process these, so we can't wait for a metadata update, but let's give it 5 seconds just in case
       .then(() => utils.delayPromise(() => Promise.resolve(), 5000))
@@ -1245,7 +1245,7 @@ describe('registration', () => {
     const ids = reports.map(r => r._id);
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs(reports))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
@@ -1494,7 +1494,7 @@ describe('registration', () => {
     let updatedDocs;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
@@ -1661,7 +1661,7 @@ describe('registration', () => {
     let updatedDocs;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(ids))
       .then(() => sentinelUtils.getInfoDocs(ids))
