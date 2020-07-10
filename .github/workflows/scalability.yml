@@ -7,7 +7,7 @@ on:
       
 jobs:
   build:
-    name: Setting up EC2 Instance
+    name: Set up Medic on EC2 and Execute Jmeter on another EC2
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
