@@ -7,6 +7,7 @@ const assert = require('chai').assert;
 const db = require('../../../src/db');
 const feed = require('../../../src/lib/feed');
 const metadata = require('../../../src/lib/metadata');
+const logger = require('../../../src/lib/logger');
 const tombstoneUtils = require('@medic/tombstone-utils');
 
 describe('feed', () => {
@@ -203,6 +204,26 @@ describe('feed', () => {
         });
     });
 
+    it('should restart the queue', () => {
+      feed.cancel();
+      sinon.stub(metadata, 'getProcessedSeq').resolves('123');
+      sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
+      const change = { id: 'some-uuid' };
+      sinon.stub(feed._changeQueue, 'push');
+      sinon.spy(feed._changeQueue, 'resume');
+
+      return feed
+        .listen()
+        .then(() => {
+          const callbackFn = handler.on.args[0][1];
+          callbackFn(change);
+        })
+        .then(() => {
+          chai.expect(feed._changeQueue.resume.callCount).to.equal(1);
+          chai.expect(feed._changeQueue.push.callCount).to.equal(1);
+          chai.expect(feed._changeQueue.push.args[0][0]).to.deep.equal(change);
+        });
+    });
   });
 
   describe('cancel', () => {
@@ -212,11 +233,13 @@ describe('feed', () => {
 
       const push = sinon.stub(feed._changeQueue, 'push');
       const change = { id: 'some-uuid' };
+      sinon.spy(feed._changeQueue, 'pause');
 
       return feed
         .listen()
         .then(() => feed.cancel())
         .then(() => {
+          chai.expect(feed._changeQueue.pause.callCount).to.equal(1);
           chai.expect(handler.cancel.callCount).to.equal(1);
           // resume listening
           return feed.listen();
@@ -234,6 +257,31 @@ describe('feed', () => {
   });
 
   describe('changeQueue', () => {
+    it('should not resume feed if drain happens while queue is paused', (done) => {
+      let resolvePromise;
+      const delayedPromise = new Promise(resolve => resolvePromise = resolve);
+      sinon.stub(feed._transitionsLib, 'processChange').callsFake((change, cb) => {
+        return delayedPromise.then(() => cb());
+      });
+      sinon.spy(logger, 'debug');
+      sinon.spy(feed._changeQueue, 'resume');
+      sinon.stub(metadata, 'getProcessedSeq');
+      sinon.stub(metadata, 'update').resolves();
+
+      feed._enqueue({ id: 'somechange', seq: 65558 });
+      feed._changeQueue.process();
+      feed.cancel(); // feed is now canceled
+      resolvePromise(); // queue is now drained
+      setTimeout(() => {
+        chai.expect(logger.debug.withArgs('transitions: queue drained').callCount).to.equal(1);
+        chai.expect(feed._changeQueue.resume.callCount).to.equal(0);
+        chai.expect(metadata.getProcessedSeq.callCount).to.equal(0);
+        chai.expect(metadata.update.callCount).to.equal(1);
+        chai.expect(metadata.update.args[0]).to.deep.equal([65558]);
+        done();
+      });
+    });
+
     it('handles an empty change', done => {
       sinon.stub(feed._changeQueue, 'length').returns(0);
       sinon.stub(metadata, 'setTransitionSeq').resolves();
