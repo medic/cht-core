@@ -52,15 +52,13 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-    let geolocation;
+
+    let geoHandle;
 
     const getSelected = function() {
       if ($state.params.formId) { // adding
-        Geolocation()
-          .then(function(position) {
-            geolocation = position;
-          })
-          .catch($log.warn);
+        geoHandle && geoHandle.cancel();
+        geoHandle = Geolocation();
 
         return $q.resolve({
           formInternalId: $state.params.formId
@@ -179,7 +177,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       const reportId = model.doc && model.doc._id;
       const formInternalId = model.formInternalId;
 
-      Enketo.save(formInternalId, ctrl.form, geolocation, reportId)
+      Enketo.save(formInternalId, ctrl.form, geoHandle, reportId)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           ctrl.setEnketoSavingStatus(false);
@@ -205,6 +203,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     };
 
     $scope.$on('$destroy', function() {
+      geoHandle && geoHandle.cancel();
       unsubscribe();
       if (!$state.includes('reports.add') && !$state.includes('reports.edit')) {
         Enketo.unload(ctrl.form);

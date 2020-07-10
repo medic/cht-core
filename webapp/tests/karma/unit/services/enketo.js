@@ -679,7 +679,7 @@ describe('Enketo service', () => {
       ]);
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form, true).then(actual => {
+      return service.save('V', form, () => Promise.resolve(true)).then(actual => {
         const endTime = Date.now() + 1;
 
         expect(form.validate.callCount).to.equal(1);
@@ -894,7 +894,7 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: 'my-user', phone: '8989' });
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
-      return service.save('my-form', form, true).then(() => {
+      return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
         expect(AddAttachment.callCount).to.equal(2);
 
         expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
@@ -927,7 +927,7 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: 'my-user', phone: '8989' });
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
-      return service.save('my-form', form, true).then(() => {
+      return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
         expect(AddAttachment.callCount).to.equal(2);
 
         expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
@@ -968,7 +968,7 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: 'my-user', phone: '8989' });
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
-      return service.save('my-form-internal-id', form, true).then(() => {
+      return service.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
         expect(AddAttachment.callCount).to.equal(3);
 
         expect(AddAttachment.args[0][1]).to.equal('user-file/my-form-internal-id/my_file');

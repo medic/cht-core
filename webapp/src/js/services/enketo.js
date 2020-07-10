@@ -556,7 +556,7 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
-    this.save = function(formInternalId, form, geolocation, docId) {
+    this.save = function(formInternalId, form, geoHandle, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
@@ -574,13 +574,29 @@ angular.module('inboxServices').service('Enketo',
           return xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
         })
         .then(function(docs) {
-          if (geolocation) {
-            // Only update geolocation if one is provided.  Otherwise, maintain
-            // whatever is already set in the docs.
-            docs.forEach(function(doc) {
-              doc.geolocation = geolocation;
-            });
+          if (geoHandle) {
+            return geoHandle()
+            // REVIEWER
+            //   I'm not sure about this wrt edits. As it is written:
+            //    A) Create with no geo: no geolocation with relevant error
+            //    B) Create with geo: relevant geolocation with no error
+            //    C) Edit A with geo: relevant geolocation with old error
+            //    D) Edit A with no geo: no geolocation with relevant error
+            //    E) Edit B with no geo: old geolocation with relevant error
+            //    F) Edit B with geo: new geolcation with blank error
+            //
+            //  Perhaps we should just always overwrite doc.geolocation with either the success or the failure?
+            //  This is not what master does right now though, master follows the above but doesn't store the error
+            // REVIEWER
+              .then(coords => docs.forEach(doc => doc.geolocation = coords))
+              .catch(error => docs.forEach(doc => doc.geolocation_error = error))
+              .then(() => {
+                return docs;
+              });
           }
+          return docs;
+        })
+        .then(docs => {
           self.setLastChangedDoc(docs[0]);
           return docs;
         })

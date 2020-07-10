@@ -81,12 +81,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       }
     };
 
-    let geolocation;
-    Geolocation()
-      .then(function(position) {
-        geolocation = position;
-      })
-      .catch($log.warn);
+    // TODO: this is always geoing when the task page is open. Scope this right
+    const geoHandle = Geolocation();
 
     const hasOneActionAndNoFields = function(task) {
       return Boolean(
@@ -207,7 +203,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
       ctrl.setEnketoSavingStatus(true);
       resetFormError();
-      Enketo.save(ctrl.formId, ctrl.form, geolocation)
+      Enketo.save(ctrl.formId, ctrl.form, geoHandle)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
@@ -238,6 +234,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     ctrl.formId = null;
     ctrl.loadTasks.then(() => setSelected($state.params.id));
 
-    $scope.$on('$destroy', unsubscribe);
+    $scope.$on('$destroy', () => {
+      geoHandle && geoHandle.cancel();
+      unsubscribe();
+    });
   }
 );
