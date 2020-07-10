@@ -56,6 +56,15 @@ describe('token login', () => {
     return utils.revertDb();
   });
 
+  it('should redirect the user to the app if already logged in', () => {
+    commonElements.goToLoginPage();
+    loginPage.login(auth.username, auth.password);
+    browser.driver.get(getUrl('this is a', 'random string'));
+    helper.waitElementToDisappear(by.css('.loader'));
+    browser.waitForAngular();
+    helper.waitUntilReady(element(by.id('message-list')));
+  });
+
   it('should display an error when token login is disabled', () => {
     browser.driver.get(getUrl('this is a', 'random string'));
     helper.waitElementToDisappear(by.css('.loader'));

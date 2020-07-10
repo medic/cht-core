@@ -181,8 +181,6 @@ const checkSession = function() {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  checkSession();
-
   translations = parseTranslations();
   selectedLocale = getLocale();
 
@@ -193,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('tokenLogin')) {
     requestTokenLogin();
   } else {
+    checkSession();
     document.getElementById('login').addEventListener('click', submit, false);
 
     const user = document.getElementById('user');

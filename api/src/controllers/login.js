@@ -285,6 +285,8 @@ const tokenLogin = (req, res) => {
     return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
   }
 
+
+
   if (!req.params || !req.params.token || !req.params.userId) {
     return res.status(400).json({ error: 'missing', reason: 'Missing required params' });
   }
@@ -357,7 +359,19 @@ module.exports = {
   },
 
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
-  tokenPost: (req, res) => tokenLogin(req, res),
+  tokenPost: (req, res, next) => {
+    return auth
+      .getUserCtx(req)
+      .then(userCtx => {
+        return res.status(302).send(getRedirectUrl(userCtx));
+      })
+      .catch(err => {
+        if (err.code === 401) {
+          return tokenLogin(req, res);
+        }
+        next(err);
+      });
+  },
 
   // exposed for testing
   _safePath: getRedirectUrl,
