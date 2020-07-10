@@ -18,6 +18,7 @@ When development is ready to begin one of the engineers should be nominated as a
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
 - [ ] Raise a new issue called `Update dependencies for <version>` with a description that links to [the documentation](https://github.com/medic/medic-docs/blob/master/development/update-dependencies.md). This should be done early in the release cycle so find a volunteer to take this on and assign it to them.
+- [ ] Go through all features and improvements scheduled for this release and raise cht-docs issues for product education to be written where appropriate. If in doubt, check with Max.
 - [ ] Write an update in the weekly Product Team call agenda summarising development and acceptance testing progress and identifying any blockers. The release manager is to update this every week until the version is released.
 
 # Releasing
