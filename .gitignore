@@ -19,6 +19,7 @@ dist
 /packages
 /static
 .vscode/
+.idea/
 /build/
 config/standard/.gdrive.*.json
 config/*/backups/*
