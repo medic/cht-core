@@ -1,9 +1,8 @@
 #!/bin/bash
 
-echo $MEDIC_URL
 echo  Running Suite 
-
-git clone https://github.com/medic/cht-core.git;
+echo pwd
+git clone --single-branch --branch scalability-automation https://github.com/medic/cht-core.git;
 cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 suite_dir=$(pwd)
