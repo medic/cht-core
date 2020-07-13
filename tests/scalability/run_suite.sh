@@ -16,7 +16,9 @@ sudo apt-get install -y nodejs
 
 npm install medic-conf -g
 
- medic-conf --url=$MEDIC_URL backup-app-settings \
+MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
+
+medic-conf --url=$MEDIC_CONF_URL backup-app-settings \
     upload-app-settings \
     convert-app-forms \
     convert-collect-forms \
