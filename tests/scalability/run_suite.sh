@@ -1,6 +1,5 @@
 #!/bin/bash
 
-echo  Running Suite 
 echo Cloning cht-core to /cht-core
 git clone --single-branch --branch scalability-automation https://github.com/medic/cht-core.git;
 cd cht-core/tests/scalability
@@ -10,6 +9,12 @@ suite_dir=$(pwd)
 cp -r ./csv ../../config/standard/
 
 cd ../../config/standard/
+
+
+sudo apt-get update
+
+echo installing JAVA
+sudo apt install default-jre
 
 echo installing node
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
