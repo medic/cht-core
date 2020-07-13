@@ -22,7 +22,7 @@ angular.module('inboxServices').service('Geolocation',
 
       const finalise = () => {
         $log.info('Finalising geolocation');
-        $navigator.geolocation.clearWatch(watcher);
+        $navigator.geolocation && $navigator.geolocation.clearWatch(watcher);
 
         if (geo) {
           // Throughout the life of this handle we managed to get a GPS coordinate at least once
@@ -83,7 +83,7 @@ angular.module('inboxServices').service('Geolocation',
 
       complete.cancel = () => {
         $log.info('Cancelling geolocation');
-        $navigator.geolocation.clearWatch(watcher);
+        $navigator.geolocation && $navigator.geolocation.clearWatch(watcher);
       };
 
       return complete;
