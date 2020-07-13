@@ -13,10 +13,10 @@ cd ../../config/standard/
 
 echo installing node
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-sudo apt-get install -y nodejs
+sudo apt-get -q install -y nodejs
 
 echo installing pip
-sudo apt-get install python-pip -y
+sudo apt-get -q install python-pip -y
 
 echo installing pyxform
 sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
@@ -27,12 +27,10 @@ npm install medic-conf -g
 MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
 
 echo Upliading settings and seeding data
-medic-conf --url=$MEDIC_CONF_URL backup-app-settings \
-    upload-app-settings \
+medic-conf --url=$MEDIC_CONF_URL upload-app-settings \
     convert-app-forms \
     convert-collect-forms \
     convert-contact-forms \
-    backup-all-forms \
     delete-all-forms \
     upload-app-forms \
     upload-collect-forms \
