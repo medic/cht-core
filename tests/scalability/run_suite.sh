@@ -24,10 +24,10 @@ echo installing pip
 sudo apt-get -q install python-pip -y
 
 echo installing pyxform
-sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic -q
 
 echo installing medic-conf
-npm install medic-conf -g
+npm install medic-conf -g -s
 
 MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
 
