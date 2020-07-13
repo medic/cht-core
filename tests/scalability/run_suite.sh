@@ -14,7 +14,7 @@ cd ../../config/standard/
 sudo apt-get update
 
 echo installing JAVA
-sudo apt install default-jre
+sudo apt-get -q install default-jre -y
 
 echo installing node
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
@@ -32,6 +32,7 @@ npm install medic-conf -g
 MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
 
 echo Upliading settings and seeding data
+echo medic-conf url is $MEDIC_CONF_URL
 medic-conf --url=$MEDIC_CONF_URL upload-app-settings \
     convert-app-forms \
     convert-collect-forms \
