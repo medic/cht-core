@@ -66,7 +66,6 @@ describe('Changes controller', () => {
 
     sinon.stub(authorization, 'getViewResults').returns({});
     sinon.stub(authorization, 'allowedDoc');
-    sinon.stub(authorization, 'getDepth').returns(1);
     sinon.stub(authorization, 'getAuthorizationContext').resolves({ userCtx });
     sinon.stub(authorization, 'getAllowedDocIds').resolves({});
     sinon.stub(authorization, 'isAuthChange').returns(false);

@@ -826,4 +826,299 @@ describe('bulk-docs handler', () => {
         ]);
       });
   });
+
+
+  it('should work with replication_depth', () => {
+    const existentDocs = [
+      {
+        _id: 'existing_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'report_about_existing_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'existing_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'existing_person',
+        type: 'person',
+        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+      },
+      {
+        _id: 'denied_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person', needs_signoff: true },
+        contact: {
+          _id: 'existing_person',
+          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        },
+      },
+      {
+        _id: 'allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+      },
+      {
+        _id: 'denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:other',
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        owner: 'existing_person',
+      },
+    ];
+
+    const newDocs = [
+      {
+        _id: 'allowed_new_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'denied_new_person',
+        type: 'person',
+        parent: { _id: 'allowed_new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+      },
+      {
+        _id: 'allowed_report_about_new_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'allowed_new_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'denied_report_about_new_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'denied_new_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_new_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'denied_new_person', needs_signoff: true },
+        contact: {
+          _id: 'new_person',
+          parent: { _id: 'allowed_new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+        },
+      },
+      {
+        _id: 'new_allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+      },
+      {
+        _id: 'new_denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:other',
+      },
+      {
+        _id: 'new_allowed_target',
+        type: 'target',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'new_denied_target',
+        type: 'target',
+        owner: 'existing_person',
+      },
+    ];
+
+    const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
+    return utils
+      .updateSettings(settings)
+      .then(() => utils.saveDocs(existentDocs))
+      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => {
+        offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
+        return utils.requestOnMedicDb(offlineRequestOptions);
+      })
+      .then(results => {
+        chai.expect(results).excludingEvery('rev').to.deep.equal([
+          { id: 'allowed_new_clinic', ok: true },
+          { id: 'denied_new_person', error: 'forbidden' },
+          { id: 'allowed_report_about_new_clinic', ok: true },
+          { id: 'denied_report_about_new_person', error: 'forbidden' },
+          { id: 'allowed_report_about_new_person', ok: true },
+          { id: 'new_allowed_task', ok: true },
+          { id: 'new_denied_task', error: 'forbidden' },
+          { id: 'new_allowed_target', ok: true },
+          { id: 'new_denied_target', error: 'forbidden' },
+          { id: 'existing_clinic', ok: true },
+          { id: 'report_about_existing_clinic', ok: true },
+          { id: 'existing_person', error: 'forbidden' },
+          { id: 'denied_report_about_existing_person', error: 'forbidden' },
+          { id: 'allowed_report_about_existing_person', ok: true },
+          { id: 'allowed_task', ok: true },
+          { id: 'denied_task', error: 'forbidden' },
+          { id: 'allowed_target', ok: true },
+          { id: 'denied_target', error: 'forbidden' },
+        ]);
+      });
+  });
+
+  it('should work with report replication depth', () => {
+    const existentDocs = [
+      {
+        _id: 'existing_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'report_about_existing_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'existing_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'existing_person',
+        type: 'person',
+        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+      },
+      {
+        _id: 'denied_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_existing_person1',
+        type: 'data_record',
+        fields: { patient_id: 'existing_person' },
+        form: 'form',
+        contact: {
+          _id: 'fixture:user:offline',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        },
+      },
+      {
+        _id: 'allowed_report_about_existing_person2',
+        type: 'data_record',
+        fields: { patient_id: 'existing_person', needs_signoff: true },
+        form: 'form',
+        contact: {
+          _id: 'existing_person',
+          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        },
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        owner: 'existing_person',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        owner: 'whoever',
+      },
+    ];
+
+    const newDocs = [
+      {
+        _id: 'new_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'new_person',
+        type: 'person',
+        parent: { _id: 'new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+      },
+      {
+        _id: 'allowed_report_about_new_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'new_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'denied_report_about_new_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'new_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_new_person1',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'new_person', needs_signoff: true },
+        contact: {
+          _id: 'new_person',
+          parent: { _id: 'new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+        },
+      },
+      {
+        _id: 'allowed_report_about_new_person2',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'new_person' },
+        contact: {
+          _id: 'fixture:user:offline',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        },
+      },
+      {
+        _id: 'new_allowed_target',
+        type: 'target',
+        owner: 'new_person',
+      },
+      {
+        _id: 'new_denied_target',
+        type: 'target',
+        owner: 'whoever',
+      },
+    ];
+
+    const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
+    return utils
+      .updateSettings(settings)
+      .then(() => utils.saveDocs(existentDocs))
+      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => {
+        offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
+        return utils.requestOnMedicDb(offlineRequestOptions);
+      })
+      .then(results => {
+        chai.expect(results).excludingEvery('rev').to.deep.equal([
+          { id: 'new_clinic', ok: true },
+          { id: 'new_person', ok: true },
+          { id: 'allowed_report_about_new_clinic', ok: true },
+          { id: 'denied_report_about_new_person', error: 'forbidden' },
+          { id: 'allowed_report_about_new_person1', ok: true },
+          { id: 'allowed_report_about_new_person2', ok: true },
+          { id: 'new_allowed_target', ok: true },
+          { id: 'new_denied_target', error: 'forbidden' },
+          { id: 'existing_clinic', ok: true },
+          { id: 'report_about_existing_clinic', ok: true },
+          { id: 'existing_person', ok: true },
+          { id: 'denied_report_about_existing_person', error: 'forbidden' },
+          { id: 'allowed_report_about_existing_person1', ok: true },
+          { id: 'allowed_report_about_existing_person2', ok: true },
+          { id: 'allowed_target', ok: true },
+          { id: 'denied_target', error: 'forbidden' },
+        ]);
+      });
+  });
 });

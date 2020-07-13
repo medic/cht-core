@@ -1063,6 +1063,188 @@ describe('changes handler', () => {
             'should-be-visible',
             'should-also-be-visible')));
 
+    describe('report replication depth', () => {
+      it('should show reports to a user only if they are within the configured depth', () => {
+        const contacts = [
+          {
+            // depth = 2
+            _id: 'chwville_patient',
+            type: 'person',
+            parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville' } },
+            name: 'patient',
+          }
+        ];
+        const reports = [
+          {
+            // depth = 0, submitted by someone they can see
+            _id: 'valid_report_1',
+            form: 'form',
+            contact: { _id: 'fixture:user:chw' },
+            fields: {
+              place_id: 'fixture:chw-bossville',
+            },
+            type: 'data_record',
+          },
+          {
+            // depth = 2, submitted by the user himself
+            _id: 'valid_report_2',
+            form: 'form',
+            contact: { _id: 'fixture:user:chw-boss' },
+            fields: {
+              patient_id: 'chwville_patient',
+            },
+            type: 'data_record',
+          },
+          {
+            // depth = 1, submitted by someone they can't see
+            _id: 'valid_report_3',
+            form: 'form',
+            contact: { _id: 'some_contact' },
+            fields: {
+              place_id: 'fixture:chwville',
+            },
+            type: 'data_record',
+          },
+          {
+            // depth = 2, submitted by someone they can see
+            _id: 'invalid_report_1',
+            form: 'form',
+            contact: { _id: 'fixture:user:chw' },
+            fields: {
+              patient_id: 'fixture:user:chw',
+            },
+            type: 'data_record'
+          },
+        ];
+
+        return utils
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
+          .then(() => utils.saveDocs(contacts))
+          .then(() => utils.saveDocs(reports))
+          .then(() => requestChanges('chw-boss'))
+          .then(changes => {
+            assertChangeIds(changes,
+              'org.couchdb.user:chw-boss',
+              'fixture:user:chw-boss',
+              'fixture:user:chw',
+              'fixture:chw-bossville',
+              'chwville_patient',
+              'fixture:chwville',
+              'valid_report_1',
+              'valid_report_2',
+              'valid_report_3',
+            );
+          });
+      });
+
+      it('should replicate targets correctly', () => {
+        const docs = [
+          {
+            // depth = 2, but not a report
+            _id: 'target~chw',
+            type: 'target',
+            owner: 'fixture:user:chw'
+          },
+          {
+            // depth = 2, submitted by someone they can see
+            _id: 'invalid_report_1',
+            form: 'form',
+            contact: { _id: 'fixture:user:chw' },
+            fields: {
+              patient_id: 'fixture:user:chw',
+            },
+            type: 'data_record'
+          },
+          {
+            // depth = 2, submitted by someone they can see
+            _id: 'task~chw',
+            type: 'task',
+            user: 'org.couchdb.user:chw'
+          },
+        ];
+
+        return utils
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
+          .then(() => utils.saveDocs(docs))
+          .then(() => requestChanges('chw-boss'))
+          .then(changes => {
+            assertChangeIds(changes,
+              'org.couchdb.user:chw-boss',
+              'fixture:user:chw-boss',
+              'fixture:user:chw',
+              'fixture:chw-bossville',
+              'fixture:chwville',
+              'target~chw',
+            );
+          });
+      });
+
+      it('users should replicate tasks and targets correctly', () => {
+        const docs = [
+          {
+            // depth = 1
+            _id: 'some_contact',
+            type: 'person',
+            parent: { _id: 'fixture:chwville' },
+            name: 'other_contact'
+          },
+          {
+            // depth = 0, submitted by someone they can see (not sensitive)
+            _id: 'valid_report_1',
+            type: 'data_record',
+            form: 'form',
+            contact: { _id: 'some_contact' },
+            fields: { place_id: 'fixture:chwville' }
+          },
+          {
+            // depth = 1,
+            _id: 'target~chw',
+            type: 'target',
+            owner: 'fixture:user:chw',
+          },
+          {
+            // depth = 1
+            _id: 'task~chw',
+            type: 'task',
+            user: 'org.couchdb.user:chw',
+          },
+          {
+            // depth = 1, submitted by the user themselves
+            _id: 'valid_report_2',
+            type: 'data_record',
+            form: 'form',
+            contact: { _id: 'fixture:user:chw' },
+            fields: { patient_id: 'some_contact' }
+          },
+          {
+            // depth = 1, submitted by someone the user can see
+            _id: 'invalid_report_1',
+            type: 'data_record',
+            form: 'form',
+            contact: { _id: 'some_contact' },
+            fields: { patient_id: 'some_contact' }
+          },
+        ];
+
+        return utils
+          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] })
+          .then(() => utils.saveDocs(docs))
+          .then(() => requestChanges('chw'))
+          .then(changes => {
+            assertChangeIds(changes,
+              'org.couchdb.user:chw',
+              'fixture:user:chw',
+              'fixture:chwville',
+              'target~chw',
+              'task~chw',
+              'valid_report_1',
+              'valid_report_2',
+              'some_contact',
+            );
+          });
+      });
+    });
+
     describe('Needs signoff', () => {
       beforeEach(done => {
         const patient = {
@@ -1224,6 +1406,101 @@ describe('changes handler', () => {
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
             requestChanges('supervisor'), // supervisor > parent_place
             requestChanges('bob'), // bob > bobbille > parent_place
+          ]))
+          .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
+            assertChangeIds(chwChanges,
+              'org.couchdb.user:chw',
+              'fixture:user:chw',
+              'fixture:chwville',
+              'clinic_patient',
+              'clinic_report',
+              'clinic_report_2');
+
+            assertChangeIds(chwBossChanges,
+              'org.couchdb.user:chw-boss',
+              'fixture:user:chw-boss',
+              'fixture:chw-bossville',
+              'fixture:chwville',
+              'health_center_patient',
+              'health_center_report',
+              'clinic_report',
+              'clinic_report_2');
+            assertChangeIds(supervisorChanges,
+              'org.couchdb.user:supervisor',
+              'fixture:user:supervisor',
+              'fixture:chw-bossville',
+              'fixture:managerville',
+              'fixture:clareville',
+              'fixture:steveville',
+              'fixture:bobville',
+              'PARENT_PLACE',
+              'health_center_report',
+              'clinic_report',
+              'clinic_report_2',
+              'bob_report');
+
+            assertChangeIds(bobChanges,
+              'org.couchdb.user:bob',
+              'fixture:bobville',
+              'fixture:user:bob',
+              'bob_report');
+          });
+      });
+
+      it('should work with report replication depth', () => {
+        const clinicReport = {
+          _id: 'clinic_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient', needs_signoff: true },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          }
+        };
+        const clinicReport2 = {
+          _id: 'clinic_report_2',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: { _id: 'fixture:chwville', parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          }
+        };
+        const healthCenterReport = {
+          _id: 'health_center_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw-boss',
+            parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+          }
+        };
+        const bobReport = {
+          _id: 'bob_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: {} },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:bob',
+            parent: { _id:'fixture:bobville', parent: { _id: parentPlace._id }}
+          }
+        };
+
+        return utils
+          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1, report_depth: 0 }]})
+          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .then(() => Promise.all([
+            requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
+            requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
+            requestChanges('supervisor'), // supervisor > parent_place
+            requestChanges('bob'), // bob > bobville > parent_place
           ]))
           .then(([ chwChanges, chwBossChanges, supervisorChanges, bobChanges ]) => {
             assertChangeIds(chwChanges,
