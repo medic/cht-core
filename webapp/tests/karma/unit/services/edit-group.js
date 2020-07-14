@@ -47,6 +47,8 @@ describe('EditGroup service', function() {
     service('123', group).then(function(actual) {
       chai.expect(actual).to.deep.equal(doc);
       done();
+    }).catch((err) => {
+      window.__karma__.error(err);
     });
   });
 

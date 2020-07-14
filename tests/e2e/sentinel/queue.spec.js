@@ -62,11 +62,19 @@ describe('Sentinel queue drain', () => {
   beforeAll(done => {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;
-    utils.saveDocs(contacts).then(done);
+    utils.saveDocs(contacts)
+      .then(done)
+      .catch(() => {
+        process.exit(1);
+      });
   });
   afterAll(done => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    utils.revertDb().then(done);
+    utils.revertDb()
+      .then(done)
+      .catch(() => {
+        process.exit(1);
+      });
   });
   afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
 

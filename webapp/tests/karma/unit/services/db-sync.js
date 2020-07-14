@@ -142,6 +142,8 @@ describe('DBSync service', () => {
           expect(from.callCount).to.equal(2);
           done();
         });
+      }).catch((err) => {
+        window.__karma__.error(err);
       });
     });
 
@@ -257,7 +259,11 @@ describe('DBSync service', () => {
             expect(from.callCount).to.equal(3);
             done();
           });
+        }).catch((err) => {
+          window.__karma__.error(err);
         });
+      }).catch((err) => {
+        window.__karma__.error(err);
       });
     });
 

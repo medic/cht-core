@@ -114,6 +114,8 @@ describe('Export Data controller', () => {
           res.end.args[0][0].should.equal('--ERROR--\nError exporting data: db not found\n');
           done();
         });
+      }).catch(() => {
+        process.exit(1);
       });
     });
   });

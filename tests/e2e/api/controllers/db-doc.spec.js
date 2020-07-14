@@ -160,7 +160,10 @@ describe('db-doc handler', () => {
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
       .then(() => utils.saveDocs([...clinics, ...patients]))
-      .then(done);
+      .then(done)
+      .catch(() => {
+        process.exit(1);
+      });
   });
 
   afterAll(done =>

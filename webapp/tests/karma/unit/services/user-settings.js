@@ -92,8 +92,16 @@ describe('UserSettings service', () => {
 
     const firstPromise = service();
     service();
-    service().then(isExpected);
-    firstPromise.then(isExpected);
+    service()
+      .then(isExpected)
+      .catch((err) => {
+        window.__karma__.error(err);
+      });
+    firstPromise
+      .then(isExpected)
+      .catch((err) => {
+        window.__karma__.error(err);
+      });
   });
 
   it('gets from remote db', () => {

@@ -42,6 +42,8 @@ describe('Resource Extraction', () => {
       expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
       expect(actualContent).to.include(expected.content);
       done();
+    }).catch(() => {
+      process.exit(1);
     });
   });
 
@@ -57,6 +59,8 @@ describe('Resource Extraction', () => {
         expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
         done();
+      }).catch(() => {
+        process.exit(1);
       });
   });
 
@@ -75,6 +79,8 @@ describe('Resource Extraction', () => {
         expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
         done();
+      }).catch(() => {
+        process.exit(1);
       });
   });
 
@@ -83,6 +89,8 @@ describe('Resource Extraction', () => {
     resourceExtraction.run().then(() => {
       expect(mockFs.writeFile.callCount).to.eq(0);
       done();
+    }).catch(() => {
+      process.exit(1);
     });
   });
 
@@ -106,6 +114,8 @@ describe('Resource Extraction', () => {
       expect(mockFs.mkdirSync.args[0][0]).to.include('src/extracted-resources');
       expect(mockFs.mkdirSync.args[1][0]).to.include('src/extracted-resources/js');
       done();
+    }).catch(() => {
+      process.exit(1);
     });
   });
 });

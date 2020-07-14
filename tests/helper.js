@@ -58,8 +58,13 @@ module.exports = {
             ) {
               element.click();
             }
+          }).catch(() => {
+            process.exit(1);
           });
         });
+      })
+      .catch(() => {
+        process.exit(1);
       });
   },
 
@@ -103,6 +108,8 @@ module.exports = {
         elements.each(element => {
           element.getText().then(text => {
             textFromElements.push(text.trim());
+          }).catch(() => {
+            process.exit(1);
           });
         });
         return textFromElements;
@@ -135,6 +142,9 @@ module.exports = {
             );
           }
         });
+      })
+      .catch(() => {
+        process.exit(1);
       });
   },
 
@@ -148,6 +158,8 @@ module.exports = {
   selectDropdownByNumber: (element, index, milliseconds) => {
     element.findElements(by.tagName('option')).then(options => {
       options[index].click();
+    }).catch(() => {
+      process.exit(1);
     });
     if (milliseconds) {
       browser.sleep(milliseconds);
@@ -166,8 +178,12 @@ module.exports = {
           if (text.indexOf(item) !== -1) {
             option.click();
           }
+        }).catch(() => {
+          process.exit(1);
         });
       });
+    }).catch(() => {
+      process.exit(1);
     });
     if (milliseconds) {
       browser.sleep(milliseconds);
@@ -179,6 +195,8 @@ module.exports = {
       if (options[0]) {
         options[0].click();
       }
+    }).catch(() => {
+      process.exit(1);
     });
     if (milliseconds) {
       browser.sleep(milliseconds);
@@ -195,6 +213,8 @@ module.exports = {
   takeScreenshot: filename => {
     browser.takeScreenshot().then(png => {
       writeScreenShot(png, filename);
+    }).catch(() => {
+      process.exit(1);
     });
   },
 

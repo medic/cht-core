@@ -201,6 +201,8 @@ const refreshToGetNewSettings = () => {
         if (result) {
           dialog.click();
         }
+      }).catch(() => {
+        process.exit(1);
       });
     })
     .then(() => {
@@ -556,6 +558,9 @@ module.exports = {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
         }, 10000);
+      })
+      .catch(() => {
+        process.exit(1);
       });
   },
 

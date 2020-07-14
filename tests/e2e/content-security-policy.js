@@ -13,9 +13,13 @@ describe('Content Security Policy', () => {
   it('Telemetry script is not blocked by CSP', done => {
     browser.manage()
       .logs()
-      .get('browser').then(function(logEntries) {
+      .get('browser')
+      .then(function(logEntries) {
         logEntries.forEach(entry => expect(entry.message).to.not.include('Refused to execute inline script'));
         done();
+      })
+      .catch(() => {
+        process.exit(1);
       });
   });
 });

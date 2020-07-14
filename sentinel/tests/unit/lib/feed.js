@@ -119,6 +119,8 @@ describe('feed', () => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(change);
           done();
+        }).catch(() => {
+          process.exit(1);
         });
     });
 

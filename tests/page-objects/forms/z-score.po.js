@@ -134,7 +134,11 @@ const docs = [
   }];
 
 const clearAndFill = (el, value) => {
-  el.clear().then(() => el.sendKeys(value));
+  el.clear()
+    .then(() => el.sendKeys(value))
+    .catch(() => {
+      process.exit(1);
+    });
 };
 
 const clickAndGetValue = el => {

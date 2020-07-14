@@ -236,7 +236,11 @@ describe('Purging on login', () => {
     return browser.executeAsyncScript((() => {
       const callback = arguments[arguments.length - 1];
       const db = window.PouchDB('medic-user-e2e_restricted');
-      db.get('_local/purgelog').then(doc => callback(doc), err => callback(err));
+      db.get('_local/purgelog')
+        .then(doc => callback(doc), err => callback(err))
+        .catch(() => {
+          process.exit(1);
+        });
     }));
   };
 
@@ -269,6 +273,8 @@ describe('Purging on login', () => {
         date: result.date
       });
       purgeDate = result.date;
+    }).catch(() => {
+      process.exit(1);
     });
 
     utils.resetBrowser();
@@ -279,6 +285,8 @@ describe('Purging on login', () => {
       // purge didn't run again on next refresh
       chai.expect(result._rev).to.equal('0-1');
       chai.expect(result.date).to.equal(purgeDate);
+    }).catch(() => {
+      process.exit(1);
     });
 
     browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
@@ -319,6 +327,8 @@ describe('Purging on login', () => {
         roles: result.roles,
         date: result.date
       });
+    }).catch(() => {
+      process.exit(1);
     });
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId, goodFormId2]);

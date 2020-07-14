@@ -346,7 +346,10 @@ describe('Users API', () => {
           docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
           expectedNbrDocs += resp.rows.length;
         })
-        .then(done);
+        .then(done)
+        .catch(() => {
+          process.exit(1);
+        });
     });
 
     afterAll(done =>

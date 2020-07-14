@@ -33,6 +33,8 @@ describe('Service worker registration (swRegister.js)', () => {
       expect(actual).to.eq(undefined);
       expect(callback.called).to.eq(false);
       done();
+    }).catch(() => {
+      process.exit(1);
     });
   });
 
@@ -47,6 +49,8 @@ describe('Service worker registration (swRegister.js)', () => {
       expect(actual).to.be.an('object');
       expect(callback.callCount).to.eq(1);
       done();
+    }).catch(() => {
+      process.exit(1);
     });
     executeSwLifecycle(registration);
   });

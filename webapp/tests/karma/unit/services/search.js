@@ -67,10 +67,16 @@ describe('Search service', function() {
         .then(function(actual) {
           chai.expect(actual).to.deep.equal(expected);
           setTimeout(done); // defer execution to give the second query time to execute
+        })
+        .catch((err) => {
+          window.__karma__.error(err);
         });
       service('reports', {})
         .then(function() {
           throw new Error('the second promise should be ignored');
+        })
+        .catch((err) => {
+          window.__karma__.error(err);
         });
     });
 
@@ -82,6 +88,9 @@ describe('Search service', function() {
         .then(function(actual) {
           firstReturned = true;
           chai.expect(actual).to.deep.equal(expected);
+        })
+        .catch((err) => {
+          window.__karma__.error(err);
         });
       return service('reports', {}, { force: true })
         .then(function(actual) {
@@ -101,6 +110,9 @@ describe('Search service', function() {
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
+        })
+        .catch((err) => {
+          window.__karma__.error(err);
         });
 
       filters.foo = 'test';
@@ -120,6 +132,9 @@ describe('Search service', function() {
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
+        })
+        .catch((err) => {
+          window.__karma__.error(err);
         });
       return service('reports', { freetext: 'second' })
         .then(function(actual) {

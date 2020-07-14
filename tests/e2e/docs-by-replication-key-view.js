@@ -353,7 +353,13 @@ describe('view docs_by_replication_key', () => {
               .then(docs => {
                 docByPlaceIds_unassigned = docs;
                 done();
+              })
+              .catch(() => {
+                process.exit(1);
               });
+          })
+          .catch(() => {
+            process.exit(1);
           });
       });
   }, 5 * 60 * 1000);

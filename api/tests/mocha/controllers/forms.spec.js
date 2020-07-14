@@ -31,6 +31,8 @@ describe('forms controller', () => {
         chai.expect(error.args[0][0]).to.equal('icky');
         chai.expect(query.callCount).to.equal(1);
         done();
+      }).catch(() => {
+        process.exit(1);
       });
     });
 
@@ -73,6 +75,8 @@ describe('forms controller', () => {
         chai.expect(error.args[0][0]).to.equal('icky');
         chai.expect(get.callCount).to.equal(1);
         done();
+      }).catch(() => {
+        process.exit(1);
       });
     });
 

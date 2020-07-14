@@ -140,6 +140,8 @@ describe('Submit Enketo form', () => {
       err => {
         console.log(err); // eslint-disable-line no-console
       }
-    );
+    ).catch(() => {
+      process.exit(1);
+    });
   });
 });

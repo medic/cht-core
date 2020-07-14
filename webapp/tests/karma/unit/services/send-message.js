@@ -118,6 +118,8 @@ describe('SendMessage service', () => {
         sent_by: 'jack',
         to: '+5552'
       });
+    }).catch((err) => {
+      window.__karma__.error(err);
     });
   });
 

@@ -122,7 +122,11 @@ describe('Changes controller', () => {
 
       this.then = promise.then.bind(promise);
       this['catch'] = promise['catch'].bind(promise);
-      this.then(result => complete(null, result), complete);
+      this.then(
+        result => complete(null, result), complete
+      ).catch(() => {
+        process.exit(1);
+      });
     };
     inherits(ChangesEmitter, EventEmitter);
 

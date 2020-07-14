@@ -70,7 +70,10 @@ describe('routing', () => {
     utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
-      .then(done);
+      .then(done)
+      .catch(() => {
+        process.exit(1);
+      });
   });
 
   afterAll(done =>

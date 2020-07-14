@@ -49,6 +49,8 @@ describe('Simprints service', () => {
         chai.expect(simprints_reg.callCount).to.equal(1);
         chai.expect(simprints_ident.callCount).to.equal(0);
         chai.expect(actual).to.equal(expected);
+      }).catch((err) => {
+        window.__karma__.error(err);
       });
       const requestId = simprints_reg.args[0][0];
       service.registerResponse(requestId, { id: expected });
@@ -75,6 +77,8 @@ describe('Simprints service', () => {
         chai.expect(simprints_reg.callCount).to.equal(0);
         chai.expect(simprints_ident.callCount).to.equal(1);
         chai.expect(actual).to.deep.equal(expected);
+      }).catch((err) => {
+        window.__karma__.error(err);
       });
       const requestId = simprints_ident.args[0][0];
       service.identifyResponse(requestId, given);
@@ -99,6 +103,8 @@ describe('Simprints service', () => {
         chai.expect(simprints_reg.callCount).to.equal(0);
         chai.expect(simprints_ident.callCount).to.equal(1);
         chai.expect(actual).to.deep.equal(expected);
+      }).catch((err) => {
+        window.__karma__.error(err);
       });
       const requestId = simprints_ident.args[0][0];
       service.identifyResponse(requestId, given);

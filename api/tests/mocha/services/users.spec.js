@@ -329,6 +329,8 @@ describe('Users service', () => {
         chai.expect(lucas.phone).to.equal(undefined);
         chai.expect(lucas.facility).to.equal(undefined);
         chai.expect(lucas.type).to.equal('unknown');
+      }).catch(() => {
+        process.exit(1);
       });
     });
 
@@ -436,6 +438,8 @@ describe('Users service', () => {
       sinon.stub(places, 'getOrCreatePlace').resolves({ _id: 'santos' });
       service._createPlace(userData).then(() => {
         chai.expect(userData.place._id).to.equal('santos');
+      }).catch(() => {
+        process.exit(1);
       });
     });
   });

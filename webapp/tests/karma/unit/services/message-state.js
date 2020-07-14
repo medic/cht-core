@@ -73,6 +73,8 @@ describe('MessageState service', function() {
     get.returns(Promise.resolve(doc));
     service.set('123', 2, 'scheduled', 'muted').then(function() {
       done();
+    }).catch((err) => {
+      window.__karma__.error(err);
     });
   });
 
@@ -118,6 +120,8 @@ describe('MessageState service', function() {
       chai.expect(SetTaskState.getCall(0).args[1]).to.equal('scheduled');
       chai.expect(SetTaskState.getCall(1).args[0]).to.deep.equal({ group: 2, state: 'muted' });
       chai.expect(SetTaskState.getCall(1).args[1]).to.equal('scheduled');
-    }).then(done, done);
+    }).then(done, done).catch((err) => {
+      window.__karma__.error(err);
+    });
   });
 });

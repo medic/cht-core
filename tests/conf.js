@@ -69,6 +69,8 @@ const baseConfig = {
             .map(log => `[${log.level.name_}] ${log.message}\n`)
             .forEach(log => browserLogStream.write(log));
           browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
+        }).catch(() => {
+          process.exit(1);
         });
     });
 
