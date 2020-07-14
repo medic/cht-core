@@ -18,5 +18,9 @@
         "no-var": "off"
       }
     }
-  ]
+  ],
+  "plugins": ["promise"],
+  "rules": {
+    "promise/catch-or-return": "error"
+  }
 }
