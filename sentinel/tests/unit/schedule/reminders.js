@@ -14,6 +14,7 @@ let clock;
 const oneDay = 24 * 60 * 60 * 1000;
 
 describe('reminders', () => {
+
   afterEach(() => {
     sinon.restore();
     clock.restore();
@@ -24,7 +25,6 @@ describe('reminders', () => {
     clock = sinon.useFakeTimers();
     reminders = rewire('../../../src/schedule/reminders');
   });
-
 
   describe('execute', () => {
     it('config with no reminders calls callback', done => {
@@ -104,6 +104,17 @@ describe('reminders', () => {
       assert.equal(isConfigValid({ form: 'a', message: 'b', text_expression: 'c' }), true);
       assert.equal(isConfigValid({ form: 'a', translation_key: 'o', cron: 'c' }), true);
       assert.equal(isConfigValid({ form: 'a', translation_key: 'o', text_expression: 'c' }), true);
+      assert.equal(isConfigValid({ form: 'a', message: 'o', text_expression: 'c', contact_types: ['clinic'] }), true);
+    });
+
+    it('should return true for configured contact types', () => {
+      sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'house' } ] });
+      assert.equal(isConfigValid({ form: 'a', message: 'o', text_expression: 'c', contact_types: ['house'] }), true);
+    });
+
+    it('should return false when given invalid contact type', () => {
+      assert.equal(isConfigValid({ form: 'a', message: 'b', cron: 'c', contact_types: [] }), false);
+      assert.equal(isConfigValid({ form: 'a', message: 'b', cron: 'c', contact_types: [ 'unknown' ] }), false);
     });
   });
 
@@ -370,15 +381,15 @@ describe('reminders', () => {
   });
 
   describe('sendReminders', () => {
-    it('should call getLeafPlaces', () => {
-      reminders.__set__('getValidLeafPlacesBatch', sinon.stub().resolves([]));
+    it('should call getPlaces', () => {
+      reminders.__set__('getValidPlacesBatch', sinon.stub().resolves([]));
 
-      return reminders.__get__('sendReminders')().then(() => {
-        assert(reminders.__get__('getValidLeafPlacesBatch').called);
+      return reminders.__get__('sendReminders')({}).then(() => {
+        assert(reminders.__get__('getValidPlacesBatch').called);
       });
     });
 
-    describe('getValidLeafPlacesBatch', () => {
+    describe('getValidPlacesBatch', () => {
       it('it calls db view and hydrates docs', () => {
         sinon.stub(request, 'get').resolves({ rows: [{ id: 'xxx' }] });
         sinon.stub(db.medic, 'allDocs')
@@ -386,17 +397,10 @@ describe('reminders', () => {
           .resolves({ rows: [{ key: 'reminder:frm:5000:xxx', error: 'not_found' }] })
           .withArgs({ keys: ['xxx'], include_docs: true })
           .resolves({ rows: [{ doc: { _id: 'xxx', contact: { _id: 'maria' }}, id: 'xxx' }] });
-
-        sinon.stub(config, 'getAll').returns({ contact_types: [
-          { id: 'person', person: true, parents: [ 'clinic' ] }, // not queried because we send reminders only to places
-          { id: 'clinic', parents: [ 'health_center' ] },        // queried
-          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
-          { id: 'district_hospital' }
-        ]});
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
-          .__get__('getValidLeafPlacesBatch')({ form: 'frm' }, moment(5000))
+          .__get__('getValidPlacesBatch')({ form: 'frm' }, moment(5000), JSON.stringify([['clinic']]))
           .then(({places, nextDocId}) => {
             assert(Array.isArray(places));
             assert.equal(nextDocId, 'xxx');
@@ -405,7 +409,7 @@ describe('reminders', () => {
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [
               'someURL/_design/medic-client/_view/contacts_by_type',
-              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]) }, json: true },
+              { qs: { limit: 1000, keys: '[["clinic"]]' }, json: true },
             ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(
@@ -445,7 +449,7 @@ describe('reminders', () => {
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().callsFake(d => d) });
 
         return reminders
-          .__get__('getValidLeafPlacesBatch')({ form: 'frm' }, now)
+          .__get__('getValidPlacesBatch')({ form: 'frm' }, now, JSON.stringify([['clinic']]))
           .then(({places, nextDocId}) => {
             assert.deepEqual(places.map(place => place._id), ['xxx', 'yyy', 'yyz']);
             assert.equal(nextDocId, 'yyz');
@@ -460,17 +464,10 @@ describe('reminders', () => {
           .withArgs({ keys: ['xxx'], include_docs: true })
           .resolves({ rows: [{ doc: { _id: 'xxx', contact: { _id: 'maria' }}, id: 'xxx' }] });
 
-        sinon.stub(config, 'getAll').returns({ contact_types: [
-          { id: 'person', person: true, parents: [ 'clinic' ] }, // not queried because we send reminders only to places
-          { id: 'clinic', parents: [ 'health_center' ] },        // queried
-          { id: 'health_center', parents: [ 'district_hospital' ] }, // not queried because its not a leaf
-          { id: 'district_hospital' }
-        ]});
-
         reminders.__set__('lineage', { hydrateDocs: sinon.stub().resolves([{ _id: 'xxx', contact: 'maria' }]) });
 
         return reminders
-          .__get__('getValidLeafPlacesBatch')({ form: 'frm' }, moment(5000), 'somedocid')
+          .__get__('getValidPlacesBatch')({ form: 'frm' }, moment(5000), JSON.stringify([['clinic']]), 'somedocid')
           .then(({places, nextDocId}) => {
             assert(Array.isArray(places));
             assert.equal(nextDocId, 'xxx');
@@ -479,7 +476,7 @@ describe('reminders', () => {
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [
               'someURL/_design/medic-client/_view/contacts_by_type',
-              { qs: { limit: 1000, keys: JSON.stringify([['clinic']]), start_key_doc_id: 'somedocid' }, json: true },
+              { qs: { limit: 1000, keys: '[["clinic"]]', start_key_doc_id: 'somedocid' }, json: true },
             ]);
             assert.equal(reminders.__get__('lineage').hydrateDocs.callCount, 1);
             assert.deepEqual(
@@ -836,6 +833,52 @@ describe('reminders', () => {
           `reminder:frm:${reminderDate}:doc10`,
           `reminder:frm:${reminderDate}:doc11`,
         ]);
+      });
+    });
+
+    it('should create reminder docs for hardcoded contact types', () => {
+      const reminderDate = 30 * 60 * 1000;
+      const reminder = {
+        form: 'frm',
+        mute_after_form_for: '10 minute',
+        message: 'I shot the sheriff',
+        contact_types: [ 'health_center' ]
+      };
+      sinon.stub(config, 'getAll').returns({}); // no configured contact types
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [ { id: 'doc1' } ]})
+        .onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { id: `reminder:frm:${reminderDate}:doc3`, value: { rev: '1-something' } },
+      ]});
+      return reminders.__get__('sendReminders')(reminder, moment(reminderDate)).then(() => {
+        assert.equal(request.get.args[0][1].qs.keys, '[["health_center"]]');
+      });
+    });
+
+    it('should create reminder docs for configured contact types', () => {
+      const reminderDate = 30 * 60 * 1000;
+      const reminder = {
+        form: 'frm',
+        mute_after_form_for: '10 minute',
+        message: 'I shot the sheriff',
+        contact_types: [ 'tier2','tier3' ]
+      };
+      sinon.stub(config, 'getAll').returns({ contact_types: [
+        { id: 'tier3', parents: [ 'tier1' ] },
+        { id: 'tier2', parents: [ 'tier1' ] },
+        { id: 'tier1' }
+      ] });
+      sinon.stub(request, 'get')
+        .onCall(0).resolves({ rows: [ { id: 'doc1' } ]})
+        .onCall(1).resolves({ rows: [] });
+      sinon.stub(db.medic, 'bulkDocs').resolves([]);
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { id: `reminder:frm:${reminderDate}:doc3`, value: { rev: '1-something' } },
+      ]});
+      return reminders.__get__('sendReminders')(reminder, moment(reminderDate)).then(() => {
+        assert.equal(request.get.args[0][1].qs.keys, '[["tier2"],["tier3"]]');
       });
     });
 
