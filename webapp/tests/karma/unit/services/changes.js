@@ -63,7 +63,11 @@ describe('Changes service', function() {
       service = _Changes_;
       dispatch = ServicesActions($ngRedux.dispatch);
       getLastChangedDoc = () => Selectors.getLastChangedDoc($ngRedux.getState());
-      service().then(done);
+      service()
+        .then(done)
+        .catch((err) => {
+          window.__karma__.error(err);
+        });
     });
   });
 
