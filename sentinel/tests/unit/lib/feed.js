@@ -102,7 +102,7 @@ describe('feed', () => {
 
   describe('listener', () => {
 
-    it('invokes listener with changes', done => {
+    it('invokes listener with changes', () => {
       const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getProcessedSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
@@ -118,7 +118,6 @@ describe('feed', () => {
         .then(() => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(change);
-          done();
         });
     });
 

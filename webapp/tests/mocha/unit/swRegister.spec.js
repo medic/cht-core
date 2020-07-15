@@ -26,13 +26,12 @@ describe('Service worker registration (swRegister.js)', () => {
     };
   });
 
-  it('resolves if already installed', done => {
+  it('resolves if already installed', () => {
     fakeRegisterFunc.resolves({});
     const callback = sinon.stub();
     return swRegister(callback).then(actual => {
       expect(actual).to.eq(undefined);
       expect(callback.called).to.eq(false);
-      done();
     });
   });
 

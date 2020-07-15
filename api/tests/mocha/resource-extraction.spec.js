@@ -32,7 +32,7 @@ function doMocking(overwrites = {}) {
 }
 
 describe('Resource Extraction', () => {
-  it('attachments written to disk', done => {
+  it('attachments written to disk', () => {
     const expected = { content: { toString: () => 'foo' } };
     doMocking(expected);
     return resourceExtraction.run().then(() => {
@@ -41,11 +41,10 @@ describe('Resource Extraction', () => {
       const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
       expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
       expect(actualContent).to.include(expected.content);
-      done();
     });
   });
 
-  it('unchanged files get written once', done => {
+  it('unchanged files get written once', () => {
     const expected = { content: 'foo' };
     doMocking(expected);
     return resourceExtraction.run()
@@ -56,11 +55,10 @@ describe('Resource Extraction', () => {
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
         expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
-        done();
       });
   });
 
-  it('changed files get written again', done => {
+  it('changed files get written again', () => {
     const expected = { content: 'foo' };
     doMocking(expected);
     return resourceExtraction.run()
@@ -74,15 +72,13 @@ describe('Resource Extraction', () => {
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[1];
         expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
-        done();
       });
   });
 
-  it('non-cacheable attachments not written to disk', done => {
+  it('non-cacheable attachments not written to disk', () => {
     doMocking({ attachments: { 'skip/me.js': {} }});
     return resourceExtraction.run().then(() => {
       expect(mockFs.writeFile.callCount).to.eq(0);
-      done();
     });
   });
 
@@ -97,7 +93,7 @@ describe('Resource Extraction', () => {
     expect(isAttachmentExtractable('translations/messages-en.properties')).to.eq(false);
   });
 
-  it('creates destination folder as necessary', done => {
+  it('creates destination folder as necessary', () => {
     doMocking();
     mockFs.existsSync.returns(false);
     mockFs.mkdirSync = sinon.stub().returns(true);
@@ -105,7 +101,6 @@ describe('Resource Extraction', () => {
       expect(mockFs.mkdirSync.callCount).to.eq(2);
       expect(mockFs.mkdirSync.args[0][0]).to.include('src/extracted-resources');
       expect(mockFs.mkdirSync.args[1][0]).to.include('src/extracted-resources/js');
-      done();
     });
   });
 });

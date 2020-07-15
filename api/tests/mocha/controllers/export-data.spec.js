@@ -87,7 +87,7 @@ describe('Export Data controller', () => {
     // NB: This is actually an integration test so we can test that
     // errors from the underlying mapper are handled correctly in
     // the controller.
-    it('catches error from service.exportStream', done => {
+    it('catches error from service.exportStream', () => {
       const req = {
         params: {
           type: 'feedback'
@@ -112,7 +112,6 @@ describe('Export Data controller', () => {
           res.write.args[0][0].toString().should.equal('id,reported_date,user,app_version,url,info\n');
           res.end.callCount.should.equal(1);
           res.end.args[0][0].should.equal('--ERROR--\nError exporting data: db not found\n');
-          done();
         });
       });
     });
