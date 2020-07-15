@@ -98,6 +98,17 @@ form {
   display: block;
 }
 
+.login-link {
+  display: none;
+}
+.tokenerror .login-link,
+.tokeninvalid .login-link,
+.tokenmissing .login-link,
+.tokentimeout .login-link,
+.tokenexpired .login-link {
+  display: block;
+}
+
 .loader {
   display: none;
   margin: 1em auto;
