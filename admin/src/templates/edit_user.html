@@ -80,11 +80,15 @@
         </label>
       </p>
       <div>
-        <input type="checkbox" id="disabletokenLogin" ng-true-value="false" ng-false-value="" ng-model="editUserModel.token_login">
+        <input type="radio" id="unmodifiedTokenLogin" ng-value="" ng-model="editUserModel.token_login">
+        <label for="unmodifiedTokenLogin" translate class="form-check-label">configuration.enable.token.login.no.modify</label>
+      </div>
+      <div>
+        <input type="radio" id="disabletokenLogin" ng-value="false" ng-model="editUserModel.token_login">
         <label for="disabletokenLogin" translate class="form-check-label">configuration.enable.token.login.disable</label>
       </div>
       <div>
-        <input type="checkbox" id="refreshTokenLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.token_login">
+        <input type="radio" id="refreshTokenLogin" ng-value="true" ng-model="editUserModel.token_login">
         <label for="refreshTokenLogin" translate class="form-check-label">configuration.enable.token.login.refresh</label>
       </div>
       <div class="help-block" translate>configuration.enable.token.login.refresh.help</div>

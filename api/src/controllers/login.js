@@ -8,6 +8,7 @@ const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
 const users = require('../services/users');
+const tokenLogin = require('../services/token-login');
 const SESSION_COOKIE_RE = /AuthSession=([^;]*);/;
 const ONE_YEAR = 31536000000;
 const logger = require('../logger');
@@ -258,7 +259,7 @@ const renderTokenLogin = (req, res) => {
     .then(body => res.send(body));
 };
 
-const createSessionRetry = (req, retry= 10) => {
+const createSessionRetry = (req, retry=10) => {
   return createSession(req).then(sessionRes => {
     if (sessionRes.statusCode === 200) {
       return sessionRes;
@@ -280,31 +281,29 @@ const createSessionRetry = (req, retry= 10) => {
  * Generates a session cookie for a user identified by supplied token and hash request params.
  * The user's password is reset in the process.
  */
-const tokenLogin = (req, res) => {
-  if (!users.validTokenLoginConfig()) {
+const loginByToken = (req, res) => {
+  if (!tokenLogin.validTokenLoginConfig()) {
     return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
   }
-
-
 
   if (!req.params || !req.params.token || !req.params.userId) {
     return res.status(400).json({ error: 'missing', reason: 'Missing required params' });
   }
 
-  return users
+  return tokenLogin
     .getUserByToken(req.params.token, req.params.userId)
     .then(userId => {
       if (!userId) {
         throw { status: 401, error: 'invalid' };
       }
 
-      return users.resetPassword(userId).then(({ user, password }) => {
+      return tokenLogin.resetPassword(userId).then(({ user, password }) => {
         req.body = { user, password };
 
         return createSessionRetry(req)
           .then(sessionRes => setCookies(req, res, sessionRes))
           .then(redirectUrl => {
-            return users.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
+            return tokenLogin.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
           });
       });
     })
@@ -367,7 +366,7 @@ module.exports = {
       })
       .catch(err => {
         if (err.code === 401) {
-          return tokenLogin(req, res);
+          return loginByToken(req, res);
         }
         next(err);
       });
