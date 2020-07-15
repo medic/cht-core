@@ -57,6 +57,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
+    let geoHandle;
 
     const setSelected = function(id) {
       if (!id) {
@@ -66,6 +67,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       }
       const task = LiveList.tasks.getList().find(task => task._id === id);
       if (task) {
+        geoHandle = Geolocation();
         const refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
         ctrl.settingSelected(refreshing);
         hydrateTaskEmission(task).then(hydratedTask => {
@@ -80,9 +82,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         });
       }
     };
-
-    // TODO: this is always geoing when the task page is open. Scope this right
-    const geoHandle = Geolocation();
 
     const hasOneActionAndNoFields = function(task) {
       return Boolean(
