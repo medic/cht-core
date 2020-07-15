@@ -23,18 +23,18 @@ const getSchedule = config => {
 };
 
 module.exports = {
-  execute: cb => {
+  execute: () => {
     const purgeConfig = config.get('purge');
     const schedule = getSchedule(purgeConfig);
 
     if (!schedule) {
-      return cb();
+      return Promise.resolve();
     }
 
     if (purgeTimeout) {
       purgeTimeout.clear();
     }
     purgeTimeout = later.setTimeout(purgeLib.purge, schedule);
-    cb();
+    return Promise.resolve();
   },
 };

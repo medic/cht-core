@@ -8,6 +8,7 @@ const rewire = require('rewire');
 const db = require('../../../src/db');
 const later = require('later');
 const request = require('request-promise-native');
+
 let reminders;
 let clock;
 
@@ -21,23 +22,20 @@ describe('reminders', () => {
     db.couchUrl = 'someURL';
   });
   beforeEach(() => {
-    process.env.TEST_ENV = true;
     clock = sinon.useFakeTimers();
     reminders = rewire('../../../src/schedule/reminders');
   });
 
   describe('execute', () => {
-    it('config with no reminders calls callback', done => {
+    it('config with no reminders calls callback', () => {
       sinon.stub(config, 'get').returns([]);
       reminders.__set__('runReminder', sinon.stub().rejects());
-      reminders.execute(err => {
-        assert.equal(err, null);
+      return reminders.execute().then(() => {
         assert.equal(reminders.__get__('runReminder').callCount, 0);
-        done();
       });
     });
 
-    it('should run every valid reminder, in sequence', (done) => {
+    it('should run every valid reminder, in sequence', () => {
       const isConfigValid = sinon.stub().callsFake(c => c.valid);
       const runReminder = sinon.stub().resolves();
       reminders.__set__('isConfigValid', isConfigValid);
@@ -49,31 +47,28 @@ describe('reminders', () => {
         { form: 'd', valid: true },
       ]);
 
-      reminders.execute(err => {
-        assert.equal(err, null);
+      return reminders.execute().then(() => {
         assert.equal(isConfigValid.callCount, 4);
         assert.equal(runReminder.callCount, 3);
         assert.deepEqual(
           runReminder.args,
           [[{ form: 'a', valid: true }],[{ form: 'c', valid: true }],[{ form: 'd', valid: true }]]
         );
-        done();
       });
     });
 
-    it('should throw errors', (done) => {
+    it('should throw errors', () => {
       reminders.__set__('isConfigValid', sinon.stub().returns(true));
       const runReminder = sinon.stub().resolves();
       runReminder.withArgs(2).rejects({ some: 'err' });
       reminders.__set__('runReminder', runReminder);
       sinon.stub(config, 'get').returns([1, 2, 3, 4]);
 
-      reminders.execute(err => {
+      return reminders.execute().catch(err => {
         assert.deepEqual(err, { some: 'err' });
         assert.equal(reminders.__get__('isConfigValid').callCount, 4);
         assert.equal(runReminder.callCount, 2);
         assert.deepEqual(runReminder.args, [[1], [2]]);
-        done();
       });
     });
   });
