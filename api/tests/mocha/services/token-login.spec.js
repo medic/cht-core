@@ -22,26 +22,39 @@ describe('TokenLogin service', () => {
     it('should return falsy when no setting', () => {
       sinon.stub(config, 'get').returns();
       chai.expect(service.validTokenLoginConfig()).to.equal(false);
-      chai.expect(config.get.callCount).to.deep.equal(1);
+      chai.expect(config.get.callCount).to.deep.equal(2);
       chai.expect(config.get.args[0]).to.deep.equal(['token_login']);
+      chai.expect(config.get.args[1]).to.deep.equal(['app_url']);
     });
 
     it('should return falsy when not enabled', () => {
-      sinon.stub(config, 'get').returns({ enabled: false });
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns({ enabled: false })
+        .withArgs('app_url').returns('someString');
       chai.expect(service.validTokenLoginConfig()).to.equal(false);
     });
 
     it('should return falsy when not missing fields', () => {
-      sinon.stub(config, 'get').returns({ enabled: true });
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns({ enabled: true })
+        .withArgs('app_url').returns('someString');
+
       chai.expect(service.validTokenLoginConfig()).to.equal(false);
-      config.get.returns({ enabled: true, app_url: 'aaaa' });
+      config.get
+        .withArgs('token_login').returns({ enabled: true })
+        .withArgs('app_url').returns('aaa');
       chai.expect(service.validTokenLoginConfig()).to.equal(false);
-      config.get.returns({ enabled: true, translation_key: 'aaaa' });
+
+      config.get
+        .withArgs('token_login').returns({ enabled: true, translation_key: 'aaaa' })
+        .withArgs('app_url').returns();
       chai.expect(service.validTokenLoginConfig()).to.equal(false);
     });
 
     it('should return true when required fields are present', () => {
-      sinon.stub(config, 'get').returns({ enabled: true, translation_key: 'aaaa', app_url: 'bbb' });
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns({ enabled: true, translation_key: 'aaaa' })
+        .withArgs('app_url').returns('bbb');
       chai.expect(service.validTokenLoginConfig()).to.equal(true);
     });
   });
@@ -53,19 +66,25 @@ describe('TokenLogin service', () => {
     });
 
     it('should return falsey when data does not request token_login to be enabled', () => {
-      sinon.stub(config, 'get').returns({ enabled: true, app_url: 'some_url', message: 'message' });
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns({ enabled: true, message: 'message' })
+        .withArgs('app_url').returns('some_url');
       chai.expect(service.shouldEnableTokenLogin({})).to.equal(undefined);
     });
 
     it('should return true when configured and requested', () => {
-      sinon.stub(config, 'get').returns({ enabled: true, app_url: 'some_url', message: 'message' });
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns({ enabled: true, message: 'message' })
+        .withArgs('app_url').returns('some_url');
       chai.expect(service.shouldEnableTokenLogin({ token_login: true })).to.equal(true);
     });
   });
 
   describe('validateTokenLogin', () => {
     beforeEach(() => {
-      sinon.stub(config, 'get').returns({ enabled: true, app_url: 'some_url', message: 'message' });
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns({ enabled: true, message: 'message' })
+        .withArgs('app_url').returns('some_url');
     });
 
     describe('on create', () => {
@@ -642,8 +661,9 @@ describe('TokenLogin service', () => {
 
     describe('enabling token login', () => {
       it('should generate password, token, create sms and update user docs', () => {
-        const tokenLoginConfig = { message: 'the sms', app_url: 'http://host', enabled: true };
-        sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+        sinon.stub(config, 'get')
+          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
+          .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         sinon.stub(db.medic, 'get').withArgs('userID').resolves({
@@ -709,8 +729,9 @@ describe('TokenLogin service', () => {
       });
 
       it('should clear previous token_login sms', () => {
-        const tokenLoginConfig = { message: 'the sms', app_url: 'http://host', enabled: true };
-        sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+        sinon.stub(config, 'get')
+          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
+          .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'my_user' }, 'user-settings': { id: 'my_user' } };
 
         sinon.stub(db.medic, 'get').withArgs('my_user').resolves({
@@ -825,8 +846,9 @@ describe('TokenLogin service', () => {
       });
 
       it('should only clear pending tasks in previous token_login sms', () => {
-        const tokenLoginConfig = { message: 'the sms', app_url: 'http://host', enabled: true };
-        sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+        sinon.stub(config, 'get')
+          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
+          .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         sinon.stub(db.medic, 'get').withArgs('userID').resolves({

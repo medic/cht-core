@@ -14,7 +14,7 @@ let user;
 
 const getUrl = (token, encrypt) => `${utils.getOrigin()}/medic/login/token/${token}/${encrypt}`;
 const setupTokenLoginSettings = () => {
-  const settings = { token_login: { app_url: utils.getOrigin(), message: 'token_login_sms', enabled: true } };
+  const settings = { token_login: {message: 'token_login_sms', enabled: true }, app_url: utils.getOrigin() };
   const waitForApiUpdate = utils.waitForLogs('api.e2e.log', /Settings updated/);
   return utils.updateSettings(settings, 'api').then(() => waitForApiUpdate.promise);
 };

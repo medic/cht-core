@@ -55,7 +55,7 @@ const getUser = (user) => {
 };
 
 const setupTokenLoginSettings = () => {
-  const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
+  const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
   return utils
     .updateSettings(settings, 'api')
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));

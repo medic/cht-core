@@ -61,10 +61,9 @@ const enableTokenLogin = (response) => {
       db.medic.get(response['user-settings'].id),
     ])
     .then(([ user, userSettings ]) => {
-      const tokenLoginConfig = config.get('token_login');
       const token = generatePassword(50);
 
-      return generateLoginSms(user, userSettings, token, tokenLoginConfig)
+      return generateLoginSms(user, userSettings, token)
         .then(result => {
           user.token_login = {
             active: true,
@@ -185,11 +184,9 @@ const clearOldLoginSms = (user) => {
  * @param {Object} user - the _users document
  * @param {Object} userSettings - the user-settings document from the main database
  * @param {String} token - the randomly generated token
- * @param {Object} tokenLoginConfig - the token_login config section that contains the translation_key used to generate
- *                                    the instructions sms message
  * @returns {Promise<Object>} - returns the result of saving the new token_login_sms document
  */
-const generateLoginSms = (user, userSettings, token, tokenLoginConfig) => {
+const generateLoginSms = (user, userSettings, token) => {
   return clearOldLoginSms(user).then(() => {
     const doc = {
       type: 'token_login_sms',
@@ -198,7 +195,9 @@ const generateLoginSms = (user, userSettings, token, tokenLoginConfig) => {
       tasks: [],
     };
     const encoded = encodeUsername(user.name);
-    const url = `${tokenLoginConfig.app_url.replace(/\/+$/, '')}/medic/login/token/${token}/${encoded}`;
+    const tokenLoginConfig = config.get('token_login');
+    const appUrl = config.get('app_url');
+    const url = `${appUrl.replace(/\/+$/, '')}/medic/login/token/${token}/${encoded}`;
 
     const messagesLib = config.getTransitionsLib().messages;
 
@@ -223,10 +222,11 @@ const shouldDisableTokenLogin = data => data.token_login === false;
 
 const validTokenLoginConfig = () => {
   const tokenLoginConfig = config.get('token_login');
+  const appUrl = config.get('app_url');
   const isValidConfig = tokenLoginConfig &&
                         tokenLoginConfig.enabled &&
                         (tokenLoginConfig.translation_key || tokenLoginConfig.message) &&
-                        tokenLoginConfig.app_url;
+                        appUrl;
   return !!isValidConfig;
 };
 

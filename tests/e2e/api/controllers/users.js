@@ -694,7 +694,7 @@ describe('Users API', () => {
 
     describe('when token-login is configured', () => {
       it('should create and update a user correctly w/o token_login', () => {
-        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms', enabled: true } };
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true }, app_url: 'https://host/' };
         return utils
           .updateSettings(settings, 'api')
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
@@ -741,7 +741,7 @@ describe('Users API', () => {
       });
 
       it('should throw an error when phone is missing when creating a user with token_login', () => {
-        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms', enabled: true } };
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true }, app_url: 'https://host/' };
         return utils
           .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
@@ -759,7 +759,7 @@ describe('Users API', () => {
       });
 
       it('should throw an error when phone is missing when updating a user with token_login', () => {
-        const settings = { token_login: { app_url: 'https://host/', translation_key: 'token_login_sms', enabled: true } };
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true }, app_url: 'https://host/' };
         return utils
           .updateSettings(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
@@ -789,8 +789,8 @@ describe('Users API', () => {
 
       it('should create a user correctly with token_login', () => {
         const settings = {
+          app_url: utils.getOrigin(),
           token_login: {
-            app_url: utils.getOrigin(),
             translation_key: 'token_login_sms',
             enabled: true,
           }
@@ -868,7 +868,7 @@ describe('Users API', () => {
       });
 
       it('should update a user correctly with token_login', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'sms_text', enabled: true } };
+        const settings = { token_login: { translation_key: 'sms_text', enabled: true }, app_url: utils.getOrigin() };
         let tokenUrl;
         return utils
           .updateSettings(settings, true)
@@ -945,7 +945,7 @@ describe('Users API', () => {
       });
 
       it('should not re-generate the token on subsequent updates, when token_login not specifically requested', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
+        const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
         user.token_login = true;
         user.phone = '+40755232323';
         let tokenLogin;
@@ -975,7 +975,7 @@ describe('Users API', () => {
       });
 
       it('should clear the old SMS tasks when token is re-generated', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
+        const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
         user.token_login = true;
         user.phone = '+40755242424';
         let firstTokenLogin;
@@ -1025,7 +1025,7 @@ describe('Users API', () => {
       });
 
       it('should disable token_login for a user when requested', () => {
-        const settings = { token_login: { app_url: utils.getOrigin(), translation_key: 'login_sms', enabled: true } };
+        const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
         user.token_login = true;
         user.phone = '+40755969696';
         let firstTokenLogin;

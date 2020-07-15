@@ -94,13 +94,13 @@
       <div class="help-block" translate>configuration.enable.token.login.refresh.help</div>
     </div>
 
-    <div class="form-group" ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled) }">
+    <div class="form-group" ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
       <label for="edit-password" translate>Password</label>
       <input id="edit-password" name="edit-password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
       <span class="help-block">{{errors.password}}</span>
     </div>
 
-    <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled) }">
+    <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
       <label for="edit-password-confirm" translate>Confirm Password</label>
       <input id="edit-password-confirm" name="edit-password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
     </div>

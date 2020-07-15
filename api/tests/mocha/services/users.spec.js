@@ -1427,8 +1427,10 @@ describe('Users service', () => {
         token_login: true,
       };
 
-      const tokenLoginConfig = { translation_key: 'sms', app_url: 'url', enabled: true };
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
       sinon.stub(auth, 'isOffline').returns(false);
 
       return service.createUser(user)
@@ -1449,8 +1451,10 @@ describe('Users service', () => {
         token_login: true,
       };
 
-      const tokenLoginConfig = { translation_key: 'sms', app_url: 'url', enabled: true };
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
       sinon.stub(auth, 'isOffline').returns(false);
 
       return service.createUser(user)
@@ -1464,8 +1468,11 @@ describe('Users service', () => {
     });
 
     it('should normalize phone number and change password (if provided)', () => {
-      const tokenLoginConfig = { message: 'sms', app_url: 'url', enabled: true };
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { message: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+
       sinon.stub(auth, 'isOffline').returns(false);
 
       const user = {
@@ -1574,8 +1581,10 @@ describe('Users service', () => {
     it('should require a phone number', () => {
       const updates = { token_login: true };
 
-      const tokenLoginConfig = { translation_key: 'sms', app_url: 'url', enabled: true};
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true};
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
       sinon.stub(auth, 'isOffline').returns(false);
 
       sinon.stub(db.medic, 'get').resolves({
@@ -1601,8 +1610,10 @@ describe('Users service', () => {
 
     it('should require a valid phone number', () => {
       const updates = { token_login: true, phone: '456' };
-      const tokenLoginConfig = { translation_key: 'sms', app_url: 'url', enabled: true };
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
       sinon.stub(auth, 'isOffline').returns(false);
 
       sinon.stub(db.medic, 'get').resolves({
@@ -1628,8 +1639,10 @@ describe('Users service', () => {
     });
 
     it('should normalize phone number and change password', () => {
-      const tokenLoginConfig = { message: 'the sms', app_url: 'http://host', enabled: true };
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { message: 'the sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://host');
       sinon.stub(auth, 'isOffline').returns(false);
 
       const updates = { token_login: true, phone: '+40 755 89-89-89' };
@@ -1706,8 +1719,10 @@ describe('Users service', () => {
     });
 
     it('should require password when removing token_login', () => {
-      const tokenLoginConfig = { message: 'the sms', app_url: 'http://host', enabled: true };
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { message: 'the sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://host');
       sinon.stub(auth, 'isOffline').returns(false);
 
       const updates = { token_login: false };
@@ -1735,8 +1750,10 @@ describe('Users service', () => {
     });
 
     it('should not require password when not changing token_login', () => {
-      const tokenLoginConfig = { message: 'the sms', app_url: 'http://host', enabled: true };
-      sinon.stub(config, 'get').withArgs('token_login').returns(tokenLoginConfig);
+      const tokenLoginConfig = { message: 'the sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://host');
       sinon.stub(auth, 'isOffline').returns(false);
 
       const updates = { token_login: false };
