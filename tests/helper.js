@@ -41,7 +41,7 @@ module.exports = {
    * expectedText : text that element should include
    */
   findElementByTextAndClick: (elements, expectedText) => {
-    browser
+    return browser
       .wait(
         EC.presenceOf(elements),
         12000,
@@ -49,7 +49,7 @@ module.exports = {
       )
       .then(() => {
         elements.each(element => {
-          element.getText().then(text => {
+          return element.getText().then(text => {
             if (
               text
                 .toLowerCase()
@@ -58,13 +58,8 @@ module.exports = {
             ) {
               element.click();
             }
-          }).catch(() => {
-            process.exit(1);
           });
         });
-      })
-      .catch(() => {
-        process.exit(1);
       });
   },
 
@@ -106,10 +101,8 @@ module.exports = {
       )
       .then(() => {
         elements.each(element => {
-          element.getText().then(text => {
+          return element.getText().then(text => {
             textFromElements.push(text.trim());
-          }).catch(() => {
-            process.exit(1);
           });
         });
         return textFromElements;
@@ -124,7 +117,7 @@ module.exports = {
   },
 
   logConsoleErrors: spec => {
-    browser
+    return browser
       .manage()
       .logs()
       .get('browser')
@@ -142,9 +135,6 @@ module.exports = {
             );
           }
         });
-      })
-      .catch(() => {
-        process.exit(1);
       });
   },
 
@@ -174,12 +164,10 @@ module.exports = {
   selectDropdownByText: (element, item, milliseconds) => {
     element.all(by.tagName('option')).then(options => {
       options.some(option => {
-        option.getText().then(text => {
+        return option.getText().then(text => {
           if (text.indexOf(item) !== -1) {
             option.click();
           }
-        }).catch(() => {
-          process.exit(1);
         });
       });
     }).catch(() => {
