@@ -109,7 +109,7 @@ describe('feed', () => {
       sinon.stub(feed._changeQueue, 'length').returns(0);
       const push = sinon.stub(feed._changeQueue, 'push');
 
-      feed
+      return feed
         .listen()
         .then(() => {
           const callbackFn = handler.on.args[0][1];
@@ -119,8 +119,6 @@ describe('feed', () => {
           chai.expect(push.callCount).to.equal(1);
           chai.expect(push.args[0][0]).to.deep.equal(change);
           done();
-        }).catch(() => {
-          process.exit(1);
         });
     });
 

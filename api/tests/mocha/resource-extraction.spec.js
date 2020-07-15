@@ -35,22 +35,20 @@ describe('Resource Extraction', () => {
   it('attachments written to disk', done => {
     const expected = { content: { toString: () => 'foo' } };
     doMocking(expected);
-    resourceExtraction.run().then(() => {
+    return resourceExtraction.run().then(() => {
       expect(mockFs.writeFile.callCount).to.eq(1);
 
       const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
       expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
       expect(actualContent).to.include(expected.content);
       done();
-    }).catch(() => {
-      process.exit(1);
     });
   });
 
   it('unchanged files get written once', done => {
     const expected = { content: 'foo' };
     doMocking(expected);
-    resourceExtraction.run()
+    return resourceExtraction.run()
       .then(resourceExtraction.run)
       .then(() => {
         expect(mockFs.writeFile.callCount).to.eq(1);
@@ -59,15 +57,13 @@ describe('Resource Extraction', () => {
         expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
         done();
-      }).catch(() => {
-        process.exit(1);
       });
   });
 
   it('changed files get written again', done => {
     const expected = { content: 'foo' };
     doMocking(expected);
-    resourceExtraction.run()
+    return resourceExtraction.run()
       .then(() => {
         fakeDdoc._attachments['js/attached.js'].digest = 'update';
         return resourceExtraction.run();
@@ -79,18 +75,14 @@ describe('Resource Extraction', () => {
         expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
         done();
-      }).catch(() => {
-        process.exit(1);
       });
   });
 
   it('non-cacheable attachments not written to disk', done => {
     doMocking({ attachments: { 'skip/me.js': {} }});
-    resourceExtraction.run().then(() => {
+    return resourceExtraction.run().then(() => {
       expect(mockFs.writeFile.callCount).to.eq(0);
       done();
-    }).catch(() => {
-      process.exit(1);
     });
   });
 
@@ -109,13 +101,11 @@ describe('Resource Extraction', () => {
     doMocking();
     mockFs.existsSync.returns(false);
     mockFs.mkdirSync = sinon.stub().returns(true);
-    resourceExtraction.run().then(() => {
+    return resourceExtraction.run().then(() => {
       expect(mockFs.mkdirSync.callCount).to.eq(2);
       expect(mockFs.mkdirSync.args[0][0]).to.include('src/extracted-resources');
       expect(mockFs.mkdirSync.args[1][0]).to.include('src/extracted-resources/js');
       done();
-    }).catch(() => {
-      process.exit(1);
     });
   });
 });

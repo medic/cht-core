@@ -197,12 +197,10 @@ const refreshToGetNewSettings = () => {
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      dialog.isPresent().then(function(result) {
+      return dialog.isPresent().then(function(result) {
         if (result) {
           dialog.click();
         }
-      }).catch(() => {
-        process.exit(1);
       });
     })
     .then(() => {
@@ -551,16 +549,13 @@ module.exports = {
   revertDb: revertDb,
 
   resetBrowser: () => {
-    browser.driver
+    return browser.driver
       .navigate()
       .refresh()
       .then(() => {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
         }, 10000);
-      })
-      .catch(() => {
-        process.exit(1);
       });
   },
 

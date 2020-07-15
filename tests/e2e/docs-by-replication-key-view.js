@@ -345,22 +345,17 @@ describe('view docs_by_replication_key', () => {
         }
         console.log('…done');
 
-        getChanges(['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username'])
-          .then(docs => {
-            docByPlaceIds = docs;
+        return getChanges(
+          ['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username']
+        ).then(docs => {
+          docByPlaceIds = docs;
 
-            getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ])
-              .then(docs => {
-                docByPlaceIds_unassigned = docs;
-                done();
-              })
-              .catch(() => {
-                process.exit(1);
-              });
-          })
-          .catch(() => {
-            process.exit(1);
-          });
+          return getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ])
+            .then(docs => {
+              docByPlaceIds_unassigned = docs;
+              done();
+            });
+        });
       });
   }, 5 * 60 * 1000);
 

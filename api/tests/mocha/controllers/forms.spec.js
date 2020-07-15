@@ -27,12 +27,10 @@ describe('forms controller', () => {
         .stub(db.medic, 'query')
         .returns(Promise.reject('icky'));
       const error = sinon.stub(serverUtils, 'error');
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         chai.expect(error.args[0][0]).to.equal('icky');
         chai.expect(query.callCount).to.equal(1);
         done();
-      }).catch(() => {
-        process.exit(1);
       });
     });
 
@@ -71,12 +69,10 @@ describe('forms controller', () => {
       const req = {};
       const get = sinon.stub(db.medic, 'query').returns(Promise.reject('icky'));
       const error = sinon.stub(serverUtils, 'error');
-      controller.list(req, res).then(() => {
+      return controller.list(req, res).then(() => {
         chai.expect(error.args[0][0]).to.equal('icky');
         chai.expect(get.callCount).to.equal(1);
         done();
-      }).catch(() => {
-        process.exit(1);
       });
     });
 

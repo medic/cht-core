@@ -1077,11 +1077,7 @@ describe('changes handler', () => {
           reported_date: 1,
           parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
         };
-        utils.saveDocs([patient, healthCenterPatient])
-          .then(done)
-          .catch(() => {
-            process.exit(1);
-          });
+        return utils.saveDocs([patient, healthCenterPatient]).then(done);
       });
 
       it('should do nothing when not truthy or not present', () => {

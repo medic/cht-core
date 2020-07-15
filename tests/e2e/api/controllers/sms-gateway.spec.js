@@ -56,11 +56,8 @@ describe('/sms', function() {
       });
 
       it('should not reject bad message content', function() {
-        api.postMessage({ missing_fields:true })
-          .then(assert.response({ messages:[] }))
-          .catch(() => {
-            process.exit(1);
-          });
+        return api.postMessage({ missing_fields:true })
+          .then(assert.response({ messages:[] }));
       });
 
       it('should save all good messages in a request containing some good and some bad', function() {

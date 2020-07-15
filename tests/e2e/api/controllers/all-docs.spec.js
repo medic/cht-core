@@ -91,13 +91,10 @@ const hasMatchingRow = (rows, id, exact = true) => {
 
 describe('all_docs handler', () => {
   beforeAll(done => {
-    utils
+    return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
-      .then(done)
-      .catch(() => {
-        process.exit(1);
-      });
+      .then(done);
   });
 
   afterAll(done =>

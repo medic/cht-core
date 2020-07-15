@@ -111,15 +111,13 @@ describe('SendMessage service', () => {
 
     allDocs.returns(mockAllDocs(recipient));
 
-    service(recipient, 'hello').then(() => {
+    return service(recipient, 'hello').then(() => {
       chai.expect(post.callCount).to.equal(1);
       assertMessage(post.args[0][0].tasks[0], {
         from: '+5551',
         sent_by: 'jack',
         to: '+5552'
       });
-    }).catch((err) => {
-      window.__karma__.error(err);
     });
   });
 

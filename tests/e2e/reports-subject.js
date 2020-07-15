@@ -284,12 +284,9 @@ describe('Reports Summary', () => {
   afterAll(utils.afterEach);
 
   afterEach((done) => {
-    utils
+    return utils
       .deleteAllDocs(CONTACTS.map(contact => contact._id)) // deletes all except these docs
-      .then(done)
-      .catch(() => {
-        process.exit(1);
-      });
+      .then(done);
   });
 
   describe('Displays correct LHS and RHS summary', () => {

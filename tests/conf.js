@@ -60,7 +60,7 @@ const baseConfig = {
     browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
-      browser
+      return browser
         .manage()
         .logs()
         .get('browser')
@@ -69,8 +69,6 @@ const baseConfig = {
             .map(log => `[${log.level.name_}] ${log.message}\n`)
             .forEach(log => browserLogStream.write(log));
           browserLogStream.write('\n~~~~~~~~~~~~~~~~~~~~~\n\n');
-        }).catch(() => {
-          process.exit(1);
         });
     });
 

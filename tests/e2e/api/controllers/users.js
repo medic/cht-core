@@ -330,7 +330,7 @@ describe('Users API', () => {
     let docsForAll;
 
     beforeAll(done => {
-      utils
+      return utils
         .saveDoc(parentPlace)
         .then(() => utils.createUsers(users))
         .then(() => {
@@ -346,10 +346,7 @@ describe('Users API', () => {
           docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
           expectedNbrDocs += resp.rows.length;
         })
-        .then(done)
-        .catch(() => {
-          process.exit(1);
-        });
+        .then(done);
     });
 
     afterAll(done =>

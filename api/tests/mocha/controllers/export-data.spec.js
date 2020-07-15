@@ -105,7 +105,7 @@ describe('Export Data controller', () => {
       auth.isOnlineOnly.returns(true);
       sinon.stub(db.medicUsersMeta, 'allDocs').returns(Promise.reject(new Error('db not found')));
       
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         // defer execution to allow the stream to write first
         setTimeout(() => {
           res.write.callCount.should.equal(1);
@@ -114,8 +114,6 @@ describe('Export Data controller', () => {
           res.end.args[0][0].should.equal('--ERROR--\nError exporting data: db not found\n');
           done();
         });
-      }).catch(() => {
-        process.exit(1);
       });
     });
   });

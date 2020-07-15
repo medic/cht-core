@@ -94,13 +94,11 @@ describe('UserSettings service', () => {
     service();
     service()
       .then(isExpected)
-      .catch((err) => {
-        window.__karma__.error(err);
+      .catch(() => {
       });
     firstPromise
       .then(isExpected)
-      .catch((err) => {
-        window.__karma__.error(err);
+      .catch(() => {
       });
   });
 
