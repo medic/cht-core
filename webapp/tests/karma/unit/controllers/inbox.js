@@ -1,3 +1,4 @@
+
 describe('InboxCtrl controller', () => {
   'use strict';
 
@@ -76,13 +77,13 @@ describe('InboxCtrl controller', () => {
       $provide.value('SendMessage', sinon.stub());
       $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
-      $provide.value('Settings', () => Promise.resolve());
+      $provide.value('Settings', () => Promise.resolve({}));
       $provide.value('$timeout', sinon.stub());
       $provide.value('UpdateUser', sinon.stub());
       $provide.value('UpdateSettings', sinon.stub());
-      $provide.value('UserSettings', sinon.stub());
+      $provide.value('UserSettings', () =>  Promise.resolve({}));
       $provide.value('Telemetry', { record: sinon.stub() });
-      $provide.value('Tour', { getTours: () => Promise.resolve([]) });
+      $provide.value('Tour', { endCurrent: () => {}, getTours: () => Promise.resolve([]) });
       $provide.value('RulesEngine', { isEnabled: () => rulesEnginePromise.promise });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.value('Enketo', sinon.stub());
@@ -112,6 +113,7 @@ describe('InboxCtrl controller', () => {
         });
       };
     });
+
   });
 
   afterEach(() => sinon.restore());
@@ -178,6 +180,15 @@ describe('InboxCtrl controller', () => {
     chai.expect(session.init.callCount).to.equal(1);
     changesListener['inbox-user-context'].callback();
     chai.expect(session.init.callCount).to.equal(2);
+  });
+
+  it('Tour modal should not be displayed if no tours are availbable', done => {
+    const controller = createController();
+    setTimeout(() => {
+      chai.expect(controller.filteredModals.length).to.equal(0);
+      done();
+    });
+    scope.$digest();
   });
 
   describe('sync status changes', () => {
