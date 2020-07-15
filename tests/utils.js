@@ -351,7 +351,7 @@ module.exports = {
 
   specReporter: new specReporter({
     spec: {
-      displayStacktrace: 'pretty',
+      displayStacktrace: 'raw',
       displayDuration: true
     }
   }),

@@ -10,22 +10,38 @@ const logger = require('../lib/logger');
 const BATCH = 1000;
 
 const getChanges = () => {
-  return metadata.getBackgroundCleanupSeq()
+  return metadata
+    .getBackgroundCleanupSeq()
     .then(seq => {
-      return db.medic.changes({
-        since: seq,
-        limit: BATCH
-      }).then(changes => {
-        const readableSeq = seq.split('-')[0];
-        const readableLastSeq = changes.last_seq.split('-')[0];
-        logger.info(`Background cleanup batch: ${readableSeq} -> ${readableLastSeq} (${changes.results.length})`);
+      return db.medic
+        .changes({ since: seq, limit: BATCH })
+        .then(changes => {
+          const readableSeq = seq.split('-')[0];
+          const readableLastSeq = changes.last_seq.split('-')[0];
+          logger.info(`Background cleanup batch: ${readableSeq} -> ${readableLastSeq} (${changes.results.length})`);
 
-        return {
-          changes: changes.results,
-          checkpointSeq: changes.last_seq,
-          more: changes.results.length === BATCH
-        };
-      });
+          return {
+            changes: changes.results,
+            checkpointSeq: changes.last_seq,
+            more: changes.results.length === BATCH
+          };
+        });
+    });
+};
+
+const getDeleteStubs = ({ rows=[] }={}) => rows
+  .filter(row => !row.error)
+  .map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+
+const deleteDocsFromDb = (dbObject, docIds) => {
+  return dbObject
+    .allDocs({ keys: docIds })
+    .then(results => {
+      const deleteStubs = getDeleteStubs(results);
+      if (!deleteStubs.length) {
+        return;
+      }
+      return dbObject.bulkDocs(deleteStubs);
     });
 };
 
@@ -36,17 +52,11 @@ const deleteInfoDocs = changes => {
     return Promise.resolve();
   }
 
-  return db.sentinel.allDocs({
-    keys: infoDocIds
-  }).then(results => {
-    const deletedStubs = results.rows.filter(r => !r.error).map(r => ({
-      _id: r.id,
-      _rev: r.value.rev,
-      _deleted: true
-    }));
-
-    return db.sentinel.bulkDocs(deletedStubs);
-  });
+  return Promise.all([
+    // if the infodoc was not migrated to sentinel, we have to delete it from medic
+    deleteDocsFromDb(db.medic, infoDocIds),
+    deleteDocsFromDb(db.sentinel, infoDocIds),
+  ]);
 };
 
 const deleteReadDocs = changes => {
@@ -66,26 +76,12 @@ const deleteReadDocs = changes => {
     // Intentionally not doing this in parallel because on larger systems we would fire off
     // thousands of requests at the same time. Would be great to use some kind of pressure based
     // work queue in the future
-    let p = Promise.resolve();
+    let promise = Promise.resolve();
     for (const udb of userDbs) {
       const userDb = db.get(udb);
 
-      p = p
-        .then(() => userDb.allDocs({ keys: possibleReadDocIds }))
-        .then(results => {
-
-          const deletedStubs = results.rows.filter(r => !r.error).map(r => ({
-            _id: r.id,
-            _rev: r.value.rev,
-            _deleted: true
-          }));
-
-          if (!deletedStubs.length) {
-            return;
-          }
-
-          return userDb.bulkDocs(deletedStubs);
-        })
+      promise = promise
+        .then(() => deleteDocsFromDb(userDb, possibleReadDocIds))
         .then(() => {
           db.close(userDb);
         })
@@ -95,25 +91,23 @@ const deleteReadDocs = changes => {
         });
     }
 
-    return p;
+    return promise;
   });
 };
 
 const batchLoop = () => {
-  return module.exports._getChanges()
+  return getChanges()
     .then(({changes, checkpointSeq, more}) => {
-      return Promise.all([
-        module.exports._deleteInfoDocs(changes),
-        module.exports._deleteReadDocs(changes)
-      ])
+      return Promise
+        .all([
+          deleteInfoDocs(changes),
+          deleteReadDocs(changes),
+        ])
         .then(() => metadata.setBackgroundCleanupSeq(checkpointSeq))
         .then(() => more && batchLoop());
     });
 };
 
 module.exports = {
-  execute: cb => batchLoop().then(() => cb()).catch(cb),
-  _getChanges: getChanges,
-  _deleteInfoDocs: deleteInfoDocs,
-  _deleteReadDocs: deleteReadDocs
+  execute: batchLoop,
 };

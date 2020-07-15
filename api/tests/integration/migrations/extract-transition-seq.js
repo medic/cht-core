@@ -4,6 +4,7 @@ const utils = require('./utils');
 const db = require('../../../src/db');
 
 const TRANSITION_SEQ_DOCUMENT = '_local/transitions-seq';
+const BACKGROUND_CLEANUP_SEQ_DOCUMENT = '_local/background-seq';
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';
 const MIGRATION = 'extract-transition-seq';
@@ -27,6 +28,10 @@ describe(`${MIGRATION} migration`, function() {
       .then(() => db.sentinel.get(TRANSITION_SEQ_DOCUMENT))
       .then(doc => {
         assert.equal(doc.value, 0);
+      })
+      .then(() => db.sentinel.get(BACKGROUND_CLEANUP_SEQ_DOCUMENT))
+      .then(doc => {
+        assert.equal(doc.value, 0);
       });
   });
 
@@ -43,6 +48,10 @@ describe(`${MIGRATION} migration`, function() {
       .then(() => db.sentinel.get(TRANSITION_SEQ_DOCUMENT))
       .then(doc => {
         assert.equal(doc.value, 1);
+      })
+      .then(() => db.sentinel.get(BACKGROUND_CLEANUP_SEQ_DOCUMENT))
+      .then(doc => {
+        assert.equal(doc.value, 1);
       });
   });
 
@@ -57,6 +66,10 @@ describe(`${MIGRATION} migration`, function() {
       }))
       .then(() => utils.runMigration(MIGRATION))
       .then(() => db.sentinel.get(TRANSITION_SEQ_DOCUMENT))
+      .then(doc => {
+        assert.equal(doc.value, 2);
+      })
+      .then(() => db.sentinel.get(BACKGROUND_CLEANUP_SEQ_DOCUMENT))
       .then(doc => {
         assert.equal(doc.value, 2);
       });

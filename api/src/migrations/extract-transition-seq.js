@@ -6,6 +6,7 @@ const db = require('../db');
 const logger = require('../logger');
 
 const TRANSITION_SEQ_DOCUMENT = '_local/transitions-seq';
+const BACKGROUND_CLEANUP_SEQ_DOCUMENT = '_local/background-seq';
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';
 
@@ -24,7 +25,8 @@ const deleteOldMetadataDoc = doc => {
 };
 
 const getExistingMetaDoc = () => {
-  return db.sentinel.get(METADATA_DOCUMENT)
+  return db.sentinel
+    .get(METADATA_DOCUMENT)
     .then(doc => ({doc, db: db.sentinel}))
     .catch(err => {
       if (err.status !== 404) {
@@ -49,12 +51,16 @@ const getExistingMetaDoc = () => {
 };
 
 const convertToNewStyle = (transitionSeq = '0') => {
-  const newMetaDoc = {
+  const newTransitionSeqMetadataDoc = {
     _id: TRANSITION_SEQ_DOCUMENT,
-    value: transitionSeq
+    value: transitionSeq,
+  };
+  const newBackgroundSeqMetadataDoc = {
+    _id: BACKGROUND_CLEANUP_SEQ_DOCUMENT,
+    value: transitionSeq,
   };
 
-  return db.sentinel.put(newMetaDoc);
+  return db.sentinel.bulkDocs([ newTransitionSeqMetadataDoc, newBackgroundSeqMetadataDoc ]);
 };
 
 module.exports = {
