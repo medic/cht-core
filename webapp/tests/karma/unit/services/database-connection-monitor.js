@@ -31,15 +31,17 @@ describe('DatabaseConnectionMonitor service', function() {
     rootScope.$emit = () => done();
     service.listenForDatabaseClosed();
     triggerPouchDbDOMException();
+    setTimeout(() => {
+      expect(rootScope.$emit.callCount).to.eq(1);
+      done();
+    }, 50);
   });
 
   const triggerPouchDbDOMException = () => { 
     let db = new window.PouchDB('test', { auto_compaction: true }); 
     const write = i => {
-      db.put({ _id: i + 'a', bar: 'bar' }).then(() => {
+      return db.put({ _id: i + 'a', bar: 'bar' }).then(() => {
         write(i + 1); 
-      }).catch((err) => {
-        window.__karma__.error(err);
       });
     };
     write(0); 
