@@ -1064,7 +1064,7 @@ describe('changes handler', () => {
             'should-also-be-visible')));
 
     describe('Needs signoff', () => {
-      beforeEach(done => {
+      beforeEach(() => {
         const patient = {
           _id: 'clinic_patient',
           type: 'person',
@@ -1077,7 +1077,7 @@ describe('changes handler', () => {
           reported_date: 1,
           parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
         };
-        return utils.saveDocs([patient, healthCenterPatient]).then(done);
+        return utils.saveDocs([patient, healthCenterPatient]);
       });
 
       it('should do nothing when not truthy or not present', () => {
