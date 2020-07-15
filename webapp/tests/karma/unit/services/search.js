@@ -75,8 +75,7 @@ describe('Search service', function() {
         .then(function() {
           throw new Error('the second promise should be ignored');
         })
-        .catch((err) => {
-          window.__karma__.error(err);
+        .catch(() => {
         });
     });
 
