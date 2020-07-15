@@ -13,7 +13,7 @@ angular.module('inboxServices').service('Geolocation',
     'ngInject';
 
     return function() {
-      $log.info('Initiating new geolocation watcher');
+      $log.debug('Initiating new geolocation watcher');
 
       let geo;
       let geoError;
@@ -21,7 +21,7 @@ angular.module('inboxServices').service('Geolocation',
       let deferred;
 
       const finalise = () => {
-        $log.info('Finalising geolocation');
+        $log.debug('Finalising geolocation');
         $navigator.geolocation && $navigator.geolocation.clearWatch(watcher);
 
         if (geo) {
@@ -54,14 +54,14 @@ angular.module('inboxServices').service('Geolocation',
       } else {
         watcher = $navigator.geolocation.watchPosition(
           position => {
-            $log.info('Geolocation hit', position);
+            $log.debug('Geolocation hit', position);
             geo = position;
             if (deferred) {
               finalise();
             }
           },
           error => {
-            $log.info('Geolocation error', error);
+            $log.debug('Geolocation error', error);
             geoError = error;
             if (deferred) {
               finalise();
@@ -71,7 +71,7 @@ angular.module('inboxServices').service('Geolocation',
       }
 
       const complete = function() {
-        $log.info('Geolocation requested');
+        $log.debug('Geolocation requested');
         deferred = $q.defer();
 
         if (geo || geoError) {
@@ -82,7 +82,7 @@ angular.module('inboxServices').service('Geolocation',
       };
 
       complete.cancel = () => {
-        $log.info('Cancelling geolocation');
+        $log.debug('Cancelling geolocation');
         $navigator.geolocation && $navigator.geolocation.clearWatch(watcher);
       };
 
