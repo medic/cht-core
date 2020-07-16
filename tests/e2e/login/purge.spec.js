@@ -237,10 +237,8 @@ describe('Purging on login', () => {
       const callback = arguments[arguments.length - 1];
       const db = window.PouchDB('medic-user-e2e_restricted');
       db.get('_local/purgelog')
-        .then(doc => callback(doc), err => callback(err))
-        .catch(() => {
-          process.exit(1);
-        });
+        .then(doc => callback(null, doc))
+        .catch(err => callback(err));
     }));
   };
 
