@@ -479,9 +479,10 @@ module.exports = {
    * objects. Returns the response body in the callback.
    *
    * @param {Object} data - request body
+   * @param {String} appUrl - request protocol://hostname
    * @api public
    */
-  createUser: data => {
+  createUser: (data, appUrl) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
       return Promise.reject(error400(
@@ -507,7 +508,7 @@ module.exports = {
       .then(() => storeUpdatedPlace(data))
       .then(() => createUser(data, response))
       .then(() => createUserSettings(data, response))
-      .then(() => tokenLogin.manageTokenLogin(data, response))
+      .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
       .then(() => response);
   },
 
@@ -536,8 +537,9 @@ module.exports = {
    * @param      {Object}    data        Changes to make
    * @param      {Boolean}   fullAccess  Are we allowed to update
    *                                     security-related things?
+   * @param      {String}    appUrl      request protocol://hostname
    */
-  updateUser: (username, data, fullAccess) => {
+  updateUser: (username, data, fullAccess, appUrl) => {
     // Reject update attempts that try to modify data they're not allowed to
     if (!fullAccess) {
       const illegalAttempts = illegalDataModificationAttempts(data);
@@ -631,7 +633,7 @@ module.exports = {
               rev: resp.rev
             };
           })
-          .then(() => tokenLogin.manageTokenLogin(data, response))
+          .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
           .then(() => response);
       });
   },

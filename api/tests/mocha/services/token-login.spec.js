@@ -18,44 +18,22 @@ describe('TokenLogin service', () => {
     sinon.restore();
   });
 
-  describe('validTokenLoginConfig', () => {
+  describe('isTokenLoginEnabled', () => {
     it('should return falsy when no setting', () => {
       sinon.stub(config, 'get').returns();
-      chai.expect(service.validTokenLoginConfig()).to.equal(false);
-      chai.expect(config.get.callCount).to.deep.equal(2);
+      chai.expect(service.isTokenLoginEnabled()).to.equal(false);
+      chai.expect(config.get.callCount).to.deep.equal(1);
       chai.expect(config.get.args[0]).to.deep.equal(['token_login']);
-      chai.expect(config.get.args[1]).to.deep.equal(['app_url']);
     });
 
     it('should return falsy when not enabled', () => {
-      sinon.stub(config, 'get')
-        .withArgs('token_login').returns({ enabled: false })
-        .withArgs('app_url').returns('someString');
-      chai.expect(service.validTokenLoginConfig()).to.equal(false);
+      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: false });
+      chai.expect(service.isTokenLoginEnabled()).to.equal(false);
     });
 
-    it('should return falsy when not missing fields', () => {
-      sinon.stub(config, 'get')
-        .withArgs('token_login').returns({ enabled: true })
-        .withArgs('app_url').returns('someString');
-
-      chai.expect(service.validTokenLoginConfig()).to.equal(false);
-      config.get
-        .withArgs('token_login').returns({ enabled: true })
-        .withArgs('app_url').returns('aaa');
-      chai.expect(service.validTokenLoginConfig()).to.equal(false);
-
-      config.get
-        .withArgs('token_login').returns({ enabled: true, translation_key: 'aaaa' })
-        .withArgs('app_url').returns();
-      chai.expect(service.validTokenLoginConfig()).to.equal(false);
-    });
-
-    it('should return true when required fields are present', () => {
-      sinon.stub(config, 'get')
-        .withArgs('token_login').returns({ enabled: true, translation_key: 'aaaa' })
-        .withArgs('app_url').returns('bbb');
-      chai.expect(service.validTokenLoginConfig()).to.equal(true);
+    it('should return true when enabled', () => {
+      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true });
+      chai.expect(service.isTokenLoginEnabled()).to.equal(true);
     });
   });
 
@@ -66,25 +44,19 @@ describe('TokenLogin service', () => {
     });
 
     it('should return falsey when data does not request token_login to be enabled', () => {
-      sinon.stub(config, 'get')
-        .withArgs('token_login').returns({ enabled: true, message: 'message' })
-        .withArgs('app_url').returns('some_url');
+      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true, message: 'message' });
       chai.expect(service.shouldEnableTokenLogin({})).to.equal(undefined);
     });
 
     it('should return true when configured and requested', () => {
-      sinon.stub(config, 'get')
-        .withArgs('token_login').returns({ enabled: true, message: 'message' })
-        .withArgs('app_url').returns('some_url');
+      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true, message: 'message' });
       chai.expect(service.shouldEnableTokenLogin({ token_login: true })).to.equal(true);
     });
   });
 
   describe('validateTokenLogin', () => {
     beforeEach(() => {
-      sinon.stub(config, 'get')
-        .withArgs('token_login').returns({ enabled: true, message: 'message' })
-        .withArgs('app_url').returns('some_url');
+      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true, message: 'message' });
     });
 
     describe('on create', () => {
@@ -225,8 +197,6 @@ describe('TokenLogin service', () => {
   });
 
   describe('getUserByToken', () => {
-    const base64Decode = string => Buffer.from(string, 'base64').toString('utf8');
-
     it('should reject with no input', () => {
       sinon.stub(db.users, 'get');
       return service
@@ -238,65 +208,99 @@ describe('TokenLogin service', () => {
         });
     });
 
-    it('should throw when user not found', () => {
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
+    it('should throw when token_login doc not found', () => {
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      const token = 'my_token';
       return service
-        .getUserByToken('token', 'base64')
+        .getUserByToken(token)
         .then(() => chai.assert.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ status: 401, error: 'invalid' });
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:${token}`]);
+        });
+    });
+
+    it('should throw when user not found', () => {
+      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:someuser' });
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      return service
+        .getUserByToken('omgtoken')
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ status: 401, error: 'invalid' });
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:omgtoken`]);
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal([`org.couchdb.user:${base64Decode('base64')}`]);
+          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:someuser']);
         });
     });
 
     it('should return false when no matches found', () => {
+      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:otheruser' });
       sinon.stub(db.users, 'get').resolves({ token_login: { token: 'not token' } });
       return service
-        .getUserByToken('token', 'somebase64')
+        .getUserByToken('sometoken')
         .then(() => chai.assert.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ status: 401, error: 'invalid' });
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:sometoken`]);
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal([`org.couchdb.user:${base64Decode('somebase64')}`]);
+          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:otheruser']);
         });
     });
 
     it('should throw when match is expired', () => {
+      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:user' });
       sinon.stub(db.users, 'get').resolves({ token_login: { active: true, token: 'the_token', expiration_date: 0 } });
       return service
-        .getUserByToken('the_token', 'the_base64')
+        .getUserByToken('the_token')
         .then(() => chai.assert.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ status: 401, error: 'expired' });
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal([`org.couchdb.user:${base64Decode('the_base64')}`]);
+          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user']);
         });
     });
 
     it('should return the row id when match is not expired', () => {
       const future = new Date().getTime() + 1000;
+      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:user_id' });
       sinon.stub(db.users, 'get').resolves({
-        _id: 'user_id',
+        _id: 'org.couchdb.user:user_id',
         token_login: {
           active: true,
           token: 'the_token',
           expiration_date: future
         },
       });
-      return service.getUserByToken('the_token', 'the_base64').then(response => {
-        chai.expect(response).to.equal('user_id');
+      return service.getUserByToken('the_token').then(response => {
+        chai.expect(response).to.equal('org.couchdb.user:user_id');
+        chai.expect(db.medic.get.callCount).to.equal(1);
+        chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
         chai.expect(db.users.get.callCount).to.equal(1);
-        chai.expect(db.users.get.args[0]).to.deep.equal([`org.couchdb.user:${base64Decode('the_base64')}`]);
+        chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user_id']);
       });
     });
 
     it('should throw when get errors', () => {
+      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:user_id' });
       sinon.stub(db.users, 'get').rejects({ some: 'err' });
       return service
         .getUserByToken('t', 'h')
         .then(() => chai.assert.fail('should have thrown'))
-        .catch(err => chai.expect(err).to.deep.equal({ status: 401, error: 'invalid' }));
+        .catch(err => chai.expect(err).to.deep.equal({ some: 'err' }));
+    });
+
+    it('should throw when get errors', () => {
+      sinon.stub(db.medic, 'get').rejects({ other: 'err' });
+      return service
+        .getUserByToken('t', 'h')
+        .then(() => chai.assert.fail('should have thrown'))
+        .catch(err => chai.expect(err).to.deep.equal({ other: 'err' }));
     });
   });
 
@@ -353,7 +357,7 @@ describe('TokenLogin service', () => {
           password: user.password,
           user: 'sally'
         });
-        chai.expect(user.password.length).to.equal(8);
+        chai.expect(user.password.length).to.equal(20);
 
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.args[0]).to.deep.equal(['userID']);
@@ -469,14 +473,14 @@ describe('TokenLogin service', () => {
 
   describe('manageTokenLogin', () => {
     it('should do nothing when undefined', () => {
-      return service.manageTokenLogin({}, { user: { id: 'user' } }).then(actual => {
+      return service.manageTokenLogin({}, '',{ user: { id: 'user' } }).then(actual => {
         chai.expect(actual).to.deep.equal({ user: { id: 'user' } });
       });
     });
 
     it('should do nothing when no config', () => {
       sinon.stub(config, 'get').withArgs('token_login').returns();
-      return service.manageTokenLogin({ token_login: true }, { user: { id: 'user' } }).then(actual => {
+      return service.manageTokenLogin({ token_login: true }, '',{ user: { id: 'user' } }).then(actual => {
         chai.expect(actual).to.deep.equal({ user: { id: 'user' } });
       });
     });
@@ -487,7 +491,7 @@ describe('TokenLogin service', () => {
         sinon.stub(db.medic, 'get').withArgs('userID').resolves({ _id: 'userID' });
         sinon.stub(db.users, 'get').withArgs('userID').resolves({ _id: 'userID' });
 
-        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(actual).to.deep.equal({ user: { id: 'userID' }, 'user-settings': { id: 'userID' } });
         });
       });
@@ -502,9 +506,10 @@ describe('TokenLogin service', () => {
             roles: ['a', 'b'],
             token_login: { active: true, expiration_date: 123 },
           })
-          .withArgs('the_sms_doc').resolves({
-            _id: 'the_sms_doc',
-            type: 'sms_doc',
+          .withArgs('token:login:aaa').resolves({
+            _id: 'token:login:aaa',
+            type: 'token_login',
+            user: 'userID',
             tasks: [
               { state: 'pending', messages: [{ message: 'sms1' }] },
               { state: 'pending', messages: [{ message: 'sms2' }] },
@@ -518,18 +523,18 @@ describe('TokenLogin service', () => {
             active: true,
             expiration_date: 123,
             token: 'aaa',
-            doc_id: 'the_sms_doc',
           }
         });
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
 
-        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(2);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
-            _id: 'the_sms_doc',
-            type: 'sms_doc',
+            _id: 'token:login:aaa',
+            type: 'token_login',
+            user: 'userID',
             tasks: [
               {
                 state: 'cleared',
@@ -573,9 +578,10 @@ describe('TokenLogin service', () => {
             roles: ['a', 'b'],
             token_login: { active: true, expiration_date: 123 },
           })
-          .withArgs('the_sms_doc').resolves({
-            _id: 'the_sms_doc',
-            type: 'sms_doc',
+          .withArgs('token:login:bbb').resolves({
+            _id: 'token:login:bbb',
+            type: 'token_login',
+            user: 'userID',
             tasks: [
               { state: 'sent', messages: [{ message: 'sms1' }] },
               { state: 'forwarded-by-gateway', messages: [{ message: 'sms2' }] },
@@ -588,15 +594,14 @@ describe('TokenLogin service', () => {
           token_login: {
             active: true,
             expiration_date: 123,
-            token: 'aaa',
-            doc_id: 'the_sms_doc',
+            token: 'bbb',
           }
         });
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
 
-        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'userID',
@@ -614,7 +619,7 @@ describe('TokenLogin service', () => {
         });
       });
 
-      it('should work when old sms message not found', () => {
+      it('should work when old login token doc not found', () => {
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
         sinon.stub(db.medic, 'get')
           .withArgs('userID').resolves({
@@ -623,7 +628,7 @@ describe('TokenLogin service', () => {
             roles: ['a', 'b'],
             token_login: { active: true, expiration_date: 123 },
           })
-          .withArgs('the_sms_doc').rejects({ status: 404 });
+          .withArgs('token:login:ccc').rejects({ status: 404 });
 
         sinon.stub(db.users, 'get').withArgs('userID').resolves({
           _id: 'userID',
@@ -632,15 +637,14 @@ describe('TokenLogin service', () => {
           token_login: {
             active: true,
             expiration_date: 123,
-            token: 'aaa',
-            doc_id: 'the_sms_doc',
+            token: 'ccc',
           }
         });
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
 
-        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'userID',
@@ -681,11 +685,10 @@ describe('TokenLogin service', () => {
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'post').resolves({ id: 'someId' });
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'userID',
@@ -695,24 +698,22 @@ describe('TokenLogin service', () => {
           chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
             active: true,
             expiration_date: 2000 + oneDayInMS,
-            doc_id: 'someId',
           });
           const token = db.users.put.args[0][0].token_login.token;
-          const encoded = Buffer.from('user').toString('base64');
 
-          chai.expect(db.medic.post.callCount).to.equal(1);
-          chai.expect(db.medic.post.args[0][0]).to.deep.nested.include({
-            type: 'token_login_sms',
+          chai.expect(db.medic.put.callCount).to.equal(2);
+          chai.expect(db.medic.put.args[0][0]).to.deep.nested.include({
+            _id: `token:login:${token}`,
+            type: 'token_login',
             reported_date: 2000,
             user: 'userID',
             'tasks[0].state': 'pending',
             'tasks[0].messages[0].to': '+40755232323',
             'tasks[0].messages[0].message': 'the sms',
             'tasks[1].messages[0].to': '+40755232323',
-            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}/${encoded}`,
+            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
           });
-          chai.expect(db.medic.put.callCount).to.equal(1);
-          chai.expect(db.medic.put.args[0]).to.deep.equal([{
+          chai.expect(db.medic.put.args[1]).to.deep.equal([{
             _id: 'userID',
             name: 'user',
             phone: '+40755232323',
@@ -723,7 +724,7 @@ describe('TokenLogin service', () => {
           chai.expect(actual).to.deep.equal({
             user: { id: 'userID' },
             'user-settings': { id: 'userID' },
-            token_login: { id: 'someId', expiration_date: 2000 + oneDayInMS }
+            token_login: { expiration_date: 2000 + oneDayInMS }
           });
         });
       });
@@ -741,9 +742,9 @@ describe('TokenLogin service', () => {
           phone: 'phone',
           token_login: { active: true, expiration_date: 2500 },
         });
-        db.medic.get.withArgs('oldSms').resolves({
-          _id: 'oldSms',
-          type: 'token_login_sms',
+        db.medic.get.withArgs('token:login:oldtoken').resolves({
+          _id: 'token:login:oldtoken',
+          type: 'token_login',
           reported_date: 1000,
           user: 'my_user',
           tasks: [
@@ -764,7 +765,6 @@ describe('TokenLogin service', () => {
           roles: ['a', 'b'],
           token_login: {
             active: true,
-            doc_id: 'oldSms',
             expiration_date: 2500,
             token: 'oldtoken',
           },
@@ -772,11 +772,10 @@ describe('TokenLogin service', () => {
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'post').resolves({ id: 'someId' });
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'my_user',
@@ -786,30 +785,17 @@ describe('TokenLogin service', () => {
           chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
             active: true,
             expiration_date: 2000 + oneDayInMS,
-            doc_id: 'someId',
           });
           const token = db.users.put.args[0][0].token_login.token;
-          const encoded = Buffer.from('user').toString('base64');
 
           chai.expect(token).not.to.equal('oldtoken');
-          chai.expect(token.length).to.equal(50);
+          chai.expect(token.length).to.equal(64);
 
-          chai.expect(db.medic.post.callCount).to.equal(1);
-          chai.expect(db.medic.post.args[0][0]).to.deep.nested.include({
-            type: 'token_login_sms',
-            reported_date: 2000,
-            user: 'my_user',
-            'tasks[0].state': 'pending',
-            'tasks[0].messages[0].to': 'phone',
-            'tasks[0].messages[0].message': 'the sms',
-            'tasks[1].messages[0].to': 'phone',
-            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}/${encoded}`,
-          });
+          chai.expect(db.medic.put.callCount).to.equal(3);
 
-          chai.expect(db.medic.put.callCount).to.equal(2);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
-            _id: 'oldSms',
-            type: 'token_login_sms',
+            _id: 'token:login:oldtoken',
+            type: 'token_login',
             reported_date: 1000,
             user: 'my_user',
             tasks: [
@@ -829,7 +815,20 @@ describe('TokenLogin service', () => {
               },
             ],
           }]);
-          chai.expect(db.medic.put.args[1]).to.deep.equal([{
+
+          chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+            _id: `token:login:${token}`,
+            type: 'token_login',
+            reported_date: 2000,
+            user: 'my_user',
+            'tasks[0].state': 'pending',
+            'tasks[0].messages[0].to': 'phone',
+            'tasks[0].messages[0].message': 'the sms',
+            'tasks[1].messages[0].to': 'phone',
+            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
+          });
+
+          chai.expect(db.medic.put.args[2]).to.deep.equal([{
             _id: 'my_user',
             name: 'user',
             phone: 'phone',
@@ -840,7 +839,7 @@ describe('TokenLogin service', () => {
           chai.expect(actual).to.deep.equal({
             user: { id: 'my_user' },
             'user-settings': { id: 'my_user' },
-            token_login: { id: 'someId', expiration_date: 2000 + oneDayInMS }
+            token_login: { expiration_date: 2000 + oneDayInMS }
           });
         });
       });
@@ -858,9 +857,9 @@ describe('TokenLogin service', () => {
           phone: 'newphone',
           token_login: { active: true, expiration_date: 2500 },
         });
-        db.medic.get.withArgs('oldSms').resolves({
-          _id: 'oldSms',
-          type: 'token_login_sms',
+        db.medic.get.withArgs('token:login:oldtoken').resolves({
+          _id: 'token:login:oldtoken',
+          type: 'token_login',
           reported_date: 1000,
           user: 'userID',
           tasks: [
@@ -889,36 +888,21 @@ describe('TokenLogin service', () => {
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'post').resolves({ id: 'otherId' });
 
         clock.tick(5000);
 
-        return service.manageTokenLogin({ token_login: true }, response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
             active: true,
             expiration_date: 5000 + oneDayInMS,
-            doc_id: 'otherId',
           });
           const token = db.users.put.args[0][0].token_login.token;
-          const encoded = Buffer.from('username').toString('base64');
 
-          chai.expect(db.medic.post.callCount).to.equal(1);
-          chai.expect(db.medic.post.args[0][0]).to.deep.nested.include({
-            type: 'token_login_sms',
-            reported_date: 5000,
-            user: 'userID',
-            'tasks[0].state': 'pending',
-            'tasks[0].messages[0].to': 'newphone',
-            'tasks[0].messages[0].message': 'the sms',
-            'tasks[1].messages[0].to': 'newphone',
-            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}/${encoded}`,
-          });
-
-          chai.expect(db.medic.put.callCount).to.equal(2);
+          chai.expect(db.medic.put.callCount).to.equal(3);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
-            _id: 'oldSms',
-            type: 'token_login_sms',
+            _id: 'token:login:oldtoken',
+            type: 'token_login',
             reported_date: 1000,
             user: 'userID',
             tasks: [
@@ -936,10 +920,22 @@ describe('TokenLogin service', () => {
             ],
           }]);
 
+          chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+            _id: `token:login:${token}`,
+            type: 'token_login',
+            reported_date: 5000,
+            user: 'userID',
+            'tasks[0].state': 'pending',
+            'tasks[0].messages[0].to': 'newphone',
+            'tasks[0].messages[0].message': 'the sms',
+            'tasks[1].messages[0].to': 'newphone',
+            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
+          });
+
           chai.expect(actual).to.deep.equal({
             user: { id: 'userID' },
             'user-settings': { id: 'userID' },
-            token_login: { id: 'otherId', expiration_date: 5000 + oneDayInMS }
+            token_login: { expiration_date: 5000 + oneDayInMS }
           });
         });
       });

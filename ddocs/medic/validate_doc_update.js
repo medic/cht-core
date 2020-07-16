@@ -9,7 +9,7 @@
 */
 function(newDoc, oldDoc, userCtx, secObj) {
 
-  var ADMIN_ONLY_TYPES = [ 'form', 'translations' ];
+  var ADMIN_ONLY_TYPES = [ 'form', 'translations', 'token_login' ];
   var ADMIN_ONLY_IDS = [ 'resources', 'service-worker-meta', 'zscore-charts', 'settings', 'branding', 'partners' ];
 
   var _err = function(msg) {

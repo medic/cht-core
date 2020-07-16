@@ -22,9 +22,9 @@ const loginWithData = data => {
   return utils.request(opts);
 };
 
-const loginWithTokenLink = (token = '', hash = '') => {
+const loginWithTokenLink = (token = '') => {
   const opts = {
-    path: `/medic/login/token/${token}/${hash}`,
+    path: `/medic/login/token/${token}`,
     method: 'POST',
     simple: false,
     resolveWithFullResponse: true,
@@ -54,14 +54,15 @@ const getUser = (user) => {
   return utils.request(opts);
 };
 
-const setupTokenLoginSettings = () => {
-  const settings = { token_login: { translation_key: 'login_sms', enabled: true }, app_url: utils.getOrigin() };
+const setupTokenLoginSettings = (configureAppUrl = false) => {
+  const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
+  if (configureAppUrl) {
+    settings.app_url = utils.getOrigin();
+  }
   return utils
     .updateSettings(settings, 'api')
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
-
-const base64Encode = string => Buffer.from(string).toString('base64');
 
 describe('login', () => {
   beforeAll(() => utils.saveDoc(parentPlace));
@@ -131,7 +132,7 @@ describe('login', () => {
 
     it('should fail with invalid data', () => {
       return setupTokenLoginSettings()
-        .then(() => loginWithTokenLink('token', 'hash'))
+        .then(() => loginWithTokenLink('token'))
         .then(response => expectLoginToFail(response));
     });
 
@@ -143,12 +144,20 @@ describe('login', () => {
         method: 'POST',
         body: user
       };
+      const optsEdit = {
+        path: `/api/v1/users/${user.username}`,
+        method: 'POST',
+        body: { token_login: true },
+      };
+      let firstToken;
       return setupTokenLoginSettings()
         .then(() => utils.request(opts))
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectLoginToFail(response))
         .then(() => getUser(user))
-        .then(user => loginWithTokenLink(user.token_login.token, 'randomHash'))
+        .then(user => firstToken = user.token_login.token)
+        .then(() => utils.request(optsEdit)) // generate a new token
+        .then(() => loginWithTokenLink(firstToken))
         .then(response => expectLoginToFail(response));
     });
 
@@ -170,7 +179,7 @@ describe('login', () => {
           tokenLogin = user.token_login;
           return utils.request({ method: 'PUT', path: `/_users/${user._id}`, body: user });
         })
-        .then(() => loginWithTokenLink(tokenLogin.token, base64Encode(user.username)))
+        .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToFail(response));
     });
 
@@ -187,9 +196,29 @@ describe('login', () => {
         .then(() => utils.request(opts))
         .then(() => getUser(user))
         .then(user => tokenLogin = user.token_login)
-        .then(() => loginWithTokenLink(tokenLogin.token, base64Encode(user.username)))
+        .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToWork(response))
-        .then(() => loginWithTokenLink(tokenLogin.token, base64Encode(user.username)))
+        .then(() => loginWithTokenLink(tokenLogin.token))
+        .then(response => expectLoginToFail(response)); // fails after being activated the 1st time
+    });
+
+    it('should succeed with correct data and configured app_url', () => {
+      user.phone = '+40755565656';
+      user.token_login = true;
+      const opts = {
+        path: '/api/v1/users',
+        method: 'POST',
+        body: user,
+        headers: { 'Host': 'definitely-not-our-host.com' },
+      };
+      let tokenLogin;
+      return setupTokenLoginSettings(true)
+        .then(() => utils.request(opts))
+        .then(() => getUser(user))
+        .then(user => tokenLogin = user.token_login)
+        .then(() => loginWithTokenLink(tokenLogin.token))
+        .then(response => expectLoginToWork(response))
+        .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToFail(response)); // fails after being activated the 1st time
     });
   });

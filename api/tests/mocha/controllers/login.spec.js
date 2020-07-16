@@ -287,19 +287,19 @@ describe('login controller', () => {
   describe('POST login/token', () => {
     it('should redirect the user directly if they have a valid session', () => {
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'user' });
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(true);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(res, 'send').returns(res);
       sinon.stub(res, 'status').returns(res);
       return controller.tokenPost(req, res).then(() => {
         chai.expect(auth.getUserCtx.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
-        chai.expect(tokenLogin.validTokenLoginConfig.callCount).to.equal(0);
+        chai.expect(tokenLogin.isTokenLoginEnabled.callCount).to.equal(0);
       });
     });
 
     it('should fail early when token login not enabled', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(false);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(false);
       sinon.stub(res, 'json').returns(res);
       sinon.stub(res, 'status').returns(res);
       return controller.tokenPost(req, res).then(() => {
@@ -312,28 +312,28 @@ describe('login controller', () => {
 
     it('should fail early with no params', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(true);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(res, 'json').returns(res);
       sinon.stub(res, 'status').returns(res);
-      req.params = { token: 'my_token' };
+      req.params = {};
       return controller.tokenPost(req, res).then(() => {
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0]).to.deep.equal([400]);
         chai.expect(res.json.callCount).to.equal(1);
-        chai.expect(res.json.args[0]).to.deep.equal([{ error: 'missing', reason: 'Missing required params' }]);
+        chai.expect(res.json.args[0]).to.deep.equal([{ error: 'missing', reason: 'Missing required param' }]);
       });
     });
 
     it('should send 401 when token incorrect', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(true);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(tokenLogin, 'getUserByToken').resolves(false);
       sinon.stub(res, 'json').returns(res);
       sinon.stub(res, 'status').returns(res);
-      req.params = { token: 'my_token', userId: 'myUserID' };
+      req.params = { token: 'my_token' };
       return controller.tokenPost(req, res).then(() => {
         chai.expect(tokenLogin.getUserByToken.callCount).to.equal(1);
-        chai.expect(tokenLogin.getUserByToken.args[0]).to.deep.equal( [ 'my_token', 'myUserID' ]);
+        chai.expect(tokenLogin.getUserByToken.args[0]).to.deep.equal( [ 'my_token' ]);
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0]).to.deep.equal([401]);
         chai.expect(res.json.callCount).to.equal(1);
@@ -343,11 +343,11 @@ describe('login controller', () => {
 
     it('should send error when error thrown while validating token', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(true);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(tokenLogin, 'getUserByToken').rejects({ some: 'err' });
       sinon.stub(res, 'json').returns(res);
       sinon.stub(res, 'status').returns(res);
-      req.params = { token: 'a', userId: 'b' };
+      req.params = { token: 'a' };
       return controller.tokenPost(req, res).then(() => {
         chai.expect(tokenLogin.getUserByToken.callCount).to.equal(1);
         chai.expect(res.status.callCount).to.equal(1);
@@ -358,7 +358,7 @@ describe('login controller', () => {
     });
 
     it('should login the user when token is valid', () => {
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(true);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(tokenLogin, 'getUserByToken').resolves('userId');
       sinon.stub(tokenLogin, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(tokenLogin, 'deactivateTokenLogin').resolves();
@@ -393,7 +393,7 @@ describe('login controller', () => {
     });
 
     it('should retry logging in when login fails', () => {
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(true);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(tokenLogin, 'getUserByToken').resolves('userId');
       sinon.stub(tokenLogin, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(tokenLogin, 'deactivateTokenLogin').resolves();
@@ -433,7 +433,7 @@ describe('login controller', () => {
 
     it('should abandon logging in after retrying 11 times', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
-      sinon.stub(tokenLogin, 'validTokenLoginConfig').returns(true);
+      sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(tokenLogin, 'getUserByToken').resolves('userId');
       sinon.stub(tokenLogin, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(tokenLogin, 'deactivateTokenLogin');

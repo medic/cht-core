@@ -282,16 +282,16 @@ const createSessionRetry = (req, retry=10) => {
  * The user's password is reset in the process.
  */
 const loginByToken = (req, res) => {
-  if (!tokenLogin.validTokenLoginConfig()) {
+  if (!tokenLogin.isTokenLoginEnabled()) {
     return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
   }
 
-  if (!req.params || !req.params.token || !req.params.userId) {
-    return res.status(400).json({ error: 'missing', reason: 'Missing required params' });
+  if (!req.params || !req.params.token) {
+    return res.status(400).json({ error: 'missing', reason: 'Missing required param' });
   }
 
   return tokenLogin
-    .getUserByToken(req.params.token, req.params.userId)
+    .getUserByToken(req.params.token)
     .then(userId => {
       if (!userId) {
         throw { status: 401, error: 'invalid' };

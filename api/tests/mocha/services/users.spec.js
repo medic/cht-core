@@ -1471,7 +1471,7 @@ describe('Users service', () => {
       const tokenLoginConfig = { message: 'sms', enabled: true };
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('url');
+        .withArgs('app_url').returns('');
 
       sinon.stub(auth, 'isOffline').returns(false);
 
@@ -1487,7 +1487,6 @@ describe('Users service', () => {
         .resolves({ id: 'org.couchdb.user:sally' });
       sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
-      sinon.stub(db.medic, 'post').resolves({ id: 'someRandomId' });
 
       sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally')
         .onCall(0).rejects({ status: 404 })
@@ -1507,15 +1506,14 @@ describe('Users service', () => {
           name: 'sally',
         });
 
-      return service.createUser(user).then(response => {
+      return service.createUser(user, 'http://realhost').then(response => {
         chai.expect(response).to.deep.equal({
           user: { id: 'org.couchdb.user:sally', rev: undefined },
           'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
-          token_login: { id: 'someRandomId', expiration_date: oneDayInMS },
+          token_login: { expiration_date: oneDayInMS },
         });
-        chai.expect(db.medic.put.callCount).to.equal(2);
+        chai.expect(db.medic.put.callCount).to.equal(3);
         chai.expect(db.users.put.callCount).to.equal(2);
-        chai.expect(db.medic.post.callCount).to.equal(1);
 
         chai.expect(db.medic.put.args[0]).to.deep.equal([{
           _id: 'org.couchdb.user:sally',
@@ -1534,7 +1532,7 @@ describe('Users service', () => {
         chai.expect(db.users.put.args[0][0].password).not.to.equal('random');
         chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
 
-        chai.expect(db.medic.put.args[1][0]).to.deep.equal({
+        chai.expect(db.medic.put.args[2][0]).to.deep.equal({
           _id: 'org.couchdb.user:sally',
           name: 'sally',
           type: 'user-settings',
@@ -1556,21 +1554,20 @@ describe('Users service', () => {
         chai.expect(db.users.put.args[1][0].token_login).to.deep.include({
           active: true,
           expiration_date: oneDayInMS,
-          doc_id: 'someRandomId',
         });
         const token = db.users.put.args[1][0].token_login.token;
-        const encoded = Buffer.from('sally').toString('base64');
-        chai.expect(token.length).to.equal(50);
+        chai.expect(token.length).to.equal(64);
 
-        chai.expect(db.medic.post.args[0][0]).to.deep.nested.include({
-          type: 'token_login_sms',
+        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+          _id: `token:login:${token}`,
+          type: 'token_login',
           reported_date: 0,
           user: 'org.couchdb.user:sally',
           'tasks[0].messages[0].to': '+40755696969',
           'tasks[0].messages[0].message': 'sms',
           'tasks[0].state': 'pending',
           'tasks[1].messages[0].to': '+40755696969',
-          'tasks[1].messages[0].message': `url/medic/login/token/${token}/${encoded}`,
+          'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
           'tasks[1].state': 'pending',
         });
       });
@@ -1657,7 +1654,6 @@ describe('Users service', () => {
         type: 'user',
         roles: ['a', 'b', 'mm-online'],
       });
-      sinon.stub(db.medic, 'post').resolves({ id: 'otherRandomId' });
       sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
       sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
@@ -1665,15 +1661,15 @@ describe('Users service', () => {
 
       clock.tick(5000);
 
-      return service.updateUser('sally', updates).then(response => {
+      return service.updateUser('sally', updates, true, 'https://realhost').then(response => {
         chai.expect(response).to.deep.equal({
           user: { id: 'org.couchdb.user:sally', rev: undefined },
           'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
-          token_login: { id: 'otherRandomId', expiration_date: 5000 + oneDayInMS },
+          token_login: { expiration_date: 5000 + oneDayInMS },
         });
 
-        chai.expect(db.medic.put.callCount).to.equal(2);
-        chai.expect(db.medic.put.args[1][0]).to.deep.equal({
+        chai.expect(db.medic.put.callCount).to.equal(3);
+        chai.expect(db.medic.put.args[2][0]).to.deep.equal({
           _id: 'org.couchdb.user:sally',
           name: 'sally',
           type: 'user-settings',
@@ -1696,23 +1692,22 @@ describe('Users service', () => {
         chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
           active: true,
           expiration_date: 5000 + oneDayInMS,
-          doc_id: 'otherRandomId',
         });
         chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
 
         const token = db.users.put.args[0][0].token_login.token;
-        const encoded = Buffer.from('sally').toString('base64');
-        chai.expect(token.length).to.equal(50);
+        chai.expect(token.length).to.equal(64);
 
-        chai.expect(db.medic.post.args[0][0]).to.deep.nested.include({
-          type: 'token_login_sms',
-          reported_date: 5000,
+        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+          _id: `token:login:${token}`,
+          type: 'token_login',
           user: 'org.couchdb.user:sally',
+          reported_date: 5000,
           'tasks[0].messages[0].to': '+40755898989',
           'tasks[0].messages[0].message': 'the sms',
           'tasks[0].state': 'pending',
           'tasks[1].messages[0].to': '+40755898989',
-          'tasks[1].messages[0].message': `http://host/medic/login/token/${token}/${encoded}`,
+          'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
           'tasks[1].state': 'pending',
         });
       });

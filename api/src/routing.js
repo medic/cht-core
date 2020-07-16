@@ -235,8 +235,8 @@ app.use(express.static(extractedResourceDirectory));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
-app.get(routePrefix + 'login/token/:token?/:userId?', login.tokenGet);
-app.postJson(routePrefix + 'login/token/:token?/:userId?', login.tokenPost);
+app.get(routePrefix + 'login/token/:token?', login.tokenGet);
+app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 
 // saves CouchDB _session information as `userCtx` in the `req` object
 app.use(authorization.getUserCtx);

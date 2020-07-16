@@ -101,6 +101,10 @@ const getAllowedDocIds = userCtx => {
     .then(allowedDocIds => purgedDocs.getUnPurgedIds(userCtx.roles, allowedDocIds));
 };
 
+// this might not be correct.
+// In express4, req.host strips off the port number: https://expressjs.com/en/guide/migrating-5.html#req.host
+const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
+
 module.exports = {
   get: (req, res) => {
     auth
@@ -110,9 +114,9 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   create: (req, res) => {
-    auth
+    return auth
       .check(req, 'can_create_users')
-      .then(() => usersService.createUser(req.body))
+      .then(() => usersService.createUser(req.body, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -124,7 +128,7 @@ module.exports = {
     const username = req.params.username;
     const credentials = auth.basicAuthCredentials(req);
 
-    Promise.all([
+    return Promise.all([
       hasFullPermission(req),
       isUpdatingSelf(req, credentials, username),
       basicAuthValid(credentials, username),
@@ -169,7 +173,7 @@ module.exports = {
           }
 
           return usersService
-            .updateUser(username, req.body, !!fullPermission)
+            .updateUser(username, req.body, !!fullPermission, getAppUrl(req))
             .then(result => {
               logger.info(
                 `REQ ${

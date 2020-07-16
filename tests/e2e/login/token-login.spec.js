@@ -12,8 +12,10 @@ const ERROR = 'Something went wrong when processing your request';
 
 let user;
 
-const getUrl = (token, encrypt) => `${utils.getOrigin()}/medic/login/token/${token}/${encrypt}`;
+const getUrl = token => `${utils.getOrigin()}/medic/login/token/${token}`;
 const setupTokenLoginSettings = () => {
+  // we're configuring app_url here because we're serving api on a port, and in express4 req.hostname strips the port
+  // https://expressjs.com/en/guide/migrating-5.html#req.host
   const settings = { token_login: {message: 'token_login_sms', enabled: true }, app_url: utils.getOrigin() };
   const waitForApiUpdate = utils.waitForLogs('api.e2e.log', /Settings updated/);
   return utils.updateSettings(settings, 'api').then(() => waitForApiUpdate.promise);
@@ -23,17 +25,20 @@ const createUser = (user) => {
   return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
 };
 
-const getTokenUrl = ({ token_login: { id } } = {}) => {
+const getUser = id => utils.request({ path: `/_users/${id}`});
+
+const getTokenUrl = ({ token_login: { token } } = {}) => {
+  const id = `token:login:${token}`;
   return utils.getDoc(id).then(doc => {
     return doc.tasks[1].messages[0].message;
   });
 };
 
-const expireToken = ({ user: { id } } = {}) => {
-  return utils.request(`/_users/${id}`).then(userDoc => {
+const expireToken = (user) => {
+  return utils.request(`/_users/${user._id}`).then(userDoc => {
     const rightNow = new Date().getTime();
     userDoc.token_login.expiration_date = rightNow - 1000; // token expired a second ago
-    return utils.request({ path: `/_users/${id}`, method: 'PUT', body: userDoc });
+    return utils.request({ path: `/_users/${user._id}`, method: 'PUT', body: userDoc });
   });
 };
 
@@ -59,14 +64,14 @@ describe('token login', () => {
   it('should redirect the user to the app if already logged in', () => {
     commonElements.goToLoginPage();
     loginPage.login(auth.username, auth.password);
-    browser.driver.get(getUrl('this is a', 'random string'));
+    browser.driver.get(getUrl('this is a random string'));
     helper.waitElementToDisappear(by.css('.loader'));
     browser.waitForAngular();
     helper.waitUntilReady(element(by.id('message-list')));
   });
 
   it('should display an error when token login is disabled', () => {
-    browser.driver.get(getUrl('this is a', 'random string'));
+    browser.driver.get(getUrl('this is a random string'));
     helper.waitElementToDisappear(by.css('.loader'));
     expect(helper.isTextDisplayed(ERROR)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
@@ -75,7 +80,7 @@ describe('token login', () => {
 
   it('should display an error with incorrect url', () => {
     browser.wait(() => setupTokenLoginSettings().then(() => true));
-    browser.driver.get(`${utils.getOrigin()}/medic/login/token/justtoken`);
+    browser.driver.get(`${utils.getOrigin()}/medic/login/token`);
     helper.waitElementToDisappear(by.css('.loader'));
     expect(helper.isTextDisplayed(MISSING)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
@@ -84,7 +89,7 @@ describe('token login', () => {
 
   it('should display an error when accessing with random strings', () => {
     browser.wait(() => setupTokenLoginSettings().then(() => true));
-    browser.driver.get(getUrl('this is a', 'random string'));
+    browser.driver.get(getUrl('this is a random string'));
     helper.waitElementToDisappear(by.css('.loader'));
     expect(helper.isTextDisplayed(INVALID)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
@@ -95,9 +100,10 @@ describe('token login', () => {
     browser.wait(() => {
       return setupTokenLoginSettings()
         .then(() => createUser(user))
-        .then(response => Promise.all([
-          getTokenUrl(response),
-          expireToken(response),
+        .then(response => getUser(response.user.id))
+        .then(user => Promise.all([
+          getTokenUrl(user),
+          expireToken(user),
         ]))
         .then(([ url ]) => browser.driver.get(url))
         .then(() => true);
@@ -112,7 +118,8 @@ describe('token login', () => {
     browser.wait(() => {
       return setupTokenLoginSettings()
         .then(() => createUser(user))
-        .then(response => getTokenUrl(response))
+        .then(response => getUser(response.user.id))
+        .then(user => getTokenUrl(user))
         .then(url => browser.driver.get(url))
         .then(() => true);
     });

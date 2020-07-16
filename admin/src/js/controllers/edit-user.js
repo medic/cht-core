@@ -56,10 +56,7 @@ angular
       }
     };
 
-    const validTokenLoginSettings = settings => settings.token_login &&
-                                                settings.app_url &&
-                                                settings.token_login.enabled &&
-                                                (settings.token_login.translation_key || settings.token_login.message);
+    const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
 
     const determineEditUserModel = function() {
       // Edit a user that's not the current user.
@@ -68,7 +65,7 @@ angular
       return Settings()
         .then(settings => {
           $scope.roles = settings.roles;
-          $scope.allowTokenLogin = validTokenLoginSettings(settings);
+          $scope.allowTokenLogin = allowTokenLogin(settings);
           if (!$scope.model) {
             return $q.resolve({});
           }

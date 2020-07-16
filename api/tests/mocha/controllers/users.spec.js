@@ -5,6 +5,7 @@ const auth = require('../../../src/auth');
 const authorization = require('../../../src/services/authorization');
 const serverUtils = require('../../../src/server-utils');
 const purgedDocs = require('../../../src/services/purged-docs');
+const users = require('../../../src/services/users');
 
 let req;
 let userCtx;
@@ -12,6 +13,8 @@ let res;
 
 describe('Users Controller', () => {
   beforeEach(() => {
+    req = {};
+    res = {};
     sinon.stub(authorization, 'getAuthorizationContext');
     sinon.stub(authorization, 'getAllowedDocIds');
     sinon.stub(auth, 'isOnlineOnly');
@@ -404,6 +407,114 @@ describe('Users Controller', () => {
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: unpurgedIds.length, warn: false, limit: 10000 }]);
         });
+      });
+    });
+  });
+
+  describe('create', () => {
+    it('should respond with error when requester has no permission', () => {
+      sinon.stub(auth, 'check').rejects({ status: 403 });
+      return controller.create(req, res).then(() => {
+        chai.expect(auth.check.callCount).to.equal(1);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_create_users']);
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([{ status: 403 }, req, res]);
+      });
+    });
+
+    it('should respond with error when creating fails', () => {
+      sinon.stub(auth, 'check').resolves();
+      sinon.stub(users, 'createUser').rejects({ some: 'err' });
+      req = { protocol: 'http', hostname: 'thehost.com', body: { name: 'user' } };
+      res = { json: sinon.stub() };
+      return controller.create(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
+        chai.expect(users.createUser.callCount).to.equal(1);
+        chai.expect(users.createUser.args[0]).to.deep.equal([req.body, 'http://thehost.com']);
+        chai.expect(res.json.callCount).to.equal(0);
+
+      });
+    });
+
+    it('should create the user and respond', () => {
+      sinon.stub(auth, 'check').resolves();
+      sinon.stub(users, 'createUser').resolves({ user: { id: 'aaa' } });
+      req = { protocol: 'https', hostname: 'host.com', body: { name: 'user' } };
+      res = { json: sinon.stub() };
+      return controller.create(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(0);
+        chai.expect(users.createUser.callCount).to.equal(1);
+        chai.expect(users.createUser.args[0]).to.deep.equal([req.body, 'https://host.com']);
+        chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0]).to.deep.equal([{ user: { id: 'aaa' } }]);
+      });
+    });
+  });
+
+  describe('update', () => {
+    it('should respond with error when empty body', () => {
+      req.body = {};
+      // this is probably not a promise, but we make it a promise so we can make certain we're testing the whole thing
+      sinon.stub(serverUtils, 'emptyJSONBodyError').resolves();
+      return controller.update(req, res).then(() => {
+        chai.expect(serverUtils.emptyJSONBodyError.callCount).to.equal(1);
+      });
+    });
+
+    it('should respond with error when not permitted', () => {
+      sinon.stub(auth, 'check').rejects({ code: 403 });
+      sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
+      sinon.stub(auth, 'basicAuthCredentials').returns({ name: 'alpha' });
+      sinon.stub(auth, 'validateBasicAuth').resolves();
+      req = { params: { username: 'beta' }, body: { field: 'update' } };
+
+      return controller.update(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([
+          { code: 403, message: 'You do not have permissions to modify this person' },
+          req,
+          res,
+        ]);
+        chai.expect(auth.check.callCount).to.equal(1);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_update_users']);
+        chai.expect(auth.getUserCtx.callCount).to.equal(2);
+      });
+    });
+
+    it('should allow user to update himself', () => {
+      sinon.stub(auth, 'check').rejects({ code: 403 });
+      sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
+      sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
+      sinon.stub(auth, 'validateBasicAuth').resolves();
+      req = { params: { username: 'alpha' }, protocol: 'http', hostname: 'myhost.net', body: { field: 'update' } };
+      res = { json: sinon.stub() };
+      sinon.stub(users, 'updateUser').resolves({ response: true });
+
+      return controller.update(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(0);
+        chai.expect(users.updateUser.callCount).to.equal(1);
+        chai.expect(users.updateUser.args[0]).to.deep.equal(['alpha', { field: 'update' }, false, 'http://myhost.net']);
+        chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0]).to.deep.equal([{ response: true }]);
+      });
+    });
+
+    it('should allow admins to update other users', () => {
+      sinon.stub(auth, 'check').resolves();
+      sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
+      sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
+      sinon.stub(auth, 'validateBasicAuth').resolves();
+      req = { params: { username: 'beta' }, protocol: 'https', hostname: 'myhost.io', body: { field: 'update' } };
+      res = { json: sinon.stub() };
+      sinon.stub(users, 'updateUser').resolves({ updated: true });
+
+      return controller.update(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(0);
+        chai.expect(users.updateUser.callCount).to.equal(1);
+        chai.expect(users.updateUser.args[0]).to.deep.equal(['beta', { field: 'update' }, true, 'https://myhost.io']);
+        chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0]).to.deep.equal([{ updated: true }]);
       });
     });
   });
