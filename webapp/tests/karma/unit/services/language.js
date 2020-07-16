@@ -37,9 +37,7 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][1]).to.equal('latin');
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
-    }).catch((err) => {
-      window.__karma__.error(err);
-    });
+    }).catch(err => done(err));
   });
 
   it('uses the language configured in settings', function(done) {
@@ -56,9 +54,7 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][1]).to.equal('yiddish');
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
-    }).catch((err) => {
-      window.__karma__.error(err);
-    });
+    }).catch(err => done(err));
   });
 
   it('defaults', function(done) {
@@ -75,9 +71,7 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][1]).to.equal('en');
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
-    }).catch((err) => {
-      window.__karma__.error(err);
-    });
+    }).catch(err => done(err));
   });
 
   it('uses cookie if set', function(done) {
@@ -88,9 +82,7 @@ describe('Language service', function() {
       chai.expect(ipCookie.callCount).to.equal(1);
       chai.expect(actual).to.equal('ca');
       done();
-    }).catch((err) => {
-      window.__karma__.error(err);
-    });
+    }).catch(err => done(err));
   });
 
 });

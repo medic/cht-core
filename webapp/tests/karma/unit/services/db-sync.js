@@ -142,9 +142,7 @@ describe('DBSync service', () => {
           expect(from.callCount).to.equal(2);
           done();
         });
-      }).catch((err) => {
-        window.__karma__.error(err);
-      });
+      }).catch(err => done(err));
     });
 
     it('does not attempt sync while offline', () => {
@@ -259,12 +257,8 @@ describe('DBSync service', () => {
             expect(from.callCount).to.equal(3);
             done();
           });
-        }).catch((err) => {
-          window.__karma__.error(err);
-        });
-      }).catch((err) => {
-        window.__karma__.error(err);
-      });
+        }).catch(err => done(err));
+      }).catch(err => done(err));
     });
 
     it('does not sync to remote if user lacks "can_edit" permission', () => {
