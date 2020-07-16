@@ -90,11 +90,10 @@ const hasMatchingRow = (rows, id, exact = true) => {
 };
 
 describe('all_docs handler', () => {
-  beforeAll(done => {
+  beforeAll(() => {
     return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .then(() => utils.createUsers(users));
   });
 
   afterAll(done =>

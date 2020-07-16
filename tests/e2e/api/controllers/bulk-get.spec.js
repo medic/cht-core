@@ -67,11 +67,10 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-get handler', () => {
-  beforeAll(done => {
+  beforeAll(() => {
     return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .then(() => utils.createUsers(users));
   });
 
   afterAll(done =>
