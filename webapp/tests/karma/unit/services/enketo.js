@@ -476,7 +476,6 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
       UserSettings.resolves({ name: 'Jim' });
-
       return service.save('V', form).then(actual => {
         actual = actual[0];
 
@@ -493,6 +492,358 @@ describe('Enketo service', () => {
         expect(actual.content_type).to.equal('xml');
         expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
+        expect(dbGetAttachment.callCount).to.equal(1);
+        expect(dbGetAttachment.args[0][0]).to.equal('abc');
+        expect(AddAttachment.callCount).to.equal(1);
+        expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+        expect(AddAttachment.args[0][1]).to.equal('content');
+        expect(AddAttachment.args[0][2]).to.equal(content);
+        expect(AddAttachment.args[0][3]).to.equal('application/xml');
+      });
+    });
+
+    describe('Geolocation recording', () => {
+      it('saves geolocation data into a new report', () => {
+        form.validate.resolves(true);
+        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        form.getDataStr.returns(content);
+        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+        dbGetAttachment.resolves('<form/>');
+        UserContact.resolves({ _id: '123', phone: '555' });
+        UserSettings.resolves({ name: 'Jim' });
+        const geoData = {
+          latitude: 1,
+          longitude: 2,
+          altitude: 3,
+          accuracy: 4,
+          altitudeAccuracy: 5,
+          heading: 6,
+          speed: 7
+        };
+        return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.callCount).to.equal(1);
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(UserContact.callCount).to.equal(1);
+          expect(actual._id).to.match(/(\w+-)\w+/);
+          expect(actual._rev).to.equal('1-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('V');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.contact._id).to.equal('123');
+          expect(actual.from).to.equal('555');
+          expect(actual.geolocation).to.deep.equal(geoData);
+          expect(dbGetAttachment.callCount).to.equal(1);
+          expect(dbGetAttachment.args[0][0]).to.equal('abc');
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+          expect(AddAttachment.args[0][1]).to.equal('content');
+          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        });
+      });
+
+      it('saves a geolocation error into a new report', () => {
+        form.validate.resolves(true);
+        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        form.getDataStr.returns(content);
+        dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+        dbGetAttachment.resolves('<form/>');
+        UserContact.resolves({ _id: '123', phone: '555' });
+        UserSettings.resolves({ name: 'Jim' });
+        const geoError = {
+          code: 42,
+          message: 'some bad geo'
+        };
+        return service.save('V', form, () => Promise.reject(geoError)).then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.callCount).to.equal(1);
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(UserContact.callCount).to.equal(1);
+          expect(actual._id).to.match(/(\w+-)\w+/);
+          expect(actual._rev).to.equal('1-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('V');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.contact._id).to.equal('123');
+          expect(actual.from).to.equal('555');
+          expect(actual.geolocation).to.deep.equal(geoError);
+          expect(dbGetAttachment.callCount).to.equal(1);
+          expect(dbGetAttachment.args[0][0]).to.equal('abc');
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+          expect(AddAttachment.args[0][1]).to.equal('content');
+          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        });
+      });
+
+      it('does not overwrite exising geolocation data on edit with new geolocation data', () => {
+        form.validate.resolves(true);
+        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        form.getDataStr.returns(content);
+        const originalGeoData = {
+          latitude: 1,
+          longitude: 2,
+          altitude: 3,
+          accuracy: 4,
+          altitudeAccuracy: 5,
+          heading: 6,
+          speed: 7
+        };
+        dbGet.resolves({
+          _id: '6',
+          _rev: '1-abc',
+          form: 'V',
+          fields: { name: 'Silly' },
+          content: '<doc><name>Silly</name></doc>',
+          content_type: 'xml',
+          type: 'data_record',
+          reported_date: 500,
+          geolocation: originalGeoData
+        });
+        dbBulkDocs.resolves([ { ok: true, id: '6', rev: '2-abc' } ]);
+        dbGetAttachment.resolves('<form/>');
+        const geoData = {
+          latitude: 10,
+          longitude: 11,
+          altitude: 12,
+          accuracy: 13,
+          altitudeAccuracy: 14,
+          heading: 15,
+          speed: 16
+        };
+        return service.save('V', form, () => Promise.resolve(geoData), '6').then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.callCount).to.equal(1);
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbGet.callCount).to.equal(1);
+          expect(dbGet.args[0][0]).to.equal('6');
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(actual._id).to.equal('6');
+          expect(actual._rev).to.equal('2-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('V');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.reported_date).to.equal(500);
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.geolocation).to.deep.equal(originalGeoData);
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+          expect(AddAttachment.args[0][1]).to.equal('content');
+          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+          expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        });
+      });
+
+      it('does not overwrite existing geolocation error on edit with new geolocation data', () => {
+        form.validate.resolves(true);
+        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        form.getDataStr.returns(content);
+        const originalGeoError = {
+          error: 42,
+          message: 'something bad happened'
+        };
+        dbGet.resolves({
+          _id: '6',
+          _rev: '1-abc',
+          form: 'V',
+          fields: { name: 'Silly' },
+          content: '<doc><name>Silly</name></doc>',
+          content_type: 'xml',
+          type: 'data_record',
+          reported_date: 500,
+          geolocation: originalGeoError
+        });
+        dbBulkDocs.resolves([ { ok: true, id: '6', rev: '2-abc' } ]);
+        dbGetAttachment.resolves('<form/>');
+        const geoData = {
+          latitude: 10,
+          longitude: 11,
+          altitude: 12,
+          accuracy: 13,
+          altitudeAccuracy: 14,
+          heading: 15,
+          speed: 16
+        };
+        return service.save('V', form, () => Promise.resolve(geoData), '6').then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.callCount).to.equal(1);
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbGet.callCount).to.equal(1);
+          expect(dbGet.args[0][0]).to.equal('6');
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(actual._id).to.equal('6');
+          expect(actual._rev).to.equal('2-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('V');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.reported_date).to.equal(500);
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.geolocation).to.deep.equal(originalGeoError);
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+          expect(AddAttachment.args[0][1]).to.equal('content');
+          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+          expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        });
+      });
+
+      it('does not overwrite existing geolocation data on edit with a new error', () => {
+        form.validate.resolves(true);
+        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        form.getDataStr.returns(content);
+        const originalGeoData = {
+          latitude: 1,
+          longitude: 2,
+          altitude: 3,
+          accuracy: 4,
+          altitudeAccuracy: 5,
+          heading: 6,
+          speed: 7
+        };
+        dbGet.resolves({
+          _id: '6',
+          _rev: '1-abc',
+          form: 'V',
+          fields: { name: 'Silly' },
+          content: '<doc><name>Silly</name></doc>',
+          content_type: 'xml',
+          type: 'data_record',
+          reported_date: 500,
+          geolocation: originalGeoData
+        });
+        dbBulkDocs.resolves([ { ok: true, id: '6', rev: '2-abc' } ]);
+        dbGetAttachment.resolves('<form/>');
+        const geoError = {
+          code: 42,
+          message: 'something bad happened'
+        };
+        return service.save('V', form, () => Promise.reject(geoError), '6').then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.callCount).to.equal(1);
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbGet.callCount).to.equal(1);
+          expect(dbGet.args[0][0]).to.equal('6');
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(actual._id).to.equal('6');
+          expect(actual._rev).to.equal('2-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('V');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.reported_date).to.equal(500);
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.geolocation).to.deep.equal(originalGeoData);
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+          expect(AddAttachment.args[0][1]).to.equal('content');
+          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+          expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        });
+      });
+
+      it('does not overwrite existing geolocation error on edit with a new error', () => {
+        form.validate.resolves(true);
+        const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+        form.getDataStr.returns(content);
+        const originalGeoError = {
+          code: 42,
+          message: 'old error'
+        };
+        dbGet.resolves({
+          _id: '6',
+          _rev: '1-abc',
+          form: 'V',
+          fields: { name: 'Silly' },
+          content: '<doc><name>Silly</name></doc>',
+          content_type: 'xml',
+          type: 'data_record',
+          reported_date: 500,
+          geolocation: originalGeoError
+        });
+        dbBulkDocs.resolves([ { ok: true, id: '6', rev: '2-abc' } ]);
+        dbGetAttachment.resolves('<form/>');
+        const geoError = {
+          code: 43,
+          message: 'something else bad happened'
+        };
+        return service.save('V', form, () => Promise.reject(geoError), '6').then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.callCount).to.equal(1);
+          expect(form.getDataStr.callCount).to.equal(1);
+          expect(dbGet.callCount).to.equal(1);
+          expect(dbGet.args[0][0]).to.equal('6');
+          expect(dbBulkDocs.callCount).to.equal(1);
+          expect(actual._id).to.equal('6');
+          expect(actual._rev).to.equal('2-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('V');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.reported_date).to.equal(500);
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.geolocation).to.deep.equal(originalGeoError);
+          expect(AddAttachment.callCount).to.equal(1);
+          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
+          expect(AddAttachment.args[0][1]).to.equal('content');
+          expect(AddAttachment.args[0][2]).to.equal(content);
+          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
+          expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        });
+      });
+    });
+
+    it('creates report with erroring geolocation', () => {
+      form.validate.resolves(true);
+      const content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+      form.getDataStr.returns(content);
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      dbGetAttachment.resolves('<form/>');
+      UserContact.resolves({ _id: '123', phone: '555' });
+      UserSettings.resolves({ name: 'Jim' });
+      const geoError = {
+        code: 42,
+        message: 'geolocation failed for some reason'
+      };
+      return service.save('V', form, () => Promise.reject(geoError  )).then(actual => {
+        actual = actual[0];
+
+        expect(form.validate.callCount).to.equal(1);
+        expect(form.getDataStr.callCount).to.equal(1);
+        expect(dbBulkDocs.callCount).to.equal(1);
+        expect(UserContact.callCount).to.equal(1);
+        expect(actual._id).to.match(/(\w+-)\w+/);
+        expect(actual._rev).to.equal('1-abc');
+        expect(actual.fields.name).to.equal('Sally');
+        expect(actual.fields.lmp).to.equal('10');
+        expect(actual.form).to.equal('V');
+        expect(actual.type).to.equal('data_record');
+        expect(actual.content_type).to.equal('xml');
+        expect(actual.contact._id).to.equal('123');
+        expect(actual.from).to.equal('555');
+        expect(actual.geolocation).to.deep.equal(geoError);
         expect(dbGetAttachment.callCount).to.equal(1);
         expect(dbGetAttachment.args[0][0]).to.equal('abc');
         expect(AddAttachment.callCount).to.equal(1);
@@ -679,7 +1030,16 @@ describe('Enketo service', () => {
       ]);
       dbGetAttachment.resolves('<form/>');
       UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form, () => Promise.resolve(true)).then(actual => {
+      const geoData = {
+        latitude: 1,
+        longitude: 2,
+        altitude: 3,
+        accuracy: 4,
+        altitudeAccuracy: 5,
+        heading: 6,
+        speed: 7
+      };
+      return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
         const endTime = Date.now() + 1;
 
         expect(form.validate.callCount).to.equal(1);
@@ -704,14 +1064,14 @@ describe('Enketo service', () => {
         expect(actualReport.fields.doc1).to.equal(undefined);
         expect(actualReport.fields.doc2).to.equal(undefined);
 
-        expect(actualReport.geolocation).to.equal(true);
+        expect(actualReport.geolocation).to.deep.equal(geoData);
 
         const actualThing1 = actual[1];
         expect(actualThing1._id).to.match(/(\w+-)\w+/);
         expect(actualThing1.reported_date).to.be.above(startTime);
         expect(actualThing1.reported_date).to.be.below(endTime);
         expect(actualThing1.some_property_1).to.equal('some_value_1');
-        expect(actualThing1.geolocation).to.equal(true);
+        expect(actualThing1.geolocation).to.deep.equal(geoData);
 
         const actualThing2 = actual[2];
         expect(actualThing2._id).to.match(/(\w+-)\w+/);
@@ -719,7 +1079,7 @@ describe('Enketo service', () => {
         expect(actualThing2.reported_date).to.be.below(endTime);
         expect(actualThing2.some_property_2).to.equal('some_value_2');
 
-        expect(actualThing2.geolocation).to.equal(true);
+        expect(actualThing2.geolocation).to.deep.equal(geoData);
 
         expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
       });
