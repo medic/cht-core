@@ -47,7 +47,7 @@ done
 echo Api Is up
 
 echo installing medic-conf
-npm install https://github.com/medic/medic-conf.git#307_force_arg -g -s
+npm install https://github.com/medic/medic-conf.git#307_force_arg -g
 
 MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
 
@@ -57,6 +57,7 @@ cd ../../config/standard/
 
 echo Uploading settings and seeding data
 echo medic-conf url is $MEDIC_CONF_URL
+which medic-conf
 medic-conf --url=$MEDIC_CONF_URL --force upload-app-settings \
     convert-app-forms \
     convert-collect-forms \
@@ -71,6 +72,6 @@ medic-conf --url=$MEDIC_CONF_URL --force upload-app-settings \
     upload-docs \
     create-users \
 
-sleep 360
+# sleep 360
 
-curl https://medic:medicScalability@$PublicDnsName/api/v1/upgrade -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
+# curl https://medic:medicScalability@$PublicDnsName/api/v1/upgrade -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
