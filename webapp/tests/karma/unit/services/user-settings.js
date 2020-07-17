@@ -98,6 +98,7 @@ describe('UserSettings service', () => {
     firstPromise
       .then(isExpected)
       .catch(err => done(err));
+    done();
   });
 
   it('gets from remote db', () => {
