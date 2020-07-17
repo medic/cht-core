@@ -46,7 +46,7 @@ done
 
 echo Api Is up
 
-MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
+MEDIC_CONF_URL=${url:0:8}medic:medicScalability@${url:8}
 
 cp -r ./csv ../../config/standard/
 
