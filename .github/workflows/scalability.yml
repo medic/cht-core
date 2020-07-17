@@ -21,4 +21,4 @@ jobs:
       - name: Start EC2 and Medic
         run: cd tests/scalability && ./start_ec2_medic.sh ${GITHUB_REF#refs/heads/}
       - name: Execute Jmeter
-        run: cd tests/scalability && ./start_jmeter_ec2.sh
+        # run: cd tests/scalability && ./start_jmeter_ec2.sh

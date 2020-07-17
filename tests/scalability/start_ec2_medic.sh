@@ -44,7 +44,33 @@ echo
 echo 
 done
 
-echo Api Is up.
-echo Applying Branch $1
+echo Api Is up
+
+echo installing medic-conf
+npm install https://github.com/medic/medic-conf.git#307_force_arg -g -s
+
+MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
+
+cp -r ./csv ../../config/standard/
+
+cd ../../config/standard/
+
+echo Uploading settings and seeding data
+echo medic-conf url is $MEDIC_CONF_URL
+medic-conf --url=$MEDIC_CONF_URL --force upload-app-settings \
+    convert-app-forms \
+    convert-collect-forms \
+    convert-contact-forms \
+    delete-all-forms \
+    upload-app-forms \
+    upload-collect-forms \
+    upload-contact-forms \
+    upload-resources \
+    upload-custom-translations  \
+    csv-to-docs \
+    upload-docs \
+    create-users \
+
+sleep 360
 
 curl https://medic:medicScalability@$PublicDnsName/api/v1/upgrade -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
