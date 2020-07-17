@@ -65,20 +65,20 @@ echo installing medic-conf
 npm install https://github.com/medic/medic-conf.git#307_force_arg
 
 # echo Uploading settings and seeding data
-# echo medic-conf url is $MEDIC_CONF_URL
-# $(npm bin)/medic-conf --url=$MEDIC_CONF_URL --force --accept-self-signed-certs upload-app-settings \
-#     convert-app-forms \
-#     convert-collect-forms \
-#     convert-contact-forms \
-#     delete-all-forms \
-#     upload-app-forms \
-#     upload-collect-forms \
-#     upload-contact-forms \
-#     upload-resources \
-#     upload-custom-translations  \
-#     csv-to-docs \
-#     upload-docs \
-#     create-users \
+echo medic-conf url is $MEDIC_CONF_URL
+$(npm bin)/medic-conf --url="$MEDIC_CONF_URL" --force --accept-self-signed-certs upload-app-settings \
+    convert-app-forms \
+    convert-collect-forms \
+    convert-contact-forms \
+    delete-all-forms \
+    upload-app-forms \
+    upload-collect-forms \
+    upload-contact-forms \
+    upload-resources \
+    upload-custom-translations  \
+    csv-to-docs \
+    upload-docs \
+    create-users \
 
 # sleep 360
 
