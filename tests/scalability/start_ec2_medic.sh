@@ -48,6 +48,9 @@ echo Api Is up
 
 MEDIC_CONF_URL=https://medic:medicScalability@$PublicDnsName
 
+echo https://medic:medicScalability
+echo @$PublicDnsName
+
 cp -r ./csv ../../config/standard/
 
 cd ../../config/standard/
@@ -61,21 +64,21 @@ sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1
 echo installing medic-conf
 npm install https://github.com/medic/medic-conf.git#307_force_arg
 
-echo Uploading settings and seeding data
-echo medic-conf url is $MEDIC_CONF_URL
-$(npm bin)/medic-conf --url=$MEDIC_CONF_URL --force --accept-self-signed-certs upload-app-settings \
-    convert-app-forms \
-    convert-collect-forms \
-    convert-contact-forms \
-    delete-all-forms \
-    upload-app-forms \
-    upload-collect-forms \
-    upload-contact-forms \
-    upload-resources \
-    upload-custom-translations  \
-    csv-to-docs \
-    upload-docs \
-    create-users \
+# echo Uploading settings and seeding data
+# echo medic-conf url is $MEDIC_CONF_URL
+# $(npm bin)/medic-conf --url=$MEDIC_CONF_URL --force --accept-self-signed-certs upload-app-settings \
+#     convert-app-forms \
+#     convert-collect-forms \
+#     convert-contact-forms \
+#     delete-all-forms \
+#     upload-app-forms \
+#     upload-collect-forms \
+#     upload-contact-forms \
+#     upload-resources \
+#     upload-custom-translations  \
+#     csv-to-docs \
+#     upload-docs \
+#     create-users \
 
 # sleep 360
 
