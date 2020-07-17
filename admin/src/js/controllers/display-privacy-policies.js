@@ -2,8 +2,6 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
   function (
     $log,
     $scope,
-    $translate,
-    Blob,
     DB,
     Languages,
     Modal
