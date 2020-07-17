@@ -576,20 +576,12 @@ angular.module('inboxServices').service('Enketo',
         .then(function(docs) {
           if (geoHandle) {
             return geoHandle()
-            // REVIEWER
-            //   I'm not sure about this wrt edits. As it is written:
-            //    A) Create with no geo: no geolocation with relevant error
-            //    B) Create with geo: relevant geolocation with no error
-            //    C) Edit A with geo: relevant geolocation with old error
-            //    D) Edit A with no geo: no geolocation with relevant error
-            //    E) Edit B with no geo: old geolocation with relevant error
-            //    F) Edit B with geo: new geolcation with blank error
-            //
-            //  Perhaps we should just always overwrite doc.geolocation with either the success or the failure?
-            //  This is not what master does right now though, master follows the above but doesn't store the error
-            // REVIEWER
               .then(coords => docs.forEach(doc => doc.geolocation = coords))
-              .catch(error => docs.forEach(doc => doc.geolocation_error = error))
+              .catch(error => docs.forEach(doc => {
+                if (!doc.geolocation) {
+                  doc.geolocation = error;
+                }
+              }))
               .then(() => {
                 return docs;
               });
