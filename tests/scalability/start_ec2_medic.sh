@@ -33,11 +33,11 @@ url=https://$PublicDnsName
 echo "::set-env name=MEDIC_URL::$url"
 
 echo Begin Checking $url/api/info is up
-version=$(curl -s https://medic:password@localhost/api/info -k  | jq .version -r)
+version=$(curl -s $url/api/info -k  | jq .version -r)
 
 until [ "$version" = 0.1.0 ]
 do
-version=$(curl -s https://medic:password@localhost/api/info -k  | jq .version -r)
+version=$(curl -s $url/api/info -k  | jq .version -r)
 sleep 10
 echo Sleeping again. Version is $version
 echo
