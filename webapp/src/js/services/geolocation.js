@@ -1,12 +1,8 @@
-angular.module('inboxServices').service('$navigator', function() {
-  return navigator;
-});
-
 angular.module('inboxServices').service('Geolocation',
   function(
     $log,
-    $navigator,
     $q,
+    $window,
     Telemetry
   ) {
     'use strict';
@@ -22,7 +18,7 @@ angular.module('inboxServices').service('Geolocation',
 
       const finalise = () => {
         $log.debug('Finalising geolocation');
-        $navigator.geolocation && $navigator.geolocation.clearWatch(watcher);
+        $window.navigator.geolocation && $window.navigator.geolocation.clearWatch(watcher);
 
         if (geo) {
           // Throughout the life of this handle we managed to get a GPS coordinate at least once
@@ -46,13 +42,13 @@ angular.module('inboxServices').service('Geolocation',
         }
       };
 
-      if (!$navigator.geolocation) {
+      if (!$window.navigator.geolocation) {
         geoError = {
           code: -1,
           message: 'Geolocation API unavailable.',
         };
       } else {
-        watcher = $navigator.geolocation.watchPosition(
+        watcher = $window.navigator.geolocation.watchPosition(
           position => {
             $log.debug('Geolocation hit', position);
             geo = position;
@@ -67,7 +63,7 @@ angular.module('inboxServices').service('Geolocation',
               finalise();
             }
           },
-          { enableHighAccuracy: true, timeout: 30 * 1000 });
+          { enableHighAccuracy: true, timeout: 30 * 1000, maximumAge: 5 * 60 * 1000 });
       }
 
       const complete = function() {
@@ -83,7 +79,7 @@ angular.module('inboxServices').service('Geolocation',
 
       complete.cancel = () => {
         $log.debug('Cancelling geolocation');
-        $navigator.geolocation && $navigator.geolocation.clearWatch(watcher);
+        $window.navigator.geolocation && $window.navigator.geolocation.clearWatch(watcher);
       };
 
       return complete;

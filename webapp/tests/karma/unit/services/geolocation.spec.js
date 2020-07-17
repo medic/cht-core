@@ -3,7 +3,7 @@ describe('Geolocation service', () => {
   'use strict';
 
   let $log;
-  let $navigator;
+  let $window;
   let Telemetry;
   let service;
 
@@ -19,17 +19,19 @@ describe('Geolocation service', () => {
     //   info: console.log,
     //   error: console.log
     // };
-    $navigator = {
-      geolocation: {
-        watchPosition: sinon.stub(),
-        clearWatch: sinon.stub()
+    $window = {
+      navigator: {
+        geolocation: {
+          watchPosition: sinon.stub(),
+          clearWatch: sinon.stub()
+        }
       }
     };
     Telemetry = {
       record: sinon.stub()
     };
     module($provide => {
-      $provide.value('$navigator', $navigator);
+      $provide.value('$window', $window);
       $provide.value('$log', $log);
       $provide.value('Telemetry', Telemetry);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
@@ -41,7 +43,7 @@ describe('Geolocation service', () => {
 
   describe('Geolocation', () => {
     it('Errors if geolocation navigator fn not available', () => {
-      delete $navigator.geolocation;
+      delete $window.navigator.geolocation;
 
       return service()()
         .catch(err => err)
@@ -60,7 +62,7 @@ describe('Geolocation service', () => {
         heading: 6,
         speed: 7,
       };
-      $navigator.geolocation.watchPosition.callsArgWith(0, {coords: position});
+      $window.navigator.geolocation.watchPosition.callsArgWith(0, {coords: position});
 
       return service()()
         .then(returned => {
@@ -69,7 +71,7 @@ describe('Geolocation service', () => {
     });
 
     it('correctly returns an unsuccessful geo result', () => {
-      $navigator.geolocation.watchPosition.callsArgWith(1, {code: 42, message: 'An error!'});
+      $window.navigator.geolocation.watchPosition.callsArgWith(1, {code: 42, message: 'An error!'});
 
       return service()()
         .catch(err => err)
@@ -97,7 +99,7 @@ describe('Geolocation service', () => {
         heading: 13,
         speed: 14,
       };
-      $navigator.geolocation.watchPosition.callsFake(success => {
+      $window.navigator.geolocation.watchPosition.callsFake(success => {
         success({coords: first});
         success({coords: second});
       });
@@ -118,7 +120,7 @@ describe('Geolocation service', () => {
         heading: 13,
         speed: 14,
       };
-      $navigator.geolocation.watchPosition.callsFake((success, failure) => {
+      $window.navigator.geolocation.watchPosition.callsFake((success, failure) => {
         failure({code: 1, message: 'some error'});
         success({coords: second});
       });
@@ -139,7 +141,7 @@ describe('Geolocation service', () => {
         heading: 6,
         speed: 7,
       };
-      $navigator.geolocation.watchPosition.callsFake((success, failure) => {
+      $window.navigator.geolocation.watchPosition.callsFake((success, failure) => {
         success({coords: first});
         failure({code: 2, message: 'some later error'});
       });
@@ -161,7 +163,7 @@ describe('Geolocation service', () => {
         speed: 7,
       };
       let successFn;
-      $navigator.geolocation.watchPosition.callsFake(success => {
+      $window.navigator.geolocation.watchPosition.callsFake(success => {
         successFn = success;
       });
 
@@ -176,7 +178,7 @@ describe('Geolocation service', () => {
 
     it('blocks promise completion until at least one error', (done) => {
       let failureFn;
-      $navigator.geolocation.watchPosition.callsFake((_, failure) => {
+      $window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
         failureFn = failure;
       });
 
