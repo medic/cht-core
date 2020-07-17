@@ -59,7 +59,7 @@ echo installing pyxform
 sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic -q
 
 echo installing medic-conf
-npm install https://github.com/medic/medic-conf.git#307-temp
+npm install https://github.com/medic/medic-conf.git#307_force_arg
 
 echo Uploading settings and seeding data
 echo medic-conf url is $MEDIC_CONF_URL
