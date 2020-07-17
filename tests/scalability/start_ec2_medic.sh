@@ -46,17 +46,18 @@ done
 
 echo Api Is up
 
-echo installing medic-conf
-npm install https://github.com/medic/medic-conf.git#307_force_arg
-
 MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
 
 cp -r ./csv ../../config/standard/
 
 cd ../../config/standard/
 
+echo installing medic-conf
+npm install https://github.com/medic/medic-conf.git#307_force_arg
+
 echo Uploading settings and seeding data
 echo medic-conf url is $MEDIC_CONF_URL
+ls -la $(npm bin)
 $(npm bin)/medic-conf
 $(npm bin)/medic-conf --url=$MEDIC_CONF_URL --force upload-app-settings \
     convert-app-forms \
