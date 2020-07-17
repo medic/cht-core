@@ -46,7 +46,7 @@ done
 
 echo Api Is up
 
-MEDIC_CONF_URL=${url:0:8}medic:medicScalability@${url:8}
+MEDIC_CONF_URL=https://medic:medicScalability@$PublicDnsName
 
 cp -r ./csv ../../config/standard/
 
