@@ -23,6 +23,8 @@ require('./controllers/delete-doc-confirm');
 require('./controllers/delete-user');
 require('./controllers/display-date-time');
 require('./controllers/display-languages');
+require('./controllers/display-privacy-policies');
+require('./controllers/display-privacy-policies-preview');
 require('./controllers/display-translations');
 require('./controllers/edit-language');
 require('./controllers/edit-translation');
@@ -50,6 +52,7 @@ require('./controllers/upgrade-confirm');
 require('./controllers/users');
 
 angular.module('directives', ['ngSanitize']);
+require('./directives/file-model');
 require('./directives/modal');
 require('./directives/pagination');
 require('./directives/relative-date');
@@ -191,6 +194,15 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'DisplayLanguagesCtrl',
           templateUrl: 'templates/display_languages.html'
+        }
+      }
+    })
+    .state('display.privacy-policies', {
+      url: '/privacy-policies',
+      views: {
+        tab: {
+          controller: 'DisplayPrivacyPoliciesCtrl',
+          templateUrl: 'templates/display_privacy_policies.html'
         }
       }
     })

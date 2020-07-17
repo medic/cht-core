@@ -24,6 +24,9 @@ angular.module('directives').directive('mmModal', function() {
       // string: the translation key to use for the title of the modal
       titleKey: '=',
 
+      // Object: the parameters used for title translation
+      titleParams: '=',
+
       // string: the translation key to use for the submit button
       submitKey: '=',
 

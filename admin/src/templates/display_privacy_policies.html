@@ -1,0 +1,62 @@
+<p translate>display.privacy.policies.description</p>
+<div class="loader" ng-show="loading"></div>
+<div class="section privacy-policies" ng-hide="loading">
+  <div class="container-fluid">
+    <form id="privacy-policy-upload">
+      <div class="row selection-heading">
+        <div class="col-xs-4">
+          <span translate>Language</span>
+        </div>
+        <div class="col-xs-4">
+          <span translate>display.privacy.policies.current</span>
+        </div>
+        <div class="col-xs-4 text-right">
+          <span translate>display.privacy.policies.update</span>
+        </div>
+      </div>
+      <div class="row selection" ng-repeat="language in languages track by language.code">
+        <div class="col-xs-4">
+          <span>{{language.name}}</span>
+        </div>
+        <div class="col-xs-4">
+          <div class="details" ng-if="privacyPolicies[language.code].length">
+            <span class="detail"><strong translate>display.privacy.policies.digest</strong> {{privacyPolicies[language.code].digest}}</span>
+            <span class="detail"><strong translate>display.privacy.policies.content.type</strong> {{privacyPolicies[language.code].content_type}}</span>
+            <span class="detail"><strong translate>display.privacy.policies.size</strong> {{privacyPolicies[language.code].length / 1024 | number : 2}}KB</span>
+            <div class="actions">
+              <button class="btn btn-default" ng-click="preview(language)" translate>display.privacy.policies.preview</button>
+              <button class="btn btn-danger" ng-click="delete(language)" translate>display.privacy.policies.delete</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-4">
+          <div class="input-area text-right" ng-if="!updates[language.code]">
+            <a class="btn btn-default choose">
+              <i class="fa fa-arrow-up"></i>
+              <span translate>display.privacy.policies.select</span>
+            </a>
+            <div class="hide">
+              <input class="uploader" file-model="updates[language.code]" type="file" accept="text/html">
+            </div>
+          </div>
+          <div class="details preview-area" ng-if="updates[language.code]">
+            <span class="detail"><strong translate>display.privacy.policies.name</strong> {{updates[language.code].name}}</span>
+            <span class="detail"><strong translate>display.privacy.policies.content.type</strong> {{updates[language.code].type}}</span>
+            <span class="detail"><strong translate>display.privacy.policies.size</strong> {{updates[language.code].size / 1024 | number : 2}}KB</span>
+            <div class="actions">
+              <button class="btn btn-default preview" ng-click="previewUpdate(language)" translate>display.privacy.policies.preview</button>
+              <button class="btn btn-danger" ng-click="deleteUpdate(language)" translate>display.privacy.policies.delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+        <span class="loader inline small" ng-show="submitting"></span>
+        <span translate ng-if="submitted && !submitError">display.privacy.policies.submit.success</span>
+        <span class="error" translate ng-if="submitError">display.privacy.policies.failure</span>
+      </div>
+    </form>
+  </div>
+</div>
