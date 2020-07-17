@@ -237,14 +237,14 @@ describe('Purging on login', () => {
       const callback = arguments[arguments.length - 1];
       const db = window.PouchDB('medic-user-e2e_restricted');
       db.get('_local/purgelog')
-        .then(doc => callback(null, doc))
+        .then(doc => callback(doc), err => callback(err))
         .catch(err => callback(err));
     }));
   };
 
   const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
-  it('Logging in as a restricted user with configured purge rules should not download purged docs', () => {
+  it('Logging in as a restricted user with configured purge rules should not download purged docs', (done) => {
     utils.resetBrowser();
     commonElements.goToLoginPage();
     loginPage.login(restrictedUserName, restrictedPass);
@@ -271,9 +271,7 @@ describe('Purging on login', () => {
         date: result.date
       });
       purgeDate = result.date;
-    }).catch(() => {
-      process.exit(1);
-    });
+    }).catch(err => done(err));
 
     utils.resetBrowser();
     commonElements.calm();
@@ -283,9 +281,7 @@ describe('Purging on login', () => {
       // purge didn't run again on next refresh
       chai.expect(result._rev).to.equal('0-1');
       chai.expect(result.date).to.equal(purgeDate);
-    }).catch(() => {
-      process.exit(1);
-    });
+    }).catch(err => done(err));
 
     browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
     commonElements.sync();
@@ -325,12 +321,11 @@ describe('Purging on login', () => {
         roles: result.roles,
         date: result.date
       });
-    }).catch(() => {
-      process.exit(1);
-    });
+    }).catch(err => done(err));
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId, goodFormId2]);
     reports.expectReportsToNotExist([badFormId, badFormId2]);
+    done();
   });
 
 });
