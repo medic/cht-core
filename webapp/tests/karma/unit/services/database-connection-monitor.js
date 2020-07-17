@@ -38,7 +38,9 @@ describe('DatabaseConnectionMonitor service', function() {
     const write = i => {
       db.put({ _id: i + 'a', bar: 'bar' }).then(() => {
         write(i + 1); 
-      }).catch();
+      }).catch((err) => {
+        throw new Error(err);
+      });
     };
     write(0); 
     db.destroy(); 

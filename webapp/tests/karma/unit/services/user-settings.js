@@ -82,7 +82,7 @@ describe('UserSettings service', () => {
       });
   });
 
-  it('multiple concurrent calls result in single database lookup', () => {
+  it('multiple concurrent calls result in single database lookup', (done) => {
     userCtx.returns({ name: 'jack' });
     get.returns(Promise.resolve({ id: 'j' }));
     const isExpected = doc => {
@@ -94,12 +94,10 @@ describe('UserSettings service', () => {
     service();
     service()
       .then(isExpected)
-      .catch(() => {
-      });
+      .catch(err => done(err));
     firstPromise
       .then(isExpected)
-      .catch(() => {
-      });
+      .catch(err => done(err));
   });
 
   it('gets from remote db', () => {
