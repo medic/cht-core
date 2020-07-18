@@ -24,8 +24,9 @@ describe('Log Docs service', () => {
 
     it('should persist log', () => {
       const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
+      const logType = logDocsService.LOG_TYPES.replicationCount;
       const expectedDoc = {
-        _id: 'replication-count-userXYZ',
+        _id: logType + 'userXYZ',
         user: { username: 'userXYZ' },
         count: 100,
         limit: 30
@@ -41,34 +42,63 @@ describe('Log Docs service', () => {
   });
 
   describe('getReplicationLimitExceededLog()', () => {
-    it('should reject if parameter is missing', () => {
-      const getStub = sinon.stub(db.medicLogs, 'get');
-      const expectedMessage = 'Error on getting Replication Limit Exceeded Log: Missing user name';
-
-      return logDocsService
-        .getReplicationLimitExceededLog()
-        .catch((error) => {
-          chai.expect(error).to.not.be.undefined;
-          chai.expect(error.message).to.deep.equal(expectedMessage);
-          chai.expect(getStub.called).to.be.false;
-        });
-    });
-
-    it('should retrieve log', () => {
+    it('should retrieve log by document ID', () => {
+      const logType = logDocsService.LOG_TYPES.replicationCount;
       const doc = {
-        _id: 'replication-count-userXYZ',
+        _id: logType + 'userXYZ',
         user: { username: 'userXYZ' },
         count: 100,
         limit: 30
       };
+      const allDocsStub = sinon.stub(db.medicLogs, 'allDocs');
       const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.resolve(doc));
 
       return logDocsService
         .getReplicationLimitExceededLog('userXYZ')
         .then((response) => {
           chai.expect(getStub.called).to.be.true;
-          chai.expect(getStub.args[0][0]).to.equal('replication-count-userXYZ');
+          chai.expect(allDocsStub.called).to.be.false;
+          chai.expect(getStub.args[0][0]).to.equal(doc._id);
           chai.expect(response).to.equal(doc);
+        });
+    });
+
+    it('should retrieve list of logs by type', () => {
+      const logType = logDocsService.LOG_TYPES.replicationCount;
+      const doc1 = {
+        _id: logType + 'userABC',
+        user: { username: 'userABC' },
+        count: 100,
+        limit: 30
+      };
+      const doc2 = {
+        _id: logType + 'userXYZ',
+        user: { username: 'userXYZ' },
+        count: 100,
+        limit: 30
+      };
+      const response = {
+        rows: [
+          { doc: doc1 },
+          { doc: doc2 }
+        ]
+      };
+      const options = {
+        startkey: logType,
+        endkey: logType + '\ufff0',
+        include_docs: true
+      };
+      const getStub = sinon.stub(db.medicLogs, 'get');
+      const allDocsStub = sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve(response));
+
+      return logDocsService
+        .getReplicationLimitExceededLog()
+        .then((response) => {
+          chai.expect(getStub.called).to.be.false;
+          chai.expect(allDocsStub.called).to.be.true;
+          chai.expect(allDocsStub.args[0][0]).to.deep.include(options);
+          chai.expect(response[0]).to.equal(doc1);
+          chai.expect(response[1]).to.equal(doc2);
         });
     });
   });

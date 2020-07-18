@@ -1,6 +1,10 @@
 const moment = require('moment');
 const db = require('../db');
 
+const LOG_TYPES = {
+  replicationCount: 'replication-count-'
+};
+
 const persistLog = (logDocId, info) => {
   if (!logDocId || !info) {
     const error = new Error('Error when persisting log: Log Document ID or Log Information missing.');
@@ -21,13 +25,25 @@ const persistLog = (logDocId, info) => {
     });
 };
 
+const getLogsByType = (docPrefix) => {
+  const options = {
+    startkey: docPrefix,
+    endkey: docPrefix + '\ufff0',
+    include_docs: true
+  };
+  return db.medicLogs
+    .allDocs(options)
+    .then((result) => result.rows.map(row => row.doc));
+};
+
+const getLogById = (docId) => db.medicLogs.get(docId);
+
 const getReplicationLimitExceededLog = (username) => {
   if (!username) {
-    const error = new Error('Error on getting Replication Limit Exceeded Log: Missing user name');
-    return Promise.reject(error);
+    return getLogsByType(LOG_TYPES.replicationCount);
   }
 
-  return db.medicLogs.get(`replication-count-${username}`);
+  return getLogById(LOG_TYPES.replicationCount + username);
 };
 
 const logReplicationLimitExceeded = (username, count, limit) => {
@@ -36,7 +52,7 @@ const logReplicationLimitExceeded = (username, count, limit) => {
     return Promise.reject(error);
   }
 
-  const logDocId = `replication-count-${username}`;
+  const logDocId = LOG_TYPES.replicationCount + username;
   const info = {
     user: { username },
     log_date: moment().valueOf(),
@@ -49,5 +65,6 @@ const logReplicationLimitExceeded = (username, count, limit) => {
 
 module.exports = {
   logReplicationLimitExceeded,
-  getReplicationLimitExceededLog
+  getReplicationLimitExceededLog,
+  LOG_TYPES
 };
