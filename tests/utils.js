@@ -15,6 +15,7 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
+const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
 
 let originalSettings;
 let e2eDebug;
@@ -329,6 +330,7 @@ const getDefaultSettings = () => {
 module.exports = {
   db: db,
   sentinelDb: sentinel,
+  medicLogsDb: medicLogs,
 
   request: request,
 
