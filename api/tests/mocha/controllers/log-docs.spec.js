@@ -11,7 +11,7 @@ describe('Log Docs Controller', () => {
 
   beforeEach(() => {
     req = {
-      params: { user: 'userXYZ' }
+      query: { user: 'userXYZ' }
     };
     res = { json: sinon.stub() };
     sinon.stub(auth, 'getUserCtx');
