@@ -1,15 +1,24 @@
 const moment = require('moment');
 const db = require('../db');
 
-const persistLog = (logDocName, info) => {
-  if (!logDocName || !info) {
-    const error = new Error('Error when persisting log: Log Document Name or Log Information missing.');
+const persistLog = (logDocId, info) => {
+  if (!logDocId || !info) {
+    const error = new Error('Error when persisting log: Log Document ID or Log Information missing.');
     return Promise.reject(error);
   }
 
-  const logDoc = Object.assign({ _id: logDocName }, info);
-
-  return db.medicLogs.put(logDoc);
+  return db.medicLogs
+    .get(logDocId)
+    .catch(error => {
+      if (error.status === 404) {
+        return { _id: logDocId };
+      }
+      throw error;
+    })
+    .then(doc => {
+      const logDoc = Object.assign(doc, info);
+      return db.medicLogs.put(logDoc);
+    });
 };
 
 const getReplicationLimitExceededLog = (username) => {
@@ -27,7 +36,7 @@ const logReplicationLimitExceeded = (username, count, limit) => {
     return Promise.reject(error);
   }
 
-  const logDocName = `replication-count-${username}`;
+  const logDocId = `replication-count-${username}`;
   const info = {
     user: { username },
     log_date: moment().valueOf(),
@@ -35,7 +44,7 @@ const logReplicationLimitExceeded = (username, count, limit) => {
     limit
   };
 
-  return persistLog(logDocName, info);
+  return persistLog(logDocId, info);
 };
 
 module.exports = {

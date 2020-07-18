@@ -10,8 +10,8 @@ const _ = require('lodash');
 const config = require('../../../src/config');
 const serverChecks = require('@medic/server-checks');
 const environment = require('../../../src/environment');
-const logger = require('../../../src/logger');
 const purgedDocs = require('../../../src/services/purged-docs');
+const logDocs = require('../../../src/services/log-docs');
 const serverUtils = require('../../../src/server-utils');
 
 require('chai').should();
@@ -2078,7 +2078,7 @@ describe('Changes controller', () => {
       testReqC = Object.assign({ id: 'C' }, testReq, { userCtx: userCtxC });
       testResC = Object.assign({}, testRes);
 
-      sinon.stub(logger, 'warn');
+      sinon.stub(logDocs, 'logReplicationLimitExceeded');
     });
 
     it('should not log when users replicate less than 10000 docs', () => {
@@ -2093,8 +2093,7 @@ describe('Changes controller', () => {
 
       return nextTick().then(() => {
         authorization.getAllowedDocIds.callCount.should.equal(3);
-        controller._logWarnings();
-        logger.warn.callCount.should.equal(0);
+        logDocs.logReplicationLimitExceeded.callCount.should.equal(0);
       });
     });
 
@@ -2110,37 +2109,9 @@ describe('Changes controller', () => {
 
       return nextTick().then(() => {
         authorization.getAllowedDocIds.callCount.should.equal(3);
-        controller._logWarnings();
-        logger.warn.callCount.should.equal(2);
-        logger.warn.args[0].should.deep.equal(['User "userB" replicates "10500" docs']);
-        logger.warn.args[1].should.deep.equal(['User "userC" replicates "15000" docs']);
-      });
-    });
-
-    it('should not spam the logs', () => {
-      authorization.getAllowedDocIds
-        .withArgs(sinon.match({ id: 'A' })).resolves(Array.from(Array(7500), (a, i) => i))
-        .withArgs(sinon.match({ id: 'B' })).resolves(Array.from(Array(10500), (a, i) => i))
-        .withArgs(sinon.match({ id: 'C' })).resolves(Array.from(Array(15000), (a, i) => i));
-
-      controller.request(testReqA, testResA);
-      controller.request(testReqA, testResA);
-      controller.request(testReqB, testResB);
-      controller.request(testReqB, testResB);
-      controller.request(testReqB, testResB);
-      controller.request(testReqC, testResC);
-      controller.request(testReqC, testResC);
-      controller.request(testReqC, testResC);
-
-      return nextTick().then(() => {
-        authorization.getAllowedDocIds.callCount.should.equal(8);
-        logger.warn.callCount.should.equal(0);
-        controller._logWarnings();
-        logger.warn.callCount.should.equal(2);
-        logger.warn.args[0].should.deep.equal(['User "userB" replicates "10500" docs']);
-        logger.warn.args[1].should.deep.equal(['User "userC" replicates "15000" docs']);
-        controller._logWarnings();
-        logger.warn.callCount.should.equal(2);
+        logDocs.logReplicationLimitExceeded.callCount.should.equal(2);
+        logDocs.logReplicationLimitExceeded.args[0].should.deep.equal(['userB', 10500, 10000]);
+        logDocs.logReplicationLimitExceeded.args[1].should.deep.equal(['userC', 15000, 10000]);
       });
     });
   });

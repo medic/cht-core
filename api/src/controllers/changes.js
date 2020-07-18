@@ -13,6 +13,7 @@ const environment = require('../environment');
 const semver = require('semver');
 const usersService = require('../services/users');
 const purgedDocs = require('../services/purged-docs');
+const logDocs = require('../services/log-docs');
 
 let inited = false;
 let continuousFeed = false;
@@ -20,9 +21,6 @@ let longpollFeeds = [];
 let normalFeeds = [];
 let currentSeq = 0;
 let limitChangesRequests = null;
-let docCountUserWarnings = {};
-
-const LOG_WARNING_INTERVAL = 60 * 60 * 1000; // 1 hour
 
 const cleanUp = feed => {
   clearInterval(feed.heartbeat);
@@ -258,7 +256,6 @@ const getChanges = feed => {
 };
 
 const initFeed = (req, res) => {
-
   const changesControllerConfig = config.get('changes_controller') || {
     reiterate_changes: true,
     changes_limit: 100,
@@ -299,8 +296,9 @@ const initFeed = (req, res) => {
       return filterPurgedIds(feed);
     })
     .then(() => {
-      if (feed.allowedDocIds.length > usersService.DOC_IDS_WARN_LIMIT) {
-        docCountUserWarnings[feed.req.userCtx.name] = feed.allowedDocIds.length;
+      const feedCount = feed.allowedDocIds.length;
+      if (feedCount > usersService.DOC_IDS_WARN_LIMIT) {
+        logDocs.logReplicationLimitExceeded(feed.req.userCtx.name, feedCount, usersService.DOC_IDS_WARN_LIMIT);
       }
       return feed;
     });
@@ -439,15 +437,6 @@ const request = (req, res) => {
     .catch(err => serverUtils.error(err, req, res));
 };
 
-const logWarnings = () => {
-  Object.keys(docCountUserWarnings).forEach(user => {
-    logger.warn(`User "${user}" replicates "${docCountUserWarnings[user]}" docs`);
-  });
-  docCountUserWarnings = {};
-};
-
-setInterval(logWarnings, LOG_WARNING_INTERVAL);
-
 module.exports = {
   request: request,
 };
@@ -470,7 +459,6 @@ if (process.env.UNIT_TEST_ENV) {
       inited = false;
       currentSeq = 0;
       limitChangesRequests = null;
-      docCountUserWarnings = {};
     },
     _getNormalFeeds: () => normalFeeds,
     _getLongpollFeeds: () => longpollFeeds,
@@ -478,7 +466,6 @@ if (process.env.UNIT_TEST_ENV) {
     _inited: () => inited,
     _getContinuousFeed: () => continuousFeed,
     _shouldLimitChangesRequests: shouldLimitChangesRequests,
-    _getLimitChangesRequests: () => limitChangesRequests,
-    _logWarnings: logWarnings
+    _getLimitChangesRequests: () => limitChangesRequests
   });
 }
