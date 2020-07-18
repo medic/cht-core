@@ -11,6 +11,9 @@ describe('InboxCtrl controller', () => {
   let rulesEnginePromise;
   let isSyncInProgress;
   let sync;
+  let updateUser;
+  let tours = [];
+
 
   beforeEach(() => {
     module('inboxApp');
@@ -35,6 +38,8 @@ describe('InboxCtrl controller', () => {
     };
 
     rulesEnginePromise = Q.defer();
+
+    updateUser = sinon.spy();
 
     isSyncInProgress = sinon.stub();
     sync = sinon.stub();
@@ -77,13 +82,13 @@ describe('InboxCtrl controller', () => {
       $provide.value('SendMessage', sinon.stub());
       $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
-      $provide.value('Settings', () => Promise.resolve({}));
+      $provide.value('Settings', () => Promise.resolve({ setup_complete: true }));
       $provide.value('$timeout', sinon.stub());
-      $provide.value('UpdateUser', sinon.stub());
+      $provide.value('UpdateUser', updateUser);
       $provide.value('UpdateSettings', sinon.stub());
-      $provide.value('UserSettings', () =>  Promise.resolve({}));
+      $provide.value('UserSettings', () =>  Promise.resolve({ known: false }));
       $provide.value('Telemetry', { record: sinon.stub() });
-      $provide.value('Tour', { endCurrent: () => {}, getTours: () => Promise.resolve([]) });
+      $provide.value('Tour', { endCurrent: () => {}, getTours: () => Promise.resolve(tours) });
       $provide.value('RulesEngine', { isEnabled: () => rulesEnginePromise.promise });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.value('Enketo', sinon.stub());
@@ -183,12 +188,31 @@ describe('InboxCtrl controller', () => {
   });
 
   it('Tour modal should not be displayed if no tours are availbable', done => {
-    const controller = createController();
+    tours = [];
+    session.userCtx.returns({ name: 'no_error'});
+    const ctrl = createController();
     setTimeout(() => {
-      chai.expect(controller.filteredModals.length).to.equal(0);
-      done();
+      ctrl.openTourSelect = () => Promise.resolve();
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(updateUser.calledWith(sinon.match.any, sinon.match({ known : true }))).to.be.false;
+        done(); 
+      });
     });
-    scope.$digest();
+  });
+
+  it('Tour modal should be displayed if tours are available', done => {
+    tours = [{}];
+    session.userCtx.returns({ name: 'no_error'});
+    const ctrl = createController();
+    setTimeout(() => {
+      ctrl.openTourSelect = () => Promise.resolve();
+      scope.$digest();
+      setTimeout(() => {
+        chai.expect(updateUser.calledWith(sinon.match.any, sinon.match({ known : true }))).to.be.true;
+        done(); 
+      });
+    });
   });
 
   describe('sync status changes', () => {

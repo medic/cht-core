@@ -253,7 +253,6 @@ const moment = require('moment');
     Session.init()
       .then(() => initRulesEngine())
       .then(() => initForms())
-      .then(() => initTours())
       .then(() => initUnreadCount())
       .then(() => CheckDate())
       .then(() => startRecurringProcesses());
@@ -267,7 +266,7 @@ const moment = require('moment');
     ctrl.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
-    ctrl.filteredModals = [];
+    ctrl.modalsToShow = [];
 
     if (
       $window.medicmobile_android &&
@@ -427,15 +426,15 @@ const moment = require('moment');
       },
     ];
 
-    $q.all([Settings(), UserSettings()])
+    $q.all([Settings(), UserSettings(), initTours()])
       .then(function(results) {
-        ctrl.filteredModals = _.filter(startupModals, function(modal) {
+        ctrl.modalsToShow = _.filter(startupModals, function(modal) {
           return modal.required(results[0], results[1]);
         });
         const showModals = function() {
-          if (ctrl.filteredModals && ctrl.filteredModals.length) {
+          if (ctrl.modalsToShow && ctrl.modalsToShow.length) {
             // render the first modal and recursively show the rest
-            ctrl.filteredModals
+            ctrl.modalsToShow
               .shift()
               .render()
               .then(showModals);
