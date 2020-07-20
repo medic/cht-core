@@ -48,8 +48,6 @@ echo Api Is up
 
 MEDIC_CONF_URL=https://medic:medicScalability@$PublicDnsName
 
-echo https://medic:medicScalability
-echo @$PublicDnsName
 
 cp -r ./csv ../../config/standard/
 
@@ -80,6 +78,23 @@ $(npm bin)/medic-conf --url="$MEDIC_CONF_URL" --force --accept-self-signed-certs
     upload-docs \
     create-users \
 
-# sleep 360
+echo Sentinel is processing data. Sleeping immediately for 60 seconds
+sleep 60
 
-# curl https://medic:medicScalability@$PublicDnsName/api/v1/upgrade -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
+proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -k | jq .processed_seq -r)
+current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$proc_seq -k | jq '.results | length')
+
+until [ "$current_leng" -lt "50" ]
+do
+updated_proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -k | jq .processed_seq -r)
+current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$updated_proc_seq -k | jq '.results | length')
+echo New length is $current_leng
+echo sleeping again for 20
+sleep 20
+echo
+echo 
+done
+
+echo Finished processing. Updating to $1 branch
+
+curl https://medic:medicScalability@$PublicDnsName/api/v1/upgrade -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
