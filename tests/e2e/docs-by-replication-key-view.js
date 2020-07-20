@@ -1,5 +1,4 @@
 const utils = require('../utils');
-const async = require('async');
 
 describe('view docs_by_replication_key', () => {
 
