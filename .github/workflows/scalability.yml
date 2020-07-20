@@ -20,5 +20,5 @@ jobs:
           aws-region: eu-west-2
       - name: Start EC2 and Medics
         run: cd tests/scalability && ./start_ec2_medic.sh ${GITHUB_REF#refs/heads/}
-      # - name: Execute Jmeter
-      #   # run: cd tests/scalability && ./start_jmeter_ec2.sh
+      - name: Execute Jmeter
+        run: cd tests/scalability && ./start_jmeter_ec2.sh
