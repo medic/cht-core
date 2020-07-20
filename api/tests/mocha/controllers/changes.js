@@ -11,7 +11,7 @@ const config = require('../../../src/config');
 const serverChecks = require('@medic/server-checks');
 const environment = require('../../../src/environment');
 const purgedDocs = require('../../../src/services/purged-docs');
-const logDocs = require('../../../src/services/log-docs');
+const replicationLimitLogService = require('../../../src/services/replication-limit-log');
 const serverUtils = require('../../../src/server-utils');
 
 require('chai').should();
@@ -81,6 +81,7 @@ describe('Changes controller', () => {
     sinon.stub(serverChecks, 'getCouchDbVersion').resolves('2.2.0');
 
     sinon.stub(purgedDocs, 'getUnPurgedIds').callsFake((roles, ids) => Promise.resolve(ids));
+    sinon.stub(replicationLimitLogService, 'put');
 
     ChangesEmitter = function(opts) {
       changesSpy(opts);
@@ -393,6 +394,7 @@ describe('Changes controller', () => {
     it('requests changes with correct default parameters', () => {
       authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
       controller.request(testReq, testRes);
+
       return nextTick()
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
@@ -2052,67 +2054,44 @@ describe('Changes controller', () => {
     });
   });
 
-  describe('doc count warnings', () => {
-    let userCtxA;
-    let testReqA;
-    let testResA;
+  describe('Document count log', () => {
+    it('should not persist log when user name is missing', () => {
+      const userCtxA = {};
+      const testReqA = Object.assign({ id: 'A' }, testReq, { userCtx: userCtxA });
+      const testResA = Object.assign({}, testRes);
 
-    let userCtxB;
-    let testReqB;
-    let testResB;
-
-    let userCtxC;
-    let testReqC;
-    let testResC;
-
-    beforeEach(() => {
-      userCtxA = { name: 'userA', facility_id: 'facilityA', contact_id: 'contactA' };
-      testReqA = Object.assign({ id: 'A' }, testReq, { userCtx: userCtxA });
-      testResA = Object.assign({}, testRes);
-
-      userCtxB = { name: 'userB', facility_id: 'facilityB', contact_id: 'contactB' };
-      testReqB = Object.assign({ id: 'B' }, testReq, { userCtx: userCtxB });
-      testResB = Object.assign({}, testRes);
-
-      userCtxC = { name: 'userC', facility_id: 'facilityC', contact_id: 'contactC' };
-      testReqC = Object.assign({ id: 'C' }, testReq, { userCtx: userCtxC });
-      testResC = Object.assign({}, testRes);
-
-      sinon.stub(logDocs, 'logReplicationLimitExceeded');
-    });
-
-    it('should not log when users replicate less than 10000 docs', () => {
-      authorization.getAllowedDocIds
-        .withArgs(sinon.match({ id: 'A' })).resolves(Array.from(Array(20), (a, i) => i))
-        .withArgs(sinon.match({ id: 'B' })).resolves(Array.from(Array(150), (a, i) => i))
-        .withArgs(sinon.match({ id: 'C' })).resolves(Array.from(Array(4000), (a, i) => i));
+      authorization
+        .getAllowedDocIds
+        .withArgs(sinon.match({ id: 'A' }))
+        .resolves(Array.from(Array(20), (a, i) => i));
 
       controller.request(testReqA, testResA);
-      controller.request(testReqB, testResB);
-      controller.request(testReqC, testResC);
 
-      return nextTick().then(() => {
-        authorization.getAllowedDocIds.callCount.should.equal(3);
-        logDocs.logReplicationLimitExceeded.callCount.should.equal(0);
-      });
+      return nextTick()
+        .then(() => {
+          authorization.getAllowedDocIds.callCount.should.equal(1);
+          replicationLimitLogService.put.callCount.should.equal(0);
+        });
     });
 
-    it('should only log users that replicate more than 10000 docs', () => {
-      authorization.getAllowedDocIds
-        .withArgs(sinon.match({ id: 'A' })).resolves(Array.from(Array(7500), (a, i) => i))
-        .withArgs(sinon.match({ id: 'B' })).resolves(Array.from(Array(10500), (a, i) => i))
-        .withArgs(sinon.match({ id: 'C' })).resolves(Array.from(Array(15000), (a, i) => i));
+    it('should persist log when users replicate docs', () => {
+      const userCtxB = { name: 'userB', facility_id: 'facilityB', contact_id: 'contactB' };
+      const testReqB = Object.assign({ id: 'B' }, testReq, { userCtx: userCtxB });
+      const testResB = Object.assign({}, testRes);
 
-      controller.request(testReqA, testResA);
+      authorization
+        .getAllowedDocIds
+        .withArgs(sinon.match({ id: 'B' }))
+        .resolves(Array.from(Array(10500), (a, i) => i));
+
       controller.request(testReqB, testResB);
-      controller.request(testReqC, testResC);
 
-      return nextTick().then(() => {
-        authorization.getAllowedDocIds.callCount.should.equal(3);
-        logDocs.logReplicationLimitExceeded.callCount.should.equal(2);
-        logDocs.logReplicationLimitExceeded.args[0].should.deep.equal(['userB', 10500, 10000]);
-        logDocs.logReplicationLimitExceeded.args[1].should.deep.equal(['userC', 15000, 10000]);
-      });
+      return nextTick()
+        .then(() => {
+          authorization.getAllowedDocIds.callCount.should.equal(1);
+          replicationLimitLogService.put.callCount.should.equal(1);
+          replicationLimitLogService.put.args[0].should.deep.equal(['userB', 10500, 10000]);
+        });
     });
   });
 });

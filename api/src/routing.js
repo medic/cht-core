@@ -38,7 +38,7 @@ const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
-const logDocsController = require('./controllers/log-docs');
+const replicationLimitLogController = require('./controllers/replication-limit-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -426,7 +426,7 @@ app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.in
 app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
 app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
 
-app.get('/api/v1/log-replication-limit', logDocsController.getReplicationLimitLog);
+app.get('/api/v1/log-replication-limit', replicationLimitLogController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

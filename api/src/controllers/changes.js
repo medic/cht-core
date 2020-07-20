@@ -13,7 +13,7 @@ const environment = require('../environment');
 const semver = require('semver');
 const usersService = require('../services/users');
 const purgedDocs = require('../services/purged-docs');
-const logDocs = require('../services/log-docs');
+const replicationLimitLog = require('../services/replication-limit-log');
 
 let inited = false;
 let continuousFeed = false;
@@ -296,10 +296,10 @@ const initFeed = (req, res) => {
       return filterPurgedIds(feed);
     })
     .then(() => {
-      const feedCount = feed.allowedDocIds.length;
-      if (feedCount > usersService.DOC_IDS_WARN_LIMIT) {
-        logDocs.logReplicationLimitExceeded(feed.req.userCtx.name, feedCount, usersService.DOC_IDS_WARN_LIMIT);
+      if (feed.req.userCtx && feed.req.userCtx.name) {
+        replicationLimitLog.put(feed.req.userCtx.name, feed.allowedDocIds.length, usersService.DOC_IDS_WARN_LIMIT);
       }
+
       return feed;
     });
 };

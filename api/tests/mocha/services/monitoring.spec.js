@@ -5,6 +5,7 @@ const request = require('request-promise-native');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
 const service = require('../../../src/services/monitoring');
+const replicationLimitLogService = require('../../../src/services/replication-limit-log');
 
 let clock;
 
@@ -95,7 +96,15 @@ describe('Monitoring service', () => {
   });
 
   it('json returns successfully', () => {
+    sinon
+      .stub(replicationLimitLogService, 'get')
+      .resolves([
+        { count: 5, limit: 10 },
+        { count: 10, limit: 10 },
+        { count: 15, limit: 10 }
+      ]);
     setUpMocks();
+
     return service.json().then(actual => {
       chai.expect(request.post.callCount).to.equal(1);
       chai.expect(actual.version).to.deep.equal({
@@ -147,6 +156,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.feedback).to.deep.equal({ count: 2 });
       chai.expect(actual.conflict).to.deep.equal({ count: 40 });
       chai.expect(actual.date.current).to.equal(0);
+      chai.expect(actual.replication_limit.logs).to.equal(1);
     });
   });
 
@@ -158,6 +168,8 @@ describe('Monitoring service', () => {
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
+    sinon.stub(replicationLimitLogService, 'get').rejects();
+
     return service.json().then(actual => {
       chai.expect(actual.version).to.deep.equal({
         app: '',
@@ -206,6 +218,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.sentinel).to.deep.equal({ backlog: -1 });
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });
       chai.expect(actual.feedback).to.deep.equal({ count: -1 });
+      chai.expect(actual.replication_limit).to.deep.equal({ logs: -1 });
     });
   });
 

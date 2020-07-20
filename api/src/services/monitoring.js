@@ -3,6 +3,7 @@ const request = require('request-promise-native');
 const db = require('../db');
 const environment = require('../environment');
 const logger = require('../logger');
+const replicationLimitLogService = require('./replication-limit-log');
 
 const DBS_TO_MONITOR = {
   'medic': environment.db,
@@ -169,6 +170,16 @@ const getOutgoingMessageStatusCounts = () => {
     });
 };
 
+const getReplicationLimitLog = () => {
+  return replicationLimitLogService
+    .get()
+    .then(logs => logs.filter(l => l.count > l.limit).length)
+    .catch(err => {
+      logger.error('Error fetching replication limit logs: %o', err);
+      return -1;
+    });
+};
+
 const json = () => {
   return Promise
     .all([
@@ -179,7 +190,8 @@ const json = () => {
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
       getFeedbackCount(),
-      getConflictCount()
+      getConflictCount(),
+      getReplicationLimitLog()
     ])
     .then(([
       appVersion,
@@ -189,7 +201,8 @@ const json = () => {
       outboundPushBacklog,
       outgoingMessageStatus,
       feedbackCount,
-      conflictCount
+      conflictCount,
+      ReplicationLimitLogs
     ]) => {
       return {
         version: {
@@ -218,6 +231,9 @@ const json = () => {
         },
         conflict: {
           count: conflictCount
+        },
+        replication_limit: {
+          logs: ReplicationLimitLogs
         }
       };
     });
