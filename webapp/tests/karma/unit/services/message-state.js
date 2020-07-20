@@ -119,7 +119,7 @@ describe('MessageState service', function() {
       chai.expect(SetTaskState.getCall(1).args[0]).to.deep.equal({ group: 2, state: 'muted' });
       chai.expect(SetTaskState.getCall(1).args[1]).to.equal('scheduled');
     })
-      .then(done, done)
+      .then(() => done())
       .catch(err => done(err));
   });
 });

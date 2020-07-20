@@ -133,13 +133,8 @@ describe('Submit Enketo form', () => {
       by.css('#reports-content .details ul li:first-child p')
     );
     helper.waitElementToBeVisible(detail);
-    return detail.getText().then(
-      name => {
-        expect(name).toBe('Jones');
-      },
-      err => {
-        console.log(err); // eslint-disable-line no-console
-      }
-    );
+    return detail.getText().then(name => {
+      expect(name).toBe('Jones');
+    });
   });
 });

@@ -49,16 +49,20 @@ module.exports = {
       )
       .then(() => {
         elements.each(element => {
-          return element.getText().then(text => {
-            if (
-              text
-                .toLowerCase()
-                .trim()
-                .includes(expectedText)
-            ) {
-              element.click();
-            }
-          });
+          element.getText()
+            .then(text => {
+              if (
+                text
+                  .toLowerCase()
+                  .trim()
+                  .includes(expectedText)
+              ) {
+                element.click();
+              }
+            })
+            .catch(err => {
+              throw err;
+            });
         });
       });
   },
@@ -101,9 +105,13 @@ module.exports = {
       )
       .then(() => {
         elements.each(element => {
-          return element.getText().then(text => {
-            textFromElements.push(text.trim());
-          });
+          element.getText()
+            .then(text => {
+              textFromElements.push(text.trim());
+            })
+            .catch(err => {
+              throw err;
+            });
         });
         return textFromElements;
       });
@@ -148,8 +156,8 @@ module.exports = {
   selectDropdownByNumber: (element, index, milliseconds) => {
     element.findElements(by.tagName('option')).then(options => {
       options[index].click();
-    }).catch(() => {
-      process.exit(1);
+    }).catch(err => {
+      throw err;
     });
     if (milliseconds) {
       browser.sleep(milliseconds);
@@ -164,14 +172,18 @@ module.exports = {
   selectDropdownByText: (element, item, milliseconds) => {
     element.all(by.tagName('option')).then(options => {
       options.some(option => {
-        return option.getText().then(text => {
-          if (text.indexOf(item) !== -1) {
-            option.click();
-          }
-        });
+        option.getText()
+          .then(text => {
+            if (text.indexOf(item) !== -1) {
+              option.click();
+            }
+          })
+          .catch(err => {
+            throw err;
+          });
       });
-    }).catch(() => {
-      process.exit(1);
+    }).catch(err => {
+      throw err;
     });
     if (milliseconds) {
       browser.sleep(milliseconds);
@@ -183,8 +195,8 @@ module.exports = {
       if (options[0]) {
         options[0].click();
       }
-    }).catch(() => {
-      process.exit(1);
+    }).catch(err => {
+      throw err;
     });
     if (milliseconds) {
       browser.sleep(milliseconds);
@@ -201,8 +213,8 @@ module.exports = {
   takeScreenshot: filename => {
     browser.takeScreenshot().then(png => {
       writeScreenShot(png, filename);
-    }).catch(() => {
-      process.exit(1);
+    }).catch(err => {
+      throw err;
     });
   },
 

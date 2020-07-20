@@ -78,9 +78,11 @@ const expectContacts = (contacts, target) => {
     if (!target.goal) {
       expect(lineItem.all(by.css('.goal')).count()).toEqual(0);
     } else {
-      return lineItem.all(by.css('.goal')).first().getText().then(text => {
-        expect(text.indexOf(target.goal)).not.toEqual(-1);
-      });
+      lineItem.all(by.css('.goal')).first().getText()
+        .then(text => expect(text.indexOf(target.goal)).not.toEqual(-1))
+        .catch(err => {
+          throw err;
+        });
     }
   });
 };

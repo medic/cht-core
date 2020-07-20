@@ -46,8 +46,8 @@ describe('Service worker registration (swRegister.js)', () => {
       expect(actual).to.be.an('object');
       expect(callback.callCount).to.eq(1);
       done();
-    }).catch(() => {
-      process.exit(1);
+    }).catch(err => {
+      throw err;
     });
     executeSwLifecycle(registration);
   });

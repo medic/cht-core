@@ -69,16 +69,14 @@ describe('Search service', function() {
           setTimeout(done); // defer execution to give the second query time to execute
         })
         .catch((err) => {
-          window.__karma__.error(err);
+          done(err);
         });
       service('reports', {})
-        .then(function() {
-          throw new Error('the second promise should be ignored');
-        })
-        .catch(() => done());
+        .then(() => done(new Error('the second promise should be ignored')))
+        .catch(err => done(err));
     });
 
-    it('does not debounce if the same query is executed twice with the force option', function() {
+    it('does not debounce if the same query is executed twice with the force option', (done) => {
       const expected = [ { id: 'a' } ];
       GetDataRecords.returns(Promise.resolve(expected));
       let firstReturned = false;
@@ -87,17 +85,17 @@ describe('Search service', function() {
           firstReturned = true;
           chai.expect(actual).to.deep.equal(expected);
         })
-        .catch((err) => {
-          window.__karma__.error(err);
-        });
-      return service('reports', {}, { force: true })
+        .catch(err => done(err));
+      service('reports', {}, { force: true })
         .then(function(actual) {
           chai.expect(firstReturned).to.equal(true);
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
-        });
+          done();
+        })
+        .catch(err => done(err));
     });
 
-    it('does not debounce different queries - medic/medic/issues/4331)', function() {
+    it('does not debounce different queries - medic/medic/issues/4331)', (done) => {
       GetDataRecords
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
         .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
@@ -109,19 +107,19 @@ describe('Search service', function() {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
         })
-        .catch((err) => {
-          window.__karma__.error(err);
-        });
+        .catch(err => done(err));
 
       filters.foo = 'test';
-      return service('reports', filters)
+      service('reports', filters)
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
           chai.expect(firstReturned).to.equal(true);
-        });
+          done();
+        })
+        .catch(err => done(err));
     });
 
-    it('does not debounce different queries', function() {
+    it('does not debounce different queries', (done) => {
       GetDataRecords
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
         .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
@@ -134,11 +132,13 @@ describe('Search service', function() {
         .catch((err) => {
           window.__karma__.error(err);
         });
-      return service('reports', { freetext: 'second' })
+      service('reports', { freetext: 'second' })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
           chai.expect(firstReturned).to.equal(true);
-        });
+          done();
+        })
+        .catch(err => done(err));
     });
 
     it('does not debounce subsequent queries', function() {

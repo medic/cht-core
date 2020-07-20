@@ -20,7 +20,7 @@
       }
     },
     {
-      "files": [ "**/tests/**" ],
+      "files": [ "**/test/**", "**/tests/**" ],
       "rules": {
         "promise/catch-or-return": "error"
       }
