@@ -309,7 +309,7 @@ describe('view docs_by_replication_key', () => {
   let docByPlaceIds;
   let docByPlaceIds_unassigned;
 
-  beforeAll(done => {
+  beforeAll(() => {
     const alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
 
     const getChanges = keys => {
