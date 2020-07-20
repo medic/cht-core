@@ -333,7 +333,7 @@ describe('view docs_by_replication_key', () => {
       .then(() => {
         getChanges(['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username']);
       })
-      .then(docs => {
+      .then((docs) => {
         docByPlaceIds = docs;
         return getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ]);
       })
