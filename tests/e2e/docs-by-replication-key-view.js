@@ -330,32 +330,15 @@ describe('view docs_by_replication_key', () => {
     };
 
     console.log(`Pushing ${alldocs.length} documents for testing…`);
-    async.each(alldocs,
-      (testDoc, callback) => {
-        utils.saveDoc(testDoc)
-          .then(() => {
-            callback();
-          })
-          .catch(callback);
-      },
-      err => {
-        if (err) {
-          console.error(err);
-          return done.fail(err);
-        }
-        console.log('…done');
-
-        return getChanges(
-          ['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username']
-        ).then(docs => {
-          docByPlaceIds = docs;
-
-          return getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ])
-            .then(docs => {
-              docByPlaceIds_unassigned = docs;
-              done();
-            });
-        });
+    return utils.saveDocs(alldocs)
+      .then(getChanges(['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username']))
+      .then(docs => {
+        docByPlaceIds = docs;
+        getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ]);
+      })
+      .then(docs => docByPlaceIds_unassigned = docs)
+      .catch(err => {
+        throw err;
       });
   }, 5 * 60 * 1000);
 

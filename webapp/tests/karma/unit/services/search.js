@@ -72,8 +72,10 @@ describe('Search service', function() {
           done(err);
         });
       service('reports', {})
-        .then(() => done(new Error('the second promise should be ignored')))
-        .catch(err => done(err));
+        .then(function() {
+          throw new Error('the second promise should be ignored');
+        })
+        .catch(() => done());
     });
 
     it('does not debounce if the same query is executed twice with the force option', (done) => {
