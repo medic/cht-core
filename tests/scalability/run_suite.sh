@@ -4,12 +4,6 @@ echo Cloning cht-core to /cht-core
 git clone --single-branch --branch scalability-automation https://github.com/medic/cht-core.git;
 cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0
-suite_dir=$(pwd)
-
-cp -r ./csv ../../config/standard/
-
-cd ../../config/standard/
-
 
 sudo apt-get update
 
@@ -19,35 +13,6 @@ sudo apt-get -q install default-jre -y
 echo installing node
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 sudo apt-get -q install -y nodejs
-
-echo installing pip
-sudo apt-get -q install python-pip -y
-
-echo installing pyxform
-sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic -q
-
-echo installing medic-conf
-npm install medic-conf -g -s
-
-MEDIC_CONF_URL=${MEDIC_URL:0:8}medic:medicScalability@${MEDIC_URL:8}
-
-echo Upliading settings and seeding data
-echo medic-conf url is $MEDIC_CONF_URL
-medic-conf --url=$MEDIC_CONF_URL upload-app-settings \
-    convert-app-forms \
-    convert-collect-forms \
-    convert-contact-forms \
-    delete-all-forms \
-    upload-app-forms \
-    upload-collect-forms \
-    upload-contact-forms \
-    upload-resources \
-    upload-custom-translations  \
-    csv-to-docs \
-    upload-docs \
-    create-users \
-
-cd $suite_dir
 
 echo "Changing config to match url arg"
 node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL/medic'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});" 
@@ -63,3 +28,4 @@ java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.reposit
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults &&
 echo "jmeter do it!"
 ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -l ./previous_results/cli_run.jtl -e -o ./report
+echo "FINISHED! "
