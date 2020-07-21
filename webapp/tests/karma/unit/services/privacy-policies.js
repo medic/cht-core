@@ -82,13 +82,31 @@ describe('PrivacyPolicies Service', () => {
       });
     });
 
+    it('should return false/true when policy is of wrong type', () => {
+      Language.resolves('en');
+      const privacyPoliciesDoc = {
+        _id: 'privacy-policies',
+        _attachments: {
+          en: { digest: 'digest', content_type: 'image/jpeg' },
+          fr: { digest: 'digest' },
+        },
+      };
+      localMedicDb.get.resolves(privacyPoliciesDoc);
+      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { } });
+      dbSync.syncMetaDoc.resolves();
+
+      return service.hasAccepted().then(result => {
+        chai.expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
+      });
+    });
+
     it('should return true/false when policies exist but were not accepted', () => {
       Language.resolves('fr');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
         _attachments: {
-          en: { digest: 'digest' },
-          fr: { digest: 'digest' },
+          en: { digest: 'digest', content_type: 'text/html' },
+          fr: { digest: 'digest', content_type: 'text/html' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -105,8 +123,8 @@ describe('PrivacyPolicies Service', () => {
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
         _attachments: {
-          en: { digest: 'digest' },
-          fr: { digest: 'newdigest' },
+          en: { digest: 'digest', content_type: 'text/html' },
+          fr: { digest: 'newdigest', content_type: 'text/html' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -123,8 +141,8 @@ describe('PrivacyPolicies Service', () => {
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
         _attachments: {
-          en: { digest: 'digest' },
-          fr: { digest: 'digest1' },
+          en: { digest: 'digest', content_type: 'text/html' },
+          fr: { digest: 'digest1', content_type: 'text/html' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -155,8 +173,8 @@ describe('PrivacyPolicies Service', () => {
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
         _attachments: {
-          en: { digest: 'digest' },
-          fr: { digest: 'digest1' },
+          en: { digest: 'digest', content_type: 'text/html' },
+          fr: { digest: 'digest1', content_type: 'text/html' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);

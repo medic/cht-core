@@ -12,6 +12,7 @@ angular.module('inboxServices').factory('PrivacyPolicies',
 
     const PRIVACY_POLICY_ACCEPTANCE_LOG = 'privacy-policy-acceptance';
     const PRIVACY_POLICY_DOC_ID = 'privacy-policies';
+    const ACCEPTED_CONTENT_TYPE = 'text/html';
 
     const getAcceptanceLog = () => {
       return DB({ meta: true }).get(PRIVACY_POLICY_ACCEPTANCE_LOG).catch(err => {
@@ -76,7 +77,11 @@ angular.module('inboxServices').factory('PrivacyPolicies',
           getAcceptanceLog(),
         ]))
         .then(([ languageCode, privacyPolicies, acceptanceLog ]) => {
-          if (!privacyPolicies._attachments || !privacyPolicies._attachments[languageCode]) {
+          const privacyPolicyExists =
+              privacyPolicies._attachments &&
+              privacyPolicies._attachments[languageCode] &&
+              privacyPolicies._attachments[languageCode].content_type === ACCEPTED_CONTENT_TYPE;
+          if (!privacyPolicyExists) {
             return { privacyPolicy: false, accepted: true };
           }
 
@@ -85,7 +90,6 @@ angular.module('inboxServices').factory('PrivacyPolicies',
               acceptanceLog.accepted &&
               acceptanceLog.accepted[languageCode] &&
               acceptanceLog.accepted[languageCode].digest === privacyPolicies._attachments[languageCode].digest;
-
           if (isAccepted) {
             return { privacyPolicy: true, accepted: true };
           }

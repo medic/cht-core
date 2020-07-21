@@ -23,6 +23,7 @@
             <span class="detail"><strong translate>display.privacy.policies.digest</strong> {{privacyPolicies[language.code].digest}}</span>
             <span class="detail"><strong translate>display.privacy.policies.content.type</strong> {{privacyPolicies[language.code].content_type}}</span>
             <span class="detail"><strong translate>display.privacy.policies.size</strong> {{privacyPolicies[language.code].data.length / 1024 | number : 2}}KB</span>
+            <span class="error" ng-if="privacyPolicies[language.code].content_type !== allowedContentType" translate>display.privacy.policies.preview.wrong.type</span>
             <div class="actions">
               <button class="btn btn-default" ng-click="preview(language)" translate>display.privacy.policies.preview</button>
               <button class="btn btn-danger" ng-click="delete(language)" translate>display.privacy.policies.delete</button>
@@ -39,10 +40,11 @@
               <input class="uploader" file-model="updates[language.code]" type="file" accept="text/html">
             </div>
           </div>
-          <div class="details preview-area text-right" ng-if="updates[language.code]">
+          <div class="details text-right" ng-if="updates[language.code]">
             <span class="detail"><strong translate>display.privacy.policies.name</strong> {{updates[language.code].name}}</span>
             <span class="detail"><strong translate>display.privacy.policies.content.type</strong> {{updates[language.code].type}}</span>
             <span class="detail"><strong translate>display.privacy.policies.size</strong> {{updates[language.code].size / 1024 | number : 2}}KB</span>
+            <span class="error" ng-if="updates[language.code].type !== allowedContentType" translate>display.privacy.policies.preview.wrong.type</span>
             <div class="actions">
               <button class="btn btn-default preview" ng-click="previewUpdate(language)" translate>display.privacy.policies.preview</button>
               <button class="btn btn-danger" ng-click="deleteUpdate(language)" translate>display.privacy.policies.delete</button>
@@ -55,6 +57,7 @@
         <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
         <span class="loader inline small" ng-show="submitting"></span>
         <span translate ng-if="submitted && !submitError">display.privacy.policies.submit.success</span>
+        <span translate ng-if="noChanges">display.privacy.policies.no.changes</span>
         <span class="error" translate ng-if="submitError">display.privacy.policies.failure</span>
       </div>
     </form>

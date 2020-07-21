@@ -338,7 +338,7 @@ describe('Display Privacy Policies controller', function() {
         });
     });
 
-    it('should do requested deletes and updates', () => {
+    it('should do requested deletes and updates and skip non-html files', () => {
       languages.resolves([
         { code: 'en', name: 'English' }, // kept the same
         { code: 'fr', name: 'Francais' }, // updated
@@ -346,6 +346,7 @@ describe('Display Privacy Policies controller', function() {
         { code: 'hi', name: 'Hindi' }, // deleted
         { code: 'sw', name: 'Swahili' }, // new
         { code: 'ne', name: 'Nepali' }, // no change
+        { code: 'nl', name: 'Dutch' }, // new non-html
       ]);
 
       db.get
@@ -433,6 +434,7 @@ describe('Display Privacy Policies controller', function() {
             fr: { type: 'text/html', some: 'other params', fr: true },
             es: { type: 'text/html', es: true },
             sw: { type: 'text/html', sw: true },
+            nl: { type: 'not-text/html', nl: true },
           };
           scope.deletes = ['es', 'hi'];
 
@@ -490,6 +492,7 @@ describe('Display Privacy Policies controller', function() {
             },
             hi: {},
             ne: {},
+            nl: {},
           });
         });
     });

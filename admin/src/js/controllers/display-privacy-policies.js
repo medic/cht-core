@@ -12,6 +12,8 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
 
     const PRIVACY_POLICIES_DOC_ID = 'privacy-policies';
 
+    $scope.allowedContentType = 'text/html';
+
     const getPrivacyPoliciesDoc = (attachments = false) => {
       return DB()
         .get(PRIVACY_POLICIES_DOC_ID, { attachments })
@@ -35,6 +37,7 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
     $(document).on('click', '#privacy-policy-upload .choose', function(e) {
       e.preventDefault();
       $(this).parent().find('.uploader').click();
+      $q.resolve().then(() => $scope.noChanges = false);
     });
 
     const getLanguages = () => {
@@ -57,18 +60,20 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
     this.setupPromise = init();
 
     $scope.submit = () => {
+      $scope.noChanges = false;
       $scope.submitting = true;
       $scope.submitError = false;
 
       const updates = $scope.languages
-        .filter(language => $scope.updates[language.code])
-        .map(language => ({
-          language: language.code,
-          file: $scope.updates[language.code],
+        .filter(({ code }) => $scope.updates[code] && $scope.updates[code].type === $scope.allowedContentType)
+        .map(({ code }) => ({
+          language: code,
+          file: $scope.updates[code],
         }));
 
       if (!updates.length && !$scope.deletes.length) {
         // nothing to update
+        $scope.noChanges = true;
         $scope.submitting = false;
         return $q.resolve();
       }
@@ -125,6 +130,7 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
     $scope.delete = (language={}) => {
       $scope.privacyPolicies[language.code] = {};
       $scope.deletes.push(language.code);
+      $scope.noChanges = false;
     };
 
     $scope.deleteUpdate = (language={}) => {

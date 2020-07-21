@@ -25,7 +25,22 @@ angular
       return $sce.trustAsHtml(decodeUnicode(string));
     };
 
-    $scope.cancel = () =>$uibModalInstance.dismiss();
+    $scope.cancel = () => $uibModalInstance.dismiss();
+
+    const validateFileType = () => {
+      const accept = 'text/html';
+      if ($scope.model.attachment) {
+        return $scope.model.attachment.content_type === accept;
+      }
+      if ($scope.model.file) {
+        return $scope.model.file.type === accept;
+      }
+    };
+
+    if (!validateFileType()) {
+      $scope.status = { error: 'display.privacy.policies.preview.wrong.type' };
+      return;
+    }
 
     if ($scope.model.attachment) {
       $scope.content = getTrustedHtml($scope.model.attachment.data);
@@ -37,7 +52,7 @@ angular
       reader.onerror = ev => {
         $timeout(() => {
           $log.error('Error loading file contents', ev);
-          $scope.status = { error: 'Error loading preview' };
+          $scope.status = { error: 'display.privacy.policies.preview.error' };
         });
       };
       reader.readAsText($scope.model.file, 'utf-8');
