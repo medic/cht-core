@@ -306,7 +306,6 @@ describe('Purging on login', () => {
             .then(() => sentinelUtils.waitForPurgeCompletion(seq))
             .then(() => true);
         });
-
         // get new settings that say to purge on every boot!
         commonElements.sync();
         utils.refreshToGetNewSettings();
