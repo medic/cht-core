@@ -1,6 +1,7 @@
 angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
   function (
     $log,
+    $q,
     $scope,
     DB,
     Languages,
@@ -23,7 +24,7 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
     };
 
     const loadPrivacyPolicies = () => {
-      return getPrivacyPoliciesDoc().then(privacyPolicies => {
+      return getPrivacyPoliciesDoc(true).then(privacyPolicies => {
         $scope.privacyPolicies = {};
         $scope.languages.forEach(language => {
           $scope.privacyPolicies[language.code] = privacyPolicies._attachments[language.code] || {};
@@ -69,7 +70,7 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
       if (!updates.length && !$scope.deletes.length) {
         // nothing to update
         $scope.submitting = false;
-        return;
+        return $q.resolve();
       }
 
       return getPrivacyPoliciesDoc()
@@ -96,20 +97,18 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
         .finally(() => $scope.submitting = false);
     };
 
-    $scope.preview = (language) => {
-      return getPrivacyPoliciesDoc(true).then(doc => {
-        Modal({
-          templateUrl: 'templates/display_privacy_policies_preview.html',
-          controller: 'DisplayPrivacyPoliciesPreview',
-          model: {
-            attachment: doc._attachments[language.code],
-            language,
-          }
-        });
+    $scope.preview = (language={}) => {
+      Modal({
+        templateUrl: 'templates/display_privacy_policies_preview.html',
+        controller: 'DisplayPrivacyPoliciesPreview',
+        model: {
+          attachment: $scope.privacyPolicies[language.code],
+          language,
+        }
       });
     };
 
-    $scope.previewUpdate = (language) => {
+    $scope.previewUpdate = (language={}) => {
       if (!$scope.updates[language.code]) {
         return;
       }
@@ -123,12 +122,12 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
       });
     };
 
-    $scope.delete = (language) => {
-      delete $scope.privacyPolicies[language.code];
+    $scope.delete = (language={}) => {
+      $scope.privacyPolicies[language.code] = {};
       $scope.deletes.push(language.code);
     };
 
-    $scope.deleteUpdate = language => {
+    $scope.deleteUpdate = (language={}) => {
       delete $scope.updates[language.code];
     };
 

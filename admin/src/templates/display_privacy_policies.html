@@ -19,10 +19,10 @@
           <span>{{language.name}}</span>
         </div>
         <div class="col-xs-4">
-          <div class="details" ng-if="privacyPolicies[language.code].length">
+          <div class="details" ng-if="privacyPolicies[language.code].data">
             <span class="detail"><strong translate>display.privacy.policies.digest</strong> {{privacyPolicies[language.code].digest}}</span>
             <span class="detail"><strong translate>display.privacy.policies.content.type</strong> {{privacyPolicies[language.code].content_type}}</span>
-            <span class="detail"><strong translate>display.privacy.policies.size</strong> {{privacyPolicies[language.code].length / 1024 | number : 2}}KB</span>
+            <span class="detail"><strong translate>display.privacy.policies.size</strong> {{privacyPolicies[language.code].data.length / 1024 | number : 2}}KB</span>
             <div class="actions">
               <button class="btn btn-default" ng-click="preview(language)" translate>display.privacy.policies.preview</button>
               <button class="btn btn-danger" ng-click="delete(language)" translate>display.privacy.policies.delete</button>
