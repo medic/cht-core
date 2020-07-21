@@ -10,6 +10,7 @@ describe('InboxCtrl controller', () => {
   let session;
   let rulesEnginePromise;
   let isSyncInProgress;
+  let privacyPoliciesPromise;
   let sync;
   let updateUser;
   let tours = [];
@@ -43,6 +44,8 @@ describe('InboxCtrl controller', () => {
 
     isSyncInProgress = sinon.stub();
     sync = sinon.stub();
+
+    privacyPoliciesPromise = Q.defer();
 
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
@@ -79,6 +82,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('LiveListConfig', sinon.stub());
       $provide.value('ResourceIcons', { getAppTitle: () => Promise.resolve({}) });
       $provide.value('ReadMessages', sinon.stub());
+      $provide.value('PrivacyPolicies', { hasAccepted: sinon.stub().returns(privacyPoliciesPromise.promise) });
       $provide.value('SendMessage', sinon.stub());
       $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
@@ -125,6 +129,7 @@ describe('InboxCtrl controller', () => {
 
   it('should start the relative date update recurring process', done => {
     createController();
+    privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
     setTimeout(() => {
       chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
@@ -140,6 +145,7 @@ describe('InboxCtrl controller', () => {
 
   it('should not start the UpdateUnreadDocsCount recurring process when not online', done => {
     createController();
+    privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
     setTimeout(() => {
       chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(0);
@@ -152,6 +158,7 @@ describe('InboxCtrl controller', () => {
   it('should start the UpdateUnreadDocsCount recurring process when online, after lazy load', done => {
     session.isOnlineOnly.returns(true);
     createController();
+    privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
     setTimeout(() => {
       chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);

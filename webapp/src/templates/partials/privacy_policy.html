@@ -1,0 +1,12 @@
+<div class="filters">
+  <div class="inner"></div>
+</div>
+<div class="inner" ng-cloak>
+  <div class="loader" ng-if="privacyPolicyCtrl.loading"></div>
+  <div class="col-sm-12 page configuration privacy-policy" ng-if="!privacyPolicyCtrl.loading"  ui-view="content">
+    <div ng-if="privacyPolicyCtrl.privacyPolicy" ng-bind-html="privacyPolicyCtrl.privacyPolicy.html"></div>
+    <p ng-if="!privacyPolicyCtrl.privacyPolicy">
+      privacy.policy.not.found
+    </p>
+  </div>
+</div>

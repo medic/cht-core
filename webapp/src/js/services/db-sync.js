@@ -173,6 +173,13 @@ angular
         .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
     };
 
+    const syncMetaDoc = (docIds = []) => {
+      const remote = DB({ meta: true, remote: true });
+      const local = DB({ meta: true });
+
+      return local.sync(remote, { doc_ids: docIds });
+    };
+
     const sendUpdate = update => {
       updateListeners.forEach(listener => listener(update));
     };
@@ -247,5 +254,7 @@ angular
         resetSyncInterval();
         return sync(force);
       },
+
+      syncMetaDoc,
     };
   });

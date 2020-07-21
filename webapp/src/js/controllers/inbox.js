@@ -23,7 +23,6 @@ const moment = require('moment');
   angular.module('inboxControllers').controller('InboxCtrl', function(
     $log,
     $ngRedux,
-    $q,
     $rootScope,
     $scope,
     $state,
@@ -45,13 +44,13 @@ const moment = require('moment');
     LiveListConfig,
     Location,
     Modal,
+    PrivacyPolicies,
     RecurringProcessManager,
     ResourceIcons,
     RulesEngine,
     Selectors,
     Session,
     SetLanguage,
-    Settings,
     Snackbar,
     Telemetry,
     Tour,
@@ -59,9 +58,6 @@ const moment = require('moment');
     TranslationLoader,
     UnreadRecords,
     UpdateServiceWorker,
-    UpdateSettings,
-    UpdateUser,
-    UserSettings,
     WealthQuintilesWatcher,
     XmlForms
   ) {
@@ -79,7 +75,9 @@ const moment = require('moment');
         minimalTabs : Selectors.getMinimalTabs(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state)
+        showContent: Selectors.getShowContent(state),
+        privacyPolicyAccepted: Selectors.getPrivacyPolicyAccepted(state),
+        showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state),
       };
     };
     const mapDispatchToTarget = function(dispatch) {
@@ -102,7 +100,9 @@ const moment = require('moment');
         setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
         unsetSelected: globalActions.unsetSelected,
-        updateReplicationStatus: globalActions.updateReplicationStatus
+        updateReplicationStatus: globalActions.updateReplicationStatus,
+        setPrivacyPolicyAccepted: globalActions.setPrivacyPolicyAccepted,
+        setShowPrivacyPolicy: globalActions.setShowPrivacyPolicy,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
@@ -251,6 +251,7 @@ const moment = require('moment');
 
     // initialisation tasks that can occur after the UI has been rendered
     Session.init()
+      .then(() => checkPrivacyPolicy())
       .then(() => initRulesEngine())
       .then(() => initForms())
       .then(() => initUnreadCount())
@@ -338,6 +339,18 @@ const moment = require('moment');
       .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
       .catch(err => $log.error('RuleEngine failed to initialize', err));
 
+    const checkPrivacyPolicy = () => {
+      return PrivacyPolicies
+        .hasAccepted()
+        .then(({ privacyPolicy, accepted }={}) => {
+          ctrl.setPrivacyPolicyAccepted(accepted);
+          ctrl.setShowPrivacyPolicy(privacyPolicy);
+        })
+        .catch(err => {
+          $log.error('Failed to load privacy policy', err);
+        });
+    };
+
     // get the forms for the forms filter
     const initForms = () => {
       return $translate.onReady()
@@ -392,59 +405,6 @@ const moment = require('moment');
         ctrl.tours = tours;
       });
     };
-
-    const startupModals = [
-      // welcome screen
-      {
-        required: settings => !settings.setup_complete,
-        render: () => {
-          return Modal({
-            templateUrl: 'templates/modals/welcome.html',
-            controller: 'WelcomeModalCtrl',
-            controllerAs: 'welcomeModalCtrl',
-            size: 'lg',
-          }).catch(() => {});
-        },
-      },
-      // guided setup
-      {
-        required: settings => !settings.setup_complete,
-        render: () => {
-          return ctrl.openGuidedSetup()
-            .then(() => UpdateSettings({ setup_complete: true }))
-            .catch(err => $log.error('Error marking setup_complete', err));
-        },
-      },
-      // tour
-      {
-        required: (settings, user) => !user.known && ctrl.tours.length > 0,
-        render: () => {
-          return ctrl.openTourSelect()
-            .then(() => UpdateUser(Session.userCtx().name, { known: true }))
-            .catch(err => $log.error('Error updating user', err));
-        },
-      },
-    ];
-
-    $q.all([Settings(), UserSettings(), initTours()])
-      .then(function(results) {
-        ctrl.modalsToShow = _.filter(startupModals, function(modal) {
-          return modal.required(results[0], results[1]);
-        });
-        const showModals = function() {
-          if (ctrl.modalsToShow && ctrl.modalsToShow.length) {
-            // render the first modal and recursively show the rest
-            ctrl.modalsToShow
-              .shift()
-              .render()
-              .then(showModals);
-          }
-        };
-        showModals();
-      })
-      .catch(function(err) {
-        $log.error('Error fetching settings', err);
-      });
 
     moment.locale(['en']);
 
@@ -567,6 +527,7 @@ const moment = require('moment');
           change.id === '_design/medic-client' ||
           change.id === 'service-worker-meta' ||
           change.id === 'settings'
+          // Prompt the user to reload when privacy policies change?
         );
       },
       callback: function(change) {

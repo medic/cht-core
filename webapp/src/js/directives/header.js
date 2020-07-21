@@ -21,7 +21,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         return {
           currentTab: Selectors.getCurrentTab(state),
           replicationStatus: Selectors.getReplicationStatus(state),
-          unreadCount: Selectors.getUnreadCount(state)
+          unreadCount: Selectors.getUnreadCount(state),
+          showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state),
         };
       };
       const mapDispatchToTarget = function(dispatch) {
@@ -53,8 +54,6 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       ctrl.replicate = () => {
         DBSync.sync(true);
       };
-
-
 
       Settings().then(settings => {
         const tabs = HeaderTabs(settings);

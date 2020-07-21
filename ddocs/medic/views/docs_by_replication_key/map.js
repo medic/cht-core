@@ -9,6 +9,7 @@ function (doc) {
       doc._id === 'service-worker-meta' ||
       doc._id === 'zscore-charts' ||
       doc._id === 'settings' ||
+      doc._id === 'privacy-policies' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
     return emit('_all', {});

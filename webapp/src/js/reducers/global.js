@@ -25,7 +25,9 @@ const initialState = {
   showContent: false,
   title: null,
   unreadCount: {},
-  version: null
+  version: null,
+  privacyPolicyAccepted: false,
+  showPrivacyPolicy: false,
 };
 
 module.exports = function(state, action) {
@@ -98,6 +100,10 @@ module.exports = function(state, action) {
     return Object.assign({}, state, {
       replicationStatus: Object.assign({}, state.replicationStatus, action.payload.replicationStatus)
     });
+  case actionTypes.SET_PRIVACY_POLICY_ACCEPTED:
+    return Object.assign({}, state, { privacyPolicyAccepted: action.payload.privacyPolicyAccepted });
+  case actionTypes.SET_SHOW_PRIVACY_POLICY:
+    return Object.assign({}, state, { showPrivacyPolicy: action.payload.showPrivacyPolicy });
   default:
     return state;
   }

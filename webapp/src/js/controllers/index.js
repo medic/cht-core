@@ -34,6 +34,7 @@
   require('./messages');
   require('./messages-content');
   require('./navigation-confirm');
+  require('./privacy-policy');
   require('./reloading-modal');
   require('./reports');
   require('./reports-add');
