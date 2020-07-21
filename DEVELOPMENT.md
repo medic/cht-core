@@ -157,16 +157,6 @@ Follow the steps below to use an Android device with a development build of your
 2. Follow the instructions below to start ngrok or pagekite
 3. This will output a generated URL which you can enter into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
 
-### pagekite
-
-1. Create a pagekite account at https://pagekite.net/signup/
-1. Follow instructions on downloading the python script for pagekite
-1. Start pagekite (be sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for:
-    * To connect to an API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
-    * To connect to an API running via `Docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
-1. Access the app using the https address shown, eg https://YOUR-PAGEKIT-NAME.pagekite.me
-
-
 ### ngrok
 
 1. Create a ngrok account at https://ngrok.com/
@@ -177,6 +167,16 @@ Follow the steps below to use an Android device with a development build of your
 1. Access the app using the https address shown, eg https://YOUR-NGROK-NAME.ngrok.io, replacing `YOUR-NGROK-NAME` with what you signed up with.
 
 **Note:** ngrok sometimes fails due to connection throttling which can cause the service worker cache preload to fail. 
+
+### pagekite
+
+1. Create a pagekite account at https://pagekite.net/signup/
+1. Follow instructions on downloading the python script for pagekite
+1. Start pagekite (be sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for:
+    * To connect to an API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
+    * To connect to an API running via `Docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
+1. Access the app using the https address shown, eg https://YOUR-PAGEKIT-NAME.pagekite.me
+
 
 ## Data
 
