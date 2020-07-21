@@ -1,20 +1,21 @@
 const moment = require('moment');
 const db = require('../db');
 const logger = require('../logger');
+const DOC_IDS_WARN_LIMIT = require('./users').DOC_IDS_WARN_LIMIT;
 
-const LOG_TYPES = {
-  replicationCount: 'replication-count-'
-};
+const LOG_TYPE = 'replication-count-';
+// The count and month difference between old and new log.
+// To determine when the old log will updated with the new one.
 const LOG_COUNT_DIFF = 100;
 const LOG_MONTH_DIFF = 1;
 
 const persistLog = (info) => {
-  if (!info || !info.user || !info.user.user_name) {
+  if (!info || !info.user) {
     const error = new Error('Error when persisting log: Log Information missing.');
     return Promise.reject(error);
   }
 
-  const logDocId = LOG_TYPES.replicationCount + info.user.user_name;
+  const logDocId = LOG_TYPE + info.user;
 
   return db.medicLogs
     .get(logDocId)
@@ -35,16 +36,21 @@ const persistLog = (info) => {
 };
 
 const isLogDifferent = (oldLog, newLog) => {
-  if (!oldLog.log_date && !oldLog.count) {
+  if (!oldLog.date && !oldLog.count) {
     return true;
   }
 
-  const oldLogDate = moment(oldLog.log_date);
-  const newLogDate = moment(newLog.log_date);
-  const monthDiff = newLogDate.diff(oldLogDate, 'months', true);
   const countDiff = Math.abs(oldLog.count - newLog.count);
 
-  return monthDiff > LOG_MONTH_DIFF || countDiff > LOG_COUNT_DIFF;
+  if (countDiff > LOG_COUNT_DIFF) {
+    return true;
+  }
+
+  const oldLogDate = moment(oldLog.date);
+  const newLogDate = moment(newLog.date);
+  const monthDiff = newLogDate.diff(oldLogDate, 'months', true);
+
+  return monthDiff > LOG_MONTH_DIFF;
 };
 
 const getLogsByType = (docPrefix) => {
@@ -59,24 +65,23 @@ const getLogsByType = (docPrefix) => {
     .then((result) => result.rows.map(row => row.doc));
 };
 
-const getLogById = (docId) => db.medicLogs.get(docId);
-
 const getReplicationLimitLog = (userName) => {
-  if (!userName) {
-    return getLogsByType(LOG_TYPES.replicationCount);
-  }
+  const get = !userName ? getLogsByType(LOG_TYPE) : db.medicLogs.get(LOG_TYPE + userName);
 
-  return getLogById(LOG_TYPES.replicationCount + userName);
+  return get
+    .then(logs => {
+      return {
+        limit: DOC_IDS_WARN_LIMIT,
+        users: logs
+      };
+    });
 };
 
-const logReplicationLimit = (userName, count, limit) => {
+const logReplicationLimit = (userName, count) => {
   const info = {
-    user: {
-      user_name: userName
-    },
-    log_date: moment().valueOf(),
-    count,
-    limit
+    user: userName,
+    date: moment().valueOf(),
+    count
   };
 
   return persistLog(info)
@@ -89,5 +94,5 @@ module.exports = {
   put: logReplicationLimit,
   get: getReplicationLimitLog,
   _isLogDifferent: isLogDifferent,
-  LOG_TYPES
+  LOG_TYPE
 };

@@ -29,16 +29,15 @@ describe('Replication Limit Log service', () => {
     it('should persist log', () => {
       const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.reject({ status: 404 }));
       const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
-      const logType = replicationLimitLogService.LOG_TYPES.replicationCount;
+      const logType = replicationLimitLogService.LOG_TYPE;
       const expectedDoc = {
         _id: logType + 'userXYZ',
-        user: { user_name: 'userXYZ' },
-        count: 100,
-        limit: 30
+        user: 'userXYZ',
+        count: 100
       };
 
       return replicationLimitLogService
-        .put('userXYZ', 100, 30)
+        .put('userXYZ', 100)
         .then(() => {
           chai.expect(getStub.called).to.be.true;
           chai.expect(putStub.called).to.be.true;
@@ -49,12 +48,11 @@ describe('Replication Limit Log service', () => {
 
   describe('get()', () => {
     it('should retrieve log by document ID', () => {
-      const logType = replicationLimitLogService.LOG_TYPES.replicationCount;
+      const logType = replicationLimitLogService.LOG_TYPE;
       const doc = {
         _id: logType + 'userXYZ',
-        user: { username: 'userXYZ' },
-        count: 100,
-        limit: 30
+        user: 'userXYZ',
+        count: 100
       };
       const allDocsStub = sinon.stub(db.medicLogs, 'allDocs');
       const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.resolve(doc));
@@ -65,23 +63,21 @@ describe('Replication Limit Log service', () => {
           chai.expect(getStub.called).to.be.true;
           chai.expect(allDocsStub.called).to.be.false;
           chai.expect(getStub.args[0][0]).to.equal(doc._id);
-          chai.expect(response).to.equal(doc);
+          chai.expect(response.users).to.equal(doc);
         });
     });
 
     it('should retrieve list of logs by type', () => {
-      const logType = replicationLimitLogService.LOG_TYPES.replicationCount;
+      const logType = replicationLimitLogService.LOG_TYPE;
       const doc1 = {
         _id: logType + 'userABC',
-        user: { username: 'userABC' },
-        count: 100,
-        limit: 30
+        user: 'userABC',
+        count: 100
       };
       const doc2 = {
         _id: logType + 'userXYZ',
-        user: { username: 'userXYZ' },
-        count: 100,
-        limit: 30
+        user: 'userXYZ',
+        count: 100
       };
       const response = {
         rows: [
@@ -103,8 +99,8 @@ describe('Replication Limit Log service', () => {
           chai.expect(getStub.called).to.be.false;
           chai.expect(allDocsStub.called).to.be.true;
           chai.expect(allDocsStub.args[0][0]).to.deep.include(options);
-          chai.expect(response[0]).to.equal(doc1);
-          chai.expect(response[1]).to.equal(doc2);
+          chai.expect(response.users[0]).to.equal(doc1);
+          chai.expect(response.users[1]).to.equal(doc2);
         });
     });
   });
@@ -112,11 +108,11 @@ describe('Replication Limit Log service', () => {
   describe('_isLogDifferent()', () => {
     it('should return false when logs are not different enough', () => {
       const oldLog = {
-        log_date: 1583944505000, // 2020/03/12 03:05:05
+        date: 1583944505000, // 2020/03/12 03:05:05
         count: 50
       };
       const newLog = {
-        log_date: 1584635705000, // 2020/03/20 03:05:05
+        date: 1584635705000, // 2020/03/20 03:05:05
         count: 40
       };
 
@@ -127,11 +123,11 @@ describe('Replication Limit Log service', () => {
 
     it('should return true when count is different enough', () => {
       const oldLog = {
-        log_date: 1583944505000, // 2020/03/12 03:05:05
+        date: 1583944505000, // 2020/03/12 03:05:05
         count: 150
       };
       const newLog = {
-        log_date: 1584635705000, // 2020/03/20 03:05:05
+        date: 1584635705000, // 2020/03/20 03:05:05
         count: 40
       };
 
@@ -140,13 +136,13 @@ describe('Replication Limit Log service', () => {
       chai.expect(result).to.be.true;
     });
 
-    it('should return true when log_date is different enough', () => {
+    it('should return true when date is different enough', () => {
       const oldLog = {
-        log_date: 1584203705000, // 2020/03/15 03:05:05
+        date: 1584203705000, // 2020/03/15 03:05:05
         count: 50
       };
       const newLog = {
-        log_date: 1587317705000, // 2020/04/20 03:05:05
+        date: 1587317705000, // 2020/04/20 03:05:05
         count: 40
       };
 
@@ -157,7 +153,7 @@ describe('Replication Limit Log service', () => {
 
     it('should return true when old log is missing data', () => {
       const newLog = {
-        log_date: 1587317705000, // 2020/04/20 03:05:05
+        date: 1587317705000, // 2020/04/20 03:05:05
         count: 40
       };
 
