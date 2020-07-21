@@ -259,6 +259,7 @@ describe('Purging on login', () => {
     reports.expectReportsToNotExist([badFormId]);
 
     let purgeDate;
+
     return getPurgeLog()
       .then(result => {
         // purge ran but after initial replication, nothing to purge
