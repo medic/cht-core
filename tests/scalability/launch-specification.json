@@ -9,6 +9,9 @@
       }
     }
   ],
+  "Placement": {	  "Placement": {
+    "AvailabilityZone": "ca-central-1"
+  },
   "ImageId": "ami-00f6a0c18edb19300",
   "InstanceType": "c5.2xlarge",
   "KeyName": "qa-scalability",
