@@ -2,7 +2,7 @@
 #Requires jq
 
 echo Starting Instance Request
-SpotInstanceRequestId=$(aws ec2 request-spot-instances --spot-price '0.222' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)      
+SpotInstanceRequestId=$(aws ec2 request-spot-instances --spot-price '0.333' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)      
 echo Getting Instance ID
 instanceID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r )
 while [ "$instanceID" = null ]
