@@ -1,4 +1,3 @@
-<p translate>display.privacy.policies.description</p>
 <div class="loader" ng-show="loading"></div>
 <div class="section privacy-policies" ng-hide="loading">
   <div class="container-fluid">
@@ -54,6 +53,7 @@
       </div>
       <br>
       <div class="form-actions">
+        <p class="help-block" translate>display.privacy.policies.upload</p>
         <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
         <span class="loader inline small" ng-show="submitting"></span>
         <span translate ng-if="submitted && !submitError">display.privacy.policies.submit.success</span>

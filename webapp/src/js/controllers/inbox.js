@@ -527,7 +527,6 @@ const moment = require('moment');
           change.id === '_design/medic-client' ||
           change.id === 'service-worker-meta' ||
           change.id === 'settings'
-          // Prompt the user to reload when privacy policies change?
         );
       },
       callback: function(change) {

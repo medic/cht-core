@@ -63,6 +63,7 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
       $scope.noChanges = false;
       $scope.submitting = true;
       $scope.submitError = false;
+      $scope.submitted = false;
 
       const updates = $scope.languages
         .filter(({ code }) => $scope.updates[code] && $scope.updates[code].type === $scope.allowedContentType)
