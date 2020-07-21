@@ -331,13 +331,17 @@ describe('view docs_by_replication_key', () => {
     console.log(`Pushing ${alldocs.length} documents for testing…`);
     return utils.saveDocs(alldocs)
       .then(() => {
-        getChanges(['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username']);
+        return getChanges(
+          ['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username']
+        );
       })
       .then((docs) => {
         docByPlaceIds = docs;
         return getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ]);
       })
-      .then(docs => docByPlaceIds_unassigned = docs)
+      .then((docs) => {
+        docByPlaceIds_unassigned = docs;
+      })
       .catch(err => {
         throw err;
       });
