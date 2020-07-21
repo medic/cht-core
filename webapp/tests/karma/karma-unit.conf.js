@@ -10,9 +10,6 @@ module.exports = function(config) {
     singleRun: false,
     colors: true,
     browserNoActivityTimeout: 60000,
-    client: {
-      captureConsole: true,
-    },
     customLaunchers: {
       Chrome_Headless: {
         base: 'Chrome',

@@ -173,13 +173,6 @@ angular
         .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
     };
 
-    const syncMetaDoc = (docIds = []) => {
-      const remote = DB({ meta: true, remote: true });
-      const local = DB({ meta: true });
-
-      return local.sync(remote, { doc_ids: docIds });
-    };
-
     const sendUpdate = update => {
       updateListeners.forEach(listener => listener(update));
     };
@@ -255,6 +248,16 @@ angular
         return sync(force);
       },
 
-      syncMetaDoc,
+      /**
+       * Synchronize a subset of docs in meta databases. Used to avoid conflicts when accepting privacy policy.
+       * @param docIds - docs to sync
+       * @returns {Promise} = resolves when both directions of replication complete
+       */
+      syncMetaDoc: (docIds = []) => {
+        const remote = DB({ meta: true, remote: true });
+        const local = DB({ meta: true });
+
+        return local.sync(remote, { doc_ids: docIds });
+      },
     };
   });
