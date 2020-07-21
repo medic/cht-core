@@ -1506,6 +1506,8 @@ describe('Users service', () => {
           name: 'sally',
         });
 
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+
       return service.createUser(user, 'http://realhost').then(response => {
         chai.expect(response).to.deep.equal({
           user: { id: 'org.couchdb.user:sally', rev: undefined },
@@ -1659,6 +1661,7 @@ describe('Users service', () => {
       sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
 
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
       clock.tick(5000);
 
       return service.updateUser('sally', updates, true, 'https://realhost').then(response => {

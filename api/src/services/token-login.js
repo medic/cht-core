@@ -44,6 +44,26 @@ const validateAndNormalizePhone = (data) => {
 };
 
 /**
+ * Generates a unique 64 character token.
+ * @returns {String}
+ */
+const generateToken = (retry = 0) => {
+  const maxRetry = 10;
+  if (retry >= maxRetry) {
+    throw new Error('Failed to generate unique token after 10 iterations');
+  }
+  const tokens = Array.from({ length: 10 }).map(() => generatePassword(TOKEN_LENGTH));
+  const docIds = tokens.map(token => getTokenLoginDocId(token));
+  return db.medic.allDocs({ keys: docIds }).then(results => {
+    const idx = results.rows.findIndex(row => row.error);
+    if (idx === -1) {
+      return generateToken(retry + 1);
+    }
+    return tokens[idx];
+  });
+};
+
+/**
  * Enables token-login for a user
  * - a new document is created in the `medic` database that contains tasks (SMSs) to be sent to the phone number
  *   belonging to the current user (userSettings.phone) that contain instructions and a url to login in the app
@@ -59,10 +79,9 @@ const enableTokenLogin = (appUrl, response) => {
     .all([
       db.users.get(response.user.id),
       db.medic.get(response['user-settings'].id),
+      generateToken()
     ])
-    .then(([ user, userSettings ]) => {
-      const token = generatePassword(TOKEN_LENGTH);
-
+    .then(([ user, userSettings, token ]) => {
       return generateTokenLoginDoc(user, userSettings, token, appUrl)
         .then(() => {
           user.token_login = {

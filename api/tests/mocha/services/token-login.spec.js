@@ -685,6 +685,7 @@ describe('TokenLogin service', () => {
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
+        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
 
         clock.tick(2000);
 
@@ -726,6 +727,9 @@ describe('TokenLogin service', () => {
             'user-settings': { id: 'userID' },
             token_login: { expiration_date: 2000 + oneDayInMS }
           });
+
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0][0].keys[0]).to.equal(`token:login:${token}`);
         });
       });
 
@@ -772,6 +776,7 @@ describe('TokenLogin service', () => {
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
+        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
 
         clock.tick(2000);
 
@@ -841,6 +846,9 @@ describe('TokenLogin service', () => {
             'user-settings': { id: 'my_user' },
             token_login: { expiration_date: 2000 + oneDayInMS }
           });
+
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0][0].keys[0]).to.equal(`token:login:${token}`);
         });
       });
 
@@ -888,6 +896,7 @@ describe('TokenLogin service', () => {
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
+        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
 
         clock.tick(5000);
 
@@ -938,6 +947,100 @@ describe('TokenLogin service', () => {
             token_login: { expiration_date: 5000 + oneDayInMS }
           });
         });
+      });
+
+      it('should retry generating the token until hitting a unique one', () => {
+        sinon.stub(config, 'get')
+          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
+          .withArgs('app_url').returns('http://host');
+        const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
+
+        sinon.stub(db.medic, 'get').withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+          phone: '+40755232323',
+        });
+
+        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+        });
+
+        sinon.stub(db.medic, 'put').resolves();
+        sinon.stub(db.users, 'put').resolves();
+        sinon.stub(db.medic, 'allDocs')
+          .resolves({ rows: [] })
+          .onCall(4).resolves({ rows: [{}, {}, {}, { error: 'not_found' }] }); //5th call, 4th token
+
+        clock.tick(2000);
+
+        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
+          chai.expect(db.users.put.callCount).to.equal(1);
+          chai.expect(db.users.put.args[0][0]).to.deep.include({
+            _id: 'userID',
+            name: 'user',
+            roles: ['a', 'b'],
+          });
+          chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
+            active: true,
+            expiration_date: 2000 + oneDayInMS,
+          });
+          const token = db.users.put.args[0][0].token_login.token;
+
+          chai.expect(db.medic.put.callCount).to.equal(2);
+          chai.expect(db.medic.put.args[0][0]).to.deep.nested.include({
+            _id: `token:login:${token}`,
+            type: 'token_login',
+          });
+          chai.expect(db.medic.put.args[1]).to.deep.equal([{
+            _id: 'userID',
+            name: 'user',
+            phone: '+40755232323',
+            roles: ['a', 'b'],
+            token_login: { active: true, expiration_date: 2000 + oneDayInMS },
+          }]);
+
+          chai.expect(actual).to.deep.equal({
+            user: { id: 'userID' },
+            'user-settings': { id: 'userID' },
+            token_login: { expiration_date: 2000 + oneDayInMS }
+          });
+
+          chai.expect(db.medic.allDocs.callCount).to.equal(5);
+          chai.expect(db.medic.allDocs.args[4][0].keys[3]).to.equal(`token:login:${token}`);
+        });
+      });
+
+      it('should quit retrying generating a token after 10 iterarions', () => {
+        sinon.stub(config, 'get')
+          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
+          .withArgs('app_url').returns('http://host');
+        const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
+
+        sinon.stub(db.medic, 'get').withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+          phone: '+40755232323',
+        });
+        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+        });
+
+        sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
+
+        clock.tick(2000);
+
+        return service
+          .manageTokenLogin({ token_login: true }, '', response)
+          .then(() => chai.assert.fail('Should have thrown'))
+          .catch(err => {
+            chai.expect(err.message).to.equal('Failed to generate unique token after 10 iterations');
+          });
       });
     });
   });
