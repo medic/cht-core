@@ -331,5 +331,4 @@ describe('Purging on login', () => {
         reports.expectReportsToNotExist([badFormId, badFormId2]);
       });
   });
-
 });
