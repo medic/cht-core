@@ -61,18 +61,26 @@ describe('token login', () => {
     return utils.revertDb();
   });
 
+  const waitForLoaderToDisappear = () => {
+    try {
+      helper.waitElementToDisappear(by.css('.loader'));
+    } catch(err) {
+      // element can go stale
+    }
+  };
+
   it('should redirect the user to the app if already logged in', () => {
     commonElements.goToLoginPage();
     loginPage.login(auth.username, auth.password);
     browser.driver.get(getUrl('this is a random string'));
-    helper.waitElementToDisappear(by.css('.loader'));
+    waitForLoaderToDisappear();
     browser.waitForAngular();
     helper.waitUntilReady(element(by.id('message-list')));
   });
 
   it('should display an error when token login is disabled', () => {
     browser.driver.get(getUrl('this is a random string'));
-    helper.waitElementToDisappear(by.css('.loader'));
+    waitForLoaderToDisappear();
     expect(helper.isTextDisplayed(ERROR)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
@@ -81,7 +89,7 @@ describe('token login', () => {
   it('should display an error with incorrect url', () => {
     browser.wait(() => setupTokenLoginSettings().then(() => true));
     browser.driver.get(`${utils.getOrigin()}/medic/login/token`);
-    helper.waitElementToDisappear(by.css('.loader'));
+    waitForLoaderToDisappear();
     expect(helper.isTextDisplayed(MISSING)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
@@ -90,7 +98,7 @@ describe('token login', () => {
   it('should display an error when accessing with random strings', () => {
     browser.wait(() => setupTokenLoginSettings().then(() => true));
     browser.driver.get(getUrl('this is a random string'));
-    helper.waitElementToDisappear(by.css('.loader'));
+    waitForLoaderToDisappear();
     expect(helper.isTextDisplayed(INVALID)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
@@ -108,7 +116,7 @@ describe('token login', () => {
         .then(([ url ]) => browser.driver.get(url))
         .then(() => true);
     });
-    helper.waitElementToDisappear(by.css('.loader'));
+    waitForLoaderToDisappear();
     expect(helper.isTextDisplayed(EXPIRED)).toBe(true);
     expect(helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(element(by.css('.btn[href="/medic/login"]')).isDisplayed()).toBe(true);
