@@ -14,11 +14,6 @@ describe('Geolocation service', () => {
       info: sinon.stub(),
       error: sinon.stub()
     };
-    // $log = {
-    //   debug: console.log,
-    //   info: console.log,
-    //   error: console.log
-    // };
     $window = {
       navigator: {
         geolocation: {

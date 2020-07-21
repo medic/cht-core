@@ -8,6 +8,12 @@ angular.module('inboxServices').service('Geolocation',
     'use strict';
     'ngInject';
 
+    const GEO_OPTIONS = {
+      enableHighAccuracy: true,
+      timeout: 30 * 1000, // give up if coords not received within 30 seconds
+      maximumAge: 5 * 60 * 1000 // coords from up to 5 minutes ago are acceptable
+    };
+
     return function() {
       $log.debug('Initiating new geolocation watcher');
 
@@ -42,28 +48,29 @@ angular.module('inboxServices').service('Geolocation',
         }
       };
 
+      const success = function(position) {
+        $log.debug('Geolocation success', position);
+        geo = position;
+        if (deferred) {
+          finalise();
+        }
+      };
+
+      const failure = function(err) {
+        $log.debug('Geolocation error', err);
+        geoError = err;
+        if (deferred) {
+          finalise();
+        }
+      };
+
       if (!$window.navigator.geolocation) {
         geoError = {
           code: -1,
           message: 'Geolocation API unavailable.',
         };
       } else {
-        watcher = $window.navigator.geolocation.watchPosition(
-          position => {
-            $log.debug('Geolocation hit', position);
-            geo = position;
-            if (deferred) {
-              finalise();
-            }
-          },
-          error => {
-            $log.debug('Geolocation error', error);
-            geoError = error;
-            if (deferred) {
-              finalise();
-            }
-          },
-          { enableHighAccuracy: true, timeout: 30 * 1000, maximumAge: 5 * 60 * 1000 });
+        watcher = $window.navigator.geolocation.watchPosition(success, failure, GEO_OPTIONS);
       }
 
       const complete = function() {
