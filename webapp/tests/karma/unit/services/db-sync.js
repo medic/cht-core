@@ -514,5 +514,13 @@ describe('DBSync service', () => {
         chai.expect(localMetaDb.sync.args[0]).to.deep.equal([remoteMetaDb, { doc_ids: [] }]);
       });
     });
+
+    it('should not sync online users', () => {
+      isOnlineOnly.returns(true);
+      return service.syncMetaDoc().then(() => {
+        chai.expect(db.callCount).to.equal(0);
+        chai.expect(localMetaDb.sync.callCount).to.equal(0);
+      });
+    });
   });
 });
