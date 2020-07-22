@@ -47,17 +47,13 @@ const validateAndNormalizePhone = (data) => {
  * Generates a unique 64 character token.
  * @returns {String}
  */
-const generateToken = (retry = 0) => {
-  const maxRetry = 10;
-  if (retry >= maxRetry) {
-    throw new Error('Failed to generate unique token after 10 iterations');
-  }
+const generateToken = () => {
   const tokens = Array.from({ length: 10 }).map(() => generatePassword(TOKEN_LENGTH));
   const docIds = tokens.map(token => getTokenLoginDocId(token));
   return db.medic.allDocs({ keys: docIds }).then(results => {
     const idx = results.rows.findIndex(row => row.error);
     if (idx === -1) {
-      return generateToken(retry + 1);
+      throw new Error('Failed to generate unique token');
     }
     return tokens[idx];
   });

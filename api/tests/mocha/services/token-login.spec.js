@@ -949,7 +949,7 @@ describe('TokenLogin service', () => {
         });
       });
 
-      it('should retry generating the token until hitting a unique one', () => {
+      it('should try to generate a unique token', () => {
         sinon.stub(config, 'get')
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
           .withArgs('app_url').returns('http://host');
@@ -970,9 +970,7 @@ describe('TokenLogin service', () => {
 
         sinon.stub(db.medic, 'put').resolves();
         sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'allDocs')
-          .resolves({ rows: [] })
-          .onCall(4).resolves({ rows: [{}, {}, {}, { error: 'not_found' }] }); //5th call, 4th token
+        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{}, {}, {}, { error: 'not_found' }] }); // 4th token
 
         clock.tick(2000);
 
@@ -1008,12 +1006,12 @@ describe('TokenLogin service', () => {
             token_login: { expiration_date: 2000 + oneDayInMS }
           });
 
-          chai.expect(db.medic.allDocs.callCount).to.equal(5);
-          chai.expect(db.medic.allDocs.args[4][0].keys[3]).to.equal(`token:login:${token}`);
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0][0].keys[3]).to.equal(`token:login:${token}`);
         });
       });
 
-      it('should quit retrying generating a token after 10 iterarions', () => {
+      it('should throw an error when not able to generate a unique token', () => {
         sinon.stub(config, 'get')
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
           .withArgs('app_url').returns('http://host');
@@ -1039,7 +1037,7 @@ describe('TokenLogin service', () => {
           .manageTokenLogin({ token_login: true }, '', response)
           .then(() => chai.assert.fail('Should have thrown'))
           .catch(err => {
-            chai.expect(err.message).to.equal('Failed to generate unique token after 10 iterations');
+            chai.expect(err.message).to.equal('Failed to generate unique token');
           });
       });
     });
