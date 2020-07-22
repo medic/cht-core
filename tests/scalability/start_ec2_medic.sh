@@ -81,16 +81,16 @@ $(npm bin)/medic-conf --url="$MEDIC_CONF_URL" --force --accept-self-signed-certs
 echo Sentinel is processing data. Sleeping immediately for 60 seconds
 sleep 60
 
-proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -k | jq .processed_seq -r)
-current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$proc_seq -k | jq '.results | length')
+proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -s -k | jq .processed_seq -r)
+current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$proc_seq -s -k | jq '.results | length')
 
 until [ "$current_leng" -lt "50" ]
 do
-updated_proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -k | jq .processed_seq -r)
-current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$updated_proc_seq -k | jq '.results | length')
+updated_proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -s -k | jq .processed_seq -r)
+current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$updated_proc_seq -s -k | jq '.results | length')
 echo New length is $current_leng
-echo sleeping again for 60
-sleep 60
+echo sleeping again for 120
+sleep 120
 echo
 echo 
 done
@@ -103,7 +103,8 @@ echo Getting pre stage sequence numbers
 pre_update_seqs=()
 echo medic-update-seq $(curl $MEDIC_CONF_URL/medic/ -s -k | jq .update_seq)
 for ddoc in ${ddocs[@]}; do
-pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq))
+echo pre stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
+pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
 done
 
 echo staging update
@@ -121,7 +122,8 @@ done
 post_stage=()
 echo medic-update-seq $(curl $MEDIC_CONF_URL/medic/ -s -k | jq .update_seq)
 for ddoc in ${ddocs[@]}; do
-post_stage+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq))
+curl post stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
+post_stage+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
 done
 
 echo Checking post stage sequences to pre stage
