@@ -60,12 +60,16 @@ describe('Privacy policy', () => {
 
   const privacyPolicies = {
     _id: 'privacy-policies',
+    privacy_policies: {
+      en: 'en.attachment',
+      fr: 'fr.html',
+    },
     _attachments: {
-      en: {
+      'en.attachment': {
         content_type: 'text/html',
         data: Buffer.from(privacyPolicyInEnglish).toString('base64'),
       },
-      fr: {
+      'fr.html': {
         content_type: 'text/html',
         data: Buffer.from(privacyPolicyInFrench).toString('base64'),
       }
@@ -158,7 +162,8 @@ describe('Privacy policy', () => {
         return utils
           .getDoc('privacy-policies')
           .then(doc => {
-            doc._attachments.fr = {
+            doc.privacy_policies.fr = 'new_attachment';
+            doc._attachments.new_attachment = {
               content_type: 'text/html',
               data: Buffer.from(updatePrivacyPolicyInFrench).toString('base64'),
             };

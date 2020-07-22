@@ -19,17 +19,25 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
         .get(PRIVACY_POLICIES_DOC_ID, { attachments })
         .catch(err => {
           if (err.status === 404) {
-            return { _id: PRIVACY_POLICIES_DOC_ID, _attachments: {}};
+            return {
+              _id: PRIVACY_POLICIES_DOC_ID,
+              privacy_policies: {},
+              _attachments: {}
+            };
           }
           throw err;
         });
     };
 
     const loadPrivacyPolicies = () => {
-      return getPrivacyPoliciesDoc(true).then(privacyPolicies => {
+      return getPrivacyPoliciesDoc(true).then(doc => {
+        doc.privacy_policies = doc.privacy_policies || {};
+        doc._attachments = doc._attachments || {};
+
         $scope.privacyPolicies = {};
-        $scope.languages.forEach(language => {
-          $scope.privacyPolicies[language.code] = privacyPolicies._attachments[language.code] || {};
+        $scope.languages.forEach(({ code }) => {
+          const attachmentName = doc.privacy_policies[code];
+          $scope.privacyPolicies[code] = attachmentName && doc._attachments[attachmentName] || {};
         });
       });
     };
@@ -70,6 +78,7 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
         .map(({ code }) => ({
           language: code,
           file: $scope.updates[code],
+          name: $scope.updates[code].name,
         }));
 
       if (!updates.length && !$scope.deletes.length) {
@@ -81,12 +90,21 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
 
       return getPrivacyPoliciesDoc()
         .then(doc => {
+          doc.privacy_policies = doc.privacy_policies || {};
+          doc._attachments = doc._attachments || {};
+
           $scope.deletes.forEach(languageCode => {
-            delete doc._attachments[languageCode];
+            const attachmentName = doc.privacy_policies[languageCode];
+            delete doc.privacy_policies[languageCode];
+            delete doc._attachments[attachmentName];
           });
 
           updates.forEach(update => {
-            doc._attachments[update.language] = {
+            const oldAttachment = doc.privacy_policies[update.language];
+            delete doc._attachments[oldAttachment];
+
+            doc.privacy_policies[update.language] = update.name;
+            doc._attachments[update.name] = {
               content_type: update.file.type,
               data: update.file,
             };

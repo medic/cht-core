@@ -77,10 +77,12 @@ angular.module('inboxServices').factory('PrivacyPolicies',
           getAcceptanceLog(),
         ]))
         .then(([ languageCode, privacyPolicies, acceptanceLog ]) => {
+          const attachmentName = privacyPolicies.privacy_policies && privacyPolicies.privacy_policies[languageCode];
           const privacyPolicyExists =
+              attachmentName &&
               privacyPolicies._attachments &&
-              privacyPolicies._attachments[languageCode] &&
-              privacyPolicies._attachments[languageCode].content_type === ACCEPTED_CONTENT_TYPE;
+              privacyPolicies._attachments[attachmentName] &&
+              privacyPolicies._attachments[attachmentName].content_type === ACCEPTED_CONTENT_TYPE;
           if (!privacyPolicyExists) {
             return { privacyPolicy: false, accepted: true };
           }
@@ -89,7 +91,7 @@ angular.module('inboxServices').factory('PrivacyPolicies',
               acceptanceLog &&
               acceptanceLog.accepted &&
               acceptanceLog.accepted[languageCode] &&
-              acceptanceLog.accepted[languageCode].digest === privacyPolicies._attachments[languageCode].digest;
+              acceptanceLog.accepted[languageCode].digest === privacyPolicies._attachments[attachmentName].digest;
           if (isAccepted) {
             return { privacyPolicy: true, accepted: true };
           }
@@ -120,14 +122,20 @@ angular.module('inboxServices').factory('PrivacyPolicies',
           getPrivacyPolicies(true),
         ])
         .then(([languageCode, privacyPolicies]) => {
-          if (!privacyPolicies._attachments[languageCode]) {
+          const attachmentName = privacyPolicies && privacyPolicies.privacy_policies[languageCode];
+          if (!attachmentName || !privacyPolicies._attachments[attachmentName]) {
             return false;
           }
 
-          const encodedContent = privacyPolicies._attachments[languageCode].data;
+          const attachment = privacyPolicies._attachments[attachmentName];
+          if (attachment.content_type !== ACCEPTED_CONTENT_TYPE) {
+            return false;
+          }
+
+          const encodedContent = attachment.data;
           return {
             language: languageCode,
-            digest: privacyPolicies._attachments[languageCode].digest,
+            digest: attachment.digest,
             html: getTrustedHtml(encodedContent),
           };
         })

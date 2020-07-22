@@ -254,6 +254,10 @@ angular
        * @returns {Promise} = resolves when both directions of replication complete
        */
       syncMetaDoc: (docIds = []) => {
+        if (!isEnabled()) {
+          return $q.resolve();
+        }
+
         const remote = DB({ meta: true, remote: true });
         const local = DB({ meta: true });
 

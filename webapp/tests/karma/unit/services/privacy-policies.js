@@ -68,9 +68,43 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('sw');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'the_en_a.html',
+          fr: 'the_fr',
+          r1: 'rand1',
+          r2: 'rand2',
+        },
         _attachments: {
-          en: { digest: 'digest' },
-          fr: { digest: 'digest' },
+          'the_en_a.html': { digest: 'digest' },
+          'the_fr': { digest: 'digest' },
+          rand1: { digest: 'something' },
+          rand3: { digst: 'other' },
+        },
+      };
+      localMedicDb.get.resolves(privacyPoliciesDoc);
+      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { en: 'digest' } });
+      dbSync.syncMetaDoc.resolves();
+
+      return service.hasAccepted().then(result => {
+        chai.expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
+      });
+    });
+
+    it('should return false when privacy policy attachment is missing', () => {
+      Language.resolves('en');
+      const privacyPoliciesDoc = {
+        _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'missing.html',
+          fr: 'the_fr',
+          r1: 'rand1',
+          r2: 'rand2',
+        },
+        _attachments: {
+          'the_en_a.html': { digest: 'digest' },
+          'the_fr': { digest: 'digest' },
+          rand1: { digest: 'something' },
+          rand3: { digst: 'other' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -86,9 +120,13 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('en');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en.jpg',
+          fr: 'fr.html',
+        },
         _attachments: {
-          en: { digest: 'digest', content_type: 'image/jpeg' },
-          fr: { digest: 'digest' },
+          'en.jpg': { digest: 'digest', content_type: 'image/jpeg' },
+          'fr.html': { digest: 'digest' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -104,9 +142,13 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('fr');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en.html',
+          fr: 'fr_att.html',
+        },
         _attachments: {
-          en: { digest: 'digest', content_type: 'text/html' },
-          fr: { digest: 'digest', content_type: 'text/html' },
+          'en.html': { digest: 'digest', content_type: 'text/html' },
+          'fr_att.html': { digest: 'digest', content_type: 'text/html' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -122,9 +164,13 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('fr');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en.html',
+          fr: 'fra.html',
+        },
         _attachments: {
-          en: { digest: 'digest', content_type: 'text/html' },
-          fr: { digest: 'newdigest', content_type: 'text/html' },
+          'en.html': { digest: 'digest', content_type: 'text/html' },
+          'fra.html': { digest: 'newdigest', content_type: 'text/html' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -140,9 +186,13 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('fr');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'eng.html',
+          fr: 'fr.html',
+        },
         _attachments: {
-          en: { digest: 'digest', content_type: 'text/html' },
-          fr: { digest: 'digest1', content_type: 'text/html' },
+          'eng.html': { digest: 'digest', content_type: 'text/html' },
+          'fr.html': { digest: 'digest1', content_type: 'text/html' },
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
@@ -172,6 +222,10 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('fr');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en',
+          fr: 'fr',
+        },
         _attachments: {
           en: { digest: 'digest', content_type: 'text/html' },
           fr: { digest: 'digest1', content_type: 'text/html' },
@@ -270,9 +324,63 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('ne');
       localMedicDb.get.resolves({
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en_html',
+          fr: 'fr.html',
+        },
         _attachments: {
-          en: { data: 'aaaa' },
-          fr: { data: 'bbbb' },
+          'en_html': { data: 'aaaa' },
+          'fr.html': { data: 'bbbb' },
+        },
+      });
+
+      return service.getPrivacyPolicy().then(result => {
+        chai.expect(result).to.equal(false);
+        chai.expect(Language.callCount).to.equal(1);
+        chai.expect(localMedicDb.get.callCount).to.equal(1);
+        chai.expect(localMedicDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+        chai.expect(sce.trustAsHtml.callCount).to.equal(0);
+      });
+    });
+
+    it('should return nothing when no attachment found', () => {
+      Language.resolves('ne');
+      localMedicDb.get.resolves({
+        _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en_html',
+          fr: 'fr.html',
+          ne: 'some_ne',
+        },
+        _attachments: {
+          'en_html': { data: 'aaaa' },
+          'fr.html': { data: 'bbbb' },
+          'ne': { data: 'cccc' },
+        },
+      });
+
+      return service.getPrivacyPolicy().then(result => {
+        chai.expect(result).to.equal(false);
+        chai.expect(Language.callCount).to.equal(1);
+        chai.expect(localMedicDb.get.callCount).to.equal(1);
+        chai.expect(localMedicDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+        chai.expect(sce.trustAsHtml.callCount).to.equal(0);
+      });
+    });
+
+    it('should return nothing when attachment is wrong type', () => {
+      Language.resolves('ne');
+      localMedicDb.get.resolves({
+        _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en_html',
+          fr: 'fr.html',
+          ne: 'ne.json',
+        },
+        _attachments: {
+          'en_html': { data: 'aaaa' },
+          'fr.html': { data: 'bbbb' },
+          'ne.json': { data: 'bbbb', content_type: 'application/json' },
         },
       });
 
@@ -290,10 +398,15 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('sw');
       localMedicDb.get.resolves({
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en.h',
+          fr: 'fr.d',
+          sw: 'northwest',
+        },
         _attachments: {
-          en: { data: 'aaaa' },
-          fr: { data: 'bbbb' },
-          sw: { data: btoa(html), digest: 'md5' },
+          'en.h': { data: 'aaaa' },
+          'fr.d': { data: 'bbbb' },
+          'northwest': { data: btoa(html), digest: 'md5', content_type: 'text/html' },
         },
       });
 
@@ -323,10 +436,15 @@ describe('PrivacyPolicies Service', () => {
       Language.resolves('hi');
       localMedicDb.get.resolves({
         _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en.html',
+          fr: 'fr.data',
+          hi: 'hi.file',
+        },
         _attachments: {
-          en: { data: 'aaaa' },
-          fr: { data: 'bbbb' },
-          hi: { data: b64EncodeUnicode(html), digest: 'md5' },
+          'en.html': { data: 'aaaa' },
+          'fr.data': { data: 'bbbb' },
+          'hi.file': { data: b64EncodeUnicode(html), digest: 'md5', content_type: 'text/html' },
         },
       });
 
