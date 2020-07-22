@@ -9,6 +9,7 @@
       }
     }
   ],
+  "SecurityGroupIds": ["sg-0fa20cd785acec256"],
   "ImageId": "ami-065ba2b6b298ed80f",
   "InstanceType": "c5.2xlarge",
   "KeyName": "qa-scalability", 
