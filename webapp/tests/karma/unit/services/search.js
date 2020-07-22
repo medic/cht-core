@@ -131,9 +131,7 @@ describe('Search service', function() {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
         })
-        .catch((err) => {
-          window.__karma__.error(err);
-        });
+        .catch(err => done(err));
       service('reports', { freetext: 'second' })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'b' } ]);

@@ -50,7 +50,7 @@ describe('Simprints service', () => {
         chai.expect(simprints_ident.callCount).to.equal(0);
         chai.expect(actual).to.equal(expected);
       }).catch((err) => {
-        window.__karma__.error(err);
+        throw err;
       });
       const requestId = simprints_reg.args[0][0];
       service.registerResponse(requestId, { id: expected });
