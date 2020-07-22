@@ -11,7 +11,6 @@ const serverChecks = require('@medic/server-checks');
 const serverUtils = require('../server-utils');
 const environment = require('../environment');
 const semver = require('semver');
-const usersService = require('../services/users');
 const purgedDocs = require('../services/purged-docs');
 const replicationLimitLog = require('../services/replication-limit-log');
 
