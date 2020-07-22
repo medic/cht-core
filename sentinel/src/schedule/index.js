@@ -58,8 +58,8 @@ const runTasks = () => {
     tasks[taskName]
       .execute()
       .then(() => logger.info(`Task ${taskName} completed`))
-      .catch(err => logger.error(`Task ${taskName} completed with error: ${err}`))
-      .finally(() => {
+      .catch(err => logger.error(`Task ${taskName} completed with error: %o`, err))
+      .then(() => {
         ongoingTasks.delete(taskName);
       });
   });
