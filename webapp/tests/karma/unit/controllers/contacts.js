@@ -8,7 +8,6 @@ describe('Contacts controller', () => {
   let contactTypes;
   let createController;
   let district;
-  let forms;
   let icon;
   let isAdmin = false;
   let scope;
@@ -87,9 +86,7 @@ describe('Contacts controller', () => {
       icon: icon
     }]);
     contactTypes.includes.returns(false);
-    xmlForms = sinon.stub();
-    forms = [{ internalId: 'a-form', icon: 'an-icon', title: 'A Form' }];
-    xmlForms.callsArgWith(2, null, forms); // call the callback
+    xmlForms = { listen: sinon.stub() };
     userSettings = KarmaUtils.promiseService(null, {
       facility_id: district._id,
     });
@@ -178,7 +175,7 @@ describe('Contacts controller', () => {
         Tour: () => {},
         TranslateFrom: key => `TranslateFrom:${key}`,
         UserSettings: userSettings,
-        XmlForms: { listen: xmlForms },
+        XmlForms: xmlForms,
       });
     };
   }));
@@ -206,6 +203,50 @@ describe('Contacts controller', () => {
           assert(ctrl.setLeftActionBar.called);
         });
     });
+
+    it('should filter contact types to allowed ones', () => {
+      contactTypes.getChildren.resolves([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      const forms = [
+        { _id: 'form:contact:create:type3' },
+        { _id: 'form:contact:create:type2' },
+      ];
+      xmlForms.listen.callsArgWith(2, null, forms);
+
+      const ctrl = createController();
+      return ctrl
+        .getSetupPromiseForTesting()
+        .then(() => {
+          assert.equal(xmlForms.listen.callCount, 1);
+          assert.deepEqual(xmlForms.listen.args[0][1], { contactForms: true });
+          assert.deepEqual(ctrl.setLeftActionBar.args[0][0].childPlaces, [
+            {
+              id: 'type2',
+              create_form: 'form:contact:create:type2',
+            },
+            {
+              id: 'type3',
+              create_form: 'form:contact:create:type3',
+            },
+          ]);
+
+          //search still searches with all types
+          assert.deepEqual(searchService.args[0][1], { types: { selected: ['type1', 'type2', 'type3'] } });
+        });
+    });
+
   });
 
   describe('Search', () => {
