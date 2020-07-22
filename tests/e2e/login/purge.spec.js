@@ -257,7 +257,6 @@ describe('Purging on login', () => {
     );
     reports.expectReportsToExist([goodFormId]);
     reports.expectReportsToNotExist([badFormId]);
-
     let purgeDate;
 
     return getPurgeLog()
