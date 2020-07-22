@@ -2090,7 +2090,7 @@ describe('Changes controller', () => {
         .then(() => {
           authorization.getAllowedDocIds.callCount.should.equal(1);
           replicationLimitLogService.put.callCount.should.equal(1);
-          replicationLimitLogService.put.args[0].should.deep.equal(['userB', 10500, 10000]);
+          replicationLimitLogService.put.args[0].should.deep.equal(['userB', 10500]);
         });
     });
   });

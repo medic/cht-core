@@ -426,7 +426,7 @@ app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.in
 app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
 app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
 
-app.get('/api/v1/log-replication-limit', replicationLimitLogController.get);
+app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

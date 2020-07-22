@@ -297,7 +297,7 @@ const initFeed = (req, res) => {
     })
     .then(() => {
       if (feed.req.userCtx && feed.req.userCtx.name) {
-        replicationLimitLog.put(feed.req.userCtx.name, feed.allowedDocIds.length, usersService.DOC_IDS_WARN_LIMIT);
+        replicationLimitLog.put(feed.req.userCtx.name, feed.allowedDocIds.length);
       }
 
       return feed;
