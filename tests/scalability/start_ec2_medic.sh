@@ -1,7 +1,7 @@
 #!/bin/bash
 #Requires jq
 
-echo Starting Instance Request
+echo Starting Instance Requests
 SpotInstanceRequestId=$(aws ec2 request-spot-instances --spot-price '0.333' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)      
 echo Getting Instance ID
 instanceID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r )
