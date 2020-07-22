@@ -17,7 +17,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2
+          aws-region: ca-central-1
       - name: Start EC2 and Medics
         run: cd tests/scalability && ./start_ec2_medic.sh ${GITHUB_REF#refs/heads/}
       - name: Execute Jmeter
