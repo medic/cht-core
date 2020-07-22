@@ -5,7 +5,8 @@ angular.module('inboxServices').factory('PrivacyPolicies',
     $sce,
     DB,
     DBSync,
-    Language
+    Language,
+    Session
   ) {
     'use strict';
     'ngInject';
@@ -46,6 +47,15 @@ angular.module('inboxServices').factory('PrivacyPolicies',
         })
         .catch(err => {
           $log.error('Error while accepting privacy policy', err);
+        })
+        .then(() => DB().get('org.couchdb.user:' + Session.userCtx().name))
+        .then(doc => {
+          doc.accepted = doc.accepted || {};
+          doc.accepted[language] = {
+            digest,
+            accepted_at: new Date().getTime(),
+          };
+          return DB().put(doc);
         });
     };
 
