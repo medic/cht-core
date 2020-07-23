@@ -8,6 +8,7 @@ const pouchDbOptions = {
 const rewire = require('rewire');
 const bootstrapper = rewire('../../../src/js/bootstrapper');
 const purger = require('../../../src/js/bootstrapper/purger');
+const taskPurger = require('../../../src/js/bootstrapper/task-purger');
 
 let originalDocument;
 let originalWindow;
@@ -20,6 +21,7 @@ let remoteClose;
 let localAllDocs;
 let localId;
 let purgeOn;
+let taskPurgeOn;
 let localMetaClose;
 
 let localMedicDb;
@@ -90,6 +92,13 @@ describe('bootstrapper', () => {
       return promise;
     });
 
+    taskPurgeOn = sinon.stub();
+    taskPurgeOn.callsFake(() => {
+      const promise = Promise.resolve();
+      promise.on = taskPurgeOn;
+      return promise;
+    });
+
     $ = sinon.stub().returns({
       text: sinon.stub(),
       click: sinon.stub(),
@@ -138,6 +147,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -165,6 +175,7 @@ describe('bootstrapper', () => {
     localId.resolves('some-randomn-uuid');
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
@@ -181,6 +192,7 @@ describe('bootstrapper', () => {
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
@@ -205,6 +217,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'info').resolves('some-info');
     sinon.stub(purger, 'checkpoint').resolves();
     sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
 
     const localReplicateResult = Promise.resolve();
@@ -271,6 +284,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'info').resolves('some-info');
     sinon.stub(purger, 'checkpoint').resolves();
     sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
@@ -375,6 +389,7 @@ describe('bootstrapper', () => {
     setUserCtxCookie({ name: 'jim' });
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
     sinon.stub(purger, 'info').resolves('some-info');
     sinon.stub(purger, 'checkpoint').resolves();
@@ -411,6 +426,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'checkpoint').resolves();
     sinon.stub(purger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
@@ -466,6 +482,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     let purgeOn;
     purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() }); // eslint-disable-line prefer-const
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
@@ -490,6 +507,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     let purgeOn;
     purgeOn = sinon.stub().returns({ on: purgeOn, catch: sinon.stub() }); // eslint-disable-line prefer-const
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
@@ -528,6 +546,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'shouldPurge').resolves(true);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
 
     const localReplicateResult = Promise.resolve();
     localReplicateResult.on = () => {};
@@ -578,6 +597,7 @@ describe('bootstrapper', () => {
     localId.resolves('some-randomn-uuid');
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
 
@@ -599,6 +619,7 @@ describe('bootstrapper', () => {
     localId.resolves('some-randomn-uuid');
     sinon.stub(purger, 'setOptions');
     sinon.stub(purger, 'shouldPurge').resolves(true);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(false);
     sinon.stub(purger, 'purge').returns({ on: purgeOn });
     sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
     purgeOn.onCall(1).rejects({ some: 'err' });
@@ -649,6 +670,45 @@ describe('bootstrapper', () => {
       assert.deepEqual(purger.shouldPurgeMeta.args[0], [localMetaDb]);
       assert.equal(purger.purgeMeta.callCount, 1);
       assert.deepEqual(purger.purgeMeta.args[0], [localMetaDb]);
+      done();
+    });
+  });
+
+  it('should run task-purge after skipping initial replication when needed', done => {
+    setUserCtxCookie({ name: 'jim' });
+
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    localId.resolves('some-randomn-uuid');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(true);
+    sinon.stub(taskPurger, 'purge').returns({ on: taskPurgeOn });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(taskPurger.shouldPurge.callCount, 1);
+      assert.equal(taskPurger.purge.callCount, 1);
+      done();
+    });
+  });
+
+  it('should catch task-purge errors', done => {
+    setUserCtxCookie( { name: 'jim' });
+
+    localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
+    localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
+    localId.resolves('some-randomn-uuid');
+    sinon.stub(purger, 'setOptions');
+    sinon.stub(purger, 'shouldPurge').resolves(false);
+    sinon.stub(taskPurger, 'shouldPurge').resolves(true);
+    sinon.stub(taskPurger, 'purge').returns({ on: taskPurgeOn });
+    taskPurgeOn.onCall(1).rejects({ some: 'err' });
+
+    bootstrapper(pouchDbOptions, err => {
+      assert.equal(null, err);
+      assert.equal(taskPurger.shouldPurge.callCount, 1);
+      assert.equal(taskPurger.purge.callCount, 1);
       done();
     });
   });
