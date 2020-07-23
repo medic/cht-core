@@ -4,28 +4,14 @@ angular.module('inboxServices').factory('PrivacyPolicies',
     $q,
     $sce,
     DB,
-    DBSync,
     Language,
-    Session
+    UserSettings
   ) {
     'use strict';
     'ngInject';
 
-    const PRIVACY_POLICY_ACCEPTANCE_LOG = 'privacy-policy-acceptance';
     const PRIVACY_POLICY_DOC_ID = 'privacy-policies';
     const ACCEPTED_CONTENT_TYPE = 'text/html';
-
-    const getAcceptanceLog = () => {
-      return DB({ meta: true }).get(PRIVACY_POLICY_ACCEPTANCE_LOG).catch(err => {
-        if (err.status === 404) {
-          return {
-            _id: PRIVACY_POLICY_ACCEPTANCE_LOG,
-            accepted: {}
-          };
-        }
-        $log.error('Error retrieving privacy policy acceptance log', err);
-      });
-    };
 
     /**
      * Updates the local privacy policy acceptance log.
@@ -34,29 +20,17 @@ angular.module('inboxServices').factory('PrivacyPolicies',
      * @returns {Promise}
      */
     const accept = ({ language, digest }) => {
-      const localDb = DB({ meta: true });
+      return UserSettings().then(userSettings => {
+        userSettings.privacy_policy_acceptance_log = userSettings.privacy_policy_acceptance_log || [];
 
-      return getAcceptanceLog()
-        .then(doc => {
-          doc.accepted = doc.accepted || {};
-          doc.accepted[language] = {
-            digest,
-            accepted_at: new Date().getTime(),
-          };
-          return localDb.put(doc);
-        })
-        .catch(err => {
-          $log.error('Error while accepting privacy policy', err);
-        })
-        .then(() => DB().get('org.couchdb.user:' + Session.userCtx().name))
-        .then(doc => {
-          doc.accepted = doc.accepted || {};
-          doc.accepted[language] = {
-            digest,
-            accepted_at: new Date().getTime(),
-          };
-          return DB().put(doc);
+        userSettings.privacy_policy_acceptance_log.push({
+          language,
+          digest,
+          accepted_at: new Date().getTime(),
         });
+
+        return DB().put(userSettings);
+      });
     };
 
     const getPrivacyPolicies = (attachments = false) => {
@@ -71,6 +45,32 @@ angular.module('inboxServices').factory('PrivacyPolicies',
         });
     };
 
+    const policyForLanguageExists = (languageCode, privacyPolicies) => {
+      if (!privacyPolicies || !privacyPolicies.privacy_policies || !privacyPolicies.privacy_policies[languageCode]) {
+        return false;
+      }
+      const attachmentName = privacyPolicies.privacy_policies[languageCode];
+      if (!privacyPolicies._attachments || !privacyPolicies._attachments[attachmentName]) {
+        return false;
+      }
+
+      return privacyPolicies._attachments[attachmentName].content_type === ACCEPTED_CONTENT_TYPE;
+    };
+
+    const checkAcceptanceLog = (languageCode, privacyPolicies, userSettings) => {
+      if (!userSettings.privacy_policy_acceptance_log || !userSettings.privacy_policy_acceptance_log.length) {
+        return false;
+      }
+
+      const attachmentName = privacyPolicies.privacy_policies[languageCode];
+      const attachment = privacyPolicies._attachments[attachmentName];
+      const entry = userSettings.privacy_policy_acceptance_log.find(entry => {
+        return entry.language === languageCode && entry.digest === attachment.digest;
+      });
+
+      return !!entry;
+    };
+
     /**
      * Checks remote and local meta databases to verify whether the current privacy policy has been accepted
      * Checking remote is required after an initial replication, as meta db sync begins late after app bootstrapping,
@@ -78,31 +78,18 @@ angular.module('inboxServices').factory('PrivacyPolicies',
      * If any of the logs show the current privacy policy was accepted, returns { accepted: true }
      */
     const hasAccepted = () => {
-      return DBSync
-        .syncMetaDoc([PRIVACY_POLICY_ACCEPTANCE_LOG])
-        .catch(err => $log.error('Error while syncing meta dbs for policies', err))
-        .then(() => $q.all([
+      return $q
+        .all([
           Language(),
           getPrivacyPolicies(),
-          getAcceptanceLog(),
-        ]))
-        .then(([ languageCode, privacyPolicies, acceptanceLog ]) => {
-          const attachmentName = privacyPolicies.privacy_policies && privacyPolicies.privacy_policies[languageCode];
-          const privacyPolicyExists =
-              attachmentName &&
-              privacyPolicies._attachments &&
-              privacyPolicies._attachments[attachmentName] &&
-              privacyPolicies._attachments[attachmentName].content_type === ACCEPTED_CONTENT_TYPE;
-          if (!privacyPolicyExists) {
+          UserSettings(),
+        ])
+        .then(([ languageCode, privacyPolicies, userSettings ]) => {
+          if (!policyForLanguageExists(languageCode, privacyPolicies)) {
             return { privacyPolicy: false, accepted: true };
           }
 
-          const isAccepted =
-              acceptanceLog &&
-              acceptanceLog.accepted &&
-              acceptanceLog.accepted[languageCode] &&
-              acceptanceLog.accepted[languageCode].digest === privacyPolicies._attachments[attachmentName].digest;
-          if (isAccepted) {
+          if (checkAcceptanceLog(languageCode, privacyPolicies, userSettings)) {
             return { privacyPolicy: true, accepted: true };
           }
 
@@ -119,10 +106,6 @@ angular.module('inboxServices').factory('PrivacyPolicies',
         .map(char => '%' + ('00' + char.charCodeAt(0).toString(16)).slice(-2))
         .join('');
       return decodeURIComponent(unicodeCharArray);
-    };
-
-    const getTrustedHtml = string => {
-      return $sce.trustAsHtml(decodeUnicode(string));
     };
 
     const getPrivacyPolicy = () => {
@@ -143,10 +126,11 @@ angular.module('inboxServices').factory('PrivacyPolicies',
           }
 
           const encodedContent = attachment.data;
+          const decodedContent = decodeUnicode(encodedContent);
           return {
             language: languageCode,
             digest: attachment.digest,
-            html: getTrustedHtml(encodedContent),
+            html: $sce.trustAsHtml(decodedContent),
           };
         })
         .catch(err => {
@@ -158,7 +142,7 @@ angular.module('inboxServices').factory('PrivacyPolicies',
       hasAccepted,
       accept,
       getPrivacyPolicy,
-      getTrustedHtml,
+      decodeUnicode,
     };
   }
 );

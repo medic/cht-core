@@ -5,24 +5,14 @@ angular
     $sce,
     $scope,
     $timeout,
-    $uibModalInstance
+    $uibModalInstance,
+    PrivacyPolicies
   ) {
     'use strict';
     'ngInject';
 
-    // atob doesn't handle unicode characters
-    // stolen from StackOverflow
-    const decodeUnicode = string => {
-      // Going backwards: from byte stream, to percent-encoding, to original string.
-      const unicodeCharArray = atob(string)
-        .split('')
-        .map(char => '%' + ('00' + char.charCodeAt(0).toString(16)).slice(-2))
-        .join('');
-      return decodeURIComponent(unicodeCharArray);
-    };
-
     const getTrustedHtml = string => {
-      return $sce.trustAsHtml(decodeUnicode(string));
+      return $sce.trustAsHtml(PrivacyPolicies.decodeUnicode(string));
     };
 
     $scope.cancel = () => $uibModalInstance.dismiss();
