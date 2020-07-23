@@ -157,7 +157,7 @@ const setupUser = () => {
       doc.contact_id = constants.USER_CONTACT_ID;
       doc.known = true;
       doc.language = 'en';
-      doc.roles = ['_admin'];
+      doc.roles = ['_admin', 'other'];
       return utils.saveDoc(doc);
     })
     .then(() => utils.refreshToGetNewSettings());
