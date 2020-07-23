@@ -564,7 +564,7 @@ const moment = require('moment');
         );
       },
       callback: function() {
-        Session.init().then(() => showUpdateReady());
+        Session.init().then(refresh => refresh && showUpdateReady());
       },
     });
 
