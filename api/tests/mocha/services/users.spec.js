@@ -319,7 +319,7 @@ describe('Users service', () => {
         }
       ]);
       sinon.stub(service, '_getAllUserSettings').resolves([]);
-      service.getList().then(data => {
+      return service.getList().then(data => {
         chai.expect(data.length).to.equal(1);
         const lucas = data[0];
         chai.expect(lucas.id).to.equal('org.couchdb.user:x');
@@ -434,7 +434,7 @@ describe('Users service', () => {
   describe('createPlace', () => {
     it('assigns new place', () => {
       sinon.stub(places, 'getOrCreatePlace').resolves({ _id: 'santos' });
-      service._createPlace(userData).then(() => {
+      return service._createPlace(userData).then(() => {
         chai.expect(userData.place._id).to.equal('santos');
       });
     });

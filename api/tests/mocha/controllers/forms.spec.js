@@ -21,16 +21,15 @@ describe('forms controller', () => {
   });
 
   describe('get', () => {
-    it('returns error from view query', done => {
+    it('returns error from view query', () => {
       const req = { params: { form: 'a.xml' } };
       const query = sinon
         .stub(db.medic, 'query')
         .returns(Promise.reject('icky'));
       const error = sinon.stub(serverUtils, 'error');
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         chai.expect(error.args[0][0]).to.equal('icky');
         chai.expect(query.callCount).to.equal(1);
-        done();
       });
     });
 
@@ -65,14 +64,13 @@ describe('forms controller', () => {
   });
 
   describe('list', () => {
-    it('returns error from view query', done => {
+    it('returns error from view query', () => {
       const req = {};
       const get = sinon.stub(db.medic, 'query').returns(Promise.reject('icky'));
       const error = sinon.stub(serverUtils, 'error');
-      controller.list(req, res).then(() => {
+      return controller.list(req, res).then(() => {
         chai.expect(error.args[0][0]).to.equal('icky');
         chai.expect(get.callCount).to.equal(1);
-        done();
       });
     });
 

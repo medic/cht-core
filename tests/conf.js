@@ -60,7 +60,7 @@ const baseConfig = {
     browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
-      browser
+      return browser
         .manage()
         .logs()
         .get('browser')

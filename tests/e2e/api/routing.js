@@ -67,7 +67,7 @@ const DOCS_TO_KEEP = [
 
 describe('routing', () => {
   beforeAll(done => {
-    utils
+    return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
       .then(done);

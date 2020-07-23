@@ -155,12 +155,11 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
 };
 
 describe('db-doc handler', () => {
-  beforeAll(done => {
-    utils
+  beforeAll(() => {
+    return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
-      .then(() => utils.saveDocs([...clinics, ...patients]))
-      .then(done);
+      .then(() => utils.saveDocs([...clinics, ...patients]));
   });
 
   afterAll(done =>
