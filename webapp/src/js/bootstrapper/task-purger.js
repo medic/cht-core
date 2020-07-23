@@ -26,12 +26,13 @@ module.exports.purge = (localDb, userCtx) => {
     .then(() => localDb.get('settings'))
     .then(settings => {
       let promiseChain = Promise.resolve();
+      emit('start');
+
       settings.settings.purge_tasks.forEach(purgeSetting => {
         if (!purgeSetting.event_name) {
           return;
         }
 
-        emit('start');
         promiseChain = promiseChain.then(() => purgeTasks(localDb, userCtx, purgeSetting));
       });
 
@@ -49,7 +50,7 @@ module.exports.purge = (localDb, userCtx) => {
 
 const purgeTasks = (localDb, userCtx, { event_name, all_contacts }) => {
   if (!all_contacts) {
-    return getUserContact(localDb, userCtx)
+    return getUserContactId(localDb, userCtx)
       .then(contactId => purgeTasksForContact(localDb, event_name, contactId, userCtx));
   }
 
@@ -68,7 +69,7 @@ const getAllContactsIds = localDb => {
     .then(result => result.rows.map(row => row.id));
 };
 
-const getUserContact = (localDb, userCtx) => {
+const getUserContactId = (localDb, userCtx) => {
   return localDb
     .get(`org.couchdb.user:${userCtx.name}`)
     .then(userSettings => userSettings.contact_id);
