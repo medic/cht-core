@@ -1,30 +1,27 @@
 describe('PrivacyPolicies Service', () => {
   let service;
-  let localMetaDb;
   let localMedicDb;
   let db;
-  let dbSync;
   let Language;
+  let userSettings;
   let clock;
   let sce;
 
   beforeEach(() => {
     module('inboxApp');
     module($provide => {
-      localMetaDb = { get: sinon.stub(), put: sinon.stub() };
-      localMedicDb = { get: sinon.stub() };
+      localMedicDb = { get: sinon.stub(), put: sinon.stub() };
       db = sinon.stub();
-      db.withArgs({ meta: true }).returns(localMetaDb);
       db.withArgs().returns(localMedicDb);
       Language = sinon.stub();
-      dbSync = { syncMetaDoc: sinon.stub() };
       sce = { trustAsHtml: sinon.stub().callsFake(i => i) };
+      userSettings = sinon.stub();
 
       $provide.value('Language', Language);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('$sce', sce);
       $provide.value('DB', db);
-      $provide.value('DBSync', dbSync);
+      $provide.value('UserSettings', userSettings);
     });
     inject(_PrivacyPolicies_ => service = _PrivacyPolicies_);
   });
@@ -38,26 +35,24 @@ describe('PrivacyPolicies Service', () => {
     it('should return false/true when no privacy polices doc', () => {
       Language.resolves('en');
       localMedicDb.get.rejects({ status: 404 });
-      localMetaDb.get.rejects({ status: 404 });
-      dbSync.syncMetaDoc.resolves();
+      userSettings.resolves({ _id: 'org.couchdb.user:user', known: true });
 
       return service.hasAccepted().then(result => {
         chai.expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
         chai.expect(Language.callCount).to.equal(1);
         chai.expect(localMedicDb.get.callCount).to.equal(1);
         chai.expect(localMedicDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: false }]);
-        chai.expect(localMetaDb.get.callCount).to.equal(1);
-        chai.expect(localMetaDb.get.args[0]).to.deep.equal(['privacy-policy-acceptance']);
-        chai.expect(dbSync.syncMetaDoc.callCount).to.equal(1);
-        chai.expect(dbSync.syncMetaDoc.args[0]).to.deep.equal([['privacy-policy-acceptance']]);
+        chai.expect(userSettings.callCount).to.equal(1);
       });
     });
 
     it('should return false/true when old privacy policies were accepted', () => {
       Language.resolves('en');
       localMedicDb.get.rejects({ status: 404 });
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { en: 'digest' } });
-      dbSync.syncMetaDoc.resolves();
+      userSettings.resolves({
+        _id: 'user',
+        privacy_policy_acceptance_log: [{ language: 'en', digest: 'digest' }],
+      });
 
       return service.hasAccepted().then(result => {
         chai.expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
@@ -82,8 +77,7 @@ describe('PrivacyPolicies Service', () => {
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { en: 'digest' } });
-      dbSync.syncMetaDoc.resolves();
+      userSettings.resolves({ _id: 'org.couchdb.user:user', known: true });
 
       return service.hasAccepted().then(result => {
         chai.expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
@@ -108,8 +102,7 @@ describe('PrivacyPolicies Service', () => {
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { en: 'digest' } });
-      dbSync.syncMetaDoc.resolves();
+      userSettings.resolves({ _id: 'org.couchdb.user:user', known: true });
 
       return service.hasAccepted().then(result => {
         chai.expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
@@ -130,11 +123,31 @@ describe('PrivacyPolicies Service', () => {
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { } });
-      dbSync.syncMetaDoc.resolves();
+      userSettings.resolves({ _id: 'org.couchdb.user:user', known: true });
 
       return service.hasAccepted().then(result => {
         chai.expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
+      });
+    });
+
+    it('should return true/false when policies exist but were not accepted, with no log', () => {
+      Language.resolves('fr');
+      const privacyPoliciesDoc = {
+        _id: 'privacy-policies',
+        privacy_policies: {
+          en: 'en.html',
+          fr: 'fr_att.html',
+        },
+        _attachments: {
+          'en.html': { digest: 'digest', content_type: 'text/html' },
+          'fr_att.html': { digest: 'digest', content_type: 'text/html' },
+        },
+      };
+      localMedicDb.get.resolves(privacyPoliciesDoc);
+      userSettings.resolves({ _id: 'org.couchdb.user:user', known: true });
+
+      return service.hasAccepted().then(result => {
+        chai.expect(result).to.deep.equal({ privacyPolicy: true, accepted: false });
       });
     });
 
@@ -152,37 +165,23 @@ describe('PrivacyPolicies Service', () => {
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { en: { digest: 'digest' } } });
-      dbSync.syncMetaDoc.resolves();
+      userSettings.resolves({
+        _id: 'org.couchdb.user:user',
+        known: true,
+        privacy_policy_acceptance_log: [
+          { language: 'en', digest: 'digest1' },
+          { language: 'en', digest: 'digest2' },
+          { language: 'fr', digest: 'digest1' },
+          { language: 'fr', digest: 'digest2' },
+        ]
+      });
 
       return service.hasAccepted().then(result => {
         chai.expect(result).to.deep.equal({ privacyPolicy: true, accepted: false });
       });
     });
 
-    it('should return true false when policies exist and have different digest', () => {
-      Language.resolves('fr');
-      const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
-        privacy_policies: {
-          en: 'en.html',
-          fr: 'fra.html',
-        },
-        _attachments: {
-          'en.html': { digest: 'digest', content_type: 'text/html' },
-          'fra.html': { digest: 'newdigest', content_type: 'text/html' },
-        },
-      };
-      localMedicDb.get.resolves(privacyPoliciesDoc);
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { fr: { digest: 'olddigest' } } });
-      dbSync.syncMetaDoc.resolves();
-
-      return service.hasAccepted().then(result => {
-        chai.expect(result).to.deep.equal({ privacyPolicy: true, accepted: false });
-      });
-    });
-
-    it('should return true true when local meta doc has acceptance', () => {
+    it('should return true true when user has accepted', () => {
       Language.resolves('fr');
       const privacyPoliciesDoc = {
         _id: 'privacy-policies',
@@ -196,8 +195,16 @@ describe('PrivacyPolicies Service', () => {
         },
       };
       localMedicDb.get.resolves(privacyPoliciesDoc);
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { fr: { digest: 'digest1' } } });
-      dbSync.syncMetaDoc.resolves();
+      userSettings.resolves({
+        _id: 'org.couchdb.user:user',
+        known: true,
+        privacy_policy_acceptance_log: [
+          { language: 'en', digest: 'digest1' },
+          { language: 'en', digest: 'digest2' },
+          { language: 'fr', digest: 'digest1' },
+          { language: 'fr', digest: 'digest2' },
+        ]
+      });
 
       return service.hasAccepted().then(result => {
         chai.expect(result).to.deep.equal({ privacyPolicy: true, accepted: true });
@@ -207,8 +214,6 @@ describe('PrivacyPolicies Service', () => {
     it('should throw DB errors', () => {
       Language.resolves('fr');
       localMedicDb.get.rejects({ some: 'err' });
-      localMetaDb.get.rejects();
-      dbSync.syncMetaDoc.resolves();
 
       return service
         .hasAccepted()
@@ -217,105 +222,123 @@ describe('PrivacyPolicies Service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
         });
     });
-
-    it('should catch sync errors', () => {
-      Language.resolves('fr');
-      const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
-        privacy_policies: {
-          en: 'en',
-          fr: 'fr',
-        },
-        _attachments: {
-          en: { digest: 'digest', content_type: 'text/html' },
-          fr: { digest: 'digest1', content_type: 'text/html' },
-        },
-      };
-      localMedicDb.get.resolves(privacyPoliciesDoc);
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { fr: { digest: 'digest1' } } });
-      dbSync.syncMetaDoc.rejects();
-
-      return service.hasAccepted().then(result => {
-        chai.expect(result).to.deep.equal({ privacyPolicy: true, accepted: true });
-      });
-    });
   });
 
   describe('accept', () => {
     it('should create acceptance log when it does not exist', () => {
-      localMetaDb.get.rejects({ status: 404 });
-      localMetaDb.put.resolves();
+      userSettings.resolves({ _id: 'user_id', known: true });
+      localMedicDb.put.resolves();
       clock = sinon.useFakeTimers(6000);
 
       return service.accept({ language: 'en', digest: 'the_digest' }).then(() => {
-        chai.expect(localMetaDb.get.callCount).to.equal(1);
-        chai.expect(localMetaDb.get.args[0]).to.deep.equal(['privacy-policy-acceptance']);
-        chai.expect(localMetaDb.put.callCount).to.equal(1);
-        chai.expect(localMetaDb.put.args[0]).to.deep.equal([{
-          _id: 'privacy-policy-acceptance',
-          accepted: {
-            en: {
-              digest: 'the_digest',
-              accepted_at: 6000,
-            }
-          }
+        chai.expect(userSettings.callCount).to.equal(1);
+        chai.expect(localMedicDb.put.callCount).to.equal(1);
+        chai.expect(localMedicDb.put.args[0]).to.deep.equal([{
+          _id: 'user_id',
+          known: true,
+          privacy_policy_acceptance_log: [{
+            language: 'en',
+            digest: 'the_digest',
+            accepted_at: 6000,
+          }],
+        }]);
+      });
+    });
+
+    it('should update existing acceptance log', () => {
+      userSettings.resolves({
+        _id: 'user_id',
+        _rev: '223',
+        known: true,
+        privacy_policy_acceptance_log: [{
+          language: 'fr',
+          digest: 'frd',
+          accepted_at: 1234,
+        }],
+      });
+      localMedicDb.put.resolves();
+      clock = sinon.useFakeTimers(9568);
+
+      return service.accept({ language: 'en', digest: 'dig' }).then(() => {
+        chai.expect(userSettings.callCount).to.equal(1);
+        chai.expect(localMedicDb.put.callCount).to.equal(1);
+        chai.expect(localMedicDb.put.args[0]).to.deep.equal([{
+          _id: 'user_id',
+          _rev: '223',
+          known: true,
+          privacy_policy_acceptance_log: [
+            {
+              language: 'fr',
+              digest: 'frd',
+              accepted_at: 1234,
+            },
+            {
+              language: 'en',
+              digest: 'dig',
+              accepted_at: 9568,
+            },
+          ],
         }]);
       });
     });
 
     it('should update previous acceptance log', () => {
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { fr: { digest: 'frd' } }, _rev: 1 });
-      localMetaDb.put.resolves();
-      clock = sinon.useFakeTimers(988);
-
-      return service.accept({ language: 'en', digest: 'dig' }).then(() => {
-        chai.expect(localMetaDb.get.callCount).to.equal(1);
-        chai.expect(localMetaDb.get.args[0]).to.deep.equal(['privacy-policy-acceptance']);
-        chai.expect(localMetaDb.put.callCount).to.equal(1);
-        chai.expect(localMetaDb.put.args[0]).to.deep.equal([{
-          _id: 'privacy-policy-acceptance',
-          _rev: 1,
-          accepted: {
-            fr: { digest: 'frd' },
-            en: {
-              digest: 'dig',
-              accepted_at: 988,
-            }
-          }
-        }]);
+      userSettings.resolves({
+        _id: 'user_id',
+        _rev: '223',
+        known: true,
+        privacy_policy_acceptance_log: [{
+          language: 'en',
+          digest: 'frd',
+          accepted_at: 1234,
+        }],
       });
-    });
 
-    it('should update previous acceptance log and overwrite', () => {
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { en: { digest: 'frd' } }, _rev: 2 });
-      localMetaDb.put.resolves();
       clock = sinon.useFakeTimers(6987);
 
       return service.accept({ language: 'en', digest: 'my_digest' }).then(() => {
-        chai.expect(localMetaDb.get.callCount).to.equal(1);
-        chai.expect(localMetaDb.get.args[0]).to.deep.equal(['privacy-policy-acceptance']);
-        chai.expect(localMetaDb.put.callCount).to.equal(1);
-        chai.expect(localMetaDb.put.args[0]).to.deep.equal([{
-          _id: 'privacy-policy-acceptance',
-          _rev: 2,
-          accepted: {
-            en: {
+        chai.expect(userSettings.callCount).to.equal(1);
+        chai.expect(localMedicDb.put.callCount).to.equal(1);
+        chai.expect(localMedicDb.put.args[0]).to.deep.equal([{
+          _id: 'user_id',
+          _rev: '223',
+          known: true,
+          privacy_policy_acceptance_log: [
+            {
+              language: 'en',
+              digest: 'frd',
+              accepted_at: 1234,
+            },
+            {
+              language: 'en',
               digest: 'my_digest',
               accepted_at: 6987,
-            }
-          }
+            },
+          ],
         }]);
       });
     });
 
-    it('should catch errors', () => {
-      localMetaDb.get.resolves({ _id: 'privacy-policy-acceptance', accepted: { en: { digest: 'frd' } }, _rev: 2 });
-      localMetaDb.put.rejects({ my: 'err' });
+    it('should throw errors', () => {
+      userSettings.resolves({
+        _id: 'user_id',
+        _rev: '223',
+        known: true,
+        privacy_policy_acceptance_log: [{
+          language: 'en',
+          digest: 'frd',
+          accepted_at: 1234,
+        }],
+      });
+      localMedicDb.put.rejects({ my: 'err' });
       clock = sinon.useFakeTimers(6987);
 
-      return service.accept({ language: 'en', digest: 'my_digest' }).then(() => {
-        chai.expect(localMetaDb.put.callCount).to.equal(1);
-      });
+      return service.accept({ language: 'en', digest: 'my_digest' })
+        .then(() => chai.assert.fail('Should hve thrown'))
+        .catch(err => {
+          chai.expect(localMedicDb.put.callCount).to.equal(1);
+          chai.expect(err).to.deep.equal({ my: 'err' });
+        });
     });
   });
 
@@ -458,13 +481,11 @@ describe('PrivacyPolicies Service', () => {
     });
   });
 
-  describe('getTrustedHtml', () => {
-    it('should return trusted decoded html', () => {
+  describe('decodeUnicode', () => {
+    it('should return decoded html', () => {
       const html = '<a>html</a>';
-      const result = service.getTrustedHtml(btoa(html));
+      const result = service.decodeUnicode(btoa(html));
       chai.expect(result).to.equal(html);
-      chai.expect(sce.trustAsHtml.callCount).to.equal(1);
-      chai.expect(sce.trustAsHtml.args[0]).to.deep.equal([html]);
     });
   });
 
