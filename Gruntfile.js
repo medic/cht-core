@@ -125,10 +125,6 @@ module.exports = function(grunt) {
         }
       },
       test: {
-        options: {
-          user: 'admin',
-          pass: 'pass',
-        },
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
         },
