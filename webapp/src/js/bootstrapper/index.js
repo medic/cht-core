@@ -6,6 +6,7 @@
   const translator = require('./translator');
   const utils = require('./utils');
   const purger = require('./purger');
+  const taskPurger = require('./task-purger');
 
   const ONLINE_ROLE = 'mm-online';
 
@@ -230,6 +231,21 @@
             }
 
             return purger
+              .purge(localDb, userCtx)
+              .on('start', () => setUiStatus('PURGE_INIT'))
+              .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
+              .catch(err => console.error('Error attempting to purge', err));
+          });
+      })
+      .then(() => {
+        return taskPurger
+          .shouldPurge(localDb)
+          .then(shouldPurge => {
+            if (!shouldPurge) {
+              return;
+            }
+
+            return taskPurger
               .purge(localDb, userCtx)
               .on('start', () => setUiStatus('PURGE_INIT'))
               .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
