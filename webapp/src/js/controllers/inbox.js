@@ -250,7 +250,7 @@ const moment = require('moment');
     ctrl.dbWarmedUp = true;
 
     // initialisation tasks that can occur after the UI has been rendered
-    Session.init()
+    ctrl.setupPromise = Session.init()
       .then(() => checkPrivacyPolicy())
       .then(() => initRulesEngine())
       .then(() => initForms())

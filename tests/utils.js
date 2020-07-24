@@ -697,6 +697,12 @@ module.exports = {
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
 
+  closeTour: () => {
+    element.all(by.css('.modal-dialog a.cancel')).each(elm => {
+      elm.click();
+    });
+  },
+
   waitForDocRev: waitForDocRev,
 
   getDefaultSettings: getDefaultSettings,

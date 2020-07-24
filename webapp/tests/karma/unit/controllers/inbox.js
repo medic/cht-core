@@ -126,14 +126,12 @@ describe('InboxCtrl controller', () => {
   });
 
   afterEach(() => sinon.restore());
-
-  it('should start the relative date update recurring process', done => {
-    createController();
+  it('should start the relative date update recurring process', () => {
+    const ctrl = createController();
     privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
-    setTimeout(() => {
+    return ctrl.setupPromise.then(() => {
       chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
-      done();
     });
   });
 
@@ -143,26 +141,24 @@ describe('InboxCtrl controller', () => {
     chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
   });
 
-  it('should not start the UpdateUnreadDocsCount recurring process when not online', done => {
-    createController();
+  it('should not start the UpdateUnreadDocsCount recurring process when not online', () => {
+    const ctrl = createController();
     privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
-    setTimeout(() => {
+    return ctrl.setupPromise.then(() => {
       chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(0);
       scope.$destroy();
       chai.expect(RecurringProcessManager.stopUpdateReadDocsCount.callCount).to.equal(1);
-      done();
     });
   });
 
-  it('should start the UpdateUnreadDocsCount recurring process when online, after lazy load', done => {
+  it('should start the UpdateUnreadDocsCount recurring process when online, after lazy load', () => {
     session.isOnlineOnly.returns(true);
-    createController();
+    const ctrl = createController();
     privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
-    setTimeout(() => {
+    return ctrl.setupPromise.then(() => {
       chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);
-      done();
     });
   });
 
