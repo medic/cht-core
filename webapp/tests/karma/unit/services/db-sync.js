@@ -493,34 +493,4 @@ describe('DBSync service', () => {
       expect(actual).to.equal(false);
     });
   });
-
-  describe('syncMetaDoc', () => {
-    it('should sync requested docs', () => {
-      localMetaDb.sync.resolves();
-      return service.syncMetaDoc(['id1', 'id2']).then(() => {
-        chai.expect(db.callCount).to.equal(2);
-        chai.expect(db.args).to.deep.equal([[{ meta: true, remote: true }], [{ meta: true }]]);
-        chai.expect(localMetaDb.sync.callCount).to.equal(1);
-        chai.expect(localMetaDb.sync.args[0]).to.deep.equal([remoteMetaDb, { doc_ids: ['id1', 'id2'] }]);
-      });
-    });
-
-    it('should default to empty array', () => {
-      localMetaDb.sync.resolves();
-      return service.syncMetaDoc().then(() => {
-        chai.expect(db.callCount).to.equal(2);
-        chai.expect(db.args).to.deep.equal([[ { meta: true, remote: true }], [{ meta: true }]]);
-        chai.expect(localMetaDb.sync.callCount).to.equal(1);
-        chai.expect(localMetaDb.sync.args[0]).to.deep.equal([remoteMetaDb, { doc_ids: [] }]);
-      });
-    });
-
-    it('should not sync online users', () => {
-      isOnlineOnly.returns(true);
-      return service.syncMetaDoc().then(() => {
-        chai.expect(db.callCount).to.equal(0);
-        chai.expect(localMetaDb.sync.callCount).to.equal(0);
-      });
-    });
-  });
 });
