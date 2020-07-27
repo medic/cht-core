@@ -2,7 +2,7 @@ angular
   .module('controllers')
   .controller('DisplayPrivacyPoliciesPreview', function(
     $log,
-    $sce,
+    $sanitize,
     $scope,
     $timeout,
     $uibModalInstance,
@@ -11,8 +11,8 @@ angular
     'use strict';
     'ngInject';
 
-    const getTrustedHtml = string => {
-      return $sce.trustAsHtml(PrivacyPolicies.decodeUnicode(string));
+    const getHtml = string => {
+      return $sanitize(PrivacyPolicies.decodeUnicode(string));
     };
 
     $scope.cancel = () => $uibModalInstance.dismiss();
@@ -33,11 +33,11 @@ angular
     }
 
     if ($scope.model.attachment) {
-      $scope.content = getTrustedHtml($scope.model.attachment.data);
+      $scope.content = getHtml($scope.model.attachment.data);
     } else {
       const reader = new FileReader();
       reader.onload = ev => {
-        $timeout(() => $scope.content = $sce.trustAsHtml(ev.target.result));
+        $timeout(() => $scope.content = $sanitize(ev.target.result));
       };
       reader.onerror = ev => {
         $timeout(() => {

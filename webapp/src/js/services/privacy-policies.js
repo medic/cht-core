@@ -2,7 +2,7 @@ angular.module('inboxServices').factory('PrivacyPolicies',
   function(
     $log,
     $q,
-    $sce,
+    $sanitize,
     DB,
     Language,
     UserSettings
@@ -130,7 +130,7 @@ angular.module('inboxServices').factory('PrivacyPolicies',
           return {
             language: languageCode,
             digest: attachment.digest,
-            html: $sce.trustAsHtml(decodedContent),
+            html: $sanitize(decodedContent),
           };
         })
         .catch(err => {

@@ -5,7 +5,7 @@ describe('PrivacyPolicies Service', () => {
   let Language;
   let userSettings;
   let clock;
-  let sce;
+  let sanitize;
 
   beforeEach(() => {
     module('inboxApp');
@@ -14,12 +14,12 @@ describe('PrivacyPolicies Service', () => {
       db = sinon.stub();
       db.withArgs().returns(localMedicDb);
       Language = sinon.stub();
-      sce = { trustAsHtml: sinon.stub().callsFake(i => i) };
+      sanitize = sinon.stub().callsFake(i => i);
       userSettings = sinon.stub();
 
       $provide.value('Language', Language);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('$sce', sce);
+      $provide.value('$sanitize', sanitize);
       $provide.value('DB', db);
       $provide.value('UserSettings', userSettings);
     });
@@ -362,7 +362,7 @@ describe('PrivacyPolicies Service', () => {
         chai.expect(Language.callCount).to.equal(1);
         chai.expect(localMedicDb.get.callCount).to.equal(1);
         chai.expect(localMedicDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-        chai.expect(sce.trustAsHtml.callCount).to.equal(0);
+        chai.expect(sanitize.callCount).to.equal(0);
       });
     });
 
@@ -387,7 +387,7 @@ describe('PrivacyPolicies Service', () => {
         chai.expect(Language.callCount).to.equal(1);
         chai.expect(localMedicDb.get.callCount).to.equal(1);
         chai.expect(localMedicDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-        chai.expect(sce.trustAsHtml.callCount).to.equal(0);
+        chai.expect(sanitize.callCount).to.equal(0);
       });
     });
 
@@ -412,7 +412,7 @@ describe('PrivacyPolicies Service', () => {
         chai.expect(Language.callCount).to.equal(1);
         chai.expect(localMedicDb.get.callCount).to.equal(1);
         chai.expect(localMedicDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-        chai.expect(sce.trustAsHtml.callCount).to.equal(0);
+        chai.expect(sanitize.callCount).to.equal(0);
       });
     });
 
@@ -442,8 +442,8 @@ describe('PrivacyPolicies Service', () => {
         chai.expect(Language.callCount).to.equal(1);
         chai.expect(localMedicDb.get.callCount).to.equal(1);
         chai.expect(localMedicDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-        chai.expect(sce.trustAsHtml.callCount).to.equal(1);
-        chai.expect(sce.trustAsHtml.args[0]).to.deep.equal([html]);
+        chai.expect(sanitize.callCount).to.equal(1);
+        chai.expect(sanitize.args[0]).to.deep.equal([html]);
       });
     });
 
