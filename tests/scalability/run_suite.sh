@@ -33,7 +33,6 @@ sudo apt-get install unzip -y
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
-S3_PATH=s3://medic-e2e/scalability/$GITHUB_ACTION
 echo "Uploading logs and screenshots to ${S3_PATH}..."
 /usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
 echo "FINISHED! "

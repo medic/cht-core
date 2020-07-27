@@ -23,4 +23,5 @@ jobs:
       - name: Execute Jmeter
         env: 
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
+          S3_PATH: s3://medic-e2e/scalability/$GITHUB_ACTION
         run: cd tests/scalability && ./start_jmeter_ec2.sh
