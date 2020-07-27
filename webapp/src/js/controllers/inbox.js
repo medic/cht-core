@@ -73,10 +73,10 @@ const moment = require('moment');
         enketoSaving: Selectors.getEnketoSavingStatus(state),
         forms: Selectors.getForms(state),
         minimalTabs : Selectors.getMinimalTabs(state),
+        privacyPolicyAccepted: Selectors.getPrivacyPolicyAccepted(state),
         replicationStatus: Selectors.getReplicationStatus(state),
         selectMode: Selectors.getSelectMode(state),
         showContent: Selectors.getShowContent(state),
-        privacyPolicyAccepted: Selectors.getPrivacyPolicyAccepted(state),
         showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state),
       };
     };
@@ -94,15 +94,15 @@ const moment = require('moment');
         setIsAdmin: globalActions.setIsAdmin,
         setLoadingContent: globalActions.setLoadingContent,
         setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
+        setPrivacyPolicyAccepted: globalActions.setPrivacyPolicyAccepted,
         setSelectMode: globalActions.setSelectMode,
         setShowActionBar: globalActions.setShowActionBar,
         setShowContent: globalActions.setShowContent,
+        setShowPrivacyPolicy: globalActions.setShowPrivacyPolicy,
         setTitle: globalActions.setTitle,
         setUnreadCount: globalActions.setUnreadCount,
         unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus,
-        setPrivacyPolicyAccepted: globalActions.setPrivacyPolicyAccepted,
-        setShowPrivacyPolicy: globalActions.setShowPrivacyPolicy,
       };
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);

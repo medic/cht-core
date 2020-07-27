@@ -21,8 +21,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         return {
           currentTab: Selectors.getCurrentTab(state),
           replicationStatus: Selectors.getReplicationStatus(state),
-          unreadCount: Selectors.getUnreadCount(state),
           showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state),
+          unreadCount: Selectors.getUnreadCount(state),
         };
       };
       const mapDispatchToTarget = function(dispatch) {

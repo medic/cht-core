@@ -21,13 +21,13 @@ const initialState = {
   minimalTabs: false,
   replicationStatus: {},
   selectMode: false,
+  privacyPolicyAccepted: false,
   showActionBar: false,
   showContent: false,
+  showPrivacyPolicy: false,
   title: null,
   unreadCount: {},
   version: null,
-  privacyPolicyAccepted: false,
-  showPrivacyPolicy: false,
 };
 
 module.exports = function(state, action) {
@@ -80,30 +80,30 @@ module.exports = function(state, action) {
     return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
   case actionTypes.SET_MINIMAL_TABS:
     return Object.assign({}, state, { minimalTabs: action.payload.minimalTabs });
+  case actionTypes.SET_PRIVACY_POLICY_ACCEPTED:
+    return Object.assign({}, state, { privacyPolicyAccepted: action.payload.privacyPolicyAccepted });
   case actionTypes.SET_SELECT_MODE:
     return Object.assign({}, state, { selectMode: action.payload.selectMode });
   case actionTypes.SET_SHOW_ACTION_BAR:
     return Object.assign({}, state, { showActionBar: action.payload.showActionBar });
   case actionTypes.SET_SHOW_CONTENT:
     return Object.assign({}, state, { showContent: action.payload.showContent });
+  case actionTypes.SET_SHOW_PRIVACY_POLICY:
+    return Object.assign({}, state, { showPrivacyPolicy: action.payload.showPrivacyPolicy });
   case actionTypes.SET_TITLE:
     return Object.assign({}, state, { title: action.payload.title });
   case actionTypes.SET_UNREAD_COUNT:
     return Object.assign({}, state, { unreadCount: action.payload.unreadCount });
+  case actionTypes.SET_VERSION:
+    return Object.assign({}, state, { version: action.payload.version });
   case actionTypes.UPDATE_UNREAD_COUNT:
     return Object.assign({}, state, {
       unreadCount: Object.assign({}, state.unreadCount, action.payload.unreadCount)
     });
-  case actionTypes.SET_VERSION:
-    return Object.assign({}, state, { version: action.payload.version });
   case actionTypes.UPDATE_REPLICATION_STATUS:
     return Object.assign({}, state, {
       replicationStatus: Object.assign({}, state.replicationStatus, action.payload.replicationStatus)
     });
-  case actionTypes.SET_PRIVACY_POLICY_ACCEPTED:
-    return Object.assign({}, state, { privacyPolicyAccepted: action.payload.privacyPolicyAccepted });
-  case actionTypes.SET_SHOW_PRIVACY_POLICY:
-    return Object.assign({}, state, { showPrivacyPolicy: action.payload.showPrivacyPolicy });
   default:
     return state;
   }

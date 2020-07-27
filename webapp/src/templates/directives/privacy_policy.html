@@ -5,7 +5,10 @@
       <div class="html-content" ng-bind-html="mmPrivacyPolicyCtrl.privacyPolicy.html"></div>
       <div class="footer text-right">
         <button class="btn btn-primary" ng-show="!mmPrivacyPolicyCtrl.accepting && !mmPrivacyPolicyCtrl.loading" ng-click="mmPrivacyPolicyCtrl.accept()" translate>privacy.policy.accept</button>
-        <button class="btn btn-primary disabled" ng-show="mmPrivacyPolicyCtrl.accepting" translate>privacy.policy.accept</button>
+        <div ng-show="mmPrivacyPolicyCtrl.accepting">
+          <span class="loader inline small"></span>
+          <button class="btn btn-primary disabled" translate>privacy.policy.accept</button>
+        </div>
       </div>
     </div>
   </div>
