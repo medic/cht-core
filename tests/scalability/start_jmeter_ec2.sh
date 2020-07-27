@@ -2,6 +2,9 @@
 
 # Add MEDIC_URL to script executing on ec2 init
 echo $MEDIC_URL
+echo $GITHUB_RUN_ID
+echo $GITHUB_RUN_NUMBER
+
 sed -i '2s~^~'MEDIC_URL=$MEDIC_URL'\n~' run_suite.sh
 sed -i '2s~^~'S3_PATH=s3://medic-e2e/scalability/$GITHUB_ACTION'\n~' run_suite.sh
 cat run_suite.sh
