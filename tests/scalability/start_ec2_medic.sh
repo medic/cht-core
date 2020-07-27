@@ -57,13 +57,13 @@ cp -r ./csv ../../config/standard/
 cd ../../config/standard/
 
 echo installing pip
-sudo apt-get -q install python-pip -y
+sudo apt-get -q install python-pip -y'
 
 echo installing pyxform
 sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic -q
 
 echo installing medic-conf
-npm install https://github.com/medic/medic-conf.git#307_force_arg
+npm install https://github.com/medic/medic-conf.git#master
 
 # echo Uploading settings and seeding data
 echo medic-conf url is $MEDIC_CONF_URL
