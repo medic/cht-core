@@ -684,6 +684,7 @@ describe('bootstrapper', () => {
     sinon.stub(purger, 'shouldPurge').resolves(false);
     sinon.stub(taskPurger, 'shouldPurge').resolves(true);
     sinon.stub(taskPurger, 'purge').returns({ on: taskPurgeOn });
+    sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -704,6 +705,7 @@ describe('bootstrapper', () => {
     sinon.stub(taskPurger, 'shouldPurge').resolves(true);
     sinon.stub(taskPurger, 'purge').returns({ on: taskPurgeOn });
     taskPurgeOn.onCall(1).rejects({ some: 'err' });
+    sinon.stub(purger, 'shouldPurgeMeta').resolves(false);
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);

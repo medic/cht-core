@@ -132,8 +132,10 @@ describe('Purger', () => {
 
     describe('for all contacts', () => {
       it('should purge tasks for all contacts, in batches', () => {
-        localDb.get.withArgs('settings').resolves({ settings: { purge_tasks: [{ event_name: 'evt', all_contacts: true }] } });
-        localDb.query.withArgs('medic-client/contacts_by_type').resolves({ rows: [{ id: 'c1' }, { id: 'c2' }, { id: 'c3' }] });
+        localDb.get.withArgs('settings')
+          .resolves({ settings: { purge_tasks: [{ event_name: 'evt', all_contacts: true }] } });
+        localDb.query.withArgs('medic-client/contacts_by_type')
+          .resolves({ rows: [{ id: 'c1' }, { id: 'c2' }, { id: 'c3' }] });
 
         const batch1 = [
           { id: 'task~c1~event~1', value: { rev: '1' } },
