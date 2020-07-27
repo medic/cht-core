@@ -198,7 +198,7 @@ const refreshToGetNewSettings = () => {
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      dialog.isPresent().then(function(result) {
+      return dialog.isPresent().then(function(result) {
         if (result) {
           dialog.click();
         }
@@ -550,7 +550,7 @@ module.exports = {
   revertDb: revertDb,
 
   resetBrowser: () => {
-    browser.driver
+    return browser.driver
       .navigate()
       .refresh()
       .then(() => {

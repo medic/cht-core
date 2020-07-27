@@ -45,10 +45,10 @@ function (doc) {
              doc.tasks[0].messages[0].contact._id;
     }
   };
+  var value = { type: doc.type };
   switch (doc.type) {
     case 'data_record':
       var subject = getSubject() || '_unassigned';
-      var value = {};
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
       }
@@ -67,14 +67,14 @@ function (doc) {
       }
       return;
     case 'task':
-      return emit(doc.user, {});
+      return emit(doc.user, value);
     case 'target':
-      return emit(doc.owner, {});
+      return emit(doc.owner, value);
     case 'contact':
     case 'clinic':
     case 'district_hospital':
     case 'health_center':
     case 'person':
-      return emit(doc._id, {});
+      return emit(doc._id, value);
   }
 }

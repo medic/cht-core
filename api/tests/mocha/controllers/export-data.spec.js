@@ -87,7 +87,7 @@ describe('Export Data controller', () => {
     // NB: This is actually an integration test so we can test that
     // errors from the underlying mapper are handled correctly in
     // the controller.
-    it('catches error from service.exportStream', done => {
+    it('catches error from service.exportStream', () => {
       const req = {
         params: {
           type: 'feedback'
@@ -105,14 +105,13 @@ describe('Export Data controller', () => {
       auth.isOnlineOnly.returns(true);
       sinon.stub(db.medicUsersMeta, 'allDocs').returns(Promise.reject(new Error('db not found')));
       
-      controller.get(req, res).then(() => {
+      return controller.get(req, res).then(() => {
         // defer execution to allow the stream to write first
         setTimeout(() => {
           res.write.callCount.should.equal(1);
           res.write.args[0][0].toString().should.equal('id,reported_date,user,app_version,url,info\n');
           res.end.callCount.should.equal(1);
           res.end.args[0][0].should.equal('--ERROR--\nError exporting data: db not found\n');
-          done();
         });
       });
     });

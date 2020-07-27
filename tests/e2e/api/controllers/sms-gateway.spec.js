@@ -56,7 +56,7 @@ describe('/sms', function() {
       });
 
       it('should not reject bad message content', function() {
-        api.postMessage({ missing_fields:true })
+        return api.postMessage({ missing_fields:true })
           .then(assert.response({ messages:[] }));
       });
 

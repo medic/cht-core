@@ -155,12 +155,11 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
 };
 
 describe('db-doc handler', () => {
-  beforeAll(done => {
-    utils
+  beforeAll(() => {
+    return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
-      .then(() => utils.saveDocs([...clinics, ...patients]))
-      .then(done);
+      .then(() => utils.saveDocs([...clinics, ...patients]));
   });
 
   afterAll(done =>
@@ -451,6 +450,44 @@ describe('db-doc handler', () => {
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
         ).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('GET many types of reports with report replication depth and needs_signoff', () => {
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+
+      const docs = reportScenarios.map(scenario => scenario.doc);
+      return utils
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }]})
+        .then(() => utils.saveDocs(docs))
+        .then(() => Promise.all(
+          reportScenarios.map(scenario =>
+            utils
+              .requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions))
+              .catch(err => err)))
+        )
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {

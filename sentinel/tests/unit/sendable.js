@@ -1,47 +1,92 @@
-const moment = require('moment');
 const assert = require('chai').assert;
-const unit = require('../../src/schedule/index');
-let settings;
+const sinon = require('sinon');
 
-const config = {
-  get: function(property) {
-    return settings[property];
-  }
-};
+const unit = require('../../src/schedule/index');
+const config = require('../../src/config');
+const transitionsLib = config.getTransitionsLib();
 
 describe('sendable', () => {
+
+  afterEach(() => sinon.restore());
+
+  const mockConfigGet = ({
+    schedule_morning_hours,
+    schedule_morning_minutes,
+    schedule_evening_hours,
+    schedule_evening_minutes
+  }) => {
+    sinon.stub(config, 'get')
+      .withArgs('schedule_morning_hours').returns(schedule_morning_hours)
+      .withArgs('schedule_morning_minutes').returns(schedule_morning_minutes)
+      .withArgs('schedule_evening_hours').returns(schedule_evening_hours)
+      .withArgs('schedule_evening_minutes').returns(schedule_evening_minutes);
+  };
+
   it('config defaults if empty', () => {
-    settings = {};
-    assert.equal(unit.sendable(config, moment('2013-01-01T00:00:00.000')), true, '1');
-    assert.equal(unit.sendable(config, moment('2013-01-01T06:00:00.000')), true, '2');
-    assert.equal(unit.sendable(config, moment('2013-01-01T23:00:00.000')), true, '3');
+    mockConfigGet({});
+    const getDate = sinon.stub(transitionsLib.date, 'getDate');
+
+    getDate.returns('2013-01-01T00:00:00.000');
+    assert.equal(unit.sendable(), true, '1');
+
+    getDate.returns('2013-01-01T06:00:00.000');
+    assert.equal(unit.sendable(), true, '2');
+
+    getDate.returns('2013-01-01T23:00:00.000');
+    assert.equal(unit.sendable(), true, '3');
   });
 
   it('only sendable within configured hours', () => {
-    settings = {
+    mockConfigGet({
       schedule_morning_hours: 9,
       schedule_evening_hours: 17
-    };
-    assert.equal(unit.sendable(config, moment('2013-01-01T01:00:00.000')), false, '1');
-    assert.equal(unit.sendable(config, moment('2013-01-01T08:59:59.000')), false, '2');
-    assert.equal(unit.sendable(config, moment('2013-01-01T09:00:00.000')), true, '3');
-    assert.equal(unit.sendable(config, moment('2013-01-01T12:00:00.000')), true, '4');
-    assert.equal(unit.sendable(config, moment('2013-01-01T17:00:00.000')), true, '5');
-    assert.equal(unit.sendable(config, moment('2013-01-01T18:00:00.000')), false, '6');
+    });
+    const getDate = sinon.stub(transitionsLib.date, 'getDate');
+
+    getDate.returns('2013-01-01T01:00:00.000');
+    assert.equal(unit.sendable(), false, '1');
+
+    getDate.returns('2013-01-01T08:59:59.000');
+    assert.equal(unit.sendable(), false, '2');
+
+    getDate.returns('2013-01-01T09:00:00.000');
+    assert.equal(unit.sendable(), true, '3');
+
+    getDate.returns('2013-01-01T12:00:00.000');
+    assert.equal(unit.sendable(), true, '4');
+
+    getDate.returns('2013-01-01T17:00:00.000');
+    assert.equal(unit.sendable(), true, '5');
+
+    getDate.returns('2013-01-01T18:00:00.000');
+    assert.equal(unit.sendable(), false, '6');
   });
 
   it('only sendable within configured hours and minutes', () => {
-    settings = {
+    mockConfigGet({
       schedule_morning_hours: 9,
       schedule_morning_minutes: 35,
       schedule_evening_hours: 17,
       schedule_evening_minutes: 1
-    };
-    assert.equal(unit.sendable(config, moment('2013-01-01T01:00:00.000')), false, '1');
-    assert.equal(unit.sendable(config, moment('2013-01-01T09:34:59.000')), false, '2');
-    assert.equal(unit.sendable(config, moment('2013-01-01T09:35:00.000')), true, '3');
-    assert.equal(unit.sendable(config, moment('2013-01-01T12:11:00.000')), true, '4');
-    assert.equal(unit.sendable(config, moment('2013-01-01T17:01:00.000')), true, '5');
-    assert.equal(unit.sendable(config, moment('2013-01-01T17:02:00.000')), false, '6');
+    });
+    const getDate = sinon.stub(transitionsLib.date, 'getDate');
+
+    getDate.returns('2013-01-01T01:00:00.000');
+    assert.equal(unit.sendable(), false, '1');
+
+    getDate.returns('2013-01-01T09:34:59.000');
+    assert.equal(unit.sendable(), false, '2');
+
+    getDate.returns('2013-01-01T09:35:00.000');
+    assert.equal(unit.sendable(), true, '3');
+
+    getDate.returns('2013-01-01T12:11:00.000');
+    assert.equal(unit.sendable(), true, '4');
+
+    getDate.returns('2013-01-01T17:01:00.000');
+    assert.equal(unit.sendable(), true, '5');
+
+    getDate.returns('2013-01-01T17:02:00.000');
+    assert.equal(unit.sendable(), false, '6');
   });
 });

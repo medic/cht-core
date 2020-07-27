@@ -40,6 +40,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 - [ ] [Export the translations](https://github.com/medic/medic-docs/blob/master/development/translations.md#exporting-changes-from-poeditor-to-github), delete empty translation files and commit to `master`. Cherry-pick the commit into the release branch. 
 - [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/medic/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Link to the release notes in the description of the release.
 - [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Upgrade the `demo-cht.dev` instance to this version.
 - [ ] Follow the instructions for [releasing other products](https://github.com/medic/medic-docs/blob/master/development/releasing.md) that have been updated in this project (eg: medic-conf, medic-gateway, medic-android).
 - [ ] Add the release to the [Supported versions](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md#supported-versions) and update the EOL date and status of previous releases.
 - [ ] Announce the release in #products and #cht-contributors using this template:

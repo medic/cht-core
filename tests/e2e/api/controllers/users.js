@@ -331,7 +331,7 @@ describe('Users API', () => {
     let docsForAll;
 
     beforeAll(done => {
-      utils
+      return utils
         .saveDoc(parentPlace)
         .then(() => utils.createUsers(users))
         .then(() => {

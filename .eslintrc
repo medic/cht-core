@@ -3,6 +3,7 @@
   "parserOptions": {
     "ecmaVersion": 6
   },
+  "plugins": ["promise"],
   "overrides": [
     {
       "files": [ "Gruntfile.js", "grunt/service-worker.js" ],
@@ -16,6 +17,12 @@
         "max-len": "off",
         "no-console": "off",
         "no-var": "off"
+      }
+    },
+    {
+      "files": [ "**/test/**", "**/tests/**" ],
+      "rules": {
+        "promise/catch-or-return": "error"
       }
     }
   ]

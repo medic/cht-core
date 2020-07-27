@@ -9,21 +9,19 @@ const date = require('../../src/date');
 describe('due tasks', () => {
   afterEach(() => sinon.restore());
 
-  it('due_tasks handles view returning no rows', done => {
+  it('due_tasks handles view returning no rows', () => {
     const view = sinon.stub(db.medic, 'query').resolves({
       rows: [],
     });
     const saveDoc = sinon.stub(db.medic, 'put').resolves();
 
-    schedule.execute(function(err) {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 0);
-      done();
     });
   });
 
-  it('set all due scheduled tasks to pending', done => {
+  it('set all due scheduled tasks to pending', () => {
     const due = moment();
     const due1 = moment().subtract(2, 'day');
     const due2 = moment().subtract(3, 'day');
@@ -78,8 +76,7 @@ describe('due tasks', () => {
     const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
-    schedule.execute(function(err) {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       const saved = saveDoc.firstCall.args[0];
@@ -92,11 +89,10 @@ describe('due tasks', () => {
 
       assert.equal(hydrate.callCount, 1);
       assert.deepEqual(hydrate.args[0][0], [doc]);
-      done();
     });
   });
 
-  it('set all due scheduled tasks to pending and handles repeated rows', done => {
+  it('set all due scheduled tasks to pending and handles repeated rows', () => {
     const due = moment();
     const notDue = moment().add(7, 'days');
     const id = 'xyz';
@@ -133,8 +129,7 @@ describe('due tasks', () => {
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
-    schedule.execute(function(err) {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(hydrate.callCount, 1);
@@ -147,11 +142,10 @@ describe('due tasks', () => {
       );
       const saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 2);
-      done();
     });
   });
 
-  it('set all due scheduled tasks to pending and handles nonrepeated rows', done => {
+  it('set all due scheduled tasks to pending and handles nonrepeated rows', () => {
     const due = moment();
     const id1 = 'xyz';
     const id2 = 'abc';
@@ -195,19 +189,17 @@ describe('due tasks', () => {
 
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
-    schedule.execute(function(err) {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 2);
       assert.equal(setTaskState.callCount, 2);
       assert(
         setTaskState.alwaysCalledWithMatch({ due: due.toISOString(), state: 'scheduled' })
       );
-      done();
     });
   });
 
-  it('generates the messages for all due scheduled tasks', done => {
+  it('generates the messages for all due scheduled tasks', () => {
     const due = moment();
     const notDue = moment().add(7, 'days');
     const id = 'xyz';
@@ -292,8 +284,7 @@ describe('due tasks', () => {
       .resolves([hydrated]);
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
 
-    schedule.execute(err => {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(translate.callCount, 1);
@@ -313,11 +304,10 @@ describe('due tasks', () => {
         'Please visit jim asap'
       );
       assert.equal(saved.scheduled_tasks[1].messages, undefined);
-      done();
     });
   });
 
-  it('does not generate messages if they are already generated', done => {
+  it('does not generate messages if they are already generated', () => {
     const due = moment();
     const id = 'xyz';
     const patientUuid = '123-456-789';
@@ -396,8 +386,7 @@ describe('due tasks', () => {
     });
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
-    schedule.execute(err => {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(getRegistrations.callCount, 1);
@@ -414,11 +403,10 @@ describe('due tasks', () => {
         saved.scheduled_tasks[0].messages[0].message,
         expectedMessage
       );
-      done();
     });
   });
 
-  it('should not crash when registrations are found, but patient is not', done => {
+  it('should not crash when registrations are found, but patient is not', () => {
     const due = moment();
     const phone = '123456789';
 
@@ -482,8 +470,7 @@ describe('due tasks', () => {
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves();
 
-    schedule.execute(err => {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(db.medic.query.callCount, 1);
       assert.equal(db.medic.put.callCount, 0);
 
@@ -494,11 +481,10 @@ describe('due tasks', () => {
       assert.equal(utils.getContactUuid.args[0][0], '123');
       assert.equal(schedule._lineage.fetchHydratedDoc.callCount, 0);
       assert.equal(utils.setTaskState.callCount, 0);
-      done();
     });
   });
 
-  it('should not update task state and not save messages when messages lib errors', done => {
+  it('should not update task state and not save messages when messages lib errors', () => {
     const due = moment();
     const phone = '123456789';
 
@@ -572,8 +558,7 @@ describe('due tasks', () => {
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves({});
 
-    schedule.execute(err => {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(db.medic.query.callCount, 1);
       assert.equal(db.medic.put.callCount, 1);
 
@@ -606,18 +591,15 @@ describe('due tasks', () => {
         state: 'pending',
         messages: [{ message: 'visit-ad', to: phone}]
       });
-
-      done();
     });
   });
 
-  it('should query with a limit and correct start and end key', (done) => {
+  it('should query with a limit and correct start and end key', () => {
     const now = moment('2020-02-01 00:00:00');
     sinon.stub(date, 'getDate').returns(now);
     const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
 
-    schedule.execute((err) => {
-      assert.equal(err, undefined);
+    return schedule.execute().then(() => {
       assert.equal(view.callCount, 1);
       assert.deepEqual(view.args[0], [
         'medic/messages_by_state',
@@ -628,7 +610,6 @@ describe('due tasks', () => {
           limit: 1000,
         }
       ]);
-      done();
     });
   });
 });

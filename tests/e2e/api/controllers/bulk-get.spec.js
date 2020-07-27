@@ -67,11 +67,10 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-get handler', () => {
-  beforeAll(done => {
-    utils
+  beforeAll(() => {
+    return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .then(() => utils.createUsers(users));
   });
 
   afterAll(done =>
@@ -603,6 +602,180 @@ describe('bulk-get handler', () => {
           'allowed_task',
           'allowed_target',
         ];
+        const expected = existentDocs
+          .filter(doc => allowedIds.includes(doc._id))
+          .map(doc => ({
+            id: doc._id,
+            docs: [{ ok: doc }]
+          }));
+        chai.expect(result.results).to.deep.equal(expected);
+      });
+  });
+
+  it('should work with replication depth', () => {
+    const existentDocs = [
+      {
+        _id: 'existing_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'report_about_existing_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'existing_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'existing_person',
+        type: 'person',
+        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+      },
+      {
+        _id: 'denied_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person', needs_signoff: true },
+        contact: {
+          _id: 'existing_person',
+          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        },
+      },
+      {
+        _id: 'allowed_task',
+        type: 'task',
+        user: 'org.couchdb.user:offline',
+      },
+      {
+        _id: 'denied_task',
+        type: 'task',
+        user: 'org.couchdb.user:other',
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        owner: 'fixture:user:offline',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        owner: 'existing_person',
+      },
+    ];
+
+    const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
+    return utils
+      .updateSettings(settings)
+      .then(() => utils.saveDocs(existentDocs))
+      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => {
+        const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
+        offlineRequestOptions.body = { docs };
+        return utils.requestOnMedicDb(offlineRequestOptions);
+      })
+      .then(result => {
+        const allowedIds = [
+          'existing_clinic',
+          'report_about_existing_clinic',
+          'allowed_report_about_existing_person',
+          'allowed_task',
+          'allowed_target',
+        ];
+        const expected = existentDocs
+          .filter(doc => allowedIds.includes(doc._id))
+          .map(doc => ({
+            id: doc._id,
+            docs: [{ ok: doc }]
+          }));
+        chai.expect(result.results).to.deep.equal(expected);
+      });
+  });
+
+  it('should work with report replication depth', () => {
+    const existentDocs = [
+      {
+        _id: 'existing_clinic',
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+      },
+      {
+        _id: 'report_about_existing_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'existing_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'existing_person',
+        type: 'person',
+        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
+      },
+      {
+        _id: 'denied_report_about_existing_person',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'allowed_report_about_existing_person1',
+        type: 'data_record',
+        fields: { patient_id: 'existing_person' },
+        form: 'form',
+        contact: {
+          _id: 'fixture:user:offline',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        },
+      },
+      {
+        _id: 'allowed_report_about_existing_person2',
+        type: 'data_record',
+        fields: { patient_id: 'existing_person', needs_signoff: true },
+        form: 'form',
+        contact: {
+          _id: 'existing_person',
+          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        },
+      },
+      {
+        _id: 'allowed_target',
+        type: 'target',
+        owner: 'existing_person',
+      },
+      {
+        _id: 'denied_target',
+        type: 'target',
+        owner: 'whoever',
+      },
+    ];
+
+    const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
+    return utils
+      .updateSettings(settings)
+      .then(() => utils.saveDocs(existentDocs))
+      .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
+      .then(() => {
+        const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
+        offlineRequestOptions.body = { docs };
+        return utils.requestOnMedicDb(offlineRequestOptions);
+      })
+      .then(result => {
+        const allowedIds = [
+          'existing_clinic',
+          'report_about_existing_clinic',
+          'existing_person',
+          'allowed_report_about_existing_person1',
+          'allowed_report_about_existing_person2',
+          'allowed_target',
+        ];
+
         const expected = existentDocs
           .filter(doc => allowedIds.includes(doc._id))
           .map(doc => ({
