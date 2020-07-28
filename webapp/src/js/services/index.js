@@ -45,6 +45,7 @@
   require('./get-report-content');
   require('./get-subject-summaries');
   require('./get-summaries');
+  require('./header-tabs');
   require('./hydrate-contact-names');
   require('./hydrate-messages');
   require('./json-forms');

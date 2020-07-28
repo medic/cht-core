@@ -81,7 +81,7 @@
   display: inline-block;
 
   .dropdown-menu {
-    min-width: 220px;
+    min-width: 260px;
     a:before {
       // copied from .fa-fw
       display: inline-block;
@@ -106,6 +106,23 @@
       content: none;
     }
     li {
+      > a[role="menuitem"] {
+        padding: 5px 20px 3px 35px;
+        text-indent: -20px;
+
+        &.indent-1 {
+          padding-left: 50px;
+        }
+        &.indent-2 {
+          padding-left: 60px;
+        }
+        &.indent-3 {
+          padding-left: 70px;
+        }
+        &.indent-4 {
+          padding-left: 80px;
+        }
+      }
       a,
       &.dropdown-header {
         padding-left: 10px;
@@ -226,31 +243,12 @@
   }
   li > a {
     display: block;
-    padding: 3px 20px;
+    padding: 5px 20px;
     clear: both;
     font-weight: normal;
     line-height: 1.42857;
     color: #333;
-    white-space: nowrap;
-    &.indent-1 {
-      padding-left: 20px;
-    }
-
-    &.indent-2 {
-      padding-left: 30px;
-    }
-
-    &.indent-3 {
-      padding-left: 40px;
-    }
-
-    &.indent-4 {
-      padding-left: 50px;
-    }
-
-    &.indent-5 {
-      padding-left: 60px;
-    }
+    white-space: normal;
 
     &:hover, &:focus {
       text-decoration: none;
@@ -261,8 +259,8 @@
 @media (max-width: 767px) {
   .open .mm-dropdown-menu {
     top: 111px;
-    left: 20px;
-    right: 20px;
+    left: 10px;
+    right: 10px;
     .mm-dropdown-menu-modal
   }
 

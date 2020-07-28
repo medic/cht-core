@@ -39,7 +39,8 @@ const request = (options, { debug } = {}) => {
 
   options.transform = (body, response, resolveWithFullResponse) => {
     // we might get a json response for a non-json request.
-    if (response.headers['content-type'].startsWith('application/json') && !options.json) {
+    const contentType = response.headers['content-type'];
+    if (contentType && contentType.startsWith('application/json') && !options.json) {
       response.body = JSON.parse(response.body);
     }
     // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
@@ -197,7 +198,7 @@ const refreshToGetNewSettings = () => {
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      dialog.isPresent().then(function(result) {
+      return dialog.isPresent().then(function(result) {
         if (result) {
           dialog.click();
         }
@@ -351,7 +352,7 @@ module.exports = {
 
   specReporter: new specReporter({
     spec: {
-      displayStacktrace: 'pretty',
+      displayStacktrace: 'raw',
       displayDuration: true
     }
   }),
@@ -549,7 +550,7 @@ module.exports = {
   revertDb: revertDb,
 
   resetBrowser: () => {
-    browser.driver
+    return browser.driver
       .navigate()
       .refresh()
       .then(() => {
@@ -636,6 +637,45 @@ module.exports = {
       }
 
       return Promise.resolve(lines);
+    };
+  },
+
+  /**
+   * Watches a given logfile until at least one line matches one of the given regular expressions.
+   * Watch expires after 10 seconds.
+   * @param {String} logFilename - filename of file in local logs directory
+   * @param {[RegExp]} regex - matching expression(s) run against lines
+   * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
+   */
+  waitForLogs: (logFilename, ...regex) => {
+    const tail = new Tail(`./tests/logs/${logFilename}`);
+    let timeout;
+    const promise = new Promise((resolve, reject) => {
+      timeout = setTimeout(() => {
+        tail.unwatch();
+        reject({ message: 'timeout exceeded' });
+      }, 10000);
+
+      tail.on('line', data => {
+        if (regex.find(r => r.test(data))) {
+          tail.unwatch();
+          clearTimeout(timeout);
+          resolve();
+        }
+      });
+      tail.on('error', err => {
+        tail.unwatch();
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
+
+    return {
+      promise,
+      cancel: () => {
+        tail.unwatch();
+        clearTimeout(timeout);
+      },
     };
   },
 

@@ -28,6 +28,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        enketoError: Selectors.getEnketoError(state),
         selectedContact: Selectors.getSelectedContact(state)
       };
     };
@@ -59,6 +60,14 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       ctrl.setEnketoEditedStatus(true);
     };
 
+    const resetFormError = function() {
+      if (ctrl.enketoError) {
+        ctrl.setEnketoError(null);
+      }
+    };
+
+    resetFormError();
+
     const setCancelCallback = function() {
       ctrl.setCancelCallback(function() {
         $state.go('contacts.detail', { id: $state.params.id });
@@ -78,7 +87,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           };
           ctrl.setEnketoEditedStatus(false);
           ctrl.setTitle(TranslateFrom(form.title));
-          return Enketo.render('#contact-report', form, instanceData, markFormEdited);
+          return Enketo.render('#contact-report', form, instanceData, markFormEdited, resetFormError);
         })
         .then(function(formInstance) {
           ctrl.form = formInstance;
@@ -110,7 +119,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         telemetryData.preSave - telemetryData.postRender);
 
       ctrl.setEnketoSavingStatus(true);
-      ctrl.setEnketoError(null);
+      resetFormError();
       Enketo.save($state.params.formId, ctrl.form, geolocation)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);

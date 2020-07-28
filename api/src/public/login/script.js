@@ -5,6 +5,10 @@ const setState = function(className) {
   document.getElementById('form').className = className;
 };
 
+const setTokenState = className => {
+  document.getElementById('wrapper').className = `has-error ${className}`;
+};
+
 const request = function(method, url, payload, callback) {
   const xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
@@ -42,6 +46,37 @@ const submit = function(e) {
       // unknown error
       setState('loginerror');
       console.error('Error logging in', xmlhttp.response);
+    }
+  });
+};
+
+const requestTokenLogin = (retry = 20) => {
+  const url = document.getElementById('tokenLogin').action;
+  request('POST', url, '', xmlhttp => {
+    let response = {};
+    try {
+      response = JSON.parse(xmlhttp.responseText);
+    } catch (err) {
+      // no body
+    }
+    switch (xmlhttp.status) {
+    case 302:
+      window.location = xmlhttp.response;
+      break;
+    case 401:
+      setTokenState(response && response.error === 'expired' ? 'tokenexpired' : 'tokeninvalid');
+      break;
+    case 408:
+      if (retry <= 0) {
+        return setTokenState('tokentimeout');
+      }
+      requestTokenLogin(retry - 1);
+      break;
+    case 400:
+      setTokenState(response && response.error === 'missing' ? 'tokenmissing' : 'tokenerror');
+      break;
+    default:
+      setTokenState('tokenerror');
     }
   });
 };
@@ -146,24 +181,26 @@ const checkSession = function() {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  checkSession();
-
   translations = parseTranslations();
   selectedLocale = getLocale();
 
   translate();
 
-  document.getElementById('login').addEventListener('click', submit, false);
-
-  const user = document.getElementById('user');
-  user.addEventListener('keydown', focusOnPassword, false);
-  user.focus();
-
-  document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
-  
   document.getElementById('locale').addEventListener('click', handleLocaleSelection, false);
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js');
+  if (document.getElementById('tokenLogin')) {
+    requestTokenLogin();
+  } else {
+    checkSession();
+    document.getElementById('login').addEventListener('click', submit, false);
+
+    const user = document.getElementById('user');
+    user.addEventListener('keydown', focusOnPassword, false);
+    user.focus();
+
+    document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js');
+    }
   }
 });

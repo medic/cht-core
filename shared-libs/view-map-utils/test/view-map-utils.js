@@ -2,14 +2,14 @@ const sinon = require('sinon');
 require('chai').should();
 const lib = require('../src/view-map-utils');
 
-describe('Replication Helper Views Lib', function() {
-  afterEach(function() {
+describe('Replication Helper Views Lib', () =>{
+  afterEach(() => {
     sinon.restore();
-    lib.reset();
+    lib._reset();
   });
 
-  describe('loadViewMaps', function() {
-    it('saves view map function from ddoc', function() {
+  describe('loadViewMaps', () => {
+    it('saves view map function from ddoc', () => {
       const ddoc = {
         _id: '_design/ddoc',
         views: {
@@ -22,7 +22,7 @@ describe('Replication Helper Views Lib', function() {
       lib._getViewMapStrings().should.deep.equal({ ddoc : { view1: 'view1_map', view2: 'view2_map' }});
     });
 
-    it('does not crash when view is not found', function() {
+    it('does not crash when view is not found', () => {
       lib.loadViewMaps({ _id: 'ddoc' }, 'view1', 'view2');
       lib._getViewMapStrings().should.deep.equal({ ddoc: { view1: false, view2: false }});
 
@@ -30,14 +30,14 @@ describe('Replication Helper Views Lib', function() {
       lib._getViewMapStrings().should.deep.equal({ ddoc: { view1: false, view2: false }});
     });
 
-    it('does not crash when requested views param is undefined', function () {
+    it('does not crash when requested views param is undefined',  () => {
       lib.loadViewMaps({ _id: 'ddoc', views: { view1: { map: 'aaaa' }}}, 'view1');
       lib._getViewMapStrings().should.deep.equal({ddoc: { view1: 'aaaa' }});
     });
   });
 
-  describe('getViewMapFn', function() {
-    it('returns the correct function', function() {
+  describe('getViewMapFn', () => {
+    it('returns the correct function', () => {
       const fnString = 'function(a, b, operator) {' +
                      '  // this is a comment! ' +
                      '  \n \n \n \n ' +
@@ -60,18 +60,18 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc, 'viewName', 'viewName2');
       const fn = lib.getViewMapFn('ddoc', 'viewName');
-      fn(2, 3, '+').should.deep.equal([[5]]);
-      fn(5, 2, '-').should.deep.equal([[3]]);
-      fn(4, 2, '*').should.deep.equal([[8]]);
-      fn(16, 4, '/').should.deep.equal([[4]]);
+      fn(2, 3, '+').should.deep.equal([{ key: 5, value: null }]);
+      fn(5, 2, '-').should.deep.equal([{ key: 3, value: null }]);
+      fn(4, 2, '*').should.deep.equal([{ key: 8, value: null }]);
+      fn(16, 4, '/').should.deep.equal([{ key: 4, value: null }]);
 
       const fn2 = lib.getViewMapFn('ddoc', 'viewName2');
-      fn2(0).should.deep.equal([[2]]);
-      fn2(2).should.deep.equal([[4]]);
-      fn2(-2).should.deep.equal([[0]]);
+      fn2(0).should.deep.equal([{ key: 2, value: null }]);
+      fn2(2).should.deep.equal([{ key: 4, value: null }]);
+      fn2(-2).should.deep.equal([{ key: 0, value: null }]);
     });
 
-    it('supports multiple emits', function() {
+    it('supports multiple emits', () => {
       const fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
       const ddoc = {
         _id: '_design/ddoc',
@@ -81,11 +81,31 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc, 'viewName');
       const fn = lib.getViewMapFn('ddoc', 'viewName');
-      fn(1).should.deep.equal([[2], [3], [4]]);
-      fn(2).should.deep.equal([[3], [4], [5]]);
+      fn(1).should.deep.equal([{ key: 2, value: null }, { key: 3, value: null }, { key: 4, value: null }]);
+      fn(2).should.deep.equal([{ key: 3, value: null }, { key: 4, value: null }, { key: 5, value: null }]);
     });
 
-    it('throws error when requested a view that does not exist ', function() {
+    it('should emit value too', () => {
+      const fnString = `
+      function(a) { 
+        emit(a + 1, a + 2); 
+        emit(a + 2, a + 3); 
+        emit(a + 3, a + 4); 
+      };
+      `;
+      const ddoc = {
+        _id: '_design/ddoc',
+        views: {
+          viewName: { map: fnString }
+        }
+      };
+      lib.loadViewMaps(ddoc, 'viewName');
+      const fn = lib.getViewMapFn('ddoc', 'viewName');
+      fn(1).should.deep.equal([{ key: 2, value: 3 }, { key: 3, value: 4 }, { key: 4, value: 5 }]);
+      fn(2).should.deep.equal([{ key: 3, value: 4 }, { key: 4, value: 5 }, { key: 5, value: 6 }]);
+    });
+
+    it('throws error when requested a view that does not exist ', () => {
       const ddoc = {
         _id: '_design/ddoc',
         views: {
@@ -96,9 +116,7 @@ describe('Replication Helper Views Lib', function() {
       lib.getViewMapFn.bind(lib, 'ddoc', 'viewName').should.throw(Error, 'Requested view ddoc/viewName was not found');
     });
 
-    it('caches results', function() {
-      sinon.spy(lib, 'getViewMapString');
-
+    it('caches results', () => {
       const fnString = 'function(a) { emit(a + 1); emit(a + 2); emit(a + 3); }';
       const ddoc = {
         _id: '_design/ddoc',
@@ -111,15 +129,13 @@ describe('Replication Helper Views Lib', function() {
       fn = lib.getViewMapFn('ddoc', 'viewName');
       fn = lib.getViewMapFn('ddoc', 'viewName');
       fn = lib.getViewMapFn('ddoc', 'viewName');
-      fn(1).should.deep.equal([[2], [3], [4]]);
-      fn(2).should.deep.equal([[3], [4], [5]]);
-      lib.getViewMapString.callCount.should.equal(1);
-      lib.getViewMapString.args[0].should.deep.equal(['ddoc', 'viewName']);
+      fn(1).should.deep.equal([{ key: 2, value: null }, { key: 3, value: null }, { key: 4, value: null }]);
+      fn(2).should.deep.equal([{ key: 3, value: null }, { key: 4, value: null }, { key: 5, value: null }]);
     });
   });
 
-  describe('getViewMapString', function() {
-    it('returns correct view', function() {
+  describe('getViewMapString', () => {
+    it('returns correct view', () => {
       const fnStringView1 = 'function(a) { return a; }';
       const fnStringView2 = 'function(a) { return a * 2; }';
       const ddoc = {
@@ -129,12 +145,13 @@ describe('Replication Helper Views Lib', function() {
           view2: { map: fnStringView2 } }
       };
       lib.loadViewMaps(ddoc, 'view1', 'view2');
-      lib.getViewMapString('ddoc', 'view1').should.equal('function(a) { return a; }');
+      const viewMapStrings = lib._getViewMapStrings();
+      viewMapStrings['ddoc']['view1'].should.equal('function(a) { return a; }');
     });
   });
 
-  describe('hot reloading', function() {
-    it('returns correct functions when views are reloaded', function() {
+  describe('hot reloading', () => {
+    it('returns correct functions when views are reloaded', () => {
       let fnStringView1 = 'function(a) { return emit(a); }';
       let ddoc = {
         _id: '_design/ddoc',
@@ -144,8 +161,9 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc, 'view1');
 
-      lib.getViewMapFn('ddoc', 'view1')(1).should.deep.equal([[1]]);
-      lib.getViewMapFn('ddoc', 'view1')('I am a happy hippo').should.deep.equal([['I am a happy hippo']]);
+      lib.getViewMapFn('ddoc', 'view1')(1).should.deep.equal([{ key: 1, value: null }]);
+      lib.getViewMapFn('ddoc', 'view1')('I am a happy hippo')
+        .should.deep.equal([{ key: 'I am a happy hippo', value: null }]);
 
       fnStringView1 = 'function(a) { return emit(4); }';
       ddoc = {
@@ -155,8 +173,8 @@ describe('Replication Helper Views Lib', function() {
         }
       };
       lib.loadViewMaps(ddoc, 'view1');
-      lib.getViewMapFn('ddoc', 'view1')(1).should.deep.equal([[4]]);
-      lib.getViewMapFn('ddoc', 'view1')('I am a happy hippo').should.deep.equal([[4]]);
+      lib.getViewMapFn('ddoc', 'view1')(1).should.deep.equal([{ key: 4, value: null }]);
+      lib.getViewMapFn('ddoc', 'view1')('I am a happy hippo').should.deep.equal([{ key: 4, value: null }]);
 
       fnStringView1 = 'function(a) { return emit(4); }';
       ddoc = {
@@ -169,7 +187,7 @@ describe('Replication Helper Views Lib', function() {
       lib.getViewMapFn.bind(lib, 'ddoc', 'view1').should.throw(Error, 'Requested view ddoc/view1 was not found');
     });
 
-    it('supports hot reloading for multiple ddocs', function() {
+    it('supports hot reloading for multiple ddocs', () => {
       let fnStringView1 = 'function(a) { return emit(a); }';
       let ddoc1 = {
         _id: '_design/ddoc1',
@@ -188,10 +206,11 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc2, 'view');
 
-      lib.getViewMapFn('ddoc1', 'view')(1).should.deep.equal([[1]]);
-      lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo').should.deep.equal([['I am a happy hippo']]);
-      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([[3]]);
-      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([[35]]);
+      lib.getViewMapFn('ddoc1', 'view')(1).should.deep.equal([{ key: 1, value: null }]);
+      lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo')
+        .should.deep.equal([{ key: 'I am a happy hippo', value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([{ key: 3, value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 35, value: null }]);
 
       fnStringView1 = 'function(a) { return emit(1024); }';
       ddoc1 = {
@@ -202,10 +221,10 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc1, 'view');
 
-      lib.getViewMapFn('ddoc1', 'view')(1).should.deep.equal([[1024]]);
-      lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo').should.deep.equal([[1024]]);
-      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([[3]]);
-      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([[35]]);
+      lib.getViewMapFn('ddoc1', 'view')(1).should.deep.equal([{ key: 1024, value: null }]);
+      lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo').should.deep.equal([{ key: 1024, value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([{ key: 3, value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 35, value: null }]);
 
       fnStringView2 = 'function(a) { return emit(\'Medic Mobile\'); }';
       ddoc2 = {
@@ -216,10 +235,10 @@ describe('Replication Helper Views Lib', function() {
       };
       lib.loadViewMaps(ddoc2, 'view');
 
-      lib.getViewMapFn('ddoc1', 'view')(1).should.deep.equal([[1024]]);
-      lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo').should.deep.equal([[1024]]);
-      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([['Medic Mobile']]);
-      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([['Medic Mobile']]);
+      lib.getViewMapFn('ddoc1', 'view')(1).should.deep.equal([{ key: 1024, value: null }]);
+      lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo').should.deep.equal([{ key: 1024, value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([{ key: 'Medic Mobile', value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 'Medic Mobile', value: null }]);
     });
   });
 });

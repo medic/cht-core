@@ -1,67 +1,70 @@
 /**
  * @module transitions/history
- * @description Utility to track duplicate keys in a certain period of time (periodMins).
- * Removes expired keys after threshold is reached (purgeThreshold).
+ * @description Utility to track duplicate keys in a certain period of time (30 minutes).
+ * Removes expired keys after threshold is reached (1000).
  **/
-const moment = require('moment');
+const config = require('../config');
 
-let records = {};
+const AUTO_PURGE_LENGTH = 1000;
+const TIME_TO_LIVE = 30 * 60 * 1000; // 30 minutes
+const MAXIMUM_DUPLICATES_LIMIT = 20;
+const DEFAULT_DUPLICATES_LIMIT = 5;
 
-const now = () => {
-  // Passing date to make it testable with fake timers
-  return moment(new Date());
-};
+const records = {};
 
-const purgeIfExpired = (key, value) => {
-  if(value && value.timestamp) {
-    // Checks difference with history duration in minutes
-    const hasExpired = (now().diff(value.timestamp))/60000 >= module.exports._periodMins;
-    if(hasExpired) {
-      delete records[key];
-    }
-    return hasExpired;
+const getAllowedDuplicatesLimit = () => {
+  const smsConfig = config.get('sms') || {};
+  const configuredLimit = smsConfig.duplicate_limit;
+
+  if (configuredLimit && !isNaN(configuredLimit) && configuredLimit > 0) {
+    return Math.min(parseInt(configuredLimit), MAXIMUM_DUPLICATES_LIMIT);
   }
-  return true;
+
+  return DEFAULT_DUPLICATES_LIMIT;
 };
 
-const size = () => {
-  return Object.keys(records).length;
-};
-
-const purge = (force=false) => {
-  if(force || size() >= module.exports._purgeThreshold) {
-    for (const key of Object.keys(records)) {
-      purgeIfExpired(key, records[key]);
-    }
-    return true;
+const purgeIfExpired = (key) => {
+  if (!records[key]) {
+    return;
   }
-  return false;
+
+  const hasExpired = (new Date().getTime() - records[key].timestamp) >= TIME_TO_LIVE;
+  if (hasExpired) {
+    delete records[key];
+  }
 };
 
-const formatkey = (to, msg) => {
-  return `${to}-${msg}`;
+const purge = () => {
+  if (Object.keys(records).length < AUTO_PURGE_LENGTH) {
+    return;
+  }
+
+  Object.keys(records).forEach(purgeIfExpired);
+};
+
+const getKey = (to, msg) => `${to}-${msg}`;
+
+const touch = (key) => {
+  const value = records[key];
+  records[key] = {
+    timestamp: new Date().getTime(),
+    count: (value && value.count + 1) || 1,
+  };
 };
 
 module.exports = {
-
-  check: (to, msg) => { //key to track. returns true for duplicates
+  /**
+   * Returns whether the combination of message + recipient should be considered a duplicate
+   * @param {String} to - recipient phone number
+   * @param {String} msg - sms message content
+   * @returns {boolean}
+   */
+  check: (to, msg) => {
     purge();
-    const alreadyExists = module.exports._get(to, msg) !== null;
-    records[formatkey(to, msg)] = {timestamp: now()};
-    return alreadyExists;
-  },
 
-  // Exposed for testing purposes
-  _get: (to, msg) => { // returns last timestamp for given key
-    const key = formatkey(to, msg);
-    const value = records[key];
-    if(value && !purgeIfExpired(key, value)) {
-      return value;
-    }
-    return null;
+    const key = getKey(to, msg);
+    purgeIfExpired(key);
+    touch(key);
+    return records[key].count > getAllowedDuplicatesLimit();
   },
-  _size: () => size(), // returns number of expired + non-expired keys
-  _clear: () => { records = {}; },// clears history
-  _periodMins: 30, //Number of minutes to track
-  _purgeThreshold: 100 //Number of keys to keep in memory
 };

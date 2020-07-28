@@ -86,27 +86,30 @@ angular.module('inboxServices').factory('ContactsActions',
           $log.error(`Unknown contact type "${type}" for contact "${selected.doc._id}"`);
           return [];
         }
-        return ContactTypes.getChildren(selected.type.id).then(childTypes => {
-          const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
-          const models = [];
-          if (grouped.places) {
-            models.push({
-              menu_key: 'Add place',
-              menu_icon: 'fa-building',
-              permission: 'can_create_places',
-              types: grouped.places
-            });
-          }
-          if (grouped.persons) {
-            models.push({
-              menu_key: 'Add person',
-              menu_icon: 'fa-user',
-              permission: 'can_create_people',
-              types: grouped.persons
-            });
-          }
-          return models;
-        });
+        return ContactTypes.getChildren(selected.type.id);
+      };
+
+      const getGroupedChildTypes = (childTypes) => {
+        const grouped = _.groupBy(childTypes, type => type.person ? 'persons' : 'places');
+        const models = [];
+        if (grouped.places) {
+          models.push({
+            menu_key: 'Add place',
+            menu_icon: 'fa-building',
+            permission: 'can_create_places',
+            types: grouped.places
+          });
+        }
+        if (grouped.persons) {
+          models.push({
+            menu_key: 'Add person',
+            menu_icon: 'fa-user',
+            permission: 'can_create_people',
+            types: grouped.persons
+          });
+        }
+
+        return models;
       };
 
       function loadSelectedContactChildren(options) {
@@ -180,15 +183,15 @@ angular.module('inboxServices').factory('ContactsActions',
                 .then(([ title, canEdit, childTypes ]) => {
                   globalActions.setTitle(title);
                   globalActions.setRightActionBar({
-                    relevantForms: [], // this disables the "New Action" button in action bar till full load is complete
+                    relevantForms: [], // this disables the "New Action" button in action bar till forms load
                     sendTo: selected.type && selected.type.person ? selected.doc : '',
-                    canDelete: false, // this disables the "Delete" button in action bar until full load is complete
+                    canDelete: false, // this disables the "Delete" button in action bar until children load
                     canEdit: canEdit,
-                    childTypes: childTypes
                   });
                   return lazyLoadedContactData
                     .then(() => {
                       selected = Selectors.getSelectedContact(getState());
+                      globalActions.setRightActionBar({ canDelete: canDelete(selected) });
                       registerTasksListener(selected);
                       return $q.all([
                         ContactSummary(selected.doc, selected.reports, selected.lineage, selected.targetDoc),
@@ -200,11 +203,13 @@ angular.module('inboxServices').factory('ContactsActions',
                       updateSelectedContact({ summary });
                       const options = {
                         doc: selected.doc,
-                        contactSummary: summary.context
+                        contactSummary: summary.context,
+                        contactForms: false,
                       };
                       XmlForms.listen('ContactsCtrl', options, (err, forms) => {
                         if (err) {
                           $log.error('Error fetching relevant forms', err);
+                          return;
                         }
                         const showUnmuteModal = formId => {
                           return selected.doc &&
@@ -219,13 +224,19 @@ angular.module('inboxServices').factory('ContactsActions',
                             showUnmuteModal: showUnmuteModal(xForm.internalId)
                           };
                         });
-                        globalActions.setRightActionBar({
-                          relevantForms: formSummaries,
-                          sendTo: selected.type && selected.type.person ? selected.doc : '',
-                          canEdit,
-                          canDelete: canDelete(selected),
-                          childTypes,
-                        });
+                        globalActions.setRightActionBar({ relevantForms: formSummaries });
+                      });
+
+                      XmlForms.listen('ContactsCtrlContactForms', { contactForms: true }, (err, forms) => {
+                        if (err) {
+                          $log.error('Error fetching allowed contact forms', err);
+                          return;
+                        }
+
+                        const allowCreateLink = contactType => forms.find(form => form._id === contactType.create_form);
+                        const allowedChildTypes = childTypes.filter(allowCreateLink);
+
+                        globalActions.setRightActionBar({ childTypes: getGroupedChildTypes(allowedChildTypes) });
                       });
                     });
                 });

@@ -90,11 +90,10 @@ const hasMatchingRow = (rows, id, exact = true) => {
 };
 
 describe('all_docs handler', () => {
-  beforeAll(done => {
-    utils
+  beforeAll(() => {
+    return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .then(() => utils.createUsers(users));
   });
 
   afterAll(done =>
@@ -508,5 +507,145 @@ describe('all_docs handler', () => {
           chai.expect(result.rows[0]).to.deep.equal({ id: 'denied_report', error: 'forbidden' });
         });
       });
+  });
+
+  describe('replication depth', () => {
+    it('should respect replication_depth', () => {
+      const docs = [
+        {
+          // depth = 1
+          _id: 'the_clinic',
+          type: 'clinic',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        },
+        {
+          // depth = 2
+          _id: 'the_person',
+          type: 'person',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        },
+        {
+          // depth = 3
+          _id: 'the_patient',
+          type: 'person',
+          parent: { _id: 'the_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        },
+        {
+          // depth = 1
+          _id: 'report_about_place',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            place_id: 'fixture:offline',
+          },
+          contact: { _id: 'irrelevant' },
+        },
+        {
+          // depth = 2, own report
+          _id: 'allowed_report_about_the_person_1',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'the_person',
+          },
+          contact: { _id: 'fixture:user:supervisor' },
+        },
+        {
+          // depth = 2, has needs_signoff
+          _id: 'allowed_report_about_the_person_2',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'the_person',
+            needs_signoff: true,
+          },
+          contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
+        },
+        {
+          // depth = 2, no needs_signoff
+          _id: 'denied_report_about_the_person',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'the_person',
+          },
+          contact: { _id: 'fixture:user:offline' },
+        },
+        {
+          // depth = 3, has needs_signoff
+          _id: 'allowed_report_about_the_patient',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'the_patient',
+            needs_signoff: true,
+          },
+          contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
+        },
+        {
+          // depth = 3, no needs_signoff
+          _id: 'denied_report_about_the_patient',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'the_patient',
+          },
+          contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
+        },
+        {
+          // depth = 2
+          _id: 'target~offline',
+          type: 'target',
+          owner: 'fixture:user:offline',
+        },
+        {
+          _id: 'task~supervisor',
+          type: 'task',
+          user: 'org.couchdb.user:supervisor',
+        },
+        {
+          _id: 'task~offline',
+          type: 'task',
+          user: 'org.couchdb.user:offline',
+        }
+      ];
+
+      const supervisorRequestOptions = {
+        path: '/_all_docs',
+        auth: { username: 'supervisor', password },
+        method: 'GET'
+      };
+
+      const keys = docs.map(doc => doc._id);
+
+      const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
+      return utils
+        .updateSettings(settings)
+        .then(() => utils.saveDocs(docs))
+        .then(() => Promise.all([
+          utils.requestOnMedicDb(Object.assign({ qs: { keys: keys  } }, supervisorRequestOptions)),
+          utils.requestOnMedicDb(supervisorRequestOptions),
+        ]))
+        .then(([withKeys, withoutKeys]) => {
+          const expectedRowsWithKeys = [
+            { id: 'the_clinic', key: 'the_clinic', value: {} },
+            { id: 'the_person', key: 'the_person', value: {} },
+            { id: 'the_patient', error: 'forbidden' },
+            { id: 'report_about_place', key: 'report_about_place', value: {} },
+            { id: 'allowed_report_about_the_person_1', key: 'allowed_report_about_the_person_1', value: {} },
+            { id: 'allowed_report_about_the_person_2', key: 'allowed_report_about_the_person_2', value: {} },
+            { id: 'denied_report_about_the_person', error: 'forbidden' },
+            { id: 'allowed_report_about_the_patient', key: 'allowed_report_about_the_patient', value: {} },
+            { id: 'denied_report_about_the_patient', error: 'forbidden' },
+            { id: 'target~offline', key: 'target~offline', value: {} },
+            { id: 'task~supervisor', key: 'task~supervisor', value: {} },
+            { id: 'task~offline', error: 'forbidden' },
+          ];
+          const expectedRowsWithoutKeys = expectedRowsWithKeys.filter(row => !row.error);
+
+          chai.expect(withKeys.rows).excludingEvery('rev').to.deep.equal(expectedRowsWithKeys);
+          chai.expect(withoutKeys.rows).excludingEvery('rev').to.deep.include.members(expectedRowsWithoutKeys);
+        });
+    });
   });
 });

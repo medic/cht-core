@@ -92,8 +92,10 @@ describe('UserSettings service', () => {
 
     const firstPromise = service();
     service();
-    service().then(isExpected);
-    firstPromise.then(isExpected);
+    return service()
+      .then(isExpected)
+      .then(() => firstPromise)
+      .then(isExpected);
   });
 
   it('gets from remote db', () => {
