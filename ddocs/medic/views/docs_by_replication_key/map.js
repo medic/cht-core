@@ -52,6 +52,9 @@ function (doc) {
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
       }
+      if (doc.fields && doc.fields.private) {
+        value.private = true;
+      }
       emit(subject, value);
       if (doc.fields &&
           doc.fields.needs_signoff &&

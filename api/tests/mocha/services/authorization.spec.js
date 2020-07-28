@@ -278,24 +278,25 @@ describe('Authorization service', () => {
           { id: 'r4', key: null, value: { submitter: 'c2' } },
           { id: 'r5', key: 'facility_id', value: {} },
           { id: 'r6', key: 'contact_id', value: {} },
-          { id: 'r7', key: 'facility_id', value: { submitter: 'c-unknown' } }, //sensitive
-          { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown' } }, //sensitive
+          { id: 'r7', key: 'facility_id', value: { submitter: 'c-unknown', private: true } }, //sensitive
+          { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
           { id: 'r9', key: 'facility_id', value: { submitter: 'c3' } },
           { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } },
           { id: 'r11', key: 'sbj3', value: { } },
           { id: 'r12', key: 'sbj4', value: { submitter: 'someone' } },
-          { id: 'r13', key: false, value: { submitter: 'someone else' } }
+          { id: 'r13', key: false, value: { submitter: 'someone else' } },
+          { id: 'r14', key: 'contact_id', value: { submitter: 'c-unknown', private: false } }, // not sensitive
         ]});
 
       return service
         .getAllowedDocIds({subjectIds, userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' }})
         .then(result => {
-          result.length.should.equal(13);
+          result.length.should.equal(14);
           result.should.deep.equal([
             '_design/medic-client', 'org.couchdb.user:user',
             'r1', 'r2', 'r3', 'r4',
             'r5', 'r6', 'r9', 'r10',
-            'r11', 'r12', 'r13'
+            'r11', 'r12', 'r13', 'r14'
           ]);
         });
     });
@@ -755,14 +756,20 @@ describe('Authorization service', () => {
       it('returns false for reports with allowed subject, denied submitter and sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
         viewResults = {
-          replicationKeys: [{ key: userCtx.contact_id, value: { submitter: 'submitter', type: 'data_record' }}],
+          replicationKeys: [{
+            key: userCtx.contact_id,
+            value: { submitter: 'submitter', type: 'data_record', private: true }}
+          ],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
         viewResults = {
-          replicationKeys: [{ key: userCtx.facility_id, value: { submitter: 'submitter', type: 'data_record' }}],
+          replicationKeys: [{
+            key: userCtx.facility_id,
+            value: { submitter: 'submitter', type: 'data_record', private: true }
+          }],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
