@@ -1,6 +1,4 @@
 #!/bin/bash
-S3_PATH=thisisthepath
-MEDIC_URL=
 
 echo Cloning cht-core to /cht-core
 git clone --single-branch --branch scalability-automation https://github.com/medic/cht-core.git;
