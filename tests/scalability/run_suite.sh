@@ -1,4 +1,6 @@
 #!/bin/bash
+S3_PATH=thisisthepath
+MEDIC_URL=
 
 echo Cloning cht-core to /cht-core
 git clone --single-branch --branch scalability-automation https://github.com/medic/cht-core.git;
@@ -27,7 +29,8 @@ wget 'http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.2/cmdrun
 java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.repository.PluginManagerCMDInstaller &&
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults &&
 echo "jmeter do it!"
-./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -l ./previous_results/cli_run.jtl -e -o ./report
+./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
+mv ./jmeter.log ./report/jmeter.log
 echo "Installing AWS CLI"
 sudo apt-get install unzip -y 
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
