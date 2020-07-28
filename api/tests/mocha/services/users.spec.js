@@ -1,6 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const service = require('../../../src/services/users');
+const rewire = require('rewire');
+
 const people = require('../../../src/controllers/people');
 const places = require('../../../src/controllers/places');
 const config = require('../../../src/config');
@@ -13,15 +14,19 @@ const facilityb = { _id: 'b', name: 'brian' };
 const facilityc = { _id: 'c', name: 'cathy' };
 
 let userData;
+let clock;
+const oneDayInMS = 24 * 60 * 60 * 1000;
+
+let service;
 
 describe('Users service', () => {
-
   beforeEach(() => {
-    sinon.stub(service, '_getFacilities').returns([
+    service = rewire('../../../src/services/users');
+    service.__set__('getFacilities', sinon.stub().returns([
       facilitya,
       facilityb,
       facilityc,
-    ]);
+    ]));
     userData = {
       username: 'x',
       password: COMPLEX_PASSWORD,
@@ -29,21 +34,22 @@ describe('Users service', () => {
       contact: { 'parent': 'x' },
       type: 'national-manager'
     };
+    clock = sinon.useFakeTimers();
   });
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
   });
 
   describe('getSettingsUpdates', () => {
 
-    it('sets type property', done => {
-      const settings = service._getSettingsUpdates('john', {});
+    it('sets type property', () => {
+      const settings = service.__get__('getSettingsUpdates')('john', {});
       chai.expect(settings.type).to.equal('user-settings');
-      done();
     });
 
-    it('removes user doc specific fields', done => {
+    it('removes user doc specific fields', () => {
       const data = {
         name: 'john',
         email: 'john@gmail.com',
@@ -51,80 +57,74 @@ describe('Users service', () => {
         roles: ['foo'],
         starsign: 'libra'
       };
-      const settings = service._getSettingsUpdates('john', data);
+      const settings = service.__get__('getSettingsUpdates')('john', data);
       chai.expect(settings.password).to.equal(undefined);
-      done();
     });
 
-    it('reassigns place and contact fields', done => {
+    it('reassigns place and contact fields', () => {
       const data = {
         place: 'abc',
         contact: '123',
         fullname: 'John'
       };
-      const settings = service._getSettingsUpdates('john', data);
+      const settings = service.__get__('getSettingsUpdates')('john', data);
       chai.expect(settings.place).to.equal(undefined);
       chai.expect(settings.contact).to.equal(undefined);
       chai.expect(settings.contact_id).to.equal('123');
       chai.expect(settings.facility_id).to.equal('abc');
       chai.expect(settings.fullname).to.equal('John');
-      done();
     });
 
-    it('supports external_id field', done => {
+    it('supports external_id field', () => {
       const data = {
         fullname: 'John',
         external_id: 'CHP020'
       };
-      const settings = service._getSettingsUpdates('john', data);
+      const settings = service.__get__('getSettingsUpdates')('john', data);
       chai.expect(settings.external_id).to.equal('CHP020');
       chai.expect(settings.fullname).to.equal('John');
-      done();
     });
 
   });
 
   describe('getUserUpdates', () => {
 
-    it('enforces name field based on id', done => {
+    it('enforces name field based on id', () => {
       const data = {
         name: 'sam',
         email: 'john@gmail.com'
       };
-      const user = service._getUserUpdates('john', data);
+      const user = service.__get__('getUserUpdates')('john', data);
       chai.expect(user.name ).to.equal('john');
-      done();
     });
 
-    it('reassigns place field', done => {
+    it('reassigns place field', () => {
       const data = {
         place: 'abc'
       };
-      const user = service._getUserUpdates('john', data);
+      const user = service.__get__('getUserUpdates')('john', data);
       chai.expect(user.place).to.equal(undefined);
       chai.expect(user.facility_id).to.equal('abc');
-      done();
     });
 
   });
 
   describe('getType', () => {
 
-    it('returns unknown when roles is empty', done => {
+    it('returns unknown when roles is empty', () => {
       const user = {
         name: 'sam',
         roles: []
       };
       const admins = {};
-      chai.expect(service._getType(user, admins)).to.equal('unknown');
-      done();
+      chai.expect(service.__get__('getType')(user, admins)).to.equal('unknown');
     });
 
   });
 
   describe('hasParent', () => {
 
-    it('works as expected', done => {
+    it('works as expected', () => {
       const facility = {
         _id: 'foo',
         color: 'red',
@@ -137,11 +137,11 @@ describe('Users service', () => {
           }
         }
       };
-      chai.expect(service._hasParent(facility, 'baz')).to.equal(true);
-      chai.expect(service._hasParent(facility, 'slime')).to.equal(false);
-      chai.expect(service._hasParent(facility, 'bar')).to.equal(true);
-      chai.expect(service._hasParent(facility, 'foo')).to.equal(true);
-      chai.expect(service._hasParent(facility, 'goo')).to.equal(false);
+      chai.expect(service.__get__('hasParent')(facility, 'baz')).to.equal(true);
+      chai.expect(service.__get__('hasParent')(facility, 'slime')).to.equal(false);
+      chai.expect(service.__get__('hasParent')(facility, 'bar')).to.equal(true);
+      chai.expect(service.__get__('hasParent')(facility, 'foo')).to.equal(true);
+      chai.expect(service.__get__('hasParent')(facility, 'goo')).to.equal(false);
       // does not modify facility object
       chai.expect(facility).to.deep.equal({
         _id: 'foo',
@@ -155,33 +155,30 @@ describe('Users service', () => {
           }
         }
       });
-      done();
     });
 
   });
 
   describe('validateUser', () => {
-    it('defines custom error when not found', done => {
+    it('defines custom error when not found', () => {
       sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
-      service._validateUser('x').catch(err => {
+      return service.__get__('validateUser')('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find user.');
-        done();
       });
     });
   });
 
   describe('validateUserSettings', () => {
-    it('defines custom error when not found', done => {
+    it('defines custom error when not found', () => {
       sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
-      service._validateUserSettings('x').catch(err => {
+      return service.__get__('validateUserSettings')('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find user settings.');
-        done();
       });
     });
   });
 
   describe('getType', () => {
-    it('returns role when user is in admins list and has role', done => {
+    it('returns role when user is in admins list and has role', () => {
       const user = {
         name: 'sam',
         roles: ['driver']
@@ -189,15 +186,14 @@ describe('Users service', () => {
       const admins = {
         'sam': 'x'
       };
-      chai.expect(service._getType(user, admins)).to.equal('driver');
-      done();
+      chai.expect(service.__get__('getType')(user, admins)).to.equal('driver');
     });
   });
 
   describe('getList', () => {
 
     it('collects user infos', () => {
-      sinon.stub(service, '_getAllUsers').resolves([
+      const allUsers = [
         {
           id: 'org.couchdb.user:x',
           doc: {
@@ -214,8 +210,8 @@ describe('Users service', () => {
             roles: [ 'district-admin' ]
           }
         }
-      ]);
-      sinon.stub(service, '_getAllUserSettings').resolves([
+      ];
+      const allUsersSettings = [
         {
           _id: 'org.couchdb.user:x',
           name: 'lucas',
@@ -231,7 +227,9 @@ describe('Users service', () => {
           phone: '987654321',
           external_id: 'LTT093'
         }
-      ]);
+      ];
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves(allUsersSettings));
       return service.getList().then(data => {
         chai.expect(data.length).to.equal(2);
         const lucas = data[0];
@@ -255,7 +253,7 @@ describe('Users service', () => {
     });
 
     it('filters out non-users', () => {
-      sinon.stub(service, '_getAllUsers').resolves([
+      const allUsers = [
         {
           id: 'x',
           doc: {
@@ -278,8 +276,8 @@ describe('Users service', () => {
             roles: [ 'district-admin' ]
           }
         }
-      ]);
-      sinon.stub(service, '_getAllUserSettings').resolves([
+      ];
+      const allUserSettings = [
         {
           _id: 'org.couchdb.user:x',
           name: 'lucas',
@@ -294,7 +292,10 @@ describe('Users service', () => {
           email: 'm@a.com',
           phone: '987654321'
         }
-      ]);
+      ];
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves(allUserSettings));
+
       return service.getList().then(data => {
         chai.expect(data.length).to.equal(1);
         const milan = data[0];
@@ -310,15 +311,16 @@ describe('Users service', () => {
     });
 
     it('handles minimal users', () => {
-      sinon.stub(service, '_getAllUsers').resolves([
+      const allUsers = [
         {
           id: 'org.couchdb.user:x',
           doc: {
             name: 'lucas'
           }
         }
-      ]);
-      sinon.stub(service, '_getAllUserSettings').resolves([]);
+      ];
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves([]));
       return service.getList().then(data => {
         chai.expect(data.length).to.equal(1);
         const lucas = data[0];
@@ -332,17 +334,16 @@ describe('Users service', () => {
       });
     });
 
-    it('returns errors from users service', done => {
-      sinon.stub(service, '_getAllUsers').returns(Promise.reject('not found'));
-      sinon.stub(service, '_getAllUserSettings').returns(Promise.reject('not found'));
-      service.getList().catch(err => {
-        chai.expect(err).to.equal('not found');
-        done();
+    it('returns errors from users service', () => {
+      service.__set__('getAllUsers', sinon.stub().rejects('not found'));
+      service.__set__('getAllUserSettings', sinon.stub().rejects('not found'));
+      return service.getList().catch(err => {
+        chai.expect(err.name).to.equal('not found');
       });
     });
 
-    it('returns errors from facilities service', done => {
-      sinon.stub(service, '_getAllUsers').resolves([
+    it('returns errors from facilities service', () => {
+      const allUsers = [
         {
           id: 'x',
           doc: {
@@ -365,13 +366,12 @@ describe('Users service', () => {
             roles: [ 'district-admin' ]
           }
         }
-      ]);
-      sinon.stub(service, '_getAllUserSettings').resolves([]);
-      service._getFacilities.restore();
-      sinon.stub(service, '_getFacilities').returns(Promise.reject('BOOM'));
-      service.getList().catch(err => {
-        chai.expect(err).to.equal('BOOM');
-        done();
+      ];
+      service.__set__('getAllUsers', sinon.stub().resolves(allUsers));
+      service.__set__('getAllUserSettings', sinon.stub().resolves([]));
+      service.__set__('getFacilities', sinon.stub().rejects('BOOM'));
+      return service.getList().catch(err => {
+        chai.expect(err.name).to.equal('BOOM');
       });
     });
 
@@ -379,15 +379,14 @@ describe('Users service', () => {
 
   describe('deleteUser', () => {
 
-    it('returns _users insert errors', done => {
+    it('returns _users insert errors', () => {
       sinon.stub(db.users, 'get').resolves({});
       sinon.stub(db.medic, 'get').resolves({});
-      const put = sinon.stub(db.users, 'put').returns(Promise.reject('Not Found'));
-      sinon.stub(db.medic, 'put').returns(Promise.reject('Not Found'));
-      service.deleteUser('foo').catch(err => {
-        chai.expect(err).to.equal('Not Found');
+      const put = sinon.stub(db.users, 'put').rejects('Not Found');
+      sinon.stub(db.medic, 'put').rejects('Not Found');
+      return service.deleteUser('foo').catch(err => {
+        chai.expect(err.name).to.equal('Not Found');
         chai.expect(put.callCount).to.equal(1);
-        done();
       });
     });
 
@@ -434,7 +433,7 @@ describe('Users service', () => {
   describe('createPlace', () => {
     it('assigns new place', () => {
       sinon.stub(places, 'getOrCreatePlace').resolves({ _id: 'santos' });
-      return service._createPlace(userData).then(() => {
+      return service.__get__('createPlace')(userData).then(() => {
         chai.expect(userData.place._id).to.equal('santos');
       });
     });
@@ -442,11 +441,10 @@ describe('Users service', () => {
 
   describe('createUserSettings', () => {
 
-    it('returns error from db insert', done => {
-      sinon.stub(db.medic, 'put').returns(Promise.reject('yucky'));
-      service._createUserSettings(userData).catch(err => {
-        chai.expect(err).to.equal('yucky');
-        done();
+    it('returns error from db insert', () => {
+      sinon.stub(db.medic, 'put').rejects('yucky');
+      return service.__get__('createUserSettings')(userData).catch(err => {
+        chai.expect(err.name).to.equal('yucky');
       });
     });
 
@@ -456,7 +454,7 @@ describe('Users service', () => {
         rev: '1-xyz'
       });
       const response = {};
-      return service._createUserSettings(userData, response).then(() => {
+      return service.__get__('createUserSettings')(userData, response).then(() => {
         chai.expect(response).to.deep.equal({
           'user-settings': {
             id: 'abc',
@@ -470,18 +468,17 @@ describe('Users service', () => {
 
   describe('createContact', () => {
 
-    it('returns error from db insert', done => {
+    it('returns error from db insert', () => {
       sinon.stub(people, 'createPerson').returns(Promise.reject('yucky'));
-      service._createContact(userData, {}).catch(err => {
+      return service.__get__('createContact')(userData, {}).catch(err => {
         chai.expect(err).to.equal('yucky');
-        done();
       });
     });
 
     it('updates contact property', () => {
       sinon.stub(people, 'getOrCreatePerson').resolves({ id: 'abc' });
       const response = {};
-      return service._createContact(userData, response).then(() => {
+      return service.__get__('createContact')(userData, response).then(() => {
         chai.expect(userData.contact).to.deep.equal({ id: 'abc' });
       });
     });
@@ -489,7 +486,7 @@ describe('Users service', () => {
     it('sets up response', () => {
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'abc', _rev: '1-xyz' });
       const response = {};
-      return service._createContact(userData, response).then(() => {
+      return service.__get__('createContact')(userData, response).then(() => {
         chai.expect(response).to.deep.equal({
           contact: {
             id: 'abc',
@@ -501,13 +498,12 @@ describe('Users service', () => {
 
   });
 
-  describe('_createUser', () => {
+  describe('createUser', () => {
 
-    it('returns error from db insert', done => {
-      sinon.stub(db.users, 'put').returns(Promise.reject('yucky'));
-      service._createUser(userData, {}).catch(err => {
-        chai.expect(err).to.equal('yucky');
-        done();
+    it('returns error from db insert', () => {
+      sinon.stub(db.users, 'put').rejects('yucky');
+      return service.__get__('createUser')(userData, {}).catch(err => {
+        chai.expect(err.name).to.equal('yucky');
       });
     });
 
@@ -517,7 +513,7 @@ describe('Users service', () => {
         rev: '1-xyz'
       });
       const response = {};
-      return service._createUser(userData, response).then(() => {
+      return service.__get__('createUser')(userData, response).then(() => {
         chai.expect(response).to.deep.equal({
           'user': {
             id: 'abc',
@@ -531,56 +527,23 @@ describe('Users service', () => {
 
   describe('createUser', () => {
 
-    it('returns error if missing fields', done => {
-      // empty
-      service.createUser({}).catch(err => {
-        chai.expect(err.code).to.equal(400);
-      });
-      // missing username
-      service.createUser({
-        password: 'x',
-        place: 'x',
-        contact: { parent: 'x' }
-      }).catch(err => {
-        chai.expect(err.code).to.equal(400);
-      });
-      // missing password
-      service.createUser({
-        username: 'x',
-        place: 'x',
-        contact: { parent: 'x' }
-      }).catch(err => {
-        chai.expect(err.code).to.equal(400);
-      });
-      // missing place
-      service.createUser({
-        username: 'x',
-        password: 'x',
-        contact: { parent: 'x' }
-      }).catch(err => {
-        chai.expect(err.code).to.equal(400);
-      });
-      // missing contact
-      service.createUser({
-        username: 'x',
-        place: 'x',
-        contact: { parent: 'x' }
-      }).catch(err => {
-        chai.expect(err.code).to.equal(400);
-      });
-      // missing contact.parent
-      service.createUser({
-        username: 'x',
-        place: 'x',
-        contact: {}
-      }).catch(err => {
-        chai.expect(err.code).to.equal(400);
-      });
-      done();
+    it('returns error if missing fields', () => {
+      return service.createUser({})
+        .catch(err => chai.expect(err.code).to.equal(400)) // empty
+        .then(() => service.createUser({ password: 'x', place: 'x', contact: { parent: 'x' }})) // missing username
+        .catch(err => chai.expect(err.code).to.equal(400))
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }})) // missing password
+        .catch(err => chai.expect(err.code).to.equal(400))
+        .then(() => service.createUser({ username: 'x', password: 'x', contact: { parent: 'x' }})) // missing place
+        .catch(err => chai.expect(err.code).to.equal(400))
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: { parent: 'x' }})) // missing contact
+        .catch(err => chai.expect(err.code).to.equal(400))
+        .then(() => service.createUser({ username: 'x', place: 'x', contact: {}})) // missing contact.parent
+        .catch(err => chai.expect(err.code).to.equal(400));
     });
 
-    it('returns error if short password', done => {
-      service.createUser({
+    it('returns error if short password', () => {
+      return service.createUser({
         username: 'x',
         place: 'x',
         contact: { parent: 'x' },
@@ -591,12 +554,11 @@ describe('Users service', () => {
         chai.expect(err.message.message).to.equal('The password must be at least 8 characters long.');
         chai.expect(err.message.translationKey).to.equal('password.length.minimum');
         chai.expect(err.message.translationParams).to.have.property('minimum');
-        done();
       });
     });
 
-    it('returns error if weak password', done => {
-      service.createUser({
+    it('returns error if weak password', () => {
+      return service.createUser({
         username: 'x',
         place: 'x',
         contact: { parent: 'x' },
@@ -607,32 +569,29 @@ describe('Users service', () => {
         chai.expect(err.message.message)
           .to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
         chai.expect(err.message.translationKey).to.equal('password.weak');
-        done();
       });
     });
 
-    it('returns error if contact.parent lookup fails', done => {
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
-      sinon.stub(service, '_setContactParent').returns(Promise.reject('kablooey'));
-      service.createUser(userData).catch(err => {
-        chai.expect(err).to.equal('kablooey');
-        done();
+    it('returns error if contact.parent lookup fails', () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('setContactParent', sinon.stub().rejects('kablooey'));
+      return service.createUser(userData).catch(err => {
+        chai.expect(err.name).to.equal('kablooey');
       });
     });
 
-    it('returns error if place lookup fails', done => {
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').returns(Promise.reject('fail'));
-      service.createUser(userData).catch(err => {
-        chai.expect(err).to.equal('fail');
-        done();
+    it('returns error if place lookup fails', () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().rejects('fail'));
+      return service.createUser(userData).catch(err => {
+        chai.expect(err.name).to.equal('fail');
       });
     });
 
-    it('returns error if place is not within contact', done => {
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
+    it('returns error if place is not within contact', () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({
         _id: 'miami',
         parent: {
@@ -640,33 +599,32 @@ describe('Users service', () => {
         }
       });
       userData.place = 'georgia';
-      service.createUser(userData).catch(err => {
+      return service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.translationKey).to.equal('configuration.user.place.contact');
         chai.expect(err.message.message).to.equal('Contact is not within place.');
-        done();
       });
     });
 
     it('succeeds if contact and place are the same', () => {
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createContact').resolves();
-      sinon.stub(service, '_storeUpdatedPlace').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       userData.place = 'foo';
       return service.createUser(userData);
     });
 
     it('succeeds if contact is within place', () => {
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createContact').resolves();
-      sinon.stub(service, '_storeUpdatedPlace').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({
         _id: 'miami',
         parent: {
@@ -679,41 +637,38 @@ describe('Users service', () => {
       });
     });
 
-    it('fails if new username does not validate', done => {
-      sinon.stub(service, '_validateNewUsername').returns(Promise.reject('sorry'));
+    it('fails if new username does not validate', () => {
+      service.__set__('validateNewUsername', sinon.stub().rejects('sorry'));
       const insert = sinon.stub(db.medic, 'put');
-      service.createUser(userData).catch(err => {
-        chai.expect(err).to.equal('sorry');
+      return service.createUser(userData).catch(err => {
+        chai.expect(err.name).to.equal('sorry');
         chai.expect(insert.callCount).to.equal(0);
-        done();
       });
     });
 
-    it('errors if username exists in _users db', done => {
+    it('errors if username exists in _users db', () => {
       sinon.stub(db.users, 'get').resolves('bob lives here already.');
       sinon.stub(db.medic, 'get').resolves();
       const insert = sinon.stub(db.medic, 'put');
-      service.createUser(userData).catch(err => {
+      return service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "x" already taken.');
         chai.expect(err.message.translationKey).to.equal('username.taken');
         chai.expect(err.message.translationParams).to.have.property('username');
         chai.expect(insert.callCount).to.equal(0);
-        done();
       });
     });
 
-    it('errors if username exists in medic db', done => {
+    it('errors if username exists in medic db', () => {
       sinon.stub(db.users, 'get').resolves();
       sinon.stub(db.medic, 'get').resolves('jane lives here too.');
       const insert = sinon.stub(db.medic, 'put');
-      service.createUser(userData).catch(err => {
+      return service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "x" already taken.');
         chai.expect(err.message.translationKey).to.equal('username.taken');
         chai.expect(err.message.translationParams).to.have.property('username');
         chai.expect(insert.callCount).to.equal(0);
-        done();
       });
     });
 
@@ -722,23 +677,24 @@ describe('Users service', () => {
   describe('setContactParent', () => {
 
     it('resolves contact parent in waterfall', () => {
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('hasParent', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+
       sinon.stub(places, 'getPlace').resolves({
         _id: 'a',
         biz: 'marquee'
       });
-      sinon.stub(service, '_hasParent').returns(true);
-      sinon.stub(service, '_createContact').resolves();
-      sinon.stub(service, '_storeUpdatedPlace').resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
       return service.createUser(userData).then(() => {
-        chai.expect(service._createContact.args[0][0].contact.parent).to.deep.equal({ _id: 'a' });
+        chai.expect(service.__get__('createContact').args[0][0].contact.parent).to.deep.equal({ _id: 'a' });
       });
     });
 
-    it('fails validation if contact is not in place using id', done => {
+    it('fails validation if contact is not in place using id', () => {
       const userData = {
         username: 'x',
         password: COMPLEX_PASSWORD,
@@ -746,8 +702,8 @@ describe('Users service', () => {
         contact: 'def',
         type: 'national-manager'
       };
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
       sinon.stub(db.medic, 'get').resolves({
         _id: 'def',
         type: 'person',
@@ -757,11 +713,10 @@ describe('Users service', () => {
         }
       });
       sinon.stub(people, 'isAPerson').returns(true);
-      service.createUser(userData).catch(err => {
+      return service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Contact is not within place.');
         chai.expect(err.message.translationKey).to.equal('configuration.user.place.contact');
-        done();
       });
     });
 
@@ -773,8 +728,8 @@ describe('Users service', () => {
         contact: 'def',
         type: 'national-manager'
       };
-      sinon.stub(service, '_validateNewUsername').resolves();
-      sinon.stub(service, '_createPlace').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
       sinon.stub(db.medic, 'get').resolves({
         _id: 'def',
         type: 'person',
@@ -784,12 +739,12 @@ describe('Users service', () => {
         }
       });
       sinon.stub(people, 'isAPerson').returns(true);
-      sinon.stub(service, '_createContact').resolves();
-      sinon.stub(service, '_storeUpdatedPlace').resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service.createUser(userData).then(() => {
-        chai.expect(service._createContact.args[0][0].contact).to.equal('def');
+        chai.expect(service.__get__('createContact').args[0][0].contact).to.equal('def');
       });
     });
 
@@ -805,7 +760,7 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      sinon.stub(service, '_validateNewUsername').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(places, 'getOrCreatePlace').resolves({
         _id: 'place_id',
         _rev: 1,
@@ -820,8 +775,8 @@ describe('Users service', () => {
       });
       sinon.stub(db.medic, 'get').resolves(place);
       sinon.stub(db.medic, 'put').resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
@@ -842,7 +797,8 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      sinon.stub(service, '_validateNewUsername').resolves();
+
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
@@ -858,8 +814,9 @@ describe('Users service', () => {
       sinon.stub(db.medic, 'put')
         .onCall(0).rejects({ status: 409, reason: 'conflict' })
         .onCall(1).resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
@@ -883,7 +840,7 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      sinon.stub(service, '_validateNewUsername').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
@@ -902,8 +859,8 @@ describe('Users service', () => {
         .onCall(1).rejects({ status: 409, reason: 'conflict' })
         .onCall(2).rejects({ status: 409, reason: 'conflict' })
         .onCall(3).resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service.createUser(userData).then(() => {
         chai.expect(userData.contact).to.deep.equal({ _id: 'b', name: 'mickey' });
         chai.expect(userData.place.contact).to.deep.equal({ _id: 'b' });
@@ -927,7 +884,8 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      sinon.stub(service, '_validateNewUsername').resolves();
+
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const placeRev1 = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       const placeRev2 = { _id: 'place_id', _rev: 2, name: 'x', parent: 'parent', place_id: 'aaaa' };
@@ -951,8 +909,8 @@ describe('Users service', () => {
         .onCall(2).rejects(conflictErr)
         .onCall(3).rejects(conflictErr)
         .onCall(4).resolves();
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
         .then(() => { throw 'should have thrown'; })
@@ -967,7 +925,7 @@ describe('Users service', () => {
           chai.expect(db.medic.put.args[1]).to.deep.equal([{
             _id: 'place_id', _rev: 2, name: 'x', contact: { _id: 'b' }, parent: 'parent', place_id: 'aaaa',
           }]);
-          chai.expect(service._createUser.callCount).to.equal(0);
+          chai.expect(service.__get__('createUser').callCount).to.equal(0);
         });
     });
 
@@ -979,7 +937,7 @@ describe('Users service', () => {
         contact: { name: 'mickey' },
         type: 'national-manager'
       };
-      sinon.stub(service, '_validateNewUsername').resolves();
+      service.__set__('validateNewUsername', sinon.stub().resolves());
 
       const place = { _id: 'place_id', _rev: 1, name: 'x', parent: 'parent' };
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
@@ -990,8 +948,8 @@ describe('Users service', () => {
       });
       sinon.stub(db.medic, 'get').resolves(place);
       sinon.stub(db.medic, 'put').rejects({ status: 400, reason: 'not-a-conflict' });
-      sinon.stub(service, '_createUser').resolves();
-      sinon.stub(service, '_createUserSettings').resolves();
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
         .then(() => { throw 'should have thrown'; })
@@ -1003,7 +961,7 @@ describe('Users service', () => {
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'place_id', _rev: 1, name: 'x', contact: { _id: 'b' }, parent: 'parent',
           }]);
-          chai.expect(service._createUser.callCount).to.equal(0);
+          chai.expect(service.__get__('createUser').callCount).to.equal(0);
         });
     });
 
@@ -1011,79 +969,72 @@ describe('Users service', () => {
 
   describe('updateUser', () => {
 
-    it('errors if place, type and password is undefined', done => {
-      service.updateUser('paul', {}, true).catch(err => {
+    it('errors if place, type and password is undefined', () => {
+      return service.updateUser('paul', {}, true).catch(err => {
         chai.expect(err.code).to.equal(400);
-        done();
       });
     });
 
-    it('errors on unknown property', done => {
-      service.updateUser('paul', {foo: 'bar'}, true).catch(err => {
+    it('errors on unknown property', () => {
+      return service.updateUser('paul', {foo: 'bar'}, true).catch(err => {
         chai.expect(err.code).to.equal(400);
-        done();
       });
     });
 
-    it('fails if place fetch fails', done => {
+    it('fails if place fetch fails', () => {
       const data = {
         place: 'x'
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
-      sinon.stub(places, 'getPlace').returns(Promise.reject('Not today pal.'));
+      service.__set__('validateUser', sinon.stub().resolves());
+      service.__set__('validateUserSettings', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').rejects('Not today pal.');
       const update = sinon.stub(db.medic, 'put');
-      service.updateUser('paul', data, true).catch(() => {
+      return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
-        done();
       });
     });
 
-    it('fails if user not found', done => {
+    it('fails if user not found', () => {
       const data = {
         type: 'x'
       };
-      sinon.stub(service, '_validateUser').returns(Promise.reject('not found'));
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().rejects('not found'));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       const update = sinon.stub(db.medic, 'put');
-      service.updateUser('paul', data, true).catch(() => {
+      return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
-        done();
       });
     });
 
-    it('fails if user settings not found', done => {
+    it('fails if user settings not found', () => {
       const data = {
         type: 'x'
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').returns(Promise.reject('too rainy today'));
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().rejects('too rainy today'));
       const update = sinon.stub(db.medic, 'put');
-      service.updateUser('paul', data, true).catch(() => {
+      return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
-        done();
       });
     });
 
-    it('fails if users db insert fails', done => {
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+    it('fails if users db insert fails', () => {
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves();
       sinon.stub(db.users, 'put').returns(Promise.reject('shiva was here'));
-      service.updateUser('georgi', {type: 'x'}, true).catch(err => {
+      return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva was here');
-        done();
       });
     });
 
-    it('fails if medic db insert fails', done => {
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+    it('fails if medic db insert fails', () => {
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').returns(Promise.reject('shiva strikes again'));
       sinon.stub(db.users, 'put').resolves({});
-      service.updateUser('georgi', {type: 'x'}, true).catch(err => {
+      return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva strikes again');
-        done();
       });
     });
 
@@ -1091,8 +1042,8 @@ describe('Users service', () => {
       const data = {
         type: 'x'
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -1105,8 +1056,8 @@ describe('Users service', () => {
       const data = {
         password: COMPLEX_PASSWORD
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -1119,8 +1070,8 @@ describe('Users service', () => {
       const data = {
         place: 'x'
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1134,8 +1085,8 @@ describe('Users service', () => {
       const data = {
         roles: [ 'rebel' ]
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(false);
@@ -1151,8 +1102,8 @@ describe('Users service', () => {
       const data = {
         roles: [ 'rebel' ]
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(true);
@@ -1168,8 +1119,8 @@ describe('Users service', () => {
       const data = {
         password: COMPLEX_PASSWORD
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1180,37 +1131,35 @@ describe('Users service', () => {
       });
     });
 
-    it('returns error if short password', done => {
+    it('returns error if short password', () => {
       const data = {
         password: 'short'
       };
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
-      service.updateUser('paul', data, true).catch(err => {
+      return service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.translationKey).to.equal('password.length.minimum');
         chai.expect(err.message.translationParams).to.have.property('minimum');
         chai.expect(err.message.message).to.equal('The password must be at least 8 characters long.');
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
-        done();
       });
     });
 
-    it('returns error if weak password', done => {
+    it('returns error if weak password', () => {
       const data = {
         password: 'aaaaaaaa'
       };
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
-      service.updateUser('paul', data, true).catch(err => {
+      return service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.translationKey).to.equal('password.weak');
         chai.expect(err.message.message)
           .to.equal('The password is too easy to guess. Include a range of types of characters to increase the score.');
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
-        done();
       });
     });
 
@@ -1218,8 +1167,8 @@ describe('Users service', () => {
       const data = {
         place: 'paris'
       };
-      sinon.stub(service, '_validateUser').resolves({ facility_id: 'maine' });
-      sinon.stub(service, '_validateUserSettings').resolves({ facility_id: 'maine' });
+      service.__set__('validateUser', sinon.stub().resolves({ facility_id: 'maine' }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({ facility_id: 'maine' }));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1236,14 +1185,14 @@ describe('Users service', () => {
         place: null,
         contact: null
       };
-      sinon.stub(service, '_validateUser').resolves({
+      service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
         roles: ['mm-online']
-      });
-      sinon.stub(service, '_validateUserSettings').resolves({
+      }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({
         facility_id: 'maine',
         contact_id: 1
-      });
+      }));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -1264,16 +1213,16 @@ describe('Users service', () => {
         type: 'rambler',
         password: COMPLEX_PASSWORD
       };
-      sinon.stub(service, '_validateUser').resolves({
+      service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
         roles: ['bartender'],
         shoes: 'dusty boots'
-      });
-      sinon.stub(service, '_validateUserSettings').resolves({
+      }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({
         facility_id: 'maine',
         phone: '123',
         known: false
-      });
+      }));
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
@@ -1303,16 +1252,16 @@ describe('Users service', () => {
         roles: ['chp'],
         password: COMPLEX_PASSWORD
       };
-      sinon.stub(service, '_validateUser').resolves({
+      service.__set__('validateUser', sinon.stub().resolves({
         facility_id: 'maine',
         roles: ['chp'],
         shoes: 'dusty boots'
-      });
-      sinon.stub(service, '_validateUserSettings').resolves({
+      }));
+      service.__set__('validateUserSettings', sinon.stub().resolves({
         facility_id: 'maine',
         phone: '123',
         known: false
-      });
+      }));
       sinon.stub(config, 'get').returns({ chp: { offline: true } });
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
@@ -1332,8 +1281,8 @@ describe('Users service', () => {
       const data = {
         fullname: 'George'
       };
-      sinon.stub(service, '_validateUser').resolves({});
-      sinon.stub(service, '_validateUserSettings').resolves({});
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({ id: 'abc', rev: '1-xyz' });
       sinon.stub(db.users, 'put').resolves({ id: 'def', rev: '1-uvw' });
       return service.updateUser('georgi', data, true).then(resp => {
@@ -1352,49 +1301,46 @@ describe('Users service', () => {
 
   describe('validateNewUsername', () => {
 
-    it('fails if a user already exists with that name', done => {
+    it('fails if a user already exists with that name', () => {
       const usersGet = sinon.stub(db.users, 'get').resolves({ id: 'abc', rev: '1-xyz' });
       sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
-      service._validateNewUsername('georgi').catch(err => {
+      return service.__get__('validateNewUsername')('georgi').catch(err => {
         chai.expect(usersGet.callCount).to.equal(1);
         chai.expect(usersGet.args[0][0]).to.equal('org.couchdb.user:georgi');
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "georgi" already taken.');
         chai.expect(err.message.translationKey).to.equal('username.taken');
         chai.expect(err.message.translationParams).to.have.property('username');
-        done();
       });
     });
 
-    it('fails if a user settings already exists with that name', done => {
+    it('fails if a user settings already exists with that name', () => {
       sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
       const medicGet = sinon.stub(db.medic, 'get').resolves({ id: 'abc', rev: '1-xyz' });
-      service._validateNewUsername('georgi').catch(err => {
+      return service.__get__('validateNewUsername')('georgi').catch(err => {
         chai.expect(medicGet.callCount).to.equal(1);
         chai.expect(medicGet.args[0][0]).to.equal('org.couchdb.user:georgi');
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "georgi" already taken.');
         chai.expect(err.message.translationKey).to.equal('username.taken');
         chai.expect(err.message.translationParams).to.have.property('username');
-        done();
       });
     });
 
-    it('fails if username contains invalid characters', done => {
-      service._validateNewUsername('^_^').catch(err => {
+    it('fails if username contains invalid characters', () => {
+      return service.__get__('validateNewUsername')('^_^').catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal(
           'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).'
         );
         chai.expect(err.message.translationKey).to.equal('username.invalid');
-        done();
       });
     });
 
     it('passes if no user exists', () => {
       sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
       sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
-      return service._validateNewUsername('georgi');
+      return service.__get__('validateNewUsername')('georgi');
     });
 
   });
@@ -1473,5 +1419,362 @@ describe('Users service', () => {
     });
   });
 
+  describe('create a user with token_login', () => {
+    it('should require a phone number', () => {
+      const user = {
+        username: 'sally',
+        roles: ['a', 'b'],
+        token_login: true,
+      };
+
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      return service.createUser(user)
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.nested.include({
+            code: 400,
+            'message.message': 'Missing required fields: phone',
+          });
+        });
+    });
+
+    it('should require a valid phone number', () => {
+      const user = {
+        username: 'sally',
+        roles: ['a', 'b'],
+        phone: '123',
+        token_login: true,
+      };
+
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      return service.createUser(user)
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.nested.include({
+            code: 400,
+            'message.message': 'A valid phone number is required for SMS login.',
+          });
+        });
+    });
+
+    it('should normalize phone number and change password (if provided)', () => {
+      const tokenLoginConfig = { message: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('');
+
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      const user = {
+        username: 'sally',
+        roles: ['a', 'b'],
+        phone: '+40 755 69-69-69',
+        password: 'random',
+        token_login: true,
+      };
+
+      sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+      sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+
+      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({
+          _id: 'org.couchdb.user:sally',
+          type: 'user',
+          roles: ['a', 'b', 'mm-online'],
+          name: 'sally',
+        });
+      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({
+          _id: 'org.couchdb.user:sally',
+          type: 'user-settings',
+          roles: ['a', 'b', 'mm-online'],
+          phone: '+40755696969',
+          name: 'sally',
+        });
+
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+
+      return service.createUser(user, 'http://realhost').then(response => {
+        chai.expect(response).to.deep.equal({
+          user: { id: 'org.couchdb.user:sally', rev: undefined },
+          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          token_login: { expiration_date: oneDayInMS },
+        });
+        chai.expect(db.medic.put.callCount).to.equal(3);
+        chai.expect(db.users.put.callCount).to.equal(2);
+
+        chai.expect(db.medic.put.args[0]).to.deep.equal([{
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          type: 'user-settings',
+          phone: '+40755696969', // normalized phone
+          roles: ['a', 'b', 'mm-online'],
+        }]);
+
+        chai.expect(db.users.put.args[0][0]).to.deep.include({
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          type: 'user',
+          roles: ['a', 'b', 'mm-online'],
+        });
+        chai.expect(db.users.put.args[0][0].password).not.to.equal('random');
+        chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
+
+        chai.expect(db.medic.put.args[2][0]).to.deep.equal({
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          type: 'user-settings',
+          phone: '+40755696969', // normalized phone
+          roles: ['a', 'b', 'mm-online'],
+          token_login: {
+            active: true,
+            expiration_date: oneDayInMS,
+          },
+        });
+
+        chai.expect(db.users.put.args[1][0]).to.deep.include({
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          type: 'user',
+          roles: ['a', 'b', 'mm-online'],
+        });
+
+        chai.expect(db.users.put.args[1][0].token_login).to.deep.include({
+          active: true,
+          expiration_date: oneDayInMS,
+        });
+        const token = db.users.put.args[1][0].token_login.token;
+        chai.expect(token.length).to.equal(64);
+
+        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+          _id: `token:login:${token}`,
+          type: 'token_login',
+          reported_date: 0,
+          user: 'org.couchdb.user:sally',
+          'tasks[0].messages[0].to': '+40755696969',
+          'tasks[0].messages[0].message': 'sms',
+          'tasks[0].state': 'pending',
+          'tasks[1].messages[0].to': '+40755696969',
+          'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
+          'tasks[1].state': 'pending',
+        });
+      });
+    });
+  });
+
+  describe('update a user with token_login', () => {
+    it('should require a phone number', () => {
+      const updates = { token_login: true };
+
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true};
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user-settings',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      sinon.stub(db.users, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+
+      return service.updateUser('sally', updates)
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.nested.include({
+            code: 400,
+            'message.message': 'A valid phone number is required for SMS login.',
+          });
+        });
+    });
+
+    it('should require a valid phone number', () => {
+      const updates = { token_login: true, phone: '456' };
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user-settings',
+        roles: ['a', 'b', 'mm-online'],
+        phone: '123',
+      });
+      sinon.stub(db.users, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+
+      return service.updateUser('sally', updates)
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.nested.include({
+            code: 400,
+            'message.message': 'A valid phone number is required for SMS login.',
+          });
+        });
+    });
+
+    it('should normalize phone number and change password', () => {
+      const tokenLoginConfig = { message: 'the sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://host');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      const updates = { token_login: true, phone: '+40 755 89-89-89' };
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user-settings',
+        roles: ['a', 'b', 'mm-online'],
+        phone: '123',
+      });
+      sinon.stub(db.users, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+      sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+      clock.tick(5000);
+
+      return service.updateUser('sally', updates, true, 'https://realhost').then(response => {
+        chai.expect(response).to.deep.equal({
+          user: { id: 'org.couchdb.user:sally', rev: undefined },
+          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          token_login: { expiration_date: 5000 + oneDayInMS },
+        });
+
+        chai.expect(db.medic.put.callCount).to.equal(3);
+        chai.expect(db.medic.put.args[2][0]).to.deep.equal({
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          type: 'user-settings',
+          phone: '+40755898989', // normalized phone
+          roles: ['a', 'b', 'mm-online'],
+          token_login: {
+            active: true,
+            expiration_date: 5000 + oneDayInMS,
+          },
+        });
+
+        chai.expect(db.users.put.callCount).to.equal(2);
+        chai.expect(db.users.put.args[1][0]).to.deep.include({
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          type: 'user',
+          roles: ['a', 'b', 'mm-online'],
+        });
+
+        chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
+          active: true,
+          expiration_date: 5000 + oneDayInMS,
+        });
+        chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
+
+        const token = db.users.put.args[0][0].token_login.token;
+        chai.expect(token.length).to.equal(64);
+
+        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+          _id: `token:login:${token}`,
+          type: 'token_login',
+          user: 'org.couchdb.user:sally',
+          reported_date: 5000,
+          'tasks[0].messages[0].to': '+40755898989',
+          'tasks[0].messages[0].message': 'the sms',
+          'tasks[0].state': 'pending',
+          'tasks[1].messages[0].to': '+40755898989',
+          'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
+          'tasks[1].state': 'pending',
+        });
+      });
+    });
+
+    it('should require password when removing token_login', () => {
+      const tokenLoginConfig = { message: 'the sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://host');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      const updates = { token_login: false };
+      sinon.stub(db.medic, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user-settings',
+        roles: ['a', 'b', 'mm-online'],
+        token_login: { active: true },
+      });
+      sinon.stub(db.users, 'get').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+        token_login: { active: true },
+      });
+
+      return service.updateUser('sally', updates)
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.nested.include({
+            code: 400,
+            'message.message': 'Password is required when disabling token login.',
+          });
+        });
+    });
+
+    it('should not require password when not changing token_login', () => {
+      const tokenLoginConfig = { message: 'the sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://host');
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      const updates = { token_login: false };
+      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user-settings',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally').resolves({
+        _id: 'org.couchdb.user:sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:sally' });
+      sinon.stub(db.medic, 'put').resolves({ id: 'org.couchdb.user:sally' });
+
+      return service.updateUser('sally', updates).then(response => {
+        chai.expect(response).to.deep.equal({
+          user: { id: 'org.couchdb.user:sally', rev: undefined },
+          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+        });
+      });
+    });
+  });
 });
 

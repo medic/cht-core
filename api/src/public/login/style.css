@@ -40,10 +40,13 @@ input {
   line-height: 1.42857;
   border-radius: 4px;
   display: block;
-  margin-top: 2em;
+  margin: 2em auto;
   font-size: 1em;
   width: 302px;
   padding: 6px 10px;
+  text-decoration: none;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .loading .btn {
   cursor: not-allowed;
@@ -79,12 +82,34 @@ form {
   color: #DA4548;
   display: none;
 }
+.has-error .loading {
+  display: none;
+}
+
 .loading .loader,
 .loginoffline .error.offline,
 .loginincorrect .error.incorrect,
-.loginerror .error.unknown {
+.loginerror .error.unknown,
+.tokeninvalid .error.invalid,
+.tokenmissing .error.missing,
+.tokentimeout .error.timeout,
+.tokenexpired .error.expired,
+.tokenerror .error.unknown
+{
   display: block;
 }
+
+.login-link {
+  display: none;
+}
+.tokenerror .login-link,
+.tokeninvalid .login-link,
+.tokenmissing .login-link,
+.tokentimeout .login-link,
+.tokenexpired .login-link {
+  display: block;
+}
+
 .loader {
   display: none;
   margin: 1em auto;

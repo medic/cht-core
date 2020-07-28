@@ -31,8 +31,9 @@ describe('Add user  : ', () => {
           return true;
         });
     }, 2000);
-    expect(helper.isTextDisplayed(addedUser));
-    expect(helper.isTextDisplayed(fullName));
+    helper.waitForAngularComplete();
+    expect(helper.isTextDisplayed(addedUser)).toBe(true);
+    expect(helper.isTextDisplayed(fullName)).toBe(true);
   });
 
   it('should reject passwords shorter than 8 characters', () => {

@@ -60,6 +60,8 @@ const initConfig = () => {
     .then(doc => {
       _.defaults(doc.settings, DEFAULT_CONFIG);
       config = doc.settings;
+      initTransitionLib();
+      require('./transitions').loadTransitions();
       logger.debug(
         'Reminder messages allowed between %s:%s and %s:%s',
         config.schedule_morning_hours,
@@ -67,8 +69,6 @@ const initConfig = () => {
         config.schedule_evening_hours,
         config.schedule_evening_minutes
       );
-      initTransitionLib();
-      require('./transitions').loadTransitions();
     })
     .catch(err => {
       logger.error('%o', err);

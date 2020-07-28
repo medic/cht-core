@@ -1,12 +1,18 @@
 angular.module('inboxControllers').controller('ConfigurationUserCtrl',
   function (
-    Modal
+    Modal,
+    UserSettings
   ) {
 
     'use strict';
     'ngInject';
 
     const ctrl = this;
+    this.loading = true;
+    UserSettings().then(user => {
+      this.loading = false;
+      this.user = user;
+    });
 
     ctrl.updatePassword = function() {
       Modal({

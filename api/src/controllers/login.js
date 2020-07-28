@@ -8,6 +8,7 @@ const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
 const users = require('../services/users');
+const tokenLogin = require('../services/token-login');
 const SESSION_COOKIE_RE = /AuthSession=([^;]*);/;
 const ONE_YEAR = 31536000000;
 const logger = require('../logger');
@@ -15,7 +16,34 @@ const db = require('../db');
 const production = process.env.NODE_ENV === 'production';
 const localeUtils = require('locale');
 
-let loginTemplate;
+const templates = {
+  login: {
+    content: null,
+    file: 'index.html',
+    translationStrings: [
+      'login',
+      'login.error',
+      'login.incorrect',
+      'online.action.message',
+      'User Name',
+      'Password'
+    ],
+  },
+  tokenLogin: {
+    content: null,
+    file: 'token-login.html',
+    translationStrings: [
+      'login.token.missing',
+      'login.token.expired',
+      'login.token.invalid',
+      'login.token.timeout',
+      'login.token.general.error',
+      'login.token.loading',
+      'login.token.redirect.login.info',
+      'login.token.redirect.login',
+    ],
+  },
+};
 
 const getHomeUrl = userCtx => {
   // https://github.com/medic/medic/issues/5035
@@ -55,25 +83,19 @@ const getEnabledLocales = () => {
     });
 };
 
-const getLoginTemplate = () => {
-  if (loginTemplate) {
-    return loginTemplate;
+const getTemplate = (page) => {
+  if (templates[page].content) {
+    return templates[page].content;
   }
-  const filepath = path.join(__dirname, '..', 'templates', 'login', 'index.html');
-  loginTemplate = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
+  const filepath = path.join(__dirname, '..', 'templates', 'login', templates[page].file);
+  templates[page].content = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
     .then(file => _.template(file));
-  return loginTemplate;
+  return templates[page].content;
 };
 
-const getTranslationsString = () => {
-  return encodeURIComponent(JSON.stringify(config.getTranslationValues([
-    'login',
-    'login.error',
-    'login.incorrect',
-    'online.action.message',
-    'User Name',
-    'Password'
-  ])));
+const getTranslationsString = page => {
+  const translationStrings = templates[page].translationStrings;
+  return encodeURIComponent(JSON.stringify(config.getTranslationValues(translationStrings)));
 };
 
 const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
@@ -82,18 +104,23 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
   return headerLocales.best(supportedLocales).language;
 };
 
-const renderLogin = (req, branding) => {
-  return Promise.all([
-    getLoginTemplate(),
-    getEnabledLocales()
-  ])
+const render = (page, req, branding, extras = {}) => {
+  return Promise
+    .all([
+      getTemplate(page),
+      getEnabledLocales(),
+    ])
     .then(([ template, locales ]) => {
-      return template({
-        branding: branding,
-        defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
-        locales: locales,
-        translations: getTranslationsString()
-      });
+      const options = Object.assign(
+        {
+          branding: branding,
+          locales: locales,
+          defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
+          translations: getTranslationsString(page)
+        },
+        extras
+      );
+      return template(options);
     });
 };
 
@@ -165,8 +192,7 @@ const updateUserLanguageIfRequired = (user, current, selected) => {
 const setCookies = (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
-    res.status(401).json({ error: 'Not logged in' });
-    return;
+    throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
   return auth
@@ -191,13 +217,11 @@ const setCookies = (req, res, sessionRes) => {
           setLocaleCookie(res, selectedLocale);
           return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
         })
-        .then(() => {
-          res.status(302).send(getRedirectUrl(userCtx, req.body.redirect));
-        });
+        .then(() => getRedirectUrl(userCtx, req.body.redirect));
     })
     .catch(err => {
       logger.error(`Error getting authCtx %o`, err);
-      res.status(401).json({ error: 'Error getting authCtx' });
+      throw { status: 401, error: 'Error getting authCtx' };
     });
 };
 
@@ -229,10 +253,72 @@ const getBranding = () => {
     });
 };
 
+const renderTokenLogin = (req, res) => {
+  return getBranding()
+    .then(branding => render('tokenLogin', req, branding, { tokenUrl: req.url }))
+    .then(body => res.send(body));
+};
+
+const createSessionRetry = (req, retry=10) => {
+  return createSession(req).then(sessionRes => {
+    if (sessionRes.statusCode === 200) {
+      return sessionRes;
+    }
+
+    if (retry > 0) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          createSessionRetry(req, retry - 1).then(resolve).catch(reject);
+        }, 10);
+      });
+    }
+
+    throw { status: 408, message: 'Login failed after 10 retries' };
+  });
+};
+
+/**
+ * Generates a session cookie for a user identified by supplied token and hash request params.
+ * The user's password is reset in the process.
+ */
+const loginByToken = (req, res) => {
+  if (!tokenLogin.isTokenLoginEnabled()) {
+    return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
+  }
+
+  if (!req.params || !req.params.token) {
+    return res.status(400).json({ error: 'missing', reason: 'Missing required param' });
+  }
+
+  return tokenLogin
+    .getUserByToken(req.params.token)
+    .then(userId => {
+      if (!userId) {
+        throw { status: 401, error: 'invalid' };
+      }
+
+      return tokenLogin.resetPassword(userId).then(({ user, password }) => {
+        req.body = { user, password };
+
+        return createSessionRetry(req)
+          .then(sessionRes => setCookies(req, res, sessionRes))
+          .then(redirectUrl => {
+            return tokenLogin.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
+          });
+      });
+    })
+    .catch((err = {}) => {
+      logger.error('Error while logging in with token', err);
+      const status = err.status || err.code || 400;
+      const message = err.error || err.message || 'Unexpected error logging in';
+      res.status(status).json({ error: message });
+    });
+};
+
 module.exports = {
   get: (req, res, next) => {
     return getBranding()
-      .then(branding => renderLogin(req, branding))
+      .then(branding => render('login', req, branding))
       .then(body => res.send(body))
       .catch(next);
   },
@@ -243,7 +329,14 @@ module.exports = {
           res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
           return;
         }
-        return setCookies(req, res, sessionRes);
+        return setCookies(req, res, sessionRes)
+          .then(redirectUrl => res.status(302).send(redirectUrl))
+          .catch(err => {
+            if (err.status === 401) {
+              return res.status(err.status).json({ error: err.error });
+            }
+            throw err;
+          });
       })
       .catch(err => {
         logger.error('Error logging in: %o', err);
@@ -263,7 +356,26 @@ module.exports = {
         return res.send();
       });
   },
+
+  tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
+  tokenPost: (req, res, next) => {
+    return auth
+      .getUserCtx(req)
+      .then(userCtx => {
+        return res.status(302).send(getRedirectUrl(userCtx));
+      })
+      .catch(err => {
+        if (err.code === 401) {
+          return loginByToken(req, res);
+        }
+        next(err);
+      });
+  },
+
   // exposed for testing
   _safePath: getRedirectUrl,
-  _reset: () => { loginTemplate = null; }
+  _reset: () => {
+    templates.login.content = null;
+    templates.tokenLogin.content = null;
+  },
 };

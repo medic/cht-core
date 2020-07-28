@@ -119,9 +119,9 @@ module.exports = {
 
   isTextDisplayed: text => {
     const selectedElement = element(
-      by.xpath('//*[text()[normalize-space() =  " ' + text + '"]]')
+      by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
     );
-    return selectedElement.isPresent();
+    return selectedElement.isDisplayed();
   },
 
   logConsoleErrors: spec => {
