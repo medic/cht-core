@@ -85,8 +85,6 @@ const moment = require('moment');
       return {
         navigateBack: globalActions.navigateBack,
         navigationCancel: globalActions.navigationCancel,
-        openGuidedSetup: globalActions.openGuidedSetup,
-        openTourSelect: globalActions.openTourSelect,
         setAndroidAppVersion: globalActions.setAndroidAppVersion,
         setCurrentTab: globalActions.setCurrentTab,
         setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
@@ -264,7 +262,6 @@ const moment = require('moment');
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    ctrl.tours = [];
     ctrl.adminUrl = Location.adminPath;
     ctrl.setIsAdmin(Session.isAdmin());
     ctrl.modalsToShow = [];
@@ -398,12 +395,6 @@ const moment = require('moment');
           });
         })
         .catch(err => $log.error('Failed to retrieve forms', err));
-    };
-
-    const initTours = () => {
-      return Tour.getTours().then(function(tours) {
-        ctrl.tours = tours;
-      });
     };
 
     moment.locale(['en']);
