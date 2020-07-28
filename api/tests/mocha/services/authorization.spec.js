@@ -756,14 +756,20 @@ describe('Authorization service', () => {
       it('returns false for reports with allowed subject, denied submitter and sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
         viewResults = {
-          replicationKeys: [{ key: userCtx.contact_id, value: { submitter: 'submitter', type: 'data_record', private: true }}],
+          replicationKeys: [{
+            key: userCtx.contact_id,
+            value: { submitter: 'submitter', type: 'data_record', private: true }}
+          ],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility_id ];
         viewResults = {
-          replicationKeys: [{ key: userCtx.facility_id, value: { submitter: 'submitter', type: 'data_record', private: true }}],
+          replicationKeys: [{
+            key: userCtx.facility_id,
+            value: { submitter: 'submitter', type: 'data_record', private: true }
+          }],
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
