@@ -12,7 +12,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       HeaderTabs,
       Modal,
       Selectors,
-      Settings
+      Settings,
+      Tour
     ) {
       'ngInject';
 
@@ -54,6 +55,8 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       ctrl.replicate = () => {
         DBSync.sync(true);
       };
+
+      Tour.getTours().then(tours => ctrl.tours = tours);
 
       Settings().then(settings => {
         const tabs = HeaderTabs(settings);
