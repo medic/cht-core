@@ -319,7 +319,14 @@ module.exports = {
   get: (req, res, next) => {
     return getBranding()
       .then(branding => render('login', req, branding))
-      .then(body => res.send(body))
+      .then(body => {
+        res.setHeader(
+          'Link',
+          '</login/style.css>; rel=preload; as=style, '
+          + '</login/script.js>; rel=preload; as=script'
+        );
+        res.send(body);
+      })
       .catch(next);
   },
   post: (req, res) => {
