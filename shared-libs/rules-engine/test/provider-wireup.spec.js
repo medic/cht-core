@@ -72,6 +72,7 @@ const fixtures = [
 ];
 
 let clock;
+const realSetTimeout = setTimeout;
 
 describe('provider-wireup integration tests', () => {
   let provider;
@@ -918,6 +919,56 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
         expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-05');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+      });
+    });
+  });
+
+  describe('refresh queue', () => {
+    const nextTick = () => new Promise(resolve => realSetTimeout(resolve));
+
+    it('should not process more than one rule freshness thread at once', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      sinon.stub(provider, 'allTaskData').resolves({
+        contactDocs: [],
+        reportDocs: [],
+      });
+      sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(provider, 'commitTaskDocs').resolves();
+      const settings = { rules: noolsPartnerTemplate(''), enableTargets: false };
+      await wireup.initialize(provider, settings, {});
+
+      const promiseQueue = [];
+      const refreshRulesEmissions = sinon.stub().callsFake(() => new Promise(resolve => {
+        promiseQueue.push(resolve);
+      }));
+      const dummyEmissions = { targetEmissions: [],  taskTransforms: [] };
+      const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+
+      await withMockRefresher(async () => {
+        wireup.fetchTasksFor(provider);
+        wireup.fetchTasksFor(provider);
+        wireup.fetchTasksFor(provider);
+
+        chai.expect(refreshRulesEmissions.callCount).to.equal(0);
+
+        await nextTick();
+        chai.expect(refreshRulesEmissions.callCount).to.equal(1);
+        clock.tick(10000);
+        chai.expect(refreshRulesEmissions.callCount).to.equal(1);
+        promiseQueue.pop()(dummyEmissions);
+        await nextTick();
+        chai.expect(refreshRulesEmissions.callCount).to.equal(2);
+
+        await nextTick();
+        await nextTick();
+
+        chai.expect(refreshRulesEmissions.callCount).to.equal(2);
+        clock.tick(10000);
+        chai.expect(refreshRulesEmissions.callCount).to.equal(2);
+
+        promiseQueue.pop()(dummyEmissions);
+        await nextTick();
+        chai.expect(refreshRulesEmissions.callCount).to.equal(3);
       });
     });
   });

@@ -135,6 +135,7 @@ module.exports = {
   },
 };
 
+let refreshQueue = Promise.resolve();
 const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
   const refreshAndSave = (freshData, updatedContactIds) => (
     refreshRulesEmissions(freshData, calculationTimestamp, wireupOptions)
@@ -174,20 +175,24 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
       });
   };
 
-  return handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }).then(() => {
-    if (contactIds) {
-      return refreshForKnownContacts(calculationTimestamp, contactIds);
-    }
+  refreshQueue = refreshQueue
+    .then(() => handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }))
+    .then(() => {
+      if (contactIds) {
+        return refreshForKnownContacts(calculationTimestamp, contactIds);
+      }
 
-    // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
-    // reports/tasks)
-    if (!rulesStateStore.hasAllContacts()) {
-      return refreshForAllContacts(calculationTimestamp);
-    }
+      // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
+      // reports/tasks)
+      if (!rulesStateStore.hasAllContacts()) {
+        return refreshForAllContacts(calculationTimestamp);
+      }
 
-    // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-    return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
-  });
+      // Once the contact state store has all contacts, trust it and only refresh those marked dirty
+      return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
+    });
+
+  return refreshQueue;
 };
 
 const storeTargetsDoc = (provider, targets, filterInterval, force = false) => {
