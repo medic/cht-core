@@ -13,13 +13,21 @@ const getLoginButton = () => {
   return element(by.id('login'));
 };
 
+const changeLocale = locale => {
+  if (!locale) {
+    return;
+  }
+  element(by.css(`.locale[name="${locale}"]`)).click();
+};
+
 module.exports = {
-  login: (username, password, shouldFail) => {
+  login: (username, password, shouldFail, locale) => {
     helper.waitUntilReady(getUsernameField());
     getUsernameField().clear();
     getPasswordField().clear();
     getUsernameField().sendKeys(username);
     getPasswordField().sendKeys(password);
+    changeLocale(locale);
     getLoginButton().click();
     browser.waitForAngular();
     if (shouldFail) {

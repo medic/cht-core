@@ -21,6 +21,7 @@
 @import 'enketo/medic';
 @import 'messages';
 @import 'common';
+@import 'privacy-policies';
 
 .container-fluid {
   overflow: hidden;
@@ -65,7 +66,8 @@ body {
     }
   }
   &.about,
-  &.testing {
+  &.testing,
+  &.privacyPolicy {
     .header .tabs .selected,
     .filters {
       background-color: @help-color;
