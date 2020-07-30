@@ -312,17 +312,14 @@ describe(`RulesEngine service`, () => {
       await service.isEnabled();
       $timeout.flush(500 * 1000);
 
-      await Q.resolve();
+      await service.isEnabled(); // to resolve promises
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
-      await Q.resolve();
       expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
 
-      expect(Telemetry.record.callCount).to.equal(4);
+      expect(Telemetry.record.callCount).to.equal(3);
       expect(Telemetry.record.args[0][0]).to.equal('rules-engine:initialize');
       expect(Telemetry.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 20]);
       expect(Telemetry.record.args[2]).to.deep.equal(['rules-engine:targets:dirty-contacts', 20]);
-      // fetchTasksFor resolving triggered this
-      expect(Telemetry.record.args[3][0]).to.equal('rules-engine:tasks:all-contacts');
     });
 
     it('ensure freshness of tasks only', async () => {
@@ -332,19 +329,14 @@ describe(`RulesEngine service`, () => {
       await service.fetchTargets();
       $timeout.flush(500 * 1000);
 
-      await Q.resolve();
+      await service.isEnabled(); // to resolve promises
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
-      await Q.resolve();
       expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
-
-      expect(Telemetry.record.callCount).to.equal(6);
-      expect(Telemetry.record.args[0][0]).to.equal('rules-engine:initialize');
+      expect(Telemetry.record.callCount).to.equal(5);
       expect(Telemetry.record.args[1]).to.deep.equal(['rules-engine:targets:dirty-contacts', 0]);
       expect(Telemetry.record.args[2][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
       expect(Telemetry.record.args[3][0]).to.equal('rules-engine:targets');
       expect(Telemetry.record.args[4]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
-      // fetchTasksFor resolving triggered this
-      expect(Telemetry.record.args[5][0]).to.equal('rules-engine:tasks:all-contacts');
     });
 
     it('cancel all ensure freshness threads', async () => {
@@ -365,65 +357,6 @@ describe(`RulesEngine service`, () => {
       expect(Telemetry.record.args[4]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
       expect(Telemetry.record.args[5][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
       expect(Telemetry.record.args[6][0]).to.equal('rules-engine:tasks:all-contacts');
-    });
-
-    it('should never start more than one recalculation thread', async () => {
-      const service = getService();
-      await service.isEnabled();
-      const promises = [];
-      const registerResolve = () => new Promise(resolve => {
-        promises.push(resolve);
-      });
-
-      RulesEngineCore.fetchTargets.callsFake(registerResolve);
-      RulesEngineCore.fetchTasksFor.callsFake(registerResolve);
-
-      service.fetchTargets();
-      service.fetchTaskDocsForAllContacts();
-      service.fetchTaskDocsForAllContacts();
-      service.fetchTaskDocsForAllContacts();
-      service.fetchTargets();
-      service.fetchTargets();
-
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(0);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(0);
-      await Q.resolve();
-
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(0);
-
-      await Q.resolve();
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(0);
-
-      await Q.resolve();
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(0);
-
-      promises.pop()(); // call 1st resolve
-      await Q.resolve();
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
-
-      promises.pop()(); // call 2nd resolve
-      await Q.resolve();
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(2);
-
-      promises.pop()(); // call 3rd resolve
-      await Q.resolve();
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(1);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(3);
-
-      promises.pop()(); // call 4th resolve
-      await Q.resolve();
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(2);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(3);
-
-      promises.pop()(); // call 5th resolve
-      await Q.resolve();
-      expect(RulesEngineCore.fetchTargets.callCount).to.eq(3);
-      expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(3);
     });
 
     describe('monitorExternalChanges', () => {

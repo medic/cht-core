@@ -10,7 +10,6 @@ const ENSURE_FRESHNESS_SECS = 120;
 
 angular.module('inboxServices').factory('RulesEngine', function(
   $parse,
-  $q,
   $translate,
   Auth,
   CalendarInterval,
@@ -33,12 +32,6 @@ angular.module('inboxServices').factory('RulesEngine', function(
   let ensureTargetFreshness;
   let ensureTaskFreshnessTelemetryData;
   let ensureTargetFreshnessTelemetryData;
-
-  let recalculationQueue = $q.resolve();
-  const enqueue = callback => {
-    recalculationQueue = recalculationQueue.then(() => callback());
-    return recalculationQueue;
-  };
 
   const initialize = () => (
     Promise.all([Auth.has('can_view_tasks'), Auth.has('can_view_analytics')])
@@ -226,10 +219,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
         .then(() => {
           Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
           cancelDebounce(ensureTaskFreshness, ensureTaskFreshnessTelemetryData);
-          return enqueue(() => {
-            telemetryData.start();
-            return RulesEngineCore.fetchTasksFor();
-          });
+          telemetryData.start();
+          return RulesEngineCore.fetchTasksFor();
         })
         .then(telemetryData.passThrough)
         .then(translateTaskDocs);
@@ -240,11 +231,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
       return initialized
         .then(() => {
           Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
-
-          return enqueue(() => {
-            telemetryData.start();
-            return RulesEngineCore.fetchTasksFor(contactIds);
-          });
+          telemetryData.start();
+          return RulesEngineCore.fetchTasksFor(contactIds);
         })
         .then(telemetryData.passThrough)
         .then(translateTaskDocs);
@@ -257,10 +245,8 @@ angular.module('inboxServices').factory('RulesEngine', function(
           Telemetry.record('rules-engine:targets:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
           cancelDebounce(ensureTargetFreshness, ensureTargetFreshnessTelemetryData);
           const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
-          return enqueue(() => {
-            telemetryData.start();
-            return RulesEngineCore.fetchTargets(relevantInterval);
-          });
+          telemetryData.start();
+          return RulesEngineCore.fetchTargets(relevantInterval);
         })
         .then(telemetryData.passThrough);
     },
