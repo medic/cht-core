@@ -933,8 +933,12 @@ describe('provider-wireup integration tests', () => {
         reportDocs: [],
       });
       sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions').returns([]);
       sinon.stub(provider, 'commitTaskDocs').resolves();
-      const settings = { rules: noolsPartnerTemplate(''), enableTargets: false };
+      sinon.stub(provider, 'allTasks').resolves([]);
+      sinon.stub(provider, 'commitTargetDoc').resolves();
+
+      const settings = { rules: noolsPartnerTemplate(''), enableTargets: true };
       await wireup.initialize(provider, settings, {});
 
       const promiseQueue = [];
@@ -944,20 +948,71 @@ describe('provider-wireup integration tests', () => {
       const dummyEmissions = { targetEmissions: [],  taskTransforms: [] };
       const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
 
+      const generateListeners = () => ({ queued: sinon.stub(), running: sinon.stub() });
+      const listeners = [];
+
       await withMockRefresher(async () => {
-        wireup.fetchTasksFor(provider);
-        wireup.fetchTasksFor(provider);
-        wireup.fetchTasksFor(provider);
+        listeners.push(generateListeners());
+        wireup
+          .fetchTasksFor(provider)
+          .on('queued', listeners.slice(-1)[0].queued)
+          .on('running', listeners.slice(-1)[0].running);
+
+        listeners.push(generateListeners());
+        wireup
+          .fetchTasksFor(provider)
+          .on('queued', listeners.slice(-1)[0].queued)
+          .on('running', listeners.slice(-1)[0].running);
+
+        listeners.push(generateListeners());
+        wireup
+          .fetchTargets(provider)
+          .on('queued', listeners.slice(-1)[0].queued)
+          .on('running', listeners.slice(-1)[0].running);
+
+        listeners.push(generateListeners());
+        wireup
+          .fetchTargets(provider)
+          .on('queued', listeners.slice(-1)[0].queued)
+          .on('running', listeners.slice(-1)[0].running);
 
         chai.expect(refreshRulesEmissions.callCount).to.equal(0);
-
         await nextTick();
+
+        // all queued, 1st is running
+        chai.expect(listeners[0].queued.callCount).to.equal(1);
+        chai.expect(listeners[0].running.callCount).to.equal(1);
+
+        chai.expect(listeners[1].queued.callCount).to.equal(1);
+        chai.expect(listeners[1].running.callCount).to.equal(0);
+
+        chai.expect(listeners[2].queued.callCount).to.equal(1);
+        chai.expect(listeners[2].running.callCount).to.equal(0);
+
+        chai.expect(listeners[3].queued.callCount).to.equal(1);
+        chai.expect(listeners[3].running.callCount).to.equal(0);
+
         chai.expect(refreshRulesEmissions.callCount).to.equal(1);
         clock.tick(10000);
         chai.expect(refreshRulesEmissions.callCount).to.equal(1);
+
         promiseQueue.pop()(dummyEmissions);
         await nextTick();
         chai.expect(refreshRulesEmissions.callCount).to.equal(2);
+
+        // all queued, 1st and 2nd running
+        chai.expect(listeners[0].queued.callCount).to.equal(1);
+        chai.expect(listeners[0].running.callCount).to.equal(1);
+
+        chai.expect(listeners[1].queued.callCount).to.equal(1);
+        chai.expect(listeners[1].running.callCount).to.equal(1);
+
+        chai.expect(listeners[2].queued.callCount).to.equal(1);
+        chai.expect(listeners[2].running.callCount).to.equal(0);
+
+        chai.expect(listeners[3].queued.callCount).to.equal(1);
+        chai.expect(listeners[3].running.callCount).to.equal(0);
+
 
         await nextTick();
         await nextTick();
@@ -969,7 +1024,83 @@ describe('provider-wireup integration tests', () => {
         promiseQueue.pop()(dummyEmissions);
         await nextTick();
         chai.expect(refreshRulesEmissions.callCount).to.equal(3);
+
+        // all queued, 1st, 2nd, 3rd running
+        chai.expect(listeners[0].queued.callCount).to.equal(1);
+        chai.expect(listeners[0].running.callCount).to.equal(1);
+
+        chai.expect(listeners[1].queued.callCount).to.equal(1);
+        chai.expect(listeners[1].running.callCount).to.equal(1);
+
+        chai.expect(listeners[2].queued.callCount).to.equal(1);
+        chai.expect(listeners[2].running.callCount).to.equal(1);
+
+        chai.expect(listeners[3].queued.callCount).to.equal(1);
+        chai.expect(listeners[3].running.callCount).to.equal(0);
+
+        promiseQueue.pop()(dummyEmissions);
+        await nextTick();
+        chai.expect(refreshRulesEmissions.callCount).to.equal(4);
+
+        // all queued, all running
+        chai.expect(listeners[0].queued.callCount).to.equal(1);
+        chai.expect(listeners[0].running.callCount).to.equal(1);
+
+        chai.expect(listeners[1].queued.callCount).to.equal(1);
+        chai.expect(listeners[1].running.callCount).to.equal(1);
+
+        chai.expect(listeners[2].queued.callCount).to.equal(1);
+        chai.expect(listeners[2].running.callCount).to.equal(1);
+
+        chai.expect(listeners[3].queued.callCount).to.equal(1);
+        chai.expect(listeners[3].running.callCount).to.equal(1);
       });
+    });
+
+    it('should provide `on` property and only emit `running` when actions are disabled', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+
+      const settings = { rules: noolsPartnerTemplate(''), enableTargets: false, enableTasks: false };
+      await wireup.initialize(provider, settings, {});
+      const generateListeners = () => ({ queued: sinon.stub(), running: sinon.stub() });
+      const listeners = [];
+      listeners.push(generateListeners());
+      wireup
+        .fetchTasksFor(provider)
+        .on('queued', listeners.slice(-1)[0].queued)
+        .on('running', listeners.slice(-1)[0].running);
+      listeners.push(generateListeners());
+      wireup
+        .fetchTasksFor(provider)
+        .on('queued', listeners.slice(-1)[0].queued)
+        .on('running', listeners.slice(-1)[0].running);
+
+      listeners.push(generateListeners());
+      wireup
+        .fetchTargets(provider)
+        .on('queued', listeners.slice(-1)[0].queued)
+        .on('running', listeners.slice(-1)[0].running);
+
+      listeners.push(generateListeners());
+      wireup
+        .fetchTargets(provider)
+        .on('queued', listeners.slice(-1)[0].queued)
+        .on('running', listeners.slice(-1)[0].running);
+
+      await nextTick();
+
+      // none queued, all running
+      chai.expect(listeners[0].queued.callCount).to.equal(0);
+      chai.expect(listeners[0].running.callCount).to.equal(1);
+
+      chai.expect(listeners[1].queued.callCount).to.equal(0);
+      chai.expect(listeners[1].running.callCount).to.equal(1);
+
+      chai.expect(listeners[2].queued.callCount).to.equal(0);
+      chai.expect(listeners[2].running.callCount).to.equal(1);
+
+      chai.expect(listeners[3].queued.callCount).to.equal(0);
+      chai.expect(listeners[3].running.callCount).to.equal(1);
     });
   });
 });

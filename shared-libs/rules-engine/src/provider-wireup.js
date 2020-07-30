@@ -71,17 +71,19 @@ module.exports = {
    */
   fetchTasksFor: (provider, contactIds) => {
     if (!rulesEmitter.isEnabled() || !wireupOptions.enableTasks) {
-      return Promise.resolve([]);
+      return jumpQueue([]);
     }
 
-    const calculationTimestamp = Date.now();
-    return refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds)
-      .then(() => contactIds ? provider.tasksByRelation(contactIds, 'owner') : provider.allTasks('owner'))
-      .then(tasksToDisplay => {
-        const docsToCommit = updateTemporalStates(tasksToDisplay, calculationTimestamp);
-        provider.commitTaskDocs(docsToCommit);
-        return tasksToDisplay.filter(taskDoc => taskDoc.state === TaskStates.Ready);
-      });
+    return enqueue(() => {
+      const calculationTimestamp = Date.now();
+      return refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds)
+        .then(() => contactIds ? provider.tasksByRelation(contactIds, 'owner') : provider.allTasks('owner'))
+        .then(tasksToDisplay => {
+          const docsToCommit = updateTemporalStates(tasksToDisplay, calculationTimestamp);
+          provider.commitTaskDocs(docsToCommit);
+          return tasksToDisplay.filter(taskDoc => taskDoc.state === TaskStates.Ready);
+        });
+    });
   },
 
   /**
@@ -96,7 +98,7 @@ module.exports = {
    */
   fetchTargets: (provider, filterInterval) => {
     if (!rulesEmitter.isEnabled() || !wireupOptions.enableTargets) {
-      return Promise.resolve([]);
+      return jumpQueue([]);
     }
 
     const calculationTimestamp = Date.now();
@@ -105,11 +107,13 @@ module.exports = {
       return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
     });
 
-    return refreshRulesEmissionForContacts(provider, calculationTimestamp)
-      .then(() => {
-        const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-        return storeTargetsDoc(provider, targets, filterInterval).then(() => targets);
-      });
+    return enqueue(() => {
+      return refreshRulesEmissionForContacts(provider, calculationTimestamp)
+        .then(() => {
+          const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
+          return storeTargetsDoc(provider, targets, filterInterval).then(() => targets);
+        });
+    });
   },
 
   /**
@@ -136,6 +140,47 @@ module.exports = {
 };
 
 let refreshQueue = Promise.resolve();
+const enqueue = callback => {
+  const listeners = [];
+  const eventQueue = [];
+  const emit = evtName => {
+    if (!listeners[evtName]) {
+      return eventQueue.push(evtName);
+    }
+    listeners[evtName].forEach(callback => callback());
+  };
+
+  emit('queued');
+  refreshQueue = refreshQueue.then(() => {
+    emit('running');
+    return callback();
+  });
+
+  refreshQueue.on = (evtName, callback) => {
+    listeners[evtName] = listeners[evtName] || [];
+    listeners[evtName].push(callback);
+    eventQueue.forEach(queuedEvent => queuedEvent === evtName && callback());
+    return refreshQueue;
+  };
+
+  return refreshQueue;
+};
+
+const jumpQueue = result => {
+  const listeners = [];
+  const emit = evtName => (listeners[evtName] || []).forEach(callback => callback());
+  const p = Promise.resolve().then(() => {
+    emit('running');
+    return result;
+  });
+  p.on = (evtName, callback) => {
+    listeners[evtName] = listeners[evtName] || [];
+    listeners[evtName].push(callback);
+    return p;
+  };
+  return p;
+};
+
 const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
   const refreshAndSave = (freshData, updatedContactIds) => (
     refreshRulesEmissions(freshData, calculationTimestamp, wireupOptions)
@@ -175,24 +220,20 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
       });
   };
 
-  refreshQueue = refreshQueue
-    .then(() => handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }))
-    .then(() => {
-      if (contactIds) {
-        return refreshForKnownContacts(calculationTimestamp, contactIds);
-      }
+  return handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }).then(() => {
+    if (contactIds) {
+      return refreshForKnownContacts(calculationTimestamp, contactIds);
+    }
 
-      // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
-      // reports/tasks)
-      if (!rulesStateStore.hasAllContacts()) {
-        return refreshForAllContacts(calculationTimestamp);
-      }
+    // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
+    // reports/tasks)
+    if (!rulesStateStore.hasAllContacts()) {
+      return refreshForAllContacts(calculationTimestamp);
+    }
 
-      // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-      return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
-    });
-
-  return refreshQueue;
+    // Once the contact state store has all contacts, trust it and only refresh those marked dirty
+    return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
+  });
 };
 
 const storeTargetsDoc = (provider, targets, filterInterval, force = false) => {
