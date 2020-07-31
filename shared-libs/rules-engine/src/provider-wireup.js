@@ -71,7 +71,7 @@ module.exports = {
    */
   fetchTasksFor: (provider, contactIds) => {
     if (!rulesEmitter.isEnabled() || !wireupOptions.enableTasks) {
-      return jumpQueue([]);
+      return disabledResponse();
     }
 
     return enqueue(() => {
@@ -98,7 +98,7 @@ module.exports = {
    */
   fetchTargets: (provider, filterInterval) => {
     if (!rulesEmitter.isEnabled() || !wireupOptions.enableTargets) {
-      return jumpQueue([]);
+      return disabledResponse();
     }
 
     const calculationTimestamp = Date.now();
@@ -144,6 +144,9 @@ const enqueue = callback => {
   const listeners = [];
   const eventQueue = [];
   const emit = evtName => {
+    // we have to emit `queued` immediately, but there are no listeners listening at this point
+    // eventQueue will keep a list of listener-less events. when listeners are registered, we check if they
+    // have events in eventQueue, and call their callback immediately for each matching queued event.
     if (!listeners[evtName]) {
       return eventQueue.push(evtName);
     }
@@ -166,18 +169,9 @@ const enqueue = callback => {
   return refreshQueue;
 };
 
-const jumpQueue = result => {
-  const listeners = [];
-  const emit = evtName => (listeners[evtName] || []).forEach(callback => callback());
-  const p = Promise.resolve().then(() => {
-    emit('running');
-    return result;
-  });
-  p.on = (evtName, callback) => {
-    listeners[evtName] = listeners[evtName] || [];
-    listeners[evtName].push(callback);
-    return p;
-  };
+const disabledResponse = () => {
+  const p = Promise.resolve([]);
+  p.on = () => p;
   return p;
 };
 

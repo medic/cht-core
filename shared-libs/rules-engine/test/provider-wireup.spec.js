@@ -1057,7 +1057,7 @@ describe('provider-wireup integration tests', () => {
       });
     });
 
-    it('should provide `on` property and only emit `running` when actions are disabled', async () => {
+    it('should provide `on` property and emit nothing when actions are disabled', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
 
       const settings = { rules: noolsPartnerTemplate(''), enableTargets: false, enableTasks: false };
@@ -1091,16 +1091,16 @@ describe('provider-wireup integration tests', () => {
 
       // none queued, all running
       chai.expect(listeners[0].queued.callCount).to.equal(0);
-      chai.expect(listeners[0].running.callCount).to.equal(1);
+      chai.expect(listeners[0].running.callCount).to.equal(0);
 
       chai.expect(listeners[1].queued.callCount).to.equal(0);
-      chai.expect(listeners[1].running.callCount).to.equal(1);
+      chai.expect(listeners[1].running.callCount).to.equal(0);
 
       chai.expect(listeners[2].queued.callCount).to.equal(0);
-      chai.expect(listeners[2].running.callCount).to.equal(1);
+      chai.expect(listeners[2].running.callCount).to.equal(0);
 
       chai.expect(listeners[3].queued.callCount).to.equal(0);
-      chai.expect(listeners[3].running.callCount).to.equal(1);
+      chai.expect(listeners[3].running.callCount).to.equal(0);
     });
   });
 });

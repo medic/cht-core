@@ -88,6 +88,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
     };
 
     const record = () => {
+      data.start = data.start || Date.now();
       data.end = Date.now();
       Telemetry.record(data.entry, data.end - data.start);
     };

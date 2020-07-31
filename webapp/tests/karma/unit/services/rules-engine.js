@@ -458,6 +458,48 @@ describe(`RulesEngine service`, () => {
       clock.restore();
     });
 
+    it('should record correct telemetry data for disabled actions', async () => {
+      hasAuth.withArgs('can_view_tasks').resolves(false);
+
+      const realSetTimeout = setTimeout;
+      const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+
+      const clock = sinon.useFakeTimers(1000);
+      fetchTargetsResult = sinon.stub().resolves([]);
+      fetchTasksResult = sinon.stub().resolves([]);
+
+      const service = getService();
+      await service.isEnabled();
+
+      service.fetchTargets();
+      service.fetchTaskDocsForAllContacts();
+      service.fetchTaskDocsFor(['a']);
+      await Promise.resolve();
+      chai.expect(fetchTargets.events).to.have.keys(['queued', 'running']);
+      chai.expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
+
+      chai.expect(Telemetry.record.callCount).to.equal(6);
+      chai.expect(Telemetry.record.args.map(arg => arg[0])).to.deep.equal([
+        'rules-engine:initialize',
+        'rules-engine:targets:dirty-contacts',
+        'rules-engine:ensureTargetFreshness:cancel',
+        'rules-engine:tasks:dirty-contacts',
+        'rules-engine:ensureTaskFreshness:cancel',
+        'rules-engine:tasks:dirty-contacts',
+      ]);
+
+      await nextTick();
+
+      // queued and running events are not emitted!
+
+      chai.expect(Telemetry.record.callCount).to.equal(9);
+      chai.expect(Telemetry.record.args[6]).to.deep.equal(['rules-engine:targets', 0]);
+      chai.expect(Telemetry.record.args[7]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
+      chai.expect(Telemetry.record.args[8]).to.deep.equal(['rules-engine:tasks:some-contacts', 0]);
+
+      clock.restore();
+    });
+
     describe('monitorExternalChanges', () => {
       it('should null check and do nothing when no docs', async () => {
         await getService().monitorExternalChanges();
