@@ -556,6 +556,26 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
+    const saveGeo = (geoHandle, docs) => {
+      if (!geoHandle) {
+        return docs;
+      }
+
+      return geoHandle()
+        .catch(err => err)
+        .then(geoData => {
+          docs.forEach(doc => {
+            doc.geolocation_log = doc.geolocation_log || [];
+            doc.geolocation_log.push({
+              timestamp: Date.now(),
+              recording: geoData
+            });
+            doc.geolocation = geoData;
+          });
+          return docs;
+        });
+    };
+
     this.save = function(formInternalId, form, geoHandle, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
@@ -573,24 +593,7 @@ angular.module('inboxServices').service('Enketo',
         .then(function(doc) {
           return xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
         })
-        .then(function(docs) {
-          if (geoHandle) {
-            return geoHandle()
-              .catch(err => err)
-              .then(geoData => docs.forEach(doc => {
-                doc.geolocation_log = doc.geolocation_log || [];
-                doc.geolocation_log.push({
-                  timestamp: Date.now(),
-                  recording: geoData
-                });
-                doc.geolocation = geoData;
-              }))
-              .then(() => {
-                return docs;
-              });
-          }
-          return docs;
-        })
+        .then(docs => saveGeo(geoHandle, docs))
         .then(docs => {
           self.setLastChangedDoc(docs[0]);
           return docs;

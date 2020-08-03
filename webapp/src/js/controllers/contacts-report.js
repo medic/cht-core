@@ -49,7 +49,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    const geoHandle = Geolocation();
+    const geoHandle = Geolocation.init();
 
     const markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);

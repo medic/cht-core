@@ -67,7 +67,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       }
       const task = LiveList.tasks.getList().find(task => task._id === id);
       if (task) {
-        geoHandle = Geolocation();
+        geoHandle = Geolocation.init();
         const refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
         ctrl.settingSelected(refreshing);
         hydrateTaskEmission(task).then(hydratedTask => {

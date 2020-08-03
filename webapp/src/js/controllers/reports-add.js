@@ -56,14 +56,15 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     let geoHandle;
 
     const getSelected = function() {
-      if ($state.params.formId) { // adding
-        geoHandle && geoHandle.cancel();
-        geoHandle = Geolocation();
+      geoHandle && geoHandle.cancel();
+      geoHandle = Geolocation.init();
 
+      if ($state.params.formId) { // adding
         return $q.resolve({
           formInternalId: $state.params.formId
         });
       }
+
       if ($state.params.reportId) { // editing
         return LineageModelGenerator.report($state.params.reportId)
           .then(function(result) {
