@@ -78,8 +78,17 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
   const telemetryEntry = (entry, startNow = false) => {
     const data = { entry };
-    const start = () => data.start = Date.now();
+    const queued = () => {
+      data.queued = Date.now();
+    };
+
+    const start = () => {
+      data.start = Date.now();
+      data.queued && Telemetry.record(`${data.entry}:queued`, data.start - data.queued);
+    };
+
     const record = () => {
+      data.start = data.start || Date.now();
       data.end = Date.now();
       Telemetry.record(data.entry, data.end - data.start);
     };
@@ -90,6 +99,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
     return {
       start,
+      queued,
       record,
       passThrough: (result) => {
         record();
@@ -100,7 +110,7 @@ angular.module('inboxServices').factory('RulesEngine', function(
 
   const cancelDebounce = (debounce, telemetryDataEntry) => {
     if (debounce) {
-      if (!debounce.executed()) {
+      if (!debounce.executed() && !debounce.cancelled()) {
         telemetryDataEntry.record();
       }
       debounce.cancel();
@@ -219,8 +229,9 @@ angular.module('inboxServices').factory('RulesEngine', function(
         .then(() => {
           Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
           cancelDebounce(ensureTaskFreshness, ensureTaskFreshnessTelemetryData);
-          telemetryData.start();
-          return RulesEngineCore.fetchTasksFor();
+          return RulesEngineCore.fetchTasksFor()
+            .on('queued', telemetryData.queued)
+            .on('running', telemetryData.start);
         })
         .then(telemetryData.passThrough)
         .then(translateTaskDocs);
@@ -231,8 +242,10 @@ angular.module('inboxServices').factory('RulesEngine', function(
       return initialized
         .then(() => {
           Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
-          telemetryData.start();
-          return RulesEngineCore.fetchTasksFor(contactIds);
+          return RulesEngineCore
+            .fetchTasksFor(contactIds)
+            .on('queued', telemetryData.queued)
+            .on('running', telemetryData.start);
         })
         .then(telemetryData.passThrough)
         .then(translateTaskDocs);
@@ -245,8 +258,10 @@ angular.module('inboxServices').factory('RulesEngine', function(
           Telemetry.record('rules-engine:targets:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
           cancelDebounce(ensureTargetFreshness, ensureTargetFreshnessTelemetryData);
           const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
-          telemetryData.start();
-          return RulesEngineCore.fetchTargets(relevantInterval);
+          return RulesEngineCore
+            .fetchTargets(relevantInterval)
+            .on('queued', telemetryData.queued)
+            .on('running', telemetryData.start);
         })
         .then(telemetryData.passThrough);
     },
