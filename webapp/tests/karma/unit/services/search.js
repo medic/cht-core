@@ -67,14 +67,18 @@ describe('Search service', function() {
         .then(function(actual) {
           chai.expect(actual).to.deep.equal(expected);
           setTimeout(done); // defer execution to give the second query time to execute
+        })
+        .catch((err) => {
+          done(err);
         });
       service('reports', {})
-        .then(function() {
-          throw new Error('the second promise should be ignored');
-        });
+        .then(function(actual) {
+          chai.expect(actual).to.be.empty;
+        })
+        .catch((err) => done(err));
     });
 
-    it('does not debounce if the same query is executed twice with the force option', function() {
+    it('does not debounce if the same query is executed twice with the force option', (done) => {
       const expected = [ { id: 'a' } ];
       GetDataRecords.returns(Promise.resolve(expected));
       let firstReturned = false;
@@ -82,15 +86,18 @@ describe('Search service', function() {
         .then(function(actual) {
           firstReturned = true;
           chai.expect(actual).to.deep.equal(expected);
-        });
-      return service('reports', {}, { force: true })
+        })
+        .catch(err => done(err));
+      service('reports', {}, { force: true })
         .then(function(actual) {
           chai.expect(firstReturned).to.equal(true);
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
-        });
+          done();
+        })
+        .catch(err => done(err));
     });
 
-    it('does not debounce different queries - medic/medic/issues/4331)', function() {
+    it('does not debounce different queries - medic/medic/issues/4331)', (done) => {
       GetDataRecords
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
         .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
@@ -101,17 +108,20 @@ describe('Search service', function() {
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
-        });
+        })
+        .catch(err => done(err));
 
       filters.foo = 'test';
-      return service('reports', filters)
+      service('reports', filters)
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
           chai.expect(firstReturned).to.equal(true);
-        });
+          done();
+        })
+        .catch(err => done(err));
     });
 
-    it('does not debounce different queries', function() {
+    it('does not debounce different queries', (done) => {
       GetDataRecords
         .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
         .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
@@ -120,12 +130,15 @@ describe('Search service', function() {
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
-        });
-      return service('reports', { freetext: 'second' })
+        })
+        .catch(err => done(err));
+      service('reports', { freetext: 'second' })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
           chai.expect(firstReturned).to.equal(true);
-        });
+          done();
+        })
+        .catch(err => done(err));
     });
 
     it('does not debounce subsequent queries', function() {

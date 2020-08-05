@@ -1,3 +1,4 @@
+
 describe('InboxCtrl controller', () => {
   'use strict';
 
@@ -9,7 +10,10 @@ describe('InboxCtrl controller', () => {
   let session;
   let rulesEnginePromise;
   let isSyncInProgress;
+  let privacyPoliciesPromise;
   let sync;
+  let updateUser;
+
 
   beforeEach(() => {
     module('inboxApp');
@@ -35,8 +39,12 @@ describe('InboxCtrl controller', () => {
 
     rulesEnginePromise = Q.defer();
 
+    updateUser = sinon.spy();
+
     isSyncInProgress = sinon.stub();
     sync = sinon.stub();
+
+    privacyPoliciesPromise = Q.defer();
 
     module($provide => {
       $provide.value('ActiveRequests', sinon.stub());
@@ -73,16 +81,17 @@ describe('InboxCtrl controller', () => {
       $provide.value('LiveListConfig', sinon.stub());
       $provide.value('ResourceIcons', { getAppTitle: () => Promise.resolve({}) });
       $provide.value('ReadMessages', sinon.stub());
+      $provide.value('PrivacyPolicies', { hasAccepted: sinon.stub().returns(privacyPoliciesPromise.promise) });
       $provide.value('SendMessage', sinon.stub());
       $provide.value('Session', session);
       $provide.value('SetLanguageCookie', sinon.stub());
-      $provide.value('Settings', () => Promise.resolve());
+      $provide.value('Settings', () => Promise.resolve({ setup_complete: true }));
       $provide.value('$timeout', sinon.stub());
-      $provide.value('UpdateUser', sinon.stub());
+      $provide.value('UpdateUser', updateUser);
       $provide.value('UpdateSettings', sinon.stub());
-      $provide.value('UserSettings', sinon.stub());
+      $provide.value('UserSettings', () =>  Promise.resolve({ known: false }));
       $provide.value('Telemetry', { record: sinon.stub() });
-      $provide.value('Tour', { getTours: () => Promise.resolve([]) });
+      $provide.value('Tour', { endCurrent: () => {} });
       $provide.value('RulesEngine', { isEnabled: () => rulesEnginePromise.promise });
       $provide.value('RecurringProcessManager', RecurringProcessManager);
       $provide.value('Enketo', sinon.stub());
@@ -112,16 +121,16 @@ describe('InboxCtrl controller', () => {
         });
       };
     });
+
   });
 
   afterEach(() => sinon.restore());
-
-  it('should start the relative date update recurring process', done => {
-    createController();
+  it('should start the relative date update recurring process', () => {
+    const ctrl = createController();
+    privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
-    setTimeout(() => {
+    return ctrl.setupPromise.then(() => {
       chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
-      done();
     });
   });
 
@@ -131,24 +140,24 @@ describe('InboxCtrl controller', () => {
     chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
   });
 
-  it('should not start the UpdateUnreadDocsCount recurring process when not online', done => {
-    createController();
+  it('should not start the UpdateUnreadDocsCount recurring process when not online', () => {
+    const ctrl = createController();
+    privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
-    setTimeout(() => {
+    return ctrl.setupPromise.then(() => {
       chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(0);
       scope.$destroy();
       chai.expect(RecurringProcessManager.stopUpdateReadDocsCount.callCount).to.equal(1);
-      done();
     });
   });
 
-  it('should start the UpdateUnreadDocsCount recurring process when online, after lazy load', done => {
+  it('should start the UpdateUnreadDocsCount recurring process when online, after lazy load', () => {
     session.isOnlineOnly.returns(true);
-    createController();
+    const ctrl = createController();
+    privacyPoliciesPromise.resolve();
     rulesEnginePromise.resolve();
-    setTimeout(() => {
+    return ctrl.setupPromise.then(() => {
       chai.expect(RecurringProcessManager.startUpdateReadDocsCount.callCount).to.equal(1);
-      done();
     });
   });
 

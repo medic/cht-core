@@ -1,48 +1,40 @@
 'use strict';
 
-let viewMapStrings = {};
-let viewMapFns = {};
+const COMMENT_REGEX = /\/\/.*/g;
+const SIGNATURE_REGEX = /emit\(/g;
+const NEW_LINE_REGEX = /\\n/g;
 
-//ensure V8 optimization
-const argumentsToArray = function () {
-  const args = [];
-  for (let i = this && this.skip || 0; i < arguments.length; i++) {
-    args.push(arguments[i]);
+const viewMapStrings = {};
+const viewMapFns = {};
+
+const resetObj = obj => Object.keys(obj).forEach(key => delete obj[key]);
+
+const reset = ddoc => {
+  if (ddoc) {
+    viewMapStrings[ddoc] = {};
+    viewMapFns[ddoc] = {};
+    return;
   }
-  return args;
+
+  resetObj(viewMapFns);
+  resetObj(viewMapStrings);
 };
 
 module.exports = {
-  reset: function (ddoc) {
-    if (ddoc) {
-      viewMapStrings[ddoc] = {};
-      viewMapFns[ddoc] = {};
-      return;
-    }
-
-    viewMapStrings = {};
-    viewMapFns = {};
-  },
-
-  loadViewMaps: function (ddoc) {
+  loadViewMaps: (ddoc, ...viewNames) => {
     const ddocId = ddoc._id && ddoc._id.replace('_design/', '');
-    module.exports.reset(ddocId);
-    const viewNames = argumentsToArray.apply({ skip: 1 }, arguments);
-    viewNames.forEach(function(view) {
+    reset(ddocId);
+    viewNames.forEach(view => {
       viewMapStrings[ddocId][view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
     });
   },
 
-  getViewMapFn: function (ddocId, viewName) {
-    const COMMENT_REGEX = /\/\/.*/g;
-    const SIGNATURE_REGEX = /emit\(/g;
-    const NEW_LINE_REGEX = /\\n/g;
-
+  getViewMapFn: (ddocId, viewName) => {
     if (viewMapFns[ddocId] && viewMapFns[ddocId][viewName]) {
       return viewMapFns[ddocId][viewName];
     }
 
-    let fnString = module.exports.getViewMapString(ddocId, viewName);
+    let fnString = viewMapStrings[ddocId] && viewMapStrings[ddocId][viewName];
     if (!fnString) {
       throw new Error('Requested view '+ ddocId + '/' + viewName + ' was not found');
     }
@@ -53,30 +45,22 @@ module.exports = {
       .replace(SIGNATURE_REGEX, 'this.emit(')
       .trim();
 
-    const fn = new Function('return ' + fnString)(); // jshint ignore:line
+    const fn = new Function('return ' + fnString)();
 
     //support multiple `emit`s
-    const viewMapFn = function() {
+    const viewMapFn = (...args) => {
       const emitted = [];
-      const emit = function() {
-        return emitted.push(argumentsToArray.apply(null, arguments));
-      };
-      fn.apply({ emit: emit }, arguments);
+      const emit = (key, value = null) => emitted.push({ key, value });
+
+      fn.apply({ emit: emit }, args);
       return emitted;
     };
     viewMapFns[ddocId][viewName] = viewMapFn;
     return viewMapFn;
   },
 
-  getViewMapString: function (ddocId, viewName) {
-    return viewMapStrings[ddocId] && viewMapStrings[ddocId][viewName];
-  },
-
   //used for testing
-  _getViewMapStrings: function() {
-    return viewMapStrings;
-  },
-  _getViewMapFns: function() {
-    return viewMapFns;
-  }
+  _getViewMapStrings: () => viewMapStrings,
+  _getViewMapFns: () => viewMapFns,
+  _reset: reset,
 };

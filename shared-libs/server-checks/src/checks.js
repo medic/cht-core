@@ -20,6 +20,12 @@ const nodeVersionCheck = () => {
   }
 };
 
+const getNoAuthURL = () => {
+  const noAuthUrl = url.parse(process.env.COUCH_URL);
+  delete noAuthUrl.auth;
+  return noAuthUrl;
+};
+
 const envVarsCheck = () => {
   const envValueAndExample = [
     ['COUCH_URL', 'http://admin:pass@localhost:5984/medic'],
@@ -31,7 +37,8 @@ const envVarsCheck = () => {
     if (!process.env[envconst]) {
       failures.push(`${envconst} must be set. For example: ${envconst}=${example}`);
     } else {
-      console.log(envconst, process.env[envconst]);
+      const value = envconst === 'COUCH_URL' ? url.format(getNoAuthURL()) : process.env[envconst];
+      console.log(envconst, value);
     }
   });
 
@@ -41,10 +48,8 @@ const envVarsCheck = () => {
 };
 
 const couchDbNoAdminPartyModeCheck = () => {
-  const noAuthUrl = url.parse(process.env.COUCH_URL);
-  const protocol = noAuthUrl.protocol.replace(':', '');
-  const net = require(protocol);
-  delete noAuthUrl.auth;
+  const noAuthUrl = getNoAuthURL();
+  const net = require(noAuthUrl.protocol.replace(':', ''));
 
   return new Promise((resolve, reject) => {
     net.get(url.format(noAuthUrl), ({statusCode}) => {

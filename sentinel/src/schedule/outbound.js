@@ -101,12 +101,6 @@ const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise.resolve(
       return removeConfigKeyFromTask(taskDoc, key);
     }
 
-    if (outbound.alreadySent(key, infoDoc)) {
-      // Don't send "duplicate" outbound pushes
-      logger.debug(`Skipping ${medicDoc._id} for ${key} because we've pushed this combination before`);
-      return removeConfigKeyFromTask(taskDoc, key);
-    }
-
     return outbound.send(config, key, medicDoc, infoDoc)
       .then(() => {
         // Worked, remove entry from queue and store infodoc that outbound service has updated
@@ -207,5 +201,5 @@ const execute = () => {
 };
 
 module.exports = {
-  execute: cb => execute().then(() => cb()).catch(cb)
+  execute: () => execute()
 };

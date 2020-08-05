@@ -9,6 +9,7 @@ angular.module('inboxServices').factory('Debounce',
       let context;
       let timeoutDelayed;
       let executed = false;
+      let cancelled = false;
 
       if (typeof func !== 'function') {
         throw new Error('First argument must be a function');
@@ -68,10 +69,13 @@ angular.module('inboxServices').factory('Debounce',
         $timeout.cancel(timeoutDelayed);
         timeout = null;
         timeoutDelayed = null;
+        cancelled = true;
       };
 
       debounced.executed = () => executed;
+      debounced.cancelled = () => cancelled;
 
+      
       return debounced;
     };
   }

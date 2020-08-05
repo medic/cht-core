@@ -29,7 +29,8 @@ const PAGE_SIZE = 50;
     Simprints,
     Tour,
     UHCSettings,
-    UserSettings
+    UserSettings,
+    XmlForms
   ) {
     'ngInject';
 
@@ -59,6 +60,7 @@ const PAGE_SIZE = 50;
     let usersHomePlace;
     let additionalListItem = false;
     let childPlaces = [];
+    let allowedChildPlaces = [];
 
     ctrl.sortDirection = ctrl.defaultSortDirection = 'alpha';
     const isSortedByLastVisited = function() {
@@ -241,11 +243,11 @@ const PAGE_SIZE = 50;
       return p.then(children => children.filter(child => !child.person));
     };
 
-    const setActionBarData = function() {
+    const setActionBarData = () => {
       ctrl.setLeftActionBar({
         hasResults: ctrl.hasContacts,
         userFacilityId: usersHomePlace && usersHomePlace._id,
-        childPlaces: childPlaces,
+        childPlaces: allowedChildPlaces,
         exportFn: function() {
           Export('contacts', ctrl.filters, { humanReadable: true });
         },
@@ -275,6 +277,14 @@ const PAGE_SIZE = 50;
       return Auth.has('can_view_last_visited_date');
     };
 
+    const updateAllowedChildPlaces = () => {
+      XmlForms.listen('ContactsListCtrl',{ contactForms: true }, (err, forms) => {
+        const allowCreateLink = contactType => forms && forms.find(form => form._id === contactType.create_form);
+        allowedChildPlaces = childPlaces.filter(allowCreateLink);
+        setActionBarData();
+      });
+    };
+
     const setupPromise = $q
       .all([
         getUserHomePlaceSummary(),
@@ -297,8 +307,15 @@ const PAGE_SIZE = 50;
             selected: childPlaces.map(type => type.id)
           }
         };
+        updateAllowedChildPlaces();
         setActionBarData();
         return ctrl.search();
+      })
+      .catch(err => {
+        $log.error('Error initializing contacts controller', err);
+        ctrl.error = true;
+        ctrl.loading = false;
+        ctrl.appending = false;
       });
 
     this.getSetupPromiseForTesting = function(options) {

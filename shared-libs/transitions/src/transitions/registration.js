@@ -266,7 +266,7 @@ const fireConfiguredTriggers = (registrationConfig, doc) => {
         params: parseParams(event.params),
       };
       logger.debug(
-        `Parsed params for form "${doc.form}", trigger "${event.trigger}", params: "${JSON.stringify(options.params)}"`
+        `Parsed params for form "${registrationConfig.form}", trigger "${event.trigger}, params: ${options.params}"`
       );
       return () => trigger(options);
     })

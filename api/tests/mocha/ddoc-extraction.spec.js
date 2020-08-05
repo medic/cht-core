@@ -58,7 +58,7 @@ describe('DDoc extraction', () => {
     const getUsersMetaAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/users-meta.json')
       .resolves(Buffer.from(JSON.stringify(usersMetaAttachment)));
-    
+
     const getMedicNew = medicGet.withArgs('_design/medic-new').rejects({ status: 404 });
     const getMedicUpdated = medicGet.withArgs('_design/medic-updated').resolves({
       _id: '_design/medic-updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } }
@@ -105,7 +105,7 @@ describe('DDoc extraction', () => {
       getUsersMetaUnchanged.callCount.should.equal(1);
       getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
-      
+
       bulkMedic.callCount.should.equal(1);
       const medicDocs = bulkMedic.args[0][0].docs;
       medicDocs.length.should.equal(2);
@@ -113,7 +113,7 @@ describe('DDoc extraction', () => {
       chai.expect(medicDocs[0]._rev).to.equal(undefined);
       medicDocs[1]._id.should.equal('_design/medic-updated');
       medicDocs[1]._rev.should.equal('1');
-      
+
       bulkSentinel.callCount.should.equal(1);
       const sentinelDocs = bulkSentinel.args[0][0].docs;
       sentinelDocs.length.should.equal(2);
@@ -121,7 +121,7 @@ describe('DDoc extraction', () => {
       chai.expect(sentinelDocs[0]._rev).to.equal(undefined);
       sentinelDocs[1]._id.should.equal('_design/sentinel-updated');
       sentinelDocs[1]._rev.should.equal('1');
-      
+
       bulkUsersMeta.callCount.should.equal(1);
       const usersMetaDocs = bulkUsersMeta.args[0][0].docs;
       usersMetaDocs.length.should.equal(2);

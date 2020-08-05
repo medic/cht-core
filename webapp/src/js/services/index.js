@@ -45,6 +45,7 @@
   require('./get-report-content');
   require('./get-subject-summaries');
   require('./get-summaries');
+  require('./header-tabs');
   require('./hydrate-contact-names');
   require('./hydrate-messages');
   require('./json-forms');
@@ -64,6 +65,7 @@
   require('./moment-locale-data');
   require('./mrdt');
   require('./place-hierarchy');
+  require('./privacy-policies');
   require('./recurring-process-manager');
   require('./relative-date');
   require('./report-view-model-generator');

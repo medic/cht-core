@@ -66,7 +66,7 @@ const _ = require('lodash/core');
             }
             if (_.difference(userCtx.roles, response.data.userCtx.roles).length ||
                 _.difference(response.data.userCtx.roles, userCtx.roles).length) {
-              return refreshUserCtx();
+              return refreshUserCtx().then(() => true);
             }
           })
           .catch(function(response) {

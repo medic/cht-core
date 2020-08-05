@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const chai = require('chai');
+const chaiExclude = require('chai-exclude');
+chai.use(chaiExclude);
 const utils = require('../../../utils');
 const sUtils = require('../../sentinel/utils');
 const constants = require('../../../constants');
@@ -155,12 +157,11 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
 };
 
 describe('db-doc handler', () => {
-  beforeAll(done => {
-    utils
+  beforeAll(() => {
+    return utils
       .saveDoc(parentPlace)
       .then(() => utils.createUsers(users))
-      .then(() => utils.saveDocs([...clinics, ...patients]))
-      .then(done);
+      .then(() => utils.saveDocs([...clinics, ...patients]));
   });
 
   afterAll(done =>
@@ -451,6 +452,44 @@ describe('db-doc handler', () => {
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
         ).catch(err => err))))
+        .then(results => {
+          results.forEach((result, idx) => {
+            if (reportScenarios[idx].allowed) {
+              chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+            } else {
+              chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+            }
+          });
+        });
+    });
+
+    it('GET many types of reports with report replication depth and needs_signoff', () => {
+      const reportScenarios = [
+        { doc: reportForPatient('fixture:offline:patient', null, ['patient_uuid']), allowed: true },
+        { doc: reportForPatient('fixture:offline:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id']), allowed: true },
+        { doc: reportForPatient('fixture:offline:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:offline:clinic:patient', 'offline', ['patient_id'], true), allowed: true },
+
+        { doc: reportForPatient('fixture:online:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id']), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', null, ['patient_uuid'], true), allowed: false },
+        { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
+      ];
+
+      const docs = reportScenarios.map(scenario => scenario.doc);
+      return utils
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }]})
+        .then(() => utils.saveDocs(docs))
+        .then(() => Promise.all(
+          reportScenarios.map(scenario =>
+            utils
+              .requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions))
+              .catch(err => err)))
+        )
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -1169,6 +1208,56 @@ describe('db-doc handler', () => {
         .then(result => {
           // user can see the unallocated report with permissions
           chai.expect(result).to.deep.include(doc);
+        });
+    });
+
+    it('GET sensitive documents', () => {
+      const docs = [
+        {
+          _id: 'insensitive_report_1',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:offline'},
+          patient_id: 'fixture:offline'
+        },
+        {
+          _id: 'insensitive_report_2',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:offline'},
+          patient_id: 'fixture:offline',
+          fields: { private: true },
+        },
+        {
+          _id: 'insensitive_report_3',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          patient_id: 'fixture:offline',
+          fields: { private: false },
+        },
+        {
+          _id: 'sensitive_report',
+          type: 'data_record',
+          form: 'a',
+          contact: { _id: 'fixture:online'},
+          patient_id: 'fixture:offline',
+          fields: { private: true },
+        },
+      ];
+
+      return utils
+        .saveDocs(docs)
+        .then(() => Promise.all(
+          docs.map(doc =>
+            utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err)
+          )
+        ))
+        .then(results => {
+          chai.expect(results[0]).excluding('_rev').to.deep.equal(docs[0]);
+          chai.expect(results[1]).excluding('_rev').to.deep.equal(docs[1]);
+          chai.expect(results[2]).excluding('_rev').to.deep.equal(docs[2]);
+          chai.expect(results[3]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
         });
     });
 

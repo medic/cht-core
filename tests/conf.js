@@ -40,6 +40,7 @@ const baseConfig = {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
     });
+
     return new Promise(function(resolve) {
       utils.reporter.beforeLaunch(resolve);
     });
@@ -47,7 +48,6 @@ const baseConfig = {
   afterLaunch: function(exitCode) {
     return new Promise(function(resolve) {
       return request.post('http://localhost:31337/die')
-        .catch(() => {}) // On travis this doesn't currently work: https://github.com/medic/medic/issues/5915
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     });
   },
@@ -57,11 +57,10 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete
-    browser.driver.wait(startApi(), 135 * 1000, 'API took too long to start up');
-
+    browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
-      browser
+      return browser
         .manage()
         .logs()
         .get('browser')
@@ -84,10 +83,27 @@ const runAndLog = (msg, func) => {
   return func();
 };
 
-const startApi = () =>
-  listenForApi()
+const prepServices = () => {
+  let apiReady;
+  if (constants.IS_TRAVIS) {
+    console.log('On travis, waiting for horti to first boot api');
+    // Travis' horti will be installing and then deploying api and sentinel, and those logs are
+    // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
+    // that the service processes get restarted with their logs separated and pointing to the
+    // correct logs for testing
+    apiReady = listenForApi()
+      .then(() => console.log('Horti booted API, rebooting under our logging structure'))
+      .then(() => request.post('http://localhost:31337/all/restart'));
+  } else {
+    // Locally we just need to start them and can do so straight away
+    apiReady = request.post('http://localhost:31337/all/start');
+  }
+
+  return apiReady
+    .then(() => listenForApi())
     .then(() => runAndLog('Settings setup', setupSettings))
     .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
+};
 
 const listenForApi = () => {
   console.log('Checking API');
@@ -139,10 +155,9 @@ const setupUser = () => {
     .getDoc('org.couchdb.user:' + auth.username)
     .then(doc => {
       doc.contact_id = constants.USER_CONTACT_ID;
-      doc.known = true;
       doc.language = 'en';
-      doc.roles = ['_admin'];
       return utils.saveDoc(doc);
     })
-    .then(() => utils.refreshToGetNewSettings());
+    .then(() => utils.refreshToGetNewSettings())
+    .then(() => utils.closeTour());
 };

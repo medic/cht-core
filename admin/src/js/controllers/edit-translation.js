@@ -3,6 +3,7 @@ const _ = require('lodash/core');
 angular.module('controllers').controller('EditTranslationCtrl',
   function (
     $scope,
+    $translate,
     $uibModalInstance,
     DB,
     Translate
@@ -79,6 +80,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
           .then(function() {
             $scope.setFinished();
             $uibModalInstance.close();
+            $translate.refresh();
           })
           .catch(function(err) {
             $scope.setError(err, 'Error updating settings');
@@ -101,6 +103,7 @@ angular.module('controllers').controller('EditTranslationCtrl',
           .then(function() {
             $scope.setFinished();
             $uibModalInstance.close();
+            $translate.refresh();
           })
           .catch(function(err) {
             $scope.setError(err, 'Error updating settings');

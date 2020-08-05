@@ -18,6 +18,7 @@ When development is ready to begin one of the engineers should be nominated as a
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
 - [ ] Raise a new issue called `Update dependencies for <version>` with a description that links to [the documentation](https://github.com/medic/medic-docs/blob/master/development/update-dependencies.md). This should be done early in the release cycle so find a volunteer to take this on and assign it to them.
+- [ ] Go through all features and improvements scheduled for this release and raise cht-docs issues for product education to be written where appropriate. If in doubt, check with Max.
 - [ ] Write an update in the weekly Product Team call agenda summarising development and acceptance testing progress and identifying any blockers. The release manager is to update this every week until the version is released.
 
 # Releasing
@@ -39,6 +40,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 - [ ] [Export the translations](https://github.com/medic/medic-docs/blob/master/development/translations.md#exporting-changes-from-poeditor-to-github), delete empty translation files and commit to `master`. Cherry-pick the commit into the release branch. 
 - [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/medic/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Link to the release notes in the description of the release.
 - [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Upgrade the `demo-cht.dev` instance to this version.
 - [ ] Follow the instructions for [releasing other products](https://github.com/medic/medic-docs/blob/master/development/releasing.md) that have been updated in this project (eg: medic-conf, medic-gateway, medic-android).
 - [ ] Add the release to the [Supported versions](https://github.com/medic/medic-docs/blob/master/installation/supported-software.md#supported-versions) and update the EOL date and status of previous releases.
 - [ ] Announce the release in #products and #cht-contributors using this template:

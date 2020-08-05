@@ -19,6 +19,7 @@ dist
 /packages
 /static
 .vscode/
+.idea/
 /build/
 api/src/extracted-resources/**/*
 api/build/**/*
@@ -29,4 +30,4 @@ config/*/backups/*
 config/*/json_docs/*
 config/*/upload-docs.*
 config/*/users.csv
-
+/**/*/.snapshots/local.json

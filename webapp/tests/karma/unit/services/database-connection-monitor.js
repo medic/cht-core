@@ -38,6 +38,8 @@ describe('DatabaseConnectionMonitor service', function() {
     const write = i => {
       db.put({ _id: i + 'a', bar: 'bar' }).then(() => {
         write(i + 1); 
+      }).catch((err) => {
+        throw err;
       });
     };
     write(0); 

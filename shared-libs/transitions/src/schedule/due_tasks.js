@@ -75,7 +75,7 @@ const updateScheduledTasks = (doc, context, dueDates) => {
 };
 
 module.exports = {
-  execute: callback => {
+  execute: () => {
     const now = moment(date.getDate());
     const overdue = now.clone().subtract(7, 'days');
     const opts = {
@@ -115,9 +115,7 @@ module.exports = {
         });
 
         return promiseChain;
-      })
-      .then(() => callback())
-      .catch(callback);
+      });
   },
   _lineage: lineage,
 };
