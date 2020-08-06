@@ -314,7 +314,7 @@ describe('Authorization service', () => {
           { id: 'r4_tombstone', key: 'subject', value: {} },
         ]});
 
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone'));
+      tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
       tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('_tombstone', '') }));
 
       return service
