@@ -99,7 +99,7 @@ angular
         });
     };
 
-    determineEditUserModel()
+    this.setupPromise = determineEditUserModel()
       .then(model => {
         $scope.editUserModel = model;
       })
