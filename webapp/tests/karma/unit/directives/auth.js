@@ -24,7 +24,7 @@ describe('auth directive', () => {
     });
   });
 
-  const nextTick = () => new Promise(resolve => setTimeout(resolve));
+  const nextTick = () => new Promise(resolve => setTimeout(resolve, 20));
 
   it('should be shown when auth does not error',  () => {
     Auth.has.resolves(true);
