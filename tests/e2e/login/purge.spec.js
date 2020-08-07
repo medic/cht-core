@@ -197,7 +197,10 @@ describe('Purging on login', () => {
     return reports.filter(r => r.form === 'a-bad-form-type').map(r => r._id);
   };
 
+  let originalTimeout;
   beforeAll(done => {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     let seq;
     return utils
       .saveDocs(initialReports.concat(initialDocs))
@@ -215,6 +218,7 @@ describe('Purging on login', () => {
   });
 
   afterAll(done => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     commonElements.goToLoginPage();
     loginPage.login(auth.username, auth.password);
     return Promise.all([
