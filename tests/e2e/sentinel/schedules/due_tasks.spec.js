@@ -225,6 +225,41 @@ const reports = [
       },
     ],
   },
+  {
+    _id: 'report5',
+    type: 'data_record',
+    contact: {
+      _id: 'chw1',
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+    },
+    fields: { patient_id: 'patient1', value: 3 },
+    reported_date: moment(threeDaysAgo).valueOf(),
+    scheduled_tasks: [
+      {
+        due: null,
+        message_key: 'messages.one',
+        recipient: 'clinic',
+        state_history: [],
+        state: 'scheduled',
+      },
+      {
+        due: null,
+        timestamp: twoDaysAgo,
+        message_key: 'messages.two',
+        recipient: 'clinic',
+        state_history: [],
+        state: 'scheduled',
+      },
+      {
+        due: null,
+        timestamp: moment(threeDaysAgo).valueOf(),
+        message_key: 'messages.one',
+        recipient: 'ancestor:health_center',
+        state_history: [],
+        state: 'scheduled',
+      },
+    ],
+  },
 ];
 
 const settings = {
@@ -259,7 +294,9 @@ describe('Due Tasks', () => {
       .then(() => sentinelUtils.waitForSentinel(ids))
       // we can't reliably *know* when the scheduler has finished processing the docs,
       // so I'm just waiting for the revs to change
-      .then(() => utils.waitForDocRev([{ id: 'report3', rev: 2 }, { id: 'report4', rev: 2 }]))
+      .then(() => utils.waitForDocRev([
+        { id: 'report3', rev: 2 }, { id: 'report4', rev: 2 }, { id: 'report5', rev: 2 }
+      ]))
       .then(() => utils.getDocs(ids))
       .then(updatedReports => {
         // report1 should not have been changed
@@ -316,6 +353,24 @@ describe('Due Tasks', () => {
         });
 
         chai.expect(updatedReports[3].scheduled_tasks[3].messages).to.equal(undefined);
+
+        // report 5 should have been edited
+        chai.expect(updatedReports[4]).to.deep.nested.include({
+          _id: 'report5',
+          'scheduled_tasks[0].state': 'pending',
+          'scheduled_tasks[1].state': 'pending',
+          'scheduled_tasks[2].state': 'pending',
+
+          'scheduled_tasks[0].messages[0].message': 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 3',
+          'scheduled_tasks[0].messages[0].to': '111222', // clinic
+
+          'scheduled_tasks[1].messages[0].message': 'TWO. Reported by Chw1. Patient Patient1 (patient1). Value 3',
+          'scheduled_tasks[1].messages[0].to': '111222', // clinic
+
+          'scheduled_tasks[2].messages[0].message': 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 3',
+          'scheduled_tasks[2].messages[0].to': '555666', // health_center
+        });
+
       });
   });
 });

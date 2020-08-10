@@ -5,6 +5,7 @@ const utils = require('../lib/utils');
 const date = require('../date');
 const config = require('../config');
 const db = require('../db');
+const rpn = require('request-promise-native');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
@@ -37,10 +38,20 @@ const getTemplateContext = (doc) => {
 };
 
 const updateScheduledTasks = (doc, context, dueDates) => {
+  if (!doc) {
+    return;
+  }
+
   let updatedTasks = false;
   // set task to pending for gateway to pick up
   doc.scheduled_tasks.forEach(task => {
-    if (dueDates.includes(task.due)) {
+    // use the same due calculation as the `messages_by_state` view
+    let due = task.due || task.timestamp || doc.reported_date;
+    if (typeof due !== 'string') {
+      due = moment(due).toISOString();
+    }
+
+    if (dueDates.includes(due)) {
       if (!task.messages) {
         const content = {
           translationKey: task.message_key,
@@ -74,48 +85,79 @@ const updateScheduledTasks = (doc, context, dueDates) => {
   return updatedTasks;
 };
 
+const getBatch = (query, startKey, startKeyDocId) => {
+  const queryString = Object.assign({}, query);
+  if (startKeyDocId) {
+    queryString.startkey_docid = startKeyDocId;
+    queryString.startkey = JSON.stringify(startKey);
+  }
+
+  const options = {
+    baseUrl: db.couchUrl,
+    uri: '/_design/medic/_view/messages_by_state',
+    qs: queryString,
+    json: true
+  };
+
+  let nextKey;
+  let nextKeyDocId;
+
+  return rpn
+    .get(options)
+    .then(result => {
+      if (!result.rows || !result.rows.length || (result.rows.length === 1 && result.rows[0].id === startKeyDocId)) {
+        return;
+      }
+
+      ({ key: nextKey, id: nextKeyDocId } = result.rows[result.rows.length - 1]);
+      if (result.rows[0].id === startKeyDocId) {
+        // prevent last document from previous batch from being processed twice
+        result.rows.shift();
+      }
+
+      const objs = {};
+      result.rows.forEach(row => {
+        if (!objs[row.id]) {
+          row.dueDates = [];
+          objs[row.id] = row;
+        }
+        objs[row.id].dueDates.push(moment(row.key[1]).toISOString());
+      });
+
+      let promiseChain = Promise.resolve();
+      Object.values(objs).forEach(obj => {
+        promiseChain = promiseChain
+          .then(() => lineage.hydrateDocs([obj.doc]))
+          .then(([doc]) => {
+            return getTemplateContext(doc).then(context => {
+              const hasUpdatedTasks = updateScheduledTasks(doc, context, obj.dueDates);
+              if (!hasUpdatedTasks) {
+                return;
+              }
+
+              lineage.minify(doc);
+              return db.medic.put(doc);
+            });
+          });
+      });
+
+      return promiseChain;
+    })
+    .then(() => nextKeyDocId && getBatch(query, nextKey, nextKeyDocId));
+};
+
 module.exports = {
   execute: () => {
     const now = moment(date.getDate());
     const overdue = now.clone().subtract(7, 'days');
     const opts = {
       include_docs: true,
-      endkey: [ 'scheduled', now.valueOf() ],
-      startkey: [ 'scheduled', overdue.valueOf() ],
+      endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
+      startkey: JSON.stringify([ 'scheduled', overdue.valueOf() ]),
       limit: BATCH_SIZE,
     };
 
-    return db.medic
-      .query('medic/messages_by_state', opts)
-      .then(result => {
-        const objs = {};
-        result.rows.forEach(row => {
-          if (!objs[row.id]) {
-            row.dueDates = [];
-            objs[row.id] = row;
-          }
-          objs[row.id].dueDates.push(moment(row.key[1]).toISOString());
-        });
-
-        let promiseChain = Promise.resolve();
-        Object.values(objs).forEach(obj => {
-          promiseChain = promiseChain
-            .then(() => lineage.hydrateDocs([obj.doc]))
-            .then(([doc]) => {
-              return getTemplateContext(doc).then(context => {
-                const hasUpdatedTasks = updateScheduledTasks(doc, context, obj.dueDates);
-                if (!hasUpdatedTasks) {
-                  return;
-                }
-
-                lineage.minify(doc);
-                return db.medic.put(doc);
-              });
-            });
-        });
-
-        return promiseChain;
-      });
+    return getBatch(opts);
   },
   _lineage: lineage,
 };
