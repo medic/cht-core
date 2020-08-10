@@ -254,11 +254,6 @@ describe('Purging on login', () => {
     loginPage.login(restrictedUserName, restrictedPass);
     commonElements.calm();
     commonElements.goToReports();
-    browser.wait(
-      () => element(by.css('#reports-list li:first-child')).isPresent(),
-      10000,
-      'There should be at least one report in the LHS'
-    );
     reports.expectReportsToExist([goodFormId]);
     reports.expectReportsToNotExist([badFormId]);
     let purgeDate;
