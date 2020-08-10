@@ -38,6 +38,10 @@ const getTemplateContext = (doc) => {
 };
 
 const updateScheduledTasks = (doc, context, dueDates) => {
+  if (!doc) {
+    return;
+  }
+
   let updatedTasks = false;
   // set task to pending for gateway to pick up
   doc.scheduled_tasks.forEach(task => {
