@@ -38,6 +38,7 @@ const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
+const dbConfigController = require('./controllers/db-config');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -547,6 +548,12 @@ app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
     req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
   }
   next();
+});
+
+app.get('/api/db-config', (req, res)=> {
+  // eslint-disable-next-line no-console
+  console.log('got here and running');
+  dbConfigController.get(req, res);
 });
 
 // AuthZ for this endpoint should be handled by couchdb
