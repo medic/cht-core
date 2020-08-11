@@ -71,6 +71,7 @@ describe('bulk-docs handler', () => {
   beforeAll(() => {
     return utils
       .saveDoc(parentPlace)
+      .then(() => sUtils.waitForSentinel())
       .then(() => utils.createUsers(users));
   });
 
