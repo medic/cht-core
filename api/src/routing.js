@@ -550,10 +550,8 @@ app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
   next();
 });
 
-app.get('/api/db-config', (req, res)=> {
-  // eslint-disable-next-line no-console
-  console.log('got here and running');
-  dbConfigController.get(req, res);
+app.get('/api/db-config-attachemnts', (req, res)=> {
+  dbConfigController.getAttachments(req, res);
 });
 
 // AuthZ for this endpoint should be handled by couchdb

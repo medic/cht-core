@@ -1,13 +1,13 @@
-/* eslint-disable no-console */
 const axios = require('axios');
 const environment = require('../environment');
 const url = require('url');
 
 module.exports = {
-  getConfig: async () => {
+  getConfig: async (param) => {
     const parsedUrl = url.parse(environment.couchUrl);
-    console.log(parsedUrl);
-    // const resp = await axios.get(`${parsedUrl}`);
-    return 'resp';
+    const dbUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}`;
+    const nodes = await axios.get(`${dbUrl}/_membership`);
+    const config = await axios.get(`${dbUrl}/_node/${nodes.data.all_nodes[0]}/_config/${param}`);
+    return config;
   }
 };
