@@ -1,5 +1,5 @@
 /*
-Integrating with DHIS2 -- https://github.com/medic/medic-docs/blob/master/configuration/dhis-integration.md
+Integrating with DHIS2 -- https://docs.communityhealthtoolkit.org/apps/guides/integrations/dhis2-aggregate/
 */
 const _ = require('lodash');
 const moment = require('moment');
