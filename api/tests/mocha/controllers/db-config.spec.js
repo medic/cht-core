@@ -7,7 +7,6 @@ const controller = require('../../../src/controllers/db-config');
 const serverUtils = require('../../../src/server-utils');
 
 let req;
-// let userCtx;
 let res;
 
 describe.only('DB config Controller', () => {
