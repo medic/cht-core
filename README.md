@@ -14,8 +14,8 @@ The Core Framework addresses complexities like health system roles and reporting
 
 Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed and exported using a web application. These web applications are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container.
 
-For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
-For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db-schema.md).
+For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://docs.communityhealthtoolkit.org/core/overview/architecture/).
+For more information about the format of docs in the database, see [Database Schema](https://docs.communityhealthtoolkit.org/core/overview/db-schema/).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
 ## Using the Core Framework
@@ -39,7 +39,7 @@ To setup a development environment to contribute to the Core Framework follow th
 First time contributor? Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wanted) are a great place to start.
 
 Looking for other ways to help? You can also:
-* Improve documentation. Check out our style guide [here](https://github.com/medic/medic-docs/blob/master/development/docs-style-guide.md)
+* Improve documentation. Check out our style guide [here](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/)
 * Find and mark duplicate issues
 * Try to reproduce issues and help with troubleshooting
 * Or share a new idea or question with us!
