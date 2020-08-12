@@ -1,6 +1,16 @@
-const {log, error, mkdir, extractPlaceholders} = require('./utils');
+const {log, warn, error, mkdir} = require('./utils');
 const fs = require('fs');
-const path = require('path');
+const {
+  checkTranslations,
+  TranslationException
+} = require('translation-checker');
+const MessageFormat = require('messageformat');
+
+const MFORMAT = new MessageFormat('en');
+const transErrorsMsg = MFORMAT
+  .compile('There {ERRORS, plural, one{was 1 error} other{were # errors}} trying to compile');
+const transEmptyMsg = MFORMAT
+  .compile('There {EMPTIES, plural, one{was 1 empty translation} other{were # empty translations}} trying to compile');
 
 const fileExists = (fpath) => {
   const file = `${process.cwd()}/${fpath}`;
@@ -32,31 +42,66 @@ const validDirectory = (fpath) => {
   return valid;
 };
 
-const validatePlaceHolders = (langs, dir) => {
-  let valid = true;
-  const extraFile = path.join(__dirname, '..', 'messages-ex.properties');
-  const templateFile = `${dir}/messages-en.properties`;
-  const templatePlaceholders = extractPlaceholders(templateFile, extraFile);
-  langs.filter(lang => lang !== 'en').forEach(lang => {
-    const file = `${dir}/messages-${lang}.properties`;
-    const placeholders = extractPlaceholders(file);
-    Object.keys(placeholders).forEach(k => {
-      const placeholder = placeholders[k];
-      const templatePlaceholder = templatePlaceholders[k];
-      const foundAllPlaceholders = placeholder.placeholders.every(el => templatePlaceholder.placeholders.includes(el));
-      if (!foundAllPlaceholders) {
-        valid = false;
-        console.error(`\nFAILURE: messages-${lang}.properties: Translation key ${k} on line ${placeholder.index + 1} ` +
-          'has placeholders that do not match those of messages-en.properties\nYou can use messages-ex.properties to ' +
-          'add placeholders missing from the reference context.');
+const validatePlaceHolders = async (langs, dir) => {
+  let formatErrorsFound = 0;
+  let placeholderErrorsFound = 0;
+  let emptiesFound = 0;
+  try {
+    await checkTranslations(
+      dir,
+      {
+        checkPlaceholders: true,
+        languages: langs.concat('ex')
       }
-    });
-  });
-  return valid;
+    );
+  } catch (err) {
+    if (err instanceof TranslationException) {
+      if (!err.errors) {
+        return error('Exception checking translations:', err.message);
+      }
+      for (const e of err.errors) {
+        switch (e.error) {
+        case 'cannot-access-dir':
+          return log('Could not find custom translations dir:', dir);
+        case 'missed-placeholder':
+        case 'wrong-placeholder':
+          placeholderErrorsFound++;
+          error(e.message);
+          break;
+        case 'empty-message':
+          emptiesFound++;
+          break;
+        case 'wrong-messageformat':
+          formatErrorsFound++;
+          error(e.message);
+          break;
+        case 'wrong-file-name':
+          warn(e.message);
+          break;
+        default:  // No more know options, just in case ...
+          error(e.message);
+        }
+      }
+      if (emptiesFound > 0) {
+        warn(transEmptyMsg({EMPTIES: emptiesFound}));
+      }
+      if (formatErrorsFound > 0 || placeholderErrorsFound > 0) {
+        let errMsg = transErrorsMsg({ERRORS: formatErrorsFound + placeholderErrorsFound});
+        if (placeholderErrorsFound > 0) {
+          errMsg += '\nYou can use messages-ex.properties to add placeholders missing from the reference context.';
+        }
+        error(errMsg);
+        return false;
+      }
+    } else {
+      throw err;
+    }
+  }
+  return true;
 };
 
 module.exports = {
-  validTranslations: (fpath) => validTranslations(fpath),
-  validDirectory: (fpath) => validDirectory(fpath),
-  validatePlaceHolders: (lang, fpath) => validatePlaceHolders(lang, fpath)
+  validTranslations,
+  validDirectory,
+  validatePlaceHolders
 };
