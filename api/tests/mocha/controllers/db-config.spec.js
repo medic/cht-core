@@ -13,11 +13,7 @@ describe.only('DB config Controller', () => {
   beforeEach(() => {
     req = {};
     res = { json: sinon.stub() };
-    sinon.stub(authorization, 'getAuthorizationContext');
-    sinon.stub(authorization, 'getAllowedDocIds');
-    sinon.stub(auth, 'isOnlineOnly');
-    sinon.stub(auth, 'isOffline');
-    sinon.stub(auth, 'hasAllPermissions');
+    sinon.stub(authorization, 'isDbAdmin');
     sinon.stub(serverUtils, 'error');
   });
 
