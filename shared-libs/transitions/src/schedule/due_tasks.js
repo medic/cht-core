@@ -105,14 +105,20 @@ const getBatch = (query, startKey, startKeyDocId) => {
   return rpn
     .get(options)
     .then(result => {
-      if (!result.rows || !result.rows.length || (result.rows.length === 1 && result.rows[0].id === startKeyDocId)) {
+      if (!result.rows || !result.rows.length) {
         return;
       }
 
       ({ key: nextKey, id: nextKeyDocId } = result.rows[result.rows.length - 1]);
-      if (result.rows[0].id === startKeyDocId) {
-        // prevent last document from previous batch from being processed twice
-        result.rows.shift();
+
+      if (nextKeyDocId === startKeyDocId || nextKeyDocId === result.rows[0].id) {
+        if (result.rows.length >= query.limit) {
+          // queue is saturated with this single doc, double the limit for the next requests to get past it
+          query.limit = query.limit * 2;
+        } else {
+          // this is the last doc, process it and there's no need to continue
+          nextKeyDocId = null;
+        }
       }
 
       const objs = {};

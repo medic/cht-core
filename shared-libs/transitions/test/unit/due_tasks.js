@@ -53,34 +53,32 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(rpn, 'get')
-      .onCall(0).resolves({
-        rows: [
-          {
-            id: id,
-            key: [ 'scheduled', due.valueOf() ],
-            doc: doc,
-          },
-          {
-            id: id,
-            key: [ 'scheduled', due1.valueOf() ],
-            doc: doc,
-          },
-          {
-            id: id,
-            key: [ 'scheduled', due2.valueOf() ],
-            doc: doc,
-          }
-        ],
-      })
-      .onCall(1).resolves({ rows: [] });
+    const view = sinon.stub(rpn, 'get').resolves({
+      rows: [
+        {
+          id: id,
+          key: [ 'scheduled', due.valueOf() ],
+          doc: doc,
+        },
+        {
+          id: id,
+          key: [ 'scheduled', due1.valueOf() ],
+          doc: doc,
+        },
+        {
+          id: id,
+          key: [ 'scheduled', due2.valueOf() ],
+          doc: doc,
+        }
+      ],
+    });
 
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
     const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     return schedule.execute().then(() => {
-      assert.equal(view.callCount, 2);
+      assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       const saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 4);
@@ -114,28 +112,26 @@ describe('due tasks', () => {
       ],
     };
     const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
-    const view = sinon.stub(rpn, 'get')
-      .onCall(0).resolves({
-        rows: [
-          {
-            id: id,
-            key: [ 'scheduled', due.valueOf() ],
-            doc: doc,
-          },
-          {
-            id: id,
-            key: [ 'scheduled', due.valueOf() ],
-            doc: doc,
-          },
-        ],
-      })
-      .onCall(1).resolves({ rows: [] });
+    const view = sinon.stub(rpn, 'get').resolves({
+      rows: [
+        {
+          id: id,
+          key: [ 'scheduled', due.valueOf() ],
+          doc: doc,
+        },
+        {
+          id: id,
+          key: [ 'scheduled', due.valueOf() ],
+          doc: doc,
+        },
+      ],
+    });
 
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
     const setTaskState = sinon.stub(utils, 'setTaskState');
 
     return schedule.execute().then(() => {
-      assert.equal(view.callCount, 2);
+      assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(hydrate.callCount, 1);
       assert.equal(setTaskState.callCount, 1);
@@ -277,24 +273,22 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(rpn, 'get')
-      .onCall(0).resolves({
-        rows: [
-          {
-            id: id,
-            key: [ 'scheduled', due.valueOf() ],
-            doc: minified,
-          },
-        ],
-      })
-      .onCall(1).resolves({ rows: [] });
+    const view = sinon.stub(rpn, 'get').resolves({
+      rows: [
+        {
+          id: id,
+          key: [ 'scheduled', due.valueOf() ],
+          doc: minified,
+        },
+      ],
+    });
     sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .resolves([hydrated]);
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
 
     return schedule.execute().then(() => {
-      assert.equal(view.callCount, 2);
+      assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(translate.callCount, 1);
       assert.equal(translate.args[0][0], 'visit-1');
@@ -384,21 +378,19 @@ describe('due tasks', () => {
         },
       ],
     };
-    const view = sinon.stub(rpn, 'get')
-      .onCall(0).resolves({
-        rows: [
-          {
-            id: id,
-            key: [ 'scheduled', due.valueOf() ],
-            doc: minified,
-          },
-        ],
-      })
-      .onCall(1).resolves({ rows: [] });
+    const view = sinon.stub(rpn, 'get').resolves({
+      rows: [
+        {
+          id: id,
+          key: [ 'scheduled', due.valueOf() ],
+          doc: minified,
+        },
+      ],
+    });
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
     return schedule.execute().then(() => {
-      assert.equal(view.callCount, 2);
+      assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(getRegistrations.callCount, 1);
       assert.equal(getContactUuid.callCount, 1);
@@ -475,16 +467,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(rpn, 'get')
-      .onCall(0).resolves({ rows: [
-        { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
-      ]})
-      .onCall(1).resolves({ rows: [] });
+    sinon.stub(rpn, 'get').resolves({ rows: [
+      { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
+    ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 2);
+      assert.equal(rpn.get.callCount, 1);
       assert.equal(db.medic.put.callCount, 0);
 
       assert.equal(utils.translate.callCount, 1);
@@ -565,16 +555,14 @@ describe('due tasks', () => {
       ],
     };
 
-    sinon.stub(rpn, 'get')
-      .onCall(0).resolves({ rows: [
-        { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
-      ]})
-      .onCall(1).resolves({ rows: [] });
+    sinon.stub(rpn, 'get').resolves({ rows: [
+      { id: 'report_id', key: [ 'scheduled', due.valueOf() ], doc: minified }
+    ]});
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([hydrated]);
     sinon.stub(db.medic, 'put').resolves({});
 
     return schedule.execute().then(() => {
-      assert.equal(rpn.get.callCount, 2);
+      assert.equal(rpn.get.callCount, 1);
       assert.equal(db.medic.put.callCount, 1);
 
       assert.equal(utils.translate.callCount, 1);
@@ -696,29 +684,27 @@ describe('due tasks', () => {
       ],
       reported_date: due.valueOf(),
     };
-    const view = sinon.stub(rpn, 'get')
-      .onCall(0).resolves({
-        rows: [
-          {
-            id: id,
-            key: [ 'scheduled', due.valueOf() ],
-            doc: minified,
-          },
-          {
-            id: id,
-            key: [ 'scheduled', due.valueOf() ],
-            doc: minified,
-          },
-        ],
-      })
-      .onCall(1).resolves({ rows: [] });
+    const view = sinon.stub(rpn, 'get').resolves({
+      rows: [
+        {
+          id: id,
+          key: [ 'scheduled', due.valueOf() ],
+          doc: minified,
+        },
+        {
+          id: id,
+          key: [ 'scheduled', due.valueOf() ],
+          doc: minified,
+        },
+      ],
+    });
     sinon
       .stub(schedule._lineage, 'hydrateDocs')
       .resolves([hydrated]);
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
 
     return schedule.execute().then(() => {
-      assert.equal(view.callCount, 2);
+      assert.equal(view.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(translate.callCount, 2);
       assert.equal(translate.args[0][0], 'visit-1');
@@ -1178,15 +1164,276 @@ describe('due tasks', () => {
 
       assert.equal(db.medic.put.callCount, 0);
 
-      // doc3 & doc6 are not processed twice
-      assert.equal(schedule._lineage.hydrateDocs.callCount, 6);
+      assert.equal(schedule._lineage.hydrateDocs.callCount, 8);
 
       assert.equal(schedule._lineage.hydrateDocs.args[0][0][0]._id, 'doc1');
       assert.equal(schedule._lineage.hydrateDocs.args[1][0][0]._id, 'doc2');
       assert.equal(schedule._lineage.hydrateDocs.args[2][0][0]._id, 'doc3');
-      assert.equal(schedule._lineage.hydrateDocs.args[3][0][0]._id, 'doc4');
-      assert.equal(schedule._lineage.hydrateDocs.args[4][0][0]._id, 'doc5');
-      assert.equal(schedule._lineage.hydrateDocs.args[5][0][0]._id, 'doc6');
+      assert.equal(schedule._lineage.hydrateDocs.args[3][0][0]._id, 'doc3');
+      assert.equal(schedule._lineage.hydrateDocs.args[4][0][0]._id, 'doc4');
+      assert.equal(schedule._lineage.hydrateDocs.args[5][0][0]._id, 'doc5');
+      assert.equal(schedule._lineage.hydrateDocs.args[6][0][0]._id, 'doc6');
+      assert.equal(schedule._lineage.hydrateDocs.args[7][0][0]._id, 'doc6');
+    });
+  });
+
+  it('should work when the queue is saturated by a single doc that has valid different records', () => {
+    const now = moment().valueOf();
+    sinon.stub(date, 'getDate').returns(moment(now));
+    const scheduledTask = (idx) => ({
+      due: now - (5000 + idx),
+      state: 'scheduled',
+      message_key: 'the_message',
+      recipient: 'clinic',
+    });
+
+    const minifiedDoc = {
+      _id: 'doc',
+      contact: { _id: 'contact' },
+      reported_date: moment().valueOf(),
+      scheduled_tasks: Array.from({ length: 2500 }).map((e, i) => scheduledTask(i)),
+    };
+
+    const firstResponseRows = Array.from({ length: 1000 }).map((e, i) => ({
+      id: 'doc',
+      key: ['scheduled', minifiedDoc.scheduled_tasks[i].due],
+      doc: minifiedDoc
+    }));
+
+    const secondResponseRows = Array.from({ length: 1500 }).map((e, i) => ({
+      id: 'doc',
+      key: ['scheduled', minifiedDoc.scheduled_tasks[1000 + i].due],
+      doc: minifiedDoc
+    }));
+
+    const secondDoc = {
+      _id: 'second_doc',
+      contact: { _id: 'contact' },
+      reported_date: moment.valueOf(),
+      scheduled_tasks: [{
+        due: now - 100,
+        state: 'scheduled',
+        message_key: 'the_other_message',
+        recipient: 'clinic',
+      }]
+    };
+
+    secondResponseRows.push({
+      id: 'second_doc',
+      key: ['scheduled', secondDoc.scheduled_tasks[0].due],
+      doc: secondDoc
+    });
+
+    sinon.stub(rpn, 'get')
+      .onCall(0).resolves({ rows: firstResponseRows })
+      .onCall(1).resolves({ rows: secondResponseRows })
+      .onCall(2).resolves({ rows: [] });
+
+    const expectedPhone = '123456789';
+
+    sinon.stub(schedule._lineage, 'hydrateDocs').callsFake(([ doc ]) => {
+      doc.contact = {
+        _id: 'contact',
+        type: 'person',
+        parent: {
+          _id: 'b',
+          type: 'clinic',
+          contact: {
+            _id: 'c',
+            type: 'person',
+            phone: expectedPhone,
+          },
+        },
+      };
+      return [JSON.parse(JSON.stringify(doc))];
+    });
+
+    sinon.stub(utils, 'translate').returns('Message for doc {{_id}}');
+    sinon.stub(db.medic, 'put').resolves();
+
+    return schedule.execute().then(() => {
+      assert.equal(rpn.get.callCount, 3);
+
+      assert.deepNestedInclude(rpn.get.args[0][0], {
+        uri: '/_design/medic/_view/messages_by_state',
+        qs: {
+          include_docs: true,
+          limit: 1000,
+          endkey: JSON.stringify([ 'scheduled', now ]),
+          startkey: JSON.stringify([ 'scheduled', moment(now).subtract(7, 'days').valueOf() ]),
+        }
+      });
+      assert.deepNestedInclude(rpn.get.args[1][0], {
+        uri: '/_design/medic/_view/messages_by_state',
+        qs: {
+          include_docs: true,
+          limit: 2000,
+          endkey: JSON.stringify([ 'scheduled', now ]),
+          startkey: JSON.stringify([ 'scheduled', minifiedDoc.scheduled_tasks[999].due ]),
+          startkey_docid: minifiedDoc._id,
+        }
+      });
+      assert.deepNestedInclude(rpn.get.args[2][0], {
+        uri: '/_design/medic/_view/messages_by_state',
+        qs: {
+          include_docs: true,
+          limit: 2000,
+          endkey: JSON.stringify([ 'scheduled', now ]),
+          startkey: JSON.stringify([ 'scheduled', secondDoc.scheduled_tasks[0].due ]),
+          startkey_docid: secondDoc._id,
+        }
+      });
+
+      assert.equal(schedule._lineage.hydrateDocs.callCount, 3);
+      assert.equal(db.medic.put.callCount, 3);
+
+      const firstSave = { _id: 'doc' };
+      const secondSave = { _id: 'doc' };
+      minifiedDoc.scheduled_tasks.forEach((task, idx) => {
+        // first 1000 scheduled tasks are pending, others are still scheduled
+        firstSave[`scheduled_tasks[${idx}].state`] = idx < 1000 ? 'pending' : 'scheduled';
+        // first 1000 are "skipped" (they were updated in 1st batch)
+        secondSave[`scheduled_tasks[${idx}].state`] = idx >= 1000 ? 'pending' : 'scheduled';
+      });
+      assert.deepNestedInclude(db.medic.put.args[0][0], firstSave);
+      assert.deepNestedInclude(db.medic.put.args[1][0], secondSave);
+      assert.deepNestedInclude(db.medic.put.args[2][0], {
+        _id: 'second_doc',
+        'scheduled_tasks[0].state': 'pending',
+      });
+    });
+  });
+
+  it('should work when the queue is saturated with a single doc with invalid records', () => {
+    const now = moment().valueOf();
+    sinon.stub(date, 'getDate').returns(moment(now));
+    const scheduledTask = () => ({
+      due: null,
+      state: 'scheduled',
+      message_key: 'incorrect',
+      recipient: 'clinic',
+    });
+
+    const minifiedDoc = {
+      _id: 'doc',
+      contact: { _id: 'contact' },
+      reported_date: now - 1000,
+      scheduled_tasks: Array.from({ length: 2500 }).map(() => scheduledTask()),
+    };
+
+    const firstResponseRows = Array.from({ length: 1000 }).map(() => ({
+      id: 'doc',
+      key: ['scheduled', minifiedDoc.reported_date],
+      doc: minifiedDoc
+    }));
+
+    const secondResponseRows = Array.from({ length: 2000 }).map(() => ({
+      id: 'doc',
+      key: ['scheduled', minifiedDoc.reported_date],
+      doc: minifiedDoc
+    }));
+
+    const thirdResponseRows = Array.from({ length: 2500 }).map(() => ({
+      id: 'doc',
+      key: ['scheduled', minifiedDoc.reported_date],
+      doc: minifiedDoc
+    }));
+
+    const secondDoc = {
+      _id: 'second_doc',
+      contact: { _id: 'contact' },
+      reported_date: moment.valueOf(),
+      scheduled_tasks: [{
+        due: now - 100,
+        state: 'scheduled',
+        message_key: 'correct',
+        recipient: 'clinic',
+      }]
+    };
+
+    thirdResponseRows.push({
+      id: 'second_doc',
+      key: ['scheduled', secondDoc.scheduled_tasks[0].due],
+      doc: secondDoc
+    });
+
+    sinon.stub(rpn, 'get')
+      .onCall(0).resolves({ rows: firstResponseRows })
+      .onCall(1).resolves({ rows: secondResponseRows })
+      .onCall(2).resolves({ rows: thirdResponseRows })
+      .onCall(3).resolves({ rows: [] });
+
+    const expectedPhone = '123456789';
+
+    sinon.stub(schedule._lineage, 'hydrateDocs').callsFake(([ doc ]) => {
+      doc.contact = {
+        _id: 'contact',
+        type: 'person',
+        parent: {
+          _id: 'b',
+          type: 'clinic',
+          contact: {
+            _id: 'c',
+            type: 'person',
+            phone: expectedPhone,
+          },
+        },
+      };
+      return [JSON.parse(JSON.stringify(doc))];
+    });
+
+    sinon.stub(utils, 'translate').withArgs('correct').returns('Message for doc {{_id}}');
+    sinon.stub(db.medic, 'put').resolves();
+
+    return schedule.execute().then(() => {
+      assert.equal(rpn.get.callCount, 4);
+
+      assert.deepNestedInclude(rpn.get.args[0][0], {
+        uri: '/_design/medic/_view/messages_by_state',
+        qs: {
+          include_docs: true,
+          limit: 1000,
+          endkey: JSON.stringify([ 'scheduled', now ]),
+          startkey: JSON.stringify([ 'scheduled', moment(now).subtract(7, 'days').valueOf() ]),
+        }
+      });
+      assert.deepNestedInclude(rpn.get.args[1][0], {
+        uri: '/_design/medic/_view/messages_by_state',
+        qs: {
+          include_docs: true,
+          limit: 2000,
+          endkey: JSON.stringify([ 'scheduled', now ]),
+          startkey: JSON.stringify([ 'scheduled', minifiedDoc.reported_date ]),
+          startkey_docid: minifiedDoc._id,
+        }
+      });
+      assert.deepNestedInclude(rpn.get.args[2][0], {
+        uri: '/_design/medic/_view/messages_by_state',
+        qs: {
+          include_docs: true,
+          limit: 4000,
+          endkey: JSON.stringify([ 'scheduled', now ]),
+          startkey: JSON.stringify([ 'scheduled', minifiedDoc.reported_date ]),
+          startkey_docid: minifiedDoc._id,
+        }
+      });
+      assert.deepNestedInclude(rpn.get.args[3][0], {
+        uri: '/_design/medic/_view/messages_by_state',
+        qs: {
+          include_docs: true,
+          limit: 4000,
+          endkey: JSON.stringify([ 'scheduled', now ]),
+          startkey: JSON.stringify([ 'scheduled', secondDoc.scheduled_tasks[0].due ]),
+          startkey_docid: secondDoc._id,
+        }
+      });
+
+      assert.equal(schedule._lineage.hydrateDocs.callCount, 4);
+      assert.equal(db.medic.put.callCount, 1);
+      assert.deepNestedInclude(db.medic.put.args[0][0], {
+        _id: 'second_doc',
+        'scheduled_tasks[0].state': 'pending',
+      });
     });
   });
 });
