@@ -4,7 +4,7 @@ const dbConfigService = require('../services/db-config');
 
 module.exports = {
   getAttachments: (req, res) => {
-    auth.getUserCtx(req)
+    return auth.getUserCtx(req)
       .then(userCtx => {
         if (auth.isDbAdmin(userCtx)) {
           return dbConfigService.getConfig('attachments');
