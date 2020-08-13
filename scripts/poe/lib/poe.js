@@ -63,7 +63,7 @@ const download = async (opts) => {
     });
     await Promise.all(downloads);
     if (! await validatePlaceHolders(langs, dir)) {
-      throw new Error('Invalid placeholders!');
+      throw new Error('Invalid placeholders or "messageformat" messages!');
     }
   }
 };

@@ -13,6 +13,9 @@ module.exports = {
   warn: (msg) => {
     console.warn(`${chalk.yellow('Warning: ')}${msg}`);
   },
+  info: (msg) => {
+    console.warn(`${chalk.green('Info: ')}${msg}`);
+  },
   log: (msg) => {
     console.log(msg);
   },

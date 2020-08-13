@@ -1,18 +1,24 @@
 const {validTranslations, validDirectory, validatePlaceHolders} = require('../lib/validate');
 const valid = validTranslations;
 const path = require('path');
-
-const originalJoin = path.join;
+const utils = require('../lib/utils');
 
 describe('validate', () => {
 
-  console = {
-    log: jest.fn(),
-    error: jest.fn()
-  };
+  const originalLog = utils.log;
+  const originalInfo = utils.info;
+  const originalError = utils.error;
+
+  beforeEach(()=> {
+    utils.log = jest.fn();
+    utils.info = jest.fn();
+    utils.error = jest.fn();
+  });
 
   afterEach(() => {
-    path.join = originalJoin;
+    utils.log = originalLog;
+    utils.info = originalInfo;
+    utils.error = originalError;
   });
 
   test('translation file exists', () => {
@@ -32,21 +38,29 @@ describe('validate', () => {
     expect(validDirectory('tests/translations')).toBeTruthy();
   });
 
-  test('successful matching translation placeholders', () => {
+  test('successful matching translation placeholders', async () => {
     const matchingPlaceholderDir = path.resolve(__dirname, 'translations', 'matching-placeholders');
-    path.join = jest.fn().mockReturnValue(path.join(matchingPlaceholderDir, 'messages-ex.properties'));
-    validatePlaceHolders(['en', 'sw'], matchingPlaceholderDir);
-    expect(console.error).toHaveBeenCalledTimes(0);
+    await validatePlaceHolders(['en', 'sw'], matchingPlaceholderDir);
+    expect(utils.error).toHaveBeenCalledTimes(0);
   });
 
-  test('error on non-matching translation placeholders', () => {
+  test('error on non-matching translation placeholders', async () => {
     const nonMatchingPlaceholderDir = path.resolve(__dirname, 'translations', 'non-matching-placeholders');
-    path.join = jest.fn().mockReturnValue(path.join(nonMatchingPlaceholderDir, 'messages-ex.properties'));
-    validatePlaceHolders(['en', 'sw'], nonMatchingPlaceholderDir);
-    expect(console.error).toHaveBeenCalledWith(
-      '\nFAILURE: messages-sw.properties: Translation key Number\\ of\\ form\\ types on line 3 has placeholders that ' +
-      'do not match those of messages-en.properties\nYou can use messages-ex.properties to add placeholders missing ' +
-      'from the reference context.'
+    await validatePlaceHolders(['en', 'sw'], nonMatchingPlaceholderDir);
+    expect(utils.info).toHaveBeenCalledWith(
+      'There was 1 empty translation trying to compile'
+    );
+    expect(utils.error).toHaveBeenCalledWith(
+      'Cannot compile \'sw\' translation with key \'Number of facilities\' has placeholders ' +
+      'that do not match any in the base translation provided'
+    );
+    expect(utils.error).toHaveBeenCalledWith(
+      'Cannot compile \'sw\' translation with key \'Number of form types\' has placeholders ' +
+      'that do not match any in the base translation provided'
+    );
+    expect(utils.error).toHaveBeenCalledWith(
+      'There were 2 errors trying to compile\n' +
+      'You can use messages-ex.properties to add placeholders missing from the reference context.'
     );
   });
 
