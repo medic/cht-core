@@ -550,7 +550,7 @@ app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
   next();
 });
 
-app.get('/api/db-config-attachemnts', (req, res)=> {
+app.get('/api/db-config-attachments', (req, res)=> {
   dbConfigController.getAttachments(req, res);
 });
 
