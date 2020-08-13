@@ -8,11 +8,8 @@ const fs = require('fs'),
   environment = require('../environment'),
   config = require('../config'),
   cookie = require('../services/cookie'),
-  SESSION_COOKIE_RE = /AuthSession=([^;]*);/,
-  ONE_YEAR = 31536000000,
   logger = require('../logger'),
-  db = require('../db'),
-  production = process.env.NODE_ENV === 'production';
+  db = require('../db');
 
 let loginTemplate;
 
@@ -89,30 +86,8 @@ const createSession = req => {
   });
 };
 
-const getCookieOptions = () => {
-  return {
-    sameSite: 'lax', // prevents the browser from sending this cookie along with some cross-site requests
-    secure: production, // only transmit when requesting via https unless in development mode
-  };
-};
-
-const setSessionCookie = (res, cookie) => {
-  const sessionId = SESSION_COOKIE_RE.exec(cookie)[1];
-  const options = getCookieOptions();
-  options.httpOnly = true; // don't allow javascript access to stop xss
-  res.cookie('AuthSession', sessionId, options);
-};
-
 const setUserCtxCookie = (res, userCtx) => {
-  const options = getCookieOptions();
-  options.maxAge = ONE_YEAR;
-  res.cookie('userCtx', JSON.stringify(userCtx), options);
-};
-
-const setLocaleCookie = (res, locale) => {
-  const options = getCookieOptions();
-  options.maxAge = ONE_YEAR;
-  res.cookie('locale', locale, options);
+  cookie.setUserCtx(res, JSON.stringify(userCtx));
 };
 
 const getRedirectUrl = userCtx => {
@@ -136,13 +111,13 @@ const setCookies = (req, res, sessionRes) => {
   return auth
     .getUserCtx(options)
     .then(userCtx => {
-      setSessionCookie(res, sessionCookie);
+      cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
       res.clearCookie('login');
       return auth.getUserSettings(userCtx).then(({ language }={}) => {
         if (language) {
-          setLocaleCookie(res, language);
+          cookie.setLocale(res, language);
         }
         res.status(302).send(getRedirectUrl(userCtx));
       });

@@ -35,6 +35,7 @@ const _ = require('underscore'),
   authorization = require('./middleware/authorization'),
   createUserDb = require('./controllers/create-user-db'),
   purgedDocsController = require('./controllers/purged-docs'),
+  cookie = require('./services/cookie'),
   staticResources = /\/(templates|static)\//,
   // CouchDB is very relaxed in matching routes
   routePrefix = '/+' + environment.db + '/+',
@@ -247,6 +248,16 @@ ONLINE_ONLY_ENDPOINTS.forEach(url =>
   app.all(routePrefix + url, authorization.offlineUserFirewall)
 );
 
+// allow anyone to access their session
+app.all('/_session', function(req, res) {
+  const given = cookie.get(req, 'userCtx');
+  if (given) {
+    // update the expiry date on the cookie to keep it fresh
+    cookie.setUserCtx(res, decodeURIComponent(given));
+  }
+  proxy.web(req, res);
+});
+
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
@@ -262,8 +273,6 @@ var UNAUDITED_ENDPOINTS = [
   // Interacting with mongo filters uses POST
   routePrefix + '_find',
   routePrefix + '_explain',
-  // allow anyone to access their _session information
-  '/_session',
 ];
 
 UNAUDITED_ENDPOINTS.forEach(function(url) {
