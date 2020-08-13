@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const utils = require('../../utils');
 const constants = require('../../constants');
+const moment = require('moment');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -655,10 +656,78 @@ describe('routing', () => {
     });
   });
 
+  describe('_session endpoint', () => {
+
+    it('logs the user in', () => {
+
+      const username = 'offline';
+      const now = moment.utc();
+      const userCtxCookie = {
+        name: username,
+        roles: [ 'chw' ]
+      };
+
+      const createSession = () => {
+        return utils.request({
+          resolveWithFullResponse: true,
+          json: true,
+          path: '/_session',
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: { name: username, password },
+          username,
+          password
+        });
+      };
+
+      const getSession = sessionCookie => {
+        return utils.request({
+          resolveWithFullResponse: true,
+          path: '/_session',
+          method: 'GET',
+          headers: {
+            Cookie: `locale=en; ${sessionCookie}; userCtx=${JSON.stringify(userCtxCookie)}`,
+          },
+          noAuth: true
+        });
+      };
+
+      return createSession()
+        .then(res => {
+          expect(res.statusCode).toEqual(200);
+          expect(res.headers['set-cookie'].length).toEqual(1);
+          const sessionCookie = res.headers['set-cookie'][0].split(';')[0];
+          expect(sessionCookie.split('=')[0]).toEqual('AuthSession');
+          return sessionCookie;
+        })
+        .then(sessionCookie => getSession(sessionCookie))
+        .then(res => {
+          expect(res.statusCode).toEqual(200);
+          expect(res.headers['set-cookie'].length).toEqual(1);
+          const [ content, age, path, expires, samesite ] = res.headers['set-cookie'][0].split('; ');
+
+          // check the cookie content is unchanged
+          const [ contentKey, contentValue ] = content.split('=');
+          expect(contentKey).toEqual('userCtx');
+          expect(decodeURIComponent(contentValue)).toEqual(JSON.stringify(userCtxCookie));
+
+          // check the expiry date is around a year away
+          const expiryValue = expires.split('=')[1];
+          const expiryDate = moment.utc(expiryValue).add(1, 'hour'); // add a small margin of error
+          expect(expiryDate.diff(now, 'months')).toEqual(12);
+
+          // check the other properties
+          expect(samesite).toEqual('SameSite=Lax');
+          expect(age).toEqual('Max-Age=31536000');
+          expect(path).toEqual('Path=/');
+        });
+    });
+  });
+
   describe('legacy endpoints', () => {
     afterEach(done => utils.revertSettings().then(done));
 
-    it('should still route to deprecate apiV0 settings endpoints', () => {
+    it('should still route to deprecated apiV0 settings endpoints', () => {
       let settings;
       return utils
         .updateSettings({}) // this test will update settings that we want successfully reverted afterwards

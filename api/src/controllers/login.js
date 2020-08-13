@@ -8,11 +8,9 @@ const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
 const users = require('../services/users');
-const SESSION_COOKIE_RE = /AuthSession=([^;]*);/;
-const ONE_YEAR = 31536000000;
 const logger = require('../logger');
 const db = require('../db');
-const production = process.env.NODE_ENV === 'production';
+const cookie = require('../services/cookie');
 
 let loginTemplate;
 
@@ -115,23 +113,7 @@ const createSession = req => {
   });
 };
 
-const getCookieOptions = () => {
-  return {
-    sameSite: 'lax', // prevents the browser from sending this cookie along with some cross-site requests
-    secure: production, // only transmit when requesting via https unless in development mode
-  };
-};
-
-const setSessionCookie = (res, cookie) => {
-  const sessionId = SESSION_COOKIE_RE.exec(cookie)[1];
-  const options = getCookieOptions();
-  options.httpOnly = true; // don't allow javascript access to stop xss
-  res.cookie('AuthSession', sessionId, options);
-};
-
 const setUserCtxCookie = (res, userCtx) => {
-  const options = getCookieOptions();
-  options.maxAge = ONE_YEAR;
   const home = getHomeUrl(userCtx);
   let content;
   if (home === '/') {
@@ -139,13 +121,7 @@ const setUserCtxCookie = (res, userCtx) => {
   } else {
     content = Object.assign({}, userCtx, { home });
   }
-  res.cookie('userCtx', JSON.stringify(content), options);
-};
-
-const setLocaleCookie = (res, locale) => {
-  const options = getCookieOptions();
-  options.maxAge = ONE_YEAR;
-  res.cookie('locale', locale, options);
+  cookie.setUserCtx(res, JSON.stringify(content));
 };
 
 const updateUserLanguageIfRequired = (user, current, selected) => {
@@ -165,7 +141,7 @@ const setCookies = (req, res, sessionRes) => {
   return auth
     .getUserCtx(options)
     .then(userCtx => {
-      setSessionCookie(res, sessionCookie);
+      cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
       res.clearCookie('login');
@@ -181,7 +157,7 @@ const setCookies = (req, res, sessionRes) => {
           const selectedLocale = req.body.locale
             || language
             || config.get('locale');
-          setLocaleCookie(res, selectedLocale);
+          cookie.setLocale(res, selectedLocale);
           return updateUserLanguageIfRequired(req.body.user, language, selectedLocale);
         })
         .then(() => {
