@@ -59,7 +59,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(MessageQueue.query.args[0]).to.deep.equal(['tab', 0, 25, undefined]);
         chai.expect(scope.basePath).to.equal('some path');
         done();
-      });
+      }, 20);
     });
 
     it('catches Settings errors', done => {
@@ -70,7 +70,7 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.callCount).to.equal(0);
         done();
-      });
+      }, 20);
     });
 
     it('catches loadTranslation errors', done => {
@@ -81,7 +81,7 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(MessageQueue.query.callCount).to.equal(0);
         done();
-      });
+      }, 20);
     });
   });
 
@@ -97,7 +97,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(MessageQueue.query.args[0][3]).to.equal(undefined);
         chai.expect(scope.pagination.page).to.equal(1);
         done();
-      });
+      }, 20);
     });
 
     it('queries MessageQueue with descending param if set', done => {
@@ -111,7 +111,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(MessageQueue.query.args[0][3]).to.equal('descending');
         chai.expect(scope.pagination.page).to.equal(1);
         done();
-      });
+      }, 20);
     });
 
     it('loads selected page', done => {
@@ -126,7 +126,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 10 }, { notify: false }]);
         done();
-      });
+      }, 20);
     });
 
     it('normalizes page param (objects)', done => {
@@ -141,7 +141,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
-      });
+      }, 20);
     });
 
     it('normalizes page param (arrays)', done => {
@@ -156,7 +156,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
-      });
+      }, 20);
     });
 
     it('normalizes page param (strings)', done => {
@@ -171,7 +171,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
-      });
+      }, 20);
     });
 
     it('normalizes page param (strings)', done => {
@@ -186,7 +186,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 22 }, { notify: false }]);
         done();
-      });
+      }, 20);
     });
 
     it('normalizes page param (negative numbers)', done => {
@@ -201,7 +201,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 1 }, { notify: false }]);
         done();
-      });
+      }, 20);
     });
 
     it('normalizes page param (floating point numbers)', done => {
@@ -216,7 +216,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(stateGo.callCount).to.equal(1);
         chai.expect(stateGo.args[0]).to.deep.equal(['.', { page: 4 }, { notify: false }]);
         done();
-      });
+      }, 20);
     });
   });
 
@@ -240,7 +240,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(scope.loading).to.equal(false);
         chai.expect(scope.displayLastUpdated).to.equal(true);
         done();
-      });
+      }, 20);
     });
 
     it('catches query errors', done => {
@@ -254,7 +254,7 @@ describe('MessageQueueCtrl controller', () => {
         chai.expect(scope.loading).to.equal(false);
         chai.expect(scope.displayLastUpdated).to.equal(true);
         done();
-      });
+      }, 20);
     });
 
     it('applies conditional styling params', done => {
@@ -270,7 +270,7 @@ describe('MessageQueueCtrl controller', () => {
           { state: 'forwarded-by-gateway', stateHistory: {} },
           { state: 'random', stateHistory: { timestamp: 0 } }
         ]
-      });
+      }, 20);
 
       createController('due');
       setTimeout(() => {
@@ -283,7 +283,7 @@ describe('MessageQueueCtrl controller', () => {
           { state: 'random', stateHistory: { timestamp: 0 } }
         ]);
         done();
-      });
+      }, 20);
     });
 
     it('does not display last updated date for scheduled tab', done =>{
@@ -298,7 +298,7 @@ describe('MessageQueueCtrl controller', () => {
       setTimeout(() => {
         chai.expect(scope.displayLastUpdated).to.equal(false);
         done();
-      });
+      }, 20);
     });
   });
 
@@ -331,10 +331,10 @@ describe('MessageQueueCtrl controller', () => {
               chai.expect(MessageQueue.query.args[4][1]).to.equal(0);
               chai.expect(scope.pagination.page).to.equal(1);
               done();
-            });
-          });
-        });
-      });
+            }, 20);
+          }, 20);
+        }, 20);
+      }, 20);
     });
 
     it('paginates correctly', done => {
@@ -380,11 +380,11 @@ describe('MessageQueueCtrl controller', () => {
                 chai.expect(MessageQueue.query.args[3][1]).to.equal(275);
                 chai.expect(MessageQueue.query.args[4][1]).to.equal(0);
                 done();
-              });
-            });
-          });
-        });
-      });
+              }, 20);
+            }, 20);
+          }, 20);
+        }, 20);
+      }, 20);
     });
   });
 
