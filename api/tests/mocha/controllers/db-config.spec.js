@@ -25,7 +25,7 @@ describe.only('DB config Controller', () => {
     return controller.getAttachments(req, res).then(() => {
       chai.expect(auth.isDbAdmin.callCount).to.equal(1);
       chai.expect(serverUtils.error.args[0])
-        .to.deep.equal([{ code: 403, reason: 'Insufficient privileges' }, req, res]);
+        .to.deep.equal([{ code: 401, reason: 'Insufficient privileges' }, req, res]);
       chai.expect(res.json.callCount).to.equal(0);
       chai.expect(serverUtils.error.callCount).to.equal(1);
     });
