@@ -51,6 +51,8 @@ const validatePlaceHolders = async (langs, dir) => {
       dir,
       {
         checkPlaceholders: true,
+        checkEmpties: true,
+        checkMessageformat: true,
         languages: langs.concat('ex')
       }
     );
