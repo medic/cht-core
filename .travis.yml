@@ -109,8 +109,6 @@ after_failure:
       done
     )
 
-    [[ "$TRAVIS_BUILD_STAGE_NAME" = "test" ]] || return
-
     if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
       S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
     else
