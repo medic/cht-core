@@ -80,6 +80,9 @@ jobs:
         - npm install -g grunt-cli
         - ./scripts/travis/couch-config
         - mkdir tests/logs
+        - cd scripts/travis
+        - npm install
+        - cd ../../
       script:
         - node --stack_size=10000 `which grunt` ci-compile
         - node --stack_size=10000 `which grunt` publish-for-testing
@@ -90,7 +93,6 @@ jobs:
       before_script: # overwrite default
       script:
         - cd scripts/travis
-        - npm install
         - node ./publish.js
         - cd ../../
       after_failure: # overwrite default
