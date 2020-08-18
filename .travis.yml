@@ -120,6 +120,7 @@ after_failure:
     echo "Uploading logs and screenshots to ${S3_PATH}..."
 
     docker logs couch > tests/logs/couch.log 2>&1
+    wget https://api.travis-ci.org/jobs/$TRAVIS_JOB_NUMBER/log.txt -O tests/logs/travis.log
 
     aws s3 cp tests/results "$S3_PATH"/test-results --recursive
     aws s3 cp tests/logs "$S3_PATH"/ --recursive
