@@ -32,7 +32,7 @@ const request = (options, { debug } = {}) => {
   if (debug) {
     console.log('!!!!!!!REQUEST!!!!!!!');
     console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log(JSON.stringify(options));
+    console.log(JSON.stringify(options, null, 2));
     console.log('!!!!!!!REQUEST!!!!!!!');
     console.log('!!!!!!!REQUEST!!!!!!!');
   }
@@ -249,7 +249,7 @@ const revertDb = (except, ignoreRefresh) => {
 const deleteUsers = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
-  const medicDocs = await request({ path: '/medic/_all_docs', method: 'POST', body: { keys: usernames } });
+  const medicDocs = await request({ path: `/${constants.DB_NAME}/_all_docs`, method: 'POST', body: { keys: usernames}});
   const toDelete = userDocs.rows
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
@@ -259,7 +259,7 @@ const deleteUsers = async (users, meta = false) => {
 
   await Promise.all([
     request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
-    request({ path: '/medic/_bulk_docs', method: 'POST', body: { docs: toDeleteMedic } }),
+    request({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
 
   if (!meta) {
@@ -267,7 +267,7 @@ const deleteUsers = async (users, meta = false) => {
   }
 
   for (const user of users) {
-    await request({ path: `/medic-user-${user.username}-meta`,  method: 'DELETE' });
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'DELETE' });
   }
 };
 
@@ -287,7 +287,7 @@ const createUsers = async (users, meta = false) => {
   }
 
   for (const user of users) {
-    await request({ path: `/medic-user-${user.username}-meta`,  method: 'PUT' });
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'PUT'});
   }
 };
 
@@ -377,7 +377,7 @@ module.exports = {
         path: options,
       };
     }
-    options.path = `/medic-user-${options.userName}-meta${options.path || ''}`;
+    options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
     return request(options, { debug: debug });
   },
 
@@ -686,12 +686,12 @@ module.exports = {
     });
   },
 
-  setProcessedSeqToNow: () => {
+  setTransitionSeqToNow: () => {
     return Promise.all([
-      sentinel.get('_local/sentinel-meta-data').catch(() => ({_id: '_local/sentinel-meta-data'})),
+      sentinel.get('_local/transitions-seq').catch(() => ({_id: '_local/transitions-seq'})),
       db.info()
     ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
-      sentinelMetadata.processed_seq = updateSeq;
+      sentinelMetadata.value = updateSeq;
       return sentinel.put(sentinelMetadata);
     });
   },

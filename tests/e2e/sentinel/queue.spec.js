@@ -124,10 +124,6 @@ describe('Sentinel queue drain', () => {
         tombstonesIds = results.map(result => result.id + '____' + result.rev + '____' + 'tombstone');
       })
       .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => sentinelUtils.getInfoDocs(ids))
-      .then(infos => {
-        infos.forEach(info => expect(info).toEqual(null));
-      })
       .then(() => utils.getDocs(tombstonesIds))
       .then(tombstones => {
         tombstones.forEach(tombstone => {
