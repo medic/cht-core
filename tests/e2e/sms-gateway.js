@@ -385,7 +385,7 @@ describe('sms-gateway api', () => {
             )
           )
         )
-      ).toBe('forwarded to gateway');
+      ).toBe('forwarded to gateway ----');
     });
   });
 });

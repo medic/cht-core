@@ -61,7 +61,7 @@ describe('Config', () => {
               include_docs: true,
             }).callCount
           )
-          .to.equal(2);
+          .to.equal(1);
       });
     });
 
