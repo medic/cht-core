@@ -103,19 +103,11 @@ after_failure:
   - node scripts/travis/cleanup.js # clean up testing ddoc
   - pip install --user awscli
   - |
-    (cd tests/logs
-      for log in $(ls *.log); do
-        echo "--------- $log ----------"
-        tail "$log"
-        echo "-------------------------"
-      done
-    )
-
     if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
       S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
     else
       DATE=$(date +"%Y-%M-%dT%H:%m:%S")
-      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER_$DATE
+      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/$DATE
     fi
 
     echo "Uploading logs and screenshots to ${S3_PATH}..."
