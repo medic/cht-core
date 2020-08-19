@@ -42,9 +42,6 @@ before_install:
 install:
   - nvm install $NODE_VERSION
   - mkdir tests/logs
-  - cd scripts/travis
-  - npm install
-  - cd ../../
 
 before_script:
   - nvm use $NODE_VERSION
@@ -107,7 +104,7 @@ after_failure:
       S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
     else
       DATE=$(date +"%Y-%M-%dT%H:%m:%S")
-      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/$DATE
+      S3_PATH=s3://medic-e2e/BUILD_"$TRAVIS_BUILD_NUMBER"/JOB_"$TRAVIS_JOB_NUMBER"/"$DATE"
     fi
 
     echo "Uploading logs and screenshots to ${S3_PATH}..."
