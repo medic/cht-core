@@ -1,7 +1,10 @@
 const rpn = require('request-promise-native');
 const xmlJs = require('xml-js');
 
-const getUrl = (couchUrl, path) => `${couchUrl.protocol}//${couchUrl.auth}@${couchUrl.host}/${couchUrl.path.substring(1)}/${path}`;
+
+const getUrl = (couchUrl, path) => {
+  `${couchUrl.protocol}//${couchUrl.auth}@${couchUrl.host}/${couchUrl.path.substring(1)}/${path}`;
+};
 
 const getReports = async (uri, opts) => {
   const result = await rpn.get({ uri, json: true, qs: opts });
