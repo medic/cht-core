@@ -3,7 +3,7 @@ const xmlJs = require('xml-js');
 
 
 const getUrl = (couchUrl, path) => {
-  `${couchUrl.protocol}//${couchUrl.auth}@${couchUrl.host}/${couchUrl.path.substring(1)}/${path}`;
+  return `${couchUrl.protocol}//${couchUrl.auth}@${couchUrl.host}/${couchUrl.path.substring(1)}/${path}`;
 };
 
 const getReports = async (uri, opts) => {
