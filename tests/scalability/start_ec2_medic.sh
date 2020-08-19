@@ -49,7 +49,7 @@ done
 
 echo Api Is up
 
-MEDIC_CONF_URL=https://medic:medicScalability@$PublicDnsName
+MEDIC_CONF_URL='https://medic:medicScalability@$PublicDnsName'
 
 
 cp -r ./csv ../../config/standard/
@@ -67,7 +67,7 @@ npm install https://github.com/medic/medic-conf.git#master
 
 # echo Uploading settings and seeding data
 echo medic-conf url is $MEDIC_CONF_URL
-$(npm bin)/medic-conf --url="https://medic:medicScalability@$PublicDnsName" --force --accept-self-signed-certs upload-app-settings \
+$(npm bin)/medic-conf --url= $MEDIC_CONF_URL --force --accept-self-signed-certs upload-app-settings \
     convert-app-forms \
     convert-collect-forms \
     convert-contact-forms \
@@ -118,7 +118,8 @@ pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .v
 done
 
 echo staging updates
-curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
+# curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
+curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"scalability-automation"}}'
 
 staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 echo $(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
