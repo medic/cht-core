@@ -90,6 +90,7 @@ jobs:
       before_script: # overwrite default
       script:
         - cd scripts/travis
+        - npm install
         - node ./publish.js
         - cd ../../
       after_failure: # overwrite default
