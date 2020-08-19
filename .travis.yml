@@ -85,6 +85,7 @@ jobs:
         - cd ../../
       script:
         - node --stack_size=10000 `which grunt` ci-compile
+      after_script:
         - node --stack_size=10000 `which grunt` publish-for-testing
       after_failure: # overwrite default
     - stage: publish
