@@ -81,8 +81,15 @@ $(npm bin)/medic-conf --url="$MEDIC_CONF_URL" --force --accept-self-signed-certs
     upload-docs \
     create-users \
 
-echo Sentinel is processing data. Sleeping immediately for 60 seconds
-sleep 60
+
+echo "Generating attachments for all reports"
+cd ../../scripts/generate-form-attachments/
+
+npm ci
+npm run view
+
+echo Sentinel is processing data. Sleeping immediately for 120 seconds
+sleep 120
 
 proc_seq=$(curl $MEDIC_CONF_URL/medic-sentinel/_local/sentinel-meta-data -s -k | jq .processed_seq -r)
 current_leng=$(curl $MEDIC_CONF_URL/medic/_changes?since=$proc_seq -s -k | jq '.results | length')
