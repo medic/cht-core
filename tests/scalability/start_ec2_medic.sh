@@ -67,7 +67,7 @@ npm install https://github.com/medic/medic-conf.git#master
 
 # echo Uploading settings and seeding data
 echo medic-conf url is $MEDIC_CONF_URL
-$(npm bin)/medic-conf --url= $MEDIC_CONF_URL --force --accept-self-signed-certs upload-app-settings \
+$(npm bin)/medic-conf --url=$MEDIC_CONF_URL --force --accept-self-signed-certs upload-app-settings \
     convert-app-forms \
     convert-collect-forms \
     convert-contact-forms \
