@@ -84,9 +84,9 @@ $(npm bin)/medic-conf --url="$MEDIC_CONF_URL" --force --accept-self-signed-certs
 
 echo "Generating attachments for all reports"
 cd ../../scripts/generate-form-attachments/
-export COUCH_URL=$MEDIC_CONF_URL/medic
+
 npm ci
-npm run view
+COUCH_URL=$MEDIC_CONF_URL"/medic" npm run view
 
 echo Sentinel is processing data. Sleeping immediately for 120 seconds
 sleep 120
