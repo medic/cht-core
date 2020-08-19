@@ -556,7 +556,27 @@ angular.module('inboxServices').service('Enketo',
       form.output.update();
     };
 
-    this.save = function(formInternalId, form, geolocation, docId) {
+    const saveGeo = (geoHandle, docs) => {
+      if (!geoHandle) {
+        return docs;
+      }
+
+      return geoHandle()
+        .catch(err => err)
+        .then(geoData => {
+          docs.forEach(doc => {
+            doc.geolocation_log = doc.geolocation_log || [];
+            doc.geolocation_log.push({
+              timestamp: Date.now(),
+              recording: geoData
+            });
+            doc.geolocation = geoData;
+          });
+          return docs;
+        });
+    };
+
+    this.save = function(formInternalId, form, geoHandle, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
@@ -573,14 +593,8 @@ angular.module('inboxServices').service('Enketo',
         .then(function(doc) {
           return xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
         })
-        .then(function(docs) {
-          if (geolocation) {
-            // Only update geolocation if one is provided.  Otherwise, maintain
-            // whatever is already set in the docs.
-            docs.forEach(function(doc) {
-              doc.geolocation = geolocation;
-            });
-          }
+        .then(docs => saveGeo(geoHandle, docs))
+        .then(docs => {
           self.setLastChangedDoc(docs[0]);
           return docs;
         })
