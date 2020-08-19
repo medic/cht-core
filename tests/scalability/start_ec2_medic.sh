@@ -1,6 +1,6 @@
 #!/bin/bash
 #Requires jq
-
+export NODE_TLS_REJECT_UNAUTHORIZED=0
 #Base 64 encode the user-data script to start medic-os
 jq '.UserData = "'$(base64 medic-os.sh -w 0)'"' launch-specification.json >> launch-specification-medic-os.json
 
@@ -117,7 +117,7 @@ echo pre stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq
 pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
 done
 
-echo staging update
+echo staging updates
 curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
 
 staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
