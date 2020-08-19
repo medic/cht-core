@@ -87,7 +87,8 @@ jobs:
         - node --stack_size=10000 `which grunt` ci-compile
       after_script:
         - node --stack_size=10000 `which grunt` publish-for-testing
-      after_failure: # overwrite default
+      after_failure:
+        - echo "After failure"
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=12
