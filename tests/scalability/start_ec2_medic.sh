@@ -65,6 +65,7 @@ sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1
 echo installing medic-conf
 npm install https://github.com/medic/medic-conf.git#master
 
+sleep 10
 # echo Uploading settings and seeding data
 echo medic-conf url is $MEDIC_CONF_URL
 $(npm bin)/medic-conf --url="$MEDIC_CONF_URL" --force --accept-self-signed-certs upload-app-settings \
@@ -86,7 +87,7 @@ echo "Generating attachments for all reports"
 cd ../../scripts/generate-form-attachments/
 
 npm ci
-COUCH_URL=$MEDIC_CONF_URL"/medic" npm run view
+COUCH_URL="$MEDIC_CONF_URL/medic" npm run view
 
 echo Sentinel is processing data. Sleeping immediately for 120 seconds
 sleep 120
