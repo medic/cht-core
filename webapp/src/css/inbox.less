@@ -21,6 +21,7 @@
 @import 'enketo/medic';
 @import 'messages';
 @import 'common';
+@import 'privacy-policies';
 
 .container-fluid {
   overflow: hidden;
@@ -65,7 +66,8 @@ body {
     }
   }
   &.about,
-  &.testing {
+  &.testing,
+  &.privacyPolicy {
     .header .tabs .selected,
     .filters {
       background-color: @help-color;
@@ -189,19 +191,41 @@ body {
   }
 
   .options .dropdown-menu {
+    width: 250px;
+    left: auto;
+    margin-top: 30px;
+    font-size: 0;
     a {
       text-shadow: none;
-      padding: 3px 20px;
+      padding: 10px 20px;
       color: #262626;
       margin-top: 0;
       white-space: normal;
-      &.no-click:hover {
-        background-color: transparent;
-        cursor: default;
-      }
+      font-size: 1rem;
     }
     .disabled a {
       color: #999999;
+    }
+    .divider {
+      margin: 0;
+    }
+    .sync-status {
+      margin-top: 10px;
+      a {
+        padding-top: 0;
+        padding-bottom: 0;
+        color: @label-color;
+        &:hover {
+          background-color: transparent;
+          cursor: default;
+        }
+      }
+      .success {
+        color: @ok-color;
+      }
+      .required {
+        color: @error-color;
+      }
     }
   }
 
@@ -221,54 +245,73 @@ body {
       padding-left: 5px;
       padding-right: 5px;
 
+      .mm-icon {
+        display: block;
+        padding: 5px 0;
+
+        svg, span:not(.mm-badge-overlay):not(.mm-badge), img {
+          &, &:before {
+            display: block;
+            margin: auto;
+            height: 24px;
+            max-width: 24px;
+            overflow: hidden;
+          }
+        }
+      }
+
       &.selected {
         .button-label,
-        .mm-icon:hover {
+        .mm-icon:hover,
+        .resource-icon {
           .button-text;
         }
       }
 
-      &:hover {
+      &:hover:not(.selected) {
         &.messages-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @messages-color;
+            fill: @messages-color;
           }
         }
         &.tasks-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @tasks-color;
+            fill: @tasks-color;
           }
         }
         &.reports-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @reports-color;
+            fill: @reports-color;
           }
         }
         &.analytics-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @analytics-color;
+            fill: @analytics-color;
           }
         }
         &.contacts-tab {
           &,
           .mm-icon-inverse,
-          .mm-icon-inverse:hover {
+          .mm-icon-inverse:hover,
+          .resource-icon svg * {
             color: @contacts-color;
-          }
-        }
-        &.configuration-tab {
-          &,
-          .mm-icon-inverse,
-          .mm-icon-inverse:hover {
-            color: @admin-color;
+            fill: @contacts-color;
           }
         }
       }
@@ -281,29 +324,11 @@ body {
   }
 }
 
-.header .dropdown-menu .sync-status {
-  .no-click {
-    color: @label-color;
-  }
-  .success {
-    color: @ok-color;
-  }
-  .required {
-    color: @error-color;
-  }
-}
-
 .configuration-form {
   margin-bottom: 20px;
   .delete {
     float: right;
   }
-}
-
-.header .options .dropdown-menu {
-  width: 250px;
-  left: auto;
-  margin-top: 30px;
 }
 
 .filters {
@@ -1423,8 +1448,11 @@ a.fa:hover {
     .header {
       display: none;
     }
-    .content .page {
-      top: 46px;
+    &,
+    &.hide-mobile-tab-labels {
+      .content .page {
+        top: 46px;
+      }
     }
     .left-pane {
       left: -100%;

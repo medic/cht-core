@@ -28,6 +28,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        enketoError: Selectors.getEnketoError(state),
         selectedContact: Selectors.getSelectedContact(state)
       };
     };
@@ -48,16 +49,19 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    let geolocation;
-    Geolocation()
-      .then(function(position) {
-        geolocation = position;
-      })
-      .catch($log.warn);
+    const geoHandle = Geolocation.init();
 
     const markFormEdited = function() {
       ctrl.setEnketoEditedStatus(true);
     };
+
+    const resetFormError = function() {
+      if (ctrl.enketoError) {
+        ctrl.setEnketoError(null);
+      }
+    };
+
+    resetFormError();
 
     const setCancelCallback = function() {
       ctrl.setCancelCallback(function() {
@@ -78,7 +82,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
           };
           ctrl.setEnketoEditedStatus(false);
           ctrl.setTitle(TranslateFrom(form.title));
-          return Enketo.render('#contact-report', form, instanceData, markFormEdited);
+          return Enketo.render('#contact-report', form, instanceData, markFormEdited, resetFormError);
         })
         .then(function(formInstance) {
           ctrl.form = formInstance;
@@ -110,8 +114,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         telemetryData.preSave - telemetryData.postRender);
 
       ctrl.setEnketoSavingStatus(true);
-      ctrl.setEnketoError(null);
-      Enketo.save($state.params.formId, ctrl.form, geolocation)
+      resetFormError();
+      Enketo.save($state.params.formId, ctrl.form, geoHandle)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           ctrl.setEnketoSavingStatus(false);
@@ -144,6 +148,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     render($state.params.id, $state.params.formId);
 
     $scope.$on('$destroy', function() {
+      geoHandle && geoHandle.cancel();
       unsubscribe();
       if (!$state.includes('contacts.report')) {
         ctrl.setTitle();

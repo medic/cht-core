@@ -15,6 +15,7 @@ describe('outbound shared library', () => {
   describe('send', () => {
     let restores;
     let mapDocumentToPayload;
+    let alreadySent;
     let sendPayload;
 
     beforeEach(() => {
@@ -22,6 +23,9 @@ describe('outbound shared library', () => {
 
       mapDocumentToPayload = sinon.stub();
       restores.push(outbound.__set__('mapDocumentToPayload', mapDocumentToPayload));
+
+      alreadySent = sinon.stub();
+      restores.push(outbound.__set__('alreadySent', alreadySent));
 
       sendPayload = sinon.stub();
       restores.push(outbound.__set__('sendPayload', sendPayload));
@@ -66,9 +70,10 @@ describe('outbound shared library', () => {
 
     it('Propagates a sending error', () => {
       mapDocumentToPayload.resolves(payload);
+      alreadySent.returns(false);
       sendPayload.rejects(error);
 
-      return service.send(config, configName, record)
+      return service.send(config, configName, record, recordInfo)
         .catch(err => err)
         .then(err => {
           assert.equal(mapDocumentToPayload.callCount, 1);
@@ -213,7 +218,7 @@ describe('outbound shared library', () => {
         completed_tasks: []
       };
 
-      outbound.__get__('updateInfo')(info, 'test-config');
+      outbound.__get__('updateInfo')({some: 'payload'}, info, 'test-config');
 
       assert.equal(info.completed_tasks.length, 1);
       assert.equal(info.completed_tasks[0].type, 'outbound');
@@ -225,7 +230,7 @@ describe('outbound shared library', () => {
         _id: 'some-info',
       };
 
-      outbound.__get__('updateInfo')(info, 'test-config');
+      outbound.__get__('updateInfo')({some: 'payload'}, info, 'test-config');
 
       assert.equal(info.completed_tasks.length, 1);
       assert.equal(info.completed_tasks[0].type, 'outbound');
@@ -409,12 +414,12 @@ describe('outbound shared library', () => {
   });
 
   describe('alreadySent', () => {
-    it('returns false if this record has never been sent anywhere before', () => {
-      assert.isNotOk(service.alreadySent('foo', {_id: 'some-record-info'}));
+    it('returns false if this record has never been sent anywhere', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {_id: 'some-record-info'}));
     });
 
-    it('returns false if this record has been sent outbound before, but not for this configuration', () => {
-      assert.isNotOk(service.alreadySent('foo', {
+    it('returns false if this record has been sent outbound, but not for this config', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
         _id: 'some-record-info',
         completed_tasks: [{
           type: 'outbound',
@@ -424,8 +429,8 @@ describe('outbound shared library', () => {
       }));
     });
 
-    it('returns true if this record has been sent outbound before, for this configuration', () => {
-      assert.isOk(service.alreadySent('foo', {
+    it('returns false if this record has been sent outbound, for this config with a different payload', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
         _id: 'some-record-info',
         completed_tasks: [{
           type: 'outbound',
@@ -434,9 +439,120 @@ describe('outbound shared library', () => {
         }, {
           type: 'outbound',
           name: 'foo',
+          hash: 'somehashthatisnotright',
           timestamp: Date.now()
         }]
       }));
+    });
+
+    it('returns false if this record has been sent outbound, for this config and payload (not most recently)', () => {
+      assert.isNotOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
+        _id: 'some-record-info',
+        completed_tasks: [{
+          type: 'outbound',
+          name: 'bar',
+          timestamp: Date.now()
+        }, {
+          type: 'outbound',
+          name: 'foo',
+          hash: '69b2c6f726b3c4be45ecee8370f1e05754557595aa930c5c6e6cd6c51a123d3b',
+          timestamp: Date.now()
+        }, {
+          type: 'outbound',
+          name: 'foo',
+          hash: 'somehashthatisnotright',
+          timestamp: Date.now()
+        }]
+      }));
+    });
+
+    it('returns true if this record has been sent outbound, for this config and payload (most recently)', () => {
+      assert.isOk(outbound.__get__('alreadySent')({some: 'payload'}, 'foo', {
+        _id: 'some-record-info',
+        completed_tasks: [{
+          type: 'outbound',
+          name: 'bar',
+          timestamp: Date.now()
+        }, {
+          type: 'outbound',
+          name: 'foo',
+          hash: '5d8d96384c4f20565803d386aef2328e35928bb97e6883e241005b4bab868488',
+          timestamp: Date.now()
+        }]
+      }));
+    });
+  });
+
+  describe('consistent hash', () => {
+    it('generates a consistent hash regardless of object item ordering', () => {
+      // This is the problem our custom code solves
+      assert.notEqual(
+        JSON.stringify({a: 'a', b: 'b'}),
+        JSON.stringify({b: 'b', a: 'a'}),
+      );
+
+      // We are also testing for exact hash strings to detect if refactors cause the hashes to change
+
+      // Simple reordering tests
+      assert.equal(
+        outbound.__get__('hash')({b: 'b', a: 'a'}),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+      assert.equal(
+        outbound.__get__('hash')({a: 'a', b: 'b'}),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+
+      // Recursive reordering tests
+      assert.equal(outbound.__get__('hash')({
+        a: {
+          b: 'ab',
+          a: 'aa'
+        },
+        b: {
+          a: 'ba',
+          b: 'bb'
+        }
+      }), '4c48e262921875e73d2529d5f6bcc578dd2f747feb61ac5d2018bb985350420a');
+      assert.equal(outbound.__get__('hash')({
+        b: {
+          b: 'bb',
+          a: 'ba'
+        },
+        a: {
+          a: 'aa',
+          b: 'ab'
+        }
+      }), '4c48e262921875e73d2529d5f6bcc578dd2f747feb61ac5d2018bb985350420a');
+
+      // Built ordering tests
+      const builtOrderOne = {};
+      builtOrderOne.b = 'b';
+      builtOrderOne.a = 'a';
+      assert.equal(
+        outbound.__get__('hash')(builtOrderOne),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+
+      const builtOrderTwo = {};
+      builtOrderTwo.a = 'a';
+      builtOrderTwo.b = 'b';
+      assert.equal(
+        outbound.__get__('hash')(builtOrderTwo),
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+    });
+
+    it('preserves array item ordering', () => {
+      assert.equal(
+        outbound.__get__('hash')({foos: ['b', 'a']}),
+        '379ad62f0fe91c34ef9d3dcc7302990fdb31bbeee7862a2718e5358dd7c8d152');
+
+      assert.equal(
+        outbound.__get__('hash')({foos: ['a', 'b']}),
+        '34b5f1c4698211dcbee90707ac204c80e90cc581e590ede5c530a7a0df05f9dc');
+    });
+
+    it('doesnt mess up numbers or dates', () => {
+      assert.equal(
+        outbound.__get__('orderedStringify')({blah: new Date(2020, 1, 1)}),
+        '{"blah":"2020-02-01T00:00:00.000Z"}');
     });
   });
 });

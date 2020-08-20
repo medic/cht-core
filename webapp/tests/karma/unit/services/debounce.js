@@ -112,18 +112,22 @@ describe('Debounce Service', () => {
     it('should not callback if canceled', () => {
       const debounced = service(callback, 50);
       debounced();
+      chai.expect(debounced.cancelled()).to.equal(false);
       $timeout.flush(25);
       debounced.cancel();
       $timeout.flush(50);
+      chai.expect(debounced.cancelled()).to.equal(true);
       chai.expect(callback.callCount).to.equal(0);
     });
 
     it('should not callback if canceled, using maxDelay', () => {
       const debounced = service(callback, 50, 100);
       debounced();
+      chai.expect(debounced.cancelled()).to.equal(false);
       $timeout.flush(25);
       debounced.cancel();
       $timeout.flush(100);
+      chai.expect(debounced.cancelled()).to.equal(true);
       chai.expect(callback.callCount).to.equal(0);
 
     });

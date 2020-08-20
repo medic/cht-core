@@ -3,12 +3,12 @@
 const _ = require('lodash');
 const auth = require('./auth')();
 const constants = require('./constants');
-const { spawn } = require('child_process');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const path = require('path');
+const Tail = require('tail').Tail;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -32,14 +32,15 @@ const request = (options, { debug } = {}) => {
   if (debug) {
     console.log('!!!!!!!REQUEST!!!!!!!');
     console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log(JSON.stringify(options));
+    console.log(JSON.stringify(options, null, 2));
     console.log('!!!!!!!REQUEST!!!!!!!');
     console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
   options.transform = (body, response, resolveWithFullResponse) => {
     // we might get a json response for a non-json request.
-    if (response.headers['content-type'].startsWith('application/json') && !options.json) {
+    const contentType = response.headers['content-type'];
+    if (contentType && contentType.startsWith('application/json') && !options.json) {
       response.body = JSON.parse(response.body);
     }
     // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
@@ -197,7 +198,7 @@ const refreshToGetNewSettings = () => {
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      dialog.isPresent().then(function(result) {
+      return dialog.isPresent().then(function(result) {
         if (result) {
           dialog.click();
         }
@@ -248,7 +249,7 @@ const revertDb = (except, ignoreRefresh) => {
 const deleteUsers = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
-  const medicDocs = await request({ path: '/medic/_all_docs', method: 'POST', body: { keys: usernames } });
+  const medicDocs = await request({ path: `/${constants.DB_NAME}/_all_docs`, method: 'POST', body: { keys: usernames}});
   const toDelete = userDocs.rows
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
@@ -258,7 +259,7 @@ const deleteUsers = async (users, meta = false) => {
 
   await Promise.all([
     request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
-    request({ path: '/medic/_bulk_docs', method: 'POST', body: { docs: toDeleteMedic } }),
+    request({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
 
   if (!meta) {
@@ -266,7 +267,7 @@ const deleteUsers = async (users, meta = false) => {
   }
 
   for (const user of users) {
-    await request({ path: `/medic-user-${user.username}-meta`,  method: 'DELETE' });
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'DELETE' });
   }
 };
 
@@ -286,7 +287,7 @@ const createUsers = async (users, meta = false) => {
   }
 
   for (const user of users) {
-    await request({ path: `/medic-user-${user.username}-meta`,  method: 'PUT' });
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'PUT'});
   }
 };
 
@@ -351,7 +352,7 @@ module.exports = {
 
   specReporter: new specReporter({
     spec: {
-      displayStacktrace: 'pretty',
+      displayStacktrace: 'raw',
       displayDuration: true
     }
   }),
@@ -376,7 +377,7 @@ module.exports = {
         path: options,
       };
     }
-    options.path = `/medic-user-${options.userName}-meta${options.path || ''}`;
+    options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
     return request(options, { debug: debug });
   },
 
@@ -549,7 +550,7 @@ module.exports = {
   revertDb: revertDb,
 
   resetBrowser: () => {
-    browser.driver
+    return browser.driver
       .navigate()
       .refresh()
       .then(() => {
@@ -598,30 +599,84 @@ module.exports = {
 
   setDebug: debug => e2eDebug = debug,
 
-  stopSentinel: () => {
-    if (process.env.TRAVIS) {
-      return new Promise(res => {
-        const pid = spawn('horti-svc-stop', ['medic-sentinel']);
+  stopSentinel: () => rpn.post('http://localhost:31337/sentinel/stop'),
+  startSentinel: () => rpn.post('http://localhost:31337/sentinel/start'),
 
-        pid.on('exit', res);
-      });
-    } else {
-      return rpn.post('http://localhost:31337/sentinel/stop');
-    }
+  /**
+   * Collector that listens to the given logfile and collects lines that match at least one of the a
+   * given regular expressions
+   *
+   * To use, call before the action you wish to catch, and then execute the returned function after
+   * the action should have taken place. The function will return a promise that will succeed with
+   * the list of captured lines, or fail if there have been any errors with log capturing.
+   *
+   * @param      {string}    logFilename  filename of file in local logs directory
+   * @param      {[RegExp]}  regex        matching expression(s) run against lines
+   * @return     {function}  fn that returns a promise
+   */
+  collectLogs: (logFilename, ...regex) => {
+    const lines = [];
+    const errors = [];
+
+    const tail = new Tail(`./tests/logs/${logFilename}`);
+    tail.on('line', data => {
+      if (regex.find(r => r.test(data))) {
+        lines.push(data);
+      }
+    });
+    tail.on('error', err => {
+      errors.push(err);
+    });
+    tail.watch();
+
+    return function() {
+      tail.unwatch();
+
+      if (errors.length) {
+        return Promise.reject({message: 'CollectLogs errored', errors: errors});
+      }
+
+      return Promise.resolve(lines);
+    };
   },
-  startSentinel: () => {
-    if (process.env.TRAVIS) {
-      return new Promise(res => {
-        const pid = spawn('horti-svc-start', [
-          `${require('os').homedir()}/.horticulturalist/deployments`,
-          'medic-sentinel'
-        ]);
 
-        pid.on('exit', res);
+  /**
+   * Watches a given logfile until at least one line matches one of the given regular expressions.
+   * Watch expires after 10 seconds.
+   * @param {String} logFilename - filename of file in local logs directory
+   * @param {[RegExp]} regex - matching expression(s) run against lines
+   * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
+   */
+  waitForLogs: (logFilename, ...regex) => {
+    const tail = new Tail(`./tests/logs/${logFilename}`);
+    let timeout;
+    const promise = new Promise((resolve, reject) => {
+      timeout = setTimeout(() => {
+        tail.unwatch();
+        reject({ message: 'timeout exceeded' });
+      }, 10000);
+
+      tail.on('line', data => {
+        if (regex.find(r => r.test(data))) {
+          tail.unwatch();
+          clearTimeout(timeout);
+          resolve();
+        }
       });
-    } else {
-      return rpn.post('http://localhost:31337/sentinel/start');
-    }
+      tail.on('error', err => {
+        tail.unwatch();
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
+
+    return {
+      promise,
+      cancel: () => {
+        tail.unwatch();
+        clearTimeout(timeout);
+      },
+    };
   },
 
   // delays executing a function that returns a promise with the provided interval (in ms)
@@ -631,16 +686,22 @@ module.exports = {
     });
   },
 
-  setProcessedSeqToNow: () => {
+  setTransitionSeqToNow: () => {
     return Promise.all([
-      sentinel.get('_local/sentinel-meta-data').catch(() => ({_id: '_local/sentinel-meta-data'})),
+      sentinel.get('_local/transitions-seq').catch(() => ({_id: '_local/transitions-seq'})),
       db.info()
     ]).then(([sentinelMetadata, {update_seq: updateSeq}]) => {
-      sentinelMetadata.processed_seq = updateSeq;
+      sentinelMetadata.value = updateSeq;
       return sentinel.put(sentinelMetadata);
     });
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
+
+  closeTour: () => {
+    element.all(by.css('.modal-dialog a.cancel')).each(elm => {
+      elm.click();
+    });
+  },
 
   waitForDocRev: waitForDocRev,
 

@@ -84,7 +84,12 @@ angular
           });
         }
       })
-      .catch(err => $log.error('Error fetching contact', err));
+      .catch(function(err) {
+        $log.error('Error fetching contact', err);
+        ctrl.loading = false;
+        ctrl.conversations = [];
+        ctrl.error = true;
+      });
 
     const changeListener = Changes({
       key: 'messages-list',

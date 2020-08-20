@@ -6,9 +6,6 @@ const logger = require('../../src/lib/logger');
 const transition = require('../../src/transitions/update_sent_forms');
 
 describe('update sent by', () => {
-  beforeEach(() => {
-    process.env.TEST_ENV = true;
-  });
   afterEach(() => sinon.restore());
 
   it('calls db.get with id of clinic', () => {

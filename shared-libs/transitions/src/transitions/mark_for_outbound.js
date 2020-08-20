@@ -14,11 +14,10 @@ const outbound = require('@medic/outbound')(logger);
 
 const CONFIGURED_PUSHES = 'outbound';
 
-const relevantTo = (doc, infodoc) => {
+const relevantTo = (doc) => {
   const pushes = config.get(CONFIGURED_PUSHES) || {};
 
   return Object.keys(pushes)
-    .filter(key => !outbound.alreadySent(key, infodoc))
     .filter(key => {
       const conf = pushes[key];
       return conf.relevant_to && vm.runInNewContext(conf.relevant_to, {doc});
@@ -30,7 +29,7 @@ const markForOutbound = (change) => {
   // We're working out the relevant tasks to perform here and not in the exported filter function,
   // because there is no way to communicate between the filter and onMatch functions, and so because
   // we *have* to do it here nothing of value is added to also perform it in filter
-  const relevantConfigs = relevantTo(change.doc, change.info);
+  const relevantConfigs = relevantTo(change.doc);
 
   let p = Promise.resolve();
 
@@ -38,10 +37,12 @@ const markForOutbound = (change) => {
 
   for (const [config, configKey] of relevantConfigs) {
     p = p.then(() => outbound.send(config, configKey, change.doc, change.info))
-      .then(() => {
-        // Successful, outbound.send wrote to the infodoc
+      .then(sent => {
+        if (sent) {
+          // Successfully sent, outbound.send wrote to the infodoc
 
-        return db.sentinel.put(change.info);
+          return db.sentinel.put(change.info);
+        }
       })
       .catch(() => {
         // First realtime attempt failed, queue for later

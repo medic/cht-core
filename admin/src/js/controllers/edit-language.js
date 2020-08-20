@@ -46,6 +46,7 @@ angular.module('controllers').controller('EditLanguageCtrl',
           .then(function() {
             $scope.setFinished();
             $uibModalInstance.close();
+            $translate.refresh();
           })
           .catch(function(err) {
             $scope.setError(err, 'Error saving settings');

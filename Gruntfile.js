@@ -125,10 +125,6 @@ module.exports = function(grunt) {
         }
       },
       test: {
-        options: {
-          user: couchConfig.username,
-          pass: couchConfig.password,
-        },
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
         },
@@ -484,7 +480,7 @@ module.exports = function(grunt) {
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
-          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"'`
+          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
         ].join('&& ')
       },
       'clean-test-database': {
@@ -1103,11 +1099,13 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
+    'exec:e2e-servers',
     'protractor:e2e-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
+    'exec:e2e-servers',
     'protractor:performance-tests-and-services',
   ]);
 

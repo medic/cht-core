@@ -6,6 +6,7 @@ const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const getRoles = require('./types-and-roles');
 const auth = require('../auth');
+const tokenLogin = require('./token-login');
 const moment = require('moment');
 
 const USER_PREFIX = 'org.couchdb.user:';
@@ -45,8 +46,10 @@ const SETTINGS_EDITABLE_FIELDS = RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat([
   'roles',
 ]);
 
+const META_FIELDS = ['token_login'];
+
 const ALLOWED_RESTRICTED_EDITABLE_FIELDS =
-  RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS);
+  RESTRICTED_SETTINGS_EDITABLE_FIELDS.concat(RESTRICTED_USER_EDITABLE_FIELDS, META_FIELDS);
 
 const illegalDataModificationAttempts = data =>
   Object.keys(data).filter(k => !ALLOWED_RESTRICTED_EDITABLE_FIELDS.includes(k));
@@ -101,7 +104,7 @@ const validateContact = (id, placeID) => {
       if (!people.isAPerson(doc)) {
         return Promise.reject(error400('Wrong type, contact is not a person.','contact.type.wrong'));
       }
-      if (!module.exports._hasParent(doc, placeID)) {
+      if (!hasParent(doc, placeID)) {
         return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
       }
       return doc;
@@ -253,7 +256,7 @@ const setContactParent = data => {
     // contact parent must exist
     return places.getPlace(data.contact.parent)
       .then(place => {
-        if (!module.exports._hasParent(place, data.place)) {
+        if (!hasParent(place, data.place)) {
           return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
         }
         // save result to contact object
@@ -401,7 +404,7 @@ const deleteUser = id => {
   return Promise.all([ usersDbPromise, medicDbPromise ]);
 };
 
-const validatePassword = password => {
+const validatePassword = (password) => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
       `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
@@ -418,7 +421,14 @@ const validatePassword = password => {
 };
 
 const missingFields = data => {
-  const required = ['username', 'password'];
+  const required = ['username'];
+
+  if (tokenLogin.shouldEnableTokenLogin(data)) {
+    required.push('phone');
+  } else {
+    required.push('password');
+  }
+
   if (data.roles && auth.isOffline(data.roles)) {
     required.push('place', 'contact');
   }
@@ -434,8 +444,8 @@ const missingFields = data => {
 
 const getUpdatedUserDoc = (username, data) => {
   const userID = createID(username);
-  return module.exports._validateUser(userID).then(doc => {
-    const user = Object.assign(doc, module.exports._getUserUpdates(username, data));
+  return validateUser(userID).then(doc => {
+    const user = Object.assign(doc, getUserUpdates(username, data));
     user._id = userID;
     return user;
   });
@@ -443,8 +453,8 @@ const getUpdatedUserDoc = (username, data) => {
 
 const getUpdatedSettingsDoc = (username, data) => {
   const userID = createID(username);
-  return module.exports._validateUserSettings(userID).then(doc => {
-    const settings = Object.assign(doc, module.exports._getSettingsUpdates(username, data));
+  return validateUserSettings(userID).then(doc => {
+    const settings = Object.assign(doc, getSettingsUpdates(username, data));
     settings._id = userID;
     return settings;
   });
@@ -455,30 +465,12 @@ const getUpdatedSettingsDoc = (username, data) => {
  * to export functions needed for testing.
  */
 module.exports = {
-  _createUser: createUser,
-  _createContact: createContact,
-  _createPlace: createPlace,
-  _createUserSettings: createUserSettings,
-  _getType : getType,
-  _getAllUsers: getAllUsers,
-  _getAllUserSettings: getAllUserSettings,
-  _getFacilities: getFacilities,
-  _getSettingsUpdates: getSettingsUpdates,
-  _getUserUpdates: getUserUpdates,
-  _hasParent: hasParent,
-  _lineage: lineage,
-  _setContactParent: setContactParent,
-  _storeUpdatedPlace: storeUpdatedPlace,
-  _validateContact: validateContact,
-  _validateNewUsername: validateNewUsername,
-  _validateUser: validateUser,
-  _validateUserSettings: validateUserSettings,
   deleteUser: username => deleteUser(createID(username)),
   getList: () => {
     return Promise.all([
-      module.exports._getAllUsers(),
-      module.exports._getAllUserSettings(),
-      module.exports._getFacilities()
+      getAllUsers(),
+      getAllUserSettings(),
+      getFacilities()
     ])
       .then(([ users, settings, facilities ]) => {
         return mapUsers(users, settings, facilities);
@@ -489,9 +481,10 @@ module.exports = {
    * objects. Returns the response body in the callback.
    *
    * @param {Object} data - request body
+   * @param {String} appUrl - request protocol://hostname
    * @api public
    */
-  createUser: data => {
+  createUser: (data, appUrl) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
       return Promise.reject(error400(
@@ -500,18 +493,24 @@ module.exports = {
         { 'fields': missing.join(', ') }
       ));
     }
+
+    const tokenLoginError = tokenLogin.validateTokenLogin(data, true);
+    if (tokenLoginError) {
+      return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+    }
     const passwordError = validatePassword(data.password);
     if (passwordError) {
       return Promise.reject(passwordError);
     }
     const response = {};
-    return module.exports._validateNewUsername(data.username)
-      .then(() => module.exports._createPlace(data))
-      .then(() => module.exports._setContactParent(data))
-      .then(() => module.exports._createContact(data, response))
-      .then(() => module.exports._storeUpdatedPlace(data))
-      .then(() => module.exports._createUser(data, response))
-      .then(() => module.exports._createUserSettings(data, response))
+    return validateNewUsername(data.username)
+      .then(() => createPlace(data))
+      .then(() => setContactParent(data))
+      .then(() => createContact(data, response))
+      .then(() => storeUpdatedPlace(data))
+      .then(() => createUser(data, response))
+      .then(() => createUserSettings(data, response))
+      .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
       .then(() => response);
   },
 
@@ -520,10 +519,9 @@ module.exports = {
   */
   createAdmin: userCtx => {
     const data = { username: userCtx.name, roles: ['admin'] };
-    return module.exports
-      ._validateNewUsername(userCtx.name)
-      .then(() => module.exports._createUser(data, {}))
-      .then(() => module.exports._createUserSettings(data, {}));
+    return validateNewUsername(userCtx.name)
+      .then(() => createUser(data, {}))
+      .then(() => createUserSettings(data, {}));
   },
 
   /**
@@ -541,8 +539,9 @@ module.exports = {
    * @param      {Object}    data        Changes to make
    * @param      {Boolean}   fullAccess  Are we allowed to update
    *                                     security-related things?
+   * @param      {String}    appUrl      request protocol://hostname
    */
-  updateUser: (username, data, fullAccess) => {
+  updateUser: (username, data, fullAccess, appUrl) => {
     // Reject update attempts that try to modify data they're not allowed to
     if (!fullAccess) {
       const illegalAttempts = illegalDataModificationAttempts(data);
@@ -553,7 +552,7 @@ module.exports = {
       }
     }
 
-    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
+    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS, META_FIELDS));
 
     // Online users can remove place or contact
     if (!_.isNull(data.place) &&
@@ -566,6 +565,7 @@ module.exports = {
         { 'fields': props.join(', ') }
       ));
     }
+
     if (data.password) {
       const passwordError = validatePassword(data.password);
       if (passwordError) {
@@ -573,11 +573,17 @@ module.exports = {
       }
     }
 
-    return Promise.all([
-      getUpdatedUserDoc(username, data),
-      getUpdatedSettingsDoc(username, data),
-    ])
+    return Promise
+      .all([
+        getUpdatedUserDoc(username, data),
+        getUpdatedSettingsDoc(username, data),
+      ])
       .then(([ user, settings ]) => {
+        const tokenLoginError = tokenLogin.validateTokenLogin(data, false, user, settings);
+        if (tokenLoginError) {
+          return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+        }
+
         const response = {};
 
         return Promise.resolve()
@@ -585,7 +591,9 @@ module.exports = {
             if (data.place) {
               settings.facility_id = user.facility_id;
               return places.getPlace(user.facility_id);
-            } else if (_.isNull(data.place)) {
+            }
+
+            if (_.isNull(data.place)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
                 return Promise.reject(error400(
                   'Place field is required for offline users',
@@ -599,8 +607,10 @@ module.exports = {
           })
           .then(() => {
             if (data.contact) {
-              return module.exports._validateContact(settings.contact_id, user.facility_id);
-            } else if (_.isNull(data.contact)) {
+              return validateContact(settings.contact_id, user.facility_id);
+            }
+
+            if (_.isNull(data.contact)) {
               if (settings.roles && auth.isOffline(settings.roles)) {
                 return Promise.reject(error400(
                   'Contact field is required for offline users',
@@ -625,9 +635,10 @@ module.exports = {
               rev: resp.rev
             };
           })
+          .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
           .then(() => response);
       });
   },
 
-  DOC_IDS_WARN_LIMIT
+  DOC_IDS_WARN_LIMIT,
 };

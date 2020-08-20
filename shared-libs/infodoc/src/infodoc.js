@@ -148,20 +148,6 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
     });
 };
 
-const deleteInfoDoc = change => {
-  return db.sentinel
-    .get(getInfoDocId(change.id))
-    .then(doc => {
-      doc._deleted = true;
-      return db.sentinel.put(doc);
-    })
-    .catch(err => {
-      if (err.status !== 404) {
-        throw err;
-      }
-    });
-};
-
 const updateTransition = (change, transition, ok) => {
   const info = change.info;
   info.transitions = info.transitions || {};
@@ -288,7 +274,6 @@ module.exports = {
     db.sentinel = sentinelDb;
   },
   get: change => resolveInfoDocs([change], true).then(([firstResult]) => firstResult),
-  delete: change => deleteInfoDoc(change),
   updateTransition: (change, transition, ok) =>
     updateTransition(change, transition, ok),
   //
@@ -300,8 +285,8 @@ module.exports = {
   saveTransitions: saveTransitions,
 
   // Used to update infodoc metadata that occurs at write time. A delete does not count as a write
-  // in this instance, as deletes resolve as infodoc cleanups once sentinel gets to processing the
-  // delete
+  // in this instance, as deletes resolve as infodoc cleanups once sentinel's background-cleanup
+  // scheduler gets to processing the delete
   recordDocumentWrite: id => recordDocumentWrite(id, new Date()),
   recordDocumentWrites: ids => recordDocumentWrites(ids, new Date())
 };

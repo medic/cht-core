@@ -20,12 +20,22 @@ const getReminderId = (reminder, scheduledDate, placeId) => {
   return `reminder:${reminder.form}:${scheduledDate.valueOf()}:${placeId}`;
 };
 
-const isConfigValid = (config) => {
+const isContactTypeConfigValid = type => {
+  return contactTypesUtils.isHardcodedType(type) ||
+         contactTypesUtils.getTypeById(config.getAll(), type);
+
+};
+
+const isConfigValid = (reminder) => {
   return Boolean(
-    config &&
-    (config.form && typeof config.form === 'string') &&
-    (config.message || config.translation_key) &&
-    (config.text_expression || config.cron)
+    reminder &&
+    (reminder.form && typeof reminder.form === 'string') &&
+    (reminder.message || reminder.translation_key) &&
+    (reminder.text_expression || reminder.cron) &&
+    (
+      !reminder.contact_types ||
+      (reminder.contact_types.length && reminder.contact_types.every(type => isContactTypeConfigValid(type)))
+    )
   );
 };
 
@@ -93,12 +103,10 @@ const parseDuration = (format) => {
   return moment.duration(Number(tokens[0]), tokens[1]);
 };
 
-
-const getLeafPlaceIds = (startDocId) => {
-  const keys = contactTypesUtils.getLeafPlaceTypes(config.getAll()).map(type => [ type.id ]);
+const getPlaceIds = (keys, startDocId) => {
   const query = {
-    limit: BATCH_SIZE,
-    keys: JSON.stringify(keys),
+    keys,
+    limit: BATCH_SIZE
   };
 
   if (startDocId) {
@@ -193,8 +201,8 @@ const getValidPlaces = (reminder, scheduledDate, placeIds) => {
     });
 };
 
-const getValidLeafPlacesBatch = (reminder, scheduledDate, startDocId) => {
-  return getLeafPlaceIds(startDocId).then(placeIds => {
+const getValidPlacesBatch = (reminder, scheduledDate, contactsByTypeKeys, startDocId) => {
+  return getPlaceIds(contactsByTypeKeys, startDocId).then(placeIds => {
     if (startDocId) {
       placeIds.shift();
     }
@@ -238,8 +246,15 @@ const createReminder = (reminder, scheduledDate, place) => {
   return reminderDoc;
 };
 
+const getContactsByTypeKeys = reminder => {
+  const ids = reminder.contact_types ||
+              contactTypesUtils.getLeafPlaceTypes(config.getAll()).map(type => type.id);
+  return JSON.stringify(ids.map(id => [ id ]));
+};
+
 const sendReminders = (reminder, scheduledDate, startDocId) => {
-  return getValidLeafPlacesBatch(reminder, scheduledDate, startDocId)
+  const contactsByTypeKeys = getContactsByTypeKeys(reminder);
+  return getValidPlacesBatch(reminder, scheduledDate, contactsByTypeKeys, startDocId)
     .then(({ places, nextDocId }) => {
       if (!places || !places.length) {
         return nextDocId;
@@ -287,7 +302,7 @@ const runReminder = (reminder = {}) => {
 
 module.exports = {
   // called from schedule/index.js every 5 minutes, for now
-  execute: callback => {
+  execute: () => {
     const reminders = config.get('reminders') || [];
     return reminders
       .filter(reminder => {
@@ -296,8 +311,6 @@ module.exports = {
         }
         logger.warn('Reminder configuration invalid: %o', reminder);
       })
-      .reduce((p, reminder) => p.then(() => runReminder(reminder)), Promise.resolve())
-      .then(() => callback())
-      .catch(callback);
+      .reduce((p, reminder) => p.then(() => runReminder(reminder)), Promise.resolve());
   },
 };

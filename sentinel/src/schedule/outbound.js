@@ -14,14 +14,25 @@ const BATCH_SIZE = 1000;
 // @return     {<object>}  {validTasks, invalidTasks}, where a validTask is {task doc} and invalid
 //                         tasks are {task row}
 //
-const queuedTasks = () => {
-  return db.sentinel.allDocs({
-    startkey: 'task:outbound:',
-    endkey: 'task:outbound:\ufff0',
-    include_docs: true,
-    limit: BATCH_SIZE,
-  })
+const queuedTasks = startKey => {
+  return db.sentinel
+    .allDocs({
+      startkey: startKey || 'task:outbound:',
+      endkey: 'task:outbound:\ufff0',
+      include_docs: true,
+      limit: BATCH_SIZE,
+    })
     .then(taskResults => {
+      if (!taskResults.rows.length || (taskResults.rows.length === 1 && taskResults.rows[0].key === startKey)) {
+        return;
+      }
+
+      const lastDocId = taskResults.rows[taskResults.rows.length - 1].key;
+      if (taskResults.rows[0].key === startKey) {
+        // prevent last document from previous batch from being processed twice
+        taskResults.rows.shift();
+      }
+
       const outboundTaskDocs = taskResults.rows.map(r => r.doc);
       const associatedDocIds = outboundTaskDocs.map(q => q.doc_id);
 
@@ -55,11 +66,11 @@ const queuedTasks = () => {
                 t.doc = hydratedDocs[idx];
               });
 
-              return { validTasks, invalidTasks };
+              return { validTasks, invalidTasks, lastDocId };
             });
-        } else {
-          return { validTasks, invalidTasks };
         }
+
+        return { validTasks, invalidTasks, lastDocId };
       });
     });
 };
@@ -98,12 +109,6 @@ const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise.resolve(
       logger.warn(
         `Unable to push ${medicDoc._id} for ${key} because this outbound config no longer exists, clearing task`
       );
-      return removeConfigKeyFromTask(taskDoc, key);
-    }
-
-    if (outbound.alreadySent(key, infoDoc)) {
-      // Don't send "duplicate" outbound pushes
-      logger.debug(`Skipping ${medicDoc._id} for ${key} because we've pushed this combination before`);
       return removeConfigKeyFromTask(taskDoc, key);
     }
 
@@ -158,6 +163,9 @@ const removeInvalidTasks = invalidTasks => {
 // @return     {<array>}  { task, doc, info }
 //
 const attachInfoDocs = tasks => {
+  if (!tasks.length) {
+    return [];
+  }
   return db.sentinel.allDocs({
     keys: tasks.map(({doc}) => `${doc._id}-info`),
     include_docs: true
@@ -168,27 +176,23 @@ const attachInfoDocs = tasks => {
   });
 };
 
-// Coordinates the attempted pushing of documents that need it
-const execute = () => {
-  const configuredPushes = configService.get(CONFIGURED_PUSHES) || {};
-  if (!Object.keys(configuredPushes).length) {
-    return Promise.resolve();
-  }
-
-  return queuedTasks()
-    .then(({validTasks, invalidTasks}) => {
+const batch = (configuredPushes, startKey) => {
+  let nextKey;
+  return queuedTasks(startKey)
+    .then(({ validTasks = [], invalidTasks = [], lastDocId } = {}) => {
+      nextKey = lastDocId;
       if (invalidTasks.length) {
         return removeInvalidTasks(invalidTasks).then(() => validTasks);
-      } else {
-        return validTasks;
       }
+
+      return validTasks;
     })
     .then(validTasks => attachInfoDocs(validTasks))
     .then(validTasks => {
       const pushes = validTasks.reduce((acc, {task, doc, info}) => {
         const pushesForDoc =
-          getConfigurationsToPush(configuredPushes, task)
-            .map(([key, config]) => ({task, doc, info, config, key}));
+                getConfigurationsToPush(configuredPushes, task)
+                  .map(([key, config]) => ({task, doc, info, config, key}));
 
         return acc.concat(pushesForDoc);
       }, []);
@@ -203,9 +207,20 @@ const execute = () => {
         (p, {task, doc, info, config, key}) => p.then(() => singlePush(task, doc, info, config, key)),
         Promise.resolve()
       );
-    });
+    })
+    .then(() => nextKey && batch(configuredPushes, nextKey));
+};
+
+// Coordinates the attempted pushing of documents that need it
+const execute = () => {
+  const configuredPushes = configService.get(CONFIGURED_PUSHES) || {};
+  if (!Object.keys(configuredPushes).length) {
+    return Promise.resolve();
+  }
+
+  return batch(configuredPushes);
 };
 
 module.exports = {
-  execute: cb => execute().then(() => cb()).catch(cb)
+  execute: () => execute()
 };

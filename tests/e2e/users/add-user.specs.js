@@ -5,7 +5,7 @@ const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
 const addedUser = 'fulltester' + new Date().getTime();
 const fullName = 'Bede Ngaruko';
-const errorMessagePassword = element(by.css('#password ~ .help-block'));
+const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
 describe('Add user  : ', () => {
 
@@ -31,8 +31,9 @@ describe('Add user  : ', () => {
           return true;
         });
     }, 2000);
-    expect(helper.isTextDisplayed(addedUser));
-    expect(helper.isTextDisplayed(fullName));
+    helper.waitForAngularComplete();
+    expect(helper.isTextDisplayed(addedUser)).toBe(true);
+    expect(helper.isTextDisplayed(fullName)).toBe(true);
   });
 
   it('should reject passwords shorter than 8 characters', () => {
@@ -54,7 +55,7 @@ describe('Add user  : ', () => {
   it('should reject non-matching passwords', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', '%4wbbygxkgdwvdwT65');
-    element(by.id('password-confirm')).sendKeys('abc');
+    element(by.id('edit-password-confirm')).sendKeys('abc');
     addUserModal.submit();
     expect(errorMessagePassword.getText()).toMatch('Passwords must match');
     element(by.css('button.cancel.close')).click();

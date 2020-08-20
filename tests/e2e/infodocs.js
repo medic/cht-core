@@ -110,12 +110,6 @@ describe('infodocs', () => {
     }).then(result => {
       // ...should succeed...
       assert.isTrue(result.ok);
-
-      // ..and the infodoc...
-      return delayedInfoDocsOf(doc._id);
-    }).then(result => {
-      // ... should be deleted.
-      assert.isNull(result[0]);
     });
   };
 
@@ -218,11 +212,6 @@ describe('infodocs', () => {
         // ...everything should work...
         assert.isTrue(result[0].ok);
         assert.isTrue(result[1].ok);
-
-        // ...and the second doc should not have a infodoc anymore
-        return delayedInfoDocsOf(docs[1]._id);
-      }).then(results => {
-        assert.isNull(results[0]);
       });
     });
   });
@@ -245,7 +234,7 @@ describe('infodocs', () => {
           testDoc._rev = rev;
 
           // Skip the preceeding write in sentinel
-          return utils.setProcessedSeqToNow();
+          return utils.setTransitionSeqToNow();
         })
         .then(utils.startSentinel)
         .then(() => {
@@ -293,7 +282,7 @@ describe('infodocs', () => {
           return utils.db.put(legacyInfodoc);
         })
         // Skip the preceeding write in sentinel
-        .then(() => utils.setProcessedSeqToNow())
+        .then(() => utils.setTransitionSeqToNow())
         .then(utils.startSentinel)
         .then(() => {
           // Now update the document via api and with sentinel ready to roll

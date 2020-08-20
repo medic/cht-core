@@ -59,14 +59,14 @@ const report = {
 let originalTimeout;
 
 describe('Sentinel queue drain', () => {
-  beforeAll(done => {
+  beforeAll(() => {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000;
-    utils.saveDocs(contacts).then(done);
+    return utils.saveDocs(contacts);
   });
-  afterAll(done => {
+  afterAll(() => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    utils.revertDb().then(done);
+    return utils.revertDb();
   });
   afterEach(done => utils.revertDb(contacts.map(c => c._id), true).then(done));
 
@@ -124,10 +124,6 @@ describe('Sentinel queue drain', () => {
         tombstonesIds = results.map(result => result.id + '____' + result.rev + '____' + 'tombstone');
       })
       .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => sentinelUtils.getInfoDocs(ids))
-      .then(infos => {
-        infos.forEach(info => expect(info).toEqual(null));
-      })
       .then(() => utils.getDocs(tombstonesIds))
       .then(tombstones => {
         tombstones.forEach(tombstone => {

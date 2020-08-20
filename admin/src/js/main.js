@@ -23,6 +23,8 @@ require('./controllers/delete-doc-confirm');
 require('./controllers/delete-user');
 require('./controllers/display-date-time');
 require('./controllers/display-languages');
+require('./controllers/display-privacy-policies');
+require('./controllers/display-privacy-policies-preview');
 require('./controllers/display-translations');
 require('./controllers/edit-language');
 require('./controllers/edit-translation');
@@ -36,6 +38,7 @@ require('./controllers/forms-xml');
 require('./controllers/icons');
 require('./controllers/images-branding');
 require('./controllers/images-partners');
+require('./controllers/images-tabs-icons');
 require('./controllers/import-translation');
 require('./controllers/message-queue');
 require('./controllers/sms-forms');
@@ -49,6 +52,7 @@ require('./controllers/upgrade-confirm');
 require('./controllers/users');
 
 angular.module('directives', ['ngSanitize']);
+require('./directives/file-model');
 require('./directives/modal');
 require('./directives/pagination');
 require('./directives/relative-date');
@@ -90,9 +94,11 @@ require('../../../webapp/src/js/services/db');
 require('../../../webapp/src/js/services/export');
 require('../../../webapp/src/js/services/extract-lineage');
 require('../../../webapp/src/js/services/file-reader');
+require('../../../webapp/src/js/services/format-date');
 require('../../../webapp/src/js/services/get-data-records');
 require('../../../webapp/src/js/services/get-subject-summaries');
 require('../../../webapp/src/js/services/get-summaries');
+require('../../../webapp/src/js/services/header-tabs');
 require('../../../webapp/src/js/services/hydrate-contact-names');
 require('../../../webapp/src/js/services/json-parse');
 require('../../../webapp/src/js/services/language');
@@ -100,6 +106,9 @@ require('../../../webapp/src/js/services/languages');
 require('../../../webapp/src/js/services/lineage-model-generator');
 require('../../../webapp/src/js/services/location');
 require('../../../webapp/src/js/services/modal');
+require('../../../webapp/src/js/services/moment-locale-data');
+require('../../../webapp/src/js/services/privacy-policies');
+require('../../../webapp/src/js/services/privacy-policies');
 require('../../../webapp/src/js/services/resource-icons');
 require('../../../webapp/src/js/services/search');
 require('../../../webapp/src/js/services/select2-search');
@@ -187,6 +196,15 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'DisplayLanguagesCtrl',
           templateUrl: 'templates/display_languages.html'
+        }
+      }
+    })
+    .state('display.privacy-policies', {
+      url: '/privacy-policies',
+      views: {
+        tab: {
+          controller: 'DisplayPrivacyPoliciesCtrl',
+          templateUrl: 'templates/display_privacy_policies.html'
         }
       }
     })
@@ -322,6 +340,15 @@ angular.module('adminApp').config(function(
         tab: {
           controller: 'ImagesPartnersCtrl',
           templateUrl: 'templates/images_partners.html'
+        }
+      }
+    })
+    .state('images.tabs-icons', {
+      url: '/tabs-icons',
+      views: {
+        tab: {
+          controller: 'ImagesTabsIconsCtrl',
+          templateUrl: 'templates/images_tabs_icons.html'
         }
       }
     })

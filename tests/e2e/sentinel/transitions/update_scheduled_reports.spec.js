@@ -283,6 +283,18 @@ describe('update_scheduled_reports', () => {
       .updateSettings(settings, true)
       .then(() => utils.saveDocs([doc1, doc2, doc3, doc4, doc5]))
       .then(() => sentinelUtils.waitForSentinel([ doc1._id, doc2._id, doc3._id, doc4._id, doc5._id ]))
+      .then(() => utils.getDocs([ doc1._id, doc2._id, doc3._id, doc4._id, doc5._id ]))
+      .then(updated => {
+        //only one of the of doc1, doc2 and doc3 should still exist
+        const duplicates = updated.slice(0, 3);
+        expect(duplicates.filter(doc => doc).length).toEqual(1);
+
+        expect(updated[3].type).toEqual('data_record');
+        expect(updated[4].type).toEqual('data_record');
+      })
+      .then(() => utils.stopSentinel())
+      .then(() => utils.startSentinel())
+      .then(() => sentinelUtils.waitForBackgroundCleanup())
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id, doc3._id, doc4._id, doc5._id ]))
       .then(infos => {
         //only one of the of doc1, doc2 and doc3 should still exist
@@ -293,15 +305,6 @@ describe('update_scheduled_reports', () => {
         expect(infos[3].transitions.update_scheduled_reports.ok).toEqual(true);
         expect(infos[4].transitions).toBeDefined();
         expect(infos[4].transitions.update_scheduled_reports.ok).toEqual(true);
-      })
-      .then(() => utils.getDocs([ doc1._id, doc2._id, doc3._id, doc4._id, doc5._id ]))
-      .then(updated => {
-        //only one of the of doc1, doc2 and doc3 should still exist
-        const duplicates = updated.slice(0, 3);
-        expect(duplicates.filter(doc => doc).length).toEqual(1);
-
-        expect(updated[3].type).toEqual('data_record');
-        expect(updated[4].type).toEqual('data_record');
       });
   });
 });

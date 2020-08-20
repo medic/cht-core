@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ branding.name }}</title>
+  <link href="/login/style.css" media="all" rel="stylesheet">
+  <link rel="shortcut icon" href="/favicon.ico">
+</head>
+<body data-default-locale="{{ defaultLocale }}" data-translations="{{ translations }}">
+<div class="center">
+  <div id="wrapper">
+    <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
+    <div class="locale-wrapper">
+      <div class="loading">
+        <p translate="login.token.loading"></p>
+        <div class="loader"></div>
+      </div>
+      <p class="error invalid" translate="login.token.invalid"></p>
+      <p class="error missing" translate="login.token.missing"></p>
+      <p class="error expired" translate="login.token.expired"></p>
+      <p class="error timeout" translate="login.token.timeout"></p>
+      <p class="error unknown" translate="login.token.general.error"></p>
+      <div class="login-link">
+        <p translate="login.token.redirect.login.info"></p>
+        <a href="/medic/login" class="btn"><span translate="login.token.redirect.login"></span></a>
+      </div>
+    </div>
+    <div id="locale" class="locale-wrapper">
+      <% locales.forEach(function(locale) { %>
+      <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
+      <% }); %>
+    </div>
+  </div>
+</div>
+<form id="tokenLogin" action="{{tokenUrl}}"></form>
+<script src="/login/script.js"></script>
+</body>
+</html>

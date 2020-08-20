@@ -1,6 +1,7 @@
 const IS_TRAVIS = !!process.env.TEST_SUITE;
 
 module.exports = {
+  IS_TRAVIS: IS_TRAVIS,
 
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid

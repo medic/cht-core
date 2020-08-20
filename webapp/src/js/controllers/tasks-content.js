@@ -31,6 +31,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       return {
         enketoStatus: Selectors.getEnketoStatus(state),
         enketoSaving: Selectors.getEnketoSavingStatus(state),
+        enketoError: Selectors.getEnketoError(state),
         loadingContent: Selectors.getLoadingContent(state),
         selectedTask: Selectors.getSelectedTask(state),
         loadTasks: Selectors.getLoadTasks(state),
@@ -56,6 +57,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
+    let geoHandle;
 
     const setSelected = function(id) {
       if (!id) {
@@ -65,6 +67,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       }
       const task = LiveList.tasks.getList().find(task => task._id === id);
       if (task) {
+        geoHandle = Geolocation.init();
         const refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
         ctrl.settingSelected(refreshing);
         hydrateTaskEmission(task).then(hydratedTask => {
@@ -79,13 +82,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         });
       }
     };
-
-    let geolocation;
-    Geolocation()
-      .then(function(position) {
-        geolocation = position;
-      })
-      .catch($log.warn);
 
     const hasOneActionAndNoFields = function(task) {
       return Boolean(
@@ -133,6 +129,14 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       ctrl.setEnketoEditedStatus(true);
     };
 
+    const resetFormError = function() {
+      if (ctrl.enketoError) {
+        ctrl.setEnketoError(null);
+      }
+    };
+
+    resetFormError();
+
     ctrl.performAction = function(action, skipDetails) {
       ctrl.setCancelCallback(function() {
         ctrl.setSelectedTask(null);
@@ -153,7 +157,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         XmlForms.get(action.form)
           .then(function(formDoc) {
             ctrl.setEnketoEditedStatus(false);
-            return Enketo.render('#task-report', formDoc, action.content, markFormEdited)
+            return Enketo.render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
               .then(function(formInstance) {
                 ctrl.form = formInstance;
                 ctrl.loadingForm = false;
@@ -197,8 +201,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         telemetryData.preSave - telemetryData.postRender);
 
       ctrl.setEnketoSavingStatus(true);
-      ctrl.setEnketoError(null);
-      Enketo.save(ctrl.formId, ctrl.form, geolocation)
+      resetFormError();
+      Enketo.save(ctrl.formId, ctrl.form, geoHandle)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
@@ -229,6 +233,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     ctrl.formId = null;
     ctrl.loadTasks.then(() => setSelected($state.params.id));
 
-    $scope.$on('$destroy', unsubscribe);
+    $scope.$on('$destroy', () => {
+      geoHandle && geoHandle.cancel();
+      unsubscribe();
+    });
   }
 );
