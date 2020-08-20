@@ -1,9 +1,9 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
 on:
-  push:
-    branches: 
-      - scalability-automation
+  create:
+    tags: 
+      - "*-beta.*"
       
 jobs:
   build:
