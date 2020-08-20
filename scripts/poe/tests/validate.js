@@ -48,7 +48,7 @@ describe('validate', () => {
     const nonMatchingPlaceholderDir = path.resolve(__dirname, 'translations', 'non-matching-placeholders');
     await validatePlaceHolders(['en', 'sw'], nonMatchingPlaceholderDir);
     expect(utils.info).toHaveBeenCalledWith(
-      'There was 1 empty translation trying to compile'
+      'Found 1 empty translations trying to compile'
     );
     expect(utils.error).toHaveBeenCalledWith(
       'Cannot compile \'sw\' translation with key \'Number of facilities\' has placeholders ' +
@@ -59,7 +59,7 @@ describe('validate', () => {
       'that do not match any in the base translation provided'
     );
     expect(utils.error).toHaveBeenCalledWith(
-      'There were 2 errors trying to compile\n' +
+      'Found 2 errors trying to compile\n' +
       'You can use messages-ex.properties to add placeholders missing from the reference context.'
     );
   });

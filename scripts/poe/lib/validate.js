@@ -4,13 +4,6 @@ const {
   checkTranslations,
   TranslationException
 } = require('translation-checker');
-const MessageFormat = require('messageformat');
-
-const MFORMAT = new MessageFormat('en');
-const transErrorsMsg = MFORMAT
-  .compile('There {ERRORS, plural, one{was 1 error} other{were # errors}} trying to compile');
-const transEmptyMsg = MFORMAT
-  .compile('There {EMPTIES, plural, one{was 1 empty translation} other{were # empty translations}} trying to compile');
 
 const fileExists = (fpath) => {
   const file = `${process.cwd()}/${fpath}`;
@@ -85,10 +78,10 @@ const validatePlaceHolders = async (langs, dir) => {
         }
       }
       if (emptiesFound > 0) {
-        utils.info(transEmptyMsg({EMPTIES: emptiesFound}));
+        utils.info(`Found ${emptiesFound} empty translations trying to compile`);
       }
       if (formatErrorsFound > 0 || placeholderErrorsFound > 0) {
-        let errMsg = transErrorsMsg({ERRORS: formatErrorsFound + placeholderErrorsFound});
+        let errMsg = `Found ${formatErrorsFound + placeholderErrorsFound} errors trying to compile`;
         if (placeholderErrorsFound > 0) {
           errMsg += '\nYou can use messages-ex.properties to add placeholders missing from the reference context.';
         }
