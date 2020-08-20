@@ -82,7 +82,7 @@ describe('Settings shared lib - getCouchConfig function', () => {
     sinon.stub(lib, '_getCouchUrl').returns('http://user:pass@localhost:6929/medic');
     sinon.stub(lib, '_getCouchNodeName').returns('nonode@noname');
     sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
-    lib.getCredentials()
+    lib.getCouchConfig('attachments')
       .then(() => done(new Error('expected exception to be thrown')))
       .catch(err => {
         chai.expect(request.get.callCount).to.equal(1);
@@ -95,9 +95,10 @@ describe('Settings shared lib - getCouchConfig function', () => {
     sinon.stub(lib, '_getCouchUrl').returns('http://user:pass@localhost:6929/medic');
     sinon.stub(lib, '_getCouchNodeName').returns('nonode@noname');
     sinon.stub(request, 'get').resolves('couch config');
-    return lib.getCredentials('mykey').then(actual => {
+    return lib.getCouchConfig('attachments').then(actual => {
       chai.expect(actual).to.equal('couch config');
       chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/nonode@noname/_config/attachments');
     });
   });
 });

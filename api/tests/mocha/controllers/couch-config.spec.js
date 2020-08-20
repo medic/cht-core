@@ -4,7 +4,7 @@ const chai = require('chai');
 const auth = require('../../../src/auth');
 const controller = require('../../../src/controllers/couch-config');
 const serverUtils = require('../../../src/server-utils');
-const service = require('../../../src/services/couch-config');
+const secureSettings = require('@medic/settings');
 
 let req;
 let res;
@@ -15,7 +15,7 @@ describe('DB config Controller', () => {
     res = { json: sinon.stub() };
     sinon.stub(auth, 'isDbAdmin');
     sinon.stub(serverUtils, 'error');
-    sinon.stub(service, 'getConfig');
+    sinon.stub(secureSettings, 'getConfig');
   });
 
   afterEach(() => sinon.restore());
@@ -47,7 +47,7 @@ describe('DB config Controller', () => {
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
     auth.isDbAdmin.returns(true);
     const attachmentsConfig = {'compressible_types':'text/*, application/*','compression_level':'8'};
-    service.getConfig.returns(attachmentsConfig);
+    secureSettings.getCouchConfig.returns(attachmentsConfig);
     return controller.getAttachments(req, res).then(() => {
       chai.expect(auth.isDbAdmin.callCount).to.equal(1);
       chai.expect(res.json.callCount).to.equal(1);
