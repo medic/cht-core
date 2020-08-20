@@ -38,7 +38,7 @@ const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
-const dbConfigController = require('./controllers/db-config');
+const couchConfigController = require('./controllers/couch-config');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -424,6 +424,10 @@ app.get('/api/v1/settings', settings.get);
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
+app.get('/api/couch-config-attachments', (req, res)=> {
+  couchConfigController.getAttachments(req, res);
+});
+
 app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
 app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
 app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
@@ -548,10 +552,6 @@ app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
     req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
   }
   next();
-});
-
-app.get('/api/db-config-attachments', (req, res)=> {
-  dbConfigController.getAttachments(req, res);
 });
 
 // AuthZ for this endpoint should be handled by couchdb

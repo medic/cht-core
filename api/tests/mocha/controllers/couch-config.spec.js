@@ -2,9 +2,9 @@ const sinon = require('sinon');
 const chai = require('chai');
 
 const auth = require('../../../src/auth');
-const controller = require('../../../src/controllers/db-config');
+const controller = require('../../../src/controllers/couch-config');
 const serverUtils = require('../../../src/server-utils');
-const service = require('../../../src/services/db-config');
+const service = require('../../../src/services/couch-config');
 
 let req;
 let res;
