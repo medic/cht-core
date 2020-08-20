@@ -39,7 +39,7 @@ describe('Auth', () => {
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(err.message).to.equal('Not logged in');
-        chai.expect(err.code).to.equal(401);
+        chai.expect(err.code).to.equal(4012);
       });
     });
 
