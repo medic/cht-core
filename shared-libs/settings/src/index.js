@@ -37,8 +37,9 @@ module.exports = {
     const couchUrl = process.env.COUCH_URL.replace(/\/$/, '');
     return couchUrl.slice(0, couchUrl.lastIndexOf('/'));
   },
+  _getCouchUrl: () => process.env.COUCH_URL,
   getCouchConfig: (param) => {
-    const parsedUrl = url.parse(process.env.COUCH_URL);
+    const parsedUrl = url.parse(module.exports._getCouchUrl());
     const dbUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}`;
     const nodeName = module.exports._getCouchNodeName();
     return request.get({ url: `${dbUrl}/_node/${nodeName}/_config/${param}`, json: true })
