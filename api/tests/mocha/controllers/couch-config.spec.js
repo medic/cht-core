@@ -15,7 +15,7 @@ describe('DB config Controller', () => {
     res = { json: sinon.stub() };
     sinon.stub(auth, 'isDbAdmin');
     sinon.stub(serverUtils, 'error');
-    sinon.stub(secureSettings, 'getConfig');
+    sinon.stub(secureSettings, 'getCouchConfig');
   });
 
   afterEach(() => sinon.restore());
