@@ -21,7 +21,7 @@
     "inquirer": "^6.2.1",
     "loglevel": "^1.4.1",
     "request": "^2.88.0",
-    "translation-checker": "file:../../../translation-checker"
+    "@medic/translation-checker": "1.0.0"
   },
   "devDependencies": {
     "eslint-plugin-compat": "^3.1.2",

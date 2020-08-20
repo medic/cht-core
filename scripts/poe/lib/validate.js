@@ -3,7 +3,7 @@ const fs = require('fs');
 const {
   checkTranslations,
   TranslationException
-} = require('translation-checker');
+} = require('@medic/translation-checker');
 
 const fileExists = (fpath) => {
   const file = `${process.cwd()}/${fpath}`;
