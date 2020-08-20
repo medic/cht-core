@@ -29,7 +29,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 - [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Link to the release notes in the description of the release.
 - [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
 - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/overview/supported-software/) and update the EOL date and status of previous releases.
-- [ ] Announce the release in #products and #cht-contributors using this template:
+- [ ] Announce the release in #products using this template:
 ```
 @channel *Announcing the release of {{version}}*
 
