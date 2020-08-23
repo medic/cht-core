@@ -44,7 +44,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 - [ ] Upgrade the `demo-cht.dev` instance to this version.
 - [ ] Follow the instructions for [releasing other products](https://docs.communityhealthtoolkit.org/core/guides/releasing/) that have been updated in this project (eg: medic-conf, medic-gateway, medic-android).
 - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/overview/supported-software/) and update the EOL date and status of previous releases.
-- [ ] Announce the release in #products and #cht-contributors using this template:
+- [ ] Announce the release in #products using this template:
 ```
 @channel *We're excited to announce the release of {{version}}*
 
