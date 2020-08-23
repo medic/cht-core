@@ -1,5 +1,10 @@
 require('dotenv').config({ path: __dirname + '/.env' });
 
+if (!process.env.API_KEY) {
+  console.error('ERROR: An API_KEY is required. Read the README.md file for more info.');
+  process.exit(1);
+}
+
 const fetch = require('node-fetch');
 const { URLSearchParams } = require('url');
 
@@ -28,8 +33,15 @@ const calculate = monitors => {
 
 (async function() {
   const response = await getMonitors();
+  if (response.stat !== 'ok') {
+    console.error('ERROR: UptimeRobot request failed:');
+    console.error(JSON.stringify(response, null, 2));
+    process.exit(1);
+  }
   if (response.pagination.total === response.pagination.limit) {
-    throw new Error('Gareth was too lazy to implement pagination...');
+    console.error('ERROR: We have multiple pages of results - tell Gareth to stop being lazy and implement pagination');
+    console.error(JSON.stringify(response.pagination, null, 2));
+    process.exit(1);
   }
   calculate(response.monitors);
 })();
