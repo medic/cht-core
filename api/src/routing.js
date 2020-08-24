@@ -424,9 +424,7 @@ app.get('/api/v1/settings', settings.get);
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
-app.get('/api/couch-config-attachments', (req, res)=> {
-  couchConfigController.getAttachments(req, res);
-});
+app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
 
 app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
 app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);

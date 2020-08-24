@@ -1,5 +1,4 @@
 const request = require('request-promise-native');
-const url = require('url');
 const RESULT_PARSE_REGEX = /^"(.*)"\n?$/;
 
 // This API gives weird psuedo-JSON results:
@@ -37,15 +36,9 @@ module.exports = {
     const couchUrl = process.env.COUCH_URL.replace(/\/$/, '');
     return couchUrl.slice(0, couchUrl.lastIndexOf('/'));
   },
-  _getCouchUrl: () => process.env.COUCH_URL,
   getCouchConfig: (param) => {
-    const parsedUrl = url.parse(module.exports._getCouchUrl());
-    const dbUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}`;
+    const serverUrl = module.exports._getServerUrl();
     const nodeName = module.exports._getCouchNodeName();
-    return request.get({ url: `${dbUrl}/_node/${nodeName}/_config/${param}`, json: true })
-      .then(config => config)
-      .catch(err => {
-        throw err;
-      });
+    return request.get({ url: `${serverUrl}/_node/${nodeName}/_config/${param}`, json: true });
   }
 };

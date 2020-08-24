@@ -22,6 +22,7 @@ describe('DB config Controller', () => {
 
   it('should respond with an error if the user is not logged in', () => {
     serverUtils.error.resolves();
+    sinon.stub(auth, 'getUserCtx').rejects({ code: 401, message: 'Not logged in' });
     return controller.getAttachments(req, res).then(() => { 
       chai.expect(serverUtils.error.args[0][0].message).to.equal('Not logged in');
       chai.expect(serverUtils.error.args[0][0].code).to.equal(401);
@@ -47,7 +48,7 @@ describe('DB config Controller', () => {
     sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
     auth.isDbAdmin.returns(true);
     const attachmentsConfig = {'compressible_types':'text/*, application/*','compression_level':'8'};
-    secureSettings.getCouchConfig.returns(attachmentsConfig);
+    secureSettings.getCouchConfig.resolves(attachmentsConfig);
     return controller.getAttachments(req, res).then(() => {
       chai.expect(auth.isDbAdmin.callCount).to.equal(1);
       chai.expect(res.json.callCount).to.equal(1);
