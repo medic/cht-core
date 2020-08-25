@@ -114,7 +114,7 @@ echo Getting pre stage sequence numbers
 pre_update_seqs=()
 echo medic-update-seq $(curl $MEDIC_CONF_URL/medic/ -s -k | jq .update_seq)
 for ddoc in ${ddocs[@]}; do
-echo pre stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
+echo $ddoc pre stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
 pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
 done
 
@@ -135,7 +135,7 @@ done
 post_stage=()
 echo medic-update-seq $(curl $MEDIC_CONF_URL/medic/ -s -k | jq .update_seq)
 for ddoc in ${ddocs[@]}; do
-echo post stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
+echo $ddoc post stage value $(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r)
 post_stage+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .view_index.update_seq -r))
 done
 
