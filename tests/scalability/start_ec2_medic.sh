@@ -141,7 +141,7 @@ done
 
 echo Checking post stage sequences to pre stage
 for i in ${!pre_update_seqs[@]}; do 
-if [ ${pre_update_seqs[$i]} -ge ${post_stage[$i]} ]
+if ! [ ${post_stage[$i]} -ge ${pre_update_seqs[$i]} ]
 then
 echo "The sequence for ${ddocs[$i]} did not get updated. It should have been warmed."
 echo "ending run"
