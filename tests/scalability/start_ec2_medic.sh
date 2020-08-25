@@ -128,7 +128,7 @@ echo $(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 until [ "$staged" == "true" ]
 do
 staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
-sleep 2
+sleep 60
 echo "waiting for staging to complete"
 done
 
