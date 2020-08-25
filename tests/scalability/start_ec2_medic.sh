@@ -120,7 +120,7 @@ done
 
 echo staging updates
 #TEMP curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
-curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"3.9.0"}}'
+curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"3.8.0"}}'
 
 
 staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
