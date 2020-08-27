@@ -15,6 +15,22 @@ require('@uirouter/angularjs');
 
 require('ng-redux');
 
+const _ = require('lodash/core');
+_.uniq = require('lodash/uniq');
+_.groupBy = require('lodash/groupBy');
+_.uniqBy = require('lodash/uniqBy');
+_.findIndex = require('lodash/findIndex');
+_.minBy = require('lodash/minBy');
+_.partial = require('lodash/partial');
+_.partial.placeholder = _;
+_.range = require('lodash/range');
+_.intersection = require('lodash/intersection');
+_.toPairs = require('lodash/toPairs');
+_.difference = require('lodash/difference');
+_.template = require('lodash/template');
+_.templateSettings = require('lodash/templateSettings');
+_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
+
 angular.module('controllers', []);
 require('./controllers/main');
 require('./controllers/authorization-permissions');
