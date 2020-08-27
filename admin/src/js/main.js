@@ -60,7 +60,7 @@ require('./directives/release');
 
 // directives we borrow from webapp
 angular.module('inboxDirectives', []);
-require('../../../webapp/src/js/directives/auth');
+require('./directives/auth');
 
 angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
@@ -68,7 +68,7 @@ require('./filters/build-version');
 
 // filters we borrow from webapp
 angular.module('inboxFilters', []);
-require('../../../webapp/src/js/filters/resource-icon');
+require('./filters/resource-icon');
 
 angular.module('services', []);
 require('./services/blob');
@@ -91,7 +91,7 @@ require('./services/contact-muted');
 require('./services/contact-types');
 require('./services/contact-view-model-generator');
 require('./services/db');
-require('../../../webapp/src/js/services/export');
+require('./services/export');
 require('./services/extract-lineage');
 require('./services/file-reader');
 require('./services/format-date');
@@ -121,9 +121,9 @@ require('./services/translation-null-interpolation');
 require('./services/update-settings');
 require('./services/update-user');
 require('./services/user');
-require('../../../webapp/src/js/actions');
-require('../../../webapp/src/js/selectors');
-require('../../../webapp/src/js/reducers');
+require('./actions');
+require('./selectors');
+require('./reducers');
 
 angular.module('adminApp', [
   'ngRoute',
