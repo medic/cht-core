@@ -8,7 +8,7 @@ describe('Auth service', function() {
   let isOnlineOnly;
 
   beforeEach(function () {
-    module('inboxApp');
+    module('adminApp');
     userCtx = sinon.stub();
     Settings = sinon.stub();
     isOnlineOnly = sinon.stub();
@@ -197,7 +197,7 @@ describe('Auth service', function() {
           ],
         },
       });
-      
+
       const result = await service.has(['!can_backup_facilities', 'can_export_messages']);
       chai.expect(result).to.be.true;
     });

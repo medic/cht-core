@@ -7,7 +7,7 @@ describe('HydrateContactNames service', () => {
 
   beforeEach(() => {
     GetSummaries = sinon.stub();
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('GetSummaries', GetSummaries);

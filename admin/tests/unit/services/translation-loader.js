@@ -7,7 +7,7 @@ describe('TranslationLoader service', function() {
   let DBGet;
 
   beforeEach(function() {
-    module('inboxApp');
+    module('adminApp');
     DBGet = sinon.stub();
     Settings = sinon.stub();
     module(function ($provide) {

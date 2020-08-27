@@ -9,7 +9,7 @@ describe('ResourceIcons service', () => {
   beforeEach(() => {
     get = sinon.stub().resolves();
     Changes = sinon.stub();
-    module('inboxApp');
+    module('adminApp');
     module(($provide) => {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
       $provide.factory('Changes', () => Changes);

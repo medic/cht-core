@@ -14,7 +14,7 @@ describe('Telemetry service', () => {
   let pouchDb;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     clock = sinon.useFakeTimers(NOW);
 
     storageGetItem = sinon.stub();

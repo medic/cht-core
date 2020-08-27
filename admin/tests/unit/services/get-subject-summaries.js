@@ -22,7 +22,7 @@ describe('GetSubjectSummaries service', () => {
         Promise.resolve([{ _id: 'lid', doc: doc, lineage: lineage }])
       )
     };
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest

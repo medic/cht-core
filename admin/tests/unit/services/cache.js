@@ -6,7 +6,7 @@ describe('Cache service', function() {
   let changesCallback;
 
   beforeEach(function() {
-    module('inboxApp');
+    module('adminApp');
     module(function($provide) {
       $provide.value('Changes', function(options) {
         changesCallback = options.callback;

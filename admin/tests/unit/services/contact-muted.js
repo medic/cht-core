@@ -5,7 +5,7 @@ describe('ContactMuted service', function() {
   let service;
 
   beforeEach(function() {
-    module('inboxApp');
+    module('adminApp');
     inject(function(_ContactMuted_) {
       service = _ContactMuted_;
     });

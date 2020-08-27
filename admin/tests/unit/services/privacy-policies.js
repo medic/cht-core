@@ -8,7 +8,7 @@ describe('PrivacyPolicies Service', () => {
   let sanitize;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       localMedicDb = { get: sinon.stub(), put: sinon.stub() };
       db = sinon.stub();

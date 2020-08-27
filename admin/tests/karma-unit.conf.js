@@ -37,6 +37,8 @@ module.exports = function(config) {
       '../node_modules/sinon/pkg/sinon.js',
       'node_modules/moment/moment.js',
       '../node_modules/angular-mocks/angular-mocks.js',
+      '../node_modules/chai/chai.js',
+      '../node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js',
       'tests/utils.js',
 
       // test files

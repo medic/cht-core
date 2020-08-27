@@ -51,7 +51,7 @@ describe('ContactViewModelGenerator service', () => {
   };
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       search = sinon.stub();
       dbGet = sinon.stub();

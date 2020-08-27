@@ -10,7 +10,7 @@ describe('Session service', function() {
   let Location;
 
   beforeEach(function () {
-    module('inboxApp');
+    module('adminApp');
     ipCookie = sinon.stub();
     ipCookieRemove = sinon.stub();
     ipCookie.remove = ipCookieRemove;

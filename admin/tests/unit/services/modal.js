@@ -6,7 +6,7 @@ describe('Modal service', () => {
   let uibModalOpen;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     uibModalOpen = sinon.stub();
     module($provide => {
       $provide.factory('$uibModal', () => {
@@ -85,7 +85,7 @@ describe('Modal service', () => {
     // second call
     service(options2);
     chai.expect(uibModalOpen.callCount).to.equal(2);
-    
+
     chai.expect(result1.close.callCount).to.equal(0);
     chai.expect(result2.close.callCount).to.equal(0);
   });

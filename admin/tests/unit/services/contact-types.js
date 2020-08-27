@@ -13,7 +13,7 @@ describe('ContactTypes service', () => {
   beforeEach(() => {
     Settings = sinon.stub();
 
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Settings', Settings);

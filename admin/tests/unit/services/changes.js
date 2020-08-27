@@ -32,7 +32,7 @@ describe('Changes service', function() {
 
     session = { isOnlineOnly: sinon.stub(), userCtx: sinon.stub().returns({ name: 'user' }) };
 
-    module('inboxApp');
+    module('adminApp');
     KarmaUtils.setupMockStore();
     module(function ($provide) {
       $provide.value('$q', Q); // bypass $q so we don't have to digest

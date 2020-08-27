@@ -21,7 +21,7 @@ describe('DB service', () => {
     pouchDB.returns(expected);
 
     isOnlineOnly = sinon.stub();
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.factory('$window', () => {
         return {

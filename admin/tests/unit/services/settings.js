@@ -9,7 +9,7 @@ describe('Settings service', function() {
 
     beforeEach(function() {
       get = sinon.stub();
-      module('inboxApp');
+      module('adminApp');
       module(function($provide) {
         $provide.value('Cache', function(options) {
           return options.get;
@@ -75,7 +75,7 @@ describe('Settings service', function() {
     }
 
     beforeEach(function() {
-      module('inboxApp');
+      module('adminApp');
       module(function($provide) {
         $provide.value('Cache', function() {
           return function(callback) {

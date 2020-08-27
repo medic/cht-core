@@ -37,7 +37,7 @@ describe('Search service', function() {
     searchStub.returns(Promise.resolve({}));
     db = { query: sinon.stub().resolves() };
     session = { isOnlineOnly: sinon.stub() };
-    module('inboxApp');
+    module('adminApp');
     module(function ($provide) {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('DB', sinon.stub().returns(db));

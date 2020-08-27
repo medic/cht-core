@@ -14,7 +14,7 @@ describe('GetSummaries service', () => {
     includes = sinon.stub();
     isOnlineOnly = sinon.stub();
 
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query, allDocs }));
       $provide.value('ContactTypes', { includes });

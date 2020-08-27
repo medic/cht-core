@@ -7,7 +7,7 @@ describe('LineageModelGenerator service', () => {
   let dbAllDocs;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       dbQuery = sinon.stub();
       dbAllDocs = sinon.stub();

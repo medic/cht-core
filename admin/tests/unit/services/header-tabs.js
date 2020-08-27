@@ -4,7 +4,7 @@ describe('HeaderTabs service', () => {
   let service;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     inject($injector => service = $injector.get('HeaderTabs'));
   });
 

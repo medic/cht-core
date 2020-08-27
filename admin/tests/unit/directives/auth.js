@@ -7,7 +7,7 @@ describe('auth directive', () => {
   let Auth;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     module('inboxDirectives');
     Auth = {
       any: sinon.stub(),

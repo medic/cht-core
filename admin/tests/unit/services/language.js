@@ -8,7 +8,7 @@ describe('Language service', function() {
   const ipCookie = sinon.stub();
 
   beforeEach(function() {
-    module('inboxApp');
+    module('adminApp');
     module(function($provide) {
       $provide.value('UserSettings', UserSettings);
       $provide.value('Settings', Settings);

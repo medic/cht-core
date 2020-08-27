@@ -11,7 +11,7 @@ describe('GetDataRecords service', () => {
     allDocs = sinon.stub();
     GetSummaries = sinon.stub();
     HydrateContactNames = sinon.stub();
-    module('inboxApp');
+    module('adminApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ allDocs: allDocs }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest

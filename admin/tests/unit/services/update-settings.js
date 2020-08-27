@@ -6,7 +6,7 @@ describe('UpdateSettings service', function() {
   let $httpBackend;
 
   beforeEach(function() {
-    module('inboxApp');
+    module('adminApp');
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('UpdateSettings');

@@ -5,7 +5,7 @@ describe('ExtractLineage service', () => {
   let service;
 
   beforeEach(() => {
-    module('inboxApp');
+    module('adminApp');
     inject(_ExtractLineage_ => service = _ExtractLineage_);
   });
 
