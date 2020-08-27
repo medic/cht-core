@@ -121,7 +121,7 @@ module.exports = {
     return Promise.resolve();
   },
   runReplication: () => {
-    const SRC_DB_REGEX = new RegExp(`${db.medicDbName}-user-[^\\-]+-meta`);
+    const SRC_DB_REGEX = new RegExp(`${db.medicDbName}-user-[a-z0-9_-]+-meta`);
     const TO_DB_NAME = `${db.medicDbName}-users-meta`;
     return db.allDbs().then(dbs => {
       const srcDbs = dbs.filter(db => SRC_DB_REGEX.exec(db));
