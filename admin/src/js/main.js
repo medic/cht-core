@@ -82,7 +82,7 @@ require('./services/version');
 
 // services we borrow from webapp
 angular.module('inboxServices', []);
-require('../../../webapp/src/js/services/add-attachment');
+require('./services/add-attachment');
 require('../../../webapp/src/js/services/auth');
 require('../../../webapp/src/js/services/cache');
 require('../../../webapp/src/js/services/calendar-interval');
