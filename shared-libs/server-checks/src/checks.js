@@ -1,6 +1,5 @@
 const url = require('url');
 const request = require('request');
-
 const MIN_MAJOR = 8;
 
 /* eslint-disable no-console */
@@ -66,22 +65,19 @@ const couchDbNoAdminPartyModeCheck = () => {
 };
 const couchNodeNamesMatch = (serverUrl) => {
   const envNodeName = process.env['COUCH_NODE_NAME'];
-  // todo - ok to manually build up URL for memberships this way? use some external config value instead?
   const membershipUrl = serverUrl + '/_membership';
 
   return new Promise((resolve, reject) => {
     request.get({ url: membershipUrl, json: true }, (err, response, body) => {
-      // todo - ok to to just grab the zeroeth element like this?
       const serverNodeName = body.cluster_nodes[0];
       if (envNodeName === serverNodeName) {
-        resolve();
+        console.log(`Environment variable "COUCH_NODE_NAME" matches server "${envNodeName}"`);
+        return resolve();
       } else {
-        // todo - this wording is clumsy :(
-        console.error(`Expected the environment variable 'COUCH_NODE_NAME' set to "${envNodeName}" to match `);
-        console.error(`the CouchDB Membership which is "${serverNodeName}"`);
-        // todo - add a URL? remove if none?
-        reject(new Error('`COUCH_NODE_NAME` env variable seems to be misconfigured, ' +
-          'see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
+        console.error(`Environment variable 'COUCH_NODE_NAME' set to "${envNodeName}" but needs to match whats on ` +
+          `CouchDB Membership endpoint "${serverNodeName}".`);
+        return  reject('COUCH_NODE_NAME environment variable seems to be misconfigured, ' +
+          'see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#required-environment-variables');
       }
     });
   });
@@ -117,6 +113,5 @@ module.exports = {
   _nodeVersionCheck: () => nodeVersionCheck(),
   _envVarsCheck: () => envVarsCheck(),
   _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
-  _couchNodeNamesMatch: (serverUrl) => couchNodeNamesMatch(serverUrl),
   _couchDbVersionCheck: (serverUrl) => couchDbVersionCheck(serverUrl)
 };
