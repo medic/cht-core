@@ -14,7 +14,7 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
-  WEBDRIVER_VERSION=83
+  WEBDRIVER_VERSION=85
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
