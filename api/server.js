@@ -32,7 +32,7 @@ process
     const uploadDefaultDocs = require('./src/upload-default-docs');
 
     const apiPort = process.env.API_PORT || 5988;
-    
+
     logger.info('Extracting ddoc…');
     await ddocExtraction.run();
     logger.info('DDoc extraction completed successfully');
