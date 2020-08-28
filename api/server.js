@@ -14,8 +14,7 @@ process
   });
 
 (async () => {
-  await serverChecks.check(environment.serverUrl);
-  
+
   const app = require('./src/routing');
   const config = require('./src/config');
   const migrations = require('./src/migrations');
@@ -30,6 +29,10 @@ process
 
   try
   {
+    logger.info('Running server checks…');
+    await serverChecks.check(environment.serverUrl);
+    logger.info('Checks passed successfully');
+
     logger.info('Extracting ddoc…');
     await ddocExtraction.run();
     logger.info('DDoc extraction completed successfully');
@@ -41,16 +44,16 @@ process
     logger.info('Extracting initial documents…');
     await uploadDefaultDocs.run();
     logger.info('Extracting initial documents completed successfully');
-    
+
     logger.info('Loading configuration…');
     await config.load();
     logger.info('Configuration loaded successfully');
     await config.listen();
-    
+
     logger.info('Merging translations…');
     await translations.run();
     logger.info('Translations merged successfully');
-    
+
     logger.info('Running db migrations…');
     await migrations.run();
     logger.info('Database migrations completed successfully');
