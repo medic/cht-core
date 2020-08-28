@@ -24,7 +24,6 @@ module.exports = function(config) {
     files: [
       // used to query html
       'node_modules/jquery/dist/jquery.js',
-      'node_modules/lodash/lodash.js',
 
       '../node_modules/q/q.js',
 
@@ -38,6 +37,11 @@ module.exports = function(config) {
       'node_modules/moment/moment.js',
       '../node_modules/angular-mocks/angular-mocks.js',
       'tests/utils.js',
+      '../node_modules/chai/chai.js',
+      '../node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js',
+      'node_modules/redux/dist/redux.js',
+      'node_modules/ng-redux/umd/ng-redux.js',
+      'node_modules/lodash/lodash.js',
 
       // test files
       'tests/unit/**/*.js',
