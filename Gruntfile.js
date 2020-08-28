@@ -13,7 +13,8 @@ const {
   UPLOAD_URL,
   STAGING_SERVER,
   BUILDS_SERVER,
-  TRAVIS_BUILD_NUMBER
+  TRAVIS_BUILD_NUMBER,
+  WEBDRIVER_VERSION=85
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
@@ -86,6 +87,16 @@ module.exports = function(grunt) {
             to: `"_id": "medic:medic:test-${TRAVIS_BUILD_NUMBER}"`,
           },
         ],
+      },
+      'webdriver-version': {
+        src: ['node_modules/protractor/node_modules/webdriver-manager/built/config.json'],
+        overwrite: true,
+        replacements: [
+          {
+            from: /"maxChromedriver": ".*",/g,
+            to: `"maxChromedriver": "${WEBDRIVER_VERSION}",`,
+          },
+        ]
       },
     },
     'couch-compile': {
@@ -351,14 +362,6 @@ module.exports = function(grunt) {
         ],
         dest: 'webapp/node_modules_backup',
       },
-      'test-libraries-to-patch': {
-        expand: true,
-        cwd: 'node_modules',
-        src: [
-          'protractor/node_modules/webdriver-manager/**'
-        ],
-        dest: 'node_modules_backup',
-      },
     },
     exec: {
       'clean-build-dir': {
@@ -547,25 +550,6 @@ module.exports = function(grunt) {
           }).join(' && ');
         },
       },
-      'undo-test-patches': {
-        cmd: () => {
-          const modulesToPatch = [
-            'protractor/node_modules/webdriver-manager'
-          ];
-
-          return modulesToPatch.map(module => {
-            const backupPath = 'node_modules_backup/' + module;
-            const modulePath = 'node_modules/' + module;
-            return `
-              [ -d ${backupPath} ] &&
-              rm -rf ${modulePath} &&
-              mv ${backupPath} ${modulePath} &&
-              echo "Module restored: ${module}" ||
-              echo "No restore required for: ${module}"
-            `;
-          }).join(' && ');
-        },
-      },
       'test-config-standard': {
         cmd: [
           'cd config/standard',
@@ -617,14 +601,6 @@ module.exports = function(grunt) {
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-          ];
-          return patches.join(' && ');
-        },
-      },
-      'apply-test-patches': {
-        cmd: () => {
-          const patches = [
-            'patch node_modules/protractor/node_modules/webdriver-manager/built/config.json < tests/patches/webdriver-manager-config.patch',
           ];
           return patches.join(' && ');
         },
@@ -1018,14 +994,8 @@ module.exports = function(grunt) {
     'exec:pack-node-modules',
   ]);
 
-  grunt.registerTask('patch-webdriver', 'Patches webdriver to support latest Chrome', [
-    'exec:undo-test-patches',
-    'copy:test-libraries-to-patch',
-    'exec:apply-test-patches',
-  ]);
-
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    'patch-webdriver',
+    'replace:webdriver-version',
     'exec:start-webdriver',
   ]);
 
