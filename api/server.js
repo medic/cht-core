@@ -15,24 +15,24 @@ process
 
 (async () => {
 
-  const app = require('./src/routing');
-  const config = require('./src/config');
-  const migrations = require('./src/migrations');
-  const ddocExtraction = require('./src/ddoc-extraction');
-  const generateXform = require('./src/services/generate-xform');
-  const resourceExtraction = require('./src/resource-extraction');
-  const translations = require('./src/translations');
-  const serverUtils = require('./src/server-utils');
-  const uploadDefaultDocs = require('./src/upload-default-docs');
-
-  const apiPort = process.env.API_PORT || 5988;
-
   try
   {
     logger.info('Running server checks…');
     await serverChecks.check(environment.serverUrl);
     logger.info('Checks passed successfully');
 
+    const app = require('./src/routing');
+    const config = require('./src/config');
+    const migrations = require('./src/migrations');
+    const ddocExtraction = require('./src/ddoc-extraction');
+    const generateXform = require('./src/services/generate-xform');
+    const resourceExtraction = require('./src/resource-extraction');
+    const translations = require('./src/translations');
+    const serverUtils = require('./src/server-utils');
+    const uploadDefaultDocs = require('./src/upload-default-docs');
+
+    const apiPort = process.env.API_PORT || 5988;
+    
     logger.info('Extracting ddoc…');
     await ddocExtraction.run();
     logger.info('DDoc extraction completed successfully');

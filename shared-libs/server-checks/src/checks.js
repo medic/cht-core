@@ -60,9 +60,12 @@ const couchDbNoAdminPartyModeCheck = () => {
         console.error(`Instead we got a ${statusCode}`);
         reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
       }
+    }).on('error', (e) => {
+      reject(`CouchDB doesn't seem to be running on ${url.format(noAuthUrl)}. Tried to connect but got an error:\n ${e.stack}`);
     });
   });
 };
+
 const couchNodeNamesMatch = (serverUrl) => {
   const envNodeName = process.env['COUCH_NODE_NAME'];
   const membershipUrl = serverUrl + '/_membership';
@@ -82,7 +85,6 @@ const couchNodeNamesMatch = (serverUrl) => {
     });
   });
 };
-
 
 const getCouchDbVersion = (serverUrl) => {
   return new Promise((resolve, reject) => {
