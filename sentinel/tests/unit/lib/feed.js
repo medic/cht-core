@@ -206,7 +206,7 @@ describe('feed', () => {
 
     it('should restart the queue', () => {
       feed.cancel();
-      sinon.stub(metadata, 'getProcessedSeq').resolves('123');
+      sinon.stub(metadata, 'getTransitionSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
       const change = { id: 'some-uuid' };
       sinon.stub(feed._changeQueue, 'push');
@@ -265,8 +265,8 @@ describe('feed', () => {
       });
       sinon.spy(logger, 'debug');
       sinon.spy(feed._changeQueue, 'resume');
-      sinon.stub(metadata, 'getProcessedSeq');
-      sinon.stub(metadata, 'update').resolves();
+      sinon.stub(metadata, 'getTransitionSeq');
+      sinon.stub(metadata, 'setTransitionSeq').resolves();
 
       feed._enqueue({ id: 'somechange', seq: 65558 });
       feed._changeQueue.process();
@@ -275,9 +275,9 @@ describe('feed', () => {
       setTimeout(() => {
         chai.expect(logger.debug.withArgs('transitions: queue drained').callCount).to.equal(1);
         chai.expect(feed._changeQueue.resume.callCount).to.equal(0);
-        chai.expect(metadata.getProcessedSeq.callCount).to.equal(0);
-        chai.expect(metadata.update.callCount).to.equal(1);
-        chai.expect(metadata.update.args[0]).to.deep.equal([65558]);
+        chai.expect(metadata.getTransitionSeq.callCount).to.equal(0);
+        chai.expect(metadata.setTransitionSeq.callCount).to.equal(1);
+        chai.expect(metadata.setTransitionSeq.args[0]).to.deep.equal([65558]);
         done();
       });
     });
