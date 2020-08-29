@@ -76,7 +76,7 @@ const couchDbNoAdminPartyModeCheck = () => {
 const getNodeNameFromJson = (json) => {
   if (typeof json === 'object' && Object.keys(json).length > 0) {
     const key = Object.keys(json).shift();
-    if(json[key].length > 0) {
+    if(Array.isArray(json[key]) && json[key].length > 0) {
       return json[key].shift();
     }
   }
