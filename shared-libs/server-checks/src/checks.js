@@ -70,21 +70,33 @@ const couchDbNoAdminPartyModeCheck = () => {
   });
 };
 
+// since we don't know what the object keys are, so lets find the first one
+// and then the first element of that array. We always work in a single node
+//  membership, so this should be safe.
+const getNodeNameFromJson = (json) => {
+  if (typeof json === 'object' && Object.keys(json).length > 0) {
+    const key = Object.keys(json).shift();
+    if(json[key].length > 0) {
+      return json[key].shift();
+    }
+  }
+  return false;
+};
+
 const couchNodeNamesMatch = (serverUrl) => {
   const envNodeName = process.env['COUCH_NODE_NAME'];
   const membershipUrl = serverUrl + '/_membership';
 
   return new Promise((resolve, reject) => {
-    request.get({ url: membershipUrl, json: true }, (err, response, body) => {
-      const serverNodeName = body.cluster_nodes[0];
+    request.get({ url: membershipUrl, json: true }, (err, response, json) => {
+      const serverNodeName = getNodeNameFromJson(json);
       if (envNodeName === serverNodeName) {
         console.log(`Environment variable "COUCH_NODE_NAME" matches server "${envNodeName}"`);
         return resolve();
       } else {
-        console.error(`Environment variable 'COUCH_NODE_NAME' set to "${envNodeName}" but needs to match whats on ` +
-          `CouchDB Membership endpoint "${serverNodeName}".`);
-        return  reject('COUCH_NODE_NAME environment variable seems to be misconfigured, ' +
-          'see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#required-environment-variables');
+        return  reject(`Environment variable 'COUCH_NODE_NAME' set to "${envNodeName}" but doesn't match ` +
+          `what's on CouchDB Membership endpoint "${serverNodeName}". See ` +
+          `https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#required-environment-variables`);
       }
     });
   });
