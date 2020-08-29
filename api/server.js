@@ -61,24 +61,25 @@ process
     logger.info('Updating xforms…');
     await generateXform.updateAll();
     logger.info('xforms updated successfully');
+
+    // Define error-handling middleware last.
+    // http://expressjs.com/guide/error-handling.html
+    app.use((err, req, res, next) => {
+      if (res.headersSent) {
+        // If we've already started a response (eg streaming), pass on to express to abort it
+        // rather than attempt to resend headers for a 5xx response
+        return next(err);
+      }
+      serverUtils.serverError(err, req, res);
+    });
+
+    app.listen(apiPort, () => {
+      logger.info('Medic API listening on port ' + apiPort);
+    });
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
     logger.error('%o',err);
     process.exit(1);
   }
 
-  // Define error-handling middleware last.
-  // http://expressjs.com/guide/error-handling.html
-  app.use((err, req, res, next) => {
-    if (res.headersSent) {
-      // If we've already started a response (eg streaming), pass on to express to abort it
-      // rather than attempt to resend headers for a 5xx response
-      return next(err);
-    }
-    serverUtils.serverError(err, req, res);
-  });
-
-  app.listen(apiPort, () => {
-    logger.info('Medic API listening on port ' + apiPort);
-  });
 })();
