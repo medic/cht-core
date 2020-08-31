@@ -144,12 +144,12 @@ describe('Server Checks service', () => {
         versions: {node: '9.11.1'},
         env: {
           COUCH_URL: 'http://admin:pass@localhost:5984',
-          COUCH_NODE_NAME: 'something'
+          COUCH_NODE_NAME: 'nonode@nohost'
         },
         exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-      sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
+      sinon.stub(request, 'get').callsArgWith(1, null, null, {all_nodes: [ 'nonode@nohost' ], version: '2' });
       return service.check('something');
     });
 
@@ -159,12 +159,12 @@ describe('Server Checks service', () => {
         versions: {node: '9.11.1'},
         env: {
           COUCH_URL: 'http://admin:pass@localhost:5984',
-          COUCH_NODE_NAME: 'something'
+          COUCH_NODE_NAME: 'nonode@nohost'
         },
         exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-      sinon.stub(request, 'get').callsArgWith(1, 'error');
+      sinon.stub(request, 'get').callsArgWith(1, 'error', null, {all_nodes: [ 'nonode@nohost' ], version: '2' });
       return service.check('something').catch(err => {
         chai.expect(err).to.equal('error');
       });

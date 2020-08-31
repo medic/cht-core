@@ -131,5 +131,6 @@ module.exports = {
   _nodeVersionCheck: () => nodeVersionCheck(),
   _envVarsCheck: () => envVarsCheck(),
   _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
+  _couchNodeNamesMatch: () => couchNodeNamesMatch(),
   _couchDbVersionCheck: (serverUrl) => couchDbVersionCheck(serverUrl)
 };
