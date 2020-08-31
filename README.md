@@ -8,7 +8,7 @@ For the latest changes and release announcements see our [release notes](https:/
 
 ## Overview
 
-The CHT's Core Framework is a software architecture that makes it faster to build full-featured, scalable digital health apps that equip health workers to provide better care in their communities. To learn more about building an application with the Core Framework, visit our guide for [developing community health apps](https://docs.communityhealthtoolkit.org/design/apps/).
+The CHT's Core Framework is a software architecture that makes it faster to build full-featured, scalable digital health apps that equip health workers to provide better care in their communities. To learn more about building an application with the Core Framework, visit our guide for [developing community health apps](https://docs.communityhealthtoolkit.org/apps/).
 
 The Core Framework addresses complexities like health system roles and reporting hierarchies, and its features are flexible enough to support a range of health programs and local care provider workflows.
 
@@ -16,7 +16,7 @@ Mobile and web applications built with the Core Framework support a team-based a
 
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://docs.communityhealthtoolkit.org/core/overview/architecture/).
 For more information about the format of docs in the database, see [Database Schema](https://docs.communityhealthtoolkit.org/core/overview/db-schema/).
-For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
+For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://docs.communityhealthtoolkit.org/apps/guides/messaging/sms-states/).
 
 ## Using the Core Framework
 
@@ -24,7 +24,7 @@ If you are a developer looking to contribute to the Core Framework itself, you s
 
 If you wish to evaluate the Core Framework, _or_ you are a developer looking to create or modify applications built with the Core Framework, you can instead follow the [easy deployment](./INSTALL.md) instructions, which will get the latest stable release running locally via Docker.
 
-You will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [CHT-docs](https://docs.communityhealthtoolkit.org/design/apps/).
+You will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [cht-docs](https://docs.communityhealthtoolkit.org/apps/).
 
 ### Supported Browsers
 
