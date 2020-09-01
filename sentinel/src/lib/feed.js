@@ -34,27 +34,30 @@ const getTransitionSeq = () => {
     });
 };
 
-const registerFeed = seq => {
-  logger.debug(`transitions: fetching changes feed, starting from ${seq}`);
-  request = db.medic
-    .changes({ live: true, since: seq })
-    .on('change', change => {
-      if (!change.id.match(IDS_TO_IGNORE) &&
-          !tombstoneUtils.isTombstoneId(change.id)) {
-        enqueue(change);
+const registerFeed = () => {
+  request = getTransitionSeq()
+    .then(seq => {
+      logger.debug(`transitions: fetching changes feed, starting from ${seq}`);
+      request = db.medic
+        .changes({ live: true, since: seq })
+        .on('change', change => {
+          if (!change.id.match(IDS_TO_IGNORE) &&
+              !tombstoneUtils.isTombstoneId(change.id)) {
+            enqueue(change);
 
-        const queueSize = changeQueue.length();
-        if (queueSize >= MAX_QUEUE_SIZE && request) {
-          logger.debug(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
-          request.cancel();
+            const queueSize = changeQueue.length();
+            if (queueSize >= MAX_QUEUE_SIZE && request) {
+              logger.debug(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
+              request.cancel();
+              request = null;
+            }
+          }
+        })
+        .on('error', err => {
+          logger.error('transitions: error from changes feed: %o', err);
           request = null;
-        }
-      }
-    })
-    .on('error', err => {
-      logger.error('transitions: error from changes feed: %o', err);
-      request = null;
-      setTimeout(() => resumeProcessing(), RETRY_TIMEOUT);
+          setTimeout(() => resumeProcessing(), RETRY_TIMEOUT);
+        });
     });
   return request;
 };
@@ -89,7 +92,7 @@ const resumeProcessing = () => {
     return;
   }
   logger.info('transitions: processing enabled');
-  return getTransitionSeq().then(seq => registerFeed(seq));
+  return registerFeed();
 };
 
 changeQueue.drain(() => {
@@ -117,7 +120,7 @@ module.exports = {
   cancel: () => {
     changeQueue.pause();
     if (request) {
-      request.cancel();
+      request.cancel && request.cancel();
       request = null;
     }
   },
