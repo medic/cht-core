@@ -199,7 +199,7 @@ describe('Server Checks service', () => {
       };
       sinon.stub(request, 'get').callsArgWith(1, 'error', null, {all_nodes: [ 'nonode@nohost' ] });
       return service.check('something').catch(err => {
-        chai.assert.isTrue(err.startsWith("Environment variable 'COUCH_NODE_NAME' set to"));
+        chai.assert.isTrue(err.startsWith('Environment variable \'COUCH_NODE_NAME\' set to'));
       });
     });
 
@@ -213,9 +213,10 @@ describe('Server Checks service', () => {
         exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-      sinon.stub(request, 'get').callsArgWith(1, 'error', null, {all_nodes: [ 'nonode@nohost' ], version: '2' });
-      return service.check('something').catch(err => {
-        chai.assert.equal(console.log.callCount, 5);
+      sinon.stub(request, 'get').callsArgWith(1, null, null, {all_nodes: [ 'nonode@nohost' ], version: '2' });
+
+      return service.check('something').then(() => {
+        chai.assert.equal(console.log.callCount, 6);
         chai.assert.equal(log(4), 'Environment variable "COUCH_NODE_NAME" matches server "nonode@nohost"');
       });
     });
