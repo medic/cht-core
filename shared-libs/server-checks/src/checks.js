@@ -78,7 +78,7 @@ const checkNodeName = (nodeName, membership) => {
 
 const couchNodeNamesMatch = (serverUrl) => {
   const envNodeName = process.env['COUCH_NODE_NAME'];
-  const membershipUri = '/_membership'
+  const membershipUri = '/_membership';
   const membershipUrl = serverUrl + membershipUri;
 
   return new Promise((resolve, reject) => {
