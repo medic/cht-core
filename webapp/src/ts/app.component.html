@@ -1,0 +1,30 @@
+<div class="inbox {{currentTab}}" [ngClass]="{'show-content': showContent, 'bootstrapped': privacyPolicyAccepted, 'select-mode': selectMode, 'hide-mobile-tab-labels': minimalTabs }">
+  <div class="bootstrap-layer">
+    <div>
+      <div class="loader"></div>
+      <div class="status"></div>
+      <div class="error"></div>
+    </div>
+  </div>
+
+  <!--<mm-privacy-policy ng-if="inboxCtrl.showPrivacyPolicy && !inboxCtrl.privacyPolicyAccepted"></mm-privacy-policy>
+
+  <mm-actionbar non-contact-forms="inboxCtrl.nonContactForms"></mm-actionbar>-->
+
+  <div class="container-fluid" *ngIf="privacyPolicyAccepted">
+    <!--<mm-startup-modals/>-->
+    <mm-header
+      [adminUrl]="adminUrl"
+      [canLogOut]="canLogOut"
+      [tours]="tours"
+    ></mm-header>
+    <div class="row content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <div id="snackbar">
+    <span class="snackbar-content"></span>
+  </div>
+</div>
+

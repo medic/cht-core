@@ -16,7 +16,16 @@
     "webdriver": "webdriver-manager update && webdriver-manager start"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "^0.1000.8",
+    "@angular/cli": "^10.0.8",
+    "@angular/compiler": "^10.0.14",
+    "@angular/compiler-cli": "^10.0.14",
+    "@angular/localize": "^10.0.14",
     "@medic/eslint-config": "^1.1.0",
+    "@types/lodash": "^4.14.161",
+    "@types/lodash-es": "^4.17.3",
+    "@types/node": "^14.6.2",
+    "@types/pouchdb": "^6.4.0",
     "angular-jsdoc": "^1.5.1",
     "angular-mocks": "^1.7.9",
     "autoprefixer": "^9.8.0",
@@ -81,7 +90,8 @@
     "sinon": "^8.1.1",
     "sw-precache": "^5.2.1",
     "tail": "^2.0.3",
-    "time-grunt": "^2.0.0"
+    "time-grunt": "^2.0.0",
+    "typescript": "^3.9.7"
   },
   "bundlesize": [
     {
@@ -96,6 +106,5 @@
       "path": "./build/ddocs/medic/_attachments/css/inbox.css",
       "maxSize": "70 kB"
     }
-  ],
-  "dependencies": {}
+  ]
 }

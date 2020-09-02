@@ -1,47 +1,18 @@
 <!DOCTYPE html>
 
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/javascript">
-      window.startupTimes = {};
-      window.startupTimes.start = performance.now();
-    </script>
-    <link rel="stylesheet" type="text/css" href="/css/inbox.css" />
-    <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="manifest" href="/manifest.json">
-    <title></title>
-  </head>
-  <body class="inbox {{inboxCtrl.currentTab}}" ng-controller="InboxCtrl as inboxCtrl" ng-class="{'show-content': inboxCtrl.showContent, 'bootstrapped': inboxCtrl.privacyPolicyAccepted, 'select-mode': inboxCtrl.selectMode, 'hide-mobile-tab-labels': inboxCtrl.minimalTabs }">
-    <div class="bootstrap-layer">
-      <div>
-        <div class="loader"></div>
-        <div class="status"></div>
-        <div class="error"></div>
-      </div>
-    </div>
-
-    <mm-privacy-policy ng-if="inboxCtrl.showPrivacyPolicy && !inboxCtrl.privacyPolicyAccepted"></mm-privacy-policy>
-
-    <mm-actionbar non-contact-forms="inboxCtrl.nonContactForms"></mm-actionbar>
-
-    <div class="container-fluid" ng-if="inboxCtrl.privacyPolicyAccepted">
-      <mm-startup-modals/>
-      <mm-header
-        admin-url="inboxCtrl.adminUrl"
-        can-log-out="inboxCtrl.canLogOut"
-        tours="inboxCtrl.tours"
-      ></mm-header>
-      <div class="row content" ui-view></div>
-    </div>
-
-    <div id="snackbar">
-      <span class="snackbar-content"></span>
-    </div>
-
-    <script src="/js/inbox.js" type="text/javascript"></script>
-    <script src="/js/templates.js" type="text/javascript"></script>
-
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript">
+    window.startupTimes = {};
+    window.startupTimes.start = performance.now();
+  </script>
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="manifest" href="/manifest.json">
+  <title></title>
+</head>
+<body>
+<app-root></app-root>
+</body>
 </html>

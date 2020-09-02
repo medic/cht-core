@@ -24,6 +24,8 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
     staticFileGlobs: [
       path.join(staticDirectoryPath, '{audio,css,img,js}', '*'),
       path.join(staticDirectoryPath, 'manifest.json'),
+      path.join(staticDirectoryPath, '*.js'),
+      path.join(staticDirectoryPath, '*.css'),
 
       // Fonts
       path.join(staticDirectoryPath, 'fonts', 'fontawesome-webfont.woff2'),
@@ -33,7 +35,7 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
       path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
-      '/': [path.join(staticDirectoryPath, 'templates', 'inbox.html')],
+      '/': [path.join(staticDirectoryPath, 'inbox.html')],
       '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
       '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
     },
