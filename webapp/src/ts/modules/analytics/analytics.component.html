@@ -1,0 +1,21 @@
+<div class="filters">
+  <div class="inner">
+    <!--<mm-analytics-filters analytics-modules="analyticsModules"></mm-analytics-filters>-->
+    <!--<mm-navigation></mm-navigation>-->
+  </div>
+</div>
+<div class="inner" data-page="reporting_rates">
+  <div class="page reporting">
+    <ul class="mm-navigation-menu" *ngIf="analyticsModules.length">
+      <li *ngFor="let module of analyticsModules">
+        <a [routerLink]="module.state">
+          <span>{{module.label | translate}}</span>
+        </a>
+      </li>
+    </ul>
+    <div class="loader" *ngIf="loading"></div>
+    <div class="item-content empty-selection" *ngIf="!loading && !analyticsModules.length">
+      <div translate>analytics.unconfigured</div>
+    </div>
+  </div>
+</div>
