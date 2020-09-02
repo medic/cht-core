@@ -22,6 +22,7 @@ import { DirectivesModule } from './directives/directives.module';
 import { PipesModule } from './pipes/pipes.module';
 import { TranslationLoaderProvider } from './providers/translation-loader.provider';
 import { DbService } from './services/db.service';
+import { RouteGuardProvider } from './providers/route-guard.provider';
 
 import { reducers } from "./reducers";
 
@@ -84,7 +85,11 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
   ],
-  providers: [{ provide: APP_BASE_HREF, useValue: '/' }, BsModalRef ],
+  providers: [
+    { provide: APP_BASE_HREF, useValue: '/' },
+    BsModalRef,
+    RouteGuardProvider,
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

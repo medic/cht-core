@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
