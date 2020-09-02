@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule } from '@ngx-translate/core';
 
 import { MmModal } from './mm-modal/mm-modal';
 import { ReloadingComponent } from './reloading/reloading.component';

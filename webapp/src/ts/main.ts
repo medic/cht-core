@@ -11,9 +11,9 @@ window.$ = window.jQuery = require('jquery');
 //window.d3 = require('d3');
 
 require('../../node_modules/select2/dist/js/select2.full');
-require('bootstrap');
+//require('bootstrap');
 //require('./bootstrap-multidropdown');
-require('bootstrap-daterangepicker');
+//require('bootstrap-daterangepicker');
 //require('nvd3');
 
 import { enableProdMode } from '@angular/core';
@@ -21,7 +21,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app.module';
 import { environment } from './environments/environment';
-import { POUCHDB_OPTIONS } from "./constants";
+import { POUCHDB_OPTIONS } from './constants';
 
 require('moment');
 require('moment/locale/bm');

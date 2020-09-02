@@ -1,4 +1,4 @@
-import { Actions } from "../actions/global";
+import { Actions } from '../actions/global';
 import { createReducer, on } from '@ngrx/store';
 
 const initialState = {

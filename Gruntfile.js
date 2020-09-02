@@ -221,12 +221,6 @@ module.exports = function(grunt) {
       },
       web: {
         files: {
-          // webapp files
-          /*'build/ddocs/medic/_attachments/js/templates.js': 'build/ddocs/medic/_attachments/js/templates.js',
-          'build/ddocs/medic/_attachments/js/inbox.js': 'build/ddocs/medic/_attachments/js/inbox.js',
-          'build/ddocs/medic/_attachments/js/service-worker.js': 'build/ddocs/medic/_attachments/js/service-worker.js',*/
-
-          // admin files
           'build/ddocs/medic-db/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
           'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js'
         },
@@ -248,12 +242,6 @@ module.exports = function(grunt) {
       }
     },
     less: {
-      /*webapp: {
-        files: {
-          'build/ddocs/medic/_attachments/css/inbox.css':
-            'webapp/src/css/inbox.less',
-        },
-      },*/
       admin: {
         files: {
           'build/ddocs/medic-db/medic-admin/_attachments/css/main.css':
@@ -267,7 +255,6 @@ module.exports = function(grunt) {
           keepSpecialComments: 0,
         },
         files: {
-          //'build/ddocs/medic/_attachments/css/inbox.css': 'build/ddocs/medic/_attachments/css/inbox.css',
           'build/ddocs/medic-db/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-db/medic-admin/_attachments/css/main.css',
         },
       },
@@ -304,18 +291,6 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'build/ddocs/',
       },
-      /*webapp: {
-        expand: true,
-        flatten: true,
-        src: 'webapp/node_modules/font-awesome/fonts/!*',
-        dest: 'build/ddocs/medic/_attachments/fonts/',
-      },*/
-      /*'inbox-file-attachment': {
-        expand: true,
-        cwd: 'webapp/src/',
-        src: 'templates/inbox.html',
-        dest: 'build/ddocs/medic/_attachments/',
-      },*/
       'ddoc-attachments': {
         expand: true,
         cwd: 'webapp/src/',
@@ -323,7 +298,6 @@ module.exports = function(grunt) {
           'audio/**/*',
           'fonts/**/*',
           'img/**/*',
-          //'templates/inbox.html',
           'ddocs/medic/_attachments/**/*',
         ],
         dest: 'build/ddocs/medic/_attachments/',
@@ -610,17 +584,6 @@ module.exports = function(grunt) {
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
-      'envify': {
-        cmd: () => {
-          if (!TRAVIS_BUILD_NUMBER) {
-            return 'echo "Not building on Travis so not envifying"';
-          }
-          return 'mv build/ddocs/medic/_attachments/js/inbox.js inbox.tmp.js && ' +
-                 'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
-                 'rm inbox.tmp.js && ' +
-                 'echo "Envify complete"';
-        }
-      },
       'build-config': {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
@@ -632,9 +595,10 @@ module.exports = function(grunt) {
       },
       'build-webapp': {
         cmd: () => {
+          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
           return [
             `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=development`,
+            `../node_modules/.bin/ng build --configuration=${configuration}`,
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
@@ -687,16 +651,6 @@ module.exports = function(grunt) {
           'notify:deployed',
         ],
       },
-      /*'webapp-css': {
-        files: ['webapp/src/css/!**!/!*'],
-        tasks: [
-          'sass',
-          'less:webapp',
-          'generate-service-worker',
-          'couch-compile:primary',
-          'deploy',
-        ],
-      },*/
       'webapp-js': {
         files: ['webapp/src/ts/**/*', 'webapp/src/css/**/*', 'shared-libs/*/src/**/*', 'webapp/*.json'],
         tasks: [
@@ -707,27 +661,6 @@ module.exports = function(grunt) {
           'deploy',
         ],
       },
-      /*'webapp-templates': {
-        files: [
-          'webapp/src/templates/!**!/!*',
-          '!webapp/src/templates/inbox.html',
-        ],
-        tasks: [
-          'ngtemplates:inboxApp',
-          'generate-service-worker',
-          'couch-compile:primary',
-          'deploy',
-        ],
-      },*/
-      /*'inbox-html-template': {
-        files: 'webapp/src/templates/inbox.html',
-        tasks: [
-          'copy:inbox-file-attachment',
-          'generate-service-worker',
-          'couch-compile:primary',
-          'deploy',
-        ],
-      },*/
       'primary-ddoc': {
         files: ['ddocs/medic/**/*'],
         tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
@@ -838,27 +771,6 @@ module.exports = function(grunt) {
       }
     },
     ngtemplates: {
-      /*inboxApp: {
-        cwd: 'webapp/src',
-        src: [
-          'templates/modals/!**!/!*.html',
-          'templates/partials/!**!/!*.html',
-          'templates/directives/!**!/!*.html',
-        ],
-        dest: 'build/ddocs/medic/_attachments/js/templates.js',
-        options: {
-          htmlmin: {
-            collapseBooleanAttributes: true,
-            collapseWhitespace: true,
-            removeAttributeQuotes: true,
-            removeComments: true,
-            removeEmptyAttributes: true,
-            removeRedundantAttributes: true,
-            removeScriptTypeAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-          },
-        },
-      },*/
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
@@ -893,10 +805,6 @@ module.exports = function(grunt) {
       },
     },
     'optimize-js': {
-      /*'/!*build/ddocs/medic/_attachments/js/inbox.js':
-        'build/ddocs/medic/_attachments/js/inbox.js',
-      'build/ddocs/medic/_attachments/js/templates.js':
-        'build/ddocs/medic/_attachments/js/templates.js',*/
       'build/ddocs/medic-db/medic-admin/_attachments/js/main.js':
         'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
       'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js':
@@ -961,14 +869,11 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-js', 'Build the JS resources', [
-    /*'browserify:webapp',
-    'ngtemplates:inboxApp',*/
     'exec:build-webapp',
   ]);
 
   grunt.registerTask('build-css', 'Build the CSS resources', [
     'sass',
-    //'less:webapp',
     'postcss',
   ]);
 
@@ -976,7 +881,6 @@ module.exports = function(grunt) {
     'exec:clean-build-dir',
     'copy:ddocs',
     'build-common',
-    'exec:envify',
     'build-node-modules',
     'minify',
     'couch-compile:primary',
@@ -993,7 +897,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build-common', 'Build the static resources', [
     'build-css',
     'build-js',
-    //'copy:webapp',
     'exec:set-ddoc-version',
     'exec:set-horticulturalist-metadata',
     'build-admin',

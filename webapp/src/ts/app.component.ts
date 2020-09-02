@@ -1,12 +1,11 @@
-import {NavigationEnd, Router, RouterEvent} from "@angular/router";
+import {NavigationEnd, Router, RouterEvent} from '@angular/router';
 
 const moment = require('moment');
 import { Component } from '@angular/core';
 import { Store, select } from '@ngrx/store';
-import { TranslateService } from "@ngx-translate/core";
+import { TranslateService } from '@ngx-translate/core';
 import { setTheme } from 'ngx-bootstrap/utils';
-import {combineLatest} from "rxjs";
-import {filter} from "rxjs/operators";
+import {combineLatest} from 'rxjs';
 
 import { DBSyncService } from './services/db-sync.service'
 import { Selectors } from "./selectors";
@@ -235,7 +234,6 @@ export class AppComponent {
   }
 
   private showSessionExpired() {
-    alert('session expired');
     /* Modal({
        templateUrl: 'templates/modals/session_expired.html',
        controller: 'SessionExpiredModalCtrl',

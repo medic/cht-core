@@ -1,9 +1,9 @@
 const DEFAULT_LOCALE = 'en';
 const DOC_ID_PREFIX = 'messages-';
 
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
-import { SettingsService } from "../services/settings.service";
+import { SettingsService } from '../services/settings.service';
 
 @Injectable({
   providedIn: 'root'
