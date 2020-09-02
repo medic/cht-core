@@ -275,9 +275,10 @@ describe('feed', () => {
       setTimeout(() => {
         chai.expect(logger.debug.withArgs('transitions: queue drained').callCount).to.equal(1);
         chai.expect(feed._changeQueue.resume.callCount).to.equal(0);
-        chai.expect(metadata.getTransitionSeq.callCount).to.equal(0);
         chai.expect(metadata.setTransitionSeq.callCount).to.equal(1);
         chai.expect(metadata.setTransitionSeq.args[0]).to.deep.equal([65558]);
+        chai.expect(metadata.getTransitionSeq.callCount).to.equal(1); // we get the seq anyway
+        chai.expect(db.medic.changes.callCount).to.equal(0); // but we don't restart the watcher
         done();
       });
     });

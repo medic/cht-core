@@ -34,30 +34,31 @@ const getTransitionSeq = () => {
     });
 };
 
-const registerFeed = () => {
-  request = getTransitionSeq()
-    .then(seq => {
-      logger.debug(`transitions: fetching changes feed, starting from ${seq}`);
-      request = db.medic
-        .changes({ live: true, since: seq })
-        .on('change', change => {
-          if (!change.id.match(IDS_TO_IGNORE) &&
-              !tombstoneUtils.isTombstoneId(change.id)) {
-            enqueue(change);
+const registerFeed = (seq) => {
+  if (request || changeQueue.paused) {
+    return;
+  }
+  logger.info('transitions: processing enabled');
+  logger.debug(`transitions: fetching changes feed, starting from ${seq}`);
+  request = db.medic
+    .changes({ live: true, since: seq })
+    .on('change', change => {
+      if (!change.id.match(IDS_TO_IGNORE) &&
+          !tombstoneUtils.isTombstoneId(change.id)) {
+        enqueue(change);
 
-            const queueSize = changeQueue.length();
-            if (queueSize >= MAX_QUEUE_SIZE && request) {
-              logger.debug(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
-              request.cancel();
-              request = null;
-            }
-          }
-        })
-        .on('error', err => {
-          logger.error('transitions: error from changes feed: %o', err);
+        const queueSize = changeQueue.length();
+        if (queueSize >= MAX_QUEUE_SIZE && request) {
+          logger.debug(`transitions: queue size ${queueSize} greater than ${MAX_QUEUE_SIZE}, we stop listening`);
+          request.cancel();
           request = null;
-          setTimeout(() => resumeProcessing(), RETRY_TIMEOUT);
-        });
+        }
+      }
+    })
+    .on('error', err => {
+      logger.error('transitions: error from changes feed: %o', err);
+      request = null;
+      setTimeout(() => resumeProcessing(), RETRY_TIMEOUT);
     });
   return request;
 };
@@ -88,11 +89,7 @@ const changeQueue = async.queue((change, callback) => {
 });
 
 const resumeProcessing = () => {
-  if (request || changeQueue.paused) {
-    return;
-  }
-  logger.info('transitions: processing enabled');
-  return registerFeed();
+  return getTransitionSeq().then(seq => registerFeed(seq));
 };
 
 changeQueue.drain(() => {
