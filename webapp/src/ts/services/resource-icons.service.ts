@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import {ChangesService} from "./changes.service";
-import {DbService} from "./db.service";
+import {ChangesService} from './changes.service';
+import {DbService} from './db.service';
 
 @Injectable({
   providedIn: 'root'

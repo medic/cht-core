@@ -1,10 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 
-import { Selectors } from "../../selectors";
-import {SettingsService} from "../../services/settings.service";
-import {HeaderTabsService} from "../../services/header-tabs.service";
-import {AuthService} from "../../services/auth.service";
+import { Selectors } from '../../selectors';
+import {SettingsService} from '../../services/settings.service';
+import {HeaderTabsService} from '../../services/header-tabs.service';
+import {AuthService} from '../../services/auth.service';
 import {GlobalActions} from "../../actions/global";
 import {ModalService} from "../../modals/mm-modal/mm-modal";
 import {LogoutConfirmComponent} from "../../modals/logout/logout-confirm.component";

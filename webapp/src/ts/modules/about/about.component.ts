@@ -1,9 +1,9 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { Store, select } from '@ngrx/store';
-import {combineLatest} from "rxjs";
+import {combineLatest} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
-import {DbService} from "../../services/db.service";
-import {ResourceIconsService} from "../../services/resource-icons.service";
+import {DbService} from '../../services/db.service';
+import {ResourceIconsService} from '../../services/resource-icons.service';
 import {Selectors} from "../../selectors";
 import {SessionService} from "../../services/session.service";
 import {VersionService} from "../../services/version.service";

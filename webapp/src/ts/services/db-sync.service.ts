@@ -10,7 +10,7 @@ const purger = require('../bootstrapper/purger');
 import { Injectable } from '@angular/core';
 
 import { SessionService } from './session.service'
-import { LocationService } from "./location.service";
+import { LocationService } from './location.service';
 import { POUCHDB_OPTIONS } from '../constants';
 
 @Injectable({

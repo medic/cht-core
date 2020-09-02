@@ -17,9 +17,9 @@
  *        any further changes.
  */
 import { Injectable } from '@angular/core';
-import { DbService } from "./db.service";
-import { SessionService } from "./session.service";
-import { select, Store } from "@ngrx/store";
+import { DbService } from './db.service';
+import { SessionService } from './session.service';
+import { select, Store } from '@ngrx/store';
 import { Selectors } from "../selectors";
 import { ServicesActions } from "../actions/services";
 

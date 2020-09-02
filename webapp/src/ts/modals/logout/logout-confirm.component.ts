@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {BsModalRef} from 'ngx-bootstrap/modal';
 
-import {SessionService} from "../../services/session.service";
+import {SessionService} from '../../services/session.service';
 
 @Component({
   selector: 'logout-confirm-modal',

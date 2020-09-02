@@ -1,13 +1,11 @@
 const translationUtils = require('@medic/translation-utils');
 const DOC_ID_PREFIX = 'messages-';
 
-
-import { Injectable } from "@angular/core";
-import { TranslateLoader } from "@ngx-translate/core";
+import { Injectable } from '@angular/core';
+import { TranslateLoader } from '@ngx-translate/core';
 import { from } from 'rxjs';
 
-import { DbService } from "../services/db.service";
-
+import { DbService } from '../services/db.service';
 
 @Injectable()
 export class TranslationLoaderProvider implements TranslateLoader {
