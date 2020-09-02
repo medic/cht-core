@@ -799,6 +799,16 @@ module.exports = function(grunt) {
           timeout: 10000,
         },
       },
+      api: {
+        src: [
+          'api/tests/mocha/**/*.js'
+        ],
+      },
+      sentinel: {
+        src: [
+          'sentinel/tests/**/*.js'
+        ],
+      }
     },
     ngtemplates: {
       inboxApp: {
@@ -1046,6 +1056,16 @@ module.exports = function(grunt) {
     'env:unit-test',
     'exec:shared-lib-unit',
     'mochaTest:unit',
+  ]);
+
+  grunt.registerTask('unit-api', 'API unit tests', [
+    'env:unit-test',
+    'mochaTest:api',
+  ]);
+
+  grunt.registerTask('unit-sentinel', 'Sentinel unit tests', [
+    'env:unit-test',
+    'mochaTest:sentinel',
   ]);
 
   // CI tasks
