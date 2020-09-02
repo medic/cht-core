@@ -74,7 +74,7 @@ const bootstrapper = require('./bootstrapper');
     router($stateProvider);
     $urlRouterProvider.when('', '/home');
     $urlRouterProvider.when('/messages/{uuid:[^:]*}', '/messages/contact:{uuid}');
-    $translateProvider.useLoader('TranslationLoader', {});
+    $translateProvider.useLoader('TranslationLoaderService', {});
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('TranslationMessageFormatInterpolation');
     $translateProvider.addInterpolation('TranslationNullInterpolation');
@@ -149,12 +149,12 @@ const bootstrapper = require('./bootstrapper');
   };
 
   // Detects reloads or route updates (#/something)
-  angular.module('inboxApp').run(function($state, $transitions, Auth) {
+  angular.module('inboxApp').run(function($state, $transitions, AuthService) {
     $transitions.onBefore({}, function(trans) {
       if (trans.to().name.indexOf('error') === -1) {
         const permissions = getRequiredPermissions(trans.to().name);
         if (permissions && permissions.length) {
-          return Auth.has(permissions).then(hasPermission => {
+          return AuthService.has(permissions).then(hasPermission => {
             if (!hasPermission) {
               $state.target('error', { code: 403 });
             }

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class HeaderTabs {
+export class HeaderTabsService {
   constructor() {}
 
   private readonly tabs = [

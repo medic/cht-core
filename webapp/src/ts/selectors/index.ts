@@ -1,19 +1,20 @@
-import { createSelector } from '@ngrx/store';
-
 const getGlobalState = (state) => state.global;
-const getServicesState = state => state.services;
+const getServicesState = (state) => state.services;
 
 export const Selectors = {
-  getReplicationStatus: createSelector(getGlobalState, globalState => globalState.replicationStatus),
-  getAndroidAppVersion: createSelector(getGlobalState, globalState => globalState.androidAppVersion),
-  getLastChangedDoc: createSelector(getServicesState, servicesState => servicesState.lastChangedDoc),
+  // global
+  getReplicationStatus: (state) => getGlobalState(state).replicationStatus,
+  getAndroidAppVersion: (state) => getGlobalState(state).androidAppVersion,
+  getCurrentTab: (state) => getGlobalState(state).currentTab,
+
+  // services
+  getLastChangedDoc: (state) => getServicesState(state).lastChangedDoc,
 }
 /*
 
 // Global
 const getActionBar = state => getGlobalState(state).actionBar;
 const getCancelCallback = state => getGlobalState(state).cancelCallback;
-const getCurrentTab = state => getGlobalState(state).currentTab;
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited;
 const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving;
@@ -88,7 +89,6 @@ angular.module('inboxServices').constant('Selectors', {
   getActionBar,
   getAndroidAppVersion,
   getCancelCallback,
-  getCurrentTab,
   getEnketoStatus,
   getEnketoEditedStatus,
   getEnketoSavingStatus,

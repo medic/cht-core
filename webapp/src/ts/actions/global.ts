@@ -5,6 +5,7 @@ export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
   setMinimalTabs: createSingleValueAction('SET_MINIMAL_TABS', 'minimalTabs'),
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
+  setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
 }
 
 export class GlobalActions {
@@ -21,7 +22,12 @@ export class GlobalActions {
   setAndroidAppVersion(androidAppVersion) {
     return this.store.dispatch(Actions.setAndroidAppVersion(androidAppVersion));
   }
+
+  setCurrentTab(currentTab) {
+    return this.store.dispatch(Actions.setCurrentTab(currentTab));
+  }
 }
+
 /*
 
 angular.module('inboxServices').factory('GlobalActions',
@@ -70,9 +76,6 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetCancelCallbackAction(cancelCallback));
       }
 
-      function setCurrentTab(currentTab) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_CURRENT_TAB, 'currentTab', currentTab));
-      }
 
       function createSetEnketoStatusAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);

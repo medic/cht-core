@@ -1,24 +1,24 @@
 /*
-Auth.has resolves true if the current user's role has all the permissions passed in as arguments.
+AuthService.has resolves true if the current user's role has all the permissions passed in as arguments.
 If a permission has a '!' prefix, resolves true only if the user doesn't have the permission.
 DB admins automatically have all permissions.
 
-Auth.any function receives a list of groups of permissions and returns a promise that will be resolved if the current
+AuthService.any function receives a list of groups of permissions and returns a promise that will be resolved if the current
 user's role has all the permissions of any of the provided groups.
 */
 import { Injectable } from '@angular/core';
 
-import { Session } from './session.service';
-import { Settings } from './settings.service';
+import { SessionService } from './session.service';
+import { SettingsService } from './settings.service';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class Auth {
+export class AuthService {
   constructor(
-    private session: Session,
-    private settings: Settings,
+    private session: SessionService,
+    private settings: SettingsService,
   ) {}
 
   has(permissions) {

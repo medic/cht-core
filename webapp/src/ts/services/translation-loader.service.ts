@@ -3,14 +3,14 @@ const DOC_ID_PREFIX = 'messages-';
 
 import { Injectable } from "@angular/core";
 
-import { Settings } from "../services/settings.service";
+import { SettingsService } from "../services/settings.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class TranslationLoader {
+export class TranslationLoaderService {
   private readonly re = new RegExp(`^${DOC_ID_PREFIX}([a-zA-Z]+)$`);
-  constructor(private settings:Settings) {}
+  constructor(private settings:SettingsService) {}
 
   getLocale() {
     return this.settings.get().then((settings:any) => {

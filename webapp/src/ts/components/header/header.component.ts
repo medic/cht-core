@@ -2,9 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 
 import { Selectors } from "../../selectors";
-import {Settings} from "../../services/settings.service";
-import {HeaderTabs} from "../../services/header-tabs.service";
-import {Auth} from "../../services/auth.service";
+import {SettingsService} from "../../services/settings.service";
+import {HeaderTabsService} from "../../services/header-tabs.service";
+import {AuthService} from "../../services/auth.service";
 import {GlobalActions} from "../../actions/global";
 import {ModalService} from "../../modals/mm-modal/mm-modal";
 import {LogoutConfirmComponent} from "../../modals/logout/logout-confirm.component";
@@ -29,9 +29,9 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private store: Store,
-    private settings: Settings,
-    private headerTabs: HeaderTabs,
-    private auth: Auth,
+    private settingsService: SettingsService,
+    private headerTabsService: HeaderTabsService,
+    private authService: AuthService,
     private modalService: ModalService,
   ) {
     this.store.pipe(select(Selectors.getReplicationStatus)).subscribe(obj => this.replicationStatus = obj);
@@ -39,9 +39,9 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.settings.get().then(settings => {
-      const tabs = this.headerTabs.get(settings);
-      return Promise.all(tabs.map(tab => this.auth.has(tab.permissions))).then(results => {
+    this.settingsService.get().then(settings => {
+      const tabs = this.headerTabsService.get(settings);
+      return Promise.all(tabs.map(tab => this.authService.has(tab.permissions))).then(results => {
         this.permittedTabs = tabs.filter((tab,index) => results[index]);
         this.globalActions.setMinimalTabs(this.permittedTabs.length > 3);
       });
@@ -78,13 +78,13 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       $ngRedux,
       $q,
       $scope,
-      Auth,
-      DBSync,
+      AuthService,
+      DBSyncService,
       GlobalActions,
-      HeaderTabs,
+      HeaderTabsService,
       Modal,
       Selectors,
-      Settings,
+      SettingsService,
       Tour
     ) {
       'ngInject';
@@ -117,7 +117,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       };
 
       ctrl.replicate = () => {
-        DBSync.sync(true);
+        DBSyncService.sync(true);
       };
 
       Tour.getTours().then(tours => ctrl.tours = tours);

@@ -8,18 +8,18 @@ const USERS_DB_SUFFIX = 'users';
 
 import { Injectable } from '@angular/core';
 
-import { Session } from './session.service'
-import { Location } from "./location.service";
+import { SessionService } from './session.service'
+import { LocationService } from "./location.service";
 import { POUCHDB_OPTIONS } from '../constants';
 
 @Injectable({
   providedIn: 'root'
 })
-export class Db {
+export class DbService {
   private cache = {}
   private isOnlineOnly;
 
-  constructor(private session:Session, private location:Location) {
+  constructor(private session:SessionService, private location:LocationService) {
     this.isOnlineOnly = this.session.isOnlineOnly();
 
     if (!this.isOnlineOnly) {

@@ -1,14 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-import { ResourceIcons } from '../services/resource-icons.service';
+import { ResourceIconsService } from '../services/resource-icons.service';
 
 @Pipe({
   name: 'resourceIcon'
 })
 export class ResourceIconPipe implements PipeTransform {
   constructor(
-    private resourceIcons: ResourceIcons,
+    private resourceIcons: ResourceIconsService,
     private sanitizer: DomSanitizer,
   ) { }
 
@@ -22,7 +22,7 @@ export class ResourceIconPipe implements PipeTransform {
 })
 export class HeaderLogoPipe implements PipeTransform {
   constructor(
-    private resourceIcons: ResourceIcons,
+    private resourceIcons: ResourceIconsService,
     private sanitizer: DomSanitizer
   ) { }
 
@@ -36,7 +36,7 @@ export class HeaderLogoPipe implements PipeTransform {
 })
 export class PartnerImagePipe implements PipeTransform {
   constructor(
-    private resourceIcons: ResourceIcons,
+    private resourceIcons: ResourceIconsService,
     private sanitizer: DomSanitizer,
   ) { }
 

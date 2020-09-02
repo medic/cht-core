@@ -39,10 +39,19 @@ const _globalReducer = createReducer(
     return Object.assign({}, state, {
       replicationStatus: Object.assign({}, state.replicationStatus, replicationStatus)
     });
-  })
+  }),
+  on(Actions.setAndroidAppVersion, (state, { payload: { androidAppVersion } }) => {
+    return Object.assign({}, state, { androidAppVersion });
+  }),
+  on(Actions.setMinimalTabs, (state, { payload: { minimalTabs } } ) => {
+    return Object.assign({}, state, { minimalTabs });
+  }),
+  on(Actions.setCurrentTab, (state, { payload: { currentTab } }) => {
+    return Object.assign({}, state, { currentTab });
+  }),
 );
 
-export function globalReducer(state, action) {
+export const globalReducer = (state, action) => {
   return _globalReducer(state, action);
 }
 /*
@@ -70,8 +79,6 @@ module.exports = function(state, action) {
         right: Object.assign({}, state.actionBar.right, { verified: action.payload.verified })
       })
     });
-  case actionTypes.SET_ANDROID_APP_VERSION:
-    return Object.assign({}, state, { androidAppVersion: action.payload.androidAppVersion });
   case actionTypes.SET_CANCEL_CALLBACK:
     return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
   case actionTypes.SET_CURRENT_TAB:
@@ -94,8 +101,6 @@ module.exports = function(state, action) {
     return Object.assign({}, state, { loadingContent: action.payload.loadingContent });
   case actionTypes.SET_LOADING_SUB_ACTION_BAR:
     return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
-  case actionTypes.SET_MINIMAL_TABS:
-    return Object.assign({}, state, { minimalTabs: action.payload.minimalTabs });
   case actionTypes.SET_PRIVACY_POLICY_ACCEPTED:
     return Object.assign({}, state, { privacyPolicyAccepted: action.payload.privacyPolicyAccepted });
   case actionTypes.SET_SELECT_MODE:
