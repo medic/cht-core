@@ -1,19 +1,23 @@
+import {NavigationEnd, Router, RouterEvent} from "@angular/router";
+
 const moment = require('moment');
 import { Component } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { TranslateService } from "@ngx-translate/core";
 import { setTheme } from 'ngx-bootstrap/utils';
+import {combineLatest} from "rxjs";
+import {filter} from "rxjs/operators";
 
-import { DBSync } from './services/db-sync.service'
+import { DBSyncService } from './services/db-sync.service'
 import { Selectors } from "./selectors";
 import { GlobalActions } from "./actions/global";
-import { TranslationLoader } from './services/translation-loader.service';
-import {Session} from "./services/session.service";
-import {Auth} from "./services/auth.service";
-import {ResourceIcons} from "./services/resource-icons.service";
-import {Changes} from "./services/changes.service";
-import {UpdateServiceWorker} from "./services/update-service-worker.service";
-import {Location} from "./services/location.service";
+import { TranslationLoaderService } from './services/translation-loader.service';
+import {SessionService} from "./services/session.service";
+import {AuthService} from "./services/auth.service";
+import {ResourceIconsService} from "./services/resource-icons.service";
+import {ChangesService} from "./services/changes.service";
+import {UpdateServiceWorkerService} from "./services/update-service-worker.service";
+import {LocationService} from "./services/location.service";
 import {ModalService} from './modals/mm-modal/mm-modal';
 import {ReloadingComponent} from "./modals/reloading/reloading.component";
 
@@ -60,30 +64,52 @@ export class AppComponent {
   androidAppVersion;
 
   constructor (
-    private dbSync:DBSync,
+    private dbSyncService:DBSyncService,
     private store: Store,
     private translate: TranslateService,
-    private translationLoader: TranslationLoader,
-    private session: Session,
-    private auth: Auth,
-    private resourceIcons: ResourceIcons,
-    private changes: Changes,
-    private updateServiceWorker: UpdateServiceWorker,
-    private location: Location,
+    private translationLoaderService: TranslationLoaderService,
+    private sessionService: SessionService,
+    private authService: AuthService,
+    private resourceIconsService: ResourceIconsService,
+    private changesService: ChangesService,
+    private updateServiceWorker: UpdateServiceWorkerService,
+    private locationService: LocationService,
     private modalService: ModalService,
+    private router:Router,
   ) {
-    this.replicationStatus = store.pipe(select(Selectors.getReplicationStatus));
-    this.androidAppVersion = store.pipe(select(Selectors.getAndroidAppVersion));
+    combineLatest(
+        store.pipe(select(Selectors.getReplicationStatus)),
+        store.pipe(select(Selectors.getAndroidAppVersion)),
+        store.pipe(select(Selectors.getCurrentTab)),
+      )
+      .subscribe(([
+        replicationStatus,
+        androidAppVersion,
+        currentTab
+      ]) => {
+        console.log('updated', replicationStatus, androidAppVersion, currentTab);
+
+        this.replicationStatus = replicationStatus;
+        this.androidAppVersion = androidAppVersion;
+        this.currentTab = currentTab;
+      });
+
     this.globalActions = new GlobalActions(store);
-    translationLoader.getLocale().then(locale => {
+    translationLoaderService.getLocale().then(locale => {
       translate.setDefaultLang(locale);
       translate.use(locale);
     });
 
     moment.locale(['en']);
 
-    this.adminUrl = this.location.adminPath;
+    this.adminUrl = this.locationService.adminPath;
     setTheme('bs3');
+
+    this.router.events.subscribe((event:RouterEvent) => {
+      if (event instanceof NavigationEnd) {
+        return this.globalActions.setCurrentTab(event.url.split('/')[1]);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -95,7 +121,7 @@ export class AppComponent {
     }
 
     if (this.androidAppVersion) {
-      this.auth.has('can_log_out_on_android').then(canLogout => this.canLogOut = canLogout);
+      this.authService.has('can_log_out_on_android').then(canLogout => this.canLogOut = canLogout);
     } else {
       this.canLogOut = true;
     }
@@ -110,15 +136,15 @@ export class AppComponent {
     // Set this first because if there are any bugs in configuration
     // we want to ensure dbsync still happens so they can be fixed
     // automatically.
-    if (this.dbSync.isEnabled()) {
+    if (this.dbSyncService.isEnabled()) {
       // Delay it by 10 seconds so it doesn't slow down initial load.
-      setTimeout(() => this.dbSync.sync(), 10000);
+      setTimeout(() => this.dbSyncService.sync(), 10000);
     } else {
       console.debug('You have administrative privileges; not replicating');
       this.globalActions.updateReplicationStatus({ disabled: true });
     }
 
-    this.setupPromise = this.session.init();
+    this.setupPromise = this.sessionService.init();
 
 
     const dbFetch = (<any>window).PouchDB.fetch;
@@ -136,7 +162,7 @@ export class AppComponent {
         });
     };
 
-    this.changes.register({
+    this.changesService.register({
       key: 'branding-icon',
       filter: change => change.id === 'branding',
       callback: () => this.setAppTitle(),
@@ -153,7 +179,7 @@ export class AppComponent {
       });
     }
 
-    this.changes.register({
+    this.changesService.register({
       key: 'inbox-ddoc',
       filter: (change) => {
         return (
@@ -173,8 +199,8 @@ export class AppComponent {
       },
     });
 
-    const userCtx = this.session.userCtx();
-    this.changes.register({
+    const userCtx = this.sessionService.userCtx();
+    this.changesService.register({
       key: 'inbox-user-context',
       filter: (change) => {
         return (
@@ -184,19 +210,25 @@ export class AppComponent {
         );
       },
       callback: () => {
-        this.session.init().then(refresh => refresh && this.showUpdateReady());
+        this.sessionService.init().then(refresh => refresh && this.showUpdateReady());
       },
     });
 
-    this.changes.register({
+    this.changesService.register({
       key: 'inbox-translations',
-      filter: change => this.translationLoader.test(change.id),
-      callback: change => this.translate.reloadLang(this.translationLoader.getCode(change.id)),
+      filter: change => this.translationLoaderService.test(change.id),
+      callback: change => this.translate.reloadLang(this.translationLoaderService.getCode(change.id)),
+    });
+
+    this.changesService.register({
+      key: 'branding-icon',
+      filter: change => change.id === 'branding',
+      callback: () => this.setAppTitle(),
     });
   }
 
   private setAppTitle() {
-    this.resourceIcons.getAppTitle().then(title => {
+    this.resourceIconsService.getAppTitle().then(title => {
       document.title = title;
       (<any>window).$('.header-logo').attr('title', `${title}`);
     });
@@ -239,11 +271,11 @@ export class AppComponent {
     $transitions,
     $translate,
     $window,
-    Auth,
-    Changes,
+    AuthService,
+    ChangesService,
     CheckDate,
     CountMessages,
-    DBSync,
+    DBSyncService,
     DatabaseConnectionMonitor,
     Debug,
     Feedback,
@@ -251,22 +283,22 @@ export class AppComponent {
     JsonForms,
     Language,
     LiveListConfig,
-    Location,
+    LocationService,
     Modal,
     PrivacyPolicies,
     RecurringProcessManager,
-    ResourceIcons,
+    ResourceIconsService,
     RulesEngine,
     Selectors,
-    Session,
+    SessionService,
     SetLanguage,
     Snackbar,
     Telemetry,
     Tour,
     TranslateFrom,
-    TranslationLoader,
+    TranslationLoaderService,
     UnreadRecords,
-    UpdateServiceWorker,
+    UpdateServiceWorkerService,
     WealthQuintilesWatcher,
     XmlForms
   ) {
@@ -342,7 +374,7 @@ export class AppComponent {
       lastSuccessTo: parseInt($window.localStorage.getItem('medic-last-replicated-date'))
     });
 
-    DBSync.addUpdateListener(({ state, to, from }) => {
+    DBSyncService.addUpdateListener(({ state, to, from }) => {
       if (state === 'disabled') {
         ctrl.updateReplicationStatus({ disabled: true });
         return;
@@ -382,9 +414,9 @@ export class AppComponent {
     // Set this first because if there are any bugs in configuration
     // we want to ensure dbsync still happens so they can be fixed
     // automatically.
-    if (DBSync.isEnabled()) {
+    if (DBSyncService.isEnabled()) {
       // Delay it by 10 seconds so it doesn't slow down initial load.
-      $timeout(() => DBSync.sync(), 10000);
+      $timeout(() => DBSyncService.sync(), 10000);
     } else {
       $log.debug('You have administrative privileges; not replicating');
       ctrl.replicationStatus.disabled = true;
@@ -398,7 +430,7 @@ export class AppComponent {
             showSessionExpired();
             $timeout(() => {
               $log.info('Redirect to login after 1 minute of inactivity');
-              Session.navigateToLogin();
+              SessionService.navigateToLogin();
             }, 60000);
           }
           return response;
@@ -428,28 +460,14 @@ export class AppComponent {
       Debug.set(false);
     }
 
-    const setAppTitle = () => {
-      ResourceIcons.getAppTitle().then(title => {
-        document.title = title;
-        $('.header-logo').attr('title', `${title}`);
-      });
-    };
-    setAppTitle();
-
-    Changes({
-      key: 'branding-icon',
-      filter: change => change.id === 'branding',
-      callback: () => setAppTitle()
-    });
-
-    $window.addEventListener('online', () => DBSync.setOnlineStatus(true), false);
-    $window.addEventListener('offline', () => DBSync.setOnlineStatus(false), false);
-    Changes({
+    $window.addEventListener('online', () => DBSyncService.setOnlineStatus(true), false);
+    $window.addEventListener('offline', () => DBSyncService.setOnlineStatus(false), false);
+    ChangesService({
       key: 'sync-status',
       callback: function() {
-        if (!DBSync.isSyncInProgress()) {
+        if (!DBSyncService.isSyncInProgress()) {
           ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
-          DBSync.sync();
+          DBSyncService.sync();
         }
       },
     });
@@ -457,7 +475,7 @@ export class AppComponent {
     ctrl.dbWarmedUp = true;
 
     // initialisation tasks that can occur after the UI has been rendered
-    ctrl.setupPromise = Session.init()
+    ctrl.setupPromise = SessionService.init()
       .then(() => checkPrivacyPolicy())
       .then(() => initRulesEngine())
       .then(() => initForms())
@@ -471,33 +489,9 @@ export class AppComponent {
 
     ctrl.setLoadingContent(false);
     ctrl.setLoadingSubActionBar(false);
-    ctrl.adminUrl = Location.adminPath;
-    ctrl.setIsAdmin(Session.isAdmin());
+    ctrl.adminUrl = LocationService.adminPath;
+    ctrl.setIsAdmin(SessionService.isAdmin());
     ctrl.modalsToShow = [];
-
-    if (
-      $window.medicmobile_android &&
-      typeof $window.medicmobile_android.getAppVersion === 'function'
-    ) {
-      ctrl.setAndroidAppVersion($window.medicmobile_android.getAppVersion());
-    }
-
-    if (navigator.storage && navigator.storage.persist) {
-      navigator.storage.persist().then(granted => {
-        if (granted) {
-          $log.info('Persistent storage granted: storage will not be cleared except by explicit user action');
-        } else {
-          $log.info('Persistent storage denied: storage may be cleared by the UA under storage pressure.');
-        }
-      });
-    }
-
-    ctrl.canLogOut = false;
-    if (ctrl.androidAppVersion) {
-      Auth.has('can_log_out_on_android').then(canLogout => ctrl.canLogOut = canLogout);
-    } else {
-      ctrl.canLogOut = true;
-    }
 
     $transitions.onBefore({}, (trans) => {
       if (ctrl.enketoEdited && ctrl.cancelCallback) {
@@ -713,13 +707,13 @@ export class AppComponent {
       });
     };
 
-    Changes({
+    ChangesService({
       key: 'inbox-translations',
-      filter: change => TranslationLoader.test(change.id),
-      callback: change => $translate.refresh(TranslationLoader.getCode(change.id)),
+      filter: change => TranslationLoaderService.test(change.id),
+      callback: change => $translate.refresh(TranslationLoaderService.getCode(change.id)),
     });
 
-    Changes({
+    ChangesService({
       key: 'inbox-ddoc',
       filter: function(change) {
         return (
@@ -731,7 +725,7 @@ export class AppComponent {
       },
       callback: function(change) {
         if (change.id === 'service-worker-meta') {
-          UpdateServiceWorker(showUpdateReady);
+          UpdateServiceWorkerService(showUpdateReady);
         } else {
           Snackbar(`${change.id} changed`, {dev:true});
           showUpdateReady();
@@ -741,7 +735,7 @@ export class AppComponent {
 
     const startRecurringProcesses = () => {
       RecurringProcessManager.startUpdateRelativeDate();
-      if (Session.isOnlineOnly()) {
+      if (SessionService.isOnlineOnly()) {
         RecurringProcessManager.startUpdateReadDocsCount();
       }
     };
@@ -753,8 +747,8 @@ export class AppComponent {
       RecurringProcessManager.stopUpdateReadDocsCount();
     });
 
-    const userCtx = Session.userCtx();
-    Changes({
+    const userCtx = SessionService.userCtx();
+    ChangesService({
       key: 'inbox-user-context',
       filter: function(change) {
         return (
@@ -764,11 +758,11 @@ export class AppComponent {
         );
       },
       callback: function() {
-        Session.init().then(refresh => refresh && showUpdateReady());
+        SessionService.init().then(refresh => refresh && showUpdateReady());
       },
     });
 
-    Auth.has('can_write_wealth_quintiles')
+    AuthService.has('can_write_wealth_quintiles')
       .then(canWriteQuintiles => {
         if (canWriteQuintiles) {
           WealthQuintilesWatcher.start();

@@ -14,11 +14,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ComponentsModule } from './components/components.module';
 import { ModalsModule } from './modals/modals.module';
+import {ModulesModule} from "./modules/modules.module";
 import { DirectivesModule } from './directives/directives.module';
 import { PipesModule } from './pipes/pipes.module';
 import { TranslationLoaderProvider } from './providers/translation-loader.provider';
 
-import { Db } from "./services/db.service";
+import { DbService } from "./services/db.service";
 
 import { environment } from './environments/environment';
 
@@ -61,6 +62,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     AppRoutingModule,
     ComponentsModule,
     ModalsModule,
+    ModulesModule,
     DirectivesModule,
     PipesModule,
     RouterModule,
@@ -70,8 +72,8 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
-        useFactory: (db: Db) => new TranslationLoaderProvider(db),
-        deps: [Db],
+        useFactory: (db: DbService) => new TranslationLoaderProvider(db),
+        deps: [DbService],
       },
       missingTranslationHandler: {
         provide: MissingTranslationHandler,

@@ -4,7 +4,7 @@ import { DOCUMENT } from '@angular/common';
 @Injectable({
   providedIn: 'root'
 })
-export class Location {
+export class LocationService {
   dbName = 'medic';
   path = '/';
   adminPath = '/admin/';

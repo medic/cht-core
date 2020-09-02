@@ -17,8 +17,8 @@
  *        any further changes.
  */
 import { Injectable } from '@angular/core';
-import { Db } from "./db.service";
-import { Session } from "./session.service";
+import { DbService } from "./db.service";
+import { SessionService } from "./session.service";
 import { select, Store } from "@ngrx/store";
 import { Selectors } from "../selectors";
 import { ServicesActions } from "../actions/services";
@@ -28,7 +28,7 @@ const RETRY_MILLIS = 5000;
 @Injectable({
   providedIn: 'root'
 })
-export class Changes {
+export class ChangesService {
   private readonly dbs = {
     medic: {
       lastSeq: null,
@@ -47,8 +47,8 @@ export class Changes {
 
 
   constructor(
-    private db: Db,
-    private session: Session,
+    private db: DbService,
+    private session: SessionService,
     private store: Store
   ) {
     this.store.pipe(select(Selectors.getLastChangedDoc)).subscribe(obj => this.lastChangedDoc = obj);
@@ -138,7 +138,7 @@ export class Changes {
 }
 
 /*
-angular.module('inboxServices').factory('Changes',
+angular.module('inboxServices').factory('ChangesService',
   function(
     $log,
     $ngRedux,
@@ -147,7 +147,7 @@ angular.module('inboxServices').factory('Changes',
     DB,
     Selectors,
     ServicesActions,
-    Session
+    SessionService
   ) {
 
     'use strict';

@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {BsModalRef} from 'ngx-bootstrap/modal';
 
-import {Session} from "../../services/session.service";
+import {SessionService} from "../../services/session.service";
 
 @Component({
   selector: 'logout-confirm-modal',
@@ -10,11 +10,11 @@ import {Session} from "../../services/session.service";
 export class LogoutConfirmComponent {
   constructor(
     public bsModalRef: BsModalRef,
-    private session: Session,
+    private sessionService: SessionService,
   ) {}
 
   submit() {
-    this.session.logout().then(() => {
+    this.sessionService.logout().then(() => {
       this.bsModalRef.hide();
     })
   }

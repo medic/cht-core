@@ -5,19 +5,19 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie';
 import { DOCUMENT } from '@angular/common';
-import { Location } from "./location.service";
+import { LocationService } from "./location.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class Session {
+export class SessionService {
   userCtxCookieValue = null
 
   constructor(
     private cookieService: CookieService,
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
-    private location: Location)
+    private location: LocationService)
   { }
 
   navigateToLogin() {

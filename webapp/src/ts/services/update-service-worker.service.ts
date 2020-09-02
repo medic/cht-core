@@ -6,7 +6,7 @@ import { Injectable } from "@angular/core";
 @Injectable({
   providedIn: 'root'
 })
-export class UpdateServiceWorker {
+export class UpdateServiceWorkerService {
   private readonly retryFailedUpdateAfterSec = 5 * 60;
   private existingUpdateLoop;
 

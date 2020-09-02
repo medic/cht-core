@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import {Changes} from "./changes.service";
-import {Db} from "./db.service";
+import {ChangesService} from "./changes.service";
+import {DbService} from "./db.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class ResourceIcons {
+export class ResourceIconsService {
   private readonly CSS_CLASS = ['resource-icon', 'header-logo', 'partner-image'];
   private readonly DOC_IDS = ['resources', 'branding', 'partners'];
 
@@ -28,8 +28,8 @@ export class ResourceIcons {
   };
 
   constructor(
-    private changes: Changes,
-    private db: Db,
+    private changes: ChangesService,
+    private db: DbService,
   ) {
     this.DOC_IDS.slice(1).forEach(doc => this.updateResources(doc));
     this.initResources = this.updateResources(this.DOC_IDS[0]);

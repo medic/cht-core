@@ -9,15 +9,15 @@ const purger = require('../bootstrapper/purger');
 
 import { Injectable } from '@angular/core';
 
-import { Session } from './session.service'
-import { Location } from "./location.service";
+import { SessionService } from './session.service'
+import { LocationService } from "./location.service";
 import { POUCHDB_OPTIONS } from '../constants';
 
 @Injectable({
   providedIn: 'root'
 })
-export class DBSync {
-  constructor(private session:Session) {}
+export class DBSyncService {
+  constructor(private session:SessionService) {}
 
   isEnabled() {
     return !this.session.isOnlineOnly();
@@ -32,16 +32,16 @@ export class DBSync {
 
 angular
   .module('inboxServices')
-  .factory('DBSync', function(
+  .factory('DBSyncService', function(
     $interval,
     $log,
     $q,
     $window,
-    Auth,
+    AuthService,
     DB,
     DBSyncRetry,
     RulesEngine,
-    Session
+    SessionService
   ) {
     'use strict';
     'ngInject';
@@ -80,7 +80,7 @@ angular
           filter: readOnlyFilter,
           checkpoint: 'source',
         },
-        allowed: () => Auth.has('can_edit'),
+        allowed: () => AuthService.has('can_edit'),
         onDenied: DBSyncRetry,
       },
       {
@@ -213,7 +213,7 @@ angular
     };
 
     // online users have potentially too much data so bypass local pouch
-    const isEnabled = () => !Session.isOnlineOnly();
+    const isEnabled = () => !SessionService.isOnlineOnly();
 
     return {
       /!**

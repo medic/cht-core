@@ -1,6 +1,6 @@
 const _ = require('lodash/core');
 import { Directive, ElementRef, Input, HostBinding, OnInit } from '@angular/core';
-import { Auth } from '../services/auth.service';
+import { AuthService } from '../services/auth.service';
 
 @Directive({
   selector: '[mmAuth]'
@@ -14,7 +14,7 @@ export class AuthDirective implements OnInit {
 
   constructor(
     private el: ElementRef,
-    private auth: Auth,
+    private authService: AuthService,
   ) { }
 
   ngOnInit() {
@@ -35,7 +35,7 @@ export class AuthDirective implements OnInit {
           return;
         }
 
-        return updateVisibility([ this.auth.any(permissionsGroups) ]);
+        return updateVisibility([ this.authService.any(permissionsGroups) ]);
       }
     };
 
@@ -59,11 +59,11 @@ export class AuthDirective implements OnInit {
     const staticChecks = () => {
       const promises = [];
       if (this.mmAuth) {
-        promises.push(this.auth.has(this.mmAuth.split(',')));
+        promises.push(this.authService.has(this.mmAuth.split(',')));
       }
 
       if (this.mmAuthOnline) {
-        const onlineResult = this.auth.online(this.mmAuthOnline);
+        const onlineResult = this.authService.online(this.mmAuthOnline);
         promises.push(Promise.resolve(onlineResult));
       }
 

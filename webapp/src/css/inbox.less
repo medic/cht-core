@@ -27,45 +27,45 @@
 
 body {
   overflow-y: hidden;
-  &.messages {
+  .app-root.messages {
     .header .tabs .selected,
     .filters {
       background-color: @messages-color;
     }
   }
-  &.tasks {
+  .app-root.tasks {
     .header .tabs .selected,
     .filters {
       background-color: @tasks-color;
     }
   }
-  &.reports {
+  .app-root.reports {
     .header .tabs .selected,
     .filters {
       background-color: @reports-color;
     }
   }
-  &.analytics {
+  .app-root.analytics {
     .header .tabs .selected,
     .filters {
       background-color: @analytics-color;
     }
   }
-  &.contacts {
+  .app-root.contacts {
     .header .tabs .selected,
     .filters {
       background-color: @contacts-color;
     }
   }
-  &.userSettings {
+  .app-root.userSettings {
     .header .tabs .selected,
     .filters {
       background-color: @admin-color;
     }
   }
-  &.about,
-  &.testing,
-  &.privacyPolicy {
+  .app-root.about,
+  .app-root.testing,
+  .app-root.privacyPolicy {
     .header .tabs .selected,
     .filters {
       background-color: @help-color;
@@ -80,8 +80,8 @@ body {
       margin-top: 100px;
     }
   }
-  &.error,
-  &.testing {
+  .app-root.error,
+  .app-root.testing {
     .header .tabs .selected,
     .filters {
       background-color: @error-color;

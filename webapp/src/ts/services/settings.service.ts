@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
-import { Db } from "./db.service";
-import { Cache } from "./cache.service";
+import { DbService } from "./db.service";
+import { CacheService } from "./cache.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class Settings {
+export class SettingsService {
   private cache;
   private readonly SETTINGS_ID = 'settings';
 
   constructor(
-    private db: Db,
-    private cacheService: Cache
+    private db: DbService,
+    private cacheService: CacheService
   ) {
     this.cache = this.cacheService.register({
       get: (callback) => {

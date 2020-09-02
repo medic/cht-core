@@ -6,12 +6,12 @@ import { Injectable } from "@angular/core";
 import { TranslateLoader } from "@ngx-translate/core";
 import { from } from 'rxjs';
 
-import { Db } from "../services/db.service";
+import { DbService } from "../services/db.service";
 
 
 @Injectable()
 export class TranslationLoaderProvider implements TranslateLoader {
-  constructor(private db:Db) {}
+  constructor(private db:DbService) {}
 
   getTranslation(locale) {
     const promise =  this.db.get()
@@ -30,11 +30,11 @@ export class TranslationLoaderProvider implements TranslateLoader {
   };
 }
 /*
-angular.module('inboxServices').factory('TranslationLoader',
+angular.module('inboxServices').factory('TranslationLoaderService',
   function(
     $q,
     DB,
-    Settings
+    SettingsService
   ) {
     'use strict';
     'ngInject';
@@ -43,7 +43,7 @@ angular.module('inboxServices').factory('TranslationLoader',
       if (options.key) {
         return $q.resolve(options.key);
       }
-      return Settings().then(function(settings) {
+      return SettingsService().then(function(settings) {
         return settings.locale || DEFAULT_LOCALE;
       });
     };

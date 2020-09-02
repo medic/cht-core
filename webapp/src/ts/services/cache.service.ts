@@ -1,13 +1,13 @@
 import {Injectable} from '@angular/core';
-import {Changes} from "./changes.service";
+import {ChangesService} from "./changes.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class Cache {
+export class CacheService {
   private caches = [];
 
-  constructor(private changes:Changes) {
+  constructor(private changes:ChangesService) {
     this.changes.register({
       key: 'cache',
       callback: (change) => {
