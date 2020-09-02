@@ -10,9 +10,8 @@ const db = require('./db');
 const environment = require('./environment');
 const logger = require('./logger');
 
-const extractableFolders = ['audio', 'css', 'fonts', 'default-docs', 'templates', 'img', 'js'];
 const isAttachmentExtractable = name => {
-  return name === 'manifest.json' || extractableFolders.some(prefix => name.startsWith(`${prefix}/`));
+  return !name.startsWith('ddoc');
 };
 
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
