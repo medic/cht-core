@@ -16,6 +16,7 @@
     "webdriver": "webdriver-manager update && webdriver-manager start"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "^10.0.0",
     "@angular-devkit/build-angular": "^0.1000.8",
     "@angular/cli": "^10.0.8",
     "@angular/compiler": "^10.0.14",
@@ -76,6 +77,7 @@
     "medic-conf": "^3.2.1",
     "mocha": "^7.2.0",
     "moment": "^2.26.0",
+    "moment-locales-webpack-plugin": "^1.2.0",
     "node-sass": "^4.14.1",
     "nodemon": "^2.0.4",
     "pouchdb-adapter-http": "^7.2.1",

@@ -1,6 +1,6 @@
-const _ = require('lodash/core');
 import { Injectable } from '@angular/core';
 import { SettingsService } from './settings.service';
+import * as _ from 'lodash-es';
 
 @Injectable({
   providedIn: 'root'

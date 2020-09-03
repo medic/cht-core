@@ -1,5 +1,5 @@
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
-const moment = require('moment');
+import * as moment from 'moment';
 import { Component } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -40,6 +40,7 @@ const SYNC_STATUS = {
     key: 'sync.status.unknown'
   }
 };
+
 
 @Component({
   selector: 'app-root',
