@@ -1,4 +1,4 @@
-import * as uuidV4 from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import {Injectable} from '@angular/core';
 import { DbService } from './db.service';
 import { SessionService } from './session.service';
@@ -75,7 +75,7 @@ export class FeedbackService {
   private create(info, isManual?) {
     return this.versionService.getLocal().then(({ version }) => {
       const date = new Date().toISOString();
-      const uuid = uuidV4();
+      const uuid = uuidv4();
       return {
         _id: `feedback-${date}-${uuid}`,
         meta: {

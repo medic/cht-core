@@ -10,6 +10,7 @@ import {ModalService} from "../../modals/mm-modal/mm-modal";
 import {LogoutConfirmComponent} from "../../modals/logout/logout-confirm.component";
 import {FeedbackComponent} from '../../modals/feedback/feedback.component';
 import { combineLatest } from 'rxjs';
+import { DBSyncService } from '../../services/db-sync.service';
 
 
 @Component({
@@ -35,6 +36,7 @@ export class HeaderComponent implements OnInit {
     private headerTabsService: HeaderTabsService,
     private authService: AuthService,
     private modalService: ModalService,
+    private dbSyncService: DBSyncService,
   ) {
     combineLatest(
       store.pipe(select(Selectors.getReplicationStatus)),
@@ -70,13 +72,6 @@ export class HeaderComponent implements OnInit {
 
   openFeedback() {
     this.modalService.show(FeedbackComponent);
-    /*Modal({
-     templateUrl: 'templates/modals/feedback.html',
-     controller: 'FeedbackCtrl',
-     controllerAs: 'feedbackCtrl'
-     }).catch(() => {}); // modal dismissed is ok
-    * */
-
   }
 
   logout() {
@@ -84,7 +79,7 @@ export class HeaderComponent implements OnInit {
   }
 
   replicate() {
-
+    this.dbSyncService.sync(true);
   }
 }
 /*
@@ -126,14 +121,6 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         };
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-      ctrl.openFeedback = () => {
-
-      };
-
-      ctrl.replicate = () => {
-        DBSyncService.sync(true);
-      };
 
       Tour.getTours().then(tours => ctrl.tours = tours);
 
