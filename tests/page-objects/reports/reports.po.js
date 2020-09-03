@@ -11,6 +11,7 @@ module.exports = {
       10000,
       'There should be at least one report in the LHS'
     );
+    browser.waitForAngular();
     uuids.forEach(uuid => {
       expect(browser.isElementPresent(by.css(`#reports-list li[data-record-id="${uuid}"]`))).toBeTruthy();
     });
