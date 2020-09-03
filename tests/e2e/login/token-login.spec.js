@@ -72,8 +72,8 @@ describe('token login', () => {
   it('should redirect the user to the app if already logged in', () => {
     commonElements.goToLoginPage();
     loginPage.login(auth.username, auth.password);
-    browser.waitForAngular();
     browser.driver.get(getUrl('this is a random string'));
+    browser.waitForAngular();
     waitForLoaderToDisappear();
     browser.waitForAngular();
     helper.waitUntilReady(element(by.id('message-list')));
