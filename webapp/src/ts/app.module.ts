@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
@@ -23,6 +24,7 @@ import { PipesModule } from './pipes/pipes.module';
 import { TranslationLoaderProvider } from './providers/translation-loader.provider';
 import { DbService } from './services/db.service';
 import { RouteGuardProvider } from './providers/route-guard.provider';
+import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
 
 import { reducers } from "./reducers";
 
@@ -71,9 +73,11 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     ModalModule.forRoot(),
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
+    FormsModule,
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
+    { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
     BsModalRef,
     RouteGuardProvider,
   ],

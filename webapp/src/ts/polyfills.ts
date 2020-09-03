@@ -74,6 +74,7 @@ declare global {
     $: any;
     jQuery: any;
     d3: any;
+    bootstrapFeedback: any;
   }
 }
 (window as any).process = {

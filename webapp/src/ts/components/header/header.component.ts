@@ -8,6 +8,8 @@ import {AuthService} from '../../services/auth.service';
 import {GlobalActions} from "../../actions/global";
 import {ModalService} from "../../modals/mm-modal/mm-modal";
 import {LogoutConfirmComponent} from "../../modals/logout/logout-confirm.component";
+import {FeedbackComponent} from '../../modals/feedback/feedback.component';
+import { combineLatest } from 'rxjs';
 
 
 @Component({
@@ -21,7 +23,7 @@ export class HeaderComponent implements OnInit {
 
   showPrivacyPolicy = false;
   replicationStatus;
-  currentTab = '';
+  currentTab;
   unreadCount = {};
   permittedTabs = [];
 
@@ -34,7 +36,17 @@ export class HeaderComponent implements OnInit {
     private authService: AuthService,
     private modalService: ModalService,
   ) {
-    this.store.pipe(select(Selectors.getReplicationStatus)).subscribe(obj => this.replicationStatus = obj);
+    combineLatest(
+      store.pipe(select(Selectors.getReplicationStatus)),
+      store.pipe(select(Selectors.getCurrentTab)),
+    )
+      .subscribe(([
+        replicationStatus,
+        currentTab
+      ]) => {
+        this.replicationStatus = replicationStatus;
+        this.currentTab = currentTab;
+      });
     this.globalActions = new GlobalActions(store);
   }
 
@@ -57,6 +69,13 @@ export class HeaderComponent implements OnInit {
   }
 
   openFeedback() {
+    this.modalService.show(FeedbackComponent);
+    /*Modal({
+     templateUrl: 'templates/modals/feedback.html',
+     controller: 'FeedbackCtrl',
+     controllerAs: 'feedbackCtrl'
+     }).catch(() => {}); // modal dismissed is ok
+    * */
 
   }
 
@@ -109,11 +128,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
       ctrl.openFeedback = () => {
-        Modal({
-          templateUrl: 'templates/modals/feedback.html',
-          controller: 'FeedbackCtrl',
-          controllerAs: 'feedbackCtrl'
-        }).catch(() => {}); // modal dismissed is ok
+
       };
 
       ctrl.replicate = () => {

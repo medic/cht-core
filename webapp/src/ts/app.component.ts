@@ -18,6 +18,7 @@ import {UpdateServiceWorkerService} from './services/update-service-worker.servi
 import {LocationService} from './services/location.service';
 import {ModalService} from './modals/mm-modal/mm-modal';
 import {ReloadingComponent} from './modals/reloading/reloading.component';
+import { FeedbackService } from './services/feedback.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -75,6 +76,7 @@ export class AppComponent {
     private locationService: LocationService,
     private modalService: ModalService,
     private router:Router,
+    private feedbackService:FeedbackService,
   ) {
     combineLatest(
       store.pipe(select(Selectors.getReplicationStatus)),
@@ -144,21 +146,22 @@ export class AppComponent {
     }
 
     this.setupPromise = this.sessionService.init();
-
+    this.feedbackService.init();
 
     const dbFetch = (<any>window).PouchDB.fetch;
     (<any>window).PouchDB.fetch = function() {
-      return dbFetch.apply(this, arguments)
-                    .then((response) => {
-                      if (response.status === 401) {
-                        this.showSessionExpired();
-                        setTimeout(() => {
-                          console.info('Redirect to login after 1 minute of inactivity');
-                          this.session.navigateToLogin();
-                        }, 60000);
-                      }
-                      return response;
-                    });
+      return dbFetch
+        .apply(this, arguments)
+        .then((response) => {
+          if (response.status === 401) {
+            this.showSessionExpired();
+            setTimeout(() => {
+              console.info('Redirect to login after 1 minute of inactivity');
+              this.session.navigateToLogin();
+            }, 60000);
+          }
+          return response;
+        });
     };
 
     this.changesService.register({
@@ -269,26 +272,24 @@ export class AppComponent {
     $transitions,
     $translate,
     $window,
-    AuthService,
-    ChangesService,
+
+
     CheckDate,
     CountMessages,
-    DBSyncService,
+
     DatabaseConnectionMonitor,
     Debug,
     Feedback,
-    GlobalActions,
+
     JsonForms,
     Language,
     LiveListConfig,
     LocationService,
-    Modal,
     PrivacyPolicies,
     RecurringProcessManager,
-    ResourceIconsService,
+
     RulesEngine,
-    Selectors,
-    SessionService,
+
     SetLanguage,
     Snackbar,
     Telemetry,
@@ -344,34 +345,6 @@ export class AppComponent {
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    const SYNC_STATUS = {
-      inProgress: {
-        icon: 'fa-refresh',
-        key: 'sync.status.in_progress',
-        disableSyncButton: true
-      },
-      success: {
-        icon: 'fa-check',
-        key: 'sync.status.not_required',
-        className: 'success'
-      },
-      required: {
-        icon: 'fa-exclamation-triangle',
-        key: 'sync.status.required',
-        className: 'required'
-      },
-      unknown: {
-        icon: 'fa-info-circle',
-        key: 'sync.status.unknown'
-      }
-    };
-
-    ctrl.updateReplicationStatus({
-      disabled: false,
-      lastTrigger: undefined,
-      lastSuccessTo: parseInt($window.localStorage.getItem('medic-last-replicated-date'))
-    });
-
     DBSyncService.addUpdateListener(({ state, to, from }) => {
       if (state === 'disabled') {
         ctrl.updateReplicationStatus({ disabled: true });
@@ -408,32 +381,6 @@ export class AppComponent {
       }
       ctrl.updateReplicationStatus(statusUpdates);
     });
-
-    // Set this first because if there are any bugs in configuration
-    // we want to ensure dbsync still happens so they can be fixed
-    // automatically.
-    if (DBSyncService.isEnabled()) {
-      // Delay it by 10 seconds so it doesn't slow down initial load.
-      $timeout(() => DBSyncService.sync(), 10000);
-    } else {
-      $log.debug('You have administrative privileges; not replicating');
-      ctrl.replicationStatus.disabled = true;
-    }
-
-    const dbFetch = $window.PouchDB.fetch;
-    $window.PouchDB.fetch = function() {
-      return dbFetch.apply(this, arguments)
-        .then(function(response) {
-          if (response.status === 401) {
-            showSessionExpired();
-            $timeout(() => {
-              $log.info('Redirect to login after 1 minute of inactivity');
-              SessionService.navigateToLogin();
-            }, 60000);
-          }
-          return response;
-        });
-    };
 
     $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
@@ -480,8 +427,6 @@ export class AppComponent {
       .then(() => initUnreadCount())
       .then(() => CheckDate())
       .then(() => startRecurringProcesses());
-
-    Feedback.init();
 
     LiveListConfig();
 
