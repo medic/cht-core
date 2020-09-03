@@ -6,6 +6,7 @@ export const Selectors = {
   getReplicationStatus: (state) => getGlobalState(state).replicationStatus,
   getAndroidAppVersion: (state) => getGlobalState(state).androidAppVersion,
   getCurrentTab: (state) => getGlobalState(state).currentTab,
+  getSnackbarContent: (state) => getGlobalState(state).snackbarContent,
 
   // services
   getLastChangedDoc: (state) => getServicesState(state).lastChangedDoc,

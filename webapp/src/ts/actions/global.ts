@@ -6,6 +6,7 @@ export const Actions = {
   setMinimalTabs: createSingleValueAction('SET_MINIMAL_TABS', 'minimalTabs'),
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
   setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
+  setSnackbarContent: createSingleValueAction('SET_SNACKBAR_CONTENT', 'content'),
 }
 
 export class GlobalActions {
@@ -25,6 +26,10 @@ export class GlobalActions {
 
   setCurrentTab(currentTab) {
     return this.store.dispatch(Actions.setCurrentTab(currentTab));
+  }
+
+  setSnackbarContent(content) {
+    return this.store.dispatch(Actions.setSnackbarContent(content));
   }
 }
 

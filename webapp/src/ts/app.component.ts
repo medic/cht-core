@@ -19,6 +19,7 @@ import {LocationService} from './services/location.service';
 import {ModalService} from './modals/mm-modal/mm-modal';
 import {ReloadingComponent} from './modals/reloading/reloading.component';
 import { FeedbackService } from './services/feedback.service';
+import { environment } from './environments/environment';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -194,7 +195,7 @@ export class AppComponent {
         if (change.id === 'service-worker-meta') {
           this.updateServiceWorker.update(() => this.showUpdateReady());
         } else {
-          //Snackbar(`${change.id} changed`, {dev:true});
+          !environment.production && this.globalActions.setSnackbarContent(`${change.id} changed`);
           this.showUpdateReady();
         }
       },
@@ -655,26 +656,6 @@ export class AppComponent {
       key: 'inbox-translations',
       filter: change => TranslationLoaderService.test(change.id),
       callback: change => $translate.refresh(TranslationLoaderService.getCode(change.id)),
-    });
-
-    ChangesService({
-      key: 'inbox-ddoc',
-      filter: function(change) {
-        return (
-          change.id === '_design/medic' ||
-          change.id === '_design/medic-client' ||
-          change.id === 'service-worker-meta' ||
-          change.id === 'settings'
-        );
-      },
-      callback: function(change) {
-        if (change.id === 'service-worker-meta') {
-          UpdateServiceWorkerService(showUpdateReady);
-        } else {
-          Snackbar(`${change.id} changed`, {dev:true});
-          showUpdateReady();
-        }
-      },
     });
 
     const startRecurringProcesses = () => {

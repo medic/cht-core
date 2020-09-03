@@ -30,6 +30,7 @@ const initialState = {
   title: null,
   unreadCount: {},
   version: null,
+  snackbarContent: null,
 };
 
 
@@ -48,6 +49,9 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setCurrentTab, (state, { payload: { currentTab } }) => {
     return Object.assign({}, state, { currentTab });
+  }),
+  on(Actions.setSnackbarContent, (state, { payload: { content } }) => {
+    return Object.assign({}, state, { snackbarContent: content });
   }),
 );
 

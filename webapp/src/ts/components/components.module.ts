@@ -7,11 +7,13 @@ import { RouterModule } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { PipesModule } from '../pipes/pipes.module';
 import { DirectivesModule } from '../directives/directives.module';
+import { SnackbarComponent } from './snackbar/snackbar.component';
 
 
 @NgModule({
   declarations: [
     HeaderComponent,
+    SnackbarComponent,
   ],
   imports: [
     CommonModule,
@@ -23,6 +25,7 @@ import { DirectivesModule } from '../directives/directives.module';
   ],
   exports: [
     HeaderComponent,
+    SnackbarComponent,
   ]
 })
 export class ComponentsModule { }
