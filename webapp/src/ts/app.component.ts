@@ -131,7 +131,6 @@ export class AppComponent {
       disabled: false,
       lastTrigger: undefined,
       lastSuccessTo: parseInt(window.localStorage.getItem('medic-last-replicated-date')),
-      current: {},
     });
 
     // Set this first because if there are any bugs in configuration
@@ -227,6 +226,44 @@ export class AppComponent {
       filter: change => change.id === 'branding',
       callback: () => this.setAppTitle(),
     });
+
+    this.dbSyncService.subscribe(({ state, to, from }) => {
+      if (state === 'disabled') {
+        this.globalActions.updateReplicationStatus({ disabled: true });
+        return;
+      }
+      if (state === 'unknown') {
+        this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
+        return;
+      }
+      const now = Date.now();
+      const lastTrigger = this.replicationStatus.lastTrigger;
+      const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
+      if (state === 'inProgress') {
+        this.globalActions.updateReplicationStatus({
+          current: SYNC_STATUS.inProgress,
+          lastTrigger: now
+        });
+        console.info(`Replication started after ${delay} seconds since previous attempt`);
+        return;
+      }
+      const statusUpdates:any = {};
+      if (to === 'success') {
+        statusUpdates.lastSuccessTo = now;
+      }
+      if (from === 'success') {
+        statusUpdates.lastSuccessFrom = now;
+      }
+      if (to === 'success' && from === 'success') {
+        console.info(`Replication succeeded after ${delay} seconds`);
+        statusUpdates.current = SYNC_STATUS.success;
+      } else {
+        console.info(`Replication failed after ${delay} seconds`);
+        statusUpdates.current = SYNC_STATUS.required;
+      }
+      this.globalActions.updateReplicationStatus(statusUpdates);
+    });
+
   }
 
   private setAppTitle() {
@@ -345,42 +382,6 @@ export class AppComponent {
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-    DBSyncService.addUpdateListener(({ state, to, from }) => {
-      if (state === 'disabled') {
-        ctrl.updateReplicationStatus({ disabled: true });
-        return;
-      }
-      if (state === 'unknown') {
-        ctrl.updateReplicationStatus({ current: SYNC_STATUS.unknown });
-        return;
-      }
-      const now = Date.now();
-      const lastTrigger = ctrl.replicationStatus.lastTrigger;
-      const delay = lastTrigger ? (now - lastTrigger) / 1000 : 'unknown';
-      if (state === 'inProgress') {
-        ctrl.updateReplicationStatus({
-          current: SYNC_STATUS.inProgress,
-          lastTrigger: now
-        });
-        $log.info(`Replication started after ${Math.round(delay)} seconds since previous attempt`);
-        return;
-      }
-      const statusUpdates = {};
-      if (to === 'success') {
-        statusUpdates.lastSuccessTo = now;
-      }
-      if (from === 'success') {
-        statusUpdates.lastSuccessFrom = now;
-      }
-      if (to === 'success' && from === 'success') {
-        $log.info(`Replication succeeded after ${delay} seconds`);
-        statusUpdates.current = SYNC_STATUS.success;
-      } else {
-        $log.info(`Replication failed after ${delay} seconds`);
-        statusUpdates.current = SYNC_STATUS.required;
-      }
-      ctrl.updateReplicationStatus(statusUpdates);
-    });
 
     $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(

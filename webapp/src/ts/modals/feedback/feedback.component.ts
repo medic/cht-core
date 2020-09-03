@@ -3,12 +3,13 @@ import {BsModalRef} from 'ngx-bootstrap/modal';
 
 import {FeedbackService} from '../../services/feedback.service';
 import { TranslateService } from '@ngx-translate/core';
+import {MmModalAbstract} from '../mm-modal/mm-modal';
 
 @Component({
   selector: 'feedback-modal',
   templateUrl: './feedback.component.html'
 })
-export class FeedbackComponent {
+export class FeedbackComponent extends MmModalAbstract {
   error:{ message? } = {};
   model:{ message? } = {};
 
@@ -16,7 +17,9 @@ export class FeedbackComponent {
     public bsModalRef: BsModalRef,
     private feedbackService: FeedbackService,
     private translateService: TranslateService,
-  ) {}
+  ) {
+    super();
+  }
 
   private validateMessage(message) {
     if (message) {
@@ -32,19 +35,19 @@ export class FeedbackComponent {
   };
 
   submit() {
-    // set processing???
+    this.setProcessing();
 
     const message = this.model.message && this.model.message.trim();
     return this.validateMessage(message).then(() => {
         if (this.error.message) {
-          // $scope.setFinished();
+          this.setFinished();
           return;
         }
 
         return this.feedbackService
           .submit(message, true)
           .then(() => {
-            // $scope.setFinished();
+            this.setFinished();
             this.bsModalRef.hide();
             /*
              return $translate('feedback.submitted')
@@ -53,7 +56,7 @@ export class FeedbackComponent {
              */
           })
           .catch(err => {
-            // $scope.setError(err, 'Error saving feedback')
+            this.setError(err, 'Error saving feedback');
           })
       });
   }

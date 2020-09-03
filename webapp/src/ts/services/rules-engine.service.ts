@@ -1,13 +1,20 @@
-'use strict';
-
-const _ = require('lodash/core');
-
-const registrationUtils = require('@medic/registration-utils');
-const rulesEngineCore = require('@medic/rules-engine');
+import {Injectable} from '@angular/core';
+import * as _ from 'lodash';
+import * as registrationUtils from '@medic/registration-utils';
+import * as rulesEngineCore from '@medic/rules-engine';
 
 const MAX_LINEAGE_DEPTH = 50;
 const ENSURE_FRESHNESS_SECS = 120;
 
+@Injectable({
+  providedIn: 'root'
+})
+export class RulesEngineService {
+  monitorExternalChanges() {
+
+  }
+}
+/*
 angular.module('inboxServices').factory('RulesEngine', function(
   $parse,
   $translate,
@@ -279,4 +286,4 @@ angular.module('inboxServices').factory('RulesEngine', function(
 });
 
 // RulesEngineCore allows for karma to test using a mock shared-lib
-angular.module('inboxServices').factory('RulesEngineCore', function(DB) { return rulesEngineCore(DB()); });
+angular.module('inboxServices').factory('RulesEngineCore', function(DB) { return rulesEngineCore(DB()); });*/

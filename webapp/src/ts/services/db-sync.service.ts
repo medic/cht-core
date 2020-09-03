@@ -1,3 +1,5 @@
+import { AuthService } from './auth.service';
+
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
 const DDOC_PREFIX = ['_design/'];
@@ -12,264 +14,238 @@ import { SessionService } from './session.service'
 import { LocationService } from './location.service';
 import { POUCHDB_OPTIONS } from '../constants';
 import * as purger from '../bootstrapper/purger';
+import { RulesEngineService } from './rules-engine.service';
+import {DbSyncRetryService} from './db-sync-retry.service';
+import { DbService } from './db.service';
+import { Subject } from 'rxjs';
+
+const readOnlyFilter = function(doc) {
+  // Never replicate "purged" documents upwards
+  const keys = Object.keys(doc);
+  if (keys.length === 4 &&
+    keys.includes('_id') &&
+    keys.includes('_rev') &&
+    keys.includes('_deleted') &&
+    keys.includes('purged')) {
+    return false;
+  }
+
+  // don't try to replicate read only docs back to the server
+  return (
+    READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
+    READ_ONLY_IDS.indexOf(doc._id) === -1 &&
+    doc._id.indexOf(DDOC_PREFIX) !== 0
+  );
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class DBSyncService {
-  constructor(private session:SessionService) {}
+  constructor(
+    private dbService:DbService,
+    private sessionService:SessionService,
+    private authService:AuthService,
+    private rulesEngineService:RulesEngineService,
+    private dbSyncRetryService:DbSyncRetryService,
+  ) {}
+
+  private readonly DIRECTIONS = [
+    {
+      name: 'to',
+      options: {
+        filter: readOnlyFilter,
+        checkpoint: 'source',
+      },
+      allowed: () => this.authService.has('can_edit'),
+      onDenied: this.dbSyncRetryService.retryForbiddenFailure,
+    },
+    {
+      name: 'from',
+      options: {
+        heartbeat: 10000, // 10 seconds
+        timeout: 1000 * 60 * 10, // 10 minutes
+      },
+      allowed: () => Promise.resolve(true),
+      onChange: this.rulesEngineService.monitorExternalChanges,
+    }
+  ];
+  private inProgressSync;
+  private knownOnlineState = true; // assume the user is online
+  private syncIsRecent = false; // true when a replication has succeeded within one interval
+  private readonly intervalPromises = {
+    sync: undefined,
+    meta: undefined,
+  };
+  private readonly observable = new Subject();
 
   isEnabled() {
-    return !this.session.isOnlineOnly();
+    return !this.sessionService.isOnlineOnly();
   }
 
-  sync() {
+  private replicate (direction, { batchSize=100 }={}) {
+    const remote = this.dbService.get({ remote: true });
+    const options = Object.assign({}, direction.options, { batch_size: batchSize });
+    return this.dbService.get()
+      .replicate[direction.name](remote, options)
+      .on('change', replicationResult => {
+        if (direction.onChange) {
+          direction.onChange(replicationResult);
+        }
+      })
+      .on('denied', function(err) {
+        console.error(`Denied replicating ${direction.name} remote server`, err);
+        if (direction.onDenied) {
+          direction.onDenied(err);
+        }
+      })
+      .on('error', function(err) {
+        console.error(`Error replicating ${direction.name} remote server`, err);
+      })
+      .then(info => {
+        console.debug(`Replication ${direction.name} successful`, info);
+        return;
+      })
+      .catch(err => {
+        if (err.code === 413 && direction.name === 'to' && batchSize > 1) {
+          batchSize = Math.floor(batchSize / 2);
+          console.warn('Error attempting to replicate too much data to the server. ' +
+            `Trying again with batch size of ${batchSize}`);
+          return this.replicate(direction, { batchSize });
+        }
+        console.error(`Error replicating ${direction.name} remote server`, err);
+        return direction.name;
+      });
+  }
 
+  private replicateIfAllowed(direction) {
+    return direction.allowed().then(allowed => {
+      if (!allowed) {
+        // not authorized to replicate - that's ok, skip silently
+        return;
+      }
+      return this.replicate(direction);
+    });
+  }
+
+  private getCurrentSeq() {
+    return this.dbService.get().info().then(info => info.update_seq + '');
+  }
+  private getLastReplicatedSeq() {
+    window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
+  }
+
+  private syncMedic(force?) {
+    if (!this.knownOnlineState && !force) {
+      return Promise.resolve();
+    }
+
+    if (!this.inProgressSync) {
+      this.inProgressSync = Promise
+        .all(this.DIRECTIONS.map(direction => this.replicateIfAllowed(direction)))
+        .then(errs => {
+          return this.getCurrentSeq().then(currentSeq => {
+            errs = errs.filter(err => err);
+            let update:any = { to: 'success', from: 'success' };
+            if (!errs.length) {
+              // no errors
+              this.syncIsRecent = true;
+              window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
+            } else if (currentSeq === this.getLastReplicatedSeq()) {
+              // no changes to send, but may have some to receive
+              update = { state: 'unknown' };
+            } else {
+              // definitely need to sync something
+              errs.forEach(err => {
+                update[err] = 'required';
+              });
+            }
+            if (update.to === 'success') {
+              window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
+            }
+            this.sendUpdate(update);
+          });
+        })
+        .finally(() => {
+          this.inProgressSync = undefined;
+        });
+    }
+
+    this.sendUpdate({ state: 'inProgress' });
+    return this.inProgressSync;
+  };
+
+  private syncMeta() {
+    const remote = this.dbService.get({ meta: true, remote: true });
+    const local = this.dbService.get({ meta: true });
+    let currentSeq;
+    return local
+      .info()
+      .then(info => currentSeq = info.update_seq)
+      .then(() => local.sync(remote))
+      .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
+  };
+
+  private sendUpdate(update) {
+    this.observable.next(update);
+  };
+
+  private resetSyncInterval() {
+    if (this.intervalPromises.sync) {
+      clearInterval(this.intervalPromises.sync);
+      this.intervalPromises.sync = undefined;
+    }
+
+    this.intervalPromises.sync = setInterval(() => {
+      this.syncIsRecent = false;
+      this.sync();
+    }, SYNC_INTERVAL);
+  };
+
+  subscribe(listener) {
+    this.observable.subscribe(listener);
+  }
+
+  /**
+  * Boolean representing if sync is currently in progress
+  */
+  isSyncInProgress() {
+    return !!this.inProgressSync;
+  }
+
+  /**
+  * Set the current user's online status to control when replications will be attempted.
+  *
+  * @param newOnlineState {Boolean} The current online state of the user.
+  */
+  setOnlineStatus(onlineStatus) {
+    if (this.knownOnlineState !== onlineStatus) {
+      this.knownOnlineState = !!onlineStatus;
+
+      if (this.knownOnlineState && !this.syncIsRecent) {
+        this.resetSyncInterval();
+        return this.syncMedic();
+      }
+    }
+  }
+
+  /**
+  * Synchronize the local database with the remote database.
+  *
+  * @returns Promise which resolves when both directions of the replication complete.
+  */
+  sync(force?) {
+    if (!this.isEnabled()) {
+      this.sendUpdate({ state: 'disabled' });
+      return Promise.resolve();
+    }
+
+    if (!this.intervalPromises.meta) {
+      this.intervalPromises.meta = setInterval(this.syncMeta, META_SYNC_INTERVAL);
+      this.syncMeta();
+    }
+
+    this.resetSyncInterval();
+    return this.syncMedic(force);
   }
 }
-/*
-
-
-angular
-  .module('inboxServices')
-  .factory('DBSyncService', function(
-    $interval,
-    $log,
-    $q,
-    $window,
-    AuthService,
-    DB,
-    DBSyncRetry,
-    RulesEngine,
-    SessionService
-  ) {
-    'use strict';
-    'ngInject';
-
-    const updateListeners = [];
-    let knownOnlineState = true; // assume the user is online
-    let syncIsRecent = false; // true when a replication has succeeded within one interval
-    const intervalPromises = {
-      sync: undefined,
-      meta: undefined,
-    };
-
-    const readOnlyFilter = function(doc) {
-      // Never replicate "purged" documents upwards
-      const keys = Object.keys(doc);
-      if (keys.length === 4 &&
-          keys.includes('_id') &&
-          keys.includes('_rev') &&
-          keys.includes('_deleted') &&
-          keys.includes('purged')) {
-        return false;
-      }
-
-      // don't try to replicate read only docs back to the server
-      return (
-        READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
-        READ_ONLY_IDS.indexOf(doc._id) === -1 &&
-        doc._id.indexOf(DDOC_PREFIX) !== 0
-      );
-    };
-
-    const DIRECTIONS = [
-      {
-        name: 'to',
-        options: {
-          filter: readOnlyFilter,
-          checkpoint: 'source',
-        },
-        allowed: () => AuthService.has('can_edit'),
-        onDenied: DBSyncRetry,
-      },
-      {
-        name: 'from',
-        options: {
-          heartbeat: 10000, // 10 seconds
-          timeout: 1000 * 60 * 10, // 10 minutes
-        },
-        allowed: () => $q.resolve(true),
-        onChange: RulesEngine.monitorExternalChanges,
-      }
-    ];
-
-    const replicate = (direction, { batchSize=100 }={}) => {
-      const remote = DB({ remote: true });
-      const options = Object.assign({}, direction.options, { batch_size: batchSize });
-      return DB()
-        .replicate[direction.name](remote, options)
-        .on('change', replicationResult => {
-          if (direction.onChange) {
-            direction.onChange(replicationResult);
-          }
-        })
-        .on('denied', function(err) {
-          $log.error(`Denied replicating ${direction.name} remote server`, err);
-          if (direction.onDenied) {
-            direction.onDenied(err);
-          }
-        })
-        .on('error', function(err) {
-          $log.error(`Error replicating ${direction.name} remote server`, err);
-        })
-        .then(info => {
-          $log.debug(`Replication ${direction.name} successful`, info);
-          return;
-        })
-        .catch(err => {
-          if (err.code === 413 && direction.name === 'to' && batchSize > 1) {
-            batchSize = parseInt(batchSize / 2);
-            $log.warn('Error attempting to replicate too much data to the server. ' +
-              `Trying again with batch size of ${batchSize}`);
-            return replicate(direction, { batchSize });
-          }
-          $log.error(`Error replicating ${direction.name} remote server`, err);
-          return direction.name;
-        });
-    };
-
-    const replicateIfAllowed = direction => {
-      return direction.allowed().then(allowed => {
-        if (!allowed) {
-          // not authorized to replicate - that's ok, skip silently
-          return;
-        }
-        return replicate(direction);
-      });
-    };
-
-    const getCurrentSeq = () => DB().info().then(info => info.update_seq + '');
-    const getLastReplicatedSeq = () => $window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
-
-    // inProgressSync prevents multiple concurrent replications
-    let inProgressSync;
-
-    const sync = force => {
-      if (!knownOnlineState && !force) {
-        return $q.resolve();
-      }
-
-      if (!inProgressSync) {
-        inProgressSync = $q
-          .all(DIRECTIONS.map(direction => replicateIfAllowed(direction)))
-          .then(errs => {
-            return getCurrentSeq().then(currentSeq => {
-              errs = errs.filter(err => err);
-              let update = { to: 'success', from: 'success' };
-              if (!errs.length) {
-                // no errors
-                syncIsRecent = true;
-                $window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-              } else if (currentSeq === getLastReplicatedSeq()) {
-                // no changes to send, but may have some to receive
-                update = { state: 'unknown' };
-              } else {
-                // definitely need to sync something
-                errs.forEach(err => {
-                  update[err] = 'required';
-                });
-              }
-              if (update.to === 'success') {
-                $window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now());
-              }
-              sendUpdate(update);
-            });
-          })
-          .finally(() => {
-            inProgressSync = undefined;
-          });
-      }
-
-      sendUpdate({ state: 'inProgress' });
-      return inProgressSync;
-    };
-
-    const syncMeta = function() {
-      const remote = DB({ meta: true, remote: true });
-      const local = DB({ meta: true });
-      let currentSeq;
-      local
-        .info()
-        .then(info => currentSeq = info.update_seq)
-        .then(() => local.sync(remote))
-        .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
-    };
-
-    const sendUpdate = update => {
-      updateListeners.forEach(listener => listener(update));
-    };
-
-    const resetSyncInterval = () => {
-      if (intervalPromises.sync) {
-        $interval.cancel(intervalPromises.sync);
-        intervalPromises.sync = undefined;
-      }
-
-      intervalPromises.sync = $interval(() => {
-        syncIsRecent = false;
-        sync();
-      }, SYNC_INTERVAL);
-    };
-
-    // online users have potentially too much data so bypass local pouch
-    const isEnabled = () => !SessionService.isOnlineOnly();
-
-    return {
-      /!**
-       * Adds a listener function to be notified of replication state changes.
-       *
-       * @param listener {Function} A callback `function (update)`
-       *!/
-      addUpdateListener: listener => {
-        updateListeners.push(listener);
-      },
-
-      /!**
-       * Boolean representing if sync is curently in progress
-       *!/
-      isSyncInProgress: () => !!inProgressSync,
-
-      /!**
-       * Set the current user's online status to control when replications will be attempted.
-       *
-       * @param newOnlineState {Boolean} The current online state of the user.
-       *!/
-      setOnlineStatus: onlineStatus => {
-        if (knownOnlineState !== onlineStatus) {
-          knownOnlineState = !!onlineStatus;
-
-          if (knownOnlineState && !syncIsRecent) {
-            resetSyncInterval();
-            return sync();
-          }
-        }
-      },
-
-      /!**
-       * @returns {boolean} Whether or not syncing is available for this user.
-       *!/
-      isEnabled: isEnabled,
-
-      /!**
-       * Synchronize the local database with the remote database.
-       *
-       * @returns Promise which resolves when both directions of the replication complete.
-       *!/
-      sync: force => {
-        if (!isEnabled()) {
-          sendUpdate({ state: 'disabled' });
-          return $q.resolve();
-        }
-
-        if (!intervalPromises.meta) {
-          intervalPromises.meta = $interval(syncMeta, META_SYNC_INTERVAL);
-          syncMeta();
-        }
-
-        resetSyncInterval();
-        return sync(force);
-      },
-    };
-  });
-*/

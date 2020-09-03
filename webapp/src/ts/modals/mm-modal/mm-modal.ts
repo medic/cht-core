@@ -31,6 +31,36 @@ export class MmModal {
   }
 }
 
+Injectable({
+  providedIn: 'root'
+})
+export class MmModalAbstract {
+  status = {
+    processing:false,
+    error: false,
+    severity: false,
+  }
+
+  setProcessing() {
+    this.status.processing = true;
+    this.status.error = false;
+    this.status.severity = false;
+  }
+
+  setFinished() {
+    this.status.processing = false;
+    this.status.error = false;
+    this.status.severity = false;
+  }
+
+  setError(err, message, severity?) {
+    console.error('Error submitting modal', err);
+    this.status.processing = false;
+    this.status.error = message;
+    this.status.severity = severity;
+  }
+}
+
 
 @Injectable({
   providedIn: 'root'

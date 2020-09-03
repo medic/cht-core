@@ -78,5 +78,6 @@ declare global {
   }
 }
 (window as any).process = {
-  env: { DEBUG: undefined }
+  env: { DEBUG: undefined },
+  browser: true,
 }

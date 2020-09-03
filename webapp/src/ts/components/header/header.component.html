@@ -99,8 +99,8 @@
 
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
-          <li role="presentation disabled" *ngIf="!replicationStatus.disabled" [ngClass]="{ 'disabled': replicationStatus.current.disableSyncButton }">
-            <a role="menuitem" tabindex="-1" (click)="!replicationStatus.current.disableSyncButton && replicate()">
+          <li role="presentation disabled" *ngIf="!replicationStatus.disabled" [ngClass]="{ 'disabled': replicationStatus.current?.disableSyncButton }">
+            <a role="menuitem" tabindex="-1" (click)="!replicationStatus.current?.disableSyncButton && replicate()">
               <i class="fa fa-fw fa-refresh"></i>
               <span translate>sync.now</span>
             </a>
@@ -109,9 +109,9 @@
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
           <li role="presentation disabled" *ngIf="!replicationStatus.disabled" class="sync-status">
-            <a class="no-click" [ngClass]="replicationStatus.current.className" *ngIf="replicationStatus.current">
-              <i class="fa fa-fw" [ngClass]="replicationStatus.current.icon"></i>
-              <span translate>{{replicationStatus.current.key}}</span>
+            <a class="no-click" [ngClass]="replicationStatus.current?.className" *ngIf="replicationStatus.current">
+              <i class="fa fa-fw" [ngClass]="replicationStatus.current?.icon"></i>
+              <span [translate]="replicationStatus.current.key"></span>
             </a>
             <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
               <span translate>sync.last_success</span>
