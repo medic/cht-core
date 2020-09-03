@@ -123,8 +123,8 @@
     </div>
 
     <div class="tabs small-font">
-      <a *ngFor="let tab of permittedTabs" routerLink="{{tab.state}}" id="{{tab.name}}-tab" class="{{tab.name}}-tab" [ngClass]="{'selected': currentTab === tab.name}">
-        <div class="mm-icon" [ngClass]="{'mm-icon-inverse': currentTab !== tab.name}">
+      <a *ngFor="let tab of permittedTabs" routerLink="{{tab.route}}" id="{{tab.name}}-tab" class="{{tab.name}}-tab" [class.selected]="currentTab === tab.name">
+        <div class="mm-icon" [class.mm-icon-inverse]="currentTab !== tab.name">
           <span *ngIf="!tab.resourceIcon" class="fa {{tab.icon}}"><span class="fa {{tab.defaultIcon}}"></span></span>
           <span *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon:tab.defaultIcon"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="unreadCount[tab.typeName] <= 0">
