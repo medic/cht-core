@@ -1,4 +1,4 @@
-const _ = require('lodash/core');
+import * as _ from 'lodash-es';
 import { Directive, ElementRef, Input, HostBinding, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 

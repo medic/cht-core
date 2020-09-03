@@ -1,6 +1,6 @@
 const COOKIE_NAME = 'userCtx';
 const ONLINE_ROLE = 'mm-online';
-const _ = require('lodash/core');
+import * as _ from 'lodash-es';
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie';

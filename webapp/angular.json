@@ -15,7 +15,7 @@
       "prefix": "",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "../build/ddocs/medic/_attachments",
             "index": "src/templates/inbox.html",
@@ -36,7 +36,10 @@
                 "src/css"
               ]
             },
-            "scripts": []
+            "scripts": [],
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
           },
           "configurations": {
             "development": {

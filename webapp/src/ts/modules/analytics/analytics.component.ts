@@ -3,8 +3,7 @@ import { Store } from '@ngrx/store';
 import { AnalyticsModulesService } from '../../services/analytics-modules.service';
 import { AnalyticsActions } from '../../actions/analytics';
 import { ActivatedRoute, Router } from '@angular/router';
-
-const _ = require('lodash/core');
+import * as _ from 'lodash-es';
 
 @Component({
   templateUrl: './analytics.component.html'

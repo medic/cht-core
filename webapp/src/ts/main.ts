@@ -10,7 +10,7 @@ window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 //window.d3 = require('d3');
 
-require('../../node_modules/select2/dist/js/select2.full');
+//import * as Select2 from '../../node_modules/select2/dist/js/select2.full';
 //require('bootstrap');
 //require('./bootstrap-multidropdown');
 //require('bootstrap-daterangepicker');
@@ -23,20 +23,7 @@ import { AppModule } from './app.module';
 import { environment } from './environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
-require('moment');
-require('moment/locale/bm');
-require('moment/locale/es');
-require('moment/locale/fr');
-require('moment/locale/hi');
-require('moment/locale/id');
-require('moment/locale/ne');
-require('moment/locale/sw');
-require('./moment-locales/tl');
-require('./moment-locales/hil');
-require('./moment-locales/ceb');
-
-const bootstrapper = require('./bootstrapper');
-//const router = require('./router');
+import * as bootstrapper from './bootstrapper';
 
 //const KARMA_UNIT_TEST_PORT = '9876';
 
@@ -163,9 +150,7 @@ const bootstrapper = require('./bootstrapper');
       }
     });
   });
-
   */
-
   bootstrapper(POUCHDB_OPTIONS, function(err) {
     if (err) {
       if (err.redirect) {
