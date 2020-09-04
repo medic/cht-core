@@ -28,6 +28,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   reportsList;
   selectedReports;
+  forms;
   error;
   errorSyntax;
   loading;
@@ -48,14 +49,17 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.pipe(select(Selectors.getReportsList)),
       this.store.pipe(select(Selectors.getSelectedReports)),
       this.store.pipe(select(Selectors.listContains)),
+      this.store.pipe(select(Selectors.getForms)),
     ).subscribe(([
       reportsList,
       selectedReports,
       listContains,
+      forms,
     ]) => {
       this.reportsList = reportsList;
       this.selectedReports = selectedReports;
       this.listContains = listContains;
+      this.forms = forms;
     });
     this.subscription.add(subscription);
 
@@ -104,14 +108,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   private prepareReports(reports) {
     return reports.map(report => {
-      const form = null; // todo
-      report.icon = ''; // todo
+      const form = _.find(this.forms, { code: report.form });
+      report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
-      report.date = report.reported_date;
       report.summary = form ? form.title : report.form;
-      report.showStatus = true;
-      report.valid = report.valid;
-      report.verified = report.verified;
       const statusIcon = (report.valid && report.verified) ?
                          'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
       // report.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon); todo
@@ -147,16 +147,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return this.searchService
       .search('reports', [], options)
       .then((updatedReports) => {
-
-        console.log(updatedReports);
         // add read status todo
         updatedReports = this.prepareReports(updatedReports);
-        console.log(updatedReports);
 
         this.reportsActions.updateReportsList(updatedReports);
         // set action bar data todo
 
         this.moreItems = updatedReports.length >= options.limit;
+        this.hasReports = !!updatedReports.length;
         this.loading = false;
         this.appending = false;
         this.error = false;
@@ -164,6 +162,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
         // set first report selected if conditions todo
         // scrolling todo
+
+        this.initScroll();
       })
       .catch(err => {
         this.error = true;
@@ -179,6 +179,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
         console.error('Error loading messages', err);
       });
   }
+
+  private initScroll() {
+    scrollLoaderInit(() => {
+      if (!this.loading && this.moreItems) {
+        this.query({ skip: true });
+      }
+    });
+  };
 
   search(force = false) {
     // todo filters

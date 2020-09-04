@@ -13,6 +13,7 @@ export const Selectors = {
   getShowContent: state => getGlobalState(state).showContent,
   getSelectMode: state => getGlobalState(state).selectMode,
   getShowActionBar: state => getGlobalState(state).showActionBar,
+  getForms: state => getGlobalState(state).forms,
 
   // services
   getLastChangedDoc: (state) => getServicesState(state).lastChangedDoc,
@@ -32,7 +33,7 @@ const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited
 const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving;
 const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 const getFilters = state => getGlobalState(state).filters;
-const getForms = state => getGlobalState(state).forms;
+
 const getIsAdmin = state => getGlobalState(state).isAdmin;
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
 

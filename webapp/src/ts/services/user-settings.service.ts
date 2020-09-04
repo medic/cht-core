@@ -13,7 +13,7 @@ export class UserSettingsService {
     private dbService:DbService,
     private sessionService:SessionService,
   ) {
-    const cache = this.cacheService.register({
+    this.cache = this.cacheService.register({
       get: callback => {
         const docId = this.userDocId();
         this.dbService.get()

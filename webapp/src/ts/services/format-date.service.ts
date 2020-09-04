@@ -107,7 +107,7 @@ export class FormatDateService {
     if (options.withoutTime) {
       return this.relativeDate(date, { suffix: true, humanize: true });
     }
-    return moment(date).fromNow(true);
+    return moment(date).fromNow(false);
   }
 
   age(date, options:any = {}) {

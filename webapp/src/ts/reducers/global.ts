@@ -60,6 +60,9 @@ const _globalReducer = createReducer(
   on(Actions.setShowActionBar, (state, { payload: { showActionBar } }) => {
     return { ...state, showActionBar };
   }),
+  on(Actions.setForms, (state, { payload: { forms } }) => {
+    return { ...state, forms };
+  }),
 );
 
 
@@ -105,8 +108,6 @@ module.exports = function(state, action) {
     });
   case actionTypes.SET_FILTERS:
     return Object.assign({}, state, { filters: action.payload.filters });
-  case actionTypes.SET_FORMS:
-    return Object.assign({}, state, { forms: action.payload.forms });
   case actionTypes.SET_IS_ADMIN:
     return Object.assign({}, state, { isAdmin: action.payload.isAdmin });
   case actionTypes.SET_LOADING_CONTENT:

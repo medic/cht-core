@@ -12,6 +12,7 @@ export const Actions = {
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
+  setForms: createSingleValueAction('SET_FORMS', 'forms'),
 }
 
 export class GlobalActions {
@@ -39,6 +40,10 @@ export class GlobalActions {
 
   setLoadingContent(loading) {
     return this.store.dispatch(Actions.setLoadingContent(loading));
+  }
+
+  setForms(forms) {
+    return this.store.dispatch(Actions.setForms(forms));
   }
 
   setShowContent(showContent) {
@@ -136,9 +141,7 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetEnketoStatusAction({ saving }));
       }
 
-      function setForms(forms) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FORMS, 'forms', forms));
-      }
+
 
       function clearFilters() {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', {}));

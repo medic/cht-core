@@ -22,6 +22,8 @@ import { FeedbackService } from './services/feedback.service';
 import { environment } from './environments/environment';
 import { FormatDateService } from './services/format-date.service';
 import { XmlFormsService } from './services/xml-forms.service';
+import { JsonFormsService } from './services/json-forms.service';
+import { TranslateFromService } from './services/translate-from.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -53,6 +55,7 @@ const SYNC_STATUS = {
 export class AppComponent {
   private globalActions;
   setupPromise;
+  translationsLoaded;
 
   currentTab = '';
   showContent = false;
@@ -65,6 +68,7 @@ export class AppComponent {
   tours = [];
   replicationStatus;
   androidAppVersion;
+  nonContactForms;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -82,6 +86,8 @@ export class AppComponent {
     private feedbackService:FeedbackService,
     private formatDateService:FormatDateService,
     private xmlFormsService:XmlFormsService,
+    private jsonFormsService:JsonFormsService,
+    private translateFromService:TranslateFromService,
   ) {
     combineLatest(
       store.pipe(select(Selectors.getReplicationStatus)),
@@ -99,10 +105,7 @@ export class AppComponent {
       });
 
     this.globalActions = new GlobalActions(store);
-    translationLoaderService.getLocale().then(locale => {
-      translateService.setDefaultLang(locale);
-      translateService.use(locale);
-    });
+
 
     moment.locale(['en']);
     this.formatDateService.init();
@@ -111,6 +114,11 @@ export class AppComponent {
 
     setBootstrapTheme('bs3');
 
+    this.setupRouter();
+    this.loadTranslations();
+  }
+
+  private setupRouter() {
     this.router.events.subscribe((event:RouterEvent) => {
       console.log(event);
       if (event instanceof NavigationEnd) {
@@ -119,19 +127,14 @@ export class AppComponent {
     });
   }
 
-  ngOnInit(): void {
-    if (
-      (<any>window).medicmobile_android &&
-      typeof (<any>window).medicmobile_android.getAppVersion === 'function'
-    ) {
-      this.globalActions.setAndroidAppVersion((<any>window).medicmobile_android.getAppVersion())
-    }
+  private loadTranslations() {
+    this.translationsLoaded = this.translationLoaderService.getLocale().then(locale => {
+      this.translateService.setDefaultLang(locale);
+      return this.translateService.use(locale).toPromise();
+    });
+  }
 
-    if (this.androidAppVersion) {
-      this.authService.has('can_log_out_on_android').then(canLogout => this.canLogOut = canLogout);
-    } else {
-      this.canLogOut = true;
-    }
+  private setupDb() {
 
     this.globalActions.updateReplicationStatus({
       disabled: false,
@@ -150,24 +153,77 @@ export class AppComponent {
       this.globalActions.updateReplicationStatus({ disabled: true });
     }
 
-    this.setupPromise = this.sessionService.init();
-    this.feedbackService.init();
-
-    const dbFetch = (<any>window).PouchDB.fetch;
-    (<any>window).PouchDB.fetch = function() {
+    const dbFetch = window.PouchDB.fetch;
+    window.PouchDB.fetch = (...args) => {
       return dbFetch
-        .apply(this, arguments)
+        .apply(dbFetch, args)
         .then((response) => {
           if (response.status === 401) {
             this.showSessionExpired();
             setTimeout(() => {
               console.info('Redirect to login after 1 minute of inactivity');
-              this.session.navigateToLogin();
+              this.sessionService.navigateToLogin();
             }, 60000);
           }
           return response;
         });
     };
+
+    this.dbSyncService.subscribe(({ state, to, from }) => {
+      if (state === 'disabled') {
+        this.globalActions.updateReplicationStatus({ disabled: true });
+        return;
+      }
+      if (state === 'unknown') {
+        this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
+        return;
+      }
+      const now = Date.now();
+      const lastTrigger = this.replicationStatus.lastTrigger;
+      const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
+      if (state === 'inProgress') {
+        this.globalActions.updateReplicationStatus({
+          current: SYNC_STATUS.inProgress,
+          lastTrigger: now
+        });
+        console.info(`Replication started after ${delay} seconds since previous attempt`);
+        return;
+      }
+      const statusUpdates:any = {};
+      if (to === 'success') {
+        statusUpdates.lastSuccessTo = now;
+      }
+      if (from === 'success') {
+        statusUpdates.lastSuccessFrom = now;
+      }
+      if (to === 'success' && from === 'success') {
+        console.info(`Replication succeeded after ${delay} seconds`);
+        statusUpdates.current = SYNC_STATUS.success;
+      } else {
+        console.info(`Replication failed after ${delay} seconds`);
+        statusUpdates.current = SYNC_STATUS.required;
+      }
+      this.globalActions.updateReplicationStatus(statusUpdates);
+    });
+  }
+
+  ngOnInit(): void {
+    if (
+      (<any>window).medicmobile_android &&
+      typeof (<any>window).medicmobile_android.getAppVersion === 'function'
+    ) {
+      this.globalActions.setAndroidAppVersion((<any>window).medicmobile_android.getAppVersion())
+    }
+
+    if (this.androidAppVersion) {
+      this.authService.has('can_log_out_on_android').then(canLogout => this.canLogOut = canLogout);
+    } else {
+      this.canLogOut = true;
+    }
+
+
+    this.setupPromise = this.sessionService.init();
+    this.feedbackService.init();
 
     this.changesService.subscribe({
       key: 'branding-icon',
@@ -233,92 +289,65 @@ export class AppComponent {
       callback: () => this.setAppTitle(),
     });
 
-    this.dbSyncService.subscribe(({ state, to, from }) => {
-      if (state === 'disabled') {
-        this.globalActions.updateReplicationStatus({ disabled: true });
-        return;
-      }
-      if (state === 'unknown') {
-        this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
-        return;
-      }
-      const now = Date.now();
-      const lastTrigger = this.replicationStatus.lastTrigger;
-      const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
-      if (state === 'inProgress') {
-        this.globalActions.updateReplicationStatus({
-          current: SYNC_STATUS.inProgress,
-          lastTrigger: now
-        });
-        console.info(`Replication started after ${delay} seconds since previous attempt`);
-        return;
-      }
-      const statusUpdates:any = {};
-      if (to === 'success') {
-        statusUpdates.lastSuccessTo = now;
-      }
-      if (from === 'success') {
-        statusUpdates.lastSuccessFrom = now;
-      }
-      if (to === 'success' && from === 'success') {
-        console.info(`Replication succeeded after ${delay} seconds`);
-        statusUpdates.current = SYNC_STATUS.success;
-      } else {
-        console.info(`Replication failed after ${delay} seconds`);
-        statusUpdates.current = SYNC_STATUS.required;
-      }
-      this.globalActions.updateReplicationStatus(statusUpdates);
-    });
+    this.initForms();
+  }
 
-    const initForms = () => {
-      return $translate.onReady()
-        .then(() => JsonForms())
-        .then(function(jsonForms) {
-          const jsonFormSummaries = jsonForms.map(function(jsonForm) {
-            return {
-              code: jsonForm.code,
-              title: translateTitle(jsonForm.translation_key, jsonForm.name),
-              icon: jsonForm.icon,
-              subjectKey: jsonForm.subject_key
-            };
-          });
-          XmlForms.listen(
-            'FormsFilter',
-            { contactForms: false, ignoreContext: true },
-            function(err, xForms) {
-              if (err) {
-                return $log.error('Error fetching form definitions', err);
-              }
-              const xFormSummaries = xForms.map(function(xForm) {
-                return {
-                  code: xForm.internalId,
-                  title: translateTitle(xForm.translation_key, xForm.title),
-                  icon: xForm.icon,
-                  subjectKey: xForm.subject_key
-                };
-              });
-              const forms = xFormSummaries.concat(jsonFormSummaries);
-              ctrl.setForms(forms);
-            }
-          );
-          // get the forms for the Add Report menu
-          XmlForms.listen('AddReportMenu', { contactForms: false }, function(err, xForms) {
-            if (err) {
-              return $log.error('Error fetching form definitions', err);
-            }
-            ctrl.nonContactForms = xForms.map(function(xForm) {
-              return {
-                code: xForm.internalId,
-                icon: xForm.icon,
-                title: translateTitle(xForm.translation_key, xForm.title),
-              };
-            });
-          });
-        })
-        .catch(err => $log.error('Failed to retrieve forms', err));
+  private initForms(){
+    /**
+    * Translates using the key if truthy using the old style label
+    * array as a fallback.
+    */
+    const translateTitle = (key, label) => {
+      return key ? this.translateService.instant(key) : this.translateFromService.get(label);
     };
 
-  }
+    return this
+      .translationsLoaded
+      .then(() => this.jsonFormsService.get())
+      .then((jsonForms) => {
+        const jsonFormSummaries = jsonForms.map((jsonForm) => {
+          return {
+            code: jsonForm.code,
+            title: translateTitle(jsonForm.translation_key, jsonForm.name),
+            icon: jsonForm.icon,
+            subjectKey: jsonForm.subject_key
+          };
+        });
+        this.xmlFormsService.subscribe(
+          'FormsFilter',
+          { contactForms: false, ignoreContext: true },
+          (err, xForms) => {
+            if (err) {
+              return console.error('Error fetching form definitions', err);
+            }
+            const xFormSummaries = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                title: translateTitle(xForm.translation_key, xForm.title),
+                icon: xForm.icon,
+                subjectKey: xForm.subject_key
+              };
+            });
+            const forms = xFormSummaries.concat(jsonFormSummaries);
+            this.globalActions.setForms(forms);
+          }
+        );
+        // get the forms for the Add Report menu
+        this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, (err, xForms) => {
+          if (err) {
+            return console.error('Error fetching form definitions', err);
+          }
+          this.nonContactForms = xForms.map((xForm) => {
+            return {
+              code: xForm.internalId,
+              icon: xForm.icon,
+              title: translateTitle(xForm.translation_key, xForm.title),
+            };
+          });
+        });
+      })
+      .catch(err => console.error('Failed to retrieve forms', err));
+  };
 
   private setAppTitle() {
     this.resourceIconsService.getAppTitle().then(title => {
@@ -525,13 +554,7 @@ export class AppComponent {
       });
     };
 
-    /!**
-     * Translates using the key if truthy using the old style label
-     * array as a fallback.
-     *!/
-    const translateTitle = function(key, label) {
-      return key ? $translate.instant(key) : TranslateFrom(label);
-    };
+
 
     const initRulesEngine = () => RulesEngine.isEnabled()
       .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))

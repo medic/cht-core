@@ -26,19 +26,15 @@ export class XmlFormsService {
 
     this.changesService.subscribe({
       key: 'xml-forms',
-      filter: function(change) {
+      filter: (change) => {
         return change.id.indexOf('form:') === 0;
       },
-      callback: function() {
+      callback: () => {
         this.init = this.getForms();
         this
           .init
-          .then(notifyAll)
-          .catch(function(err) {
-            Object.keys(listeners).forEach(key => {
-              listeners[key].callback(err);
-            });
-          });
+          .then(forms => this.notify(null, forms))
+          .catch((err) => this.notify(err));
       }
     });
   }
@@ -175,8 +171,8 @@ export class XmlFormsService {
     });
   }
 
-  private notify(forms) {
-    this.observable.next(forms);
+  private notify(error, forms?) {
+    this.observable.next({ error, forms });
   }
 
   /**
@@ -208,12 +204,18 @@ export class XmlFormsService {
       callback = options;
       options = {};
     }
-    return this.observable.subscribe(forms => {
+
+    const cb = ({ error, forms }) => {
+      if (error) {
+        return callback(error);
+      }
       return this
         .filterAll(forms, options)
         .then(results => callback(null, results))
         .catch(err => callback(err));
-    });
+    };
+    this.init.then(forms => cb({ forms, error: undefined }));
+    return this.observable.subscribe(cb);
   }
 
   /**

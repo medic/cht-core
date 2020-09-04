@@ -26,7 +26,7 @@ const _insertReport = (reports, reportsById, report) => {
     return;
   }
 
-  const idx = _.sortedIndexBy(reports, report, 'reported_date');
+  const idx = _.sortedIndexBy(reports, report, r => -r.reported_date);
   reports.splice(idx, 0, report);
   reportsById.set(report._id);
 }

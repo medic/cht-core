@@ -55,6 +55,7 @@ export class ContentRowListItemComponent {
   @Input() unread;
   @Input() primary;
   @Input() visits;
+  @Input() statusIcon;
 
   constructor() {}
 }

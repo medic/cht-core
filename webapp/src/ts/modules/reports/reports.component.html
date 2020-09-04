@@ -41,10 +41,18 @@
       <ul class="unfiltered" *ngIf="(!loading || appending) && !filtered">
         <mm-content-row
           *ngFor="let report of reportsList"
-          [id]="report.id"
+          [id]="report._id"
           route="reports"
-          [icon]=""
-          [heading]=""
+          [icon]="report.icon"
+          [heading]="report.heading"
+          [date]="report.reported_date"
+          [summary]="report.summary"
+          [showStatus]="true"
+          [valid]="report.valid"
+          [verified]="report.verified"
+          [statusIcon]="report.statusIcon"
+          [lineage]="report.lineage"
+          [unread]="!report.read"
         >
         </mm-content-row>
       </ul>

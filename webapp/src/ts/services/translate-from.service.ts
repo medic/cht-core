@@ -16,13 +16,18 @@
  * var patient = { _id: 'abc', patient: { name: 'Estelle' } };
  * translateFrom([ { locale: 'en', content: 'Go visit {{patient.name}}' }], patient);  // 'Go visit Estelle'
  */
-const _ = require('lodash/core');
+import * as _ from 'lodash-es';
+import { Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
-(function () {
+@Injectable({
+  providedIn: 'root'
+})
+export class TranslateFromService {
+  constructor(private translateService:TranslateService) {
+  }
 
-  'use strict';
-
-  const getLabel = function(labels, locale) {
+  private getLabel(labels, locale) {
     locale = locale || 'en';
 
     // first format: [ { content: 'Hello', locale: 'en' } ]
@@ -46,20 +51,14 @@ const _ = require('lodash/core');
     return labels;
   };
 
-  angular.module('inboxServices').factory('TranslateFrom',
-    function($translate) {
-      'ngInject';
-      return function(labels, scope) {
-        if (!labels) {
-          return;
-        }
-        const label = getLabel(labels, $translate.use());
-        if (!scope || !label || label.indexOf('{{') === -1) {
-          return label;
-        }
-        return _.template(label)(scope);
-      };
+  get(labels, scope?) {
+    if (!labels) {
+      return;
     }
-  );
-
-}());
+    const label = this.getLabel(labels, this.translateService.currentLang);
+    if (!scope || !label || label.indexOf('{{') === -1) {
+      return label;
+    }
+    return _.template(label)(scope);
+  }
+}
