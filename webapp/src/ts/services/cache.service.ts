@@ -7,8 +7,8 @@ import {ChangesService} from './changes.service';
 export class CacheService {
   private caches = [];
 
-  constructor(private changes:ChangesService) {
-    this.changes.register({
+  constructor(private changesService:ChangesService) {
+    this.changesService.subscribe({
       key: 'cache',
       callback: (change) => {
         this.caches.forEach((cache) => {

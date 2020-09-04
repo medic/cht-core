@@ -8,12 +8,13 @@ import { HeaderComponent } from './header/header.component';
 import { PipesModule } from '../pipes/pipes.module';
 import { DirectivesModule } from '../directives/directives.module';
 import { SnackbarComponent } from './snackbar/snackbar.component';
-
+import {ContentRowListItemComponent} from './content-row-list-item/content-row-list-item.component';
 
 @NgModule({
   declarations: [
     HeaderComponent,
     SnackbarComponent,
+    ContentRowListItemComponent,
   ],
   imports: [
     CommonModule,
@@ -26,6 +27,7 @@ import { SnackbarComponent } from './snackbar/snackbar.component';
   exports: [
     HeaderComponent,
     SnackbarComponent,
+    ContentRowListItemComponent,
   ]
 })
 export class ComponentsModule { }

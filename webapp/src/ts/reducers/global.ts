@@ -1,5 +1,6 @@
 import { Actions } from '../actions/global';
 import { createReducer, on } from '@ngrx/store';
+import * as _ from 'lodash-es';
 
 const initialState = {
   actionBar: {
@@ -42,18 +43,28 @@ const _globalReducer = createReducer(
     });
   }),
   on(Actions.setAndroidAppVersion, (state, { payload: { androidAppVersion } }) => {
-    return Object.assign({}, state, { androidAppVersion });
+    return { ...state, androidAppVersion };
   }),
   on(Actions.setMinimalTabs, (state, { payload: { minimalTabs } } ) => {
-    return Object.assign({}, state, { minimalTabs });
+    return { ...state, minimalTabs };
   }),
   on(Actions.setCurrentTab, (state, { payload: { currentTab } }) => {
-    return Object.assign({}, state, { currentTab });
+    return { ...state, currentTab };
   }),
   on(Actions.setSnackbarContent, (state, { payload: { content } }) => {
-    return Object.assign({}, state, { snackbarContent: content });
+    return { ...state, snackbarContent: content };
+  }),
+  on(Actions.setLoadingContent, (state, { payload: { loadingContent } }) => {
+    return { ...state, loadingContent };
+  }),
+  on(Actions.setShowActionBar, (state, { payload: { showActionBar } }) => {
+    return { ...state, showActionBar };
+  }),
+  on(Actions.setForms, (state, { payload: { forms } }) => {
+    return { ...state, forms };
   }),
 );
+
 
 export const globalReducer = (state, action) => {
   return _globalReducer(state, action);
@@ -97,8 +108,6 @@ module.exports = function(state, action) {
     });
   case actionTypes.SET_FILTERS:
     return Object.assign({}, state, { filters: action.payload.filters });
-  case actionTypes.SET_FORMS:
-    return Object.assign({}, state, { forms: action.payload.forms });
   case actionTypes.SET_IS_ADMIN:
     return Object.assign({}, state, { isAdmin: action.payload.isAdmin });
   case actionTypes.SET_LOADING_CONTENT:
@@ -109,8 +118,7 @@ module.exports = function(state, action) {
     return Object.assign({}, state, { privacyPolicyAccepted: action.payload.privacyPolicyAccepted });
   case actionTypes.SET_SELECT_MODE:
     return Object.assign({}, state, { selectMode: action.payload.selectMode });
-  case actionTypes.SET_SHOW_ACTION_BAR:
-    return Object.assign({}, state, { showActionBar: action.payload.showActionBar });
+
   case actionTypes.SET_SHOW_CONTENT:
     return Object.assign({}, state, { showContent: action.payload.showContent });
   case actionTypes.SET_SHOW_PRIVACY_POLICY:

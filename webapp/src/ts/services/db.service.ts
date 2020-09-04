@@ -20,6 +20,8 @@ export class DbService {
   private isOnlineOnly;
 
   constructor(private session:SessionService, private location:LocationService) {
+
+
     this.isOnlineOnly = this.session.isOnlineOnly();
 
     if (!this.isOnlineOnly) {

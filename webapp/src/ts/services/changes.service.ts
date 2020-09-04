@@ -22,6 +22,7 @@ import { SessionService } from './session.service';
 import { select, Store } from '@ngrx/store';
 import { Selectors } from "../selectors";
 import { ServicesActions } from "../actions/services";
+import { Subject } from 'rxjs';
 
 const RETRY_MILLIS = 5000;
 
@@ -33,18 +34,19 @@ export class ChangesService {
     medic: {
       lastSeq: null,
       callbacks: {},
-      watchIncludeDocs: true
+      watchIncludeDocs: true,
+      observable: new Subject(),
     },
     meta: {
       lastSeq: null,
       callbacks: {},
-      watchIncludeDocs: true
+      watchIncludeDocs: true,
+      observable: new Subject(),
     }
   };
   private watches = [];
   private lastChangedDoc;
   private servicesActions;
-
 
   constructor(
     private db: DbService,
@@ -74,7 +76,9 @@ export class ChangesService {
           this.servicesActions.setLastChangedDoc(false);
         }
 
-        this.notifyAll(meta, change);
+        console.debug('Change notification firing', meta, change);
+        db.observable.next(change);
+        db.lastSeq = change.seq;
       })
       .on('error', (err) => {
         console.error('Error watching for db changes', err);
@@ -85,22 +89,6 @@ export class ChangesService {
       });
 
     this.watches.push(watch);
-  };
-
-  private notifyAll(meta, change) {
-    console.debug('Change notification firing', meta, change);
-    const db = meta ? this.dbs.meta : this.dbs.medic;
-    db.lastSeq = change.seq;
-    Object.keys(db.callbacks).forEach((key) => {
-      const options = db.callbacks[key];
-      if (!options.filter || options.filter(change)) {
-        try {
-          options.callback(change);
-        } catch(e) {
-          console.error(new Error('Error executing changes callback: ' + key), e);
-        }
-      }
-    });
   };
 
   private init() {
@@ -125,15 +113,17 @@ export class ChangesService {
       });
   };
 
-  register(options) {
+  subscribe(options) {
     const db = options.metaDb ? this.dbs.meta : this.dbs.medic;
-    db.callbacks[options.key] = options;
-
-    return {
-      unsubscribe: () => {
-        delete db.callbacks[options.key];
+    return db.observable.subscribe(change => {
+      try {
+        if (!options.filter || options.filter(change)) {
+          options.callback(change);
+        }
+      } catch(e) {
+        console.error(new Error('Error executing changes callback: ' + options.key), e);
       }
-    };
+    })
   }
 }
 

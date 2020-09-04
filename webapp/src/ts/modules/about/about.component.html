@@ -38,7 +38,7 @@
         <dd>{{dbInfo?.update_seq}}</dd>
         <dt translate>replication.last.success.to</dt>
         <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
-          <!--{{replicationStatus.lastSuccessTo | simpleDateTime}}-->
+          {{replicationStatus.lastSuccessTo | simpleDateTime}}
         </dd>
         <dd *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessTo" translate>
           replication.last.success.unknown
@@ -48,7 +48,7 @@
         </dd>
         <dt translate>replication.last.success.from</dt>
         <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessFrom">
-          <!--{{replicationStatus.lastSuccessFrom | simpleDateTime}}-->
+          {{replicationStatus.lastSuccessFrom | simpleDateTime}}
         </dd>
         <dd *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessFrom" translate>
           replication.last.success.unknown

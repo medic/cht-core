@@ -43,8 +43,6 @@ export class SnackbarComponent implements OnInit {
     this.content = content;
     this.active = true;
 
-    console.log(content);
-
     this.timer = setTimeout(() => this.hide(), this.SHOW_DURATION);
   }
 
