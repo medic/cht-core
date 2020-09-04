@@ -56,12 +56,9 @@ describe('token login', () => {
 
   afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb([], [])));
 
-  beforeAll(() => {
+  afterAll(() => {
     commonElements.goToLoginPage();
     loginPage.login(auth.username, auth.password);
-  });
-
-  afterAll(() => {
     return utils.revertDb();
   });
 
@@ -74,8 +71,9 @@ describe('token login', () => {
   };
 
   it('should redirect the user to the app if already logged in', () => {
+    commonElements.goToLoginPage();
+    loginPage.login(auth.username, auth.password);
     browser.driver.get(getUrl('this is a random string'));
-    waitForLoaderToDisappear();
     browser.waitForAngular();
     helper.waitUntilReady(element(by.id('message-list')));
   });
