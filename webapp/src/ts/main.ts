@@ -170,7 +170,7 @@ import * as bootstrapper from './bootstrapper';
     }
 
     platformBrowserDynamic()
-      .bootstrapModule(AppModule)
+      .bootstrapModule(AppModule, { preserveWhitespaces: true })
       .catch(err => console.error(err));
   });
 

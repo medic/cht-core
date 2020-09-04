@@ -1,5 +1,7 @@
 import { Store } from '@ngrx/store';
+import { take } from 'rxjs/operators';
 import { createSingleValueAction } from './actionUtils';
+import { Selectors } from '../selectors';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
@@ -7,6 +9,9 @@ export const Actions = {
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
   setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
   setSnackbarContent: createSingleValueAction('SET_SNACKBAR_CONTENT', 'content'),
+  setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
+  setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
+  setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
 }
 
 export class GlobalActions {
@@ -30,6 +35,39 @@ export class GlobalActions {
 
   setSnackbarContent(content) {
     return this.store.dispatch(Actions.setSnackbarContent(content));
+  }
+
+  setLoadingContent(loading) {
+    return this.store.dispatch(Actions.setLoadingContent(loading));
+  }
+
+  setShowContent(showContent) {
+    return this.store
+      .select(Selectors.getSelectMode)
+      .pipe(take(1))
+      .subscribe(selectMode => {
+        if (showContent && selectMode) {
+          // when in select mode we never show the RHS on mobile
+          return;
+        }
+
+        return this.store.dispatch(Actions.setShowContent(showContent));
+      })
+  }
+
+  setShowActionBar(showActionBar) {
+    return this.store.dispatch(Actions.setShowActionBar(showActionBar));
+  }
+
+  settingSelected(refreshing) {
+    this.store.dispatch(Actions.setLoadingContent(false));
+    setTimeout(() => {
+      this.store.dispatch(Actions.setShowContent(true));
+      this.store.dispatch(Actions.setShowActionBar(true));
+      if (!refreshing) {
+        // TODO scroll body to top
+      }
+    });
   }
 }
 
@@ -118,9 +156,7 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
       }
 
-      function setLoadingContent(loading) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LOADING_CONTENT, 'loadingContent', loading));
-      }
+
 
       function setLoadingSubActionBar(loading) {
         dispatch(ActionUtils.createSingleValueAction(
@@ -132,20 +168,9 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECT_MODE, 'selectMode', selectMode));
       }
 
-      function setShowActionBar(showActionBar) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SHOW_ACTION_BAR, 'showActionBar', showActionBar));
-      }
 
-      function setShowContent(showContent) {
-        return dispatch(function(dispatch, getState) {
-          const selectMode = Selectors.getSelectMode(getState());
-          if (showContent && selectMode) {
-            // when in select mode we never show the RHS on mobile
-            return;
-          }
-          dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SHOW_CONTENT, 'showContent', showContent));
-        });
-      }
+
+
 
       function setTitle(title) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_TITLE, 'title', title));
@@ -165,18 +190,7 @@ angular.module('inboxServices').factory('GlobalActions',
         setShowContent(true);
       }
 
-      function settingSelected(refreshing) {
-        setLoadingContent(false);
-        $timeout(function() {
-          setShowContent(true);
-          setShowActionBar(true);
-          if (!refreshing) {
-            $timeout(function() {
-              $('.item-body').scrollTop(0);
-            });
-          }
-        });
-      }
+
 
       /!**
        * Unset the selected item

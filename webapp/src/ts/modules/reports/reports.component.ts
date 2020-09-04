@@ -1,8 +1,192 @@
-const _ = require('lodash/core');
-const responsive = require('../modules/responsive');
-const scrollLoader = require('../modules/scroll-loader');
+import * as _ from 'lodash-es';
+import { isMobile } from '../../providers/responsive.provider';
+import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { select, Store } from '@ngrx/store';
+import {GlobalActions} from '../../actions/global';
+import {ReportsActions} from '../../actions/reports';
+import {ServicesActions} from '../../actions/services';
+import { ChangesService } from '../../services/changes.service';
+import { SearchService } from '../../services/search.service';
+import {Selectors} from '../../selectors';
+import { combineLatest, Subscription } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 
 const PAGE_SIZE = 50;
+
+@Component({
+  templateUrl: './reports.component.html'
+})
+export class ReportsComponent implements OnInit, OnDestroy {
+  private subscription: Subscription = new Subscription();
+
+  private globalActions;
+  private reportsActions;
+  private ServicesActions;
+
+  private listContains;
+
+  reportsList;
+  selectedReports;
+  error;
+  errorSyntax;
+  loading;
+  appending;
+  moreItems;
+  filters:any = {};
+  hasReports;
+  selectMode;
+  filtered;
+
+  constructor(
+    private store:Store,
+    private changesService:ChangesService,
+    private searchService:SearchService,
+    private translateService:TranslateService,
+  ) {
+    const subscription = combineLatest(
+      this.store.pipe(select(Selectors.getReportsList)),
+      this.store.pipe(select(Selectors.getSelectedReports)),
+      this.store.pipe(select(Selectors.listContains)),
+    ).subscribe(([
+      reportsList,
+      selectedReports,
+      listContains,
+    ]) => {
+      this.reportsList = reportsList;
+      this.selectedReports = selectedReports;
+      this.listContains = listContains;
+    });
+    this.subscription.add(subscription);
+
+    this.globalActions = new GlobalActions(store);
+    this.reportsActions = new ReportsActions(store);
+    this.ServicesActions = new ServicesActions(store);
+  }
+
+  ngOnInit() {
+    this.search();
+
+    const subscription = this.changesService.subscribe({
+      key: 'reports-list',
+      callback: (change) => {
+        if (change.deleted) {
+          this.reportsActions.removeReportFromList({ _id: change.id });
+          this.hasReports = this.reportsList.length;
+          // setActionBarData(); todo
+        } else {
+          this.query({ silent: true, limit: this.reportsList.length });
+        }
+      },
+      filter: (change) => {
+        return change.doc && change.doc.form || this.listContains(change.id);
+      },
+    });
+    this.subscription.add(subscription);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  private getReportHeading(form, report) {
+    if (form && form.subjectKey) {
+      return this.translateService.instant(form.subjectKey, report);
+    }
+    if (report.validSubject) {
+      return report.subject.value;
+    }
+    if (report.subject.name) {
+      return report.subject.name;
+    }
+    return this.translateService.instant('report.subject.unknown');
+  }
+
+  private prepareReports(reports) {
+    return reports.map(report => {
+      const form = null; // todo
+      report.icon = ''; // todo
+      report.heading = this.getReportHeading(form, report);
+      report.date = report.reported_date;
+      report.summary = form ? form.title : report.form;
+      report.showStatus = true;
+      report.valid = report.valid;
+      report.verified = report.verified;
+      const statusIcon = (report.valid && report.verified) ?
+                         'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
+      // report.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon); todo
+      report.lineage = report.subject && report.subject.lineage || report.lineage;
+      report.unread = !report.read;
+
+      return report;
+    });
+  }
+
+  private query(opts) {
+    const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+    if (options.limit < PAGE_SIZE) {
+      options.limit = PAGE_SIZE;
+    }
+
+    if (!options.silent) {
+      this.error = false;
+      this.errorSyntax = false;
+      this.loading = true;
+      if (this.selectedReports.length && isMobile()) {
+        // ctrl.unsetSelected(); todo
+      }
+
+      if (options.skip) {
+        this.appending = true;
+        options.skip = this.reportsList.length;
+      } else if (!options.silent) {
+        this.reportsActions.resetReportsList();
+      }
+    }
+
+    return this.searchService
+      .search('reports', [], options)
+      .then((updatedReports) => {
+
+        console.log(updatedReports);
+        // add read status todo
+        updatedReports = this.prepareReports(updatedReports);
+        console.log(updatedReports);
+
+        this.reportsActions.updateReportsList(updatedReports);
+        // set action bar data todo
+
+        this.moreItems = updatedReports.length >= options.limit;
+        this.loading = false;
+        this.appending = false;
+        this.error = false;
+        this.errorSyntax = false;
+
+        // set first report selected if conditions todo
+        // scrolling todo
+      })
+      .catch(err => {
+        this.error = true;
+        this.loading = false;
+        if (
+          this.filters.search &&
+          err.reason &&
+          err.reason.toLowerCase().indexOf('bad query syntax') !== -1
+        ) {
+          // invalid freetext filter query
+          this.errorSyntax = true;
+        }
+        console.error('Error loading messages', err);
+      });
+  }
+
+  search(force = false) {
+    // todo filters
+
+    return this.query(force);
+  }
+}
+/*
 
 angular
   .module('inboxControllers')
@@ -138,9 +322,9 @@ angular
         });
     };
 
-    /**
+    /!**
      * @param {Boolean} force Show list even if viewing the content on mobile
-     */
+     *!/
     ctrl.search = function(force) {
       // clears report selection for any text search or filter selection
       // does not clear selection when someone is editing a form
@@ -283,3 +467,4 @@ angular
       }
     });
   });
+*/

@@ -34,7 +34,7 @@ export class ResourceIconsService {
     this.DOC_IDS.slice(1).forEach(doc => this.updateResources(doc));
     this.initResources = this.updateResources(this.DOC_IDS[0]);
 
-    this.changes.register({
+    this.changes.subscribe({
       key: 'resource-icons',
       filter: change => this.DOC_IDS.includes(change.id),
       callback: change => this.updateResources(change.id),

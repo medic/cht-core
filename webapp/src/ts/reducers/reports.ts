@@ -1,9 +1,73 @@
+import { Actions } from '../actions/reports';
+import { createReducer, on } from '@ngrx/store';
+import * as _ from 'lodash-es';
+import { cloneDate } from 'ngx-bootstrap/chronos/create/clone';
+
+const initialState = {
+  reports: [],
+  reportsById: new Map(),
+  selected: [],
+  verifyingReport: false,
+};
+
+
+const _removeReport = (reports, reportsById, report) => {
+  if (!report._id || !reportsById.has(report._id)) {
+    return;
+  }
+
+  const idx = reports.findIndex(r => r._id === report._id);
+  reports.splice(1, idx);
+  reportsById.delete(report._id);
+}
+
+const _insertReport = (reports, reportsById, report) => {
+  if (!report._id || reportsById.has(report._id)) {
+    return;
+  }
+
+  const idx = _.sortedIndexBy(reports, report, 'reported_date');
+  reports.splice(idx, 0, report);
+  reportsById.set(report._id);
+}
+
+const updateReports = (state, newReports) => {
+  const reports = [...state.reports];
+  const reportsById = new Map(state.reportsById);
+
+  newReports.forEach(report => {
+    _removeReport(reports, reportsById, report);
+    _insertReport(reports, reportsById, report);
+  });
+
+  return { ...state, reports, reportsById };
+}
+
+const removeReport = (state, report) => {
+  const reports = [ ...state.reports];
+  const reportsById = new Map(state.reportsById);
+
+  _removeReport(reports, reportsById, report);
+  return { ...state, reports, reportsById };
+}
+
+const _reportsReducer = createReducer(
+  initialState,
+  on(Actions.updateReportsList, (state, { payload: { reports } }) => updateReports(state, reports)),
+  on(Actions.removeReportFromList, (state, { payload: { report } }) => removeReport(state, report)),
+  on(Actions.resetReportsList, (state) => ({ ...state, reports: [], reportsById: new Map })),
+);
+
+export function reportsReducer(state, action) {
+  return _reportsReducer(state, action);
+}
+
+
+
+/*
 const _ = require('lodash/core');
 const actionTypes = require('../actions/actionTypes');
-const initialState = {
-  selected: [],
-  verifyingReport: false
-};
+
 
 module.exports = function(state, action) {
   if (typeof state === 'undefined') {
@@ -60,3 +124,4 @@ module.exports = function(state, action) {
     return state;
   }
 };
+*/

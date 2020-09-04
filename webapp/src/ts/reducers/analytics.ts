@@ -7,7 +7,7 @@ const initialState = {
 const _analyticsReducer = createReducer(
   initialState,
   on(Actions.setSelectedAnalytics, (state, { payload: { selected } }) => {
-    return Object.assign({}, state, { selected });
+    return { ...state, selected };
   })
 );
 

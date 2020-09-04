@@ -93,13 +93,13 @@ export class DBSyncService {
           direction.onChange(replicationResult);
         }
       })
-      .on('denied', function(err) {
+      .on('denied', (err) => {
         console.error(`Denied replicating ${direction.name} remote server`, err);
         if (direction.onDenied) {
           direction.onDenied(err);
         }
       })
-      .on('error', function(err) {
+      .on('error', (err) => {
         console.error(`Error replicating ${direction.name} remote server`, err);
       })
       .then(info => {
@@ -203,7 +203,7 @@ export class DBSyncService {
   };
 
   subscribe(listener) {
-    this.observable.subscribe(listener);
+    return this.observable.subscribe(listener);
   }
 
   /**

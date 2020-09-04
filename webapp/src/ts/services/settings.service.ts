@@ -17,12 +17,12 @@ export class SettingsService {
       get: (callback) => {
         this.db.get()
           .get(this.SETTINGS_ID)
-          .then(function(doc) {
+          .then((doc) => {
             callback(null, doc.settings);
           })
           .catch(callback);
       },
-      invalidate: function(change) {
+      invalidate: (change) => {
         return change.id === this.SETTINGS_ID;
       }
     });

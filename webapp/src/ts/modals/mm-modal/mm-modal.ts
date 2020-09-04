@@ -69,7 +69,7 @@ export class ModalService {
   private readonly config = {
     keyboard: true,
     show: true,
-    animated: false,
+    animated: true,
   }
 
   private modalRefs = {};

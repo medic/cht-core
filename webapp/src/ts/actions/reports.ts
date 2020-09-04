@@ -1,6 +1,46 @@
-const _ = require('lodash/core');
-const actionTypes = require('./actionTypes');
-const lineageFactory = require('@medic/lineage');
+import * as _ from 'lodash-es';
+import * as lineageFactory from '@medic/lineage';
+import { Store, createAction } from '@ngrx/store';
+import { createSingleValueAction } from './actionUtils';
+
+export const Actions = {
+  addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'selected'),
+  removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'id'),
+
+  updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
+  removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
+  resetReportsList: createAction('RESET_REPORTS_LIST'),
+};
+
+export class ReportsActions {
+  constructor(private store: Store) {}
+
+  addSelectedReport(selected) {
+    return this.store.dispatch(Actions.addSelectedReport(selected));
+  }
+
+  removeSelectedReport(id) {
+    /*
+     dispatch(ActionUtils.createSingleValueAction(actionTypes.REMOVE_SELECTED_REPORT, 'id', id));
+     setRightActionBar();
+     globalActions.settingSelected(true);
+     $(`#reports-list li[data-record-id="${id}"] input[type="checkbox"]`).prop('checked', false);
+     */
+  }
+
+  updateReportsList(reports) {
+    return this.store.dispatch(Actions.updateReportsList(reports));
+  }
+
+  removeReportFromList(report) {
+    return this.store.dispatch(Actions.removeReportFromList(report));
+  }
+
+  resetReportsList() {
+    return this.store.dispatch(Actions.resetReportsList());
+  }
+}
+/*
 
 angular.module('inboxServices').factory('ReportsActions',
   function(
@@ -26,17 +66,6 @@ angular.module('inboxServices').factory('ReportsActions',
 
       const globalActions = GlobalActions(dispatch);
       const servicesActions = ServicesActions(dispatch);
-
-      function addSelectedReport(selected) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.ADD_SELECTED_REPORT, 'selected', selected));
-      }
-
-      function removeSelectedReport(id) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.REMOVE_SELECTED_REPORT, 'id', id));
-        setRightActionBar();
-        globalActions.settingSelected(true);
-        $(`#reports-list li[data-record-id="${id}"] input[type="checkbox"]`).prop('checked', false);
-      }
 
       function setFirstSelectedReportDocProperty(doc) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY, 'doc', doc));
@@ -354,3 +383,4 @@ angular.module('inboxServices').factory('ReportsActions',
     };
   }
 );
+*/

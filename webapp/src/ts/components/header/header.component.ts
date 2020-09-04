@@ -41,14 +41,14 @@ export class HeaderComponent implements OnInit {
     combineLatest(
       store.pipe(select(Selectors.getReplicationStatus)),
       store.pipe(select(Selectors.getCurrentTab)),
-    )
-      .subscribe(([
-        replicationStatus,
-        currentTab
-      ]) => {
-        this.replicationStatus = replicationStatus;
-        this.currentTab = currentTab;
-      });
+    ).subscribe(([
+      replicationStatus,
+      currentTab
+    ]) => {
+      this.replicationStatus = replicationStatus;
+      this.currentTab = currentTab;
+    });
+
     this.globalActions = new GlobalActions(store);
   }
 

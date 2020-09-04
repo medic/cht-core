@@ -1,9 +1,13 @@
 import { globalReducer } from './global';
 import { servicesReducer } from './services';
+import { analyticsReducer } from './analytics';
+import { reportsReducer } from './reports';
 
 export const reducers = {
   global: globalReducer,
   services: servicesReducer,
+  analytics: analyticsReducer,
+  reports: reportsReducer,
 }
 
 /*

@@ -1,5 +1,6 @@
 const getGlobalState = (state) => state.global;
 const getServicesState = (state) => state.services;
+const getReportsState = (state) => state.reports;
 
 export const Selectors = {
   // global
@@ -7,9 +8,19 @@ export const Selectors = {
   getAndroidAppVersion: (state) => getGlobalState(state).androidAppVersion,
   getCurrentTab: (state) => getGlobalState(state).currentTab,
   getSnackbarContent: (state) => getGlobalState(state).snackbarContent,
+  getLoadingContent: state => getGlobalState(state).loadingContent,
+  getMinimalTabs: state => getGlobalState(state).minimalTabs,
+  getShowContent: state => getGlobalState(state).showContent,
+  getSelectMode: state => getGlobalState(state).selectMode,
+  getShowActionBar: state => getGlobalState(state).showActionBar,
 
   // services
   getLastChangedDoc: (state) => getServicesState(state).lastChangedDoc,
+
+  // reports
+  getReportsList: (state) => getReportsState(state).reports,
+  listContains: (state) => (id) => getReportsState(state).reportsById.has(id),
+  getSelectedReports: (state) => getReportsState(state).selected,
 }
 /*
 
@@ -23,12 +34,8 @@ const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 const getFilters = state => getGlobalState(state).filters;
 const getForms = state => getGlobalState(state).forms;
 const getIsAdmin = state => getGlobalState(state).isAdmin;
-const getLoadingContent = state => getGlobalState(state).loadingContent;
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
-const getMinimalTabs = state => getGlobalState(state).minimalTabs;
-const getSelectMode = state => getGlobalState(state).selectMode;
-const getShowActionBar = state => getGlobalState(state).showActionBar;
-const getShowContent = state => getGlobalState(state).showContent;
+
 const getTitle = state => getGlobalState(state).title;
 const getUnreadCount = state => getGlobalState(state).unreadCount;
 const getPrivacyPolicyAccepted = state => getGlobalState(state).privacyPolicyAccepted;

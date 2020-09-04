@@ -31,7 +31,7 @@
             </a>
           </li>
           <li role="presentation" mmAuth="can_view_reports,!can_view_reports_tab">
-            <a role="menuitem" tabindex="-1" routerLink="reports.detail">
+            <a role="menuitem" tabindex="-1" routerLink="reports">
               <i class="fa fa-fw fa-list-alt"></i>
               <span translate>Reports</span>
             </a>
@@ -115,7 +115,7 @@
             </a>
             <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
               <span translate>sync.last_success</span>
-<!--              <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"/>-->
+              <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
             </a>
           </li>
         </ul>

@@ -20,6 +20,8 @@ import {ModalService} from './modals/mm-modal/mm-modal';
 import {ReloadingComponent} from './modals/reloading/reloading.component';
 import { FeedbackService } from './services/feedback.service';
 import { environment } from './environments/environment';
+import { FormatDateService } from './services/format-date.service';
+import { XmlFormsService } from './services/xml-forms.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -67,7 +69,7 @@ export class AppComponent {
   constructor (
     private dbSyncService:DBSyncService,
     private store: Store,
-    private translate: TranslateService,
+    private translateService: TranslateService,
     private translationLoaderService: TranslationLoaderService,
     private sessionService: SessionService,
     private authService: AuthService,
@@ -78,6 +80,8 @@ export class AppComponent {
     private modalService: ModalService,
     private router:Router,
     private feedbackService:FeedbackService,
+    private formatDateService:FormatDateService,
+    private xmlFormsService:XmlFormsService,
   ) {
     combineLatest(
       store.pipe(select(Selectors.getReplicationStatus)),
@@ -96,11 +100,12 @@ export class AppComponent {
 
     this.globalActions = new GlobalActions(store);
     translationLoaderService.getLocale().then(locale => {
-      translate.setDefaultLang(locale);
-      translate.use(locale);
+      translateService.setDefaultLang(locale);
+      translateService.use(locale);
     });
 
     moment.locale(['en']);
+    this.formatDateService.init();
 
     this.adminUrl = this.locationService.adminPath;
 
@@ -164,7 +169,7 @@ export class AppComponent {
         });
     };
 
-    this.changesService.register({
+    this.changesService.subscribe({
       key: 'branding-icon',
       filter: change => change.id === 'branding',
       callback: () => this.setAppTitle(),
@@ -181,7 +186,7 @@ export class AppComponent {
       });
     }
 
-    this.changesService.register({
+    this.changesService.subscribe({
       key: 'inbox-ddoc',
       filter: (change) => {
         return (
@@ -202,7 +207,7 @@ export class AppComponent {
     });
 
     const userCtx = this.sessionService.userCtx();
-    this.changesService.register({
+    this.changesService.subscribe({
       key: 'inbox-user-context',
       filter: (change) => {
         return (
@@ -216,13 +221,13 @@ export class AppComponent {
       },
     });
 
-    this.changesService.register({
+    this.changesService.subscribe({
       key: 'inbox-translations',
       filter: change => this.translationLoaderService.test(change.id),
-      callback: change => this.translate.reloadLang(this.translationLoaderService.getCode(change.id)),
+      callback: change => this.translateService.reloadLang(this.translationLoaderService.getCode(change.id)),
     });
 
-    this.changesService.register({
+    this.changesService.subscribe({
       key: 'branding-icon',
       filter: change => change.id === 'branding',
       callback: () => this.setAppTitle(),
@@ -264,6 +269,54 @@ export class AppComponent {
       }
       this.globalActions.updateReplicationStatus(statusUpdates);
     });
+
+    const initForms = () => {
+      return $translate.onReady()
+        .then(() => JsonForms())
+        .then(function(jsonForms) {
+          const jsonFormSummaries = jsonForms.map(function(jsonForm) {
+            return {
+              code: jsonForm.code,
+              title: translateTitle(jsonForm.translation_key, jsonForm.name),
+              icon: jsonForm.icon,
+              subjectKey: jsonForm.subject_key
+            };
+          });
+          XmlForms.listen(
+            'FormsFilter',
+            { contactForms: false, ignoreContext: true },
+            function(err, xForms) {
+              if (err) {
+                return $log.error('Error fetching form definitions', err);
+              }
+              const xFormSummaries = xForms.map(function(xForm) {
+                return {
+                  code: xForm.internalId,
+                  title: translateTitle(xForm.translation_key, xForm.title),
+                  icon: xForm.icon,
+                  subjectKey: xForm.subject_key
+                };
+              });
+              const forms = xFormSummaries.concat(jsonFormSummaries);
+              ctrl.setForms(forms);
+            }
+          );
+          // get the forms for the Add Report menu
+          XmlForms.listen('AddReportMenu', { contactForms: false }, function(err, xForms) {
+            if (err) {
+              return $log.error('Error fetching form definitions', err);
+            }
+            ctrl.nonContactForms = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                icon: xForm.icon,
+                title: translateTitle(xForm.translation_key, xForm.title),
+              };
+            });
+          });
+        })
+        .catch(err => $log.error('Failed to retrieve forms', err));
+    };
 
   }
 
@@ -497,53 +550,7 @@ export class AppComponent {
     };
 
     // get the forms for the forms filter
-    const initForms = () => {
-      return $translate.onReady()
-        .then(() => JsonForms())
-        .then(function(jsonForms) {
-          const jsonFormSummaries = jsonForms.map(function(jsonForm) {
-            return {
-              code: jsonForm.code,
-              title: translateTitle(jsonForm.translation_key, jsonForm.name),
-              icon: jsonForm.icon,
-              subjectKey: jsonForm.subject_key
-            };
-          });
-          XmlForms.listen(
-            'FormsFilter',
-            { contactForms: false, ignoreContext: true },
-            function(err, xForms) {
-              if (err) {
-                return $log.error('Error fetching form definitions', err);
-              }
-              const xFormSummaries = xForms.map(function(xForm) {
-                return {
-                  code: xForm.internalId,
-                  title: translateTitle(xForm.translation_key, xForm.title),
-                  icon: xForm.icon,
-                  subjectKey: xForm.subject_key
-                };
-              });
-              const forms = xFormSummaries.concat(jsonFormSummaries);
-              ctrl.setForms(forms);
-            }
-          );
-          // get the forms for the Add Report menu
-          XmlForms.listen('AddReportMenu', { contactForms: false }, function(err, xForms) {
-            if (err) {
-              return $log.error('Error fetching form definitions', err);
-            }
-            ctrl.nonContactForms = xForms.map(function(xForm) {
-              return {
-                code: xForm.internalId,
-                icon: xForm.icon,
-                title: translateTitle(xForm.translation_key, xForm.title),
-              };
-            });
-          });
-        })
-        .catch(err => $log.error('Failed to retrieve forms', err));
-    };
+
 
     moment.locale(['en']);
 

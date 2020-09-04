@@ -31,7 +31,7 @@ export class SessionService {
     return this.http
       .delete('/_session')
       .toPromise()
-      .catch(function() {
+      .catch(() => {
         // Set cookie to force login before using app
         this.cookieService.put('login', 'force', { path: '/' });
       })

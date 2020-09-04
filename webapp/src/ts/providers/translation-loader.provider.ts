@@ -18,7 +18,7 @@ export class TranslationLoaderProvider implements TranslateLoader {
         const values = Object.assign(doc.generic || {}, doc.custom || {});
         return translationUtils.loadTranslations(values);
       })
-      .catch(function(err) {
+      .catch((err) => {
         if (err.status !== 404) {
           throw err;
         }

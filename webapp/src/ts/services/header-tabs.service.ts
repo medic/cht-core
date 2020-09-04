@@ -28,7 +28,7 @@ export class HeaderTabsService {
     },
     {
       name: 'reports',
-      route: 'reports.detail',
+      route: 'reports',
       defaultIcon: 'fa-list-alt',
       translation: 'Reports',
       permissions: ['can_view_reports', 'can_view_reports_tab'],
@@ -36,6 +36,8 @@ export class HeaderTabsService {
       icon: undefined,
       resourceIcon: undefined,
     },
+
+
     {
       name:'contacts',
       route:'contacts.detail',
