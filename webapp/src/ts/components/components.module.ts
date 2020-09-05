@@ -9,12 +9,15 @@ import { PipesModule } from '../pipes/pipes.module';
 import { DirectivesModule } from '../directives/directives.module';
 import { SnackbarComponent } from './snackbar/snackbar.component';
 import {ContentRowListItemComponent} from './content-row-list-item/content-row-list-item.component';
+import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from './status-icons/status-icons.template';
 
 @NgModule({
   declarations: [
     HeaderComponent,
     SnackbarComponent,
     ContentRowListItemComponent,
+    ReportVerifyValidIconComponent,
+    ReportVerifyInvalidIconComponent,
   ],
   imports: [
     CommonModule,
@@ -28,6 +31,8 @@ import {ContentRowListItemComponent} from './content-row-list-item/content-row-l
     HeaderComponent,
     SnackbarComponent,
     ContentRowListItemComponent,
+    ReportVerifyValidIconComponent,
+    ReportVerifyInvalidIconComponent,
   ]
 })
 export class ComponentsModule { }

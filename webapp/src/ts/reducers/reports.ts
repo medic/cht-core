@@ -5,7 +5,7 @@ import { cloneDate } from 'ngx-bootstrap/chronos/create/clone';
 
 const initialState = {
   reports: [],
-  reportsById: new Map(),
+  reportsById: new Set(),
   selected: [],
   verifyingReport: false,
 };
@@ -17,7 +17,7 @@ const _removeReport = (reports, reportsById, report) => {
   }
 
   const idx = reports.findIndex(r => r._id === report._id);
-  reports.splice(1, idx);
+  reports.splice(idx, 1);
   reportsById.delete(report._id);
 }
 
@@ -28,12 +28,12 @@ const _insertReport = (reports, reportsById, report) => {
 
   const idx = _.sortedIndexBy(reports, report, r => -r.reported_date);
   reports.splice(idx, 0, report);
-  reportsById.set(report._id);
+  reportsById.add(report._id);
 }
 
 const updateReports = (state, newReports) => {
   const reports = [...state.reports];
-  const reportsById = new Map(state.reportsById);
+  const reportsById = new Set(state.reportsById);
 
   newReports.forEach(report => {
     _removeReport(reports, reportsById, report);
@@ -45,7 +45,7 @@ const updateReports = (state, newReports) => {
 
 const removeReport = (state, report) => {
   const reports = [ ...state.reports];
-  const reportsById = new Map(state.reportsById);
+  const reportsById = new Set(state.reportsById);
 
   _removeReport(reports, reportsById, report);
   return { ...state, reports, reportsById };
