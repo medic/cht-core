@@ -9,6 +9,7 @@ import {AboutComponent} from './about/about.component';
 import {ErrorComponent} from './error/error.component';
 import {AnalyticsComponent} from './analytics/analytics.component';
 import {ReportsComponent} from './reports/reports.component';
+import {ReportsContentComponent} from './reports/reports-content.component';
 import {ComponentsModule} from '../components/components.module';
 
 @NgModule({
@@ -17,6 +18,7 @@ import {ComponentsModule} from '../components/components.module';
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
+    ReportsContentComponent,
   ],
   imports: [
     CommonModule,
@@ -30,6 +32,7 @@ import {ComponentsModule} from '../components/components.module';
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
+    ReportsContentComponent,
   ]
 })
 export class ModulesModule { }

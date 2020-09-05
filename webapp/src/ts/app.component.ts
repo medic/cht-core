@@ -93,15 +93,18 @@ export class AppComponent {
       store.pipe(select(Selectors.getReplicationStatus)),
       store.pipe(select(Selectors.getAndroidAppVersion)),
       store.pipe(select(Selectors.getCurrentTab)),
+      store.pipe(select(Selectors.getMinimalTabs)),
     )
       .subscribe(([
         replicationStatus,
         androidAppVersion,
-        currentTab
+        currentTab,
+        minimalTabs,
       ]) => {
         this.replicationStatus = replicationStatus;
         this.androidAppVersion = androidAppVersion;
         this.currentTab = currentTab;
+        this.minimalTabs = minimalTabs;
       });
 
     this.globalActions = new GlobalActions(store);

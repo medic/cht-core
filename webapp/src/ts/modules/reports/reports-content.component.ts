@@ -1,4 +1,104 @@
-const _ = require('lodash/core');
+import { Component, OnInit } from '@angular/core';
+import { ChangesService } from '../../services/changes.service';
+import { combineLatest, Subscription } from 'rxjs';
+import {Selectors} from '../../selectors';
+import {GlobalActions} from '../../actions/global';
+import {ReportsActions} from '../../actions/reports';
+import { select, Store } from '@ngrx/store';
+import * as _ from 'lodash-es';
+
+@Component({
+  templateUrl: './reports-content.component.html'
+})
+export class ReportsContentComponent implements OnInit {
+  private subscription: Subscription = new Subscription();
+  private globalActions;
+  private reportsActions;
+  forms;
+  loadingContent;
+  selectedReports;
+  selectMode = false; // todo
+
+  validChecks = { }; // todo
+  summaries = { }; // todo
+
+
+  constructor(
+    private changesService:ChangesService,
+    private store:Store,
+  ) {
+    const subscription = combineLatest(
+      this.store.pipe(select(Selectors.getSelectedReports)),
+      this.store.pipe(select(Selectors.getForms)),
+      this.store.pipe(select(Selectors.getLoadingContent)),
+    ).subscribe(([
+      selectedReports,
+      forms,
+      loadingContent,
+    ]) => {
+      this.selectedReports = selectedReports;
+      this.loadingContent = loadingContent;
+      this.forms = forms;
+    });
+    this.subscription.add(subscription);
+
+    this.globalActions = new GlobalActions(store);
+    this.reportsActions = new ReportsActions(store);
+  }
+
+  ngOnInit() {
+    const subscription = this.changesService.subscribe({
+      key: 'reports-content',
+      filter: (change) => {
+        return this.selectedReports &&
+          this.selectedReports.length &&
+          _.some(this.selectedReports, (item) => item._id === change.id);
+      },
+      callback: function(change) {
+        if (change.deleted) {
+          // everything here is todo
+          if (this.selectMode) {
+            //this.removeSelectedReport(change.id); todo
+          } else {
+            //this.unsetSelected();
+            //$state.go($state.current.name, { id: null });
+          }
+        } else {
+          // everything here is todo
+          const selectedReports = this.selectedReports;
+          /*ctrl.selectReport(change.id, { silent: true })
+            .then(function() {
+              if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
+                (change.doc && ('oldVerified' in selectedReports[0].formatted &&
+                  selectedReports[0].formatted.oldVerified !== change.doc.verified))) {
+                ctrl.setSelectedReports(selectedReports);
+                $timeout(function() {
+                  ctrl.setFirstSelectedReportFormattedProperty({ verified: change.doc.verified });
+                });
+              }
+            });*/
+        }
+      }
+    });
+    this.subscription.add(subscription);
+  }
+
+  trackByFn(index, item) {
+    return item._id;
+  }
+
+  toggleExpand(report) {
+
+  }
+
+  deselect(item, event) {
+
+  }
+
+
+}
+
+/*const _ = require('lodash/core');
 
 (function () {
 
@@ -128,39 +228,7 @@ const _ = require('lodash/core');
         }).catch(() => {}); // dismissed
       };
 
-      const changeListener = Changes({
-        key: 'reports-content',
-        filter: function(change) {
-          return ctrl.selectedReports &&
-            ctrl.selectedReports.length &&
-            _.some(ctrl.selectedReports, function(item) {
-              return item._id === change.id;
-            });
-        },
-        callback: function(change) {
-          if (change.deleted) {
-            if (ctrl.selectMode) {
-              ctrl.removeSelectedReport(change.id);
-            } else {
-              ctrl.unsetSelected();
-              $state.go($state.current.name, { id: null });
-            }
-          } else {
-            const selectedReports = ctrl.selectedReports;
-            ctrl.selectReport(change.id, { silent: true })
-              .then(function() {
-                if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
-                   (change.doc && ('oldVerified' in selectedReports[0].formatted &&
-                    selectedReports[0].formatted.oldVerified !== change.doc.verified))) {
-                  ctrl.setSelectedReports(selectedReports);
-                  $timeout(function() {
-                    ctrl.setFirstSelectedReportFormattedProperty({ verified: change.doc.verified });
-                  });
-                }
-              });
-          }
-        }
-      });
+
 
       $scope.$on('$destroy', function() {
         unsubscribe();
@@ -169,4 +237,4 @@ const _ = require('lodash/core');
     }
   );
 
-}());
+}());*/
