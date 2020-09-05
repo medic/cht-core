@@ -16,10 +16,15 @@ import {
   TaskDueDatePipe,
   WeeksPregnantPipe
 } from './date.pipe';
+import {
+  ClinicPipe, LineagePipe, SummaryPipe, TitlePipe
+} from './message.pipe'
 
 @NgModule({
   declarations: [
+    ClinicPipe,
     HeaderLogoPipe,
+    LineagePipe,
     PartnerImagePipe,
     ResourceIconPipe,
     AgePipe,
@@ -32,14 +37,18 @@ import {
     SimpleDatePipe,
     SimpleDateTimePipe,
     StatePipe,
+    SummaryPipe,
     TaskDueDatePipe,
+    TitlePipe,
     WeeksPregnantPipe,
   ],
   imports: [
     CommonModule,
   ],
   exports: [
+    ClinicPipe,
     HeaderLogoPipe,
+    LineagePipe,
     PartnerImagePipe,
     ResourceIconPipe,
     AgePipe,
@@ -52,7 +61,9 @@ import {
     SimpleDatePipe,
     SimpleDateTimePipe,
     StatePipe,
+    SummaryPipe,
     TaskDueDatePipe,
+    TitlePipe,
     WeeksPregnantPipe,
   ]
 })

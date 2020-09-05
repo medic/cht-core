@@ -44,7 +44,7 @@
       <p [innerHTML]="dob | age:dod"></p>
       <span *ngIf="muted && displayMuted" translate>contact.muted</span>
       <div *ngIf="simprintsTier" class="simprints-stars tier-{{simprintsTier}}"></div>
-      <!--<div *ngIf="lineage && lineage.length" class="detail" [innerHTML]="lineage | lineage"></div>-->
+      <div *ngIf="lineage && lineage.length" class="detail" [innerHTML]="lineage | lineage"></div>
       <div class="warning">{{warning}}</div>
     </div>
   </a>

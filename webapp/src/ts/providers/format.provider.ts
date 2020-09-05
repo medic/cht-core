@@ -1,10 +1,16 @@
-const _ = require('lodash/core');
+import { Injectable } from '@angular/core';
+import * as _ from 'lodash-es';
+import { TranslateService } from '@ngx-translate/core';
 
-(function () {
+@Injectable({
+  providedIn: 'root'
+})
+export class FormatProvider {
+  constructor(
+    private translateService:TranslateService
+  ) {}
 
-  'use strict';
-
-  const formatEntity = function(entity, $state) {
+  private formatEntity(entity) {
     if (!entity) {
       return;
     }
@@ -14,43 +20,46 @@ const _ = require('lodash/core');
     let part = entity.name || (entity.contact && entity.contact.phone);
     if (part) {
       part = _.escape(part);
-      if (entity._id && $state) {
-        const url = $state.href('contacts.detail', { id: entity._id });
+      if (entity._id) {
+        const url = `/contacts/${entity._id}`;
         part = '<a href="' + url + '">' + part + '</a>';
       }
       return part;
     }
-  };
+  }
 
-  exports.lineage = function(entity, $state) {
+  lineage(entity) {
     let parts;
     if (_.isArray(entity)) {
-      parts = entity.map(function(i) {
-        return formatEntity(i, $state);
+      parts = entity.map((i) => {
+        return this.formatEntity(i);
       });
     } else {
       parts = [];
       while (entity) {
-        parts.push(formatEntity(entity, $state));
+        parts.push(this.formatEntity(entity));
         entity = entity.parent;
       }
     }
-    const items = _.compact(parts).map(function(part) {
+    const items = _.compact(parts).map((part) => {
       return '<li>' + part + '</li>';
     });
     return '<ol class="horizontal lineage">' + items.join('') + '</ol>';
-  };
+  }
 
-  // Deprecated, use lineage filter instead.
-  exports.clinic = exports.lineage;
+  // @deprecated
+  // use lineage filter instead.
+  clinic(entity) {
+    return this.lineage(entity);
+  }
 
-  exports.sender = function(options, $translate) {
+  sender(options) {
     const parts = [];
     if (options.name) {
       parts.push('<span class="name">' + _.escape(options.name) + '</span>');
     }
     if (options.muted) {
-      parts.push('<span class="muted">' + _.escape($translate.instant('contact.muted')) + '</span>');
+      parts.push('<span class="muted">' + _.escape(this.translateService.instant('contact.muted')) + '</span>');
     }
     if (options.phone) {
       parts.push('<span>' + _.escape(options.phone) + '</span>');
@@ -61,5 +70,4 @@ const _ = require('lodash/core');
     }
     return '<span class="sender">' + parts.join('') + '</span>';
   };
-
-}());
+}
