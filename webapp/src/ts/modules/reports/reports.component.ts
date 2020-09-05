@@ -112,9 +112,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
-      const statusIcon = (report.valid && report.verified) ?
-                         'report-verify-valid-icon.html' : 'report-verify-invalid-icon.html';
-      // report.statusIcon = $templateCache.get('templates/partials/svg-icons/'+statusIcon); todo
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
 
