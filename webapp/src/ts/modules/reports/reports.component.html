@@ -40,7 +40,7 @@
       </div>
       <ul class="unfiltered" *ngIf="(!loading || appending) && !filtered">
         <mm-content-row
-          *ngFor="let report of reportsList"
+          *ngFor="let report of reportsList; trackBy: listTrackBy"
           [id]="report._id"
           route="reports"
           [icon]="report.icon"

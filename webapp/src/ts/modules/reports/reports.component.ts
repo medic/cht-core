@@ -22,7 +22,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   private globalActions;
   private reportsActions;
-  private ServicesActions;
+  private servicesActions;
 
   private listContains;
 
@@ -65,7 +65,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
-    this.ServicesActions = new ServicesActions(store);
+    this.servicesActions = new ServicesActions(store);
   }
 
   ngOnInit() {
@@ -115,8 +115,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
 
+
       return report;
     });
+  }
+
+  listTrackBy(index, report) {
+    return report._id + report._rev;
   }
 
   private query(opts) {
@@ -445,22 +450,6 @@ angular
     };
 
     setActionBarData();
-
-    const changeListener = Changes({
-      key: 'reports-list',
-      callback: function(change) {
-        if (change.deleted) {
-          liveList.remove(change.id);
-          ctrl.hasReports = liveList.count() > 0;
-          setActionBarData();
-        } else {
-          query({ silent: true, limit: liveList.count() });
-        }
-      },
-      filter: function(change) {
-        return change.doc && change.doc.form || liveList.contains(change.id);
-      },
-    });
 
     $scope.$on('$destroy', function() {
       unsubscribe();
