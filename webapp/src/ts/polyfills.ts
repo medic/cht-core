@@ -81,3 +81,7 @@ declare global {
   env: { DEBUG: undefined },
   browser: true,
 }
+
+interface jQuery {
+  multiDropdown(): any;
+}

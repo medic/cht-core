@@ -6,10 +6,12 @@ import { createSingleValueAction } from './actionUtils';
 export const Actions = {
   addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'selected'),
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'id'),
+  setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
   resetReportsList: createAction('RESET_REPORTS_LIST'),
+
 };
 
 export class ReportsActions {
@@ -28,6 +30,10 @@ export class ReportsActions {
      */
   }
 
+  setSelectedReports(selected) {
+    return this.store.dispatch(Actions.setSelectedReports(selected));
+  }
+
   updateReportsList(reports) {
     return this.store.dispatch(Actions.updateReportsList(reports));
   }
@@ -39,6 +45,7 @@ export class ReportsActions {
   resetReportsList() {
     return this.store.dispatch(Actions.resetReportsList());
   }
+
 }
 /*
 

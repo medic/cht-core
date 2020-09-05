@@ -63,6 +63,17 @@ const _globalReducer = createReducer(
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
+  on(Actions.clearFilters, (state) => {
+    return { ...state, filters: {} };
+  }),
+  on(Actions.setFilters, (state, { payload: { filters } }) => {
+    return { ...state, filters };
+  }),
+  on(Actions.setFilter, (state, { payload: { filter } }) => {
+    return Object.assign({}, state, {
+      filters: Object.assign({}, state.filters, filter)
+    });
+  }),
 );
 
 

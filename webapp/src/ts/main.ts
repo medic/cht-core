@@ -12,9 +12,10 @@ window.$ = window.jQuery = require('jquery');
 
 //import * as Select2 from '../../node_modules/select2/dist/js/select2.full';
 //require('bootstrap');
-//require('./bootstrap-multidropdown');
+
 //require('bootstrap-daterangepicker');
 //require('nvd3');
+require('../js/bootstrap-multidropdown');
 
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';

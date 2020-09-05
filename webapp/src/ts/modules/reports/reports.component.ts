@@ -11,6 +11,7 @@ import { SearchService } from '../../services/search.service';
 import {Selectors} from '../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
+import { SearchFiltersService } from '../../services/search-filters.service';
 
 const PAGE_SIZE = 50;
 
@@ -38,28 +39,39 @@ export class ReportsComponent implements OnInit, OnDestroy {
   hasReports;
   selectMode;
   filtered;
+  verifyingReport;
+  showContent;
+
+  enketoEdited = false; //todo
 
   constructor(
     private store:Store,
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
+    private searchFiltersService:SearchFiltersService,
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getReportsList)),
       this.store.pipe(select(Selectors.getSelectedReports)),
       this.store.pipe(select(Selectors.listContains)),
       this.store.pipe(select(Selectors.getForms)),
+      this.store.pipe(select(Selectors.getFilters)),
+      this.store.pipe(select(Selectors.getShowContent))
     ).subscribe(([
       reportsList,
       selectedReports,
       listContains,
       forms,
+      filters,
+      showContent,
     ]) => {
       this.reportsList = reportsList;
       this.selectedReports = selectedReports;
       this.listContains = listContains;
       this.forms = forms;
+      this.filters = filters;
+      this.showContent = showContent;
     });
     this.subscription.add(subscription);
 
@@ -87,6 +99,15 @@ export class ReportsComponent implements OnInit, OnDestroy {
       },
     });
     this.subscription.add(subscription);
+
+    this.globalActions.setFilters({
+      // search: $stateParams.query, todo
+      search: {}
+    });
+    this.reportsActions.setSelectedReports([]);
+    this.appending = false;
+    this.error = false;
+    this.verifyingReport = false;
   }
 
   ngOnDestroy() {
@@ -191,9 +212,46 @@ export class ReportsComponent implements OnInit, OnDestroy {
   };
 
   search(force = false) {
-    // todo filters
+    // clears report selection for any text search or filter selection
+    // does not clear selection when someone is editing a form
+    if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
+      //$state.go('reports.detail', { id: null }, { notify: false });
+      //ctrl.clearSelection();
+    }
+    if (!force && isMobile() && this.showContent) {
+      // leave content shown
+      return;
+    }
+    this.loading = true;
+    if (
+      this.filters.search ||
+      (this.filters.forms &&
+        this.filters.forms.selected &&
+        this.filters.forms.selected.length) ||
+      (this.filters.facilities &&
+        this.filters.facilities.selected &&
+        this.filters.facilities.selected.length) ||
+      (this.filters.date &&
+        (this.filters.date.to || this.filters.date.from)) ||
+      (this.filters.valid === true || this.filters.valid === false) ||
+      (this.filters.verified && this.filters.verified.length)
+    ) {
+      this.filtered = true;
+    } else {
+      this.filtered = false;
+    }
 
     return this.query(force);
+  }
+
+  resetFilterModel() {
+    if (this.selectMode && this.selectedReports && this.selectedReports.length) {
+      // can't filter when in select mode
+      return;
+    }
+    this.globalActions.clearFilters();
+    this.searchFiltersService.reset();
+    this.search();
   }
 }
 /*
@@ -247,15 +305,10 @@ angular
     // where the summary is the data required for the collapsed view,
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
-    ctrl.setSelectedReports([]);
-    ctrl.appending = false;
-    ctrl.error = false;
-    ctrl.setFilters({
-      search: $stateParams.query,
-    });
-    ctrl.verifyingReport = false;
 
-    let liveList = LiveList.reports;
+
+
+
 
     const updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {
@@ -385,15 +438,7 @@ angular
       Tour.start($stateParams.tour);
     }
 
-    ctrl.resetFilterModel = function() {
-      if (ctrl.selectMode && ctrl.selectedReports && ctrl.selectedReports.length) {
-        // can't filter when in select mode
-        return;
-      }
-      ctrl.clearFilters();
-      SearchFilters.reset();
-      ctrl.search();
-    };
+
 
     ctrl.search();
 

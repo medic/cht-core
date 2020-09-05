@@ -1,13 +1,13 @@
 import { Actions } from '../actions/reports';
 import { createReducer, on } from '@ngrx/store';
 import * as _ from 'lodash-es';
-import { cloneDate } from 'ngx-bootstrap/chronos/create/clone';
 
 const initialState = {
   reports: [],
   reportsById: new Set(),
   selected: [],
   verifyingReport: false,
+  filters: {},
 };
 
 
