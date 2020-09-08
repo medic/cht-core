@@ -199,7 +199,9 @@ describe('Server Checks service', () => {
         },
         exit: () => 0
       };
-      sinon.stub(request, 'get').callsArgWith(1, 'error', null, {all_nodes: [ 'nonode@nohost' ] });
+      sinon.stub(request, 'get')
+        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
+        .onCall(1).callsArgWith(1, null, null, { version: '2' });
       return service.check('something').catch(err => {
         chai.assert.isTrue(err.startsWith('Environment variable \'COUCH_NODE_NAME\' set to'));
       });
