@@ -166,9 +166,7 @@ describe('Server Checks service', () => {
         exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-      sinon.stub(request, 'get')
-        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
-        .onCall(1).callsArgWith(1, null, null, { version: '2' });
+      sinon.stub(request, 'get').callsArgWith(1, 'error');
       return service.check('something').catch(err => {
         chai.expect(err).to.equal('error');
       });

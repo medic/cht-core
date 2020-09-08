@@ -83,6 +83,9 @@ const couchNodeNamesMatch = (serverUrl) => {
 
   return new Promise((resolve, reject) => {
     request.get({ url: membershipUrl, json: true }, (err, response, body) => {
+      if (err) {
+        return reject(err);
+      }
       if (checkNodeName(envNodeName, body)) {
         console.log(`Environment variable "COUCH_NODE_NAME" matches server "${envNodeName}"`);
         return resolve();
