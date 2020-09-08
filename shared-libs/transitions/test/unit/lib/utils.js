@@ -181,6 +181,26 @@ describe('utils util', () => {
         ]);
       });
     });
+
+    it('should return unique docs', () => {
+      sinon.stub(config, 'getAll').returns({ config: 'all' });
+      const docs = [
+        { _id: 'a', fields: { patient_id: 'a', patient_uuid: 'uuid' } },
+        { _id: 'b', fields: { patient_id: 'b', patient_uuid: 'uuidb' } },
+        { _id: 'a', fields: { patient_id: 'a', patient_uuid: 'uuid' } },
+        { _id: 'b', fields: { patient_id: 'b', patient_uuid: 'uuidb' } },
+        { _id: 'c', fields: { patient_id: 'c', patient_uuid: 'uuidc' } },
+      ];
+      db.medic.query.resolves({ rows: docs.map(doc => ({ doc })) });
+
+      return utils.getReportsBySubject({ id: 'a'}).then((actual) => {
+        actual.should.deep.equal([
+          { _id: 'a', fields: { patient_id: 'a', patient_uuid: 'uuid' } },
+          { _id: 'b', fields: { patient_id: 'b', patient_uuid: 'uuidb' } },
+          { _id: 'c', fields: { patient_id: 'c', patient_uuid: 'uuidc' } },
+        ]);
+      });
+    });
   });
 
   describe('setTasksStates', () => {
