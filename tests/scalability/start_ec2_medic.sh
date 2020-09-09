@@ -63,8 +63,7 @@ echo installing pyxform
 sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic -q
 
 echo installing medic-conf
-# npm install medic-conf TEMP
-npm install https://github.com/medic/medic-conf.git#master
+npm install medic-conf 
 
 sleep 10
 # echo Uploading settings and seeding data
@@ -119,9 +118,7 @@ pre_update_seqs+=($(curl $MEDIC_CONF_URL/medic/_design/$ddoc/_info -s -k | jq .v
 done
 
 echo staging updates
-#TEMP curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
-curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"3.7.0"}}'
-
+curl $MEDIC_CONF_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
 
 staged=$(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 echo $(curl $MEDIC_CONF_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)

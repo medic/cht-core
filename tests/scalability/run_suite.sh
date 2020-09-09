@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo Cloning cht-core to /cht-core
-# git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
-git clone --single-branch --branch scalability-automation https://github.com/medic/cht-core.git;
+git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
+
 cd cht-core/tests/scalability
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
