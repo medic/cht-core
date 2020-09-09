@@ -4,7 +4,7 @@ echo Cloning cht-core to /cht-core
 git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
 
 cd cht-core/tests/scalability
-export NODE_TLS_REJECT_UNAUTHORIZED=0
+export NODE_TLS_REJECT_UNAUTHORIZED=0 
 
 sudo apt-get update
 
