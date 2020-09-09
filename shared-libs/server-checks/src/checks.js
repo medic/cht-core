@@ -49,7 +49,7 @@ const envVarsCheck = () => {
 const couchDbNoAdminPartyModeCheck = () => {
   const noAuthUrl = getNoAuthURL();
 
-  // require either 'http' or 'https' by removing the ";" from noAuthUrl.protocol
+  // require either 'http' or 'https' by removing the ":" from noAuthUrl.protocol
   const net = require(noAuthUrl.protocol.replace(':', ''));
 
   return new Promise((resolve, reject) => {
