@@ -40,6 +40,7 @@ const waitForApi = () =>
     waitLoop();
   });
 
+logger.info('Running server checks…');
 serverChecks
   .check(db.serverUrl)
   .then(waitForApi)

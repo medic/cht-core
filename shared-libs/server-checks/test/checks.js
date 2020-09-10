@@ -144,12 +144,14 @@ describe('Server Checks service', () => {
         versions: {node: '9.11.1'},
         env: {
           COUCH_URL: 'http://admin:pass@localhost:5984',
-          COUCH_NODE_NAME: 'something'
+          COUCH_NODE_NAME: 'nonode@nohost'
         },
         exit: () => 0
       };
       sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
-      sinon.stub(request, 'get').callsArgWith(1, null, null, {version: '2'});
+      sinon.stub(request, 'get')
+        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
+        .onCall(1).callsArgWith(1, null, null, { version: '2' });
       return service.check('something');
     });
 
@@ -159,7 +161,7 @@ describe('Server Checks service', () => {
         versions: {node: '9.11.1'},
         env: {
           COUCH_URL: 'http://admin:pass@localhost:5984',
-          COUCH_NODE_NAME: 'something'
+          COUCH_NODE_NAME: 'nonode@nohost'
         },
         exit: () => 0
       };
@@ -185,6 +187,45 @@ describe('Server Checks service', () => {
       });
     });
 
+  });
+
+  describe('Validate env node names', () => {
+    it('invalid node name is caught', function() {
+      process = {
+        versions: {node: '9.11.1'},
+        env: {
+          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_NODE_NAME: 'bad_node_name'
+        },
+        exit: () => 0
+      };
+      sinon.stub(request, 'get')
+        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
+        .onCall(1).callsArgWith(1, null, null, { version: '2' });
+      return service.check('something').catch(err => {
+        chai.assert.isTrue(err.startsWith('Environment variable \'COUCH_NODE_NAME\' set to'));
+      });
+    });
+
+    it('valid node name logged', function() {
+      process = {
+        versions: {node: '9.11.1'},
+        env: {
+          COUCH_URL: 'http://admin:pass@localhost:5984',
+          COUCH_NODE_NAME: 'nonode@nohost'
+        },
+        exit: () => 0
+      };
+      sinon.stub(http, 'get').callsArgWith(1, {statusCode: 401});
+      sinon.stub(request, 'get')
+        .onCall(0).callsArgWith(1, null, null, { all_nodes: [ 'nonode@nohost' ], cluster_nodes: [ 'nonode@nohost' ] })
+        .onCall(1).callsArgWith(1, null, null, { version: '2' });
+
+      return service.check('something').then(() => {
+        chai.assert.equal(console.log.callCount, 6);
+        chai.assert.equal(log(4), 'Environment variable "COUCH_NODE_NAME" matches server "nonode@nohost"');
+      });
+    });
   });
 
   describe('getCouchDbVersion', () => {
