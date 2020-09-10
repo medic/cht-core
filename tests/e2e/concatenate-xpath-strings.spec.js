@@ -47,12 +47,12 @@ describe('Concatenate xpath strings', () => {
       )
     ).click();
     helper.waitElementToPresent(
-      element(by.css('#concat #first-name'))
+      element(by.css('#first-name'))
     );
-    element(by.css('#concat #first-name')).sendKeys('Bruce');
+    element(by.css('#first-name')).sendKeys('Bruce');
     helper.waitElementToPresent(
-      element(by.css('#concat #full-name'))
+      element(by.css('#full-name'))
     );
-    expect(element(by.css('#concat #full-name'))).toEqual('Bruce Wayne');
+    expect(element(by.css('#full-name'))).toEqual('Bruce Wayne');
   });
 });
