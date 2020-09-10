@@ -1,13 +1,12 @@
 const helper = require('../helper');
-const photoUpload = require('../page-objects/forms/photo-upload.po');
+const concatenateStrings = require('../page-objects/forms/concatenate-strings.po');
 const common = require('../page-objects/common/common.po');
 const utils = require('../utils');
 const constants = require('../constants');
-const path = require('path');
 
 const userContactDoc = {
   _id: constants.USER_CONTACT_ID,
-  name: 'Jack' + 'Sparrow',
+  name: 'Jack',
   date_of_birth: '',
   phone: '+64274444444',
   alternate_phone: '',
@@ -22,7 +21,7 @@ const userContactDoc = {
 describe('Concatenate xpath strings', () => {
   beforeAll(done => {
     Promise.resolve()
-      .then(() => photoUpload.configureForm(userContactDoc, done))
+      .then(() => concatenateStrings.configureForm(userContactDoc, done))
       .catch(done.fail);
   });
 
@@ -48,19 +47,12 @@ describe('Concatenate xpath strings', () => {
       )
     ).click();
     helper.waitElementToPresent(
-      element(by.css('#photo-upload input[type=file]'))
+      element(by.css('#concat #first-name'))
     );
-    element(by.css('#photo-upload input[type=file]')).sendKeys(
-      path.join(__dirname, '../../../webapp/src/img/simprints.png')
-    );
+    element(by.css('#concat #first-name')).sendKeys('Bruce');
     helper.waitElementToPresent(
-      element(by.css('#photo-upload .file-picker .file-preview img'))
+      element(by.css('#concat #full-name'))
     );
-    //submit
-    photoUpload.submit();
-    helper.waitElementToPresent(element(by.css('div.details')));
-    expect(element(by.css('div.details')).isPresent()).toBeTruthy();
-    helper.waitElementToPresent(element(by.css('.report-image')));
-    expect(element(by.css('.report-image')).isPresent()).toBeTruthy();
+    expect(element(by.css('#concat #full-name'))).toEqual('Bruce Wayne');
   });
 });
