@@ -18,6 +18,8 @@ const userContactDoc = {
   },
 };
 
+// If this test starts failing then we need to document in the release notes that we've removed the deprecated 
+// feature allowing for concatenation of strings
 describe('Concatenate xpath strings', () => {
   beforeAll(done => {
     Promise.resolve()
@@ -47,12 +49,13 @@ describe('Concatenate xpath strings', () => {
       )
     ).click();
     helper.waitElementToPresent(
-      element(by.css('#first-name'))
+      element(by.css('#concat'))
     );
-    element(by.css('#first-name')).sendKeys('Bruce');
-    helper.waitElementToPresent(
-      element(by.css('#full-name'))
-    );
-    expect(element(by.css('#full-name'))).toEqual('Bruce Wayne');
+    let name = element(by.name('/concatenate-strings/inputs/full_name')).getAttribute('value');
+    expect(name).toEqual('John Doe');
+    element(by.name('/concatenate-strings/inputs/first_name')).sendKeys('Bruce');
+    element(by.name('/concatenate-strings/inputs/full_name')).click();
+    name = element(by.name('/concatenate-strings/inputs/full_name')).getAttribute('value');
+    expect(name).toEqual('Bruce Wayne');
   });
 });

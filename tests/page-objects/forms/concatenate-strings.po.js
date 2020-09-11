@@ -7,26 +7,29 @@ const xml = `<?xml version="1.0"?>
 		<h:title>photo-upload</h:title>
 
 		<model>
-			<instance>
-        <concatenate-strings id="concat">
-          <inputs>
-            <first_name id="first-name"/>
-            <full_name id="full-name"/>
-          </inputs>
-        </concatenate-strings>
-			</instance>
+    <instance>
+    <concatenate-strings id="concat">
+      <inputs>
+        <first_name/>
+        <full_name/>
+      </inputs>
+      <meta>
+        <instanceID/>
+      </meta>
+    </concatenate-strings>
+  </instance>
 
-      <bind nodeset="/concatenate-strings/first_name" type="string"/>
-      <bind calculate="if( /concatenate-strings/first_name  = 'Bruce', 'Bruce ' + 'Wayne', 'John' + 'Doe')"
-        nodeset="/concatenate-strings/full_name" type="string"/>
+  <bind nodeset="/concatenate-strings/inputs/first_name" type="string"/>
+  <bind calculate="if( /concatenate-strings/inputs/first_name  = 'Bruce', 'Bruce ' + 'Wayne', 'John ' + 'Doe')"
+    nodeset="/concatenate-strings/inputs/full_name" type="string"/>
 		</model>
 	</h:head>
 
 	<h:body>
-    <input ref="concatenate-strings/first_name">
+    <input ref="/concatenate-strings/inputs/first_name">
       <label>First Name</label>
     </input>
-    <input appearance="hidden" ref="/concatenate-strings/full_name">
+    <input ref="/concatenate-strings/inputs/full_name">
       <label>Full Name</label>
     </input>
 	</h:body>
