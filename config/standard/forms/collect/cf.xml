@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Child Nutrition Followup (CF)</h:title>
     <model>
       <itext>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/cf/id:label">
             <value>Child ID</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <cf delimiter="#" id="cf" prefix="J1!cf!" version="2019-02-06 16-00">
+        <cf id="cf" prefix="J1!cf!" delimiter="#" version="2019-02-06 16-00">
           <id/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
         </cf>
       </instance>
-      <bind constraint="regex(., '[0-9]{5,13}')" nodeset="/cf/id" required="true()" type="int"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/cf/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/cf/id" type="int" required="true()" constraint="regex(., '[0-9]{5,13}')"/>
+      <bind nodeset="/cf/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body>

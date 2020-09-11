@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Postnatal Visit</h:title>
     <model>
@@ -12,7 +12,7 @@
             <value>Mengirimkan laporan kunjungan untuk ID <output value=" /m/id "/></value>
           </text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/m/id:label">
             <value>Patient ID</value>
           </text>
@@ -38,7 +38,7 @@
         </translation>
       </itext>
       <instance>
-        <m delimiter="#" id="m" prefix="J1!m!" version="2018-09-27_07-24">
+        <m id="m" prefix="J1!m!" delimiter="#" version="2018-09-27_07-24">
           <id/>
           <review/>
           <meta tag="hidden">
@@ -46,9 +46,9 @@
           </meta>
         </m>
       </instance>
-      <bind nodeset="/m/id" required="true()" type="string"/>
+      <bind nodeset="/m/id" type="string" required="true()"/>
       <bind nodeset="/m/review" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/m/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/m/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>New Person</h:title>
     <model>
@@ -12,7 +12,7 @@
             <value>Nama orang</value>
           </text>
         </translation>
-        <translation default="true()" lang="English">
+        <translation lang="English" default="true()">
           <text id="/n/n:hint">
             <value>Submitting this form will give you a Medic ID associated to this person</value>
           </text>
@@ -46,15 +46,15 @@
         </translation>
       </itext>
       <instance>
-        <n delimiter="#" id="n" prefix="J1!n!" version="2018-09-27_07-24">
+        <n id="n" prefix="J1!n!" delimiter="#" version="2018-09-27_07-24">
           <n/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
         </n>
       </instance>
-      <bind nodeset="/n/n" required="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/n/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/n/n" type="string" required="true()"/>
+      <bind nodeset="/n/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

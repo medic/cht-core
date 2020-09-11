@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Danger Sign</h:title>
     <model>
@@ -14,7 +14,7 @@
           <text id="/f/review:label">
             <value>Mengirimkan laporan tanda-tanda bahaya untuk ID <output value=" /f/id "/> , dengan catatan berikut: <output value=" /f/n "/></value></text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/f/id:label">
             <value>Patient ID</value>
           </text>
@@ -56,7 +56,7 @@
         </translation>
       </itext>
       <instance>
-        <f delimiter="#" id="f" prefix="J1!f!" version="2018-09-27_07-24">
+        <f id="f" prefix="J1!f!" delimiter="#" version="2018-09-27_07-24">
           <id/>
           <n/>
           <review/>
@@ -65,10 +65,10 @@
           </meta>
         </f>
       </instance>
-      <bind nodeset="/f/id" required="true()" type="string"/>
+      <bind nodeset="/f/id" type="string" required="true()"/>
       <bind nodeset="/f/n" type="string"/>
       <bind nodeset="/f/review" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/f/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/f/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">
