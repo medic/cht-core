@@ -3,7 +3,7 @@
  * generated in our system, and configurations the define mappings, external service location and
  * authentication.
  *
- * See: https://docs.communityhealthtoolkit.org/apps/reference/app-settings/outbound/
+ * See: https://github.com/medic/medic-docs/blob/master/configuration/outbound.md
  *
  * This library deals with the conversion of the record into a REST request, and sending it to its
  * destination. Background management of retries and so on is done in schedules, and the initial

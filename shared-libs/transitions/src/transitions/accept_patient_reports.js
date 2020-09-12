@@ -48,7 +48,7 @@ const getScheduledTasksByType = (registration, type) => {
 
 // find the messages to clear
 const findToClear = (registration, reported_date, config) => {
-  // See: https://docs.communityhealthtoolkit.org/apps/guides/messaging/sms-states/#message-states-in-medic
+  // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic
   // Both scheduled and pending have not yet been either seen by a gateway or
   // delivered, so they are both clearable.
   // Also clear `muted` schedules, as they could be `unmuted` later

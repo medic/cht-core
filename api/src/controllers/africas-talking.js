@@ -5,7 +5,7 @@ const secureSettings = require('@medic/settings');
 
 // Map from Africa's Talking status codes to ours
 // https://build.at-labs.io/docs/sms%2Fnotifications
-// https://docs.communityhealthtoolkit.org/apps/guides/messaging/sms-states/
+// https://github.com/medic/medic-docs/blob/master/user/message-states.md
 const STATUS_CODES = {
   // Sent: The message has successfully been sent by our network.
   Sent: 'forwarded-by-gateway',
