@@ -61,7 +61,7 @@
           </elementProp>
           <stringProp name="SystemSampler.directory">${working_dir}</stringProp>
           <longProp name="SystemSampler.timeout">-1</longProp>
-          <stringProp name="SystemSampler.stderr">./stderr</stringProp>
+          <stringProp name="SystemSampler.stderr">./report/stderr</stringProp>
         </SystemSampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
@@ -126,7 +126,7 @@
             <bytes>true</bytes>
           </value>
         </objProp>
-        <stringProp name="filename">./initial-replication.jtl</stringProp>
+        <stringProp name="filename">./report/initial-replication.jtl</stringProp>
         <boolProp name="ResultCollector.success_only_logging">true</boolProp>
       </ResultCollector>
       <hashTree/>

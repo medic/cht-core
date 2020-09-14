@@ -13,6 +13,7 @@ describe('AndroidApi service', () => {
     registerResponse = sinon.stub();
     module($provide => {
       $provide.value('Session', sinon.stub());
+      $provide.value('Geolocation', { permissionRequestResolved: sinon.stub() });
       $provide.value('Simprints', {
         identifyResponse: identifyResponse,
         registerResponse: registerResponse

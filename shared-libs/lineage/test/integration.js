@@ -307,6 +307,91 @@ const sms_doc = {
     form: 'D'
   }
 };
+const placeWithLinks = {
+  _id: 'placeWithLinks',
+  name: 'place_name',
+  type: 'clinic',
+  contact: { _id: place_contact._id },
+  parent: {
+    _id: place_parent._id,
+    parent: {
+      _id: place_grandparent._id
+    }
+  },
+  linked_docs: {
+    contact_tag_1: report_parent._id,
+    contact_tag_2: { _id: report_contact._id },
+    contact_tag_3: { _id: '404' },
+    report_tag_1: sms_doc._id,
+  },
+};
+const personWithLinks = {
+  _id: 'personWithLinks',
+  name: 'person_name',
+  type: 'person',
+  parent: {
+    _id: placeWithLinks._id,
+    parent: {
+      _id: place_parent._id,
+      parent: {
+        _id: place_grandparent._id
+      }
+    },
+  },
+  linked_docs: {
+    one_tag: { _id: person_with_circular_ids._id },
+    other_tag: report_grandparent._id,
+    no_tag: 'not_found',
+  },
+};
+const reportWithLinks = {
+  _id: 'reportWithLinks',
+  type: 'data_record',
+  form: 'A',
+  contact: {
+    _id: report_contact._id,
+    parent: {
+      _id: report_parent._id,
+      parent: {
+        _id: report_grandparent._id
+      }
+    }
+  },
+  fields: {
+    patient_id: 'something'
+  },
+  linked_docs: {
+    a: { _id: report_grandparent._id },
+    b: report_parent._id,
+    c: { this: 'is an object', that: 'will remain unchanged' },
+  },
+};
+const contactWithStringLinks = {
+  _id: 'contactWithStringLinks',
+  name: 'place_name',
+  type: 'clinic',
+  contact: { _id: place_contact._id },
+  parent: {
+    _id: place_parent._id,
+    parent: {
+      _id: place_grandparent._id
+    }
+  },
+  linked_docs: 'this is a string',
+};
+const contactWithArrayLinks = {
+  _id: 'contactWithArrayLinks',
+  name: 'place_name',
+  type: 'clinic',
+  contact: { _id: place_contact._id },
+  parent: {
+    _id: place_parent._id,
+    parent: {
+      _id: place_grandparent._id
+    }
+  },
+  linked_docs: [{ _id: place_grandparent._id }, 'this is a string', 78979],
+};
 
 const fixtures = [
   child_is_great_grandparent,
@@ -344,7 +429,12 @@ const fixtures = [
   report4,
   stub_contacts,
   stub_parents,
-  sms_doc
+  sms_doc,
+  placeWithLinks,
+  personWithLinks,
+  reportWithLinks,
+  contactWithStringLinks,
+  contactWithArrayLinks,
 ];
 const deleteDocs = ids => {
   return db.allDocs({
@@ -644,6 +734,39 @@ describe('Lineage', function() {
         });
       });
     });
+
+    it('should hydrate linked docs from contacts', () => {
+      return lineage.fetchHydratedDoc(placeWithLinks._id).then(actual => {
+        expect(actual).excludingEvery('_rev').to.deep.equal({
+          _id: placeWithLinks._id,
+          type: placeWithLinks.type,
+          contact: place_contact,
+          name: placeWithLinks.name,
+          parent: {
+            _id: place_parent._id,
+            name: place_parent.name,
+            contact: place_parentContact,
+            parent: {
+              name: place_grandparent.name,
+              _id: place_grandparent._id,
+              contact: place_grandparentContact,
+            }
+          },
+          linked_docs: {
+            contact_tag_1: report_parent,
+            contact_tag_2: report_contact,
+            contact_tag_3: { _id: '404' },
+            report_tag_1: sms_doc,
+          },
+        });
+      });
+    });
+
+    it('should not hydrate linked docs from reports ', () => {
+      return lineage.fetchHydratedDoc(reportWithLinks._id).then(actual => {
+        expect(actual.linked_docs).to.deep.equal(reportWithLinks.linked_docs);
+      });
+    });
   });
 
   describe('hydrateDocs', function() {
@@ -897,6 +1020,144 @@ describe('Lineage', function() {
         });
       });
     });
+
+    it('should hydrate linked docs from contacts, but not from reports', () => {
+      const docs = [
+        cloneDeep(placeWithLinks),
+        cloneDeep(personWithLinks),
+        cloneDeep(reportWithLinks),
+        cloneDeep(contactWithArrayLinks),
+        cloneDeep(contactWithStringLinks),
+      ];
+
+      return lineage.hydrateDocs(docs).then(actual => {
+        expect(actual).excludingEvery('_rev').to.deep.equal([
+          {
+            _id: placeWithLinks._id,
+            type: placeWithLinks.type,
+            contact: place_contact,
+            name: placeWithLinks.name,
+            parent: {
+              _id: place_parent._id,
+              name: place_parent.name,
+              contact: place_parentContact,
+              parent: {
+                name: place_grandparent.name,
+                _id: place_grandparent._id,
+                contact: place_grandparentContact,
+              }
+            },
+            linked_docs: {
+              contact_tag_1: report_parent,
+              contact_tag_2: report_contact,
+              contact_tag_3: { _id: '404' },
+              report_tag_1: sms_doc,
+            },
+          },
+          {
+            _id: personWithLinks._id,
+            name: personWithLinks.name,
+            type: personWithLinks.type,
+            parent: {
+              _id: placeWithLinks._id,
+              type: placeWithLinks.type,
+              contact: place_contact,
+              name: placeWithLinks.name,
+              parent: {
+                _id: place_parent._id,
+                name: place_parent.name,
+                contact: place_parentContact,
+                parent: {
+                  name: place_grandparent.name,
+                  _id: place_grandparent._id,
+                  contact: place_grandparentContact,
+                }
+              },
+              linked_docs: {
+                contact_tag_1: report_parent,
+                contact_tag_2: report_contact,
+                contact_tag_3: { _id: '404' },
+                report_tag_1: sms_doc,
+              },
+            },
+            linked_docs: {
+              one_tag: person_with_circular_ids,
+              other_tag: report_grandparent,
+              no_tag: 'not_found',
+            },
+          },
+          {
+            _id: reportWithLinks._id,
+            form: reportWithLinks.form,
+            type: reportWithLinks.type,
+            fields: reportWithLinks.fields,
+            linked_docs: reportWithLinks.linked_docs, // unchanged for reports!
+            contact: {
+              _id: report_contact._id,
+              name: report_contact.name,
+              type: report_contact.type,
+              reported_date: report_contact.reported_date,
+              parent: {
+                _id: report_parent._id,
+                name: report_parent.name,
+                contact: {
+                  _id: report_parentContact._id,
+                  type: report_parentContact.type,
+                  reported_date: report_parentContact.reported_date,
+                  phone: '+123',
+                  name: report_parentContact.name,
+                },
+                parent: {
+                  _id: report_grandparent._id,
+                  name: report_grandparent.name,
+                  contact: {
+                    _id: report_grandparentContact._id,
+                    type: report_grandparentContact.type,
+                    reported_date: report_grandparentContact.reported_date,
+                    phone: '+456',
+                    name: report_grandparentContact.name,
+                  }
+                }
+              }
+            },
+          },
+          {
+            _id: contactWithArrayLinks._id,
+            type: contactWithArrayLinks.type,
+            contact: place_contact,
+            name: contactWithArrayLinks.name,
+            parent: {
+              _id: place_parent._id,
+              name: place_parent.name,
+              contact: place_parentContact,
+              parent: {
+                name: place_grandparent.name,
+                _id: place_grandparent._id,
+                contact: place_grandparentContact,
+              }
+            },
+            linked_docs: contactWithArrayLinks.linked_docs, // unchanged when it's an array
+          },
+          {
+            _id: contactWithStringLinks._id,
+            type: contactWithStringLinks.type,
+            contact: place_contact,
+            name: contactWithStringLinks.name,
+            parent: {
+              _id: place_parent._id,
+              name: place_parent.name,
+              contact: place_parentContact,
+              parent: {
+                name: place_grandparent.name,
+                _id: place_grandparent._id,
+                contact: place_grandparentContact,
+              }
+            },
+            linked_docs: contactWithStringLinks.linked_docs, // unchanged when it's a string
+          },
+        ]);
+      });
+    });
   });
 
   describe('fetchHydratedDocs', () => {
@@ -1053,6 +1314,104 @@ describe('Lineage', function() {
           }
         });
       });
+    });
+
+    it('should hydrate linked docs for contacts, but not for reports', () => {
+      return lineage
+        .fetchHydratedDocs([ personWithLinks._id, placeWithLinks._id, reportWithLinks._id ])
+        .then(actual => {
+          expect(actual).excludingEvery('_rev').to.deep.equal([
+            {
+              _id: personWithLinks._id,
+              name: personWithLinks.name,
+              type: personWithLinks.type,
+              parent: {
+                _id: placeWithLinks._id,
+                type: placeWithLinks.type,
+                contact: place_contact,
+                name: placeWithLinks.name,
+                parent: {
+                  _id: place_parent._id,
+                  name: place_parent.name,
+                  contact: place_parentContact,
+                  parent: {
+                    name: place_grandparent.name,
+                    _id: place_grandparent._id,
+                    contact: place_grandparentContact,
+                  }
+                },
+                linked_docs: {
+                  contact_tag_1: report_parent,
+                  contact_tag_2: report_contact,
+                  contact_tag_3: { _id: '404' },
+                  report_tag_1: sms_doc,
+                },
+              },
+              linked_docs: {
+                no_tag: 'not_found',
+                one_tag: person_with_circular_ids,
+                other_tag: report_grandparent,
+              },
+            },
+            {
+              _id: placeWithLinks._id,
+              type: placeWithLinks.type,
+              contact: place_contact,
+              name: placeWithLinks.name,
+              parent: {
+                _id: place_parent._id,
+                name: place_parent.name,
+                contact: place_parentContact,
+                parent: {
+                  name: place_grandparent.name,
+                  _id: place_grandparent._id,
+                  contact: place_grandparentContact,
+                }
+              },
+              linked_docs: {
+                contact_tag_1: report_parent,
+                contact_tag_2: report_contact,
+                contact_tag_3: { _id: '404' },
+                report_tag_1: sms_doc,
+              },
+            },
+            {
+              _id: reportWithLinks._id,
+              form: reportWithLinks.form,
+              type: reportWithLinks.type,
+              fields: reportWithLinks.fields,
+              linked_docs: reportWithLinks.linked_docs,
+              contact: {
+                _id: report_contact._id,
+                name: report_contact.name,
+                type: report_contact.type,
+                reported_date: report_contact.reported_date,
+                parent: {
+                  _id: report_parent._id,
+                  name: report_parent.name,
+                  contact: {
+                    _id: report_parentContact._id,
+                    type: report_parentContact.type,
+                    reported_date: report_parentContact.reported_date,
+                    phone: '+123',
+                    name: report_parentContact.name,
+                  },
+                  parent: {
+                    _id: report_grandparent._id,
+                    name: report_grandparent.name,
+                    contact: {
+                      _id: report_grandparentContact._id,
+                      type: report_grandparentContact.type,
+                      reported_date: report_grandparentContact.reported_date,
+                      phone: '+456',
+                      name: report_grandparentContact.name,
+                    }
+                  }
+                }
+              },
+            }
+          ]);
+        });
     });
   });
 });

@@ -43,7 +43,7 @@ module.exports = {
   reset: () => {
     element(by.css('.icon.icon-refresh')).click();
   },
-  
+
   getEstimatedDeliveryDate: () => {
     return element(by.css('[data-value=" /pregnancy/group_lmp/g_edd "]')).getText();
   },

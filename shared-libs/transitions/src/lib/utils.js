@@ -186,7 +186,7 @@ module.exports = {
     }
 
     return db.medic.query('medic-client/reports_by_subject', viewOptions).then(result => {
-      const reports = result.rows.map(row => row.doc);
+      const reports = _.uniqBy(result.rows.map(row => row.doc), '_id');
       if (!options.registrations) {
         return reports;
       }

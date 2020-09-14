@@ -146,7 +146,7 @@ describe('mark_for_outbound', () => {
             },
             mapping: {
               id: 'doc._id',
-              rev: 'doc._rev'
+              form: 'doc.form'
             }
           }
         }
@@ -167,7 +167,7 @@ describe('mark_for_outbound', () => {
           expect(workingEndpointRequests.length).to.equal(1);
           expect(workingEndpointRequests[0]).to.deep.equal({
             id: report._id,
-            rev: report._rev
+            form: report.form
           });
 
           // It worked, let's do it again
@@ -191,6 +191,79 @@ describe('mark_for_outbound', () => {
             'completed_tasks[0].name': 'test'
           });
           expect(infoDoc.completed_tasks.length).to.equal(1);
+        });
+    });
+
+    it('correctly sends changed doc outbound multiple times', () => {
+      let report = makeReport();
+      report.hello = 'there';
+
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.hello === "there"',
+            destination: {
+              base_url: `http://localhost:${server.address().port}`,
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              form: 'doc.form'
+            }
+          }
+        }
+      };
+
+      // First round
+      return utils
+        .updateSettings(config, true)
+        .then(() => utils.saveDoc(report))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          expect(tasks.length).to.equal(0);
+        })
+        .then(() => utils.getDoc(report._id))
+        .then(result => {
+          report = result;
+
+          expect(brokenEndpointRequests.length).to.equal(0);
+          expect(workingEndpointRequests.length).to.equal(1);
+          expect(workingEndpointRequests[0]).to.deep.equal({
+            id: report._id,
+            form: report.form
+          });
+
+          // It worked, let's do it again
+          report.form = 'we changed the form';
+          return utils.saveDoc(report);
+        })
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          // And confirm that it got sent again
+          expect(tasks.length).to.equal(0);
+          expect(brokenEndpointRequests.length).to.equal(0);
+          expect(workingEndpointRequests.length).to.equal(2);
+          expect(workingEndpointRequests[1]).to.deep.equal({
+            id: report._id,
+            form: 'we changed the form'
+          });
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id,
+            'completed_tasks[0].type': 'outbound',
+            'completed_tasks[0].name': 'test',
+            'completed_tasks[1].type': 'outbound',
+            'completed_tasks[1].name': 'test'
+          });
+          expect(infoDoc.completed_tasks.length).to.equal(2);
         });
     });
 

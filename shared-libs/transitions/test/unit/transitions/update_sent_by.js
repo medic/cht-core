@@ -4,7 +4,6 @@ const db = require('../../../src/db');
 const transition = require('../../../src/transitions/update_sent_by');
 
 describe('update sent by', () => {
-  beforeEach(() => { process.env.TEST_ENV = true; });
   afterEach(() => sinon.restore());
 
   it('updates sent_by to clinic name if contact name', () => {

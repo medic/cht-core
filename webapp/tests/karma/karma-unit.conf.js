@@ -49,5 +49,4 @@ module.exports = function(config) {
       'tests/karma/unit/**/*.js'
     ]
   });
-
 };

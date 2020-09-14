@@ -1,6 +1,6 @@
 /**
  * An API to provide integration with the medic-android app.
- * 
+ *
  * This service must maintain backwards compatibility as we cannot
  * guarantee the all clients will be on a recent version of the app.
  */
@@ -11,6 +11,7 @@ angular.module('inboxServices').factory('AndroidApi',
     $stateParams,
     $window,
     Feedback,
+    Geolocation,
     MRDT,
     Session,
     Simprints
@@ -148,7 +149,7 @@ angular.module('inboxServices').factory('AndroidApi',
               $state.go(uiSref);
               return true;
             } else {
-              const message = 'Attempt to back to an undefined state [AndroidApi.back()]';  
+              const message = 'Attempt to back to an undefined state [AndroidApi.back()]';
               Feedback.submit(message).catch(err => {
                 $log.error('Error saving feedback', err);
               });
@@ -213,7 +214,6 @@ angular.module('inboxServices').factory('AndroidApi',
         },
 
         smsStatusUpdate: function(id, destination, content, status, detail) {
-          // prettier-ignore
           $log.debug('smsStatusUpdate() :: ' +
               ' id=' + id +
               ', destination=' + destination +
@@ -222,6 +222,8 @@ angular.module('inboxServices').factory('AndroidApi',
               ', detail=' + detail);
           // TODO storing status updates for SMS should be implemented as part of #4812
         },
+
+        locationPermissionRequestResolved: () => Geolocation.permissionRequestResolved(),
       }
     };
 

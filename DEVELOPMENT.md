@@ -151,31 +151,32 @@ Navigate your browser to [`http://localhost:5988/medic/login`](http://localhost:
 
 ## Testing locally with devices
 
-Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. Use either `serveo` or `ngrok` to make your developer build accessible from your Android device by giving it a trusted URL.
+Follow the steps below to use an Android device with a development build of your application. This process is relevant when running v3.5.0 or greater of the Core Framework since it relies on service workers, which requires a valid HTTPS certificate. Use `ngrok` or `pagekite` to make your developer build accessible from your Android device by giving it a trusted URL.
 
 1. Start the api. This can be via docker, grunt, debug, horti, etc.
-2. Follow the instructions below to start serveo (preferred) or ngrok
+2. Follow the instructions below to start ngrok or pagekite
 3. This will output a generated URL which you can enter into our [android app](https://github.com/medic/medic-android) or browser and connect to your local dev environment.
 
-### serveo
-
-Proxying via serveo is generally more successful than ngrok so it is our preferred route. Sometimes it will be blocked by Chrome safe browsing however in which case you can try ngrok.
-
-* To connect to an API running via `grunt` or `horti`, execute `ssh -R 80:localhost:5988 serveo.net`
-* To connect to an API running via `Docker`, execute `ssh -R 80:localhost:443 serveo.net`
-
-This will echo a URL which you can connect to.
-
 ### ngrok
-
-ngrok sometimes fails due to connection throttling which can cause the service worker cache preload to fail. It's included here as an alternative in case serveo doesn't work for some reason.
 
 1. Create a ngrok account at https://ngrok.com/
 1. Follow instructions on downloading and linking your computer to your ngrok account.
 1. Start ngrok
     * To connect to an API running via `grunt` or `horti`, execute `./ngrok http 5988`
     * To connect to an API running via `Docker`, execute `./ngrok http 443`
-1. Access the app using the https address shown, eg https://123456.ngrok.io
+1. Access the app using the https address shown, eg https://YOUR-NGROK-NAME.ngrok.io, replacing `YOUR-NGROK-NAME` with what you signed up with.
+
+**Note:** ngrok sometimes fails due to connection throttling which can cause the service worker cache preload to fail. 
+
+### pagekite
+
+1. Create a pagekite account at https://pagekite.net/signup/
+1. Follow instructions on downloading the python script for pagekite
+1. Start pagekite (be sure to replace `YOUR-PAGEKIT-NAME` with the URL you signed up for:
+    * To connect to an API running via `grunt` or `horti`, execute `python2 pagekite.py 5988 YOUR-PAGEKIT-NAME.pagekite.me`
+    * To connect to an API running via `Docker`, execute `python2 pagekite.py 443 YOUR-PAGEKIT-NAME.pagekite.me`
+1. Access the app using the https address shown, eg https://YOUR-PAGEKIT-NAME.pagekite.me
+
 
 ## Data
 

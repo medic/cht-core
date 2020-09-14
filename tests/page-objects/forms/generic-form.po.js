@@ -16,13 +16,11 @@ module.exports = {
 
   invalidateReport: () => {
     const reportInvalidBtn = element(by.css('[ng-include*="verify-invalid"]'));
-    const reportInvalidIcon = element(by.css('.detail>.status>.error'));
-    const reportInvalidMessage = element(
-      by.css('.verify-error>span:last-of-type')
-    );
     helper.waitUntilReady(reportInvalidBtn);
     reportInvalidBtn.click();
+    const reportInvalidIcon = element(by.css('.detail>.status>.error'));
     helper.waitUntilReady(reportInvalidIcon);
+    const reportInvalidMessage = element(by.css('.verify-error>span:last-of-type'));
     expect(reportInvalidMessage.getText()).toEqual('Has errors');
   },
 
@@ -74,13 +72,11 @@ module.exports = {
 
   validateReport: () => {
     const reportValidBtn = element(by.css('[ng-include*="verify-valid"]'));
-    const reportValidIcon = element(by.css('.detail>.status>.verified'));
-    const reportValidMessage = element(
-      by.css('.verify-valid>span:last-of-type')
-    );
     helper.waitElementToBeClickable(reportValidBtn);
     reportValidBtn.click();
+    const reportValidIcon = element(by.css('.detail>.status>.verified'));
     helper.waitUntilReady(reportValidIcon);
+    const reportValidMessage = element(by.css('.verify-valid>span:last-of-type'));
     expect(reportValidMessage.getText()).toEqual('Correct');
   },
 

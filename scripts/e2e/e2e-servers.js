@@ -83,6 +83,11 @@ if(!fs.existsSync('tests/logs')) {
 
 const app = express();
 
+const started = {
+  api: false,
+  sentinel: false,
+};
+
 app.post('/:server/:action', (req, res) => {
   const { server, action } = req.params;
   let p = Promise.resolve();
@@ -101,11 +106,11 @@ app.post('/:server/:action', (req, res) => {
   if (['start', 'restart'].includes(action)) {
     if (['api', 'all'].includes(server)) {
       console.log('Starting API...');
-      p = p.then(() => startServer('api', true));
+      p = p.then(() => startServer('api', started.api)).then(() => started.api = true);
     }
     if (['sentinel', 'all'].includes(server)) {
       console.log('Starting Sentinel...');
-      p = p.then(() => startServer('sentinel', true));
+      p = p.then(() => startServer('sentinel', started.sentinel)).then(() => started.sentinel = true);
     }
   }
 

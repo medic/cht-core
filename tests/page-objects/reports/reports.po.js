@@ -7,7 +7,9 @@ const reportBodyDetails = '#reports-content .report-body .details';
 module.exports = {
   expectReportsToExist: uuids => {
     uuids.forEach(uuid => {
-      expect(browser.isElementPresent(by.css(`#reports-list li[data-record-id="${uuid}"]`))).toBeTruthy();
+      browser.wait(() => element(by.css(`#reports-list li[data-record-id="${uuid}"]`)).isPresent(),
+        10000,
+        `Report ${uuid} not found`);
     });
   },
   expectReportsToNotExist: uuids => {

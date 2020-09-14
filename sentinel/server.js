@@ -4,11 +4,6 @@ const db = require('./src/db');
 const logger = require('./src/lib/logger');
 const serverChecks = require('@medic/server-checks');
 
-if (process.env.TEST_ENV) {
-  logger.info('TEST_ENV is set, server does not run in test mode.');
-  process.exit(1);
-}
-
 process
   .on('unhandledRejection', reason => {
     logger.error('Unhandled Rejection:');
@@ -45,6 +40,7 @@ const waitForApi = () =>
     waitLoop();
   });
 
+logger.info('Running server checks…');
 serverChecks
   .check(db.serverUrl)
   .then(waitForApi)
@@ -53,7 +49,7 @@ serverChecks
     // api has booted
     const config = require('./src/config');
     return config.init().then(() => {
-      require('./src/schedule').checkSchedule();
+      require('./src/schedule').init();
       logger.info('startup complete.');
     });
   })
