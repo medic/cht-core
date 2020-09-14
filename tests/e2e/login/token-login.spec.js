@@ -53,6 +53,7 @@ describe('token login', () => {
     };
     browser.manage().deleteAllCookies();
   });
+
   afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb([], [])));
 
   afterAll(() => {
@@ -73,7 +74,6 @@ describe('token login', () => {
     commonElements.goToLoginPage();
     loginPage.login(auth.username, auth.password);
     browser.driver.get(getUrl('this is a random string'));
-    waitForLoaderToDisappear();
     browser.waitForAngular();
     helper.waitUntilReady(element(by.id('message-list')));
   });

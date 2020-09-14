@@ -18,7 +18,8 @@ const TYPES = [
   { labels: ['enhancement', 'Type: Improvement'], title: 'Improvements', issues: [] },
   { labels: ['Type: Performance'], title: 'Performance fixes', issues: [] },
   { labels: ['bug', 'Type: Bug'], title: 'Bug fixes', issues: [] },
-  { labels: ['Type: Technical issue'], title: 'Technical issues', issues: [] }
+  { labels: ['Type: Technical issue'], title: 'Technical issues', issues: [] },
+  { labels: ['Type: Security'], title: 'Security issues', issues: [] }
 ];
 const PREFIXES_TO_IGNORE = [ 'Type: Internal process', 'Won\'t fix:' ];
 

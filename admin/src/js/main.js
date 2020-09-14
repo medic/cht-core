@@ -15,6 +15,22 @@ require('@uirouter/angularjs');
 
 require('ng-redux');
 
+const _ = require('lodash/core');
+_.uniq = require('lodash/uniq');
+_.groupBy = require('lodash/groupBy');
+_.uniqBy = require('lodash/uniqBy');
+_.findIndex = require('lodash/findIndex');
+_.minBy = require('lodash/minBy');
+_.partial = require('lodash/partial');
+_.partial.placeholder = _;
+_.range = require('lodash/range');
+_.intersection = require('lodash/intersection');
+_.toPairs = require('lodash/toPairs');
+_.difference = require('lodash/difference');
+_.template = require('lodash/template');
+_.templateSettings = require('lodash/templateSettings');
+_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
+
 angular.module('controllers', []);
 require('./controllers/main');
 require('./controllers/authorization-permissions');
@@ -60,7 +76,7 @@ require('./directives/release');
 
 // directives we borrow from webapp
 angular.module('inboxDirectives', []);
-require('../../../webapp/src/js/directives/auth');
+require('./directives/auth');
 
 angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
@@ -68,7 +84,7 @@ require('./filters/build-version');
 
 // filters we borrow from webapp
 angular.module('inboxFilters', []);
-require('../../../webapp/src/js/filters/resource-icon');
+require('./filters/resource-icon');
 
 angular.module('services', []);
 require('./services/blob');
@@ -82,49 +98,49 @@ require('./services/version');
 
 // services we borrow from webapp
 angular.module('inboxServices', []);
-require('../../../webapp/src/js/services/add-attachment');
-require('../../../webapp/src/js/services/auth');
-require('../../../webapp/src/js/services/cache');
-require('../../../webapp/src/js/services/calendar-interval');
-require('../../../webapp/src/js/services/changes');
-require('../../../webapp/src/js/services/contact-muted');
-require('../../../webapp/src/js/services/contact-types');
-require('../../../webapp/src/js/services/contact-view-model-generator');
-require('../../../webapp/src/js/services/db');
-require('../../../webapp/src/js/services/export');
-require('../../../webapp/src/js/services/extract-lineage');
-require('../../../webapp/src/js/services/file-reader');
-require('../../../webapp/src/js/services/format-date');
-require('../../../webapp/src/js/services/get-data-records');
-require('../../../webapp/src/js/services/get-subject-summaries');
-require('../../../webapp/src/js/services/get-summaries');
-require('../../../webapp/src/js/services/header-tabs');
-require('../../../webapp/src/js/services/hydrate-contact-names');
-require('../../../webapp/src/js/services/json-parse');
-require('../../../webapp/src/js/services/language');
-require('../../../webapp/src/js/services/languages');
-require('../../../webapp/src/js/services/lineage-model-generator');
-require('../../../webapp/src/js/services/location');
-require('../../../webapp/src/js/services/modal');
-require('../../../webapp/src/js/services/moment-locale-data');
-require('../../../webapp/src/js/services/privacy-policies');
-require('../../../webapp/src/js/services/privacy-policies');
-require('../../../webapp/src/js/services/resource-icons');
-require('../../../webapp/src/js/services/search');
-require('../../../webapp/src/js/services/select2-search');
-require('../../../webapp/src/js/services/settings');
-require('../../../webapp/src/js/services/session');
-require('../../../webapp/src/js/services/telemetry');
-require('../../../webapp/src/js/services/translate');
-require('../../../webapp/src/js/services/translate-from');
-require('../../../webapp/src/js/services/translation-loader');
-require('../../../webapp/src/js/services/translation-null-interpolation');
-require('../../../webapp/src/js/services/update-settings');
-require('../../../webapp/src/js/services/update-user');
-require('../../../webapp/src/js/services/user');
-require('../../../webapp/src/js/actions');
-require('../../../webapp/src/js/selectors');
-require('../../../webapp/src/js/reducers');
+require('./services/add-attachment');
+require('./services/auth');
+require('./services/cache');
+require('./services/calendar-interval');
+require('./services/changes');
+require('./services/contact-muted');
+require('./services/contact-types');
+require('./services/contact-view-model-generator');
+require('./services/db');
+require('./services/export');
+require('./services/extract-lineage');
+require('./services/file-reader');
+require('./services/format-date');
+require('./services/get-data-records');
+require('./services/get-subject-summaries');
+require('./services/get-summaries');
+require('./services/header-tabs');
+require('./services/hydrate-contact-names');
+require('./services/json-parse');
+require('./services/language');
+require('./services/languages');
+require('./services/lineage-model-generator');
+require('./services/location');
+require('./services/modal');
+require('./services/moment-locale-data');
+require('./services/privacy-policies');
+require('./services/privacy-policies');
+require('./services/resource-icons');
+require('./services/search');
+require('./services/select2-search');
+require('./services/settings');
+require('./services/session');
+require('./services/telemetry');
+require('./services/translate');
+require('./services/translate-from');
+require('./services/translation-loader');
+require('./services/translation-null-interpolation');
+require('./services/update-settings');
+require('./services/update-user');
+require('./services/user');
+require('./actions');
+require('./selectors');
+require('./reducers');
 
 angular.module('adminApp', [
   'ngRoute',
