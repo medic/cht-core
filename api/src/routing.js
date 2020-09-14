@@ -428,6 +428,7 @@ app.post('/api/v1/contacts-by-phone', authorization.offlineUserFirewall, jsonPar
 
 app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
+app.get('/api/v1/settings/deprecated-transitions', settings.getDeprecatedTransitions);
 
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);

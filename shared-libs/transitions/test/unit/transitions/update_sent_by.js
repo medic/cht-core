@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const db = require('../../src/db');
-const transition = require('../../src/transitions/update_sent_by');
+const db = require('../../../src/db');
+const transition = require('../../../src/transitions/update_sent_by');
 
 describe('update sent by', () => {
   afterEach(() => sinon.restore());

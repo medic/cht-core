@@ -13,6 +13,21 @@ const NAME = 'update_sent_forms';
 // to be removed this in 4.0, this is rendered useless by the updates to reminders.
 // https://github.com/medic/medic/issues/5939
 module.exports = {
+  name: NAME,
+  asynchronousOnly: true,
+  deprecated: true,
+  deprecatedIn: '3.7.x',
+  init: () => {
+    const self = module.exports;
+    logger.warn(self.getDeprecationMessage());
+  },
+  getDeprecationMessage: () => {
+    const self = module.exports;
+    const deprecatedExtraInfo = 'It will be removed in next major version. '
+    + 'Consider updating your configuration to disable it.';
+
+    return transitionUtils.getDeprecationMessage(self.name, self.deprecatedIn, deprecatedExtraInfo);
+  },
   filter: function(doc, info = {}) {
     const self = module.exports;
     return Boolean(
@@ -76,11 +91,5 @@ module.exports = {
         });
       });
     });
-  },
-  asynchronousOnly: true,
-
-  init: () => {
-    logger.warn('"update_sent_forms" transition is deprecated and will be removed in next major version. ' +
-      'Consider updating your configuration to disable it.');
   }
 };

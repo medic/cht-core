@@ -17,6 +17,7 @@ describe('Settings controller', () => {
     sinon.stub(serverUtils, 'error');
     sinon.stub(settingsService, 'get');
     sinon.stub(settingsService, 'update');
+    sinon.stub(settingsService, 'getDeprecatedTransitions');
   });
 
   afterEach(() => {
@@ -43,6 +44,38 @@ describe('Settings controller', () => {
         chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ some: 'settings' }]);
+        chai.expect(serverUtils.error.callCount).to.equal(0);
+      });
+    });
+  });
+
+  describe('getDeprecatedTransitions', () => {
+    it('should throw an error when not authenticated', () => {
+      auth.getUserCtx.rejects({ some: 'err' });
+      return controller.get(req, res).then(() => {
+        chai.expect(auth.getUserCtx.callCount).to.equal(1);
+        chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+        chai.expect(res.json.callCount).to.equal(0);
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res, true]);
+      });
+    });
+
+    it('should respond with deprecated transitions', () => {
+      const deprecatedTransition = {
+        name: 'abc',
+        deprecated: true,
+        deprecatedIn: '3.7.x',
+        deprecationMessage: 'abc transition deprecated since 3.7.x'
+      };
+      auth.getUserCtx.resolves();
+      settingsService.getDeprecatedTransitions.resolves([deprecatedTransition]);
+
+      return controller.getDeprecatedTransitions(req, res).then(() => {
+        chai.expect(auth.getUserCtx.callCount).to.equal(1);
+        chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+        chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0][0][0]).to.deep.equal(deprecatedTransition);
         chai.expect(serverUtils.error.callCount).to.equal(0);
       });
     });

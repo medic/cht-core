@@ -1,10 +1,10 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const config = require('../../src/config');
-const messages = require('../../src/lib/messages');
-const transition = require('../../src/transitions/default_responses');
+const config = require('../../../src/config');
+const messages = require('../../../src/lib/messages');
+const transition = require('../../../src/transitions/default_responses');
 
-describe('conditional alerts', () => {
+describe('default responses', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {

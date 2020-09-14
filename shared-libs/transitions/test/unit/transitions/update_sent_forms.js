@@ -1,12 +1,32 @@
 const moment = require('moment');
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const db = require('../../src/db');
-const logger = require('../../src/lib/logger');
-const transition = require('../../src/transitions/update_sent_forms');
+const db = require('../../../src/db');
+const logger = require('../../../src/lib/logger');
+const transition = require('../../../src/transitions/update_sent_forms');
 
-describe('update sent by', () => {
+describe('update sent forms', () => {
   afterEach(() => sinon.restore());
+
+  it('should have basic properties defined', () => {
+    assert.equal(transition.name, 'update_sent_forms');
+    assert.equal(transition.asynchronousOnly, true);
+    assert.equal(transition.deprecated, true);
+    assert.equal(transition.deprecatedIn, '3.7.x');
+  });
+
+  it('init() should log a warning when transition is deprecated.', () => {
+    const deprecatedMsg = 'It will be removed in next major version. '
+      + 'Consider updating your configuration to disable it.';
+    sinon.stub(logger, 'warn');
+
+    transition.init();
+
+    assert.equal(logger.warn.callCount, 1);
+    assert.equal(logger.warn.args[0][0].includes(transition.name), true);
+    assert.equal(logger.warn.args[0][0].includes(transition.deprecatedIn), true);
+    assert.equal(logger.warn.args[0][0].includes(deprecatedMsg), true);
+  });
 
   it('calls db.get with id of clinic', () => {
     sinon.stub(db.medic, 'get').callsArgWith(1, null, {});

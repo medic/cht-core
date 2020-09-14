@@ -1,9 +1,9 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const db = require('../../src/db');
-const config = require('../../src/config');
-const transition = require('../../src/transitions/update_clinics');
-const utils = require('../../src/lib/utils');
+const db = require('../../../src/db');
+const config = require('../../../src/config');
+const transition = require('../../../src/transitions/update_clinics');
+const utils = require('../../../src/lib/utils');
 const phone = '+34567890123';
 
 let lineageStub;

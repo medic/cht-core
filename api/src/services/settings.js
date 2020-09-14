@@ -30,6 +30,21 @@ const doExtend = (target, source) => {
   });
 };
 
+const getDeprecatedTransitions = () => {
+  const transitions = require('@medic/transitions')();
+
+  return transitions
+    .getDeprecatedTransitions()
+    .map(transition => {
+      return {
+        name: transition.name,
+        deprecated: transition.deprecated,
+        deprecatedIn: transition.deprecatedIn,
+        deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
+      };
+    });
+};
+
 module.exports = {
   get: () => {
     return getDoc()
@@ -94,5 +109,6 @@ module.exports = {
         info('Not updating settings - the existing settings are already up to date');
         return Promise.resolve(false);
       });
-  }
+  },
+  getDeprecatedTransitions: getDeprecatedTransitions
 };

@@ -362,17 +362,19 @@ const onMatch = change => {
 };
 
 module.exports = {
-  filter: (doc, info = {}) =>
-    !!(
+  name: TRANSITION_NAME,
+  asynchronousOnly: true,
+  filter: (doc, info = {}) => {
+    return !!(
       doc &&
       doc.form &&
       doc.type === 'data_record' &&
       !transitionUtils.hasRun(info, TRANSITION_NAME) &&
       utils.isValidSubmission(doc)
-    ),
+    );
+  },
   onMatch: onMatch,
   init: validateConfig,
   _getCountedReportsAndPhones: getCountedReportsAndPhones,
-  _lineage: lineage,
-  asynchronousOnly: true
+  _lineage: lineage
 };

@@ -1,8 +1,8 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const messages = require('../../src/lib/messages');
-const utils = require('../../src/lib/utils');
-const transition = require('../../src/transitions/conditional_alerts');
+const messages = require('../../../src/lib/messages');
+const utils = require('../../../src/lib/utils');
+const transition = require('../../../src/transitions/conditional_alerts');
 
 describe('conditional alerts', () => {
   afterEach(() => sinon.restore());

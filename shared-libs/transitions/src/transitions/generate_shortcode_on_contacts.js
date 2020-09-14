@@ -1,8 +1,11 @@
 const config = require('../config');
 const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
+const NAME = 'generate_shortcode_on_contacts';
 
 module.exports = {
+  name: NAME,
+  asynchronousOnly: true,
   filter: doc => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (!contactType) {
@@ -19,7 +22,6 @@ module.exports = {
 
     return true;
   },
-
   onMatch: change => {
     return transitionUtils
       .getUniqueId()
@@ -29,7 +31,5 @@ module.exports = {
         change.doc[prop] = id;
         return true;
       });
-  },
-
-  asynchronousOnly: true
+  }
 };
