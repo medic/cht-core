@@ -1,5 +1,5 @@
 import * as _ from 'lodash-es';
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import { DbService } from './db.service';
 import { GetSubjectSummariesService } from './get-subject-summaries.service';
 import { GetSummariesService } from './get-summaries.service';
@@ -32,7 +32,8 @@ export class GetDataRecordsService {
   ) {}
 
   private getDocs(ids) {
-    return this.dbService.get()
+    return this.dbService
+      .get()
       .allDocs({ keys: ids, include_docs: true })
       .then((response) => {
         return _.map(response.rows, 'doc');
@@ -62,8 +63,8 @@ export class GetDataRecordsService {
     if (!ids.length) {
       return Promise.resolve([]);
     }
-    const getFn = opts.include_docs ? this.getDocs : ids => this.getSummaries(ids, opts);
-    return getFn(ids)
+    const getPromise = opts.include_docs ? this.getDocs(ids) : this.getSummaries(ids, opts);
+    return getPromise
       .then((response) => {
         if (!arrayGiven) {
           response = response.length ? response[0] : null;
