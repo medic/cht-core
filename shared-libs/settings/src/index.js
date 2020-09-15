@@ -35,5 +35,10 @@ module.exports = {
     }
     const couchUrl = process.env.COUCH_URL.replace(/\/$/, '');
     return couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+  },
+  getCouchConfig: (param) => {
+    const serverUrl = module.exports._getServerUrl();
+    const nodeName = module.exports._getCouchNodeName();
+    return request.get({ url: `${serverUrl}/_node/${nodeName}/_config/${param}`, json: true });
   }
 };

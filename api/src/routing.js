@@ -38,6 +38,7 @@ const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
+const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
@@ -433,6 +434,8 @@ app.get('/api/v1/settings/deprecated-transitions', settings.getDeprecatedTransit
 
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
+
+app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
 
 app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
 app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);

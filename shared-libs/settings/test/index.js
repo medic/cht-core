@@ -74,3 +74,18 @@ describe('Settings shared lib - getCredentials function', () => {
   });
 
 });
+
+describe('Settings shared lib - getCouchConfig function', () => {
+  afterEach(() => sinon.restore());
+
+  it('returns the expected value', () => {
+    sinon.stub(lib, '_getServerUrl').returns('http://user:pass@localhost:6929');
+    sinon.stub(lib, '_getCouchNodeName').returns('nonode@noname');
+    sinon.stub(request, 'get').resolves('couch config');
+    return lib.getCouchConfig('attachments').then(actual => {
+      chai.expect(actual).to.equal('couch config');
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0][0].url).to.equal('http://user:pass@localhost:6929/_node/nonode@noname/_config/attachments');
+    });
+  });
+});
