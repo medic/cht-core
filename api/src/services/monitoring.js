@@ -169,6 +169,16 @@ const getOutgoingMessageStatusCounts = () => {
     });
 };
 
+const getReplicationLimitLog = () => {
+  return db.medicLogs
+    .query('logs/replication_limit')
+    .then(result => getResultCount(result))
+    .catch(err => {
+      logger.error('Error fetching replication limit logs: %o', err);
+      return -1;
+    });
+};
+
 const json = () => {
   return Promise
     .all([
@@ -179,7 +189,8 @@ const json = () => {
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
       getFeedbackCount(),
-      getConflictCount()
+      getConflictCount(),
+      getReplicationLimitLog()
     ])
     .then(([
       appVersion,
@@ -189,7 +200,8 @@ const json = () => {
       outboundPushBacklog,
       outgoingMessageStatus,
       feedbackCount,
-      conflictCount
+      conflictCount,
+      replicationLimitLogs
     ]) => {
       return {
         version: {
@@ -218,6 +230,9 @@ const json = () => {
         },
         conflict: {
           count: conflictCount
+        },
+        replication_limit: {
+          count: replicationLimitLogs
         }
       };
     });

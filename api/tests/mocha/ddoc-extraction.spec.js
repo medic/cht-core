@@ -19,6 +19,7 @@ describe('DDoc extraction', () => {
     const medicGet = sinon.stub(db.medic, 'get');
     const sentinelGet = sinon.stub(db.sentinel, 'get');
     const usersMetaGet = sinon.stub(db.medicUsersMeta, 'get');
+    const logsGet = sinon.stub(db.medicLogs, 'get');
     const getAttachment = sinon.stub(db.medic, 'getAttachment');
 
     const medicAttachment = { docs: [
@@ -35,6 +36,11 @@ describe('DDoc extraction', () => {
       { _id: '_design/users-meta-new', views: { doc_by_place: { map: 'function() { return true; }' } } },
       { _id: '_design/users-meta-updated', views: { doc_by_valid: { map: 'function() { return true; }' } } },
       { _id: '_design/users-meta-unchanged', views: { doc_by_valid: { map: 'function() { return true; }' } } },
+    ] };
+    const logsAttachment = { docs: [
+      { _id: '_design/logs-new', views: { doc_by_place: { map: 'function() { return true; }' } } },
+      { _id: '_design/logs-updated', views: { doc_by_valid: { map: 'function() { return true; }' } } },
+      { _id: '_design/logs-unchanged', views: { doc_by_valid: { map: 'function() { return true; }' } } },
     ] };
     const ddoc = {
       _id: '_design/medic',
@@ -58,7 +64,9 @@ describe('DDoc extraction', () => {
     const getUsersMetaAttachment = getAttachment
       .withArgs('_design/medic', 'ddocs/users-meta.json')
       .resolves(Buffer.from(JSON.stringify(usersMetaAttachment)));
-
+    const getLogsAttachment = getAttachment
+      .withArgs('_design/medic', 'ddocs/logs.json')
+      .resolves(Buffer.from(JSON.stringify(logsAttachment)));
     const getMedicNew = medicGet.withArgs('_design/medic-new').rejects({ status: 404 });
     const getMedicUpdated = medicGet.withArgs('_design/medic-updated').resolves({
       _id: '_design/medic-updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } }
@@ -83,17 +91,27 @@ describe('DDoc extraction', () => {
       _id: '_design/users-meta-unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } }
     });
 
+    const getLogsNew = logsGet.withArgs('_design/logs-new').rejects({ status: 404 });
+    const getLogsUpdated = logsGet.withArgs('_design/logs-updated').resolves({
+      _id: '_design/logs-updated', _rev: '1', views: { doc_by_valed: { map: 'function() { return true; }' } }
+    });
+    const getLogsUnchanged = logsGet.withArgs('_design/logs-unchanged').resolves({
+      _id: '_design/logs-unchanged', _rev: '1', views: { doc_by_valid: { map: 'function() { return true; }' } }
+    });
+
     const getSwMeta = medicGet.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = medicGet.withArgs('settings').resolves({ });
     const bulkMedic = sinon.stub(db.medic, 'bulkDocs').resolves();
     const bulkSentinel = sinon.stub(db.sentinel, 'bulkDocs').resolves();
     const bulkUsersMeta = sinon.stub(db.medicUsersMeta, 'bulkDocs').resolves();
+    const bulkLogs = sinon.stub(db.medicLogs, 'bulkDocs').resolves();
 
     return ddocExtraction.run().then(() => {
       getDdoc.callCount.should.equal(1);
       getMedicAttachment.callCount.should.equal(1);
       getSentielAttachment.callCount.should.equal(1);
       getUsersMetaAttachment.callCount.should.equal(1);
+      getLogsAttachment.callCount.should.equal(1);
       getMedicNew.callCount.should.equal(1);
       getMedicUpdated.callCount.should.equal(1);
       getMedicUnchanged.callCount.should.equal(1);
@@ -103,6 +121,9 @@ describe('DDoc extraction', () => {
       getUsersMetaNew.callCount.should.equal(1);
       getUsersMetaUpdated.callCount.should.equal(1);
       getUsersMetaUnchanged.callCount.should.equal(1);
+      getLogsNew.callCount.should.equal(1);
+      getLogsUpdated.callCount.should.equal(1);
+      getLogsUnchanged.callCount.should.equal(1);
       getSwMeta.callCount.should.equal(1);
       getSettings.callCount.should.equal(0);
 
@@ -129,6 +150,14 @@ describe('DDoc extraction', () => {
       chai.expect(usersMetaDocs[0]._rev).to.equal(undefined);
       usersMetaDocs[1]._id.should.equal('_design/users-meta-updated');
       usersMetaDocs[1]._rev.should.equal('1');
+
+      bulkLogs.callCount.should.equal(1);
+      const logsDocs = bulkLogs.args[0][0].docs;
+      logsDocs.length.should.equal(2);
+      logsDocs[0]._id.should.equal('_design/logs-new');
+      chai.expect(logsDocs[0]._rev).to.equal(undefined);
+      logsDocs[1]._id.should.equal('_design/logs-updated');
+      logsDocs[1]._rev.should.equal('1');
     });
   });
 
@@ -187,6 +216,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getUpdated = get.withArgs('_design/updated').resolves({
       _id: '_design/updated',
       _rev: '1',
@@ -266,6 +296,7 @@ describe('DDoc extraction', () => {
       .rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves({ digest: 'md5-JRYByZdYixaFg3a4L6X0pw==' });
     const getSettings = get.withArgs('settings').resolves({ });
     return ddocExtraction.run().then(() => {
@@ -308,6 +339,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').rejects({ status: 404 });
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -364,6 +396,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -419,6 +452,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -478,6 +512,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -537,6 +572,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -587,6 +623,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -638,6 +675,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -694,6 +732,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').resolves(existingClient);
@@ -745,6 +784,7 @@ describe('DDoc extraction', () => {
       .resolves(Buffer.from(JSON.stringify(attachment)));
     getAttachment.withArgs('_design/medic', 'ddocs/sentinel.json').rejects({ status: 404 });
     getAttachment.withArgs('_design/medic', 'ddocs/users-meta.json').rejects({ status: 404 });
+    getAttachment.withArgs('_design/medic', 'ddocs/logs.json').rejects({ status: 404 });
     const getSwMeta = get.withArgs('service-worker-meta').resolves(appcache);
     const getSettings = get.withArgs('settings').resolves({ });
     const getClient = get.withArgs('_design/medic-client').rejects({ status: 404 });

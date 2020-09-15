@@ -110,6 +110,7 @@ module.exports = function(grunt) {
           'build/ddocs/medic/_attachments/ddocs/medic.json': 'build/ddocs/medic-db/*',
           'build/ddocs/medic/_attachments/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
           'build/ddocs/medic/_attachments/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
+          'build/ddocs/medic/_attachments/ddocs/logs.json': 'build/ddocs/logs-db/*',
         },
       },
     },
@@ -133,6 +134,7 @@ module.exports = function(grunt) {
           [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
           [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
           [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/medic/_attachments/ddocs/logs.json',
         }
       },
       test: {
