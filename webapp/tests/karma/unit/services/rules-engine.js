@@ -16,6 +16,12 @@ describe(`RulesEngine service`, () => {
   let UserSettings;
   let UHCSettings;
   let Telemetry;
+  let fetchTasksFor;
+  let fetchTasksForRecursive;
+  let fetchTasksResult;
+  let fetchTargets;
+  let fetchTargetsRecursive;
+  let fetchTargetsResult;
 
   const settingsDoc = {
     _id: 'settings',
@@ -74,11 +80,37 @@ describe(`RulesEngine service`, () => {
     UHCSettings = { getMonthStartDate: sinon.stub().returns(1) };
     Telemetry = { record: sinon.stub() };
 
+    fetchTasksResult = Promise.resolve;
+    fetchTasksFor = sinon.stub();
+    fetchTasksForRecursive = sinon.stub();
+    fetchTasksFor.events = {};
+    fetchTasksForRecursive.callsFake((event, fn) => {
+      fetchTasksFor.events[event] = fetchTasksFor.events[event] || [];
+      fetchTasksFor.events[event].push(fn);
+      const promise = fetchTasksResult();
+      promise.on = fetchTasksForRecursive;
+      return promise;
+    });
+    fetchTasksFor.returns({ on: fetchTasksForRecursive });
+
+    fetchTargetsResult = Promise.resolve;
+    fetchTargets = sinon.stub();
+    fetchTargets.events = {};
+    fetchTargetsRecursive = sinon.stub();
+    fetchTargetsRecursive.callsFake((event, fn) => {
+      fetchTargets.events[event] = fetchTargets.events[event] || [];
+      fetchTargets.events[event].push(fn);
+      const promise = fetchTargetsResult();
+      promise.on = fetchTargetsRecursive;
+      return promise;
+    });
+    fetchTargets.returns({ on: fetchTargetsRecursive });
+
     RulesEngineCore = {
       initialize: sinon.stub().resolves(true),
       isEnabled: sinon.stub().returns(true),
-      fetchTasksFor: sinon.stub().resolves([]),
-      fetchTargets: sinon.stub().resolves([]),
+      fetchTasksFor: fetchTasksFor,
+      fetchTargets: fetchTargets,
       updateEmissionsFor: sinon.stub().resolves(),
       rulesConfigChange: sinon.stub().returns(true),
       getDirtyContacts: sinon.stub().returns([]),
@@ -259,7 +291,7 @@ describe(`RulesEngine service`, () => {
     });
 
     it('fetchTaskDocsForAllContacts', async () => {
-      RulesEngineCore.fetchTasksFor.resolves([deepCopy(sampleTaskDoc)]);
+      fetchTasksResult = sinon.stub().resolves([deepCopy(sampleTaskDoc)]);
       RulesEngineCore.getDirtyContacts.returns(['a', 'b', 'c']);
       const actual = await getService().fetchTaskDocsForAllContacts();
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
@@ -280,7 +312,7 @@ describe(`RulesEngine service`, () => {
 
     it('fetchTaskDocsFor', async () => {
       const contactIds = ['a', 'b', 'c'];
-      RulesEngineCore.fetchTasksFor.resolves([deepCopy(sampleTaskDoc)]);
+      fetchTasksResult = sinon.stub().resolves([deepCopy(sampleTaskDoc)]);
       RulesEngineCore.getDirtyContacts.returns(['a', 'b']);
       const actual = await getService().fetchTaskDocsFor(contactIds);
       expect(RulesEngineCore.fetchTasksFor.callCount).to.eq(1);
@@ -299,6 +331,7 @@ describe(`RulesEngine service`, () => {
     });
 
     it('correct range is passed when getting targets', async () => {
+      fetchTargetsResult = sinon.stub().resolves([]);
       const actual = await getService().fetchTargets();
       expect(actual).to.deep.eq([]);
 
@@ -323,6 +356,8 @@ describe(`RulesEngine service`, () => {
     });
 
     it('ensure freshness of tasks only', async () => {
+      fetchTargetsResult = sinon.stub().resolves([]);
+
       const service = getService();
       await service.isEnabled();
 
@@ -340,6 +375,8 @@ describe(`RulesEngine service`, () => {
     });
 
     it('cancel all ensure freshness threads', async () => {
+      fetchTargetsResult = sinon.stub().resolves([]);
+      fetchTasksResult = sinon.stub().resolves([]);
       const service = getService();
       await service.isEnabled();
 
@@ -357,6 +394,110 @@ describe(`RulesEngine service`, () => {
       expect(Telemetry.record.args[4]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
       expect(Telemetry.record.args[5][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
       expect(Telemetry.record.args[6][0]).to.equal('rules-engine:tasks:all-contacts');
+    });
+
+    it('should record correct telemetry data with emitted events', async () => {
+      const realSetTimeout = setTimeout;
+      const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+      const clock = sinon.useFakeTimers(1000);
+      let fetchTargetResultPromise;
+      const fetchTasksResultPromise = [];
+      fetchTargetsResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTargetResultPromise = resolve));
+      fetchTasksResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTasksResultPromise.push(resolve)));
+
+      const service = getService();
+      await service.isEnabled();
+
+      service.fetchTargets();
+      service.fetchTaskDocsForAllContacts();
+      service.fetchTaskDocsFor(['a']);
+      await Promise.resolve();
+      chai.expect(fetchTargets.events).to.have.keys(['queued', 'running']);
+      chai.expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
+
+      chai.expect(Telemetry.record.callCount).to.equal(6);
+      chai.expect(Telemetry.record.args.map(arg => arg[0])).to.deep.equal([
+        'rules-engine:initialize',
+        'rules-engine:targets:dirty-contacts',
+        'rules-engine:ensureTargetFreshness:cancel',
+        'rules-engine:tasks:dirty-contacts',
+        'rules-engine:ensureTaskFreshness:cancel',
+        'rules-engine:tasks:dirty-contacts',
+      ]);
+
+      fetchTargets.events.queued[0]();
+      fetchTasksFor.events.queued[0]();
+      fetchTasksFor.events.queued[1]();
+
+      chai.expect(Telemetry.record.callCount).to.equal(6);
+      fetchTargets.events.running[0]();
+      chai.expect(Telemetry.record.callCount).to.equal(7);
+      chai.expect(Telemetry.record.args[6]).to.deep.equal(['rules-engine:targets:queued', 0]);
+      await Promise.resolve();
+      clock.tick(5000);
+      fetchTargetResultPromise([]);
+      await nextTick();
+      chai.expect(Telemetry.record.callCount).to.equal(8);
+      chai.expect(Telemetry.record.args[7]).to.deep.equal(['rules-engine:targets', 5000]);
+      fetchTasksFor.events.running[0]();
+      chai.expect(Telemetry.record.callCount).to.equal(9);
+      chai.expect(Telemetry.record.args[8]).to.deep.equal(['rules-engine:tasks:all-contacts:queued', 5000]);
+      clock.tick(10000);
+      fetchTasksResultPromise[1]([]);
+      await nextTick();
+      chai.expect(Telemetry.record.callCount).to.equal(10);
+      chai.expect(Telemetry.record.args[9]).to.deep.equal(['rules-engine:tasks:all-contacts', 10000]);
+      fetchTasksFor.events.running[1]();
+      chai.expect(Telemetry.record.callCount).to.equal(11);
+      chai.expect(Telemetry.record.args[10]).to.deep.equal(['rules-engine:tasks:some-contacts:queued', 15000]);
+      clock.tick(550);
+      fetchTasksResultPromise[3]([]);
+      await nextTick();
+      chai.expect(Telemetry.record.callCount).to.equal(12);
+      chai.expect(Telemetry.record.args[11]).to.deep.equal(['rules-engine:tasks:some-contacts', 550]);
+      clock.restore();
+    });
+
+    it('should record correct telemetry data for disabled actions', async () => {
+      hasAuth.withArgs('can_view_tasks').resolves(false);
+
+      const realSetTimeout = setTimeout;
+      const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+
+      const clock = sinon.useFakeTimers(1000);
+      fetchTargetsResult = sinon.stub().resolves([]);
+      fetchTasksResult = sinon.stub().resolves([]);
+
+      const service = getService();
+      await service.isEnabled();
+
+      service.fetchTargets();
+      service.fetchTaskDocsForAllContacts();
+      service.fetchTaskDocsFor(['a']);
+      await Promise.resolve();
+      chai.expect(fetchTargets.events).to.have.keys(['queued', 'running']);
+      chai.expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
+
+      chai.expect(Telemetry.record.callCount).to.equal(6);
+      chai.expect(Telemetry.record.args.map(arg => arg[0])).to.deep.equal([
+        'rules-engine:initialize',
+        'rules-engine:targets:dirty-contacts',
+        'rules-engine:ensureTargetFreshness:cancel',
+        'rules-engine:tasks:dirty-contacts',
+        'rules-engine:ensureTaskFreshness:cancel',
+        'rules-engine:tasks:dirty-contacts',
+      ]);
+
+      await nextTick();
+
+      // queued and running events are not emitted!
+
+      chai.expect(Telemetry.record.callCount).to.equal(9);
+      chai.expect(Telemetry.record.args[6]).to.deep.equal(['rules-engine:targets', 0]);
+      chai.expect(Telemetry.record.args[7]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
+      chai.expect(Telemetry.record.args[8]).to.deep.equal(['rules-engine:tasks:some-contacts', 0]);
+
+      clock.restore();
     });
 
     describe('monitorExternalChanges', () => {

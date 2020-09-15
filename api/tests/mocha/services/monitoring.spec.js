@@ -81,6 +81,8 @@ const setUpMocks = () => {
     .resolves({ rows: [ { value: 3 } ] });
   sinon.stub(db.medicUsersMeta, 'query')
     .resolves({ rows: [ { value: 2 } ] });
+  sinon.stub(db.medicLogs, 'query')
+    .resolves({ rows: [ { value: 1 } ] });
 };
 
 describe('Monitoring service', () => {
@@ -96,6 +98,7 @@ describe('Monitoring service', () => {
 
   it('json returns successfully', () => {
     setUpMocks();
+
     return service.json().then(actual => {
       chai.expect(request.post.callCount).to.equal(1);
       chai.expect(actual.version).to.deep.equal({
@@ -147,6 +150,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.feedback).to.deep.equal({ count: 2 });
       chai.expect(actual.conflict).to.deep.equal({ count: 40 });
       chai.expect(actual.date.current).to.equal(0);
+      chai.expect(actual.replication_limit.count).to.equal(1);
     });
   });
 
@@ -158,6 +162,8 @@ describe('Monitoring service', () => {
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
+    sinon.stub(db.medicLogs, 'query').rejects();
+
     return service.json().then(actual => {
       chai.expect(actual.version).to.deep.equal({
         app: '',
@@ -206,6 +212,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.sentinel).to.deep.equal({ backlog: -1 });
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });
       chai.expect(actual.feedback).to.deep.equal({ count: -1 });
+      chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
     });
   });
 

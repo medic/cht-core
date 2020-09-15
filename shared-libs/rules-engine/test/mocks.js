@@ -72,7 +72,7 @@ rule GenerateEvents {
     return Object.assign({
       rules: chtSettingsDoc.tasks.rules,
       targets: chtSettingsDoc.tasks.targets.items,
-      taskScedules: chtSettingsDoc.tasks.schedules,
+      taskSchedules: chtSettingsDoc.tasks.schedules,
       enableTasks: true,
       enableTargets: true,
       user: userSettingsDoc,

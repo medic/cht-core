@@ -1,4 +1,6 @@
-<div class="col-xs-5"><span class="label label-info">{{release | buildVersion}}</span></div>
+<div class="col-xs-5">
+    <span class="label label-info release-name" title="{{release | buildVersion}}">{{release | buildVersion}}</span>
+</div>
 <div class="col-xs-4" ng-if="!dateFormat" ng-bind-html="release.time | date"></div>
 <div class="col-xs-4" ng-if="dateFormat === 'medium'" ng-bind-html="release.time | date:'medium'"></div>
 <div class="col-xs-1">

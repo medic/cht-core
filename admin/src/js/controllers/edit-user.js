@@ -99,7 +99,7 @@ angular
         });
     };
 
-    determineEditUserModel()
+    this.setupPromise = determineEditUserModel()
       .then(model => {
         $scope.editUserModel = model;
       })
@@ -381,6 +381,40 @@ angular
 
     const isEmailValid = email => email.match(/.+@.+/);
 
+    const updateUser = () => {
+      return changedUpdates($scope.editUserModel)
+        .then(updates => {
+          if (!haveUpdates(updates)) {
+            return;
+          }
+
+          if ($scope.editUserModel.id) {
+            return UpdateUser($scope.editUserModel.username, updates);
+          }
+
+          return CreateUser(updates);
+        })
+        .then(() => {
+          $scope.setFinished();
+          // TODO: change this from a broadcast to a changes watcher
+          //       https://github.com/medic/medic/issues/4094
+          $rootScope.$broadcast(
+            'UsersUpdated',
+            $scope.editUserModel.id
+          );
+          $uibModalInstance.close();
+        })
+        .catch(err => {
+          if (err && err.data && err.data.error && err.data.error.translationKey) {
+            $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
+              $scope.setError(err, value);
+            });
+          } else {
+            $scope.setError(err, 'Error updating user');
+          }
+        });
+    };
+
     // #edit-user-profile is the admin view, which has additional fields.
     $scope.editUser = () => {
       $scope.setProcessing();
@@ -411,38 +445,8 @@ angular
             $scope.setError();
             return;
           }
-          return validateReplicationLimit()
-            .then(() => changedUpdates($scope.editUserModel))
-            .then(updates => {
-              if (!haveUpdates(updates)) {
-                return;
-              }
 
-              if ($scope.editUserModel.id) {
-                return UpdateUser($scope.editUserModel.username, updates);
-              }
-
-              return CreateUser(updates);
-            })
-            .then(() => {
-              $scope.setFinished();
-              // TODO: change this from a broadcast to a changes watcher
-              //       https://github.com/medic/medic/issues/4094
-              $rootScope.$broadcast(
-                'UsersUpdated',
-                $scope.editUserModel.id
-              );
-              $uibModalInstance.close();
-            })
-            .catch(err => {
-              if (err && err.data && err.data.error && err.data.error.translationKey) {
-                $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
-                  $scope.setError(err, value);
-                });
-              } else {
-                $scope.setError(err, 'Error updating user');
-              }
-            });
+          return validateReplicationLimit().then(() => updateUser());
         })
         .catch(err => {
           if (err.key) {

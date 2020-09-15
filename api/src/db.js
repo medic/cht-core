@@ -14,6 +14,7 @@ if (UNIT_TEST_ENV) {
     'users',
     'medicUsersMeta',
     'sentinel',
+    'logs'
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -55,23 +56,20 @@ if (UNIT_TEST_ENV) {
     module.exports[fn] = () => notStubbed(fn);
   });
 } else {
-  const DB = new PouchDB(environment.couchUrl, {
-    fetch: (url, opts) => {
-      opts.headers.set('X-Medic-Service', 'api');
-      return PouchDB.fetch(url, opts);
-    },
-  });
-  const DBUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, {
-    fetch: (url, opts) => {
-      opts.headers.set('X-Medic-Service', 'api');
-      return PouchDB.fetch(url, opts);
-    },
-  });
+  const fetch = (url, opts) => {
+    // Adding audit flag (haproxy) Service that made the request initially.
+    opts.headers.set('X-Medic-Service', 'api');
+    return PouchDB.fetch(url, opts);
+  };
+
+  const DB = new PouchDB(environment.couchUrl, { fetch });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
+
   DB.setMaxListeners(0);
   module.exports.medic = DB;
-  module.exports.medicUsersMeta = DBUsersMeta;
-  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`);
+  module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
+  module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
+  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
   module.exports.users = new PouchDB(getDbUrl('/_users'));
 
   // Get the DB with the given name

@@ -5,11 +5,13 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const NAME = 'self_report';
 
 const getConfig = () => config.get(NAME) || [];
+
 const getConfiguredForm = (form) => form && getConfig().find(item => item && item.form === form);
 
 const hasPatientId = doc => doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid);
 
 module.exports = {
+  name: NAME,
   filter: (doc, info={}) => {
     return Boolean(
       doc &&

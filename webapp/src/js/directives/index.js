@@ -21,6 +21,7 @@
   require('./messages-list');
   require('./modal');
   require('./navigation');
+  require('./privacy-policy');
   require('./report-image');
   require('./reports-list');
   require('./reset-filter');
@@ -28,6 +29,7 @@
   require('./show-muted-modal');
   require('./simprints-filter');
   require('./sort-filter');
+  require('./startup-modals');
   require('./status-filter');
   require('./tasks-list');
 

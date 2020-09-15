@@ -14,8 +14,7 @@ process
   });
 
 (async () => {
-  await serverChecks.check(environment.serverUrl);
-  
+
   const app = require('./src/routing');
   const config = require('./src/config');
   const migrations = require('./src/migrations');
@@ -25,11 +24,14 @@ process
   const translations = require('./src/translations');
   const serverUtils = require('./src/server-utils');
   const uploadDefaultDocs = require('./src/upload-default-docs');
-
   const apiPort = process.env.API_PORT || 5988;
 
   try
   {
+    logger.info('Running server checks…');
+    await serverChecks.check(environment.serverUrl);
+    logger.info('Checks passed successfully');
+
     logger.info('Extracting ddoc…');
     await ddocExtraction.run();
     logger.info('DDoc extraction completed successfully');
@@ -41,16 +43,16 @@ process
     logger.info('Extracting initial documents…');
     await uploadDefaultDocs.run();
     logger.info('Extracting initial documents completed successfully');
-    
+
     logger.info('Loading configuration…');
     await config.load();
     logger.info('Configuration loaded successfully');
     await config.listen();
-    
+
     logger.info('Merging translations…');
     await translations.run();
     logger.info('Translations merged successfully');
-    
+
     logger.info('Running db migrations…');
     await migrations.run();
     logger.info('Database migrations completed successfully');
@@ -58,12 +60,13 @@ process
     logger.info('Updating xforms…');
     await generateXform.updateAll();
     logger.info('xforms updated successfully');
+
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
     logger.error('%o',err);
     process.exit(1);
   }
-
+  
   // Define error-handling middleware last.
   // http://expressjs.com/guide/error-handling.html
   app.use((err, req, res, next) => {
@@ -78,4 +81,5 @@ process
   app.listen(apiPort, () => {
     logger.info('Medic API listening on port ' + apiPort);
   });
+
 })();

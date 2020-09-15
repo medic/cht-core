@@ -38,10 +38,20 @@ describe('replications', () => {
     const replicateDbs = sinon.stub(replications, 'replicateDbs');
     replicateDbs.returns(Promise.resolve());
     sinon.stub(db, 'allDbs')
-      .resolves(['medic-b', 'medic-s', `${db.medicDbName}-user-x-meta`, `${db.medicDbName}-user-y-meta`]);
+      .resolves([
+        'medic-b',
+        'medic-s',
+        `${db.medicDbName}-user-x-meta`,
+        `${db.medicDbName}-user-y-meta`,
+        `${db.medicDbName}-user-xx-yy-meta`
+      ]);
     return replications.execute().then(() => {
       assert.equal(replicateDbs.callCount, 1);
-      assert.deepEqual(replicateDbs.args[0][0], [`${db.medicDbName}-user-x-meta`, `${db.medicDbName}-user-y-meta`]);
+      assert.deepEqual(replicateDbs.args[0][0], [
+        `${db.medicDbName}-user-x-meta`,
+        `${db.medicDbName}-user-y-meta`,
+        `${db.medicDbName}-user-xx-yy-meta`
+      ]);
       assert.equal(replicateDbs.args[0][1], `${db.medicDbName}-users-meta`);
     });
   });

@@ -267,6 +267,13 @@
         templateUrl: 'templates/partials/configuration_user.html'
       })
 
+      .state('privacyPolicy', {
+        url: '/privacy-policy',
+        controller: 'PrivacyPolicyCtrl',
+        controllerAs: 'privacyPolicyCtrl',
+        templateUrl: 'templates/partials/privacy_policy.html'
+      })
+
       // about page
       .state('about', {
         url: '/about',

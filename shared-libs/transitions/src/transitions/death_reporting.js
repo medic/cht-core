@@ -4,7 +4,7 @@ const utils = require('../lib/utils');
 const objectPath = require('object-path');
 const transitionUtils = require('./utils');
 const db = require('../db');
-const TRANSITION_NAME = 'death_reporting';
+const NAME = 'death_reporting';
 const CONFIG_NAME = 'death_reporting';
 const MARK_PROPERTY_NAME = 'mark_deceased_forms';
 const UNDO_PROPERTY_NAME = 'undo_deceased_forms';
@@ -37,6 +37,7 @@ const updatePatient = (patient, doc) => {
 };
 
 module.exports = {
+  name: NAME,
   init: () => {
     const forms = getConfirmFormCodes();
     if (!forms || !_.isArray(forms) || !forms.length) {
@@ -50,7 +51,7 @@ module.exports = {
       doc.type === 'data_record' &&
       (isConfirmForm(doc.form) || isUndoForm(doc.form)) &&
       doc.patient &&
-      !transitionUtils.hasRun(info, TRANSITION_NAME) &&
+      !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc)
     );
   },

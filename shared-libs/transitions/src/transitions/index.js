@@ -339,6 +339,25 @@ const availableTransitions = () => {
   return AVAILABLE_TRANSITIONS;
 };
 
+const getDeprecatedTransitions = () => {
+  const deprecatedList = [];
+
+  AVAILABLE_TRANSITIONS.forEach(transitionName => {
+    try {
+      const transition = require('./' + transitionName);
+
+      if (transition.deprecated) {
+        deprecatedList.push(transition);
+      }
+    } catch (e) {
+      logger.error(`Failed read transition "${transitionName}"`);
+      logger.error('%o', e);
+    }
+  });
+
+  return deprecatedList;
+};
+
 module.exports = {
   _loadTransition: loadTransition,
   _lineage: lineage,
@@ -350,5 +369,6 @@ module.exports = {
   applyTransitions: applyTransitions,
   processChange: processChange,
   processDocs: processDocs,
-  _transitions: () => transitions
+  _transitions: () => transitions,
+  getDeprecatedTransitions: getDeprecatedTransitions
 };

@@ -83,6 +83,7 @@ const getContact = doc => {
  * phone number.
  */
 module.exports = {
+  name: NAME,
   filter: (doc, info = {}) => {
     return Boolean(
       doc &&

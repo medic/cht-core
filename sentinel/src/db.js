@@ -55,6 +55,7 @@ if (UNIT_TEST_ENV) {
   module.exports.allDbs = stubMe('allDbs');
   module.exports.get = stubMe('get');
   module.exports.close = stubMe('close');
+  module.exports.medicDbName = stubMe('medicDbName');
 } else if (COUCH_URL) {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
@@ -63,6 +64,7 @@ if (UNIT_TEST_ENV) {
   module.exports.serverUrl = couchUrl.slice(0, couchUrl.lastIndexOf('/'));
 
   const fetchFn = (url, opts) => {
+    // Adding audit flags (haproxy) Service and user that made the request initially.
     opts.headers.set('X-Medic-Service', 'sentinel');
     opts.headers.set('X-Medic-User', 'sentinel');
     return PouchDB.fetch(url, opts);

@@ -3,6 +3,7 @@ const db = require('../db');
 const NAME = 'update_sent_by';
 
 module.exports = {
+  name: NAME,
   filter: function(doc, info={}) {
     const self = module.exports;
     return Boolean(
