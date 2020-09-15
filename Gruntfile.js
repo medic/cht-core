@@ -13,7 +13,8 @@ const {
   UPLOAD_URL,
   STAGING_SERVER,
   BUILDS_SERVER,
-  TRAVIS_BUILD_NUMBER
+  TRAVIS_BUILD_NUMBER,
+  WEBDRIVER_VERSION=85
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
@@ -87,6 +88,16 @@ module.exports = function(grunt) {
           },
         ],
       },
+      'webdriver-version': {
+        src: ['node_modules/protractor/node_modules/webdriver-manager/built/config.json'],
+        overwrite: true,
+        replacements: [
+          {
+            from: /"maxChromedriver": ".*",/g,
+            to: `"maxChromedriver": "${WEBDRIVER_VERSION}",`,
+          },
+        ]
+      },
     },
     'couch-compile': {
       primary: {
@@ -127,10 +138,6 @@ module.exports = function(grunt) {
         }
       },
       test: {
-        options: {
-          user: couchConfig.username,
-          pass: couchConfig.password,
-        },
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
         },
@@ -357,14 +364,6 @@ module.exports = function(grunt) {
         ],
         dest: 'webapp/node_modules_backup',
       },
-      'test-libraries-to-patch': {
-        expand: true,
-        cwd: 'node_modules',
-        src: [
-          'protractor/node_modules/webdriver-manager/**'
-        ],
-        dest: 'node_modules_backup',
-      },
     },
     exec: {
       'clean-build-dir': {
@@ -486,7 +485,7 @@ module.exports = function(grunt) {
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
-          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"'`
+          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
         ].join('&& ')
       },
       'clean-test-database': {
@@ -553,25 +552,6 @@ module.exports = function(grunt) {
           }).join(' && ');
         },
       },
-      'undo-test-patches': {
-        cmd: () => {
-          const modulesToPatch = [
-            'protractor/node_modules/webdriver-manager'
-          ];
-
-          return modulesToPatch.map(module => {
-            const backupPath = 'node_modules_backup/' + module;
-            const modulePath = 'node_modules/' + module;
-            return `
-              [ -d ${backupPath} ] &&
-              rm -rf ${modulePath} &&
-              mv ${backupPath} ${modulePath} &&
-              echo "Module restored: ${module}" ||
-              echo "No restore required for: ${module}"
-            `;
-          }).join(' && ');
-        },
-      },
       'test-config-standard': {
         cmd: [
           'cd config/standard',
@@ -623,14 +603,6 @@ module.exports = function(grunt) {
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-          ];
-          return patches.join(' && ');
-        },
-      },
-      'apply-test-patches': {
-        cmd: () => {
-          const patches = [
-            'patch node_modules/protractor/node_modules/webdriver-manager/built/config.json < tests/patches/webdriver-manager-config.patch',
           ];
           return patches.join(' && ');
         },
@@ -829,6 +801,16 @@ module.exports = function(grunt) {
           timeout: 10000,
         },
       },
+      api: {
+        src: [
+          'api/tests/mocha/**/*.js'
+        ],
+      },
+      sentinel: {
+        src: [
+          'sentinel/tests/**/*.js'
+        ],
+      }
     },
     ngtemplates: {
       inboxApp: {
@@ -1024,14 +1006,8 @@ module.exports = function(grunt) {
     'exec:pack-node-modules',
   ]);
 
-  grunt.registerTask('patch-webdriver', 'Patches webdriver to support latest Chrome', [
-    'exec:undo-test-patches',
-    'copy:test-libraries-to-patch',
-    'exec:apply-test-patches',
-  ]);
-
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    'patch-webdriver',
+    'replace:webdriver-version',
     'exec:start-webdriver',
   ]);
 
@@ -1082,6 +1058,16 @@ module.exports = function(grunt) {
     'env:unit-test',
     'exec:shared-lib-unit',
     'mochaTest:unit',
+  ]);
+
+  grunt.registerTask('unit-api', 'API unit tests', [
+    'env:unit-test',
+    'mochaTest:api',
+  ]);
+
+  grunt.registerTask('unit-sentinel', 'Sentinel unit tests', [
+    'env:unit-test',
+    'mochaTest:sentinel',
   ]);
 
   // CI tasks

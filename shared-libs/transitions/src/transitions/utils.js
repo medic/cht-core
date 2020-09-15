@@ -65,5 +65,23 @@ module.exports = {
 
   hasRun: (doc, transition) => {
     return !!(doc.transitions && doc.transitions[transition]);
+  },
+
+  getDeprecationMessage(name, deprecatedIn, extraInfo) {
+    if (!name) {
+      return;
+    }
+
+    let message = name + ' transition is deprecated';
+
+    if (deprecatedIn) {
+      message += ' since ' + deprecatedIn;
+    }
+
+    if (extraInfo) {
+      message += '. ' + extraInfo;
+    }
+
+    return message;
   }
 };

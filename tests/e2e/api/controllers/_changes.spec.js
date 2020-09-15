@@ -1246,7 +1246,7 @@ describe('changes handler', () => {
     });
 
     describe('Needs signoff', () => {
-      beforeEach(done => {
+      beforeEach(() => {
         const patient = {
           _id: 'clinic_patient',
           type: 'person',
@@ -1259,7 +1259,7 @@ describe('changes handler', () => {
           reported_date: 1,
           parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
         };
-        utils.saveDocs([patient, healthCenterPatient]).then(done);
+        return utils.saveDocs([patient, healthCenterPatient]);
       });
 
       it('should do nothing when not truthy or not present', () => {
@@ -1544,23 +1544,57 @@ describe('changes handler', () => {
     });
   });
 
-  it('should not return reports about your place by someone above you in the hierarchy', () =>
-    utils
-      .saveDoc({
-        type:'data_record', _id:'chw-report', place_id:'fixture:chwville',
-        contact:{ _id:'fixture:user:chw' }, form:'some-form'
-      })
-      .then(() => utils.saveDoc({
-        type:'data_record', _id:'chw-boss-report', place_id:'fixture:chwville',
-        contact:{ _id:'fixture:user:chw-boss' }, form:'some-form'
-      }))
+  it('should not return reports about your place by someone above you in the hierarchy', () => {
+    const docs = [
+      {
+        // report about home place submitted by logged in user
+        _id: 'chw-report-1',
+        type: 'data_record',
+        place_id: 'fixture:chwville',
+        contact: { _id: 'fixture:user:chw' },
+        form: 'form',
+      },
+      {
+        // private report about place submitted by logged in user
+        _id: 'chw-report-2',
+        type: 'data_record',
+        place_id: 'fixture:chwville',
+        contact: { _id: 'fixture:user:chw' },
+        form: 'form',
+        fields: { private: true },
+      },
+      {
+        // report about place submitted by someone else
+        _id: 'chw-report-3',
+        type: 'data_record',
+        place_id: 'fixture:chwville',
+        contact: { _id: 'someone_else' },
+        form: 'form',
+      },
+      {
+        // private report about place submitted by someone else
+        _id: 'chw-report-4',
+        type: 'data_record',
+        place_id: 'fixture:chwville',
+        contact: { _id: 'someone_else' },
+        form: 'form',
+        fields: { private: true },
+      },
+    ];
+    return utils
+      .saveDocs(docs)
       .then(() => requestChanges('chw'))
-      .then(changes =>
+      .then(changes => {
         assertChangeIds(changes,
           'org.couchdb.user:chw',
           'fixture:chwville',
           'fixture:user:chw',
-          'chw-report')));
+          'chw-report-1',
+          'chw-report-2',
+          'chw-report-3',
+        );
+      });
+  });
 
   it('should update the feed when the doc is updated', () => {
     let seq_number;

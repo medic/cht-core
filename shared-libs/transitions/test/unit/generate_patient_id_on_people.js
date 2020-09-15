@@ -4,6 +4,7 @@ const config = require('../../src/config');
 const transitionUtils = require('../../src/transitions/utils');
 const transition = require('../../src/transitions/generate_patient_id_on_people');
 const generateShortcodeOnContacts = require('../../src/transitions/generate_shortcode_on_contacts');
+const logger = require('../../src/lib/logger');
 
 const types = [
   { id: 'person', person: true },
@@ -13,6 +14,25 @@ const types = [
 describe('generate_patient_id_on_people transition', () => {
   beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: types }));
   afterEach(() => sinon.restore());
+
+  it('should have basic properties defined', () => {
+    assert.equal(transition.name, 'generate_patient_id_on_people');
+    assert.equal(transition.asynchronousOnly, true);
+    assert.equal(transition.deprecated, true);
+    assert.equal(transition.deprecatedIn, '3.8.x');
+  });
+
+  it('init() should log a warning when transition is deprecated.', () => {
+    const deprecatedMsg = 'Please use "generate_shortcode_on_contacts" transition instead.';
+    sinon.stub(logger, 'warn');
+
+    transition.init();
+
+    assert.equal(logger.warn.callCount, 1);
+    assert.equal(logger.warn.args[0][0].includes(transition.name), true);
+    assert.equal(logger.warn.args[0][0].includes(transition.deprecatedIn), true);
+    assert.equal(logger.warn.args[0][0].includes(deprecatedMsg), true);
+  });
 
   it('adds patient_id to people', () => {
     sinon.stub(transitionUtils, 'getUniqueId').resolves('something');

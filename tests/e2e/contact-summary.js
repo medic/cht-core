@@ -9,8 +9,28 @@ describe('Contact summary info', () => {
     if (contact.type === "person") {
       fields = [
         { label: "test.pid", value: contact.patient_id, width: 3 },
-        { label: "test.sex", value: contact.sex, width: 3 }
+        { label: "test.sex", value: contact.sex, width: 3 },
       ];
+      Object.keys(contact.linked_docs).forEach(key => {
+        const linkedDoc = contact.linked_docs[key];
+        if (!linkedDoc) {
+          return;
+        }
+        
+        if (linkedDoc.type === 'data_record') {
+          fields.push({
+            label: key,
+            value: linkedDoc.form,
+            width: 3,
+          });
+        } else {              
+          fields.push({
+            label: key,
+            value: linkedDoc.name + ' ' + linkedDoc.phone,
+            width: 3,
+          });
+        }
+      });
       let pregnancy;
       let pregnancyDate;
       reports.forEach(report=> {
@@ -61,16 +81,6 @@ describe('Contact summary info', () => {
     type: 'clinic',
     name: 'Bob Place',
   };
-  const CAROL = {
-    _id: 'carol-contact',
-    reported_date: 1,
-    type: 'person',
-    name: 'Carol Carolina',
-    parent: BOB_PLACE,
-    patient_id: '05946',
-    sex: 'f',
-    date_of_birth: 1462333250374,
-  };
   const DAVID = {
     _id: 'david-contact',
     reported_date: 1,
@@ -78,6 +88,40 @@ describe('Contact summary info', () => {
     name: 'David Davidson',
     phone: '+447765902002',
     parent: BOB_PLACE,
+  };
+
+  const DAVID_VISIT = {
+    _id: 'david_visit_form',
+    form: 'VISIT',
+    type: 'data_record',
+    content_type: 'xml',
+    reported_date: 1462538250374,
+    patient_id: DAVID.patient_id,
+    contact: {
+      name: 'Sharon',
+      phone: '+555',
+      type: 'person',
+      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
+      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
+    },
+    from: '+555',
+    hidden_fields: [],
+  };
+
+  const CAROL = {
+    _id: 'carol-contact',
+    reported_date: 1,
+    type: 'person',
+    name: 'Carol Carolina',
+    parent: { _id: BOB_PLACE._id },
+    patient_id: '05946',
+    sex: 'f',
+    date_of_birth: 1462333250374,
+    linked_docs: {
+      aliceTag: ALICE._id,
+      davidTag: { _id: DAVID._id },
+      visitTag: { _id: DAVID_VISIT._id },
+    },
   };
 
   // reports
@@ -115,7 +159,7 @@ describe('Contact summary info', () => {
     hidden_fields: [],
   };
 
-  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT];
+  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
 
   beforeEach(done => {
     utils
@@ -179,6 +223,21 @@ describe('Contact summary info', () => {
         element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p'))
       )
     ).toBe(CAROL.sex);
+
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(3) label'))))
+      .toBe('aliceTag');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(3) p'))))
+      .toBe(ALICE.name + ' ' + ALICE.phone);
+
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(4) label'))))
+      .toBe('davidTag');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(4) p'))))
+      .toBe(DAVID.name + ' ' + DAVID.phone);
+
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(5) label'))))
+      .toBe('visitTag');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(5) p'))))
+      .toBe(DAVID_VISIT.form);
 
     // assert that the pregnancy card exists and has the right fields.
     expect(

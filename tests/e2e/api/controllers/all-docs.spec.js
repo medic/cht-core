@@ -90,11 +90,10 @@ const hasMatchingRow = (rows, id, exact = true) => {
 };
 
 describe('all_docs handler', () => {
-  beforeAll(done => {
-    utils
+  beforeAll(() => {
+    return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .then(() => utils.createUsers(users));
   });
 
   afterAll(done =>
@@ -432,6 +431,58 @@ describe('all_docs handler', () => {
           { id: 'allowed_report', key: 'allowed_report', value: { rev: docs[1]._rev, deleted: true }},
           { id: 'denied_contact', error: 'forbidden' },
           { id: 'denied_report', error: 'forbidden' },
+        ]);
+      });
+  });
+
+  it('should not return sensitive documents', () => {
+    const docs = [
+      {
+        _id: 'insensitive_report_1',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:offline'},
+        patient_id: 'fixture:offline'
+      },
+      {
+        _id: 'insensitive_report_2',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:offline'},
+        patient_id: 'fixture:offline',
+        fields: { private: true },
+      },
+      {
+        _id: 'insensitive_report_3',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        patient_id: 'fixture:offline',
+        fields: { private: false },
+      },
+      {
+        _id: 'sensitive_report',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        patient_id: 'fixture:offline',
+        fields: { private: true },
+      },
+    ];
+
+    const keys = docs.map(doc => doc._id);
+    const opts = _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions);
+
+    return utils
+      .saveDocs(docs)
+      .then(result => result.forEach((r, idx) => docs[idx]._rev = r.rev))
+      .then(() => utils.requestOnMedicDb(opts))
+      .then(result => {
+        chai.expect(result.rows).to.deep.equal([
+          { id: 'insensitive_report_1', key: 'insensitive_report_1', value: { rev: docs[0]._rev }},
+          { id: 'insensitive_report_2', key: 'insensitive_report_2', value: { rev: docs[1]._rev }},
+          { id: 'insensitive_report_3', key: 'insensitive_report_3', value: { rev: docs[2]._rev }},
+          { id: 'sensitive_report', error: 'forbidden' },
         ]);
       });
   });

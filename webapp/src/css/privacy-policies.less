@@ -1,0 +1,39 @@
+#privacy-policy-wrapper {
+  z-index: 11;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  background: white;
+
+  .container {
+    height: 100%;
+
+    > .loader {
+      top: 50%;
+      margin-top: -20px;
+    }
+
+    .content {
+      height: 100%;
+      padding-bottom: 67px;
+      position: relative;
+
+      .html-content {
+        height: 100%;
+        overflow-y: auto;
+      }
+
+      .footer {
+        position: absolute;
+        border-top: 1px solid @separator-color;
+        padding: 15px;
+        width: 100%;
+        bottom: 0;
+      }
+    }
+  }
+}
+

@@ -4,7 +4,6 @@ const validation = require('../lib/validation');
 const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const acceptPatientReports = require('./accept_patient_reports');
-
 const NAME = 'accept_case_reports';
 
 const getConfig = form => {
@@ -81,6 +80,7 @@ const updatePlaceUuid = (doc, registrations) => {
 };
 
 module.exports = {
+  name: NAME,
   filter: function(doc, info = {}) {
     return Boolean(
       doc &&

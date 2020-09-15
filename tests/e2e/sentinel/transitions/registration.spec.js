@@ -1796,6 +1796,7 @@ describe('registration', () => {
       form: 'FORM',
       from: '+444999',
       fields: {
+        patient_uuid: 'person',
         patient_id: 'patient',
       },
       some_date_field: moment().subtract(3, 'week').valueOf(),
@@ -1812,6 +1813,7 @@ describe('registration', () => {
       form: 'FORM',
       from: '+444999',
       fields: {
+        patient_uuid: 'person',
         patient_id: 'patient',
       },
       some_date_field: moment().subtract(2, 'week').valueOf(),

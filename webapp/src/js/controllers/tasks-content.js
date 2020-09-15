@@ -57,6 +57,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     };
     const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
+    let geoHandle;
 
     const setSelected = function(id) {
       if (!id) {
@@ -66,6 +67,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       }
       const task = LiveList.tasks.getList().find(task => task._id === id);
       if (task) {
+        geoHandle = Geolocation.init();
         const refreshing = (ctrl.selectedTask && ctrl.selectedTask._id) === id;
         ctrl.settingSelected(refreshing);
         hydrateTaskEmission(task).then(hydratedTask => {
@@ -80,13 +82,6 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
         });
       }
     };
-
-    let geolocation;
-    Geolocation()
-      .then(function(position) {
-        geolocation = position;
-      })
-      .catch($log.warn);
 
     const hasOneActionAndNoFields = function(task) {
       return Boolean(
@@ -207,7 +202,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
       ctrl.setEnketoSavingStatus(true);
       resetFormError();
-      Enketo.save(ctrl.formId, ctrl.form, geolocation)
+      Enketo.save(ctrl.formId, ctrl.form, geoHandle)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
@@ -238,6 +233,9 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     ctrl.formId = null;
     ctrl.loadTasks.then(() => setSelected($state.params.id));
 
-    $scope.$on('$destroy', unsubscribe);
+    $scope.$on('$destroy', () => {
+      geoHandle && geoHandle.cancel();
+      unsubscribe();
+    });
   }
 );

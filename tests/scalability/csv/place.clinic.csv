@@ -1,0 +1,17 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,is_name_generated,name,reported_date:timestamp
+clinic_1,health_center_1,FALSE,Clinic_1,1544031155715
+clinic_2,health_center_1,FALSE,Clinic_2,1544031155715
+clinic_3,health_center_1,FALSE,Clinic_3,1544031155715
+clinic_4,health_center_1,FALSE,Clinic_4,1544031155715
+clinic_5,health_center_1,FALSE,Clinic_5,1544031155715
+clinic_6,health_center_1,FALSE,Clinic_6,1544031155715
+clinic_7,health_center_2,FALSE,Clinic_7,1544031155715
+clinic_8,health_center_2,FALSE,Clinic_8,1544031155715
+clinic_9,health_center_2,FALSE,Clinic_9,1544031155715
+clinic_10,health_center_2,FALSE,Clinic_10,1544031155715
+clinic_11,health_center_2,FALSE,Clinic_11,1544031155715
+clinic_12,health_center_2,FALSE,Clinic_12,1544031155715
+clinic_13,health_center_3,FALSE,Clinic_13,1544031155715
+clinic_14,health_center_4,FALSE,Clinic_14,1544031155715
+clinic_15,health_center_5,FALSE,Clinic_15,1544031155715
+clinic_16,health_center_6,FALSE,Clinic_16,1544031155715
