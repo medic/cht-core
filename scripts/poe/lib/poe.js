@@ -2,7 +2,11 @@ const {save, mmVersion, error} = require('./utils');
 const queryString = require('querystring');
 const post = require('./post');
 const {readStream} = require('./read');
-const {validTranslations, validDirectory, validatePlaceHolders} = require('./validate');
+const {
+  validTranslations,
+  validDirectory,
+  validatePlaceHolders
+} = require('./validate');
 const slack = require('./slack')(process.env.SLACK_WEBHOOK_URL);
 
 const upload = async (opts) => {
@@ -58,8 +62,8 @@ const download = async (opts) => {
       return response;
     });
     await Promise.all(downloads);
-    if (!validatePlaceHolders(langs, dir)) {
-      throw new Error('Invalid placeholders!');
+    if (! await validatePlaceHolders(langs, dir)) {
+      throw new Error('Invalid placeholders or "messageformat" messages!');
     }
   }
 };
