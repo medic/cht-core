@@ -13,9 +13,9 @@ import { ChangesService } from '../../services/changes.service';
   templateUrl: './messages.component.html'
 })
 export class MessagesComponent implements OnInit, OnDestroy {
-  private subscriptions: Subscription = new Subscription();
   private globalActions: GlobalActions;
   private messagesActions: MessagesActions;
+  subscriptions: Subscription = new Subscription();
 
   loading = false;
   loadingContent;
@@ -29,13 +29,13 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private messageContactService: MessageContactService
   ) {
     const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getConversations)),
+      this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getLoadingContent)),
       this.store.pipe(select(Selectors.getMessagesError)),
     ).subscribe(([
-      selectedConversation,
       conversations,
+      selectedConversation,
       loadingContent,
       error,
     ]) => {
@@ -75,13 +75,13 @@ export class MessagesComponent implements OnInit, OnDestroy {
     });*/
   }
 
-  setConversations(messages = [], {merge = false} = {}) {
+  setConversations(conversations = [], {merge = false} = {}) {
     if (merge) {
-      this.removeDeleted(this.conversations, messages);
-      this.mergeUpdated(this.conversations, messages);
+      this.removeDeleted(this.conversations, conversations);
+      this.mergeUpdated(this.conversations, conversations);
     }
 
-    this.messagesActions.addConversations(messages);
+    this.messagesActions.addConversations(conversations);
     this.updateActionBar();
   }
 
@@ -90,23 +90,23 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     return this.messageContactService
       .getList()
-      .then(messages => {
-        this.setConversations(messages, { merge });
+      .then(conversations => {
+        this.setConversations(conversations, { merge });
         this.loading = false;
       });
   }
 
-  removeDeleted(conversations, changedMessages) {
-    for (let i = conversations.length - 1; i >= 0; i--) {
-      if (!changedMessages.some(changed => conversations[i].key === changed.key)) {
-        conversations.splice(i, 1);
+  removeDeleted(currentConversations, updatedConversations) {
+    for (let i = currentConversations.length - 1; i >= 0; i--) {
+      if (!updatedConversations.some(changed => currentConversations[i].key === changed.key)) {
+        currentConversations.splice(i, 1);
       }
     }
   }
 
-  mergeUpdated(conversations, changedMessages) {
-    changedMessages.forEach(updated => {
-      const match = _.find(conversations, existing => existing.key === updated.key);
+  mergeUpdated(currentConversations, updatedConversations) {
+    updatedConversations.forEach(updated => {
+      const match = _.find(currentConversations, existing => existing.key === updated.key);
 
       if (match) {
         if (!_.isEqual(updated.message, match.message)) {
@@ -114,7 +114,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
           match.read = false;
         }
       } else {
-        conversations.push(updated);
+        currentConversations.push(updated);
       }
     });
   }

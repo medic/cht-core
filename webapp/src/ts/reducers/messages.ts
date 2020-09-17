@@ -1,9 +1,15 @@
 import { createReducer, on } from '@ngrx/store';
-import * as _ from 'lodash-es';
 
 import { Actions } from '../actions/messages';
 
-const initialState = {
+export interface MessagesState {
+  error: boolean;
+  conversations: object[],
+  messages: object[],
+  selected: object;
+}
+
+const initialState: MessagesState = {
   error: false,
   conversations: [],
   messages: [],

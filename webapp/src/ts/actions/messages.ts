@@ -1,4 +1,4 @@
-import { createAction, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 
 import { createSingleValueAction } from './actionUtils';
 

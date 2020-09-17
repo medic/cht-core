@@ -17,7 +17,7 @@ export class MessageContactService {
   ) { }
 
   private listParams() {
-    return {group_level: 1};
+    return { group_level: 1 };
   }
 
   private conversationParams(id, skip, limit = 0) {
@@ -45,7 +45,7 @@ export class MessageContactService {
           return response.rows;
         }
 
-//include_docs on reduce views (listParams)
+        //include_docs on reduce views (listParams)
         const ids = response.rows.map(row => row.value && row.value.id);
 
         return this.getDataRecordsService

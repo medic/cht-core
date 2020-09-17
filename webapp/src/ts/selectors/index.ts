@@ -1,7 +1,7 @@
-const getGlobalState = (state) => state.global;
-const getServicesState = (state) => state.services;
-const getReportsState = (state) => state.reports;
-const getMessagesState = (state) => state.messages;
+const getGlobalState = (state) => state.global || {};
+const getServicesState = (state) => state.services || {};
+const getReportsState = (state) => state.reports || {};
+const getMessagesState = (state) => state.messages || {};
 
 export const Selectors = {
   // global

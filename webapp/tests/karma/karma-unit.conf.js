@@ -14,7 +14,7 @@ module.exports = function (config) {
       require('@angular-devkit/build-angular/plugins/karma')
     ],
     client: {
-      clearContext: false // leave Jasmine Spec Runner output visible in browser
+      captureConsole: true
     },
     reporters: ['mocha'],
     mochaReporter: {
@@ -23,7 +23,7 @@ module.exports = function (config) {
     },
     port: 9876,
     colors: true,
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
     autoWatch: true,
     browsers: ['ChromeHeadless'],
     singleRun: false,
