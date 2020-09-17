@@ -1,4 +1,48 @@
-module.exports = function(config) {
+// Karma configuration file, see link for more information
+// https://karma-runner.github.io/1.0/config/configuration-file.html
+
+module.exports = function (config) {
+  config.set({
+    basePath: '../../',
+    frameworks: ['mocha', '@angular-devkit/build-angular'],
+    plugins: [
+      require('karma-mocha'),
+      require('karma-chai'),
+      require('karma-sinon'),
+      require('karma-chrome-launcher'),
+      require('karma-mocha-reporter'),
+      require('@angular-devkit/build-angular/plugins/karma')
+    ],
+    client: {
+      clearContext: false // leave Jasmine Spec Runner output visible in browser
+    },
+    reporters: ['mocha'],
+    mochaReporter: {
+      output: 'autowatch',
+      showDiff: true
+    },
+    port: 9876,
+    colors: true,
+    logLevel: config.LOG_INFO,
+    autoWatch: true,
+    browsers: ['ChromeHeadless'],
+    singleRun: false,
+    restartOnFileChange: true,
+    browserNoActivityTimeout: 60000,
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox']
+      }
+    },
+    files: [
+      { pattern: 'node_modules/sinon/pkg/sinon.js', instrument: false },
+      { pattern: 'node_modules/chai/chai.js', instrument: false },
+    ],
+  });
+};
+
+/*module.exports = function(config) {
 
   'use strict';
 
@@ -17,7 +61,7 @@ module.exports = function(config) {
       }
     },
     preprocessors: {
-      'src/templates/**/*.html': ['ng-html2js']
+      'src/templates/!**!/!*.html': ['ng-html2js']
     },
     ngHtml2JsPreprocessor: {
       moduleName: 'templates'
@@ -46,7 +90,7 @@ module.exports = function(config) {
       'tests/karma/utils.js',
 
       // test files
-      'tests/karma/unit/**/*.js'
+      'tests/karma/unit/!**!/!*.js'
     ]
   });
-};
+};*/
