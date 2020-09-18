@@ -19,20 +19,20 @@ module.exports = function (config) {
     reporters: ['mocha'],
     mochaReporter: {
       output: 'autowatch',
-      showDiff: true
+      showDiff: true,
     },
+    logLevel: config.LOG_INFO,
     port: 9876,
     colors: true,
-    logLevel: config.LOG_DEBUG,
     autoWatch: true,
-    browsers: ['ChromeHeadless'],
     singleRun: false,
     restartOnFileChange: true,
+    browsers: ['ChromeHeadless'],
     browserNoActivityTimeout: 60000,
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox']
+        flags: ['--no-sandbox'],
       }
     },
     files: [

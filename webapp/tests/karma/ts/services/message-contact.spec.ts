@@ -1,13 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
-import * as _ from 'lodash-es';
 
 import { MessageContactService } from '../../../../src/ts/services/message-contact.service';
 import { HydrateMessagesService } from '../../../../src/ts/services/hydrate-messages.service';
 import { GetDataRecordsService } from '../../../../src/ts/services/get-data-records.service';
 import { DbService } from '../../../../src/ts/services/db.service';
-import { compact } from 'lodash-es';
 
 describe('Message Contacts Service', () => {
   let service: MessageContactService;
@@ -44,14 +42,18 @@ describe('Message Contacts Service', () => {
 
   describe('getList()', () => {
     it('should build list', () => {
-      dbService.get().query.returns(Promise.resolve({
+      const dbRows = {
         rows: [
           { id: 'some_id1', value: { id: 'id1' } },
           { id: 'some_id2', value: { id: 'id2' } },
           { id: 'some_id3', value: { id: 'id3' } },
           { id: 'some_id4', value: { id: 'id4' } },
         ]
-      }));
+      };
+      dbService.get = () => ({
+        query: sinon.stub().returns(Promise.resolve(dbRows)),
+        allDocs: sinon.stub().returns(Promise.resolve(dbRows))
+      });
       getDataRecordsService.get.returns(Promise.resolve([
         { _id: 'id1' },
         { _id: 'id2' },
@@ -78,16 +80,18 @@ describe('Message Contacts Service', () => {
             { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'id4' } },
           ]]);
           expect(list).to.deep.equal([
-            { id: 'some_id1', hydrated: true },
-            { id: 'some_id2', hydrated: true },
-            { id: 'some_id3', hydrated: true },
-            { id: 'some_id4', hydrated: true },
+            { id: 'some_id1', hydrated: true, read: true },
+            { id: 'some_id2', hydrated: true, read: true },
+            { id: 'some_id3', hydrated: true, read: true },
+            { id: 'some_id4', hydrated: true, read: true },
           ]);
         });
     });
-/*
+
     it('should return errors from db query', () => {
-      dbService.get().query.returns(Promise.reject('server error'));
+      dbService.get = () => ({
+        query: sinon.stub().returns(Promise.reject('server error'))
+      });
 
       service
         .getList()
@@ -97,6 +101,192 @@ describe('Message Contacts Service', () => {
         .catch(err => {
           expect(err).to.equal('server error');
         });
-    });*/
+    });
+  });
+
+  describe('getConversation()', () => {
+    it('should build conversation', () => {
+      const expectedQueryParams = {
+        reduce: false,
+        descending: true,
+        include_docs: true,
+        skip: 0,
+        limit: 50,
+        startkey: [ 'abc', {} ],
+        endkey: [ 'abc' ]
+      };
+      const dbRows = {
+        rows: [
+          { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' } },
+          { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' } },
+          { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' } },
+          { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' } },
+        ]
+      };
+      const query = sinon.stub().returns(Promise.resolve(dbRows));
+      dbService.get = () => ({
+        query,
+        allDocs: sinon.stub().returns(Promise.resolve(dbRows))
+      });
+      hydrateMessagesService.hydrate.returns(Promise.resolve([
+        { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true },
+        { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true },
+        { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true },
+        { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' }, hydrated: true },
+      ]));
+
+      return service
+        .getConversation('abc')
+        .then(result => {
+          expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
+          chai.expect(getDataRecordsService.get.callCount).to.equal(0);
+          chai.expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
+          chai.expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[
+            { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' } },
+            { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' } },
+            { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' } },
+            { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' } },
+          ]]);
+          chai.expect(result).to.deep.equal([
+            { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true, read: true },
+            { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true, read: true },
+            { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true, read: true },
+            { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' }, hydrated: true, read: true },
+          ]);
+        });
+    });
+
+    it('should build conversation with skip', () => {
+      const expectedQueryParams = {
+        reduce: false,
+        descending: true,
+        include_docs: true,
+        skip: 45,
+        limit: 50,
+        startkey: [ 'abc', {} ],
+        endkey: [ 'abc' ]
+      };
+      const query = sinon.stub().returns(Promise.resolve({}));
+      dbService.get = () => ({
+        query,
+        allDocs: sinon.stub().returns(Promise.resolve({}))
+      });
+      hydrateMessagesService.hydrate.returns(Promise.resolve([]));
+
+      return service
+        .getConversation('abc', 45)
+        .then(result => {
+          expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
+          expect(getDataRecordsService.get.callCount).to.deep.equal(0);
+          expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
+          expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
+          expect(result).to.deep.equal([]);
+        });
+    });
+
+    it('should build conversation with limit', () => {
+      const expectedQueryParams = {
+        reduce: false,
+        descending: true,
+        include_docs: true,
+        skip: 45,
+        limit: 120,
+        startkey: [ 'abc', {} ],
+        endkey: [ 'abc' ]
+      };
+      const query = sinon.stub().returns(Promise.resolve({}));
+      dbService.get = () => ({
+        query,
+        allDocs: sinon.stub().returns(Promise.resolve({}))
+      });
+      hydrateMessagesService.hydrate.returns(Promise.resolve([]));
+
+      return service
+        .getConversation('abc', 45, 120)
+        .then(result => {
+        expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
+        expect(getDataRecordsService.get.callCount).to.deep.equal(0);
+        expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
+        expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
+        expect(result).to.deep.equal([]);
+      });
+    });
+
+    it('should build conversation with limit under default', () => {
+      const expectedQueryParams = {
+        reduce: false,
+        descending: true,
+        include_docs: true,
+        skip: 45,
+        limit: 50,
+        startkey: [ 'abc', {} ],
+        endkey: [ 'abc' ]
+      };
+      const query = sinon.stub().returns(Promise.resolve({}));
+      dbService.get = () => ({
+        query,
+        allDocs: sinon.stub().returns(Promise.resolve({}))
+      });
+      hydrateMessagesService.hydrate.returns(Promise.resolve([]));
+
+
+      return service
+        .getConversation('abc', 45, 45)
+        .then(result => {
+          expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
+          expect(getDataRecordsService.get.callCount).to.deep.equal(0);
+          expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
+          expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
+          expect(result).to.deep.equal([]);
+        });
+    });
+
+    it('should return errors from db query', () => {
+      dbService.get = () => ({
+        query: sinon.stub().returns(Promise.reject('server error'))
+      });
+
+      service
+        .getConversation('abc')
+        .then(() => {
+          assert.fail('expected exception');
+        })
+        .catch(err => {
+          expect(err).to.equal('server error');
+        });
+    });
+  });
+
+  describe('isRelevantChange()', () => {
+    it('should return falsy when change is not relevant', () => {
+      expect(!!service.isRelevantChange({})).to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some' })).to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: {} })).to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: {}, delete: false })).to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: { kujua_message: false }, delete: false }))
+        .to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: { sms_message: false }, delete: false }))
+        .to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: {} }, {})).to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: {} }, { messages: [] })).to.equal(false);
+      const messages = [
+        { doc: { _id: 'one' } },
+        { doc: { _id: 'two' } },
+        { doc: { _id: 'three' } }
+      ];
+      expect(!!service.isRelevantChange({ id: 'some', doc: {} }, { messages })).to.equal(false);
+    });
+
+    it('should return truthy when change is relevant', () => {
+      expect(!!service.isRelevantChange({ deleted: true })).to.equal(true);
+      expect(!!service.isRelevantChange({ id: 'some', doc: { kujua_message: true } })).to.equal(true);
+      expect(!!service.isRelevantChange({ id: 'some', doc: { sms_message: true } })).to.equal(true);
+      const messages = [
+        { doc: { _id: 'one' } },
+        { doc: { _id: 'two' } },
+        { doc: { _id: 'three' } }
+      ];
+      expect(!!service.isRelevantChange({ id: 'one' }, { messages })).to.equal(true);
+    });
   });
 });
