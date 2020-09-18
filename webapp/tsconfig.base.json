@@ -15,7 +15,20 @@
       "es2016",
       "dom"
     ],
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@mm-actions/*": ["src/ts/actions/*"],
+      "@mm-components/*": ["src/ts/components/*"],
+      "@mm-directives/*": ["src/ts/directives/*"],
+      "@mm-environments/*": ["src/ts/environments/*"],
+      "@mm-modals/*": ["src/ts/modals/*"],
+      "@mm-modules/*": ["src/ts/modules/*"],
+      "@mm-pipes/*": ["src/ts/pipes/*"],
+      "@mm-providers/*": ["src/ts/providers/*"],
+      "@mm-reducers/*": ["src/ts/reducers/*"],
+      "@mm-selectors/*": ["src/ts/selectors/*"],
+      "@mm-services/*": ["src/ts/services/*"]
+    }
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-import { Actions, MessagesActions } from '../../../../src/ts/actions/messages';
+import { Actions, MessagesActions } from '@mm-actions/messages';
 
 describe('Messages Action', () => {
   let store: any;

@@ -4,9 +4,9 @@ import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { MessagesComponent } from '../../../../../src/ts/modules/messages/messages.component';
-import { ChangesService } from '../../../../../src/ts/services/changes.service';
-import { MessageContactService } from '../../../../../src/ts/services/message-contact.service';
+import { MessagesComponent } from '@mm-modules/messages/messages.component';
+import { ChangesService } from '@mm-services/changes.service';
+import { MessageContactService } from '@mm-services/message-contact.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;

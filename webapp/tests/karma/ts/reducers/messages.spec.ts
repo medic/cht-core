@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
-import { Actions } from '../../../../src/ts/actions/messages';
-import { messagesReducer, MessagesState } from '../../../../src/ts/reducers/messages';
+import { Actions } from '@mm-actions/messages';
+import { messagesReducer, MessagesState } from '@mm-reducers/messages';
 
 describe('Messages Reducer', () => {
   let state: MessagesState;

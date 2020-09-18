@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { RouteGuardProvider } from '../../providers/route-guard.provider';
+import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
 import { MessagesComponent } from './messages.component';
 
 export const routes: Routes = [

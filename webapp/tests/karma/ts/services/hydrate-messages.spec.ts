@@ -3,8 +3,8 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import * as _ from 'lodash-es';
 
-import { HydrateMessagesService } from '../../../../src/ts/services/hydrate-messages.service';
-import { LineageModelGeneratorService } from '../../../../src/ts/services/lineage-model-generator.service';
+import { HydrateMessagesService } from '@mm-services/hydrate-messages.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 describe('Hydrate Messages Service', () => {
   let service: HydrateMessagesService

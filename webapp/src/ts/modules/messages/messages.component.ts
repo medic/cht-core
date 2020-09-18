@@ -3,11 +3,11 @@ import * as _ from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 
-import { MessageContactService } from '../../services/message-contact.service';
-import { GlobalActions } from '../../actions/global';
-import { MessagesActions } from '../../actions/messages';
-import { Selectors } from '../../selectors';
-import { ChangesService } from '../../services/changes.service';
+import { MessageContactService } from '@mm-services/message-contact.service';
+import { GlobalActions } from '@mm-actions/global';
+import { MessagesActions } from '@mm-actions/messages';
+import { Selectors } from '@mm-selectors/index';
+import { ChangesService } from '@mm-services/changes.service';
 
 @Component({
   templateUrl: './messages.component.html'

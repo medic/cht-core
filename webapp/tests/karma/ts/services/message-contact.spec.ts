@@ -2,10 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 
-import { MessageContactService } from '../../../../src/ts/services/message-contact.service';
-import { HydrateMessagesService } from '../../../../src/ts/services/hydrate-messages.service';
-import { GetDataRecordsService } from '../../../../src/ts/services/get-data-records.service';
-import { DbService } from '../../../../src/ts/services/db.service';
+import { MessageContactService } from '@mm-services/message-contact.service';
+import { HydrateMessagesService } from '@mm-services/hydrate-messages.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('Message Contacts Service', () => {
   let service: MessageContactService;
