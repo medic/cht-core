@@ -604,7 +604,7 @@ module.exports = function(grunt) {
       'unit-webapp': {
         cmd: () => {
           return [
-            `cd webapp`,
+            'cd webapp',
             '../node_modules/.bin/ng test webapp --watch=false',
             'cd ../',
           ].join(' && ');
@@ -613,7 +613,7 @@ module.exports = function(grunt) {
       'unit-webapp-continuous': {
         cmd: () => {
           return [
-            `cd webapp`,
+            'cd webapp',
             '../node_modules/.bin/ng test webapp --watch=true',
             'cd ../',
           ].join(' && ');
