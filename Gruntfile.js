@@ -973,7 +973,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    'unit-test-webapp',
+    'unit-webapp',
     'karma:admin',
     'env:unit-test',
     'exec:shared-lib-unit',
