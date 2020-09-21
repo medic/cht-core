@@ -87,7 +87,7 @@ describe('Messages Component', () => {
 
       component.mergeUpdated(conversations, changedMessages);
 
-      chai.expect(conversations).to.deep.equal([
+      expect(conversations).to.deep.equal([
         { key: 'a', message: { inAllMessages: true }},
         { key: 'c', message: { inAllMessages: true }},
         { key: 'b', message: { fromUpdatedMessages: true }}
@@ -106,7 +106,7 @@ describe('Messages Component', () => {
 
       component.mergeUpdated(conversations, changedMessages);
 
-      chai.expect(conversations).to.deep.equal([
+      expect(conversations).to.deep.equal([
         { key: 'a', message: { inAllMessages: true } },
         { key: 'b', message: { fromUpdatedMessages: true }, read: false },
         { key: 'c', message: { inAllMessages: true } }
@@ -129,7 +129,7 @@ describe('Messages Component', () => {
 
     component.removeDeleted(conversations, updatedConversations);
 
-    chai.expect(conversations).to.deep.equal([
+    expect(conversations).to.deep.equal([
       { key: 'a', message: { inAllMessages: true } },
       { key: 'c', message: { inAllMessages: true } },
     ]);

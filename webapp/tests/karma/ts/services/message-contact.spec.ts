@@ -139,15 +139,15 @@ describe('Message Contacts Service', () => {
         .getConversation('abc')
         .then(result => {
           expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
-          chai.expect(getDataRecordsService.get.callCount).to.equal(0);
-          chai.expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
-          chai.expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[
+          expect(getDataRecordsService.get.callCount).to.equal(0);
+          expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
+          expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[
             { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' } },
             { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' } },
             { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' } },
             { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' } },
           ]]);
-          chai.expect(result).to.deep.equal([
+          expect(result).to.deep.equal([
             { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true, read: true },
             { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true, read: true },
             { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true, read: true },

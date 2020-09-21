@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import * as _ from 'lodash-es';
+import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 
@@ -106,10 +106,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
   mergeUpdated(currentConversations = [], updatedConversations = []) {
     updatedConversations.forEach(updated => {
-      const match = _.find(currentConversations, existing => existing.key === updated.key);
+      const match = _find(currentConversations, existing => existing.key === updated.key);
 
       if (match) {
-        if (!_.isEqual(updated.message, match.message)) {
+        if (!_isEqual(updated.message, match.message)) {
           match.message = updated.message;
           match.read = false;
         }

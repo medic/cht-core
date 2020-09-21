@@ -1,4 +1,4 @@
-import * as _ from 'lodash-es';
+import { map as _map, isArray as _isArray } from 'lodash-es';
 import { Injectable } from '@angular/core';
 import { DbService } from './db.service';
 import { GetSubjectSummariesService } from './get-subject-summaries.service';
@@ -36,7 +36,7 @@ export class GetDataRecordsService {
       .get()
       .allDocs({ keys: ids, include_docs: true })
       .then((response) => {
-        return _.map(response.rows, 'doc');
+        return _map(response.rows, 'doc');
       });
   };
 
@@ -56,7 +56,7 @@ export class GetDataRecordsService {
     if (!ids) {
       return Promise.resolve([]);
     }
-    const arrayGiven = _.isArray(ids);
+    const arrayGiven = _isArray(ids);
     if (!arrayGiven) {
       ids = [ ids ];
     }
