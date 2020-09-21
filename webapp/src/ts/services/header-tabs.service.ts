@@ -19,7 +19,7 @@ export class HeaderTabsService {
     },
     {
       name: 'tasks',
-      route: 'tasks.detail',
+      route: 'tasks',
       defaultIcon: 'fa-flag',
       translation: 'Tasks',
       permissions: ['can_view_tasks', 'can_view_tasks_tab'],

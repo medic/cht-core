@@ -8,5 +8,8 @@ module.exports = {
     new MomentLocalesPlugin({
       localesToKeep: ['en', 'fr', 'es', 'bm', 'hi', 'id', 'ne', 'sw'],
     }),
-  ]
+  ],
+  node: {
+    fs: "empty"
+  }
 };

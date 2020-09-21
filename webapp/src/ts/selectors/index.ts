@@ -1,6 +1,7 @@
 const getGlobalState = (state) => state.global;
 const getServicesState = (state) => state.services;
 const getReportsState = (state) => state.reports;
+const getTasksState = (state) => state.tasks;
 
 export const Selectors = {
   // global
@@ -22,6 +23,11 @@ export const Selectors = {
   getReportsList: (state) => getReportsState(state).reports,
   listContains: (state) => (id) => getReportsState(state).reportsById.has(id),
   getSelectedReports: (state) => getReportsState(state).selected,
+
+  // tasks
+  getTasksList: (state) => getTasksState(state).tasks,
+  listContainsTask: (state) => (id) => getTasksState(state).tasksById.has(id),
+  getSelectedTasks: (state) => getTasksState(state).selected,
 }
 /*
 

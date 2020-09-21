@@ -16,19 +16,18 @@ import { POUCHDB_OPTIONS } from '../constants';
   providedIn: 'root'
 })
 export class DbService {
-  private cache = {}
+  private cache = {};
   private isOnlineOnly;
 
   constructor(private session:SessionService, private location:LocationService) {
 
-
     this.isOnlineOnly = this.session.isOnlineOnly();
-
     if (!this.isOnlineOnly) {
       // delay the cleanup so it's out of the main startup sequence
+      const self = this;
       setTimeout(() => {
-        this.get().viewCleanup();
-        this.get({ meta: true }).viewCleanup();
+        self.get().viewCleanup();
+        self.get({ meta: true }).viewCleanup();
       }, 1000);
     }
   }
