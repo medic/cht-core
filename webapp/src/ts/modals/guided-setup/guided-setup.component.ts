@@ -7,32 +7,77 @@ import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { GlobalActions } from '../../actions/global';
 import { UpdateSettingsService } from '../../services/update-settings.service';
 import { LanguagesService } from '../../services/languages.service';
+import { SettingsService } from '../../services/settings.service';
+import { COUNTRY_LIST } from '../../providers/countries.provider';
 
-declare var $: any;
+declare let $: any;
+const countries = require('../../../js/modules/countries');
+
 
 @Component({
   selector: 'guided-setup',
   templateUrl: './guided-setup.component.html'
 })
-export class GuidedSetupComponent extends MmModalAbstract {
+export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
   private globalactions;
   model:{ countryCode?, gatewayNumber? } = {};
   error:{ message? } = {};
   enabledLocales;
+  countryList;
 
   constructor(
     public bsModalRef: BsModalRef,
     private store: Store,
     private updateSettingsService: UpdateSettingsService,
-    private langugesService: LanguagesService
+    private langugesService: LanguagesService,
+    private settingsService: SettingsService,
   ) {
     super();
     this.globalactions = new GlobalActions(store);
   }
 
-  ngOnInit(): void {
+  private updateNumbers() {
+    const gatewayNumber = $('#guided-setup [name=gateway-number]').val();
+    const defaultCountryCode = $('#guided-setup [name=default-country-code]').val();
+    const parts = [];
+    if (defaultCountryCode) {
+      parts.push('+' + defaultCountryCode);
+    }
+    if (gatewayNumber) {
+      parts.push(gatewayNumber);
+    }
+    $(this).closest('.panel').find('.panel-heading .value').text(parts.join(', '));
+    if (gatewayNumber && defaultCountryCode) {
+      $(this).closest('.panel').addClass('panel-complete');
+    }
+  };
+
+  private selectOption = function(e) {
+    e.preventDefault();
+    const elem = $(this);
+    elem.closest('.horizontal-options')
+      .find('.selected')
+      .removeClass('selected');
+    elem.addClass('selected');
+    const panel = elem.closest('.panel');
+    const label = [];
+    panel.find('.horizontal-options .selected').each(function() {
+      label.push($(this).text().trim());
+    });
+    panel
+      .addClass('panel-complete')
+      .find('.panel-heading .value')
+      .text(label.join(', '));
+  };
+
+  ngOnInit() {
     this.langugesService.get().then(languages => {
       this.enabledLocales = languages;
+      this.countryList = COUNTRY_LIST;
+      $('#guided-setup').on('click', '.horizontal-options a', this.selectOption);
+      $('#guided-setup [name=gateway-number]').on('input', this.updateNumbers);
+      $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: countries.list });
+      $('#guided-setup [name=default-country-code]').on('change', this.updateNumbers);
     });
   }
 

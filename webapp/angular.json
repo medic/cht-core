@@ -29,14 +29,19 @@
               "src/audio"
             ],
             "styles": [
-              "src/css/inbox.less"
+              "src/css/inbox.less",
+              "node_modules/select2/dist/css/select2.min.css",
+              "node_modules/select2/dist/js/select2.min.js"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
                 "src/css"
               ]
             },
-            "scripts": [],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/bootstrap/dist/js/bootstrap.min.js"
+            ],
             "customWebpackConfig": {
               "path": "./custom-webpack.config.js"
             }

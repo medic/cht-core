@@ -1,8 +1,8 @@
 <mm-modal
   [status]="status"
   id="guided-setup"
-  title-key="'Easy Setup Wizard'"
-  submit-key="'setup.start'"
+  [titleKey]="'Easy Setup Wizard'"
+  [submitKey]="'setup.start'"
   cancel-key="'setup.skip'"
   (onCancel)="cancel()"
   (onSubmit)="submit()"
@@ -14,7 +14,7 @@
       <div class="panel panel-default">
         <div class="panel-heading" role="tab" id="modem-setup-heading">
           <h4 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#modem-setup-content" aria-controls="modem-setup-content" aria-expanded="true" target="_self">
+            <a data-toggle="collapse" data-parent="#accordion" data-target="#modem-setup-content" aria-controls="modem-setup-content" aria-expanded="true" target="_self">
               <span class="count">
                 <span class="number">1</span>
                 <i class="fa fa-check"></i>
@@ -28,7 +28,11 @@
             <p translate>setup.modem.description</p>
             <label for="default-country-code-setup" translate>Default country code</label>
             <p translate>Default country code help</p>
-            <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code"></select>
+            <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
+              <option *ngFor="let country of countryList">
+                {{ country.text }}
+              </option>
+            </select>
             <label for="gateway-number-setup" translate>Gateway number</label>
             <p translate>Gateway number help</p>
             <input [(ngModel)]="model.gatewayNumber" id="gateway-number-setup" name="gateway-number" type="text"/>
@@ -40,7 +44,7 @@
       <div class="panel panel-default">
         <div class="panel-heading" role="tab" id="primary-contact-heading">
           <h4 class="panel-title">
-            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#primary-contact-content" aria-controls="primary-contact-content" aria-expanded="true" target="_self">
+            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" data-target="#primary-contact-content" aria-controls="primary-contact-content" aria-expanded="true" target="_self">
               <span class="count">
                 <span class="number">2</span>
                 <i class="fa fa-check"></i>
@@ -80,14 +84,14 @@
 
             <span translate>setup.language.outgoing.subtitle</span>
             <p class="horizontal-options locale-outgoing">
-              <a *ngFor="let language in enabledLocales" href="#" [attr.data-value]="language.code">
+              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
                 <span class="rectangle">{{ language.name }}</span>
               </a>
             </p>
 
             <span translate>setup.language.subtitle</span>
             <p class="horizontal-options locale">
-              <a *ngFor="let language in enabledLocales" href="#" [attr.data-value]="language.code">
+              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
                 <span class="rectangle">{{ language.name }}</span>
               </a>
             </p>
@@ -128,6 +132,5 @@
         </div>
       </div>
     </div>
-    <p>Testing this thing</p>
   </div>
 </mm-modal>
