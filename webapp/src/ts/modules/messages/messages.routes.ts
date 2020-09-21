@@ -4,10 +4,10 @@ import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
 import { MessagesComponent } from './messages.component';
 
 export const routes: Routes = [
-    {
-        path: 'messages',
-        component: MessagesComponent,
-        data: { permissions: [ 'can_view_messages' ] },
-        canActivate: [ RouteGuardProvider ],
-    },
+  {
+    path: 'messages',
+    component: MessagesComponent,
+    data: {permissions: ['can_view_messages']},
+    canActivate: [RouteGuardProvider],
+  },
 ];

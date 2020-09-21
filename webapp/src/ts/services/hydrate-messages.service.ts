@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as _ from 'lodash-es';
+import { find as _find, map as _map } from 'lodash-es';
 
 import { LineageModelGeneratorService } from './lineage-model-generator.service';
 
@@ -18,7 +18,7 @@ export class HydrateMessagesService {
 
     if (doc.kujua_message) {
       outgoing = true;
-      const task = _.find(doc.tasks, (task) => {
+      const task = _find(doc.tasks, (task) => {
         const msg = task.messages[0];
 
         if (msg.contact) {
@@ -50,7 +50,7 @@ export class HydrateMessagesService {
       from = phone;
     }
 
-    const lineage = report && _.map(report.lineage, 'name');
+    const lineage = report && _map(report.lineage, 'name');
 
     return {
       doc: doc,
@@ -83,17 +83,17 @@ export class HydrateMessagesService {
     });
 
     return this.lineageModelGenerator
-        .reportSubjects(contactIds)
-        .then((reports) => {
-          reports.forEach((report) => {
-            if (rowsObject[report._id]) {
-              rowsObject[report._id].report = report;
-            }
-          });
-
-          return rows.map((row) => {
-            return this.buildMessageModel(row.doc, row.key[0], row.value.date, row.report);
-          });
+      .reportSubjects(contactIds)
+      .then((reports) => {
+        reports.forEach((report) => {
+          if (rowsObject[report._id]) {
+            rowsObject[report._id].report = report;
+          }
         });
+
+        return rows.map((row) => {
+          return this.buildMessageModel(row.doc, row.key[0], row.value.date, row.report);
+        });
+      });
   }
 }

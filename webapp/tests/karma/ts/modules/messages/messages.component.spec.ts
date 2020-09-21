@@ -147,7 +147,7 @@ describe('Messages Component', () => {
     component
       .updateConversations({ merge: true })
       .then(() => {
-        expect(spySetConversations.withArgs(conversations, {merge: false}).callCount).to.equal(1);
+        expect(spySetConversations.withArgs(conversations, { merge: true }).callCount).to.equal(1);
         expect(component.loading).to.be.false;
       });
 

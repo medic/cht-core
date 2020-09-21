@@ -96,7 +96,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
       });
   }
 
-  removeDeleted(currentConversations, updatedConversations) {
+  removeDeleted(currentConversations = [], updatedConversations = []) {
     for (let i = currentConversations.length - 1; i >= 0; i--) {
       if (!updatedConversations.some(changed => currentConversations[i].key === changed.key)) {
         currentConversations.splice(i, 1);
@@ -104,7 +104,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  mergeUpdated(currentConversations, updatedConversations) {
+  mergeUpdated(currentConversations = [], updatedConversations = []) {
     updatedConversations.forEach(updated => {
       const match = _.find(currentConversations, existing => existing.key === updated.key);
 
