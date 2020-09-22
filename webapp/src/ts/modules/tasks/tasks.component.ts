@@ -97,12 +97,11 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private prepareTasks(tasks) {
     return tasks.map(task => {
-      const form = _.find(this.forms, { code: task.form });
-      task.icon = form && form.icon;
-      task.summary = form ? form.title : task.form;
-      task.lineage = task.subject && task.subject.lineage || task.lineage;
-      task.unread = !task.read;
-
+      task.icon = task.emission.icon;
+      task.heading = task.emission.contact.name;
+      task.summary = task.emission.title;
+      task.lineage = task.emission.priorityLabel;
+      task.due_date = task.emission.dueDate;
       return task;
     });
   }
@@ -146,6 +145,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
         self.moreItems = updatedTasks.length >= options.limit;
         self.hasTasks = !!updatedTasks.length;
+        self.tasksList = updatedTasks;
         self.loading = false;
         self.appending = false;
         self.error = false;
