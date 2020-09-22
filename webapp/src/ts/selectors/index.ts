@@ -25,7 +25,6 @@ export const Selectors = {
   getSelectedReports: (state) => getReportsState(state).selected,
 
   // messages
-  getMessagesState: state => getMessagesState(state).messages,
   getMessagesError: state => getMessagesState(state).error,
   getSelectedConversation: state => getMessagesState(state).selected,
   getConversations: state => getMessagesState(state).conversations,

@@ -45,10 +45,10 @@ describe('Messages Reducer', () => {
   });
 
   it('should add conversations to state when latest state provided', () => {
-    const data = [{id: '124'}, {id: '567'}];
+    const data = [{id: '124', date: 111}, {id: '567', date: 444}];
     const action = Actions.setConversations(data);
     const expectedState = {
-      conversations: [{id: '124'}, {id: '567'}],
+      conversations: [{id: '567', date: 444}, {id: '124', date: 111}],
       error: false,
       messages: [],
       selected: null

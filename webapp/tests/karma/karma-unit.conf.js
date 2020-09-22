@@ -33,9 +33,6 @@ module.exports = function (config) {
         flags: ['--no-sandbox'],
       }
     },
-    files: [
-      { pattern: 'node_modules/sinon/pkg/sinon.js', instrument: false },
-      { pattern: 'node_modules/chai/chai.js', instrument: false },
-    ],
+    files: [],
   });
 };

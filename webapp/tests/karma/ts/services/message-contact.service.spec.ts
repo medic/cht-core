@@ -95,7 +95,7 @@ describe('Message Contacts Service', () => {
         query: sinon.stub().rejects({ message: 'server error' })
       });
 
-      service
+      return service
         .getList()
         .then(() => {
           assert.fail('exception expected');
@@ -248,7 +248,7 @@ describe('Message Contacts Service', () => {
         query: sinon.stub().rejects({ message: 'server error' })
       });
 
-      service
+      return service
         .getConversation('abc')
         .then(() => {
           assert.fail('expected exception');
