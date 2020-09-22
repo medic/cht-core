@@ -78,6 +78,17 @@ export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
       $('#guided-setup [name=gateway-number]').on('input', this.updateNumbers);
       $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: countries.list });
       $('#guided-setup [name=default-country-code]').on('change', this.updateNumbers);
+      this.settingsService.get().then((res: any) => {
+        if (res.setup_complete) {
+          $('#guided-setup [name=default-country-code]').val(res.default_country_code).change();
+          $('#guided-setup [name=gateway-number]').val(res.gateway_number).trigger('input');
+          $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
+          $('#language-preference-content .locale a[data-value="' + res.locale + '"]').trigger('click');
+          $('#language-preference-content .locale-outgoing a[data-value="' + res.locale_outgoing + '"]')
+            .trigger('click');
+          $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
+        }
+      })
     });
   }
 
@@ -95,16 +106,18 @@ export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
   }
 
   submit() {
+    this.setProcessing();
+
     const valid = this.validatePhoneNumber();
     if (!valid.valid) {
-      this.error.message = valid.error;
+      this.setError(null, valid.error);
       return;
     }
 
     const settings = <any>{};
     let val;
 
-    val = this.model.gatewayNumber;
+    val = $('#guided-setup [name=gateway-number]').val();
     if (val) {
       // normalise value        
       const info = { 
@@ -114,7 +127,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
       
       settings.gateway_number = normalize(info, val);
     }
-    val = this.model.countryCode;
+    val = $('#guided-setup [name=default-country-code]').val();
     if (val) {
       settings.default_country_code = val;
     }
@@ -135,16 +148,16 @@ export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
       settings.anc_registration_lmp = val === 'true';
     }
     return this.updateSettingsService.update(settings)
-      .then(function() {
+      .then(() => {
+        this.setFinished();
         this.bsModalRef.hide();
       })
-      .catch(function(err) {
-        this.error.message = 'Error saving settings';
+      .catch((err) => {
+        this.setError(err, 'Error saving settings');
       });
   }
 
   cancel() {
-    // const message = this.model.message 
     this.bsModalRef.hide();
   }
 }
