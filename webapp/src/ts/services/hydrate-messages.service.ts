@@ -87,6 +87,7 @@ export class HydrateMessagesService {
       .then((reports) => {
         reports.forEach((report) => {
           if (rowsObject[report._id]) {
+            // Adding report to each "row" by using reference in rowsObject.
             rowsObject[report._id].report = report;
           }
         });

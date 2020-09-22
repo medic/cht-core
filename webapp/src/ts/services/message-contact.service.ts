@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { DbService } from './db.service';
 import { GetDataRecordsService } from './get-data-records.service';
 import { HydrateMessagesService } from './hydrate-messages.service';
+import { AddReadStatusService } from '@mm-services/add-read-status.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,8 @@ export class MessageContactService {
   constructor(
     private dbService: DbService,
     private getDataRecordsService: GetDataRecordsService,
-    private hydrateMessages: HydrateMessagesService
+    private hydrateMessagesService: HydrateMessagesService,
+    private addReadStatusService: AddReadStatusService
   ) { }
 
   private listParams() {
@@ -55,50 +57,17 @@ export class MessageContactService {
             return response.rows;
           });
       })
-      .then((rows) => this.hydrateMessages.hydrate(rows));
-  }
-
-  private getKeys(models = []) {
-    return models.map(model => {
-      const id = model.id || model._id;
-      return [ 'read', 'message', id ].join(':');
-    });
-  }
-
-  /**
-   * Update message view models
-   * @memberof AddReadStatus
-   * @param {Object[]} models The models to mark as read
-   * @returns {Promise} A Promise to return updated models
-   */
-  private addReadStatus(models = []) {
-    if (!models.length) {
-      return Promise.resolve(models);
-    }
-
-    const keys = this.getKeys(models);
-
-    return this.dbService
-      .get({ meta: true })
-      .allDocs({ keys: keys })
-      .then((response) => {
-        models.forEach((model, i) => {
-          const row = response.rows[i];
-          model.read = !!(row.value && !row.value.deleted); // doc exists.
-        });
-
-        return models;
-      });
+      .then((rows) => this.hydrateMessagesService.hydrate(rows));
   }
 
   getList() {
     return this.getMessages(this.listParams())
-      .then(response => this.addReadStatus(response));
+      .then(response => this.addReadStatusService.updateMessages(response));
   }
 
   getConversation(id, skip = 0, limit = 0) {
     return this.getMessages(this.conversationParams(id, skip, limit))
-      .then(response => this.addReadStatus(response));
+      .then(response => this.addReadStatusService.updateMessages(response));
   }
 
   isRelevantChange(change, conversation?) {

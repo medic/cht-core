@@ -6,6 +6,7 @@ import { MessageContactService } from '@mm-services/message-contact.service';
 import { HydrateMessagesService } from '@mm-services/hydrate-messages.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
+import { AddReadStatusService } from '@mm-services/add-read-status.service';
 
 describe('Message Contacts Service', () => {
   let service: MessageContactService;
@@ -23,6 +24,7 @@ describe('Message Contacts Service', () => {
         { provide: HydrateMessagesService, useValue: hydrateMessagesMock },
         { provide: GetDataRecordsService, useValue: getDataRecordsMock },
         { provide: DbService, useValue: dbMock },
+        AddReadStatusService
       ]
     });
 

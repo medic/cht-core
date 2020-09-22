@@ -40,7 +40,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
       error,
     ]) => {
       this.selectedConversation = selectedConversation;
-      this.conversations = conversations;
+      this.conversations = (conversations || []).sort((a, b) => b.date - a.date);
       this.loadingContent = loadingContent;
       this.error = error;
     });
