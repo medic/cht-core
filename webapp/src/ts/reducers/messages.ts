@@ -17,7 +17,8 @@ const initialState: MessagesState = {
 };
 
 const setConversations = (state, newConversions) => {
-  return { ...state, conversations: [...newConversions] };
+  const conversations = newConversions ? [...newConversions].sort((a, b) => b.date - a.date) : [];
+  return { ...state, conversations };
 };
 
 const reducer = createReducer(
