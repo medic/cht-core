@@ -17,7 +17,7 @@ describe('Messages Reducer', () => {
 
   it('should set initial state and add data when latest state not provided', () => {
     const data = [{id: '124'}, {id: '567'}];
-    const action = Actions.addConversations(data);
+    const action = Actions.setConversations(data);
     const expectedState = {
       conversations: [{id: '124'}, {id: '567'}],
       error: false,
@@ -46,7 +46,7 @@ describe('Messages Reducer', () => {
 
   it('should add conversations to state when latest state provided', () => {
     const data = [{id: '124'}, {id: '567'}];
-    const action = Actions.addConversations(data);
+    const action = Actions.setConversations(data);
     const expectedState = {
       conversations: [{id: '124'}, {id: '567'}],
       error: false,

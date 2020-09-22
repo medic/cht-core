@@ -59,7 +59,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  watchForChanges() {
+  private watchForChanges() {
     const subscription = this.changesService.subscribe({
       key: 'messages-list',
       callback: () => this.updateConversations({ merge: true }),
@@ -68,20 +68,20 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
   }
 
-  updateActionBar() {
+  private updateActionBar() {
     /* ToDo: this.globalActions.setLeftActionBar({
       hasResults: this.conversations && this.conversations.length > 0,
       exportFn: () => Export('messages', {}, { humanReadable: true })
     });*/
   }
 
-  setConversations(conversations = [], {merge = false} = {}) {
+  private setConversations(conversations = [], {merge = false} = {}) {
     if (merge) {
       this.removeDeleted(this.conversations, conversations);
       this.mergeUpdated(this.conversations, conversations);
     }
 
-    this.messagesActions.addConversations(conversations);
+    this.messagesActions.setConversations(conversations);
     this.updateActionBar();
   }
 
@@ -96,7 +96,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
       });
   }
 
-  removeDeleted(currentConversations = [], updatedConversations = []) {
+  private removeDeleted(currentConversations = [], updatedConversations = []) {
     for (let i = currentConversations.length - 1; i >= 0; i--) {
       if (!updatedConversations.some(changed => currentConversations[i].key === changed.key)) {
         currentConversations.splice(i, 1);
@@ -104,7 +104,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  mergeUpdated(currentConversations = [], updatedConversations = []) {
+  private mergeUpdated(currentConversations = [], updatedConversations = []) {
     updatedConversations.forEach(updated => {
       const match = _find(currentConversations, existing => existing.key === updated.key);
 
@@ -120,6 +120,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, message) {
-    return message.key + message.doc._rev;
+    const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
+    return message.key + identifier;
   }
 }

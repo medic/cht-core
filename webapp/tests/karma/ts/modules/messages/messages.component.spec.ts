@@ -1,5 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -7,6 +9,8 @@ import sinon from 'sinon';
 import { MessagesComponent } from '@mm-modules/messages/messages.component';
 import { ChangesService } from '@mm-services/changes.service';
 import { MessageContactService } from '@mm-services/message-contact.service';
+import { RelativeDatePipe } from '@mm-pipes/date.pipe';
+import { SettingsService } from '@mm-services/settings.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -17,10 +21,11 @@ describe('Messages Component', () => {
 
   beforeEach(async(() => {
     const messageContactServiceMock = {
-      getList: sinon.stub().returns(Promise.resolve([]))
+      getList: sinon.stub().resolves([]),
+      isRelevantChange: sinon.stub()
     };
     const changesServiceMock = {
-      subscribe: sinon.stub().returns(Promise.resolve(of({})))
+      subscribe: sinon.stub().resolves(of({}))
     };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
@@ -30,13 +35,19 @@ describe('Messages Component', () => {
     ];
 
     TestBed.configureTestingModule({
+      imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule
+      ],
       declarations: [
-        MessagesComponent
+        MessagesComponent,
+        RelativeDatePipe
       ],
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ChangesService, useValue: changesServiceMock },
         { provide: MessageContactService, useValue: messageContactServiceMock },
+        { provide: SettingsService, useValue: {} } // Needed because of ngx-translate provider's constructor.
       ]
     }).compileComponents()
       .then(() => {
@@ -59,109 +70,95 @@ describe('Messages Component', () => {
 
   it('ngOnInit() should update conversations and watch for changes', () => {
     const spyUpdateConversations = sinon.spy(component, 'updateConversations');
-    const spyWatchForChanges = sinon.spy(component, 'watchForChanges');
+    changesService.subscribe.reset();
+    const spySubscriptionsAdd = sinon.spy(component.subscriptions, 'add');
 
     component.ngOnInit();
 
     expect(spyUpdateConversations.callCount).to.equal(1);
-    expect(spyWatchForChanges.callCount).to.equal(1);
+    expect(changesService.subscribe.callCount).to.equal(1);
+    expect(spySubscriptionsAdd.callCount).to.equal(1);
   });
 
   it('listTrackBy() should return unique identifier', () => {
-    const message = { key: '134', doc: { _rev: '567' } };
+    const messageWithDoc = { key: '134', id: 'abc', doc: { _rev: '567', id: 'xyz' } };
+    const messageNoDoc = { key: '134', id: 'abc' };
 
-    const result = component.listTrackBy(0, message);
+    const resultWithDoc = component.listTrackBy(0, messageWithDoc);
+    const resultNoDoc = component.listTrackBy(0, messageNoDoc);
 
-    expect(result).to.equal('134567');
+    expect(resultWithDoc).to.equal('134xyz567');
+    expect(resultNoDoc).to.equal('134abc');
   });
 
-  describe('mergeUpdated()', () => {
-    it('should add new conversations to currentConversations', () => {
-      const conversations = [
+  describe('updateConversations()', () => {
+    it('should get conversations and add new one', async () => {
+      const newConversations = [
         { key: 'a', message: { inAllMessages: true } },
-        { key: 'c', message: { inAllMessages: true } }
-      ];
-      const changedMessages = [
+        { key: 'c', message: { inAllMessages: true } },
         { key: 'b', message: { fromUpdatedMessages: true } }
       ];
-
-      component.mergeUpdated(conversations, changedMessages);
-
-      expect(conversations).to.deep.equal([
-        { key: 'a', message: { inAllMessages: true }},
-        { key: 'c', message: { inAllMessages: true }},
-        { key: 'b', message: { fromUpdatedMessages: true }}
-      ]);
-    });
-
-    it('should replace updated conversations in currentConversations', () => {
-      const conversations = [
+      messageContactService.getList.reset();
+      messageContactService.getList.resolves(newConversations);
+      component.conversations = [
         { key: 'a', message: { inAllMessages: true } },
-        { key: 'b', message: { inAllMessages: true }, read: true },
         { key: 'c', message: { inAllMessages: true } }
       ];
-      const changedMessages = [
+      fixture.detectChanges();
+
+      await component.updateConversations({ merge: true });
+
+      expect(messageContactService.getList.callCount).to.equal(1);
+      expect(component.loading).to.be.false;
+      expect(component.conversations.length).to.equal(3);
+      expect(component.conversations).to.eql(newConversations);
+    });
+
+    it('should get conversations and replace updated ones', async () => {
+      const newConversations = [
+        { key: 'a', message: { inAllMessages: true } },
         { key: 'b', message: { fromUpdatedMessages: true } }
       ];
-
-      component.mergeUpdated(conversations, changedMessages);
-
-      expect(conversations).to.deep.equal([
+      messageContactService.getList.reset();
+      messageContactService.getList.resolves(newConversations);
+      const expectedConversations =  [
         { key: 'a', message: { inAllMessages: true } },
-        { key: 'b', message: { fromUpdatedMessages: true }, read: false },
-        { key: 'c', message: { inAllMessages: true } }
-      ]);
+        { key: 'b', message: { fromUpdatedMessages: true }, read: false }
+      ];
+      component.conversations = [
+        { key: 'a', message: { inAllMessages: true } },
+        { key: 'b', message: { inAllMessages: true }, read: true }
+      ];
+      fixture.detectChanges();
+
+      await component.updateConversations({ merge: true });
+
+      expect(messageContactService.getList.callCount).to.equal(1);
+      expect(component.loading).to.be.false;
+      expect(component.conversations).to.eql( expectedConversations);
     });
-  });
 
-  it('removeDeleted() should remove conversations that no longer exist from the passed list', () => {
-    const conversations = [
-      { key: 'a', message: { inAllMessages: true } },
-      { key: 'b', message: { inAllMessages: true } },
-      { key: 'c', message: { inAllMessages: true } },
-      { key: 'd', message: { inAllMessages: true } },
-      { key: 'e', message: { inAllMessages: true } },
-    ];
-    const updatedConversations = [
-      { key: 'a', message: { updatedMessage: true } },
-      { key: 'c', message: { updatedMessage: true } },
-    ];
+    it('should get conversations and remove conversations that no longer exist', async () => {
+      const newConversations = [
+        { key: 'a', message: { updatedMessage: true }, read: false },
+        { key: 'b', message: { updatedMessage: true }, read: false }
+      ];
+      messageContactService.getList.reset();
+      messageContactService.getList.resolves(newConversations);
+      component.conversations = [
+        { key: 'a', message: { inAllMessages: true } },
+        { key: 'b', message: { inAllMessages: true } },
+        { key: 'c', message: { inAllMessages: true } },
+        { key: 'd', message: { inAllMessages: true } },
+      ];
+      fixture.detectChanges();
 
-    component.removeDeleted(conversations, updatedConversations);
+      await component.updateConversations({ merge: true });
 
-    expect(conversations).to.deep.equal([
-      { key: 'a', message: { inAllMessages: true } },
-      { key: 'c', message: { inAllMessages: true } },
-    ]);
-  });
-
-  it('updateConversations() should get conversations and set them', () => {
-    const conversations = [
-      { key: 'a', message: { inAllMessages: true } },
-      { key: 'c', message: { inAllMessages: true } }
-    ];
-    messageContactService.getList.reset();
-    messageContactService.getList.returns(Promise.resolve(conversations));
-    const spySetConversations = sinon.spy(component, 'setConversations');
-
-    component
-      .updateConversations({ merge: true })
-      .then(() => {
-        expect(spySetConversations.withArgs(conversations, { merge: true }).callCount).to.equal(1);
-        expect(component.loading).to.be.false;
-      });
-
-    expect(messageContactService.getList.callCount).to.equal(1);
-  });
-
-  it('watchForChanges() should subscribe for watching changes', () => {
-    changesService.subscribe.reset();
-    const spySubscriptionsAdd = sinon.spy(component.subscriptions, 'add');
-
-    component.watchForChanges();
-
-    expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(1);
+      expect(messageContactService.getList.callCount).to.equal(1);
+      expect(component.loading).to.be.false;
+      expect(component.conversations).to.eql( newConversations);
+    });
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {

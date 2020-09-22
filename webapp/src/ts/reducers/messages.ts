@@ -16,13 +16,13 @@ const initialState: MessagesState = {
   selected: null,
 };
 
-const insertConversations = (state, newConversions) => {
+const setConversations = (state, newConversions) => {
   return { ...state, conversations: [...newConversions] };
 };
 
 const reducer = createReducer(
   initialState,
-  on(Actions.addConversations, (state, { payload: { conversations } }) => insertConversations(state, conversations)),
+  on(Actions.setConversations, (state, { payload: { conversations } }) => setConversations(state, conversations)),
 );
 
 export function messagesReducer(state, action) {

@@ -14,22 +14,22 @@ describe('Messages Action', () => {
     sinon.restore();
   });
 
-  it('should dispatch addSelectedConversation action', () => {
+  it('should dispatch setSelectedConversation action', () => {
     const data = [{id: '124'}];
-    const expectedAction = Actions.addSelectedConversation(data);
+    const expectedAction = Actions.setSelectedConversation(data);
     const messageAction = new MessagesActions(store);
     
-    messageAction.addSelectedConversation(data);
+    messageAction.setSelectedConversation(data);
     
     expect(store.dispatch.withArgs(expectedAction).callCount).to.equal(1);
   });
 
-  it('should dispatch addConversations action', () => {
+  it('should dispatch setConversations action', () => {
     const data = [{id: '124'}, {id: '567'}];
-    const expectedAction = Actions.addConversations(data);
+    const expectedAction = Actions.setConversations(data);
     const messageAction = new MessagesActions(store);
 
-    messageAction.addConversations(data);
+    messageAction.setConversations(data);
 
     expect(store.dispatch.withArgs(expectedAction).callCount).to.equal(1);
   });

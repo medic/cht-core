@@ -51,21 +51,21 @@ describe('Message Contacts Service', () => {
         ]
       };
       dbService.get = () => ({
-        query: sinon.stub().returns(Promise.resolve(dbRows)),
-        allDocs: sinon.stub().returns(Promise.resolve(dbRows))
+        query: sinon.stub().resolves(dbRows),
+        allDocs: sinon.stub().resolves(dbRows)
       });
-      getDataRecordsService.get.returns(Promise.resolve([
+      getDataRecordsService.get.resolves([
         { _id: 'id1' },
         { _id: 'id2' },
         { _id: 'id3' },
         { _id: 'id4' },
-      ]));
-      hydrateMessagesService.hydrate.returns(Promise.resolve([
+      ]);
+      hydrateMessagesService.hydrate.resolves([
         { id: 'some_id1', hydrated: true },
         { id: 'some_id2', hydrated: true },
         { id: 'some_id3', hydrated: true },
         { id: 'some_id4', hydrated: true },
-      ]));
+      ]);
 
       return service
         .getList()
@@ -90,7 +90,7 @@ describe('Message Contacts Service', () => {
 
     it('should return errors from db query', () => {
       dbService.get = () => ({
-        query: sinon.stub().returns(Promise.reject('server error'))
+        query: sinon.stub().rejects({ message: 'server error' })
       });
 
       service
@@ -99,7 +99,7 @@ describe('Message Contacts Service', () => {
           assert.fail('exception expected');
         })
         .catch(err => {
-          expect(err).to.equal('server error');
+          expect(err).to.include({ message: 'server error' });
         });
     });
   });
@@ -123,17 +123,17 @@ describe('Message Contacts Service', () => {
           { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' } },
         ]
       };
-      const query = sinon.stub().returns(Promise.resolve(dbRows));
+      const query = sinon.stub().resolves(dbRows);
       dbService.get = () => ({
         query,
-        allDocs: sinon.stub().returns(Promise.resolve(dbRows))
+        allDocs: sinon.stub().resolves(dbRows)
       });
-      hydrateMessagesService.hydrate.returns(Promise.resolve([
+      hydrateMessagesService.hydrate.resolves([
         { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true },
         { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true },
         { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true },
         { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' }, hydrated: true },
-      ]));
+      ]);
 
       return service
         .getConversation('abc')
@@ -166,12 +166,12 @@ describe('Message Contacts Service', () => {
         startkey: [ 'abc', {} ],
         endkey: [ 'abc' ]
       };
-      const query = sinon.stub().returns(Promise.resolve({}));
+      const query = sinon.stub().resolves({});
       dbService.get = () => ({
         query,
-        allDocs: sinon.stub().returns(Promise.resolve({}))
+        allDocs: sinon.stub().resolves({})
       });
-      hydrateMessagesService.hydrate.returns(Promise.resolve([]));
+      hydrateMessagesService.hydrate.resolves([]);
 
       return service
         .getConversation('abc', 45)
@@ -194,22 +194,22 @@ describe('Message Contacts Service', () => {
         startkey: [ 'abc', {} ],
         endkey: [ 'abc' ]
       };
-      const query = sinon.stub().returns(Promise.resolve({}));
+      const query = sinon.stub().resolves({});
       dbService.get = () => ({
         query,
-        allDocs: sinon.stub().returns(Promise.resolve({}))
+        allDocs: sinon.stub().resolves({})
       });
-      hydrateMessagesService.hydrate.returns(Promise.resolve([]));
+      hydrateMessagesService.hydrate.resolves([]);
 
       return service
         .getConversation('abc', 45, 120)
         .then(result => {
-        expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
-        expect(getDataRecordsService.get.callCount).to.deep.equal(0);
-        expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
-        expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
-        expect(result).to.deep.equal([]);
-      });
+          expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
+          expect(getDataRecordsService.get.callCount).to.deep.equal(0);
+          expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
+          expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
+          expect(result).to.deep.equal([]);
+        });
     });
 
     it('should build conversation with limit under default', () => {
@@ -222,12 +222,12 @@ describe('Message Contacts Service', () => {
         startkey: [ 'abc', {} ],
         endkey: [ 'abc' ]
       };
-      const query = sinon.stub().returns(Promise.resolve({}));
+      const query = sinon.stub().resolves({});
       dbService.get = () => ({
         query,
-        allDocs: sinon.stub().returns(Promise.resolve({}))
+        allDocs: sinon.stub().resolves({})
       });
-      hydrateMessagesService.hydrate.returns(Promise.resolve([]));
+      hydrateMessagesService.hydrate.resolves([]);
 
 
       return service
@@ -243,7 +243,7 @@ describe('Message Contacts Service', () => {
 
     it('should return errors from db query', () => {
       dbService.get = () => ({
-        query: sinon.stub().returns(Promise.reject('server error'))
+        query: sinon.stub().rejects({ message: 'server error' })
       });
 
       service
@@ -252,7 +252,7 @@ describe('Message Contacts Service', () => {
           assert.fail('expected exception');
         })
         .catch(err => {
-          expect(err).to.equal('server error');
+          expect(err).to.include({ message: 'server error' });
         });
     });
   });
@@ -263,10 +263,8 @@ describe('Message Contacts Service', () => {
       expect(!!service.isRelevantChange({ id: 'some' })).to.equal(false);
       expect(!!service.isRelevantChange({ id: 'some', doc: {} })).to.equal(false);
       expect(!!service.isRelevantChange({ id: 'some', doc: {}, delete: false })).to.equal(false);
-      expect(!!service.isRelevantChange({ id: 'some', doc: { kujua_message: false }, delete: false }))
-        .to.equal(false);
-      expect(!!service.isRelevantChange({ id: 'some', doc: { sms_message: false }, delete: false }))
-        .to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: { kujua_message: false }, delete: false })).to.equal(false);
+      expect(!!service.isRelevantChange({ id: 'some', doc: { sms_message: false }, delete: false })).to.equal(false);
       expect(!!service.isRelevantChange({ id: 'some', doc: {} }, {})).to.equal(false);
       expect(!!service.isRelevantChange({ id: 'some', doc: {} }, { messages: [] })).to.equal(false);
       const messages = [

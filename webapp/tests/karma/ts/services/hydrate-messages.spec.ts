@@ -66,9 +66,9 @@ describe('Hydrate Messages Service', () => {
       type: 'contact',
       message: doc.tasks[0].messages[0].message
     }];
-    lineageModelGeneratorService.reportSubjects.returns(Promise.resolve([{
+    lineageModelGeneratorService.reportSubjects.resolves([{
       _id: contact._id, doc: contact, lineage: lineage
-    }]));
+    }]);
 
     return service
       .hydrate(given)
@@ -102,9 +102,9 @@ describe('Hydrate Messages Service', () => {
       type: 'unknown',
       message: doc.sms_message.message
     }];
-    lineageModelGeneratorService.reportSubjects.returns(Promise.resolve([{
+    lineageModelGeneratorService.reportSubjects.resolves([{
       _id: contact._id, doc: contact, lineage: lineage
-    }]));
+    }]);
 
     return service.hydrate(given).then(actual => {
       expect(actual).to.deep.equal(expected);
