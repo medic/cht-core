@@ -16,7 +16,7 @@ import { POUCHDB_OPTIONS } from '../constants';
   providedIn: 'root'
 })
 export class DbService {
-  private cache = {}
+  private cache = {};
   private isOnlineOnly;
 
   constructor(private session:SessionService, private location:LocationService) {

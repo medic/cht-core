@@ -9,7 +9,7 @@ export class HeaderTabsService {
   private readonly tabs = [
     {
       name: 'messages',
-      route: 'messages.detail',
+      route: 'messages',
       defaultIcon: 'fa-envelope',
       translation: 'Messages',
       permissions: ['can_view_messages', 'can_view_messages_tab'],
