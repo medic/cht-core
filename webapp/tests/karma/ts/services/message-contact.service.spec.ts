@@ -237,7 +237,6 @@ describe('Message Contacts Service', () => {
       });
       hydrateMessagesService.hydrate.resolves([]);
 
-
       return service
         .getConversation('abc', 45, 45)
         .then(result => {
