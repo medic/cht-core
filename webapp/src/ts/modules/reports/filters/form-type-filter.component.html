@@ -1,3 +1,4 @@
+<!--
 <div
   id="formTypeDropdown"
   class="filter dropdown mm-dropdown multidropdown"
@@ -22,3 +23,13 @@
     </ul>
   </span>
 </div>
+-->
+<multi-dropdown-filter
+  name="form_type"
+  icon="fa-list-alt"
+  [items]="forms"
+  [trackBy]="trackByFn"
+  (applyFilter)="applyFilter($event)"
+  labelNoFilter="All form types"
+  labelFilter="Number of form types"
+></multi-dropdown-filter>

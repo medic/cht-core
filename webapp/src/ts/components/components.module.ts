@@ -8,8 +8,9 @@ import { HeaderComponent } from './header/header.component';
 import { PipesModule } from '../pipes/pipes.module';
 import { DirectivesModule } from '../directives/directives.module';
 import { SnackbarComponent } from './snackbar/snackbar.component';
-import {ContentRowListItemComponent} from './content-row-list-item/content-row-list-item.component';
+import { ContentRowListItemComponent } from './content-row-list-item/content-row-list-item.component';
 import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from './status-icons/status-icons.template';
+import { MultiDropdownFilterComponent } from './multi-dropdown-filter/mullti-dropdown-filter.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from
     ContentRowListItemComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
+    MultiDropdownFilterComponent,
   ],
   imports: [
     CommonModule,
@@ -33,6 +35,7 @@ import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from
     ContentRowListItemComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
+    MultiDropdownFilterComponent,
   ]
 })
 export class ComponentsModule { }

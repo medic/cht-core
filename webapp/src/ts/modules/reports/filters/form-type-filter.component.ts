@@ -2,9 +2,9 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { select, Store } from '@ngrx/store';
 import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
-import { SearchFiltersService } from '../../../services/search-filters.service';
+//import { SearchFiltersService } from '../../../services/search-filters.service';
 import { GlobalActions } from '../../../actions/global';
-import * as _ from 'lodash-es';
+import { sortBy as _sortBy } from 'lodash-es';
 
 @Component({
   selector: 'mm-form-type-filter',
@@ -21,7 +21,7 @@ export class FormTypeFilterComponent implements OnInit, OnDestroy {
 
   constructor(
     private store:Store,
-    private searchFiltersService:SearchFiltersService,
+    //private searchFiltersService:SearchFiltersService,
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getForms)),
@@ -32,7 +32,7 @@ export class FormTypeFilterComponent implements OnInit, OnDestroy {
       selectMode,
       selectedReports,
     ]) => {
-      this.forms = _.sortBy(forms, 'name');
+      this.forms = _sortBy(forms, 'name').map(form => ({ ...form, label: form.title || form.code }));
       this.selectMode = selectMode;
       this.selectedReports = selectedReports;
     });
@@ -41,10 +41,15 @@ export class FormTypeFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.searchFiltersService.formType((forms) => {
+    /*this.searchFiltersService.formType((forms) => {
       this.globalActions.setFilter({ forms });
       this.search.emit();
-    });
+    });*/
+  }
+
+  applyFilter(forms) {
+    this.globalActions.setFilter({ forms });
+    this.search.emit();
   }
 
   ngOnDestroy() {
