@@ -8,7 +8,7 @@ angular
   .module('controllers')
   .controller('EditUserCtrl', function(
     $http,
-    $log,
+    $log, 
     $q,
     $rootScope,
     $scope,
