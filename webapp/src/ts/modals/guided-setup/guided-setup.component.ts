@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
 import { validate, normalize } from '@medic/phone-number';
@@ -18,7 +18,7 @@ const countries = require('../../../js/modules/countries');
   selector: 'guided-setup',
   templateUrl: './guided-setup.component.html'
 })
-export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
+export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit {
   private globalactions;
   model:{ countryCode?, gatewayNumber? } = {};
   error:{ message? } = {};
@@ -70,7 +70,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
       .text(label.join(', '));
   };
 
-  ngOnInit() {
+  ngAfterViewInit() {
     this.langugesService.get().then(languages => {
       this.enabledLocales = languages;
       this.countryList = COUNTRY_LIST;
@@ -83,10 +83,12 @@ export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
           $('#guided-setup [name=default-country-code]').val(res.default_country_code).change();
           $('#guided-setup [name=gateway-number]').val(res.gateway_number).trigger('input');
           $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
-          $('#language-preference-content .locale a[data-value=' + res.locale + ']').trigger('click');
-          $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']')
-            .trigger('click');
           $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
+          setTimeout(() => { // setTimeout used to make sure ngFor generated list is ready
+            $('#language-preference-content .locale a[data-value=' + res.locale + ']').trigger('click');
+            $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']')
+              .trigger('click');
+          }, 10);
         }
       })
     });
