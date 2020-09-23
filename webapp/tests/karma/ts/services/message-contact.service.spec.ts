@@ -13,18 +13,21 @@ describe('Message Contacts Service', () => {
   let dbService;
   let getDataRecordsService;
   let hydrateMessagesService;
+  let addReadStatusService;
 
   beforeEach(() => {
     const dbMock = { get: () => ({ query: sinon.stub() }) };
     const getDataRecordsMock = { get: sinon.stub() };
     const hydrateMessagesMock = { hydrate: sinon.stub() };
+    const AddReadStatusMock = { updateMessages: sinon.stub() };
+    AddReadStatusMock.updateMessages.returnsArg(0);
 
     TestBed.configureTestingModule({
       providers: [
         { provide: HydrateMessagesService, useValue: hydrateMessagesMock },
         { provide: GetDataRecordsService, useValue: getDataRecordsMock },
         { provide: DbService, useValue: dbMock },
-        AddReadStatusService
+        { provide: AddReadStatusService, useValue: AddReadStatusMock }
       ]
     });
 
@@ -32,6 +35,7 @@ describe('Message Contacts Service', () => {
     hydrateMessagesService = TestBed.inject(HydrateMessagesService);
     getDataRecordsService = TestBed.inject(GetDataRecordsService);
     dbService = TestBed.inject(DbService);
+    addReadStatusService = TestBed.inject(AddReadStatusService);
   });
 
   afterEach(() => {
@@ -72,6 +76,7 @@ describe('Message Contacts Service', () => {
       return service
         .getList()
         .then(list => {
+          expect(addReadStatusService.updateMessages.callCount).to.equal(1);
           expect(getDataRecordsService.get.callCount).to.equal(1);
           expect(getDataRecordsService.get.args[0]).to.deep.equal([['id1', 'id2', 'id3', 'id4'], { include_docs: true }]);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
@@ -82,10 +87,10 @@ describe('Message Contacts Service', () => {
             { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'id4' } },
           ]]);
           expect(list).to.deep.equal([
-            { id: 'some_id1', hydrated: true, read: true },
-            { id: 'some_id2', hydrated: true, read: true },
-            { id: 'some_id3', hydrated: true, read: true },
-            { id: 'some_id4', hydrated: true, read: true },
+            { id: 'some_id1', hydrated: true },
+            { id: 'some_id2', hydrated: true },
+            { id: 'some_id3', hydrated: true },
+            { id: 'some_id4', hydrated: true },
           ]);
         });
     });
@@ -141,6 +146,7 @@ describe('Message Contacts Service', () => {
         .getConversation('abc')
         .then(result => {
           expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
+          expect(addReadStatusService.updateMessages.callCount).to.equal(1);
           expect(getDataRecordsService.get.callCount).to.equal(0);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
           expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[
@@ -150,10 +156,10 @@ describe('Message Contacts Service', () => {
             { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' } },
           ]]);
           expect(result).to.deep.equal([
-            { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true, read: true },
-            { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true, read: true },
-            { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true, read: true },
-            { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' }, hydrated: true, read: true },
+            { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' }, hydrated: true },
+            { id: 'some_id2', value: { id: 'id2' }, doc: { _id: 'some_id2' }, hydrated: true },
+            { id: 'some_id3', value: { id: 'id3' }, doc: { _id: 'some_id3' }, hydrated: true },
+            { id: 'some_id4', value: { id: 'id4' }, doc: { _id: 'some_id4' }, hydrated: true },
           ]);
         });
     });
