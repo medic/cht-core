@@ -1,5 +1,6 @@
+import { Injectable } from '@angular/core';
+
 import * as contactTypesUtils from '@medic/contact-types-utils';
-import {Injectable} from '@angular/core';
 import { SettingsService } from './settings.service';
 
 @Injectable({

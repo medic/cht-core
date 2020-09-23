@@ -604,6 +604,24 @@ module.exports = function(grunt) {
           ].join(' && ');
         }
       },
+      'unit-webapp': {
+        cmd: () => {
+          return [
+            'cd webapp',
+            '../node_modules/.bin/ng test webapp --watch=false',
+            'cd ../',
+          ].join(' && ');
+        }
+      },
+      'unit-webapp-continuous': {
+        cmd: () => {
+          return [
+            'cd webapp',
+            '../node_modules/.bin/ng test webapp --watch=true',
+            'cd ../',
+          ].join(' && ');
+        }
+      },
     },
     watch: {
       options: {
@@ -684,16 +702,6 @@ module.exports = function(grunt) {
       },
     },
     karma: {
-      unit: {
-        configFile: './webapp/tests/karma/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless'],
-      },
-      'unit-continuous': {
-        configFile: './webapp/tests/karma/karma-unit.conf.js',
-        singleRun: false,
-        browsers: ['Chrome_Headless'],
-      },
       admin: {
         configFile: './admin/tests/karma-unit.conf.js',
         singleRun: true,
@@ -982,8 +990,17 @@ module.exports = function(grunt) {
     'protractor:performance-tests-and-services',
   ]);
 
-  grunt.registerTask('unit-continuous', 'Run karma unit tests in a loop', [
-    'karma:unit-continuous'
+  grunt.registerTask('unit-webapp', 'Run webapp unit test after installing dependencies.', [
+    'install-dependencies',
+    'exec:unit-webapp'
+  ]);
+
+  grunt.registerTask('unit-webapp-no-dependencies', 'Run webapp unit test, without reinstalling dependencies.', [
+    'exec:unit-webapp'
+  ]);
+
+  grunt.registerTask('unit-webapp-continuous', 'Run webapp unit test in a loop, without reinstalling dependencies.', [
+    'exec:unit-webapp-continuous'
   ]);
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
@@ -993,7 +1010,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    'karma:unit',
+    'unit-webapp',
     'karma:admin',
     'env:unit-test',
     'exec:shared-lib-unit',

@@ -1,6 +1,7 @@
-const getGlobalState = (state) => state.global;
-const getServicesState = (state) => state.services;
-const getReportsState = (state) => state.reports;
+const getGlobalState = (state) => state.global || {};
+const getServicesState = (state) => state.services || {};
+const getReportsState = (state) => state.reports || {};
+const getMessagesState = (state) => state.messages || {};
 
 export const Selectors = {
   // global
@@ -22,7 +23,12 @@ export const Selectors = {
   getReportsList: (state) => getReportsState(state).reports,
   listContains: (state) => (id) => getReportsState(state).reportsById.has(id),
   getSelectedReports: (state) => getReportsState(state).selected,
-}
+
+  // messages
+  getMessagesError: state => getMessagesState(state).error,
+  getSelectedConversation: state => getMessagesState(state).selected,
+  getConversations: state => getMessagesState(state).conversations,
+};
 /*
 
 // Global
