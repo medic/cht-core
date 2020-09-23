@@ -58,8 +58,6 @@
   require('./mark-read');
   require('./markdown');
   require('./merge-uri-parameters');
-  require('./message-contacts');
-  require('./message-list-utils');
   require('./message-state');
   require('./modal');
   require('./moment-locale-data');

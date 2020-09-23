@@ -2,13 +2,15 @@ import { globalReducer } from './global';
 import { servicesReducer } from './services';
 import { analyticsReducer } from './analytics';
 import { reportsReducer } from './reports';
+import { messagesReducer } from './messages';
 
 export const reducers = {
   global: globalReducer,
   services: servicesReducer,
   analytics: analyticsReducer,
   reports: reportsReducer,
-}
+  messages: messagesReducer,
+};
 
 /*
 (function() {

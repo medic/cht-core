@@ -85,6 +85,29 @@
               ]
             }
           }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "tests/karma/ts/test.ts",
+            "polyfills": "src/ts/polyfills.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "tests/karma/karma-unit.conf.js",
+            "assets": [
+              "src/img",
+              "src/fonts",
+              "src/audio"
+            ],
+            "styles": [
+              "src/css/inbox.less"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/css"
+              ]
+            },
+            "scripts": []
+          }
         }
       }
     }},

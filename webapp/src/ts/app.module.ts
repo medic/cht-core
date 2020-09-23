@@ -32,7 +32,7 @@ import { reducers } from "./reducers";
 const logger = reducer => {
   // default, no options
   return storeLogger()(reducer);
-}
+};
 const metaReducers = environment.production ? [] : [logger];
 
 export class MissingTranslationHandlerLog implements MissingTranslationHandler {
