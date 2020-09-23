@@ -8,129 +8,134 @@
   (onSubmit)="submit()"
 >
   <div class="guided-setup">
-    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-
+    <accordion>
       <!-- 1. Modem setup -->
       <div class="panel panel-default">
-        <div class="panel-heading" role="tab" id="modem-setup-heading">
-          <h4 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" data-target="#modem-setup-content" aria-controls="modem-setup-content" aria-expanded="true" target="_self">
-              <span class="count">
-                <span class="number">1</span>
-                <i class="fa fa-check"></i>
-              </span><span translate>setup.modem.title</span>
-              <span class="value"></span>
-            </a>
-          </h4>
-        </div>
-        <div id="modem-setup-content" class="modem-setup-content panel-collapse collapse in" role="tabpanel" aria-labelledby="modem-setup-heading">
-          <div class="panel-body">
-            <p translate>setup.modem.description</p>
-            <label for="default-country-code-setup" translate>Default country code</label>
-            <p translate>Default country code help</p>
-            <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
-              <option *ngFor="let country of countryList">
-                {{ country.text }}
-              </option>
-            </select>
-            <label for="gateway-number-setup" translate>Gateway number</label>
-            <p translate>Gateway number help</p>
-            <input [(ngModel)]="model.gatewayNumber" id="gateway-number-setup" name="gateway-number" type="text"/>
+        <accordion-group [isOpen]="true">
+          <div class="panel-heading" role="tab" id="modem-setup-heading" accordion-heading>
+            <h4 class="panel-title">
+              <a>
+                <span class="count">
+                  <span class="number">1</span>
+                  <i class="fa fa-check"></i>
+                </span><span translate>setup.modem.title</span>
+                <span class="value"></span>
+              </a>
+            </h4>
           </div>
-        </div>
+          <div id="modem-setup-content" class="modem-setup-content panel-collapse">
+            <div class="panel-body">
+              <p translate>setup.modem.description</p>
+              <label for="default-country-code-setup" translate>Default country code</label>
+              <p translate>Default country code help</p>
+              <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
+                <option *ngFor="let country of countryList">
+                  {{ country.text }}
+                </option>
+              </select>
+              <label for="gateway-number-setup" translate>Gateway number</label>
+              <p translate>Gateway number help</p>
+              <input [(ngModel)]="model.gatewayNumber" id="gateway-number-setup" name="gateway-number" type="text"/>
+            </div>
+          </div>
+        </accordion-group>
       </div>
 
       <!-- 2. Identify care coordinators -->
       <div class="panel panel-default">
-        <div class="panel-heading" role="tab" id="primary-contact-heading">
-          <h4 class="panel-title">
-            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" data-target="#primary-contact-content" aria-controls="primary-contact-content" aria-expanded="true" target="_self">
-              <span class="count">
-                <span class="number">2</span>
-                <i class="fa fa-check"></i>
-              </span><span translate>setup.contact.title</span>
-              <span class="value"></span>
-            </a>
-          </h4>
-        </div>
-        <div id="primary-contact-content" class="primary-contact-content panel-collapse collapse" role="tabpanel" aria-labelledby="primary-contact-heading">
-          <div class="panel-body">
-            <p translate>setup.contact.description</p>
-            <p class="horizontal-options">
-              <a href="#" class="icon contact-pregnant" data-value="patient" translate>Pregnant patient</a>
-              <a href="#" class="icon contact-chw" data-value="chw" translate>Community health worker</a>
-              <a href="#" class="icon contact-nurse" data-value="nurse" translate>Facility nurse</a>
-            </p>
-            <p translate>setup.contact.help</p>
+        <accordion-group>
+          <div class="panel-heading" role="tab" id="primary-contact-heading" accordion-heading>
+            <h4 class="panel-title">
+              <a>
+                <span class="count">
+                  <span class="number">2</span>
+                  <i class="fa fa-check"></i>
+                </span><span translate>setup.contact.title</span>
+                <span class="value"></span>
+              </a>
+            </h4>
           </div>
-        </div>
+          <div id="primary-contact-content" class="primary-contact-content panel-collapse">
+            <div class="panel-body">
+              <p translate>setup.contact.description</p>
+              <p class="horizontal-options">
+                <a href="#" class="icon contact-pregnant" data-value="patient" translate>Pregnant patient</a>
+                <a href="#" class="icon contact-chw" data-value="chw" translate>Community health worker</a>
+                <a href="#" class="icon contact-nurse" data-value="nurse" translate>Facility nurse</a>
+              </p>
+              <p translate>setup.contact.help</p>
+            </div>
+          </div>
+        </accordion-group>
       </div>
 
       <!-- 3. Language preference -->
       <div class="panel panel-default">
-        <div class="panel-heading" role="tab" id="language-preference-heading">
-          <h4 class="panel-title">
-            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#language-preference-content" aria-expanded="false" aria-controls="language-preference-content" target="_self">
-              <span class="count">
-                <span class="number">3</span>
-                <i class="fa fa-check"></i>
-              </span><span translate>setup.language.title</span>
-              <span class="value"></span>
-            </a>
-          </h4>
-        </div>
-        <div id="language-preference-content" class="language-preference-content panel-collapse collapse" role="tabpanel" aria-labelledby="language-preference-heading">
-          <div class="panel-body">
-
-            <span translate>setup.language.outgoing.subtitle</span>
-            <p class="horizontal-options locale-outgoing">
-              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
-                <span class="rectangle">{{ language.name }}</span>
+        <accordion-group>
+          <div class="panel-heading" role="tab" id="language-preference-heading" accordion-heading>
+            <h4 class="panel-title">
+              <a>
+                <span class="count">
+                  <span class="number">3</span>
+                  <i class="fa fa-check"></i>
+                </span><span translate>setup.language.title</span>
+                <span class="value"></span>
               </a>
-            </p>
-
-            <span translate>setup.language.subtitle</span>
-            <p class="horizontal-options locale">
-              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
-                <span class="rectangle">{{ language.name }}</span>
-              </a>
-            </p>
-
-            <p translate>setup.language.description</p>
+            </h4>
           </div>
-        </div>
+          <div id="language-preference-content" class="language-preference-content panel-collapse">
+            <div class="panel-body">
+              <span translate>setup.language.outgoing.subtitle</span>
+              <p class="horizontal-options locale-outgoing">
+                <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
+                  <span class="rectangle">{{ language.name }}</span>
+                </a>
+              </p>
+              <span translate>setup.language.subtitle</span>
+              <p class="horizontal-options locale">
+                <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
+                  <span class="rectangle">{{ language.name }}</span>
+                </a>
+              </p>
+  
+              <p translate>setup.language.description</p>
+            </div>
+          </div>
+        </accordion-group>
       </div>
 
       <!-- 4. Registration form -->
       <div class="panel panel-default">
-        <div class="panel-heading" role="tab" id="registration-form-heading">
-          <h4 class="panel-title">
-            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#registration-form-content" aria-expanded="false" aria-controls="registration-form-content" target="_self">
-              <span class="count">
-                <span class="number">4</span>
-                <i class="fa fa-check"></i>
-              </span><span translate>setup.registration.title</span>
-              <span class="value"></span>
-            </a>
-          </h4>
-        </div>
-        <div id="registration-form-content" class="registration-form-content panel-collapse collapse" role="tabpanel" aria-labelledby="registration-form-heading">
-          <div class="panel-body">
-            <p translate>setup.registration.description</p>
-            <p class="horizontal-options">
-              <a href="#" data-value="true">
-                <span class="circle"><i class="fa fa-check"></i></span>
-                <span class="description" translate>with.lmp</span>
+        <accordion-group>
+          <div class="panel-heading" role="tab" id="registration-form-heading" accordion-heading>
+            <h4 class="panel-title">
+              <a>
+                <span class="count">
+                  <span class="number">4</span>
+                  <i class="fa fa-check"></i>
+                </span><span translate>setup.registration.title</span>
+                <span class="value"></span>
               </a>
-              <a href="#" data-value="false">
-                <span class="circle"><i class="fa fa-check"></i></span>
-                <span class="description" translate>without.lmp</span>
-              </a>
-            </p>
-            <p translate>setup.registration.help</p>
+            </h4>
           </div>
-        </div>
+          <div id="registration-form-content" class="registration-form-content panel-collapse">
+            <div class="panel-body">
+              <p translate>setup.registration.description</p>
+              <p class="horizontal-options">
+                <a href="#" data-value="true">
+                  <span class="circle"><i class="fa fa-check"></i></span>
+                  <span class="description" translate>with.lmp</span>
+                </a>
+                <a href="#" data-value="false">
+                  <span class="circle"><i class="fa fa-check"></i></span>
+                  <span class="description" translate>without.lmp</span>
+                </a>
+              </p>
+              <p translate>setup.registration.help</p>
+            </div>
+          </div>
+        </accordion-group>
       </div>
-    </div>
+    </accordion>
   </div>
 </mm-modal>

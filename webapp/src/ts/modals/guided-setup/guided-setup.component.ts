@@ -83,8 +83,8 @@ export class GuidedSetupComponent extends MmModalAbstract implements OnInit {
           $('#guided-setup [name=default-country-code]').val(res.default_country_code).change();
           $('#guided-setup [name=gateway-number]').val(res.gateway_number).trigger('input');
           $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
-          $('#language-preference-content .locale a[data-value="' + res.locale + '"]').trigger('click');
-          $('#language-preference-content .locale-outgoing a[data-value="' + res.locale_outgoing + '"]')
+          $('#language-preference-content .locale a[data-value=' + res.locale + ']').trigger('click');
+          $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']')
             .trigger('click');
           $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
         }
