@@ -12,6 +12,7 @@ import { ReportsComponent } from './reports/reports.component';
 import { ReportsContentComponent } from './reports/reports-content.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
+import { MessagesContentComponent } from './messages/messages-content.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { MessagesComponent } from './messages/messages.component';
     ReportsComponent,
     ReportsContentComponent,
     MessagesComponent,
+    MessagesContentComponent,
   ],
   imports: [
     CommonModule,

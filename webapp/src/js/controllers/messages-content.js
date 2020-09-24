@@ -160,6 +160,8 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         });
     };
 
+
+
     const updateConversation = (options={}) => {
       const selectedId = ctrl.selectedConversation && ctrl.selectedConversation.id;
       if (!selectedId) {
@@ -244,7 +246,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       });
       ctrl.send.message = '';
     };
-
+///////// From Here ToDo
     const changeListener = Changes({
       key: 'messages-content',
       callback: change => updateConversation({ change }),

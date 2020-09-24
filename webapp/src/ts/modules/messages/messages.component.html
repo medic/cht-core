@@ -15,7 +15,7 @@
             'selected': msg.key === loadingContent || (!loadingContent && selectedConversation && msg.key === selectedConversation.id),
             'unread': !msg.read
           }">
-          <a [routerLink]="['messages', msg.type, msg.key]">
+          <a [routerLink]="msg.type + ':' + msg.key">
             <div class="content">
               <div class="heading">
                 <h4>{{msg.contact || msg.from || ('messages.unknown.sender' | translate)}}</h4>
@@ -35,6 +35,6 @@
       <div class="padding"></div>
     </div>
 
-    <!-- <router-outlet></router-outlet> -->
+    <router-outlet></router-outlet>
   </div>
 </div>

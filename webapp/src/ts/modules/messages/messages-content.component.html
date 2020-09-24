@@ -1,0 +1,71 @@
+<div class="content-pane right-pane">
+
+  <div class="item-content empty-selection" *ngIf="loadingContent">
+    <div><div class="loader"></div></div>
+  </div>
+
+  <div class="item-content empty-selection" *ngIf="!selectedConversation?.messages[0] && !loadingContent">
+    <div translate>No message selected</div>
+  </div>
+
+  <div class="message-content-wrapper item-content" *ngIf="selectedConversation?.messages[0] && !loadingContent">
+    <div class="body">
+
+      <div id="message-header" class="name-header">
+        <!-- <mm-sender message="selectedConversation.contact"></mm-sender> -->
+      </div>
+
+      <div id="message-content">
+        <div class="loader" *ngIf="loadingMoreContent"></div>
+        <p class="loading-status" *ngIf="allLoaded" translate>No more messages</p>
+        <div>
+          <ul>
+            <li *ngFor="let message of selectedConversation.messages; trackBy: listTrackBy" [ngClass]="{'outgoing': message.doc?.kujua_message, 'incoming': !message.doc?.kujua_message}">
+              <div class="marker" *ngIf="firstUnread && firstUnread.id === message.doc._id" translate>Unread below</div>
+              <span class="message-body">
+
+                <div class="data">
+                  <p>
+                    {{message.doc?.sms_message?.message}}
+                    <span *ngIf="message.doc?.kujua_message">
+                      {{message.doc?.tasks[0]?.messages[0]?.message}}
+                    </span>
+                  </p>
+
+                  <!-- outgoing message -->
+                  <span class="task-state" *ngIf="message.doc?.kujua_message" ng-bind-html="message.doc?.tasks[0] | state"></span>
+
+                  <!-- incoming message -->
+                  <span class="task-state" *ngIf="!message.doc?.kujua_message" ng-bind-html="message.doc | state"></span>
+
+                  <!-- incoming message autoreply -->
+                  <span class="task-state" *ngIf="!message.doc?.kujua_message && message.doc?.tasks[0]" ng-bind-html="message.doc.tasks[0] | autoreply"></span>
+                </div>
+
+                <div class="actions">
+                  <a class="btn btn-link fa fa-trash-o" translate-attr-title="Delete" mm-auth="can_delete_messages"></a>
+                </div>
+
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="message-footer" class="reply message-form" *ngIf="selectedConversation.messages[0] && (selectedConversation.contact?.name || selectedConversation.contact?.doc)">
+        <div class="control-group">
+          <div class="controls">
+            <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selectedConversation.contact.doc.name || selectedConversation.contact.name) }"></textarea>
+          </div>
+        </div>
+
+        <div class="message-actions">
+          <a class="btn btn-link" translate>Add recipient</a>
+          <span class="count"></span>
+          <a class="btn submit btn-primary" [ngClass]="{disabled: send?.message?.length === 0}" translate>Send</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
