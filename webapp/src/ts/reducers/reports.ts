@@ -1,5 +1,6 @@
 import { Actions } from '../actions/reports';
 import { createReducer, on } from '@ngrx/store';
+import { UniqueSortedList } from './utils';
 import * as _ from 'lodash-es';
 
 const initialState = {
@@ -10,34 +11,14 @@ const initialState = {
   filters: {},
 };
 
-
-const _removeReport = (reports, reportsById, report) => {
-  if (!report._id || !reportsById.has(report._id)) {
-    return;
-  }
-
-  const idx = reports.findIndex(r => r._id === report._id);
-  reports.splice(idx, 1);
-  reportsById.delete(report._id);
-}
-
-const _insertReport = (reports, reportsById, report) => {
-  if (!report._id || reportsById.has(report._id)) {
-    return;
-  }
-
-  const idx = _.sortedIndexBy(reports, report, r => -r.reported_date);
-  reports.splice(idx, 0, report);
-  reportsById.add(report._id);
-}
-
 const updateReports = (state, newReports) => {
   const reports = [...state.reports];
   const reportsById = new Set(state.reportsById);
 
+  const list = new UniqueSortedList(reports, reportsById, 'reported_date');
   newReports.forEach(report => {
-    _removeReport(reports, reportsById, report);
-    _insertReport(reports, reportsById, report);
+    list.remove(report);
+    list.add(report);
   });
 
   return { ...state, reports, reportsById };
@@ -47,7 +28,9 @@ const removeReport = (state, report) => {
   const reports = [ ...state.reports];
   const reportsById = new Set(state.reportsById);
 
-  _removeReport(reports, reportsById, report);
+  const list = new UniqueSortedList(reports, reportsById, 'reported_date');
+  list.remove(report);
+
   return { ...state, reports, reportsById };
 }
 
@@ -61,8 +44,6 @@ const _reportsReducer = createReducer(
 export function reportsReducer(state, action) {
   return _reportsReducer(state, action);
 }
-
-
 
 /*
 const _ = require('lodash/core');

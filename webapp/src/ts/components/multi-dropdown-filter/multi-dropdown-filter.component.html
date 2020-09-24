@@ -1,4 +1,4 @@
-<div class="filter dropdown mm-dropdown multidropdown" [class.disabled]="disabled" dropdown>
+<div class="filter dropdown mm-dropdown multidropdown" [class.disabled]="disabled" dropdown [insideClick]="true">
   <a id="{{name}}" class="mm-button" href dropdownToggle (click)="false" [attr.aria-controls]="name + '_dropdown'">
     <span class="mm-button-icon">
       <span class="fa {{icon}}"></span>
@@ -10,13 +10,13 @@
   </a>
   <div id="{{name}}_dropdown" role="menu" [attr.aria-labelledby]="name" class="dropdown-menu mm-dropdown-menu" *dropdownMenu>
     <p class="actions">
-      <a (click)="false" class="btn btn-link select-all" translate>{{selectAllLabel || 'select all'}}</a>
-      <a (click)="false" class="btn btn-link reset" translate>{{clearLabel || 'clear'}}</a>
+      <a (click)="selectAll()" class="btn btn-link select-all" translate>{{selectAllLabel || 'select all'}}</a>
+      <a (click)="clear()" class="btn btn-link reset" translate>{{clearLabel || 'clear'}}</a>
     </p>
     <ul>
-      <li role="presentation" *ngFor="let item of items; trackBy: trackByFn" [class.dropdown-header]="item.header" [class.selected]="this.selected.includes(item)">
+      <li role="presentation" *ngFor="let item of items; trackBy: trackByFn" [class.dropdown-header]="item.header" [class.selected]="this.selected.has(item)">
         <span *ngIf="item.header" translate>{{item.label}}</span>
-        <a *ngIf="!item.header" role="menuitem" tabindex="-1" [attr.data-value]="item">
+        <a *ngIf="!item.header" role="menuitem" tabindex="-1" [attr.data-value]="item" (click)="toggleSelectedItem(item)">
           <span *ngIf="item.translateLabel" translate>{{item.label}}</span>
           <span *ngIf="!item.translateLabel">{{item.label}}</span>
         </a>

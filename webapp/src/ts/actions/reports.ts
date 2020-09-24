@@ -1,5 +1,3 @@
-import * as _ from 'lodash-es';
-import * as lineageFactory from '@medic/lineage';
 import { Store, createAction } from '@ngrx/store';
 import { createSingleValueAction } from './actionUtils';
 
@@ -11,7 +9,6 @@ export const Actions = {
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
   resetReportsList: createAction('RESET_REPORTS_LIST'),
-
 };
 
 export class ReportsActions {

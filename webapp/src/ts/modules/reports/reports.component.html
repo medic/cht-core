@@ -36,7 +36,7 @@
         <span *ngIf="selectedReports.length === 1" translate>select.mode.count.singular</span>
         <span *ngIf="selectedReports.length !== 1" translate [translateParams]="{ number: selectedReports.length || 0 }">select.mode.count.plural</span>
       </div>
-      <ul class="unfiltered" *ngIf="(!loading || appending) && !filtered">
+      <ul [hidden]="loading && !appending">
         <mm-content-row
           *ngFor="let report of reportsList; trackBy: listTrackBy"
           [id]="report._id"
@@ -54,7 +54,6 @@
         >
         </mm-content-row>
       </ul>
-      <ul class="filtered" *ngIf="(!loading || appending) && filtered"></ul>
       <p *ngIf="error" class="alert alert-danger" role="alert">
     <span *ngIf="errorSyntax">
       <span translate>invalid.query</span>

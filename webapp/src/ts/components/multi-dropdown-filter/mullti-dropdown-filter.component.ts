@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { from } from 'rxjs';
 
 @Component({
   selector: 'multi-dropdown-filter',
@@ -19,7 +20,7 @@ export class MultiDropdownFilterComponent implements OnInit {
 
   @Output() applyFilter:EventEmitter<any> = new EventEmitter();
 
-  selected = [];
+  selected = new Set();
 
   constructor(private translateService:TranslateService) {
   }
@@ -36,16 +37,16 @@ export class MultiDropdownFilterComponent implements OnInit {
       return this.translateService.get(this.label(state));
     }
 
-    if (this.selected.length === 0 || this.selected.length === this.items.length) {
+    if (this.selected.size === 0 || this.selected.size === this.items.length) {
       return this.translateService.get(this.labelNoFilter);
     }
 
-    if (this.selected.length === 1) {
-      const selectedItem = this.selected[0];
-      return selectedItem.translateLabel ? this.translateService.get(selectedItem.label) : selectedItem.label;
+    if (this.selected.size === 1) {
+      const selectedItem = this.selected.entries().next().value[0];
+      return selectedItem.translateLabel ? this.translateService.get(selectedItem.label) : from([selectedItem.label]);
     }
 
-    return this.translateService.get(this.labelFilter, { number: this.selected.length });
+    return this.translateService.get(this.labelFilter, { number: this.selected.size });
   }
 
   trackByFn(index, item) {
@@ -56,5 +57,26 @@ export class MultiDropdownFilterComponent implements OnInit {
     return index;
   }
 
+  private apply() {
+    this.applyFilter.emit({ selected: Array.from(this.selected) });
+  }
 
+  toggleSelectedItem(item) {
+    if (this.selected.has(item)) {
+      this.selected.delete(item);
+    } else {
+      this.selected.add(item);
+    }
+    this.apply();
+  }
+
+  selectAll() {
+    this.items.forEach(item => this.selected.add(item));
+    this.apply();
+  }
+
+  clear() {
+    this.selected.clear();
+    this.apply();
+  }
 }

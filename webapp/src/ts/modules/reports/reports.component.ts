@@ -3,15 +3,16 @@ import { isMobile } from '../../providers/responsive.provider';
 import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import {GlobalActions} from '../../actions/global';
-import {ReportsActions} from '../../actions/reports';
-import {ServicesActions} from '../../actions/services';
+import { GlobalActions } from '../../actions/global';
+import { ReportsActions } from '../../actions/reports';
+import { ServicesActions } from '../../actions/services';
 import { ChangesService } from '../../services/changes.service';
 import { SearchService } from '../../services/search.service';
-import {Selectors} from '../../selectors';
+import { Selectors } from '../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { SearchFiltersService } from '../../services/search-filters.service';
+import { ActivatedRoute } from '@angular/router';
 
 const PAGE_SIZE = 50;
 
@@ -28,6 +29,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private listContains;
 
   reportsList;
+  filteredReportsList;
   selectedReports;
   forms;
   error;
@@ -46,6 +48,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   constructor(
     private store:Store,
+    private route: ActivatedRoute,
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
@@ -53,6 +56,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getReportsList)),
+
       this.store.pipe(select(Selectors.getSelectedReports)),
       this.store.pipe(select(Selectors.listContains)),
       this.store.pipe(select(Selectors.getForms)),
@@ -81,8 +85,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.search();
-
     const subscription = this.changesService.subscribe({
       key: 'reports-list',
       callback: (change) => {
@@ -99,15 +101,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
       },
     });
     this.subscription.add(subscription);
-
-    this.globalActions.setFilters({
-      // search: $stateParams.query, todo
-      search: {}
-    });
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
     this.error = false;
     this.verifyingReport = false;
+
+    this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
+    this.search();
   }
 
   ngOnDestroy() {
@@ -168,7 +168,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     }
 
     return this.searchService
-      .search('reports', [], options)
+      .search('reports', this.filters, options)
       .then((updatedReports) => {
         // add read status todo
         updatedReports = this.prepareReports(updatedReports);
@@ -223,23 +223,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
       return;
     }
     this.loading = true;
-    if (
-      this.filters.search ||
-      (this.filters.forms &&
-        this.filters.forms.selected &&
-        this.filters.forms.selected.length) ||
-      (this.filters.facilities &&
-        this.filters.facilities.selected &&
-        this.filters.facilities.selected.length) ||
-      (this.filters.date &&
-        (this.filters.date.to || this.filters.date.from)) ||
-      (this.filters.valid === true || this.filters.valid === false) ||
-      (this.filters.verified && this.filters.verified.length)
-    ) {
-      this.filtered = true;
-    } else {
-      this.filtered = false;
-    }
 
     return this.query(force);
   }
