@@ -777,6 +777,19 @@ module.exports = function(grunt) {
           }
         }
       },
+      'e2e-tests-mobile': {
+        options: {
+          configFile: 'tests/mobileConf.js',
+          args: {
+            suite: 'mobile'
+          },
+          capabilities: {
+            chromeOptions: {
+              mobileEmulation: {'deviceName': 'Nexus 5'}
+            }
+          }
+        }
+      },
       'performance-tests-and-services': {
         options: {
           args: {
@@ -1029,6 +1042,11 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
     'e2e-deploy',
     'protractor:e2e-tests-debug',
+    'exec:clean-test-database',
+  ]);
+  grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests on a mobile emulator', [
+    'e2e-deploy',
+    'protractor:e2e-tests-mobile',
     'exec:clean-test-database',
   ]);
 
