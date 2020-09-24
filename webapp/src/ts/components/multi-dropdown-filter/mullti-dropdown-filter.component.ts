@@ -7,16 +7,13 @@ import { from } from 'rxjs';
   templateUrl: './multi-dropdown-filter.component.html'
 })
 export class MultiDropdownFilterComponent implements OnInit {
-  @Input() name;
-  @Input() icon;
+  @Input() items;
   @Input() disabled;
   @Input() label;
   @Input() labelNoFilter;
   @Input() labelFilter;
   @Input() selectAllLabel;
   @Input() clearLabel;
-  @Input() items;
-  @Input() trackBy;
 
   @Output() applyFilter:EventEmitter<any> = new EventEmitter();
 
@@ -49,25 +46,21 @@ export class MultiDropdownFilterComponent implements OnInit {
     return this.translateService.get(this.labelFilter, { number: this.selected.size });
   }
 
-  trackByFn(index, item) {
-    if (this.trackBy) {
-      return this.trackBy(index, item);
-    }
-
-    return index;
-  }
-
   private apply() {
-    this.applyFilter.emit({ selected: Array.from(this.selected) });
+    this.applyFilter.emit(Array.from(this.selected));
   }
 
-  toggleSelectedItem(item) {
-    if (this.selected.has(item)) {
+  toggle(item) {
+    if (this.isSelected(item)) {
       this.selected.delete(item);
     } else {
       this.selected.add(item);
     }
     this.apply();
+  }
+
+  isSelected(item) {
+    return this.selected.has(item);
   }
 
   selectAll() {

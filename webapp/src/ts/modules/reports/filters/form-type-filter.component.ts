@@ -1,16 +1,17 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 //import { SearchFiltersService } from '../../../services/search-filters.service';
 import { GlobalActions } from '../../../actions/global';
 import { sortBy as _sortBy } from 'lodash-es';
+import { MultiDropdownFilterComponent } from '@mm-components/multi-dropdown-filter/mullti-dropdown-filter.component';
 
 @Component({
   selector: 'mm-form-type-filter',
   templateUrl: './form-type-filter.component.html'
 })
-export class FormTypeFilterComponent implements OnInit, OnDestroy {
+export class FormTypeFilterComponent implements OnDestroy {
   private subscription: Subscription = new Subscription();
   private globalActions;
   forms;
@@ -18,9 +19,12 @@ export class FormTypeFilterComponent implements OnInit, OnDestroy {
   selectedReports;
 
   @Output() search: EventEmitter<any> = new EventEmitter();
+  @ViewChild(MultiDropdownFilterComponent)
+  dropdownFilter: MultiDropdownFilterComponent;
 
   constructor(
     private store:Store,
+    private cd: ChangeDetectorRef,
     //private searchFiltersService:SearchFiltersService,
   ) {
     const subscription = combineLatest(
@@ -32,7 +36,7 @@ export class FormTypeFilterComponent implements OnInit, OnDestroy {
       selectMode,
       selectedReports,
     ]) => {
-      this.forms = _sortBy(forms, 'name').map(form => ({ ...form, label: form.title || form.code }));
+      this.forms = _sortBy(forms, 'name');
       this.selectMode = selectMode;
       this.selectedReports = selectedReports;
     });
@@ -40,15 +44,12 @@ export class FormTypeFilterComponent implements OnInit, OnDestroy {
     this.globalActions = new GlobalActions(store);
   }
 
-  ngOnInit() {
-    /*this.searchFiltersService.formType((forms) => {
-      this.globalActions.setFilter({ forms });
-      this.search.emit();
-    });*/
+  ngAfterViewInit() {
+    this.cd.detectChanges();
   }
 
   applyFilter(forms) {
-    this.globalActions.setFilter({ forms });
+    this.globalActions.setFilter({ forms: { selected: forms } });
     this.search.emit();
   }
 

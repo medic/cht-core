@@ -25,11 +25,17 @@
 </div>
 -->
 <multi-dropdown-filter
-  name="form_type"
-  icon="fa-list-alt"
   [items]="forms"
-  [trackBy]="trackByFn"
   (applyFilter)="applyFilter($event)"
   labelNoFilter="All form types"
   labelFilter="Number of form types"
-></multi-dropdown-filter>
+>
+  <span class="fa fa-list-alt"></span>
+  <ul>
+    <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="dropdownFilter?.isSelected(form)">
+      <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="dropdownFilter?.toggle(form)">
+        {{form.title || form.code}}
+      </a>
+    </li>
+  </ul>
+</multi-dropdown-filter>
