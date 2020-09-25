@@ -14,6 +14,7 @@ import { ReportsContentComponent } from './reports/reports-content.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
 import { FormTypeFilterComponent } from './reports/filters/form-type-filter.component';
+import { FacilityFilterComponent } from '@mm-modules/reports/filters/facility-filter.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { FormTypeFilterComponent } from './reports/filters/form-type-filter.comp
     ReportsComponent,
     ReportsContentComponent,
     FormTypeFilterComponent,
+    FacilityFilterComponent,
     MessagesComponent,
   ],
   imports: [

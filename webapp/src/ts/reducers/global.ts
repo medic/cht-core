@@ -74,6 +74,9 @@ const _globalReducer = createReducer(
       filters: Object.assign({}, state.filters, filter)
     });
   }),
+  on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
+    return { ...state, isAdmin };
+  }),
 );
 
 

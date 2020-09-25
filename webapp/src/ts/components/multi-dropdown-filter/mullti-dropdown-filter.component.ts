@@ -16,6 +16,7 @@ export class MultiDropdownFilterComponent implements OnInit {
   @Input() clearLabel;
 
   @Output() applyFilter:EventEmitter<any> = new EventEmitter();
+  @Output() onOpen:EventEmitter<any> = new EventEmitter();
 
   selected = new Set();
 
@@ -23,6 +24,12 @@ export class MultiDropdownFilterComponent implements OnInit {
   }
 
   ngOnInit() {
+  }
+
+  onOpenChange(open) {
+    if (open && this.onOpen) {
+      this.onOpen.emit();
+    }
   }
 
   getLabel() {

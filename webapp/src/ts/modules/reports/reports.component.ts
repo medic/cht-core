@@ -136,7 +136,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
 
-
       return report;
     });
   }

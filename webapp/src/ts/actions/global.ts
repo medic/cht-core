@@ -17,6 +17,7 @@ export const Actions = {
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
+  setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
 }
 
 export class GlobalActions {
@@ -95,6 +96,10 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSelectMode(selectMode));
   }
 
+  setIsAdmin(isAdmin) {
+    return this.store.dispatch(Actions.setIsAdmin(isAdmin));
+  }
+
 }
 
 /*
@@ -166,9 +171,6 @@ angular.module('inboxServices').factory('GlobalActions',
 
 
 
-      function setIsAdmin(isAdmin) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
-      }
 
 
 

@@ -1,4 +1,4 @@
-<div class="filter dropdown mm-dropdown multidropdown" [class.disabled]="disabled" dropdown [insideClick]="true">
+<div class="filter dropdown mm-dropdown multidropdown" [class.disabled]="disabled" dropdown [insideClick]="true" (isOpenChange)="onOpenChange($event)">
   <a class="mm-button" href dropdownToggle (click)="false" >
     <span class="mm-button-icon">
       <ng-content select="span"></ng-content>

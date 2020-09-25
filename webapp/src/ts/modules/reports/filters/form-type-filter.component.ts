@@ -45,6 +45,8 @@ export class FormTypeFilterComponent implements OnDestroy {
   }
 
   ngAfterViewInit() {
+    // this is needed because the change detection doesn't run normally at this point, and we're using the
+    // child component's methods in the view.
     this.cd.detectChanges();
   }
 

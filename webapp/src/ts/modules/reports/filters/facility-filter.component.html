@@ -1,0 +1,42 @@
+<!--<span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-class="{ 'disabled': facilityFilterCtrl.selectMode && facilityFilterCtrl.selected.length }" ng-click="facilityFilterCtrl.monitorFacilityDropdown()">
+  <span id="facility" class="mm-button" data-toggle="dropdown">
+    <span class="mm-button-icon">
+      <span class="fa fa-hospital-o"></span>
+    </span>
+    <span class="mm-button-dropdown">
+      <span class="fa fa-chevron-down"></span>
+    </span>
+    <span class="mm-button-text"></span>
+  </span>
+  <span role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
+    <div class="loader" ng-show="!facilityFilterCtrl.facilities.length"></div>
+    <ul>
+      <li role="presentation" ng-repeat="facility in facilityFilterCtrl.facilities | orderBy:'doc.name' | limitTo:facilityFilterCtrl.totalFacilitiesDisplayed track by facility.doc._id" ng-include="::'templates/partials/filters/facility_items.html'" ng-init="facilityDepth = 0"></li>
+    </ul>
+  </span>
+</span>-->
+
+<multi-dropdown-filter
+  [items]="facilities"
+  (applyFilter)="applyFilter($event)"
+  labelNoFilter="All facilities"
+  labelFilter="Number of facilities"
+  [disabled]="selectMode && selectedReports.length"
+  (onOpen)="loadFacilities()"
+>
+  <span class="fa fa-list-alt"></span>
+  <ul>
+    <li role="presentation" *ngFor="let facility of facilities; trackBy: trackByFn" [class.selected]="dropdownFilter?.isSelected(facility)">
+      <ng-container [ngTemplateOutlet]="facilityTemplate" [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }"></ng-container>
+    </li>
+  </ul>
+</multi-dropdown-filter>
+
+<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth">
+  <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}">{{facility?.doc?.name || ((isAdmin ? 'place.deleted' : 'place.unavailable') | translate)}}</a>
+  <ul class="mm-dropdown-submenu">
+    <li role="presentation" *ngFor="let child of facility?.children; trackBy: trackByFn">
+      <ng-container *ngTemplateOutlet="facilityTemplate; context: { facility: child, facilityDepth: facilityDepth + 1 }"></ng-container>
+    </li>
+  </ul>
+</ng-template>

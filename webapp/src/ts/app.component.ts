@@ -109,7 +109,6 @@ export class AppComponent {
 
     this.globalActions = new GlobalActions(store);
 
-
     moment.locale(['en']);
     this.formatDateService.init();
 
@@ -223,9 +222,10 @@ export class AppComponent {
       this.canLogOut = true;
     }
 
-
     this.setupPromise = this.sessionService.init();
     this.feedbackService.init();
+
+    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
 
     this.changesService.subscribe({
       key: 'branding-icon',
