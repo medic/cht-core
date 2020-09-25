@@ -26,17 +26,25 @@
 >
   <span class="fa fa-list-alt"></span>
   <ul>
-    <li role="presentation" *ngFor="let facility of facilities; trackBy: trackByFn" [class.selected]="dropdownFilter?.isSelected(facility)">
-      <ng-container [ngTemplateOutlet]="facilityTemplate" [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }"></ng-container>
-    </li>
+    <ng-container
+      *ngFor="let facility of facilities; trackBy: trackByFn"
+      [ngTemplateOutlet]="facilityTemplate"
+      [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }">
+    </ng-container>
   </ul>
 </multi-dropdown-filter>
 
-<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth">
-  <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}">{{facility?.doc?.name || ((isAdmin ? 'place.deleted' : 'place.unavailable') | translate)}}</a>
-  <ul class="mm-dropdown-submenu">
-    <li role="presentation" *ngFor="let child of facility?.children; trackBy: trackByFn">
-      <ng-container *ngTemplateOutlet="facilityTemplate; context: { facility: child, facilityDepth: facilityDepth + 1 }"></ng-container>
-    </li>
-  </ul>
+<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent">
+  <li role="presentation" [class.selected]="dropdownFilter?.isSelected(facility)" [class.disabled]="parent && dropdownFilter?.isSelected(parent)">
+    <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}" (click)="toggle(facility)">
+      {{facility?.doc?.name || ((isAdmin ? 'place.deleted' : 'place.unavailable') | translate)}}
+    </a>
+    <ul class="mm-dropdown-submenu">
+      <ng-container
+        *ngFor="let child of facility?.children; trackBy: trackByFn"
+        [ngTemplateOutlet]="facilityTemplate"
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, facilityDepth: facilityDepth + 1 }">
+      </ng-container>
+    </ul>
+  </li>
 </ng-template>

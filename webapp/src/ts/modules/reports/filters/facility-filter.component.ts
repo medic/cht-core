@@ -5,6 +5,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { GlobalActions } from '../../../actions/global';
 import { MultiDropdownFilterComponent } from '@mm-components/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '../../../services/place-hierarchy.service';
+import { sortBy as _sortBy } from 'lodash-es';
 
 @Component({
   selector: 'mm-facility-filter',
@@ -47,11 +48,16 @@ export class FacilityFilterComponent implements OnDestroy {
   }
 
   loadFacilities() {
+    if (this.facilities.length) {
+      this.totalFacilitiesDisplayed += 1;
+      return;
+    }
+
     return this.placeHierarchyService
       .get()
       .then(hierarchy => {
         // todo sort!
-        console.log(hierarchy);
+        hierarchy = this.sortHierarchy(hierarchy);
         this.facilities = hierarchy;
         this.totalFacilitiesDisplayed += 1;
       })
@@ -63,6 +69,17 @@ export class FacilityFilterComponent implements OnDestroy {
         $timeout(() => ctrl.totalFacilitiesDisplayed += 1);
       }
     });*/
+  }
+
+  private sortHierarchy(hierarchy) {
+    const sortChildren = (facility) => {
+      facility.children = _sortBy(facility.children, 'name');
+      facility.children.forEach(child => sortChildren(child));
+    }
+
+    hierarchy.forEach(facility => sortChildren(facility));
+
+    return _sortBy(hierarchy, 'name');
   }
 
   ngAfterViewInit() {
@@ -82,6 +99,11 @@ export class FacilityFilterComponent implements OnDestroy {
 
   trackByFn(idx, facility) {
     return facility.doc._id;
+  }
+
+  toggle(facility) {
+    this.dropdownFilter.toggle(facility);
+    facility.children?.forEach(child => this.dropdownFilter.toggle(child));
   }
 }
 

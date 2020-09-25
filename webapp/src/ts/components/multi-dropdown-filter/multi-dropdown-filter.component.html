@@ -13,6 +13,7 @@
       <a (click)="selectAll()" class="btn btn-link select-all" translate>{{selectAllLabel || 'select all'}}</a>
       <a (click)="clear()" class="btn btn-link reset" translate>{{clearLabel || 'clear'}}</a>
     </p>
+    <div class="loader" *ngIf="!items.length"></div>
     <ng-content select="ul"></ng-content>
   </div>
 </div>
