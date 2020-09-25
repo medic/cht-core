@@ -1,7 +1,7 @@
 const auth = require('../../auth')();
 const commonElements = require('../../page-objects/common/common.po.js');
 const loginPage = require('../../page-objects/login/login.po.js');
-const helper= require('../../helper')
+
 describe('Login tests : ', () => {
   const wrongUsername = 'fakeuser';
   const wrongPassword = 'fakepass';
