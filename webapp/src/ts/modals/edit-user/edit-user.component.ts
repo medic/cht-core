@@ -1,3 +1,54 @@
+import {MmModalAbstract} from "@mm-modals/mm-modal/mm-modal";
+import {Injectable} from "@angular/core";
+import {UserSettingsService} from "@mm-services/user-settings.service";
+import {BsModalRef} from "ngx-bootstrap/modal";
+
+
+Injectable({
+  providedIn: 'root'
+})
+export class EditUserAbstract extends MmModalAbstract {
+
+  editUserModel;
+
+  constructor(
+    private bsModalRef: BsModalRef,
+    private userSettingsService: UserSettingsService,
+  ) {
+    super();
+    this.determineEditUserModel()
+      .then(model => {
+        this.editUserModel = model;
+      })
+      .catch(err => {
+        console.error('Error determining user model', err);
+      });
+  }
+
+  cancel() {
+    this.bsModalRef.hide();
+  }
+
+  private determineEditUserModel() {
+    return this.userSettingsService.get()
+      .then((user: any) => {
+        if (user) {
+          return {
+            id: user._id,
+            username: user.name,
+            fullname: user.fullname,
+            email: user.email,
+            phone: user.phone,
+            language: { code: user.language }
+          };
+        } else {
+          return {};
+        }
+      });
+  }
+}
+
+/*
 const passwordTester = require('simple-password-tester');
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -213,3 +264,4 @@ const PASSWORD_MINIMUM_SCORE = 50;
   );
 
 }());
+*/
