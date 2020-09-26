@@ -12,7 +12,7 @@
     <div class="body">
 
       <div id="message-header" class="name-header">
-        <!-- <mm-sender message="selectedConversation.contact"></mm-sender> -->
+        <mm-sender [message]="selectedConversation.contact"></mm-sender>
       </div>
 
       <div id="message-content">
@@ -33,17 +33,17 @@
                   </p>
 
                   <!-- outgoing message -->
-                  <span class="task-state" *ngIf="message.doc?.kujua_message" ng-bind-html="message.doc?.tasks[0] | state"></span>
+                  <span class="task-state" *ngIf="message.doc?.kujua_message" [innerHTML]="message.doc?.tasks[0] | state"></span>
 
                   <!-- incoming message -->
-                  <span class="task-state" *ngIf="!message.doc?.kujua_message" ng-bind-html="message.doc | state"></span>
+                  <span class="task-state" *ngIf="!message.doc?.kujua_message" [innerHTML]="message.doc | state"></span>
 
                   <!-- incoming message autoreply -->
-                  <span class="task-state" *ngIf="!message.doc?.kujua_message && message.doc?.tasks[0]" ng-bind-html="message.doc.tasks[0] | autoreply"></span>
+                  <span class="task-state" *ngIf="!message.doc?.kujua_message && message.doc?.tasks[0]" [innerHTML]="message.doc?.tasks[0] | autoreply"></span>
                 </div>
 
                 <div class="actions">
-                  <a class="btn btn-link fa fa-trash-o" translate-attr-title="Delete" mm-auth="can_delete_messages"></a>
+                  <a class="btn btn-link fa fa-trash-o" title="{{ 'Delete' | translate }}" mm-auth="can_delete_messages"></a>
                 </div>
 
               </span>
@@ -55,7 +55,10 @@
       <div id="message-footer" class="reply message-form" *ngIf="selectedConversation.messages[0] && (selectedConversation.contact?.name || selectedConversation.contact?.doc)">
         <div class="control-group">
           <div class="controls">
-            <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selectedConversation.contact.doc.name || selectedConversation.contact.name) }"></textarea>
+            <textarea name="message"
+                      [ngModel]="send.message"
+                      placeholder="{{ ('Reply to' | translate) + ' ' + (selectedConversation.contact?.doc?.name || selectedConversation.contact?.name || '') }}">
+            </textarea>
           </div>
         </div>
 

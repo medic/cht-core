@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterContentInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -11,6 +11,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { MarkReadService } from '@mm-services/mark-read.service';
 
 /**
 *  In this context the URL parameter "id", can be:
@@ -23,7 +24,7 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
   selector: 'messages-content',
   templateUrl: './messages-content.component.html'
 })
-export class MessagesContentComponent implements OnInit, OnDestroy {
+export class MessagesContentComponent implements OnInit, OnDestroy, AfterContentInit {
   private userCtx;
   private globalActions: GlobalActions;
   private messagesActions: MessagesActions;
@@ -44,7 +45,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
     private changesService: ChangesService,
     private messageContactService: MessageContactService,
     private sessionService: SessionService,
-    private lineageModelGeneratorService: LineageModelGeneratorService
+    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private markReadService: MarkReadService
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getSelectedConversation)),
@@ -56,7 +58,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
 
     this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store);
+    this.messagesActions = new MessagesActions(store, this.globalActions);
     this.userCtx = this.sessionService.userCtx();
   }
 
@@ -69,9 +71,11 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
       this.selectContact(this.parameters.id, this.parameters.type);
     });
     this.subscriptions.add(subscription);
-    // ng for orderBy:'doc.reported_date'
 
     this.watchForChanges();
+  }
+
+  ngAfterContentInit(): void {
     window.jQuery('.tooltip').remove();
     window.jQuery('body')
       .on('focus', '#message-footer textarea', () => {
@@ -84,6 +88,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    window.jQuery('body').off('focus', '#message-footer textarea');
+    window.jQuery('body').off('blur', '#message-footer textarea');
   }
 
   listTrackBy(index, message) {
@@ -103,7 +109,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
     let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
 
     content.scrollTop(scrollTo);
-    window.jQuery('.message-content-wrapper').on('scroll', (elem) => this.checkScroll(content));
+    window.jQuery('.message-content-wrapper').on('scroll', () => this.checkScroll(content));
   }
 
   // See URL parameter "id" note at top of file
@@ -130,7 +136,13 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
     const hasUnreadDoc = this.selectedConversation.messages.some(message => !message.read && message.doc);
 
     if (hasUnreadDoc) {
-      // ToDo: this.messagesActions.markSelectedConversationRead();
+      const docs = this.selectedConversation.messages.map(message => message.doc);
+      this.markReadService
+        .markAsRead(docs)
+        .then(() => {
+          this.messagesActions.markSelectedConversationRead();
+        })
+        .catch(err => console.error('Error marking all as read', err));
     }
   }
 
@@ -138,13 +150,14 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
     if (!id) {
       this.messagesActions.setMessagesError(false);
       this.globalActions.setLoadingContent(false);
-      // ToDo: this.globalActions.unsetSelected();
+      this.globalActions.unsetSelected();
       return;
     }
 
     // ToDo: not sure if needed -> window.jQuery('.message-content-wrapper').off('scroll', () => this.checkScroll());
-    // ToDo: this.messagesActions.setSelected({ id: id, messages: [] });
-    // ToDo: this.globalActions.setLoadingShowContent(id);
+    const refreshSelected = this.selectedConversation && this.selectedConversation.id === id;
+    this.messagesActions.setSelected({ id: id, messages: [] }, refreshSelected);
+    this.globalActions.setLoadingShowContent(id);
 
     return Promise
       .all([
@@ -172,14 +185,14 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
           return;
         }
 
-        // ToDo: this.globalActions.setLoadingShowContent(false);
+        this.globalActions.setLoadingShowContent(false);
         this.messagesActions.setMessagesError(false);
         const unread = conversation.filter(message => !message.read);
         this.firstUnread = _minBy(unread, message => message.doc.reported_date);
         this.messagesActions.updateSelectedConversation({ contact: contactModel, messages: conversation });
-        // ToDo: this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
+        this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();
-        this.scrollToUnread(); // Todo $timeout();
+        setTimeout(() => this.scrollToUnread()); // Todo $timeout();
       })
       .catch((err) => {
         this.globalActions.setLoadingContent(false);
@@ -232,6 +245,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy {
         } else if (first.length && newMessageFromUser) {
           scroll = window.jQuery('.message-content-wrapper')[0].scrollHeight;
         }
+
         if (scroll) {
           window.jQuery('.message-content-wrapper').scrollTop(scroll);
         }

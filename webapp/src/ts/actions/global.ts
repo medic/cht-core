@@ -13,6 +13,8 @@ export const Actions = {
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
+  setTitle: createSingleValueAction('SET_TITLE', 'title'),
+  clearSelected: createSingleValueAction('CLEAR_SELECTED', ''),
 }
 
 export class GlobalActions {
@@ -73,6 +75,30 @@ export class GlobalActions {
         // TODO scroll body to top
       }
     });
+  }
+
+  setTitle(title) {
+    return this.store.dispatch(Actions.setTitle(title));
+  }
+
+  setLoadingShowContent(id) {
+    this.setLoadingContent(id);
+    this.setShowContent(true);
+  }
+
+  /**
+   * Warning! Use carefully because more than one reducer might be listening to this global action.
+   */
+  clearSelected() {
+    this.store.dispatch(Actions.clearSelected(''));
+  }
+
+  unsetSelected() {
+    this.setShowContent(false);
+    this.setLoadingContent(false);
+    this.setShowActionBar(false);
+    this.setTitle('');
+    this.clearSelected();
   }
 }
 

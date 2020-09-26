@@ -63,6 +63,9 @@ const _globalReducer = createReducer(
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
+  on(Actions.setTitle, (state, { payload: { title } }) => {
+    return { ...state, title };
+  }),
 );
 
 

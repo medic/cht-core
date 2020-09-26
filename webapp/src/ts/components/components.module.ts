@@ -4,12 +4,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { RouterModule } from '@angular/router';
 
+import { PipesModule } from '@mm-pipes/pipes.module';
+import { DirectivesModule } from '@mm-directives/directives.module';
 import { HeaderComponent } from './header/header.component';
-import { PipesModule } from '../pipes/pipes.module';
-import { DirectivesModule } from '../directives/directives.module';
 import { SnackbarComponent } from './snackbar/snackbar.component';
-import {ContentRowListItemComponent} from './content-row-list-item/content-row-list-item.component';
+import { ContentRowListItemComponent } from './content-row-list-item/content-row-list-item.component';
 import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from './status-icons/status-icons.template';
+import { SenderComponent } from './sender/sender.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from
     ContentRowListItemComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
+    SenderComponent,
   ],
   imports: [
     CommonModule,
@@ -33,6 +35,7 @@ import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from
     ContentRowListItemComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
+    SenderComponent,
   ]
 })
 export class ComponentsModule { }

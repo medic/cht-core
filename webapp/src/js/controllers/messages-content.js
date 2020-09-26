@@ -213,7 +213,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         })
         .catch(err => $log.error('Error fetching contact conversation', err));
     };
-
+///////// From Here ToDo
     ctrl.sendMessage = () => {
       if (!ctrl.selectedConversation) {
         $log.error('Error sending message', new Error('No facility selected'));
@@ -246,7 +246,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       });
       ctrl.send.message = '';
     };
-///////// From Here ToDo
+
     const changeListener = Changes({
       key: 'messages-content',
       callback: change => updateConversation({ change }),

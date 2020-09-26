@@ -47,7 +47,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
 
     this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store);
+    this.messagesActions = new MessagesActions(store, this.globalActions);
   }
 
   ngOnInit(): void {

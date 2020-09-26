@@ -1,19 +1,22 @@
 import { createReducer, on } from '@ngrx/store';
 
-import { Actions } from '../actions/messages';
+import { Actions } from '@mm-actions/messages';
+import { Actions as GlobalActions } from '@mm-actions/global';
 
 export interface MessagesState {
   error: boolean;
   conversations: object[],
-  messages: object[],
   selected: object;
 }
 
 const initialState: MessagesState = {
   error: false,
   conversations: [],
-  messages: [],
   selected: null,
+};
+
+const sortMessages = (a, b) => {
+  return b.doc.reported_date - a.doc.reported_date;
 };
 
 const setConversations = (state, newConversions) => {
@@ -31,13 +34,14 @@ const setMessagesError = (state, error) => {
 
 const removeMessageFromSelectedConversation = (state, id) => {
   const filteredMessages = state.selected.messages
-    .filter(message => message.id !== id);
+    .filter(message => message.id !== id)
+    .sort(sortMessages);
 
   return { ...state, selected: { ...state.selected, messages: filteredMessages } };
 };
 
 const updateSelectedConversation = (state, selected) => {
-  const mergedMessages = [...((state.selected && state.selected.messages) || [])];
+  let mergedMessages = [...((state.selected && state.selected.messages) || [])];
 
   selected.messages.forEach(updated => {
     const index = mergedMessages.findIndex(existent => updated.id === existent.id);
@@ -49,7 +53,25 @@ const updateSelectedConversation = (state, selected) => {
     }
   });
 
+  mergedMessages = mergedMessages.sort(sortMessages);
+
   return { ...state, selected: { ...state.selected, ...selected, messages: mergedMessages } };
+};
+
+const markSelectedConversationRead = (state) => {
+  if (!state.conversations || !state.selected.messages) {
+    return state;
+  }
+
+  const ids = state.selected.messages.map(message => message.doc._id);
+  const updatedConversations = state.conversations.map(conversation => {
+    if (ids.includes(conversation.id)) {
+      conversation = { ...conversation, read: true };
+    }
+    return conversation;
+  });
+
+  return { ...state, conversations: updatedConversations };
 };
 
 const reducer = createReducer(
@@ -59,6 +81,8 @@ const reducer = createReducer(
   on(Actions.setMessagesError, (state, { payload: { error } }) => setMessagesError(state, error)),
   on(Actions.removeMessageFromSelectedConversation, (state, { payload: { id } }) => removeMessageFromSelectedConversation(state, id)),
   on(Actions.updateSelectedConversation, (state, { payload: { selected } }) => updateSelectedConversation(state, selected)),
+  on(GlobalActions.clearSelected, (state) => setSelectedConversation(state, null)),
+  on(Actions.markSelectedConversationRead, (state) => markSelectedConversationRead(state)),
 );
 
 export function messagesReducer(state, action) {

@@ -2,8 +2,9 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
-import {PipesModule} from '../pipes/pipes.module';
+import  { PipesModule } from '@mm-pipes/pipes.module';
 
 import { AboutComponent } from './about/about.component';
 import { ErrorComponent } from './error/error.component';
@@ -30,6 +31,7 @@ import { MessagesContentComponent } from './messages/messages-content.component'
     PipesModule,
     RouterModule,
     ComponentsModule,
+    FormsModule,
   ],
   exports: [
     AboutComponent,
