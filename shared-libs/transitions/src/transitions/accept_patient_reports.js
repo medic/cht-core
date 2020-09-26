@@ -254,6 +254,7 @@ const handleReport = (doc, config, callback) => {
 };
 
 module.exports = {
+  name: NAME,
   filter: function(doc, info = {}) {
     return Boolean(
       doc &&

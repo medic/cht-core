@@ -67,11 +67,10 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('bulk-get handler', () => {
-  beforeAll(done => {
-    utils
+  beforeAll(() => {
+    return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .then(() => utils.createUsers(users));
   });
 
   afterAll(done =>
@@ -784,6 +783,66 @@ describe('bulk-get handler', () => {
             docs: [{ ok: doc }]
           }));
         chai.expect(result.results).to.deep.equal(expected);
+      });
+  });
+
+  it('should not return sensitive documents', () => {
+    const docs = [
+      {
+        _id: 'insensitive_report_1',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:offline'},
+        patient_id: 'fixture:offline'
+      },
+      {
+        _id: 'insensitive_report_2',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:offline'},
+        patient_id: 'fixture:offline',
+        fields: { private: true },
+      },
+      {
+        _id: 'insensitive_report_3',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        patient_id: 'fixture:offline',
+        fields: { private: false },
+      },
+      {
+        _id: 'sensitive_report',
+        type: 'data_record',
+        form: 'a',
+        contact: { _id: 'fixture:online'},
+        patient_id: 'fixture:offline',
+        fields: { private: true },
+      },
+    ];
+
+    return utils
+      .saveDocs(docs)
+      .then(result => {
+        result.forEach((r, idx) => docs[idx]._rev = r.rev);
+        offlineRequestOptions.body = { docs: docs.map(doc => ({ id: doc._id, rev: doc._rev })) };
+      })
+      .then(() => utils.requestOnMedicDb(offlineRequestOptions))
+      .then(result => {
+        chai.expect(result.results).to.deep.equal([
+          {
+            id: 'insensitive_report_1',
+            docs: [{ ok: docs[0] }],
+          },
+          {
+            id: 'insensitive_report_2',
+            docs: [{ ok: docs[1] }],
+          },
+          {
+            id: 'insensitive_report_3',
+            docs: [{ ok: docs[2] }],
+          },
+        ]);
       });
   });
 });

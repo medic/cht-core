@@ -9,6 +9,7 @@ function (doc) {
       doc._id === 'service-worker-meta' ||
       doc._id === 'zscore-charts' ||
       doc._id === 'settings' ||
+      doc._id === 'privacy-policies' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
     return emit('_all', {});
@@ -51,6 +52,9 @@ function (doc) {
       var subject = getSubject() || '_unassigned';
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
+      }
+      if (doc.fields && doc.fields.private) {
+        value.private = true;
       }
       emit(subject, value);
       if (doc.fields &&

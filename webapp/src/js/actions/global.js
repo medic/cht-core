@@ -251,6 +251,26 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_MINIMAL_TABS, 'minimalTabs', minimal));
       }
 
+      function setPrivacyPolicyAccepted(accepted) {
+        dispatch(
+          ActionUtils.createSingleValueAction(
+            actionTypes.SET_PRIVACY_POLICY_ACCEPTED,
+            'privacyPolicyAccepted',
+            accepted
+          )
+        );
+      }
+
+      function setShowPrivacyPolicy(show) {
+        dispatch(
+          ActionUtils.createSingleValueAction(
+            actionTypes.SET_SHOW_PRIVACY_POLICY,
+            'showPrivacyPolicy',
+            show
+          )
+        );
+      }
+
       return {
         clearCancelCallback,
         clearFilters,
@@ -284,7 +304,9 @@ angular.module('inboxServices').factory('GlobalActions',
         updateReplicationStatus,
         updateUnreadCount,
         unsetSelected,
-        settingSelected
+        settingSelected,
+        setPrivacyPolicyAccepted,
+        setShowPrivacyPolicy,
       };
     };
   }

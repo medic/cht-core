@@ -134,7 +134,7 @@ const docs = [
   }];
 
 const clearAndFill = (el, value) => {
-  el.clear().then(() => el.sendKeys(value));
+  return el.clear().then(() => el.sendKeys(value));
 };
 
 const clickAndGetValue = el => {

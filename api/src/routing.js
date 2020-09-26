@@ -38,6 +38,8 @@ const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
+const couchConfigController = require('./controllers/couch-config');
+const replicationLimitLogController = require('./controllers/replication-limit-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -48,6 +50,7 @@ const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
+const cookie = require('./services/cookie');
 const app = express();
 
 // requires content-type application/json header
@@ -235,6 +238,8 @@ app.use(express.static(extractedResourceDirectory));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
+app.get(routePrefix + 'login/token/:token?', login.tokenGet);
+app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 
 // saves CouchDB _session information as `userCtx` in the `req` object
 app.use(authorization.getUserCtx);
@@ -257,6 +262,16 @@ ONLINE_ONLY_ENDPOINTS.forEach(url =>
   app.all(routePrefix + url, authorization.offlineUserFirewall)
 );
 
+// allow anyone to access their session
+app.all('/_session', function(req, res) {
+  const given = cookie.get(req, 'userCtx');
+  if (given) {
+    // update the expiry date on the cookie to keep it fresh
+    cookie.setUserCtx(res, decodeURIComponent(given));
+  }
+  proxy.web(req, res);
+});
+
 const UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
@@ -272,8 +287,6 @@ const UNAUDITED_ENDPOINTS = [
   // Interacting with mongo filters uses POST
   routePrefix + '_find',
   routePrefix + '_explain',
-  // allow anyone to access their _session information
-  '/_session',
 ];
 
 UNAUDITED_ENDPOINTS.forEach(function(url) {
@@ -417,13 +430,18 @@ app.post('/api/v1/contacts-by-phone', authorization.offlineUserFirewall, jsonPar
 
 app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
+app.get('/api/v1/settings/deprecated-transitions', settings.getDeprecatedTransitions);
 
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
 
+app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
+
 app.get('/purging', authorization.onlineUserPassThrough, purgedDocsController.info);
 app.get('/purging/changes', authorization.onlineUserPassThrough, purgedDocsController.getPurgedDocs);
 app.get('/purging/checkpoint', authorization.onlineUserPassThrough, purgedDocsController.checkpoint);
+
+app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

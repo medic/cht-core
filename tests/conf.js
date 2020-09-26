@@ -60,7 +60,7 @@ const baseConfig = {
     browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
-      browser
+      return browser
         .manage()
         .logs()
         .get('browser')
@@ -155,10 +155,9 @@ const setupUser = () => {
     .getDoc('org.couchdb.user:' + auth.username)
     .then(doc => {
       doc.contact_id = constants.USER_CONTACT_ID;
-      doc.known = true;
       doc.language = 'en';
-      doc.roles = ['_admin'];
       return utils.saveDoc(doc);
     })
-    .then(() => utils.refreshToGetNewSettings());
+    .then(() => utils.refreshToGetNewSettings())
+    .then(() => utils.closeTour());
 };

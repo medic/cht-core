@@ -43,6 +43,7 @@ const evaluateCondition = (doc, alert) => {
 };
 
 module.exports = {
+  name: NAME,
   _getConfig: function() {
     return Object.assign({}, config.get('alerts'));
   },

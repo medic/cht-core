@@ -1,5 +1,6 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
+const utils = require('./utils');
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
@@ -20,6 +21,30 @@ const selfAndParents = function(self) {
 const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
+
+const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
+
+const getContactIds = (contacts) => {
+  const ids = [];
+  contacts.forEach(doc => {
+    if (!doc) {
+      return;
+    }
+
+    const id = utils.getId(doc.contact);
+    id && ids.push(id);
+
+    if (!utils.validLinkedDocs(doc)) {
+      return;
+    }
+    Object.keys(doc.linked_docs).forEach(key => {
+      const id = utils.getId(doc.linked_docs[key]);
+      id && ids.push(id);
+    });
+  });
+
+  return _.uniq(ids);
+};
 
 module.exports = function(Promise, DB) {
   const fillParentsInDocs = function(doc, lineage) {
@@ -51,32 +76,37 @@ module.exports = function(Promise, DB) {
     }
 
     docs.forEach(function(doc) {
-      const id = doc && doc.contact && doc.contact._id;
-      const contactDoc = id && contacts.find(contactDoc => contactDoc._id === id);
+      if (!doc) {
+        return;
+      }
+      const id = utils.getId(doc.contact);
+      const contactDoc = getContactById(contacts, id);
       if (contactDoc) {
         doc.contact = deepCopy(contactDoc);
       }
+
+      if (!utils.validLinkedDocs(doc)) {
+        return;
+      }
+
+      Object.keys(doc.linked_docs).forEach(key => {
+        const id = utils.getId(doc.linked_docs[key]);
+        const contactDoc = getContactById(contacts, id);
+        if (contactDoc) {
+          doc.linked_docs[key] = deepCopy(contactDoc);
+        }
+      });
     });
   };
 
   const fetchContacts = function(lineage) {
-    const contactIds = _.uniq(
-      lineage
-        .map(function(doc) {
-          return doc && doc.contact && doc.contact._id;
-        })
-        .filter(function(id) {
-          return !!id;
-        })
-    );
+    const contactIds = getContactIds(lineage);
 
     // Only fetch docs that are new to us
     const lineageContacts = [];
     const contactsToFetch = [];
     contactIds.forEach(function(id) {
-      const contact = lineage.find(function(doc) {
-        return doc && doc._id === id;
-      });
+      const contact = getContactById(lineage, id);
       if (contact) {
         lineageContacts.push(deepCopy(contact));
       } else {
@@ -243,7 +273,7 @@ module.exports = function(Promise, DB) {
     docs.forEach(function(doc) {
       let parent = doc.parent;
       if (doc.type === 'data_record') {
-        const contactId = doc.contact && doc.contact._id;
+        const contactId = utils.getId(doc.contact);
         if (!contactId) {
           return;
         }
@@ -261,11 +291,7 @@ module.exports = function(Promise, DB) {
     const ids = [];
     partiallyHydratedDocs.forEach(function(doc) {
       const startLineageFrom = doc.type === 'data_record' ? doc.contact : doc;
-      const contactIds = selfAndParents(startLineageFrom)
-        .map(parent => parent.contact && parent.contact._id)
-        .filter(id => id);
-
-      ids.push(...contactIds);
+      ids.push(...getContactIds(selfAndParents(startLineageFrom)));
     });
 
     return _.uniq(ids);
@@ -337,7 +363,7 @@ module.exports = function(Promise, DB) {
             const parentIds = extractParentIds(docWithLineage);
             return parentIds.map(id => {
               // how can we use hashmaps?
-              return parents.find(doc => doc._id === id);
+              return getContactById(parents, id);
             });
           };
 
@@ -349,7 +375,7 @@ module.exports = function(Promise, DB) {
             lineage.unshift(doc);
           }
 
-          const patientDoc = patientUuids[i] && patientDocs.find(known => known._id === patientUuids[i]);
+          const patientDoc = getContactById(patientDocs, patientUuids[i]);
           const patientLineage = reconstructLineage(patientDoc, knownDocs);
 
           mergeLineagesIntoDoc(lineage, knownDocs, patientLineage);
