@@ -18,6 +18,7 @@ import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
+import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
     FormTypeFilterComponent,
     StatusFilterComponent,
     FreetextFilterComponent,
+    ResetFiltersComponent,
   ],
   imports: [
     CommonModule,
@@ -53,6 +55,7 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
     FormTypeFilterComponent,
     StatusFilterComponent,
     FreetextFilterComponent,
+    ResetFiltersComponent,
   ]
 })
 export class ComponentsModule { }

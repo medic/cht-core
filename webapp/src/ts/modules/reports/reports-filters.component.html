@@ -4,9 +4,5 @@
   <mm-date-filter (search)="applyFilters()" [disabled]="disabled"></mm-date-filter>
   <mm-status-filter (search)="applyFilters()" [disabled]="disabled"></mm-status-filter>
   <mm-freetext-filter (search)="applyFilters()" [disabled]="disabled"></mm-freetext-filter>
-  <span class="reset-filter">
-    <a tabindex="-1" (click)="clearFilters()" title="{{'Clear all filters' | translate}}" [class.disabled]="disabled">
-      <i class="fa fa-undo"></i>
-    </a>
-  </span>
+  <reset-filters (reset)="clearFilters()" [disabled]="disabled"></reset-filters>
 </div>

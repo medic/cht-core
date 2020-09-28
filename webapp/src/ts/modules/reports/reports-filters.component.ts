@@ -41,11 +41,11 @@ export class ReportsFiltersComponent {
 
   clearFilters() {
     this.globalActions.setFilters({});
-    this.formTypeFilter.clear();
-    this.facilityFilter.clear();
-    this.dateFilter.clear();
-    this.statusFilter.clear();
-    this.freetextFilter.clear();
+    this.formTypeFilter?.clear();
+    this.facilityFilter?.clear();
+    this.dateFilter?.clear();
+    this.statusFilter?.clear();
+    this.freetextFilter?.clear();
 
     this.applyFilters();
   }
