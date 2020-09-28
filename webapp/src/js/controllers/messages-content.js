@@ -160,8 +160,6 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         });
     };
 
-
-
     const updateConversation = (options={}) => {
       const selectedId = ctrl.selectedConversation && ctrl.selectedConversation.id;
       if (!selectedId) {
@@ -213,7 +211,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         })
         .catch(err => $log.error('Error fetching contact conversation', err));
     };
-///////// From Here ToDo
+
     ctrl.sendMessage = () => {
       if (!ctrl.selectedConversation) {
         $log.error('Error sending message', new Error('No facility selected'));
@@ -279,6 +277,5 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       .on('blur', '#message-footer textarea', function() {
         $('#message-footer').removeClass('sending');
       });
-
   }
 );

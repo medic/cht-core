@@ -43,7 +43,7 @@
                 </div>
 
                 <div class="actions">
-                  <a class="btn btn-link fa fa-trash-o" title="{{ 'Delete' | translate }}" mm-auth="can_delete_messages"></a>
+                  <a class="btn btn-link fa fa-trash-o" (click)="deleteDoc(message.doc)" title="{{ 'Delete' | translate }}" mm-auth="can_delete_messages"></a>
                 </div>
 
               </span>
@@ -52,21 +52,31 @@
         </div>
       </div>
 
-      <div id="message-footer" class="reply message-form" *ngIf="selectedConversation.messages[0] && (selectedConversation.contact?.name || selectedConversation.contact?.doc)">
+      <div id="message-footer"
+        class="reply message-form"
+        [ngClass]="{sending: textAreaFocused || send.message?.length}"
+        *ngIf="selectedConversation.messages[0] && (selectedConversation.contact?.name || selectedConversation.contact?.doc)">
+
         <div class="control-group">
           <div class="controls">
             <textarea name="message"
-                      [ngModel]="send.message"
-                      placeholder="{{ ('Reply to' | translate) + ' ' + (selectedConversation.contact?.doc?.name || selectedConversation.contact?.name || '') }}">
+              [(ngModel)]="send.message"
+              placeholder="{{ ('Reply to' | translate) + ' ' + (selectedConversation.contact?.doc?.name || selectedConversation.contact?.name || '') }}">
             </textarea>
           </div>
         </div>
 
-        <div class="message-actions">
-          <a class="btn btn-link" translate>Add recipient</a>
+        <div class="message-actions" *ngIf="textAreaFocused || send.message?.length">
+          <button class="btn btn-link" (click)="addRecipients()" translate>Add recipient</button>
           <span class="count"></span>
-          <a class="btn submit btn-primary" [ngClass]="{disabled: send?.message?.length === 0}" translate>Send</a>
+          <button class="btn submit btn-primary"
+            (click)="sendMessage()"
+            [disabled]="!send.message?.length"
+            [ngClass]="{disabled: !send.message?.length}" translate>
+            Send
+          </button>
         </div>
+
       </div>
 
     </div>

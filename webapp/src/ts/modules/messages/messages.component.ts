@@ -39,7 +39,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
       loadingContent,
       error,
     ]) => {
-      this.conversations = conversations;
+      // Create new reference of conversation's items
+      // because the ones from store can't be modified as they are read only.
+      this.conversations = (conversations || []).map(c => ({ ...c }));
       this.selectedConversation = selectedConversation;
       this.loadingContent = loadingContent;
       this.error = error;
@@ -90,7 +92,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     return this.messageContactService
       .getList()
-      .then(conversations => {
+      .then((conversations = []) => {
         this.setConversations(conversations, { merge });
         this.loading = false;
       });

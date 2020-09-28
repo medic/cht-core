@@ -39,7 +39,7 @@ export class MmModalAbstract {
     processing:false,
     error: false,
     severity: false,
-  }
+  };
 
   setProcessing() {
     this.status.processing = true;

@@ -12,6 +12,9 @@ import { MessageContactService } from '@mm-services/message-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { MarkReadService } from '@mm-services/mark-read.service';
+import { SendMessageService } from '@mm-services/send-message.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 /**
 *  In this context the URL parameter "id", can be:
@@ -38,6 +41,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
   // _testSelect; // See URL param "id" note at top of file. Promise exposed solely for testing purposes
   parameters = { type: '', id: '' };
   subscriptions: Subscription = new Subscription();
+  textAreaFocused = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -46,7 +50,9 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
     private messageContactService: MessageContactService,
     private sessionService: SessionService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
-    private markReadService: MarkReadService
+    private markReadService: MarkReadService,
+    private sendMessageService: SendMessageService,
+    private modalService: ModalService,
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getSelectedConversation)),
@@ -67,6 +73,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
       const parts = params.type_id.split(':');
       this.parameters.type = parts[0];
       this.parameters.id = parts[1];
+      this.send.message = '';
       // See URL param "id" note at top of file.
       this.selectContact(this.parameters.id, this.parameters.type);
     });
@@ -79,10 +86,12 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
     window.jQuery('.tooltip').remove();
     window.jQuery('body')
       .on('focus', '#message-footer textarea', () => {
-        window.jQuery('#message-footer').addClass('sending');
+       // window.jQuery('#message-footer').addClass('sending');
+        this.textAreaFocused = true;
       })
       .on('blur', '#message-footer textarea', () => {
-        window.jQuery('#message-footer').removeClass('sending');
+        // window.jQuery('#message-footer').removeClass('sending');
+        this.textAreaFocused = false;
       });
   }
 
@@ -262,4 +271,48 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
     this.subscriptions.add(subscription);
   }
 
+  sendMessage() {
+    if (!this.send.message) {
+      return;
+    }
+
+    if (!this.selectedConversation) {
+      console.error('Error sending message', new Error('No facility selected'));
+      return;
+    }
+
+    const recipient = { doc: null };
+
+    if (this.selectedConversation.contact && this.selectedConversation.contact.doc) { // known contact
+      recipient.doc = this.selectedConversation.contact.doc;
+    } else { // unknown sender
+      recipient.doc = { contact: { phone: this.selectedConversation.id } };
+    }
+
+    this.sendMessageService.send(recipient, this.send.message)
+      .then(() => {
+        this.send.message = '';
+      })
+      .catch(err => {
+        console.error('Error sending message', err);
+      });
+  }
+
+  deleteDoc(doc) {
+    if (doc) {
+      this.globalActions.deleteDoc(doc);
+    }
+  }
+
+  addRecipients() {
+    this.modalService.show(SendMessageComponent, {
+      initialState: {
+        fields: {
+          to: this.selectedConversation.id,
+          message: this.send.message
+        }
+      }
+    });
+    this.send.message = '';
+  }
 }

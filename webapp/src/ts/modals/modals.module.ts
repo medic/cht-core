@@ -7,6 +7,7 @@ import { MmModal } from './mm-modal/mm-modal';
 import { ReloadingComponent } from './reloading/reloading.component';
 import { LogoutConfirmComponent } from './logout/logout-confirm.component';
 import {FeedbackComponent} from './feedback/feedback.component';
+import { SendMessageComponent } from './send-message/send-message.component';
 
 
 @NgModule({
@@ -15,6 +16,7 @@ import {FeedbackComponent} from './feedback/feedback.component';
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
+    SendMessageComponent,
   ],
   imports: [
     CommonModule,

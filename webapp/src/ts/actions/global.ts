@@ -100,6 +100,27 @@ export class GlobalActions {
     this.setTitle('');
     this.clearSelected();
   }
+
+  deleteDoc(doc) {
+    /*return dispatch((dispatch, getState) => {
+      return Modal({
+        templateUrl: 'templates/modals/delete_doc_confirm.html',
+        controller: 'DeleteDocConfirm',
+        controllerAs: 'deleteDocConfirmCtrl',
+        model: { doc },
+      })
+        .then(() => {
+          const selectMode = Selectors.getSelectMode(getState());
+          if (
+            !selectMode &&
+            ($state.includes('contacts') || $state.includes('reports'))
+          ) {
+            $state.go($state.current.name, { id: null });
+          }
+        })
+        .catch(() => {}); // modal dismissed is ok
+    });*/
+  }
 }
 
 /*
