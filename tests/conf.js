@@ -12,13 +12,12 @@ const chai = require('chai');
 chai.config.truncateThreshold = 0;
 
 const baseConfig = {
-  params:{
+  params: {
     pathToConfig: false
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    e2e:'e2e/**/*.js',
-    mobile:'mobile/**/*.js',
+    e2e: 'e2e/**/*.js',
     performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
@@ -29,25 +28,25 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768','--headless', '--disable-gpu']
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
     }
   },
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
-    print: () => {}
+    print: () => { }
   },
-  beforeLaunch: function() {
-    process.on('uncaughtException', function() {
+  beforeLaunch: function () {
+    process.on('uncaughtException', function () {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
     });
 
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
       utils.reporter.beforeLaunch(resolve);
     });
   },
-  afterLaunch: function(exitCode) {
-    return new Promise(function(resolve) {
+  afterLaunch: function (exitCode) {
+    return new Promise(function (resolve) {
       return request.post('http://localhost:31337/die')
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     });
