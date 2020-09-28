@@ -6,7 +6,7 @@ jdk: oraclejdk9
 dist: xenial
 
 addons:
-  chrome: 'stable'
+  chrome: "stable"
 
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
@@ -60,6 +60,7 @@ script:
   - |
     if [[ "$TEST_SUITE" = 'integration' ]]; then
       node --stack_size=10000 `which grunt` ci-e2e
+      node --stack_size=10000 `which grunt` ci-mobile
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
     else
@@ -118,6 +119,6 @@ notifications:
       - https://hooks.zapier.com/hooks/catch/3653132/j182m9/
     on_success: change
     on_failure: always
-    on_start:   never
-    on_cancel:  never
-    on_error:   always
+    on_start: never
+    on_cancel: never
+    on_error: always
