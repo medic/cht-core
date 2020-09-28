@@ -62,4 +62,8 @@ export class FormTypeFilterComponent implements OnDestroy {
   trackByFn(idx, element) {
     return element.code;
   }
+
+  itemLabel(form) {
+    return form.title || form.code;
+  }
 }

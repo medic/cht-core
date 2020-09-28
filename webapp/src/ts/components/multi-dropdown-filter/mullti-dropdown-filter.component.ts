@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { from } from 'rxjs';
+import { debounce as _debounce } from 'lodash-es';
 
 @Component({
   selector: 'multi-dropdown-filter',
@@ -10,6 +11,7 @@ export class MultiDropdownFilterComponent implements OnInit {
   @Input() items;
   @Input() disabled;
   @Input() label;
+  @Input() itemLabel;
   @Input() labelNoFilter;
   @Input() labelFilter;
   @Input() selectAllLabel;
@@ -21,6 +23,7 @@ export class MultiDropdownFilterComponent implements OnInit {
   selected = new Set();
 
   constructor(private translateService:TranslateService) {
+    this.apply = _debounce(this.apply, 200);
   }
 
   ngOnInit() {
@@ -47,10 +50,15 @@ export class MultiDropdownFilterComponent implements OnInit {
 
     if (this.selected.size === 1) {
       const selectedItem = this.selected.entries().next().value[0];
-      return selectedItem.translateLabel ? this.translateService.get(selectedItem.label) : from([selectedItem.label]);
+      const selectedItemlabel = this.getItemLabel(selectedItem);
+      return selectedItem.translateLabel ? this.translateService.get(selectedItemlabel) : from([selectedItemlabel]);
     }
 
     return this.translateService.get(this.labelFilter, { number: this.selected.size });
+  }
+
+  getItemLabel(item) {
+    return this.itemLabel ? this.itemLabel(item) : (item.label || item.name);
   }
 
   private apply() {

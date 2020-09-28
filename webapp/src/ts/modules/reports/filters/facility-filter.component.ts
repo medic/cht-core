@@ -6,6 +6,7 @@ import { GlobalActions } from '../../../actions/global';
 import { MultiDropdownFilterComponent } from '@mm-components/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '../../../services/place-hierarchy.service';
 import { sortBy as _sortBy } from 'lodash-es';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'mm-facility-filter',
@@ -29,6 +30,7 @@ export class FacilityFilterComponent implements OnDestroy {
     private store:Store,
     private cd: ChangeDetectorRef,
     private placeHierarchyService:PlaceHierarchyService,
+    private translateService:TranslateService,
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getIsAdmin)),
@@ -89,7 +91,7 @@ export class FacilityFilterComponent implements OnDestroy {
   }
 
   applyFilter(facilities) {
-    this.globalActions.setFilter({ facilities: { selected: facilities } });
+    this.globalActions.setFilter({ facilities: { selected: facilities.map(facility => facility.doc._id) } });
     this.search.emit();
   }
 
@@ -104,6 +106,10 @@ export class FacilityFilterComponent implements OnDestroy {
   toggle(facility) {
     this.dropdownFilter.toggle(facility);
     facility.children?.forEach(child => this.dropdownFilter.toggle(child));
+  }
+
+  itemLabel(facility) {
+    return facility?.doc?.name || this.translateService.get(this.isAdmin ? 'place.deleted' : 'place.unavailable');
   }
 }
 

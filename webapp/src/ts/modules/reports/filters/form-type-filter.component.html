@@ -26,6 +26,7 @@
 -->
 <multi-dropdown-filter
   [items]="forms"
+  [itemLabel]="itemLabel"
   (applyFilter)="applyFilter($event)"
   labelNoFilter="All form types"
   labelFilter="Number of form types"
@@ -35,7 +36,7 @@
   <ul>
     <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="dropdownFilter?.isSelected(form)">
       <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="dropdownFilter?.toggle(form)">
-        {{form.title || form.code}}
+        {{itemLabel(form)}}
       </a>
     </li>
   </ul>

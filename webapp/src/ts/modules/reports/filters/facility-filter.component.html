@@ -18,6 +18,7 @@
 
 <multi-dropdown-filter
   [items]="facilities"
+  [itemLabel]="itemLabel"
   (applyFilter)="applyFilter($event)"
   labelNoFilter="All facilities"
   labelFilter="Number of facilities"
@@ -37,7 +38,7 @@
 <ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent">
   <li role="presentation" [class.selected]="dropdownFilter?.isSelected(facility)" [class.disabled]="parent && dropdownFilter?.isSelected(parent)">
     <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}" (click)="toggle(facility)">
-      {{facility?.doc?.name || ((isAdmin ? 'place.deleted' : 'place.unavailable') | translate)}}
+      {{itemLabel(facility)}}
     </a>
     <ul class="mm-dropdown-submenu">
       <ng-container
