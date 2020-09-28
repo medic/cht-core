@@ -39,6 +39,7 @@ export class UpdatePasswordComponent extends EditUserAbstract {
   }
 
   updatePassword() {
+    this.errors = {};
     this.setProcessing();
     if (this.validatePasswordFields()) {
       const updates = { password: this.editUserModel.password };
