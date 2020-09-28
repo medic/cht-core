@@ -1,7 +1,7 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
 on:
-  create:
+  push:
     tags: 
       - "*-beta.*"
       
