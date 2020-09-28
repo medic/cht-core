@@ -1,5 +1,5 @@
 <multi-dropdown-filter
-  [items]="['unverified', 'verifiedErrors', 'verified', 'valid', 'invalid']"
+  [items]="allStatuses()"
   (applyFilter)="applyFilter($event)"
   [label]="getFilterLabel"
   [disabled]="disabled"

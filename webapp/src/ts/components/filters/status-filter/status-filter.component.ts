@@ -78,5 +78,9 @@ export class StatusFilterComponent implements AbstractFilter {
   clear() {
     this.dropdownFilter?.clear(false)
   }
+
+  allStatuses() {
+    return [...this.statuses.valid, ...this.statuses.verified];
+  }
 }
 
