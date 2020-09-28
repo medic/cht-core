@@ -1,23 +1,22 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
-//import { SearchFiltersService } from '../../../services/search-filters.service';
 import { GlobalActions } from '../../../actions/global';
 import { sortBy as _sortBy } from 'lodash-es';
-import { MultiDropdownFilterComponent } from '@mm-components/multi-dropdown-filter/mullti-dropdown-filter.component';
+import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-form-type-filter',
   templateUrl: './form-type-filter.component.html'
 })
-export class FormTypeFilterComponent implements OnDestroy {
+export class FormTypeFilterComponent implements OnDestroy, AbstractFilter {
   private subscription: Subscription = new Subscription();
   private globalActions;
   forms;
-  selectMode;
-  selectedReports;
 
+  @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter: MultiDropdownFilterComponent;
@@ -25,20 +24,13 @@ export class FormTypeFilterComponent implements OnDestroy {
   constructor(
     private store:Store,
     private cd: ChangeDetectorRef,
-    //private searchFiltersService:SearchFiltersService,
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getForms)),
-      this.store.pipe(select(Selectors.getSelectMode)),
-      this.store.pipe(select(Selectors.getSelectedReports))
     ).subscribe(([
       forms,
-      selectMode,
-      selectedReports,
     ]) => {
       this.forms = _sortBy(forms, 'name');
-      this.selectMode = selectMode;
-      this.selectedReports = selectedReports;
     });
     this.subscription.add(subscription);
     this.globalActions = new GlobalActions(store);
@@ -65,5 +57,9 @@ export class FormTypeFilterComponent implements OnDestroy {
 
   itemLabel(form) {
     return form.title || form.code;
+  }
+
+  clear() {
+    this.dropdownFilter?.clear(false);
   }
 }

@@ -1,13 +1,14 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { from } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'multi-dropdown-filter',
   templateUrl: './multi-dropdown-filter.component.html'
 })
-export class MultiDropdownFilterComponent implements OnInit {
+export class MultiDropdownFilterComponent implements OnInit, AbstractFilter {
   @Input() items;
   @Input() disabled;
   @Input() label;
@@ -50,15 +51,13 @@ export class MultiDropdownFilterComponent implements OnInit {
 
     if (this.selected.size === 1) {
       const selectedItem = this.selected.entries().next().value[0];
-      const selectedItemlabel = this.getItemLabel(selectedItem);
-      return selectedItem.translateLabel ? this.translateService.get(selectedItemlabel) : from([selectedItemlabel]);
+      if (this.itemLabel) {
+        const label = this.itemLabel(selectedItem);
+        return label instanceof Observable ? label : from([label]);
+      }
     }
 
     return this.translateService.get(this.labelFilter, { number: this.selected.size });
-  }
-
-  getItemLabel(item) {
-    return this.itemLabel ? this.itemLabel(item) : item.label;
   }
 
   private apply() {
@@ -83,8 +82,8 @@ export class MultiDropdownFilterComponent implements OnInit {
     this.apply();
   }
 
-  clear() {
+  clear(apply=true) {
     this.selected.clear();
-    this.apply();
+    apply && this.apply();
   }
 }

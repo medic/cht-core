@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, Input } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
@@ -6,6 +6,7 @@ import { GlobalActions } from '../../../actions/global';
 import 'bootstrap-daterangepicker';
 import { isMobile } from '@mm-providers/responsive.provider';
 import * as moment from 'moment';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 // the default declaration of moment doesn't include _week property
 interface LocaleWithWeekSpec extends moment.Locale {
   _week: moment.WeekSpec;
@@ -15,34 +16,20 @@ interface LocaleWithWeekSpec extends moment.Locale {
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html'
 })
-export class DateFilterComponent implements OnDestroy {
-  private subscription: Subscription = new Subscription();
+export class DateFilterComponent implements OnDestroy, AbstractFilter {
   private globalActions;
 
   date = {
     from: undefined,
     to: undefined,
   }
-  selectMode;
-  selectedReports;
 
+  @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   constructor(
     private store: Store,
-    private cd: ChangeDetectorRef,
   ) {
-    const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getSelectMode)),
-      this.store.pipe(select(Selectors.getSelectedReports))
-    ).subscribe(([
-      selectMode,
-      selectedReports,
-    ]) => {
-      this.selectMode = selectMode;
-      this.selectedReports = selectedReports;
-    });
-    this.subscription.add(subscription);
     this.globalActions = new GlobalActions(store);
   }
 
@@ -54,7 +41,6 @@ export class DateFilterComponent implements OnDestroy {
   ngAfterViewInit() {
     const datepicker = (<any>$('#date-filter')).daterangepicker(
       {
-        showDropdowns: true,
         startDate: moment().subtract(1, 'months'),
         endDate: moment(),
         maxDate: moment(),
@@ -96,8 +82,14 @@ export class DateFilterComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
     // avoid dom-nodes leaks
     (<any>$('#date-filter')).data('daterangepicker').remove();
+  }
+
+  clear() {
+    this.date = {
+      from: undefined,
+      to: undefined,
+    }
   }
 }

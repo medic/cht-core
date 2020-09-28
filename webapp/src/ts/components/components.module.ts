@@ -11,8 +11,8 @@ import { DirectivesModule } from '../directives/directives.module';
 import { SnackbarComponent } from './snackbar/snackbar.component';
 import { ContentRowListItemComponent } from './content-row-list-item/content-row-list-item.component';
 import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from './status-icons/status-icons.template';
-import { MultiDropdownFilterComponent } from './multi-dropdown-filter/mullti-dropdown-filter.component';
 
+import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';

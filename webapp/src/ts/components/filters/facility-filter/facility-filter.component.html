@@ -1,10 +1,10 @@
 <multi-dropdown-filter
   [items]="facilities"
-  [itemLabel]="itemLabel"
+  [itemLabel]="itemLabel.bind(this)"
   (applyFilter)="applyFilter($event)"
   labelNoFilter="All facilities"
   labelFilter="Number of facilities"
-  [disabled]="selectMode && selectedReports.length"
+  [disabled]="disabled"
   (onOpen)="loadFacilities()"
 >
   <span class="fa fa-list-alt"></span>
@@ -17,16 +17,16 @@
   </ul>
 </multi-dropdown-filter>
 
-<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent">
-  <li role="presentation" [class.selected]="dropdownFilter?.isSelected(facility)" [class.disabled]="parent && dropdownFilter?.isSelected(parent)">
-    <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}" (click)="toggle(facility)">
-      {{itemLabel(facility)}}
+<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent" let-selectedParent="selectedParent">
+  <li role="presentation" [class.selected]="dropdownFilter?.isSelected(facility)" [class.disabled]="selectedParent">
+    <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}" (click)="!selectedParent && toggle(facility)">
+      {{itemLabel(facility) | async }}
     </a>
     <ul class="mm-dropdown-submenu">
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
         [ngTemplateOutlet]="facilityTemplate"
-        [ngTemplateOutletContext]="{ facility: child, parent: facility, facilityDepth: facilityDepth + 1 }">
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: dropdownFilter?.isSelected(facility), facilityDepth: facilityDepth + 1 }">
       </ng-container>
     </ul>
   </li>

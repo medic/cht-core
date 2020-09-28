@@ -1,27 +1,26 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { GlobalActions } from '../../../actions/global';
-import { MultiDropdownFilterComponent } from '@mm-components/multi-dropdown-filter/mullti-dropdown-filter.component';
-import { TranslateService } from '@ngx-translate/core';
+import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-status-filter',
   templateUrl: './status-filter.component.html'
 })
-export class StatusFilterComponent implements OnDestroy {
-  private subscription: Subscription = new Subscription();
+export class StatusFilterComponent implements AbstractFilter {
   private globalActions;
 
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
   }
-  selectMode;
-  selectedReports;
 
+  @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
+
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter: MultiDropdownFilterComponent;
 
@@ -29,17 +28,6 @@ export class StatusFilterComponent implements OnDestroy {
     private store: Store,
     private cd: ChangeDetectorRef,
   ) {
-    const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getSelectMode)),
-      this.store.pipe(select(Selectors.getSelectedReports))
-    ).subscribe(([
-      selectMode,
-      selectedReports,
-    ]) => {
-      this.selectMode = selectMode;
-      this.selectedReports = selectedReports;
-    });
-    this.subscription.add(subscription);
     this.globalActions = new GlobalActions(store);
   }
 
@@ -83,12 +71,12 @@ export class StatusFilterComponent implements OnDestroy {
     this.search.emit();
   }
 
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
-  }
-
   getFilterLabel() {
     return 'Any status';
+  }
+
+  clear() {
+    this.dropdownFilter?.clear(false)
   }
 }
 

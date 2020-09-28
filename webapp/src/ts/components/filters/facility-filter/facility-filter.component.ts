@@ -1,27 +1,27 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Selectors } from '../../../selectors';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subscription, from } from 'rxjs';
 import { GlobalActions } from '../../../actions/global';
-import { MultiDropdownFilterComponent } from '@mm-components/multi-dropdown-filter/mullti-dropdown-filter.component';
+import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '../../../services/place-hierarchy.service';
 import { sortBy as _sortBy } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnDestroy {
+export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
   private subscription: Subscription = new Subscription();
   private globalActions;
   isAdmin;
-  selectMode;
-  selectedReports;
 
   facilities = [];
   totalFacilitiesDisplayed = 0;
 
+  @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter: MultiDropdownFilterComponent;
@@ -34,16 +34,10 @@ export class FacilityFilterComponent implements OnDestroy {
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getIsAdmin)),
-      this.store.pipe(select(Selectors.getSelectMode)),
-      this.store.pipe(select(Selectors.getSelectedReports))
     ).subscribe(([
       isAdmin,
-      selectMode,
-      selectedReports,
     ]) => {
       this.isAdmin = isAdmin;
-      this.selectMode = selectMode;
-      this.selectedReports = selectedReports;
     });
     this.subscription.add(subscription);
     this.globalActions = new GlobalActions(store);
@@ -58,7 +52,6 @@ export class FacilityFilterComponent implements OnDestroy {
     return this.placeHierarchyService
       .get()
       .then(hierarchy => {
-        // todo sort!
         hierarchy = this.sortHierarchy(hierarchy);
         this.facilities = hierarchy;
         this.totalFacilitiesDisplayed += 1;
@@ -110,7 +103,15 @@ export class FacilityFilterComponent implements OnDestroy {
   }
 
   itemLabel(facility) {
-    return facility?.doc?.name || this.translateService.get(this.isAdmin ? 'place.deleted' : 'place.unavailable');
+    if (facility.doc && facility.doc.name) {
+      return from([facility.doc.name]);
+    }
+
+    return this.translateService.get(this.isAdmin ? 'place.deleted' : 'place.unavailable');
+  }
+
+  clear() {
+    this.dropdownFilter?.clear(false);
   }
 }
 

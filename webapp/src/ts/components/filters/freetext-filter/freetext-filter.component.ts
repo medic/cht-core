@@ -1,25 +1,25 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Input, Output } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { GlobalActions } from '../../../actions/global';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-freetext-filter',
   templateUrl: './freetext-filter.component.html'
 })
-export class FreetextFilterComponent implements OnDestroy {
+export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
   private subscription: Subscription = new Subscription();
   private globalActions;
 
   inputText;
   private inputTextChanged: Subject<string> = new Subject<string>();
 
-  selectMode;
   currentTab;
-  selectedReports;
 
+  @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   constructor(
@@ -27,16 +27,10 @@ export class FreetextFilterComponent implements OnDestroy {
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getCurrentTab)),
-      this.store.pipe(select(Selectors.getSelectMode)),
-      this.store.pipe(select(Selectors.getSelectedReports))
     ).subscribe(([
       currentTab,
-      selectMode,
-      selectedReports,
     ]) => {
       this.currentTab = currentTab;
-      this.selectMode = selectMode;
-      this.selectedReports = selectedReports;
     });
     this.subscription.add(subscription);
     this.globalActions = new GlobalActions(store);
@@ -49,7 +43,7 @@ export class FreetextFilterComponent implements OnDestroy {
       });
   }
 
-  onFieldChange(inputText){
+  onFieldChange(inputText) {
     this.inputTextChanged.next(inputText);
   }
 
@@ -60,6 +54,10 @@ export class FreetextFilterComponent implements OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  clear() {
+    this.inputText = '';
   }
 }
 

@@ -2,7 +2,7 @@
   [items]="['unverified', 'verifiedErrors', 'verified', 'valid', 'invalid']"
   (applyFilter)="applyFilter($event)"
   [label]="getFilterLabel"
-  [disabled]="selectMode && selectedReports.length"
+  [disabled]="disabled"
 >
   <span class="fa fa-circle-o"></span>
   <ul>

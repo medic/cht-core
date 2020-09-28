@@ -1,33 +1,13 @@
 <div class="filters">
   <div class="inner">
-    <div class="basic-filters left-pane">
-
+    <reports-filters (search)="search()" [disabled]="selectMode && selectedReports.length"></reports-filters>
+    <!--<div class="basic-filters left-pane">
       <mm-form-type-filter (search)="search()"></mm-form-type-filter>
       <mm-facility-filter (search)="search()"></mm-facility-filter>
       <mm-date-filter (search)="search()"></mm-date-filter>
       <mm-status-filter (search)="search()"></mm-status-filter>
       <mm-freetext-filter (search)="search()"></mm-freetext-filter>
-      <!--<mm-facility-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-facility-filter>
-      <mm-date-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-date-filter>
-      <mm-status-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-status-filter>
-      <mm-freetext-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-freetext-filter>
-      <mm-reset-filter
-        reset-filter-model="reportsCtrl.resetFilterModel"
-        selected="reportsCtrl.selectedReports"
-      ></mm-reset-filter>-->
-    </div>
+    </div>-->
     <!--<mm-navigation></mm-navigation>-->
   </div>
 </div>
@@ -69,7 +49,6 @@
       <div class="loader" *ngIf="loading"></div>
       <div class="padding"></div>
     </div>
-
     <router-outlet></router-outlet>
   </div>
 </div>
