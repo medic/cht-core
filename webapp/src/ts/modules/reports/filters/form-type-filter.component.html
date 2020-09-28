@@ -1,29 +1,3 @@
-<!--
-<div
-  id="formTypeDropdown"
-  class="filter dropdown mm-dropdown multidropdown"
-  data-label-no-filter="All form types" data-filter-label="Number of form types"
-  [class.disabled]="selectMode && selectedReports.length"
-  dropdown
->
-  <a id="form_type" class="mm-button" href dropdownToggle (click)="false" aria-controls="form_type_dropdown">
-    <span class="mm-button-icon">
-      <span class="fa fa-list-alt"></span>
-    </span>
-    <span class="mm-button-dropdown">
-      <span class="fa fa-chevron-down"></span>
-    </span>
-    <span class="mm-button-text"></span>
-  </a>
-  <span id="form_type_dropdown" role="menu" aria-labelledby="form_type" class="dropdown-menu mm-dropdown-menu" *dropdownMenu>
-    <ul>
-      <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn">
-        <a role="menuitem" tabindex="-1" [attr.data-value]="form">{{form.title || form.code}}</a>
-      </li>
-    </ul>
-  </span>
-</div>
--->
 <multi-dropdown-filter
   [items]="forms"
   [itemLabel]="itemLabel"

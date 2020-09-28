@@ -58,7 +58,7 @@ export class MultiDropdownFilterComponent implements OnInit {
   }
 
   getItemLabel(item) {
-    return this.itemLabel ? this.itemLabel(item) : (item.label || item.name);
+    return this.itemLabel ? this.itemLabel(item) : item.label;
   }
 
   private apply() {

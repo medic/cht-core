@@ -15,6 +15,7 @@ import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
 import { FormTypeFilterComponent } from './reports/filters/form-type-filter.component';
 import { FacilityFilterComponent } from '@mm-modules/reports/filters/facility-filter.component';
+import { StatusFilterComponent } from '@mm-modules/reports/filters/status-filter.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { FacilityFilterComponent } from '@mm-modules/reports/filters/facility-fi
     ReportsContentComponent,
     FormTypeFilterComponent,
     FacilityFilterComponent,
+    StatusFilterComponent,
     MessagesComponent,
   ],
   imports: [

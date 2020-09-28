@@ -65,6 +65,7 @@ export class FacilityFilterComponent implements OnDestroy {
       })
       .catch(err => console.error('Error loading facilities', err));
 
+    // TODO check if this is still necessary
    /* $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
       // visible height + pixel scrolled >= total height - 100
       if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
