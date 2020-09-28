@@ -1,5 +1,5 @@
 <span class="filter input-group freetext-filter" [class.only-filter]="currentTab === 'contacts'">
-  <input id="freetext" class="form-control" [(ngModel)]="inputText" type="text" [class.disabled]="selectMode && selectedReports.length" placeholder="{{'freetext.search' | translate}}">
+  <input id="freetext" class="form-control" [(ngModel)]="inputText" (ngModelChange)="onFieldChange($event)" type="text" [class.disabled]="selectMode && selectedReports.length" placeholder="{{'freetext.search' | translate}}">
   <span class="input-group-btn">
     <button id="search" class="btn btn-default" type="button" [class.disabled]="selectMode && selectedReports.length">
       <span class="fa fa-search"></span>
@@ -7,8 +7,8 @@
   </span>
 </span>
 
-<span class="filter dropdown mobile-freetext-filter" *ngIf="currentTab === 'reports'" [class.disabled]="selectMode && selectedReports.length">
-  <span id="mobile-search" class="mm-button" data-toggle="dropdown">
+<span class="filter dropdown mobile-freetext-filter" *ngIf="currentTab === 'reports'" [class.disabled]="selectMode && selectedReports.length" dropdown [insideClick]="true">
+  <span id="mobile-search" class="mm-button" data-toggle="dropdown" dropdownToggle>
     <span class="mm-button-icon">
       <span class="fa fa-search"></span>
     </span>
@@ -16,9 +16,9 @@
       <span class="fa fa-chevron-down"></span>
     </span>
   </span>
-  <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search">
+  <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search" *dropdownMenu>
     <span class="input-group">
-      <input id="mobile-freetext" class="form-control" type="text" [(ngModel)]="inputText" placeholder="{{'freetext.search' | translate}}">
+      <input id="mobile-freetext" class="form-control" type="text" [(ngModel)]="inputText" (ngModelChange)="onFieldChange($event)" placeholder="{{'freetext.search' | translate}}">
       <span class="input-group-btn small-font">
         <button id="mobile-search-go" class="btn btn-default" type="button">
           <span class="fa fa-search"></span>
