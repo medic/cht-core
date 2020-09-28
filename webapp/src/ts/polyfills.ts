@@ -82,6 +82,7 @@ declare global {
   browser: true,
 }
 
-interface jQuery {
-  multiDropdown(): any;
+interface JQuery {
+  daterangepicker(options?: any, callback?: Function) : any;
 }
+

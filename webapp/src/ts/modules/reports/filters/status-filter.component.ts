@@ -77,7 +77,6 @@ export class StatusFilterComponent implements OnDestroy {
   }
 
   applyFilter(statuses) {
-    console.log(statuses);
     this.globalActions.setFilter({ valid: this.getValidStatus(statuses) });
     this.globalActions.setFilter({ verified: this.getVerifiedStatus(statuses) });
 
