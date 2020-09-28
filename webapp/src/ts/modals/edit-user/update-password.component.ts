@@ -51,7 +51,7 @@ export class UpdatePasswordComponent extends EditUserAbstract {
           window.location.reload(true);
         })
         .catch(err => {
-          if (err.status === -1) { //Offline Status
+          if (err.status === 0) { //Offline Status
             this.translateService.get('online.action.message').toPromise().then(value => {
               this.errors.currentPassword = value;
               this.setError(err, value);
