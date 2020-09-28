@@ -5,7 +5,7 @@ import { combineLatest, Subscription, from } from 'rxjs';
 import { GlobalActions } from '../../../actions/global';
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '../../../services/place-hierarchy.service';
-import { sortBy as _sortBy } from 'lodash-es';
+import { iteratee, sortBy as _sortBy } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
@@ -69,13 +69,13 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
 
   private sortHierarchy(hierarchy) {
     const sortChildren = (facility) => {
-      facility.children = _sortBy(facility.children, 'name');
+      facility.children = _sortBy(facility.children, iteratee => iteratee.doc.name);
       facility.children.forEach(child => sortChildren(child));
     }
 
     hierarchy.forEach(facility => sortChildren(facility));
 
-    return _sortBy(hierarchy, 'name');
+    return _sortBy(hierarchy, iteratee => iteratee.doc.name);
   }
 
   ngAfterViewInit() {
