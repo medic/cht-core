@@ -13,10 +13,6 @@ import { ReportsComponent } from './reports/reports.component';
 import { ReportsContentComponent } from './reports/reports-content.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
-import { FormTypeFilterComponent } from './reports/filters/form-type-filter.component';
-import { FacilityFilterComponent } from '@mm-modules/reports/filters/facility-filter.component';
-import { StatusFilterComponent } from '@mm-modules/reports/filters/status-filter.component';
-import { DateFilterComponent } from '@mm-modules/reports/filters/date-filter.component';
 
 @NgModule({
   declarations: [
@@ -25,10 +21,6 @@ import { DateFilterComponent } from '@mm-modules/reports/filters/date-filter.com
     AnalyticsComponent,
     ReportsComponent,
     ReportsContentComponent,
-    FormTypeFilterComponent,
-    FacilityFilterComponent,
-    StatusFilterComponent,
-    DateFilterComponent,
     MessagesComponent,
   ],
   imports: [

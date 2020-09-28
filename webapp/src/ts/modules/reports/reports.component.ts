@@ -11,7 +11,6 @@ import { SearchService } from '../../services/search.service';
 import { Selectors } from '../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { SearchFiltersService } from '../../services/search-filters.service';
 import { ActivatedRoute } from '@angular/router';
 
 const PAGE_SIZE = 50;
@@ -52,7 +51,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
-    private searchFiltersService:SearchFiltersService,
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getReportsList)),
@@ -232,7 +230,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       return;
     }
     this.globalActions.clearFilters();
-    this.searchFiltersService.reset();
+    // todo reset filters!
     this.search();
   }
 }
