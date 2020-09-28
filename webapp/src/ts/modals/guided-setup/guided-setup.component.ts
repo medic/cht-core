@@ -1,7 +1,7 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
-import { validate, normalize } from '@medic/phone-number';
+import { validate as validatePhoneNumber, normalize as normalizePhoneNumber } from '@medic/phone-number';
 
 import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { GlobalActions } from '../../actions/global';
@@ -11,9 +11,6 @@ import { SettingsService } from '../../services/settings.service';
 import { COUNTRY_LIST } from '../../providers/countries.provider';
 
 declare let $: any;
-const countries = require('../../../js/modules/countries');
-
-
 @Component({
   selector: 'guided-setup',
   templateUrl: './guided-setup.component.html'
@@ -76,7 +73,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
       this.countryList = COUNTRY_LIST;
       $('#guided-setup').on('click', '.horizontal-options a', this.selectOption);
       $('#guided-setup [name=gateway-number]').on('input', this.updateNumbers);
-      $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: countries.list });
+      $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: this.countryList });
       $('#guided-setup [name=default-country-code]').on('change', this.updateNumbers);
       this.settingsService.get().then((res: any) => {
         if (res.setup_complete) {
@@ -98,7 +95,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     const countryCode = this.model.countryCode;
     const gatewayNumber = this.model.gatewayNumber;
     if (gatewayNumber &&
-      !validate({ default_country_code: countryCode, phone_validation: 'none' }, gatewayNumber)) {
+      !validatePhoneNumber({ default_country_code: countryCode, phone_validation: 'none' }, gatewayNumber)) {
       return {
         valid: false,
         error: 'Phone number not valid'
@@ -127,7 +124,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
         phone_validation: 'none'
       };
       
-      settings.gateway_number = normalize(info, val);
+      settings.gateway_number = normalizePhoneNumber(info, val);
     }
     val = $('#guided-setup [name=default-country-code]').val();
     if (val) {

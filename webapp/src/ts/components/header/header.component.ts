@@ -64,7 +64,7 @@ export class HeaderComponent implements OnInit {
   }
 
   openGuidedSetup() {
-    this.modalService.show(GuidedSetupComponent);
+    this.modalService.show(GuidedSetupComponent, Object.assign({}, { class: 'modal-lg' }));
   }
 
   openTourSelect() {

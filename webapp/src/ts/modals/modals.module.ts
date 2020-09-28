@@ -23,14 +23,12 @@ import { GuidedSetupComponent } from './guided-setup/guided-setup.component';
     CommonModule,
     TranslateModule,
     FormsModule,
-    AccordionModule.forRoot(),
+    AccordionModule,
   ],
   exports: [
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
-    GuidedSetupComponent,
-    AccordionModule,
   ]
 })
 export class ModalsModule { }

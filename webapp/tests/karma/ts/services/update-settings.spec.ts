@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
 
 import { UpdateSettingsService } from '@mm-services/update-settings.service';
 
@@ -20,46 +20,48 @@ describe('UpdateSettings service', () => {
     httpMock.verify();
   });
 
-  it('updates settings', () => {
+  it('updates settings', async () => {
     const updates = {
       isTrue: true,
       isString: 'hello'
     };
-    service.update(updates).then((result: any) => {
-      expect(result.success).to.equal(true);
-    });
+    const update = service.update(updates);
     const res = httpMock.expectOne('/api/v1/settings?replace=undefined');
-    expect(res.request.body).to.deep.equal(updates);
     res.flush({ success: true });
+    const result: any = await update;
+
+    expect(result.success).to.equal(true);
+    expect(res.request.body).to.deep.equal(updates);
   });
 
-  it('replaces settings', () => {
+  it('replaces settings', async () => {
     const updates = {
       isTrue: true,
       isString: 'hello'
     };
-    service.update(updates, { replace: true }).then((result: any) => {
-      expect(result.success).to.equal(true);
-    });
+    const update = service.update(updates, { replace: true });
     const res = httpMock.expectOne('/api/v1/settings?replace=true');
-    expect(res.request.body).to.deep.equal(updates);
     res.flush({ success: true });
+    const result: any = await update;
+
+    expect(result.success).to.equal(true);
+    expect(res.request.body).to.deep.equal(updates);
   });
 
-  it('returns errors', (done) => {
+  it('returns errors', () => {
     const updates = {
       isTrue: true,
       isString: 'hello'
     };
-    service.update(updates, { replace: true })
-      .then(() => {
-        done(new Error('expected error'));
-      })
-      .catch((err) => {
-        expect(err.statusText).to.equal('Server error');
-        done();
-      });
+    const update = service.update(updates, { replace: true });
     const res = httpMock.expectOne('/api/v1/settings?replace=true');
     res.flush({message: 'my error message'}, {status: 500, statusText: 'Server error'});
+
+    return update.then(() => {
+      assert.fail('exception expected');
+    })
+    .catch(err => {
+      expect(err).to.include({ statusText: 'Server error' });
+    });
   });
 });

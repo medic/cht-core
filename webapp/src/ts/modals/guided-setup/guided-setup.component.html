@@ -8,7 +8,7 @@
   (onSubmit)="submit()"
 >
   <div class="guided-setup">
-    <accordion>
+    <accordion [closeOthers]="true" [isAnimated]="true">
       <!-- 1. Modem setup -->
       <div class="panel panel-default">
         <accordion-group [isOpen]="true">

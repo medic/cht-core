@@ -8,6 +8,7 @@ export class UpdateSettingsService {
   constructor(
     private http: HttpClient
   ){}
+
   update(updates, options=<any>{}) {
     const config = {
       params: { replace: options.replace },
