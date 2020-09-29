@@ -23,6 +23,7 @@ export class ReportsFiltersComponent {
   }
 
   @Output() search: EventEmitter<any> = new EventEmitter();
+  @Input() reset;
 
   @ViewChild(FormTypeFilterComponent)
   formTypeFilter:FormTypeFilterComponent;
@@ -39,8 +40,9 @@ export class ReportsFiltersComponent {
     this.search.emit();
   }
 
-  clearFilters() {
-    this.globalActions.setFilters({});
+  resetFilters() {
+    this.globalActions.clearFilters();
+
     this.formTypeFilter?.clear();
     this.facilityFilter?.clear();
     this.dateFilter?.clear();

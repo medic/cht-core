@@ -13,7 +13,7 @@ export const Actions = {
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
-  clearFilters: createAction('SET_FILTERS'),
+  clearFilters: createAction('CLEAR_FILTERS'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
@@ -317,7 +317,7 @@ angular.module('inboxServices').factory('GlobalActions',
 
       return {
         clearCancelCallback,
-        clearFilters,
+        resetFilters,
         clearRightActionBar,
         deleteDoc,
         navigationCancel,

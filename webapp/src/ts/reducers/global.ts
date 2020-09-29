@@ -1,6 +1,5 @@
 import { Actions } from '../actions/global';
 import { createReducer, on } from '@ngrx/store';
-import * as _ from 'lodash-es';
 
 const initialState = {
   actionBar: {
@@ -70,9 +69,10 @@ const _globalReducer = createReducer(
     return { ...state, filters };
   }),
   on(Actions.setFilter, (state, { payload: { filter } }) => {
-    return Object.assign({}, state, {
-      filters: Object.assign({}, state.filters, filter)
-    });
+    return {
+      ...state,
+      filters: { ...state.filters, ...filter }
+    };
   }),
   on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
     return { ...state, isAdmin };

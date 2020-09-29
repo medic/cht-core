@@ -223,16 +223,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     return this.query(force);
   }
-
-  resetFilterModel() {
-    if (this.selectMode && this.selectedReports && this.selectedReports.length) {
-      // can't filter when in select mode
-      return;
-    }
-    this.globalActions.clearFilters();
-    // todo reset filters!
-    this.search();
-  }
 }
 /*
 

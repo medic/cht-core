@@ -1,16 +1,16 @@
 import { Component, EventEmitter, OnDestroy, Output, Input } from '@angular/core';
-import { select, Store } from '@ngrx/store';
-import { Selectors } from '../../../selectors';
-import { combineLatest, Subscription } from 'rxjs';
-import { GlobalActions } from '../../../actions/global';
+import { Store } from '@ngrx/store';
 import 'bootstrap-daterangepicker';
-import { isMobile } from '@mm-providers/responsive.provider';
 import * as moment from 'moment';
-import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 // the default declaration of moment doesn't include _week property
 interface LocaleWithWeekSpec extends moment.Locale {
   _week: moment.WeekSpec;
 }
+
+import { GlobalActions } from '@mm-actions/global';
+import { isMobile } from '@mm-providers/responsive.provider';
+import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+
 
 @Component({
   selector: 'mm-date-filter',
@@ -22,7 +22,7 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter {
   date = {
     from: undefined,
     to: undefined,
-  }
+  };
 
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();

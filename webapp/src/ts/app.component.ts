@@ -124,7 +124,7 @@ export class AppComponent {
   private setupRouter() {
     this.router.events.subscribe((event:RouterEvent) => {
       if (event instanceof ActivationEnd) {
-        return this.globalActions.setCurrentTab((event.snapshot.data.tab));
+        return this.globalActions.setCurrentTab(event.snapshot.data.tab);
       }
     });
   }

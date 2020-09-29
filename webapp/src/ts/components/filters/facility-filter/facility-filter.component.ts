@@ -94,7 +94,7 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
   }
 
   trackByFn(idx, facility) {
-    return facility.doc._id;
+    return facility.doc?._id + facility.doc?._rev;
   }
 
   toggle(facility) {

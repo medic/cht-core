@@ -1,7 +1,6 @@
 <div class="filters">
   <div class="inner">
     <reports-filters (search)="search()" [disabled]="selectMode && selectedReports.length"></reports-filters>
-
     <!--<mm-navigation></mm-navigation>-->
   </div>
 </div>
@@ -33,9 +32,9 @@
         </mm-content-row>
       </ul>
       <p *ngIf="error" class="alert alert-danger" role="alert">
-    <span *ngIf="errorSyntax">
-      <span translate>invalid.query</span>
-    </span>
+        <span *ngIf="errorSyntax">
+          <span translate>invalid.query</span>
+        </span>
         <span ng-hide="errorSyntax" translate>Error fetching reports</span>
       </p>
       <p class="loading-status" *ngIf="!error && !loading && !hasReports" translate>reports.none</p>

@@ -1,9 +1,10 @@
 import { Component, EventEmitter, OnDestroy, Input, Output } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { GlobalActions } from '../../../actions/global';
+
+import { Selectors } from '../../../selectors';
+import { GlobalActions } from '@mm-actions/global';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
@@ -35,12 +36,13 @@ export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
     this.subscription.add(subscription);
     this.globalActions = new GlobalActions(store);
 
-    this
+    const inputSubscription = this
       .inputTextChanged
       .pipe(debounceTime(400), distinctUntilChanged())
       .subscribe(() => {
         this.applyFilter();
       });
+    this.subscription.add(inputSubscription);
   }
 
   onFieldChange(inputText) {

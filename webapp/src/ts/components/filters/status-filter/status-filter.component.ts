@@ -16,7 +16,7 @@ export class StatusFilterComponent implements AbstractFilter {
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
-  }
+  };
 
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
