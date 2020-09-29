@@ -7,7 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { storeLogger } from 'ngrx-store-logger';
-import { CookieModule } from 'ngx-cookie';
+import { CookieService } from 'ngx-cookie-service';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -57,7 +57,6 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     DirectivesModule,
     PipesModule,
     RouterModule,
-    CookieModule.forRoot(),
     HttpClientModule,
     StoreModule.forRoot(reducers, { metaReducers }),
     TranslateModule.forRoot({
@@ -82,6 +81,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
     BsModalRef,
     RouteGuardProvider,
+    CookieService,
   ],
   bootstrap: [AppComponent]
 })

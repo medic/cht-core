@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import * as _ from 'lodash-es';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -28,6 +29,7 @@ export class ReportsContentComponent implements OnInit {
   constructor(
     private changesService:ChangesService,
     private store:Store,
+    private route:ActivatedRoute,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -52,9 +54,10 @@ export class ReportsContentComponent implements OnInit {
     const changesSubscription = this.changesService.subscribe({
       key: 'reports-content',
       filter: (change) => {
-        return this.selectedReports &&
+        const isSelected = this.selectedReports &&
           this.selectedReports.length &&
-          _.some(this.selectedReports, (item) => item._id === change.id);
+          _.some(this.selectedReports, (item) => item._id === change.id)
+        return isSelected;
       },
       callback: function(change) {
         if (change.deleted) {
@@ -83,6 +86,16 @@ export class ReportsContentComponent implements OnInit {
       }
     });
     this.subscription.add(changesSubscription);
+
+    if (this.route.snapshot.params.id) {
+      //ctrl.selectReport($stateParams.id);
+      //ctrl.clearCancelCallback();
+
+      //$('.tooltip').remove();
+    } else {
+      //ctrl.unsetSelected();
+    }
+
   }
 
   trackByFn(index, item) {
@@ -96,8 +109,6 @@ export class ReportsContentComponent implements OnInit {
   deselect(item, event) {
 
   }
-
-
 }
 
 /*const _ = require('lodash/core');
@@ -152,13 +163,7 @@ export class ReportsContentComponent implements OnInit {
       };
       const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
 
-      if ($stateParams.id) {
-        ctrl.selectReport($stateParams.id);
-        ctrl.clearCancelCallback();
-        $('.tooltip').remove();
-      } else {
-        ctrl.unsetSelected();
-      }
+
 
       ctrl.search = function(query) {
         SearchFilters.freetextSearch(query);
