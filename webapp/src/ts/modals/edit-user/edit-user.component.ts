@@ -29,7 +29,7 @@ export class EditUserAbstract extends MmModalAbstract {
     this.bsModalRef.hide();
   }
 
-  private determineEditUserModel() {
+  determineEditUserModel() {
     return this.userSettingsService.get()
       .then((user: any) => {
         if (user) {

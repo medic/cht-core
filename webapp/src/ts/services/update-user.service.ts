@@ -19,12 +19,12 @@ export class UpdateUserService {
    * the api (required for password updates). Otherwise it will use your
    * existing cookie.
    *
-   * @param      {String}  username       The user you wish to update, without org.couchdb.user:
-   * @param      {Object}  updates        Updates you wish to make
-   * @param      {String}  basicAuthUser  Optional username for Basic Auth
-   * @param      {String}  basicAuthPass  Optional password for Basic Auth
+   * @param      {string} username         The user you wish to update, without org.couchdb.user:
+   * @param      {Object} updates          Updates you wish to make
+   * @param      {string} [basicAuthUser]  Optional username for Basic Auth
+   * @param      {string} [basicAuthPass]  Optional password for Basic Auth
    */
-  update(username, updates, basicAuthUser, basicAuthPass): Observable<Object> {
+  update(username, updates, basicAuthUser?, basicAuthPass?): Observable<Object> {
     const url = '/api/v1/users/' + username;
 
     const headers: any = {

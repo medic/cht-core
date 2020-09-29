@@ -2,6 +2,7 @@ import {ModalService} from "@mm-modals/mm-modal/mm-modal";
 import {UserSettingsService} from "@mm-services/user-settings.service";
 import {Component} from "@angular/core";
 import {UpdatePasswordComponent} from "@mm-modals/edit-user/update-password.component";
+import {EditUserSettingsComponent} from "@mm-modals/edit-user/edit-user-settings.component";
 
 @Component({
   templateUrl: './configuration-user.component.html'
@@ -27,12 +28,7 @@ export class ConfigurationUserComponent {
   }
 
   editSettings() {
-    //TODO not working, need to pass not migrated component instead
-    this.modalService.show({
-      templateUrl: 'templates/modals/edit_user_settings.html',
-      controller: 'EditUserCtrl',
-      controllerAs: 'editUserCtrl'
-    });
+    this.modalService.show(EditUserSettingsComponent);
   }
 }
 

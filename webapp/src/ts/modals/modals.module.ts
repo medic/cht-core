@@ -10,6 +10,7 @@ import { LogoutConfirmComponent } from './logout/logout-confirm.component';
 import {FeedbackComponent} from './feedback/feedback.component';
 import { GuidedSetupComponent } from './guided-setup/guided-setup.component';
 import {UpdatePasswordComponent} from './edit-user/update-password.component';
+import {EditUserSettingsComponent} from './edit-user/edit-user-settings.component';
 
 
 @NgModule({
@@ -20,6 +21,7 @@ import {UpdatePasswordComponent} from './edit-user/update-password.component';
     FeedbackComponent,
     GuidedSetupComponent,
     UpdatePasswordComponent,
+    EditUserSettingsComponent,
   ],
   imports: [
     CommonModule,
@@ -32,6 +34,7 @@ import {UpdatePasswordComponent} from './edit-user/update-password.component';
     LogoutConfirmComponent,
     FeedbackComponent,
     UpdatePasswordComponent,
+    EditUserSettingsComponent,
   ]
 })
 export class ModalsModule { }
