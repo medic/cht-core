@@ -97,7 +97,7 @@ describe('Privacy policy', () => {
       browser.wait(() => utils.createUsers([onlineUser]).then(() => true));
       commonElements.goToLoginPage();
       loginPage.login('online', password);
-      helper.waitElementToDisappear(by.css('.loader'));
+      //helper.waitElementToDisappear(by.css('.loader'));
 
       helper.waitElementToPresent(element(by.css('#privacy-policy-wrapper')));
 
