@@ -93,7 +93,7 @@ describe('Privacy policy', () => {
   describe('for an online user', () => {
     afterEach(() => utils.deleteUsers([onlineUser]));
 
-    xit('should show the correct privacy policy on login', () => {
+    it('should show the correct privacy policy on login', () => {
       browser.wait(() => utils.createUsers([onlineUser]).then(() => true));
       commonElements.goToLoginPage();
       loginPage.login('online', password);
@@ -133,7 +133,7 @@ describe('Privacy policy', () => {
   describe('for a french offline user', () => {
     afterEach(() => utils.deleteUsers([offlineUser]));
 
-    xit('should show the correct privacy policy on login', () => {
+    it('should show the correct privacy policy on login', () => {
       browser.wait(() => utils.createUsers([offlineUser]).then(() => true));
       commonElements.goToLoginPage();
       loginPage.login('offline', password, false, 'fr');
