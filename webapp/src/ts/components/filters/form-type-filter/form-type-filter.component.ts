@@ -1,9 +1,10 @@
 import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { Selectors } from '../../../selectors';
-import { combineLatest, Subscription } from 'rxjs';
-import { GlobalActions } from '../../../actions/global';
 import { sortBy as _sortBy } from 'lodash-es';
+import { combineLatest, Subscription } from 'rxjs';
+
+import { Selectors } from '../../../selectors';
+import { GlobalActions } from '../../../actions/global';
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
@@ -12,8 +13,9 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   templateUrl: './form-type-filter.component.html'
 })
 export class FormTypeFilterComponent implements OnDestroy, AbstractFilter {
-  private subscription: Subscription = new Subscription();
   private globalActions;
+
+  subscription: Subscription = new Subscription();
   forms;
 
   @Input() disabled;

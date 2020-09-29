@@ -10,9 +10,9 @@ describe('Global Reducer', () => {
   it('should add replication status', () => {
     const replicationStatus = { a: 1, b: 2 };
     const action = Actions.updateReplicationStatus(replicationStatus);
-    const result = globalReducer(state, action);
+    state = globalReducer(state, action);
 
-    expect(result).to.deep.equal({
+    expect(state).to.deep.equal({
       replicationStatus: { a: 1, b: 2 },
     });
   });
@@ -21,9 +21,9 @@ describe('Global Reducer', () => {
     const replicationStatus = { a: 1, b: 2 };
     state = { replicationStatus: { a: 2, c: 3 } };
     const action = Actions.updateReplicationStatus(replicationStatus);
-    const result = globalReducer(state, action);
+    state = globalReducer(state, action);
 
-    expect(result).to.deep.equal({
+    expect(state).to.deep.equal({
       replicationStatus: { a: 1, b: 2, c: 3 },
     });
   });
@@ -63,8 +63,8 @@ describe('Global Reducer', () => {
       { _id: 'form2', some: 'data2' },
       { _id: 'form3', some: 'data3' },
     ];
-    const result = globalReducer(state, Actions.setForms(forms));
-    expect(result).to.deep.equal({
+    state = globalReducer(state, Actions.setForms(forms));
+    expect(state).to.deep.equal({
       forms: [
         { _id: 'form1', some: 'data1' },
         { _id: 'form2', some: 'data2' },
@@ -75,8 +75,8 @@ describe('Global Reducer', () => {
       { _id: 'form3', some: 'data2222' },
       { _id: 'form4', some: 'data4444' },
     ];
-    const updatedResult = globalReducer(state, Actions.setForms(updatedForms));
-    expect(updatedResult).to.deep.equal({
+    state = globalReducer(state, Actions.setForms(updatedForms));
+    expect(state).to.deep.equal({
       forms: [
         { _id: 'form3', some: 'data2222' },
         { _id: 'form4', some: 'data4444' },
@@ -92,32 +92,32 @@ describe('Global Reducer', () => {
         search: 'lalala'
       },
     };
-    const result = globalReducer(state, Actions.clearFilters());
-    expect(result).to.deep.equal({ filters: {} });
+    state = globalReducer(state, Actions.clearFilters());
+    expect(state).to.deep.equal({ filters: {} });
   });
 
   it('should set filters', () => {
     state = {};
-    const result = globalReducer(state, Actions.setFilters({ search: 'aaaaa' }));
-    expect(result).to.deep.equal({ filters: { search: 'aaaaa' } });
+    state = globalReducer(state, Actions.setFilters({ search: 'aaaaa' }));
+    expect(state).to.deep.equal({ filters: { search: 'aaaaa' } });
 
-    const result2 = globalReducer(state, Actions.setFilters({ forms: [{ id: 'f1' }, { id: 'f2' }] }));
-    expect(result2).to.deep.equal({ filters: { forms: [{ id: 'f1' }, { id: 'f2' }] } });
+    state = globalReducer(state, Actions.setFilters({ forms: [{ id: 'f1' }, { id: 'f2' }] }));
+    expect(state).to.deep.equal({ filters: { forms: [{ id: 'f1' }, { id: 'f2' }] } });
 
-    const result3 = globalReducer(state, Actions.setFilters({ some: 'thing' }));
-    expect(result3).to.deep.equal({ filters: { some: 'thing' } });
+    state = globalReducer(state, Actions.setFilters({ some: 'thing' }));
+    expect(state).to.deep.equal({ filters: { some: 'thing' } });
   });
 
   it('should set filter', () => {
     state = {};
-    const result = globalReducer(state, Actions.setFilter({ search: 'aaaaa' }));
-    expect(result).to.deep.equal({ filters: { search: 'aaaaa' } });
+    state = globalReducer(state, Actions.setFilter({ search: 'aaaaa' }));
+    expect(state).to.deep.equal({ filters: { search: 'aaaaa' } });
 
-    const result2 = globalReducer(state, Actions.setFilter({ forms: [{ id: 'f1' }, { id: 'f2' }] }));
-    expect(result2).to.deep.equal({ filters: { search: 'aaaaa', forms: [{ id: 'f1' }, { id: 'f2' }] } });
+    state = globalReducer(state, Actions.setFilter({ forms: [{ id: 'f1' }, { id: 'f2' }] }));
+    expect(state).to.deep.equal({ filters: { search: 'aaaaa', forms: [{ id: 'f1' }, { id: 'f2' }] } });
 
-    const result3 = globalReducer(state, Actions.setFilter({ forms: [{ id: 'f2' }, { id: 'f3' }] }));
-    expect(result3).to.deep.equal({ filters: { search: 'aaaaa', forms: [{ id: 'f2' }, { id: 'f3' }] } });
+    state = globalReducer(state, Actions.setFilter({ forms: [{ id: 'f2' }, { id: 'f3' }] }));
+    expect(state).to.deep.equal({ filters: { search: 'aaaaa', forms: [{ id: 'f2' }, { id: 'f3' }] } });
   });
 
   it('should set is Admin', () => {

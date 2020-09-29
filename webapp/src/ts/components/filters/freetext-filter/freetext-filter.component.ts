@@ -12,10 +12,12 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   templateUrl: './freetext-filter.component.html'
 })
 export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
-  private subscription: Subscription = new Subscription();
+
   private globalActions;
 
+  subscription: Subscription = new Subscription();
   inputText;
+
   private inputTextChanged: Subject<string> = new Subject<string>();
 
   currentTab;
@@ -39,7 +41,8 @@ export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
     const inputSubscription = this
       .inputTextChanged
       .pipe(debounceTime(400), distinctUntilChanged())
-      .subscribe(() => {
+      .subscribe((value) => {
+        this.inputText = value;
         this.applyFilter();
       });
     this.subscription.add(inputSubscription);

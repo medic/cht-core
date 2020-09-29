@@ -72,15 +72,17 @@ export class PlaceHierarchyService {
         }
         // Exclude people and clinics (the lowest level)
         // for performance reasons
-        return this.contactTypesService.getPlaceTypes().then(types => {
-          const ids = [];
-          types.forEach(type => {
-            if (type.parents) {
-              ids.push(...type.parents);
-            }
+        return this.contactTypesService
+          .getPlaceTypes()
+          .then(types => {
+            const ids = [];
+            types.forEach(type => {
+              if (type.parents) {
+                ids.push(...type.parents);
+              }
+            });
+            return ids;
           });
-          return ids;
-        });
       })
       .then(types => this.contactsService.get(types));
   }

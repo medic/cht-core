@@ -1,12 +1,13 @@
 import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { Selectors } from '../../../selectors';
 import { combineLatest, Subscription, from } from 'rxjs';
-import { GlobalActions } from '../../../actions/global';
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
-import { PlaceHierarchyService } from '../../../services/place-hierarchy.service';
-import { iteratee, sortBy as _sortBy } from 'lodash-es';
+import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
+
+import { Selectors } from '../../../selectors';
+import { GlobalActions } from '@mm-actions/global';
+import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
@@ -14,11 +15,12 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   templateUrl: './facility-filter.component.html'
 })
 export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
-  private subscription: Subscription = new Subscription();
+  subscription:Subscription = new Subscription();
   private globalActions;
   isAdmin;
 
   facilities = [];
+  flattenedFacilities = [];
   totalFacilitiesDisplayed = 0;
 
   @Input() disabled;
@@ -54,6 +56,7 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
       .then(hierarchy => {
         hierarchy = this.sortHierarchy(hierarchy);
         this.facilities = hierarchy;
+        this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
         this.totalFacilitiesDisplayed += 1;
       })
       .catch(err => console.error('Error loading facilities', err));
@@ -69,13 +72,17 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
 
   private sortHierarchy(hierarchy) {
     const sortChildren = (facility) => {
-      facility.children = _sortBy(facility.children, iteratee => iteratee.doc.name);
+      if (!facility.children || !facility.children.length) {
+        return;
+      }
+
+      facility.children = _sortBy(facility.children, iteratee => iteratee.doc?.name);
       facility.children.forEach(child => sortChildren(child));
     }
 
     hierarchy.forEach(facility => sortChildren(facility));
 
-    return _sortBy(hierarchy, iteratee => iteratee.doc.name);
+    return _sortBy(hierarchy, iteratee => iteratee.doc?.name);
   }
 
   ngAfterViewInit() {
@@ -85,7 +92,8 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
   }
 
   applyFilter(facilities) {
-    this.globalActions.setFilter({ facilities: { selected: facilities.map(facility => facility.doc._id) } });
+    const facilityIds = facilities.map(facility => facility.doc?._id);
+    this.globalActions.setFilter({ facilities: { selected: facilityIds } });
     this.search.emit();
   }
 
@@ -94,12 +102,20 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
   }
 
   trackByFn(idx, facility) {
-    return facility.doc?._id + facility.doc?._rev;
+    return `${facility.doc?._id}${facility.doc?._rev}`;
+  }
+
+  private getFacilitiesRecursive(parent) {
+    let facilities:any = [parent];
+    parent.children?.forEach(child => {
+      facilities = [...facilities, ...this.getFacilitiesRecursive(child)];
+    });
+    return facilities;
   }
 
   toggle(facility) {
-    this.dropdownFilter.toggle(facility);
-    facility.children?.forEach(child => this.dropdownFilter.toggle(child));
+    const recursiveFacilities = this.getFacilitiesRecursive(facility);
+    recursiveFacilities.forEach(facility => this.dropdownFilter.toggle(facility));
   }
 
   itemLabel(facility) {

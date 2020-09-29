@@ -5,6 +5,7 @@ export class UniqueSortedList {
   listById;
   sortBy;
   identityProperty;
+  
   constructor(list, listById:Set<any>, sortBy, identityProperty = '_id') {
     this.list = list;
     this.listById = listById;

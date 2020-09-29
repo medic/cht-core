@@ -1,7 +1,6 @@
-import { Component, OnDestroy, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input } from '@angular/core';
-import { select, Store } from '@ngrx/store';
-import { Selectors } from '../../../selectors';
-import { combineLatest, Subscription } from 'rxjs';
+import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import { Store } from '@ngrx/store';
+
 import { GlobalActions } from '../../../actions/global';
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';

@@ -26,7 +26,8 @@ export class ContactsService {
         types.forEach(type => {
           cacheByType[type.id] = this.cacheService.register({
             get: (callback) => {
-              return this.dbService.get()
+              return this.dbService
+                .get()
                 .query('medic-client/contacts_by_type', { include_docs: true, key: [type.id] })
                 .then((result) => {
                   callback(null, result.rows.map(row => row.doc));
@@ -53,7 +54,9 @@ export class ContactsService {
         });
       });
 
-      return Promise.all(relevantCaches).then(results => _flattenDeep(results));
+      return Promise
+        .all(relevantCaches)
+        .then(results => _flattenDeep(results));
     });
   }
 }
