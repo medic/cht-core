@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { combineLatest, Subscription, from } from 'rxjs';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
@@ -14,7 +14,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
+export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   subscription:Subscription = new Subscription();
   private globalActions;
   isAdmin;
@@ -34,6 +34,10 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
     private placeHierarchyService:PlaceHierarchyService,
     private translateService:TranslateService,
   ) {
+    this.globalActions = new GlobalActions(store);
+  }
+
+  ngOnInit() {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getIsAdmin)),
     ).subscribe(([
@@ -42,7 +46,6 @@ export class FacilityFilterComponent implements OnDestroy, AbstractFilter {
       this.isAdmin = isAdmin;
     });
     this.subscription.add(subscription);
-    this.globalActions = new GlobalActions(store);
   }
 
   loadFacilities() {

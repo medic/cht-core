@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Input, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Input, Output, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -11,7 +11,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-freetext-filter',
   templateUrl: './freetext-filter.component.html'
 })
-export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
+export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   private globalActions;
 
   subscription: Subscription = new Subscription();
@@ -27,14 +27,7 @@ export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
   constructor(
     private store: Store,
   ) {
-    const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getCurrentTab)),
-    ).subscribe(([
-      currentTab,
-    ]) => {
-      this.currentTab = currentTab;
-    });
-    this.subscription.add(subscription);
+
     this.globalActions = new GlobalActions(store);
 
     const inputSubscription = this
@@ -45,6 +38,17 @@ export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
         this.applyFilter();
       });
     this.subscription.add(inputSubscription);
+  }
+
+  ngOnInit() {
+    const subscription = combineLatest(
+      this.store.pipe(select(Selectors.getCurrentTab)),
+    ).subscribe(([
+      currentTab,
+    ]) => {
+      this.currentTab = currentTab;
+    });
+    this.subscription.add(subscription);
   }
 
   onFieldChange(inputText) {

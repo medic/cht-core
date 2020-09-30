@@ -9,7 +9,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'multi-dropdown-filter',
   templateUrl: './multi-dropdown-filter.component.html'
 })
-export class MultiDropdownFilterComponent implements OnInit, AbstractFilter {
+export class MultiDropdownFilterComponent implements AbstractFilter {
   @Input() items;
   @Input() disabled;
   @Input() label;
@@ -26,9 +26,6 @@ export class MultiDropdownFilterComponent implements OnInit, AbstractFilter {
 
   constructor(private translateService:TranslateService) {
     this.apply = _debounce(this.apply, 200);
-  }
-
-  ngOnInit() {
   }
 
   onOpenChange(open) {
