@@ -12,6 +12,7 @@ import { ReportsComponent } from './reports/reports.component';
 import { ReportsContentComponent } from './reports/reports-content.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
+import { PeopleComponent } from './people/people.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { MessagesComponent } from './messages/messages.component';
     ReportsComponent,
     ReportsContentComponent,
     MessagesComponent,
+    PeopleComponent,
   ],
   imports: [
     CommonModule,
@@ -36,6 +38,7 @@ import { MessagesComponent } from './messages/messages.component';
     ReportsComponent,
     ReportsContentComponent,
     MessagesComponent,
+    PeopleComponent,
   ]
 })
 export class ModulesModule { }
