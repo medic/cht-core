@@ -68,6 +68,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
   };
 
   ngAfterViewInit() {
+    this.bsModalRef.setClass('modal-lg');
     this.langugesService.get().then(languages => {
       this.enabledLocales = languages;
       this.countryList = COUNTRY_LIST;
