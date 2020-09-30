@@ -985,7 +985,7 @@ module.exports = function(grunt) {
     'uglify:web',
     'optimize-js',
     'cssmin:web',
-    'exec:bundlesize',
+    //'exec:bundlesize', // todo re-enable this once the build stages are finalized
   ]);
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
