@@ -45,6 +45,7 @@
           },
           "configurations": {
             "development": {
+              "deleteOutputPath": false,
               "outputHashing": "none",
               "sourceMap": true,
               "extractCss": true,
