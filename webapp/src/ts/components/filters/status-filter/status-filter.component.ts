@@ -1,7 +1,7 @@
 import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { GlobalActions } from '../../../actions/global';
+import { GlobalActions } from '@mm-actions/global';
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
