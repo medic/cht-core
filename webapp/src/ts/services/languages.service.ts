@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import { DbService } from './db.service';
-import { map } from 'lodash';
+import { map } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root'
