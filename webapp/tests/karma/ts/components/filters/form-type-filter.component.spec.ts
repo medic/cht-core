@@ -7,6 +7,8 @@ import sinon from 'sinon';
 
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import { FormsModule } from '@angular/forms';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('Form Type Filter Component', () => {
   let component:FormTypeFilterComponent;
@@ -23,6 +25,7 @@ describe('Form Type Filter Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
+          FormsModule,
         ],
         declarations: [
           FormTypeFilterComponent,
@@ -70,5 +73,20 @@ describe('Form Type Filter Component', () => {
   it('trackByFn should return form code', () => {
     const form = { code: 'formcode' };
     expect(component.trackByFn(0, form)).to.equal('formcode');
+  });
+
+  it('applyFilter should set correct filter', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+    const forms = [{ _id: 'form1' }, { _id: 'form2' }];
+    component.applyFilter(forms);
+    expect(setFilter.callCount).to.equal(1);
+    expect(setFilter.args[0]).to.deep.equal([{ forms: { selected: forms } }]);
+  });
+
+  it('clear should clear dropdown filter', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    component.clear();
+    expect(dropdownFilterClearSpy.callCount).to.equal(1);
+    expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
   });
 });

@@ -12,7 +12,6 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   templateUrl: './freetext-filter.component.html'
 })
 export class FreetextFilterComponent implements OnDestroy, AbstractFilter {
-
   private globalActions;
 
   subscription: Subscription = new Subscription();

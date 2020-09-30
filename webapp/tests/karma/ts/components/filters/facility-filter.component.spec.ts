@@ -8,6 +8,7 @@ import sinon from 'sinon';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('Facility Filter Component', () => {
   let component:FacilityFilterComponent;
@@ -287,5 +288,27 @@ describe('Facility Filter Component', () => {
         expect(value).to.equal('place.unavailable');
       })
     });
+  });
+
+  it('clear should clear dropdown filter', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    component.clear();
+    expect(dropdownFilterClearSpy.callCount).to.equal(1);
+    expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
+  });
+
+  it('applyFilter should set correct selected facility ids', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+    const selectedFacilities = [
+      { doc: { _id: 'one' }, children: [{ doc: { _id: 'child1' } }, { doc: { _id: 'child2' } }] },
+      { doc: { _id: 'child1' } },
+      { doc: { _id: 'child2' } },
+      { doc: { _id: 'parent1' }, children: [] },
+    ];
+    component.applyFilter(selectedFacilities);
+    expect(setFilter.callCount).to.equal(1);
+    expect(setFilter.args[0]).to.deep.equal([
+      { facilities: { selected: ['one', 'child1', 'child2', 'parent1'] } }
+    ]);
   });
 });
