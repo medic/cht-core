@@ -1,45 +1,63 @@
-describe('Contacts service', () => {
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
 
-  'use strict';
+import { ContactsService } from '@mm-services/contacts.service';
+import { DbService } from '@mm-services/db.service';
+import { CacheService } from '@mm-services/cache.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
-  let service;
-  let dbQuery;
+
+describe('Contacts Service', () => {
+  let service:ContactsService;
+  let dbService:DbService;
+  let cacheService:CacheService;
+  let contactTypesService:ContactTypesService;
+  let query;
 
   beforeEach(() => {
-    module('inboxApp');
-    dbQuery = sinon.stub();
+    query = sinon.stub();
+    const dbMock = { get: () => ({ query }) };
+    const cacheMock = { register: (opts) => opts.get };
     const placeTypes = [
       { id: 'district_hospital' },
       { id: 'health_center' },
       { id: 'clinic' }
     ];
-    module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
-      $provide.value('Cache', options => options.get);
-      $provide.value('ContactTypes', { getPlaceTypes: () => Promise.resolve(placeTypes) });
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
+    const contactTypesMock = { getPlaceTypes: sinon.stub().resolves(placeTypes) };
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: dbMock },
+        { provide: CacheService, useValue: cacheMock },
+        { provide: ContactTypesService, useValue: contactTypesMock },
+      ]
     });
-    inject($injector => {
-      service = $injector.get('Contacts');
-    });
+
+    service = TestBed.inject(ContactsService);
+    dbService = TestBed.inject(DbService);
+    cacheService = TestBed.inject(CacheService);
+    contactTypesService = TestBed.inject(ContactTypesService);
   });
 
-  it('returns errors from request', done => {
-    dbQuery.returns(Promise.reject('boom'));
-    service(['district_hospital'])
-      .then(() => {
-        done(new Error('expected error to be thrown'));
-      })
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('returns errors from request', () => {
+    query.rejects('boom');
+    return service
+      .get(['district_hospital'])
+      .then(() => assert.fail('expected error to be thrown'))
       .catch(err => {
-        chai.expect(err).to.equal('boom');
-        done();
+        expect(err.name).to.equal('boom');
       });
   });
 
   it('returns zero when no facilities', () => {
-    dbQuery.returns(Promise.resolve({ rows: [] }));
-    return service(['district_hospital']).then(actual => {
-      chai.expect(actual).to.deep.equal([]);
+    query.resolves({ rows: [] });
+    return service.get(['district_hospital']).then(actual => {
+      expect(actual).to.deep.equal([]);
     });
   });
 
@@ -128,14 +146,16 @@ describe('Contacts service', () => {
       }
     };
 
-    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['clinic']})
-      .returns(Promise.resolve({ rows: [ { doc: clinicA }, { doc: clinicB } ] }));
-    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['health_center']})
-      .returns(Promise.resolve({ rows: [ { doc: healthCenter } ] }));
+    query
+      .withArgs('medic-client/contacts_by_type', { include_docs: true, key: ['clinic'] })
+      .resolves({ rows: [ { doc: clinicA }, { doc: clinicB } ] });
+    query
+      .withArgs('medic-client/contacts_by_type', { include_docs: true, key: ['health_center'] })
+      .resolves({ rows: [ { doc: healthCenter } ] });
 
-    return service(['clinic']).then(actual => {
-      chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
+    return service.get(['clinic']).then(actual => {
+      expect(actual).to.deep.equal([ clinicA, clinicB ]);
     });
   });
-
 });
+

@@ -973,10 +973,12 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    'unit-webapp',
-    'karma:admin',
     'env:unit-test',
+    // todo this is a temporary fix, because webapp tests now require shared libs to be installed
+    // so I moved shared libs tests at the top, because they also all libs dependencies
     'exec:shared-lib-unit',
+    'unit-webapp-no-dependencies',
+    'karma:admin',
     'mochaTest:unit',
   ]);
 
@@ -985,7 +987,7 @@ module.exports = function(grunt) {
     'uglify:web',
     'optimize-js',
     'cssmin:web',
-    'exec:bundlesize',
+    //'exec:bundlesize', // todo re-enable this once the build stages are finalized
   ]);
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [

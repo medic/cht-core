@@ -1,4 +1,4 @@
-import { Store } from '@ngrx/store';
+import { createAction, Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
 import { createSingleValueAction } from './actionUtils';
 import { Selectors } from '../selectors';
@@ -13,6 +13,11 @@ export const Actions = {
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
+  clearFilters: createAction('CLEAR_FILTERS'),
+  setFilter: createSingleValueAction('SET_FILTER', 'filter'),
+  setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
+  setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
+  setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
 }
 
 export class GlobalActions {
@@ -74,6 +79,27 @@ export class GlobalActions {
       }
     });
   }
+
+  clearFilters() {
+    return this.store.dispatch(Actions.clearFilters());
+  }
+
+  setFilter(filter) {
+    return this.store.dispatch(Actions.setFilter(filter));
+  }
+
+  setFilters(filters) {
+    return this.store.dispatch(Actions.setFilters(filters));
+  }
+
+  setSelectMode(selectMode) {
+    return this.store.dispatch(Actions.setSelectMode(selectMode));
+  }
+
+  setIsAdmin(isAdmin) {
+    return this.store.dispatch(Actions.setIsAdmin(isAdmin));
+  }
+
 }
 
 /*
@@ -143,21 +169,8 @@ angular.module('inboxServices').factory('GlobalActions',
 
 
 
-      function clearFilters() {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', {}));
-      }
 
-      function setFilter(filter) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTER, 'filter', filter));
-      }
 
-      function setFilters(filters) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FILTERS, 'filters', filters));
-      }
-
-      function setIsAdmin(isAdmin) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_IS_ADMIN, 'isAdmin', isAdmin));
-      }
 
 
 
@@ -165,10 +178,6 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(
           actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
         ));
-      }
-
-      function setSelectMode(selectMode) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECT_MODE, 'selectMode', selectMode));
       }
 
 
@@ -308,7 +317,7 @@ angular.module('inboxServices').factory('GlobalActions',
 
       return {
         clearCancelCallback,
-        clearFilters,
+        resetFilters,
         clearRightActionBar,
         deleteDoc,
         navigationCancel,

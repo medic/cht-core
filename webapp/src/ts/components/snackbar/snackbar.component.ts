@@ -38,6 +38,8 @@ export class SnackbarComponent implements OnInit {
     this.hide();
   }
 
+  // todo refresh timeout when new show action happens
+
   private show(content) {
     console.log(content);
     this.content = content;
