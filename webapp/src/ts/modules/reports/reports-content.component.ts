@@ -87,7 +87,9 @@ export class ReportsContentComponent implements OnInit {
     });
     this.subscription.add(changesSubscription);
 
+    console.log('aiiiiici');
     if (this.route.snapshot.params.id) {
+      this.reportsActions.selectReport(this.route.snapshot.params.id);
       //ctrl.selectReport($stateParams.id);
       //ctrl.clearCancelCallback();
 

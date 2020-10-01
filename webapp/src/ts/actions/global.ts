@@ -100,6 +100,10 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setIsAdmin(isAdmin));
   }
 
+  setLoadingShowContent(id) {
+    this.setLoadingContent(id);
+    this.setShowContent(true);
+  }
 }
 
 /*

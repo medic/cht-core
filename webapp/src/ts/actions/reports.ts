@@ -1,8 +1,13 @@
-import { Store, createAction } from '@ngrx/store';
-import { createSingleValueAction } from './actionUtils';
+import * as _ from 'lodash-es';
+import * as lineageFactory from '@medic/lineage';
+import { Store, createAction, select } from '@ngrx/store';
+import { createMultiValueAction, createSingleValueAction } from './actionUtils';
+import { Actions as GlobalActions } from './global';
+import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
+import { Selectors } from '@mm-selectors/index';
 
 export const Actions = {
-  selectReport: createSingleValueAction('SELECT_REPORT', 'id'),
+  selectReport: createMultiValueAction('SELECT_REPORT'),
   setSelected: createSingleValueAction('SET_SELECTED_REPORT', 'selected'),
   addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'selected'),
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'id'),
@@ -20,8 +25,8 @@ export class ReportsActions {
     return this.store.dispatch(Actions.addSelectedReport(selected));
   }
 
-  selectReport(id) {
-    return this.store.dispatch(Actions.selectReport(id));
+  selectReport(id, { silent=false }) {
+    return this.store.dispatch(Actions.selectReport({ id, silent }));
   }
 
   removeSelectedReport(id) {

@@ -555,7 +555,7 @@ export class FormatDataRecordService {
         // backwards compatibility
         copy.messages = messages.generate(
           settings,
-          _.partial(this.translate, settings, _, _, null, true),
+          (key, locale?) => this.translate.bind(this, settings, key, locale, null, true),
           doc,
           content,
           task.recipient,
