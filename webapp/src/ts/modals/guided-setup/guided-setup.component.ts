@@ -78,11 +78,11 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
       $('#guided-setup [name=default-country-code]').on('change', this.updateNumbers);
       this.settingsService.get().then((res: any) => {
         if (res.setup_complete) {
-          $('#guided-setup [name=default-country-code]').val(res.default_country_code).change();
           $('#guided-setup [name=gateway-number]').val(res.gateway_number).trigger('input');
           $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
           $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
           setTimeout(() => { // setTimeout used to make sure ngFor generated list is ready
+            $('#guided-setup [name=default-country-code]').val(res.default_country_code).change();
             $('#language-preference-content .locale a[data-value=' + res.locale + ']').trigger('click');
             $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']')
               .trigger('click');
