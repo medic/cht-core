@@ -5,7 +5,7 @@ import { PeopleComponent } from './people.component';
 
 export const routes: Routes = [
   {
-    path: 'contacts.detail',
+    path: 'contacts',
     component: PeopleComponent,
     data: {permissions: ['can_view_contacts']},
     canActivate: [RouteGuardProvider],
