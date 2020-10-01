@@ -29,5 +29,5 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  EMULATED_DEVICE: 'Nexus 5'
+  EMULATED_DEVICE: 'Galaxy S5'
 };
