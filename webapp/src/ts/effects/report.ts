@@ -3,9 +3,10 @@ import { Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { Actions as GlobalActionList, GlobalActions } from '@mm-actions/global';
-import { from } from 'rxjs';
-import { tap, concatMap, withLatestFrom, exhaustMap, filter } from 'rxjs/operators';
+import { from, of } from 'rxjs';
+import { map, exhaustMap, filter, catchError } from 'rxjs/operators';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
+
 
 @Injectable()
 export class ReportEffects {
@@ -30,8 +31,14 @@ export class ReportEffects {
           this.globalActions.setLoadingShowContent(id);
         }
 
-        return from(this.reportViewModelGeneratorService)
-      })
-    )
+        return from(this.reportViewModelGeneratorService.get(id)).pipe(
+          map(model => this.reportActions.setSelected(model)),
+          catchError(error => {
+            console.error('Error selecting report', error);
+            return of(this.globalActions.unsetSelected());
+          }),
+        );
+      }),
+    );
   }, { dispatch: false });
 }

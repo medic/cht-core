@@ -18,6 +18,9 @@ export const Actions = {
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
   setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
+  setTitle: createSingleValueAction('SET_TITLE', 'title'),
+
+  clearSelected: createAction('CLEAR_SELECTED'),
 }
 
 export class GlobalActions {
@@ -103,6 +106,18 @@ export class GlobalActions {
   setLoadingShowContent(id) {
     this.setLoadingContent(id);
     this.setShowContent(true);
+  }
+
+  setTitle(title='') {
+    return this.store.dispatch(Actions.setTitle(title));
+  }
+
+  unsetSelected() {
+    this.setShowContent(false);
+    this.setLoadingContent(false);
+    this.setShowActionBar(false);
+    this.setTitle();
+    this.store.dispatch(Actions.clearSelected());
   }
 }
 
