@@ -91,13 +91,13 @@ export class SessionService {
     return !!(userCtx && userCtx.roles && userCtx.roles.includes(role));
   };
 
-  isAdmin(userCtx) {
+  isAdmin(userCtx?) {
     userCtx = userCtx || this.userCtx();
     return this.isDbAdmin(userCtx) ||
       this.hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
   }
 
-  isDbAdmin(userCtx) {
+  isDbAdmin(userCtx?) {
     userCtx = userCtx || this.userCtx();
     return this.hasRole(userCtx, '_admin');
   }

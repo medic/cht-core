@@ -2,6 +2,10 @@ const assert = require('chai').assert;
 const moment = require('moment');
 const sinon = require('sinon');
 
+// TODO migrate this file!
+// Moved here in advance of the migration to get the unit tests passing
+// The code this is testing was already migrated and can't be "required" anymore.
+
 const mockAngular = require('../mock-angular');
 require('../../../../src/js/filters/date');
 const filter = mockAngular.modules.inboxFilters.filters;

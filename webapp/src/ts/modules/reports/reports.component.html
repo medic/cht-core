@@ -1,32 +1,7 @@
 <div class="filters">
   <div class="inner">
-    <!--<div class="basic-filters left-pane">
-      <mm-form-type-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-form-type-filter>
-      <mm-facility-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-facility-filter>
-      <mm-date-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-date-filter>
-      <mm-status-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-status-filter>
-      <mm-freetext-filter
-        search="reportsCtrl.search"
-        selected="reportsCtrl.selectedReports"
-      ></mm-freetext-filter>
-      <mm-reset-filter
-        reset-filter-model="reportsCtrl.resetFilterModel"
-        selected="reportsCtrl.selectedReports"
-      ></mm-reset-filter>
-    </div>
-    <mm-navigation></mm-navigation>-->
+    <reports-filters (search)="search()" [disabled]="selectMode && selectedReports.length"></reports-filters>
+    <!--<mm-navigation></mm-navigation>-->
   </div>
 </div>
 
@@ -38,7 +13,7 @@
         <span *ngIf="selectedReports.length === 1" translate>select.mode.count.singular</span>
         <span *ngIf="selectedReports.length !== 1" translate [translateParams]="{ number: selectedReports.length || 0 }">select.mode.count.plural</span>
       </div>
-      <ul class="unfiltered" *ngIf="(!loading || appending) && !filtered">
+      <ul [hidden]="loading && !appending">
         <mm-content-row
           *ngFor="let report of reportsList; trackBy: listTrackBy"
           [id]="report._id"
@@ -56,11 +31,10 @@
         >
         </mm-content-row>
       </ul>
-      <ul class="filtered" *ngIf="(!loading || appending) && filtered"></ul>
       <p *ngIf="error" class="alert alert-danger" role="alert">
-    <span *ngIf="errorSyntax">
-      <span translate>invalid.query</span>
-    </span>
+        <span *ngIf="errorSyntax">
+          <span translate>invalid.query</span>
+        </span>
         <span ng-hide="errorSyntax" translate>Error fetching reports</span>
       </p>
       <p class="loading-status" *ngIf="!error && !loading && !hasReports" translate>reports.none</p>
@@ -68,7 +42,6 @@
       <div class="loader" *ngIf="loading"></div>
       <div class="padding"></div>
     </div>
-
     <router-outlet></router-outlet>
   </div>
 </div>

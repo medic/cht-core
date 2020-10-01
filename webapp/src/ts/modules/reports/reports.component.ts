@@ -3,14 +3,15 @@ import { isMobile } from '../../providers/responsive.provider';
 import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import {GlobalActions} from '../../actions/global';
-import {ReportsActions} from '../../actions/reports';
-import {ServicesActions} from '../../actions/services';
+import { GlobalActions } from '../../actions/global';
+import { ReportsActions } from '../../actions/reports';
+import { ServicesActions } from '../../actions/services';
 import { ChangesService } from '../../services/changes.service';
 import { SearchService } from '../../services/search.service';
-import {Selectors} from '../../selectors';
+import { Selectors } from '../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
+import { ActivatedRoute } from '@angular/router';
 
 const PAGE_SIZE = 50;
 
@@ -27,6 +28,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private listContains;
 
   reportsList;
+  filteredReportsList;
   selectedReports;
   forms;
   error;
@@ -38,28 +40,40 @@ export class ReportsComponent implements OnInit, OnDestroy {
   hasReports;
   selectMode;
   filtered;
+  verifyingReport;
+  showContent;
+
+  enketoEdited = false; //todo
 
   constructor(
     private store:Store,
+    private route: ActivatedRoute,
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
   ) {
     const subscription = combineLatest(
       this.store.pipe(select(Selectors.getReportsList)),
+
       this.store.pipe(select(Selectors.getSelectedReports)),
       this.store.pipe(select(Selectors.listContains)),
       this.store.pipe(select(Selectors.getForms)),
+      this.store.pipe(select(Selectors.getFilters)),
+      this.store.pipe(select(Selectors.getShowContent))
     ).subscribe(([
       reportsList,
       selectedReports,
       listContains,
       forms,
+      filters,
+      showContent,
     ]) => {
       this.reportsList = reportsList;
       this.selectedReports = selectedReports;
       this.listContains = listContains;
       this.forms = forms;
+      this.filters = filters;
+      this.showContent = showContent;
     });
     this.subscription.add(subscription);
 
@@ -69,8 +83,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.search();
-
     const subscription = this.changesService.subscribe({
       key: 'reports-list',
       callback: (change) => {
@@ -87,6 +99,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
       },
     });
     this.subscription.add(subscription);
+    this.reportsActions.setSelectedReports([]);
+    this.appending = false;
+    this.error = false;
+    this.verifyingReport = false;
+
+    this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
+    this.search();
   }
 
   ngOnDestroy() {
@@ -114,7 +133,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
-
 
       return report;
     });
@@ -147,7 +165,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     }
 
     return this.searchService
-      .search('reports', [], options)
+      .search('reports', this.filters, options)
       .then((updatedReports) => {
         // add read status todo
         updatedReports = this.prepareReports(updatedReports);
@@ -191,7 +209,17 @@ export class ReportsComponent implements OnInit, OnDestroy {
   };
 
   search(force = false) {
-    // todo filters
+    // clears report selection for any text search or filter selection
+    // does not clear selection when someone is editing a form
+    if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
+      //$state.go('reports.detail', { id: null }, { notify: false });
+      //ctrl.clearSelection();
+    }
+    if (!force && isMobile() && this.showContent) {
+      // leave content shown
+      return;
+    }
+    this.loading = true;
 
     return this.query(force);
   }
@@ -247,15 +275,10 @@ angular
     // where the summary is the data required for the collapsed view,
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
-    ctrl.setSelectedReports([]);
-    ctrl.appending = false;
-    ctrl.error = false;
-    ctrl.setFilters({
-      search: $stateParams.query,
-    });
-    ctrl.verifyingReport = false;
 
-    let liveList = LiveList.reports;
+
+
+
 
     const updateLiveList = function(updated) {
       return AddReadStatus.reports(updated).then(function() {
@@ -385,15 +408,7 @@ angular
       Tour.start($stateParams.tour);
     }
 
-    ctrl.resetFilterModel = function() {
-      if (ctrl.selectMode && ctrl.selectedReports && ctrl.selectedReports.length) {
-        // can't filter when in select mode
-        return;
-      }
-      ctrl.clearFilters();
-      SearchFilters.reset();
-      ctrl.search();
-    };
+
 
     ctrl.search();
 

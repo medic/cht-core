@@ -81,3 +81,8 @@ declare global {
   env: { DEBUG: undefined },
   browser: true,
 }
+
+interface JQuery {
+  daterangepicker(options?: any, callback?: Function) : any;
+}
+
