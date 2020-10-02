@@ -100,4 +100,4 @@ To add a condition card, add it to the "cards" section.
 To add a field inside an existing condition card, add it to the "fields" section of that card.
 You can remove the fields or condition cards that you don't want to show by deleting the whole code block belonging to that field/card.
 
-For more information: [Condition Cards documentation](http://localhost:1313/apps/features/contacts/#condition-cards)
+For more information: [Condition Cards documentation](http://docs.communityhealthtoolkit.org/apps/features/contacts/#condition-cards)
