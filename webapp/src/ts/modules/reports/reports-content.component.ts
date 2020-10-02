@@ -9,7 +9,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ChangesService } from '@mm-services/changes.service';
 
-
 @Component({
   templateUrl: './reports-content.component.html'
 })
@@ -30,6 +29,7 @@ export class ReportsContentComponent implements OnInit {
     private changesService:ChangesService,
     private store:Store,
     private route:ActivatedRoute,
+    private router:Router,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -87,17 +87,18 @@ export class ReportsContentComponent implements OnInit {
     });
     this.subscription.add(changesSubscription);
 
-    console.log('aiiiiici');
-    if (this.route.snapshot.params.id) {
-      this.reportsActions.selectReport(this.route.snapshot.params.id);
-      //ctrl.selectReport($stateParams.id);
-      //ctrl.clearCancelCallback();
+    const routeSubscription = this.router.events.subscribe(() => {
+      if (this.route.snapshot.params.id) {
+        this.reportsActions.selectReport(this.route.snapshot.params.id);
+        //ctrl.selectReport($stateParams.id);
+        //ctrl.clearCancelCallback();
 
-      //$('.tooltip').remove();
-    } else {
-      //ctrl.unsetSelected();
-    }
-
+        $('.tooltip').remove();
+      } else {
+        //ctrl.unsetSelected();
+      }
+    });
+    this.subscription.add(routeSubscription);
   }
 
   trackByFn(index, item) {

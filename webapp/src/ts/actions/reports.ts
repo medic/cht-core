@@ -5,6 +5,7 @@ import { createMultiValueAction, createSingleValueAction } from './actionUtils';
 import { Actions as GlobalActions } from './global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
+import { mod } from 'ngx-bootstrap/chronos/utils';
 
 export const Actions = {
   selectReport: createMultiValueAction('SELECT_REPORT'),
@@ -25,7 +26,7 @@ export class ReportsActions {
     return this.store.dispatch(Actions.addSelectedReport(selected));
   }
 
-  selectReport(id, { silent=false }) {
+  selectReport(id, { silent=false }={}) {
     return this.store.dispatch(Actions.selectReport({ id, silent }));
   }
 
@@ -52,6 +53,10 @@ export class ReportsActions {
 
   resetReportsList() {
     return this.store.dispatch(Actions.resetReportsList());
+  }
+
+  setSelected(model) {
+    return this.store.dispatch(Actions.setSelected(model));
   }
 
   /*setSelected(model) {

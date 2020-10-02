@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Actions, ofType, createEffect } from '@ngrx/effects';
+import { Actions, ofType, createEffect, act } from '@ngrx/effects';
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { Actions as GlobalActionList, GlobalActions } from '@mm-actions/global';
 import { from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError } from 'rxjs/operators';
+import { map, exhaustMap, filter, catchError, concatMap } from 'rxjs/operators';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 
 
@@ -40,5 +40,15 @@ export class ReportEffects {
         );
       }),
     );
-  }, { dispatch: false });
+  }, { dispatch: true });
+
+  setSelected = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.setSelected),
+      concatMap(action => )
+      exhaustMap(({ payload: { model } }) => {
+
+      }),
+    )
+  })
 }
