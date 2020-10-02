@@ -63,6 +63,21 @@ const _globalReducer = createReducer(
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
+  on(Actions.clearFilters, (state) => {
+    return { ...state, filters: {} };
+  }),
+  on(Actions.setFilters, (state, { payload: { filters } }) => {
+    return { ...state, filters };
+  }),
+  on(Actions.setFilter, (state, { payload: { filter } }) => {
+    return {
+      ...state,
+      filters: { ...state.filters, ...filter }
+    };
+  }),
+  on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
+    return { ...state, isAdmin };
+  }),
   on(Actions.setTitle, (state, { payload: { title } }) => {
     return { ...state, title };
   }),

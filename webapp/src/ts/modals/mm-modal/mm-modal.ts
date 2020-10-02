@@ -4,7 +4,7 @@
  * Usage:
  * <mm-modal [attributes]>[modal body]</mm-modal>
  */
-import {Component, Injectable, Input, Output, EventEmitter, HostListener} from '@angular/core';
+import { Component, Injectable, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
