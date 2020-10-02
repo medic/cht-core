@@ -15,6 +15,8 @@ export const Selectors = {
   getSelectMode: state => getGlobalState(state).selectMode,
   getShowActionBar: state => getGlobalState(state).showActionBar,
   getForms: state => getGlobalState(state).forms,
+  getFilters: state => getGlobalState(state).filters,
+  getIsAdmin: state => getGlobalState(state).isAdmin,
 
   // services
   getLastChangedDoc: (state) => getServicesState(state).lastChangedDoc,

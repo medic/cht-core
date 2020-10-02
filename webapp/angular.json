@@ -46,6 +46,7 @@
           },
           "configurations": {
             "development": {
+              "deleteOutputPath": false,
               "outputHashing": "none",
               "sourceMap": true,
               "extractCss": true,
@@ -92,6 +93,7 @@
             "polyfills": "src/ts/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "tests/karma/karma-unit.conf.js",
+            "progress": true,
             "assets": [
               "src/img",
               "src/fonts",
@@ -105,7 +107,9 @@
                 "src/css"
               ]
             },
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js"
+            ]
           }
         }
       }

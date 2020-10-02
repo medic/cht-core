@@ -26,7 +26,7 @@
     "angular/module-dependency-order": "error",
     "angular/one-dependency-per-line": "error",
     "angular/interval-service": "error",
-    "angular/on-destroy": "error",
+    "angular/on-destroy": "error"
   },
   "overrides": [
     {
@@ -35,20 +35,22 @@
         "src/js/enketo/**",
         "src/js/bootstrapper/**",
         "src/js/bootstrap-multidropdown.js",
-        "tests/**/*"
+        "tests/**/*",
+        "src/ts/bootstrapper/**"
       ],
       "rules": {
         "angular/window-service": "off",
         "angular/timeout-service": "off",
         "angular/di-order": "off",
-        "angular/interval-service": "off",
+        "angular/interval-service": "off"
       }
     },
     {
       "files": [
         "src/js/app.js",
         "src/js/modules/feedback.js",
-        "src/js/bootstrapper/*.js"
+        "src/js/bootstrapper/*.js",
+        "src/ts/bootstrapper/*.js"
       ],
       "rules": {
         "no-console": "off"

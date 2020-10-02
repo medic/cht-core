@@ -7,7 +7,7 @@ export const routes:Routes = [
   {
     path: 'reports',
     component: ReportsComponent,
-    data: { permissions: ['can_view_reports'] },
+    data: { permissions: ['can_view_reports'], tab: 'reports' },
     canActivate: [RouteGuardProvider],
     children: [
       {

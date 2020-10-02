@@ -1,6 +1,10 @@
 const assert = require('chai').assert;
 const format = require('../../../../src/js/modules/format');
 
+// TODO migrate this file!
+// Moved here in advance of the migration to get the unit tests passing
+// The code this is testing was already migrated and can't be "required" anymore.
+
 let $state;
 
 beforeEach(() => {

@@ -6,7 +6,8 @@
     "types": [
       "mocha",
       "sinon",
-      "node"
+      "node",
+      "jquery"
     ]
   },
   "files": [

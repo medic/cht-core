@@ -11,9 +11,6 @@ window.$ = window.jQuery = require('jquery');
 //window.d3 = require('d3');
 
 //import * as Select2 from '../../node_modules/select2/dist/js/select2.full';
-//require('bootstrap');
-//require('./bootstrap-multidropdown');
-//require('bootstrap-daterangepicker');
 //require('nvd3');
 
 import { enableProdMode } from '@angular/core';
