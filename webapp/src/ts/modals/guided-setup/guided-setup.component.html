@@ -29,9 +29,6 @@
               <label for="default-country-code-setup" translate>Default country code</label>
               <p translate>Default country code help</p>
               <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
-                <option *ngFor="let country of countryList">
-                  {{ country.text }}
-                </option>
               </select>
               <label for="gateway-number-setup" translate>Gateway number</label>
               <p translate>Gateway number help</p>
