@@ -39,6 +39,24 @@ const _reportsReducer = createReducer(
   on(Actions.updateReportsList, (state, { payload: { reports } }) => updateReports(state, reports)),
   on(Actions.removeReportFromList, (state, { payload: { report } }) => removeReport(state, report)),
   on(Actions.resetReportsList, (state) => ({ ...state, reports: [], reportsById: new Map })),
+
+  on(Actions.addSelectedReport, (state, { payload: { report } }) => {
+    return {
+      ...state,
+      selected: [...state.selected, report],
+    };
+  }),
+
+  on(Actions.removeSelectedReport, (state, { payload: { report } }) => {
+    return {
+      ...state,
+      selected: state.selected.filter(selectedReport => selectedReport._id !== report._id),
+    }
+  }),
+
+  on(Actions.setSelectedReports, (state, { payload: { reports } }) => ({ ...state, selected: reports })),
+
+
 );
 
 export function reportsReducer(state, action) {
@@ -55,17 +73,10 @@ module.exports = function(state, action) {
     state = initialState;
   }
 
+
   switch (action.type) {
-  case actionTypes.ADD_SELECTED_REPORT:
-    return Object.assign({}, state, {
-      selected: state.selected.concat(action.payload.selected)
-    });
   case actionTypes.CLEAR_SELECTED:
     return Object.assign({}, state, { selected: [], verifyingReport: false });
-  case actionTypes.REMOVE_SELECTED_REPORT: {
-    const filteredSelected = _.filter(state.selected, selected => selected._id !== action.payload.id);
-    return Object.assign({}, state, { selected: filteredSelected });
-  }
   case actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY: {
     const selected = state.selected.map((item, index) => {
       if (index === 0) {
@@ -88,8 +99,6 @@ module.exports = function(state, action) {
     });
     return Object.assign({}, state, { selected });
   }
-  case actionTypes.SET_SELECTED_REPORTS:
-    return Object.assign({}, state, { selected: action.payload.selected });
   case actionTypes.SET_VERIFYING_REPORT:
     return Object.assign({}, state, { verifyingReport: action.payload.verifyingReport });
   case actionTypes.UPDATE_SELECTED_REPORT_ITEM: {

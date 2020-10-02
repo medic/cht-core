@@ -29,7 +29,6 @@ export class ReportsContentComponent implements OnInit {
     private changesService:ChangesService,
     private store:Store,
     private route:ActivatedRoute,
-    private router:Router,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -59,7 +58,7 @@ export class ReportsContentComponent implements OnInit {
           _.some(this.selectedReports, (item) => item._id === change.id)
         return isSelected;
       },
-      callback: function(change) {
+      callback: (change) => {
         if (change.deleted) {
           // everything here is todo
           if (this.selectMode) {
@@ -87,10 +86,9 @@ export class ReportsContentComponent implements OnInit {
     });
     this.subscription.add(changesSubscription);
 
-    const routeSubscription = this.router.events.subscribe(() => {
-      if (this.route.snapshot.params.id) {
+    const routeSubscription =  this.route.params.subscribe((params) => {
+      if (params.id) {
         this.reportsActions.selectReport(this.route.snapshot.params.id);
-        //ctrl.selectReport($stateParams.id);
         //ctrl.clearCancelCallback();
 
         $('.tooltip').remove();

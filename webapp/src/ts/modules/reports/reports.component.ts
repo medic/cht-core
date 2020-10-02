@@ -157,7 +157,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
       if (options.skip) {
         this.appending = true;
-        options.skip = this.reportsList.length;
+        options.skip = this.reportsList?.length;
       } else if (!options.silent) {
         this.reportsActions.resetReportsList();
       }

@@ -73,14 +73,14 @@ export class GlobalActions {
   }
 
   settingSelected(refreshing) {
+    console.log('settings selected!!!');
     this.store.dispatch(Actions.setLoadingContent(false));
-    setTimeout(() => {
-      this.store.dispatch(Actions.setShowContent(true));
-      this.store.dispatch(Actions.setShowActionBar(true));
-      if (!refreshing) {
-        // TODO scroll body to top
-      }
-    });
+    // timeout???
+    this.store.dispatch(Actions.setShowContent(true));
+    this.store.dispatch(Actions.setShowActionBar(true));
+    if (!refreshing) {
+      // TODO scroll body to top
+    }
   }
 
   clearFilters() {

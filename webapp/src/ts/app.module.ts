@@ -27,7 +27,7 @@ import { TranslationLoaderProvider } from './providers/translation-loader.provid
 import { DbService } from './services/db.service';
 import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
-import { ReportEffects } from '@mm-effects/report';
+import { ReportsEffects } from '@mm-effects/reports.effects';
 
 import { reducers } from "./reducers";
 
@@ -77,7 +77,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BsDropdownModule.forRoot(),
     FormsModule,
     AccordionModule.forRoot(),
-    EffectsModule.forRoot([ReportEffects]),
+    EffectsModule.forRoot([ReportsEffects]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
