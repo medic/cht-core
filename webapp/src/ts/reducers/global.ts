@@ -1,6 +1,6 @@
-import { Actions } from '../actions/global';
 import { createReducer, on } from '@ngrx/store';
-import * as _ from 'lodash-es';
+
+import { Actions } from '@mm-actions/global';
 
 const initialState = {
   actionBar: {

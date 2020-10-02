@@ -20,6 +20,7 @@
       "@mm-actions/*": ["src/ts/actions/*"],
       "@mm-components/*": ["src/ts/components/*"],
       "@mm-directives/*": ["src/ts/directives/*"],
+      "@mm-effects/*": ["src/ts/effects/*"],
       "@mm-environments/*": ["src/ts/environments/*"],
       "@mm-modals/*": ["src/ts/modals/*"],
       "@mm-modules/*": ["src/ts/modules/*"],

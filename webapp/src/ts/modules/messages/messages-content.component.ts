@@ -83,6 +83,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
   }
 
   ngAfterContentInit(): void {
+    // Ensuring that any Bootstrap tooltip is removed when loading new conversation.
     window.jQuery('.tooltip').remove();
     window.jQuery('body')
       .on('focus', '#message-footer textarea', () => {
@@ -300,7 +301,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
 
   deleteDoc(doc) {
     if (doc) {
-      this.globalActions.deleteDoc(doc);
+      this.globalActions.deleteDocConfirm(doc);
     }
   }
 

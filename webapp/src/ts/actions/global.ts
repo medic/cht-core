@@ -1,5 +1,6 @@
 import { Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
+
 import { createSingleValueAction } from './actionUtils';
 import { Selectors } from '../selectors';
 
@@ -15,10 +16,13 @@ export const Actions = {
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   clearSelected: createSingleValueAction('CLEAR_SELECTED', ''),
+  deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
 }
 
 export class GlobalActions {
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store
+  ) { }
 
   updateReplicationStatus(replicationStatus) {
     return this.store.dispatch(Actions.updateReplicationStatus(replicationStatus));
@@ -90,7 +94,7 @@ export class GlobalActions {
    * Warning! Use carefully because more than one reducer might be listening to this global action.
    */
   clearSelected() {
-    this.store.dispatch(Actions.clearSelected(''));
+    return this.store.dispatch(Actions.clearSelected(''));
   }
 
   unsetSelected() {
@@ -101,25 +105,14 @@ export class GlobalActions {
     this.clearSelected();
   }
 
-  deleteDoc(doc) {
-    /*return dispatch((dispatch, getState) => {
-      return Modal({
-        templateUrl: 'templates/modals/delete_doc_confirm.html',
-        controller: 'DeleteDocConfirm',
-        controllerAs: 'deleteDocConfirmCtrl',
-        model: { doc },
-      })
-        .then(() => {
-          const selectMode = Selectors.getSelectMode(getState());
-          if (
-            !selectMode &&
-            ($state.includes('contacts') || $state.includes('reports'))
-          ) {
-            $state.go($state.current.name, { id: null });
-          }
-        })
-        .catch(() => {}); // modal dismissed is ok
-    });*/
+  /**
+   * Deletes document from DB.
+   * This action has effect.
+   *
+   * @param doc
+   */
+  deleteDocConfirm(doc) {
+    return this.store.dispatch(Actions.deleteDocConfirm(doc));
   }
 }
 

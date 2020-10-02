@@ -1,0 +1,11 @@
+<mm-modal
+  [status]="status"
+  id="'delete-confirm'"
+  [titleKey]="'bulkdelete.confirm.title'"
+  [submitKey]="'bulkdelete.confirm.action'"
+  [submittingKey]="'Deleting'"
+  (onCancel)="close()"
+  (onSubmit)="submit()"
+>
+  <p translate>confirm.delete<p>
+</mm-modal>

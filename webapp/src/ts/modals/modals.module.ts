@@ -8,6 +8,7 @@ import { ReloadingComponent } from './reloading/reloading.component';
 import { LogoutConfirmComponent } from './logout/logout-confirm.component';
 import {FeedbackComponent} from './feedback/feedback.component';
 import { SendMessageComponent } from './send-message/send-message.component';
+import { DeleteDocConfirmComponent } from './delete-doc-confirm/delete-doc-confirm.component';
 
 
 @NgModule({
@@ -17,6 +18,7 @@ import { SendMessageComponent } from './send-message/send-message.component';
     LogoutConfirmComponent,
     FeedbackComponent,
     SendMessageComponent,
+    DeleteDocConfirmComponent,
   ],
   imports: [
     CommonModule,

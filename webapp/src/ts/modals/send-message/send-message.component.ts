@@ -16,7 +16,6 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   templateUrl: './send-message.component.html',
 })
 export class SendMessageComponent extends MmModalAbstract implements OnInit, AfterViewInit {
-  count = '';
   errors = {
     message: false,
     phone: false
@@ -176,7 +175,7 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
         const personTypes = contactTypes
           .filter(type => type.person)
           .map(type => type.id);
-        const select2Options = this.getSelect2Options(settings, personTypes, contactTypes, initialValue);
+        // ToDo const select2Options = this.getSelect2Options(settings, personTypes, contactTypes, initialValue);
 
         // ToDo return Select2Search($phone, searchIds, select2Options);
       });
@@ -193,7 +192,7 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
       .get()
       .then((settings) => {
         const message = this.fields.message && this.fields.message.trim();
-        const recipients = window.jQuery('#send-message [name=phone]').select2('data');
+        const recipients = []; // ToDo window.jQuery('#send-message [name=phone]').select2('data');
         Promise
           .all([
             this.validateMessage(message),

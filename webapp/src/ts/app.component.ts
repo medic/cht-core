@@ -24,6 +24,7 @@ import { FormatDateService } from './services/format-date.service';
 import { XmlFormsService } from './services/xml-forms.service';
 import { JsonFormsService } from './services/json-forms.service';
 import { TranslateFromService } from './services/translate-from.service';
+import { CountMessageService } from '@mm-services/count-message.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -88,6 +89,7 @@ export class AppComponent {
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
+    private countMessageService: CountMessageService
   ) {
     combineLatest(
       store.pipe(select(Selectors.getReplicationStatus)),
@@ -291,6 +293,8 @@ export class AppComponent {
       filter: change => change.id === 'branding',
       callback: () => this.setAppTitle(),
     });
+
+    this.countMessageService.init();
 
     this.initForms();
   }

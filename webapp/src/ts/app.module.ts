@@ -11,6 +11,7 @@ import { CookieModule } from 'ngx-cookie';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { EffectsModule } from '@ngrx/effects';
 
 import { environment } from './environments/environment';
 
@@ -41,6 +42,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
 }
 
 import * as _ from 'lodash-es';
+import { GlobalEffects } from '@mm-effects/global';
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 @NgModule({
@@ -74,6 +76,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
+    EffectsModule.forRoot([ GlobalEffects ])
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },

@@ -18,9 +18,9 @@
         [placeholder]="'tasks.0.messages.0.message' | translate"
         [(ngModel)]="fields.message">
       </textarea>
-      Error: {{ errors.message }}
       <span class="help-block" *ngIf="errors.message">{{ errors.message }}</span>
-      <span class="count">{{ count }}</span>
+     <!-- Count is done by CountMessageService -->
+      <span class="count"></span>
     </div>
   </form>
 </mm-modal>
