@@ -10,7 +10,6 @@ import { LanguagesService } from '../../services/languages.service';
 import { SettingsService } from '../../services/settings.service';
 import { COUNTRY_LIST } from '../../providers/countries.provider';
 
-declare let $: any;
 @Component({
   selector: 'guided-setup',
   templateUrl: './guided-setup.component.html'
@@ -49,9 +48,9 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     }
   };
 
-  private selectOption = function(e) {
+  private selectOption(e) {
     e.preventDefault();
-    const elem = $(this);
+    const elem = $(e.currentTarget);
     elem.closest('.horizontal-options')
       .find('.selected')
       .removeClass('selected');
@@ -74,7 +73,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
       this.countryList = COUNTRY_LIST;
       $('#guided-setup').on('click', '.horizontal-options a', this.selectOption);
       $('#guided-setup [name=gateway-number]').on('input', this.updateNumbers);
-      $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: this.countryList });
+      (<any>$('#guided-setup [name=default-country-code]')).select2({ width: '20em', data: this.countryList });
       $('#guided-setup [name=default-country-code]').on('change', this.updateNumbers);
       this.settingsService.get().then((res: any) => {
         if (res.setup_complete) {
