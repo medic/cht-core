@@ -62,7 +62,8 @@ module.exports = {
     helper.waitElementToBeClickable(addButton);
     helper.waitForAngularComplete();
     //addButton.click();
-    browser.executeScript('arguments[0].scrollIntoView();', addButton);
+    helper.clickElement(addButton);
+    //browser.executeScript('arguments[0].scrollIntoView();', addButton);
 
     element(
       by.css(

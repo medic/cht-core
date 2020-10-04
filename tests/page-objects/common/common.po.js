@@ -106,6 +106,7 @@ module.exports = {
 
   goToReports: refresh => {
     browser.get(utils.getBaseUrl() + 'reports/');
+    helper.waitElementToDisappear(by.css('.loader'));
     helper.waitElementToPresent(
       element(
         by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
