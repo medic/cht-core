@@ -166,7 +166,7 @@ describe('africas talking api', () => {
         .catch(done.fail);
     });
 
-    it('- shows content', () => {
+    xit('- shows content', () => {
       commonElements.goToTasks();
       commonElements.goToMessages();
 
@@ -220,8 +220,10 @@ describe('africas talking api', () => {
           return Promise.all([
             submitDeliveryReport({ id: messageGatewayRef1, status: 'Submitted', phoneNumber: messageTo1 }),
             submitDeliveryReport({ id: messageGatewayRef2, status: 'Success', phoneNumber: messageTo2 }),
-            submitDeliveryReport({ id: messageGatewayRef3, status: 'Failed',
-              failureReason: 'InsufficientCredit', phoneNumber: messageTo3 }),
+            submitDeliveryReport({
+              id: messageGatewayRef3, status: 'Failed',
+              failureReason: 'InsufficientCredit', phoneNumber: messageTo3
+            }),
           ]);
         })
         .then(done)
@@ -236,6 +238,7 @@ describe('africas talking api', () => {
 
     it('- shows content', () => {
       commonElements.goToReports();
+      helper.handleUpdateModal();
       helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
       helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
       helper.waitElementToPresent(element(by.css('#reports-content .body .item-summary .icon')));

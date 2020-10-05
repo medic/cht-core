@@ -1,5 +1,5 @@
 const utils = require('../utils');
-const sUtils = require('./sentinel/utils');
+const sUtils = require('../e2e/sentinel/utils');
 const commonElements = require('../page-objects/common/common.po.js');
 const helper = require('../helper');
 const moment = require('moment');
@@ -240,14 +240,14 @@ describe('registration transition', () => {
         .then(done)
         .catch(done.fail);
     });
-    beforeEach(function() {
+    beforeEach(function () {
       //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow and it takes long for the report details to load
       originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     });
 
     afterEach(utils.afterEach);
-    afterAll(function() {
+    afterAll(function () {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
@@ -264,7 +264,7 @@ describe('registration transition', () => {
     const checkAutoResponse = (expectedDate) => {
       const taskElement = element(by.css('#reports-content .details > ul'));
       expect(taskElement.element(by.css('.task-list > li:nth-child(1) > ul > li')).getText())
-        .toBe('Thank you '+ CAROL.name +' for registering Siobhan');
+        .toBe('Thank you ' + CAROL.name + ' for registering Siobhan');
       expect(taskElement.element(
         by.css('.task-list > li:nth-child(1) .task-state .state.forwarded-to-gateway')).isDisplayed()
       ).toBeTruthy();
