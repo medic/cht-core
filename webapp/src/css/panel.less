@@ -13,6 +13,13 @@
       border-top: 1px solid @separator-color;
       clear: right;
     }
+    &.panel-open {
+      .panel-heading {
+        a:before {
+          transform: rotate(-90deg);
+        }
+      }
+    }
   }
   .panel-default > .panel-heading {
     background-color: inherit;
@@ -49,9 +56,6 @@
       font-family: FontAwesome;
       display: inline-block;
       transition: all .5s ease;
-    }
-    .collapsed:before {
-      transform: rotate(-90deg);
     }
 
     .count {
