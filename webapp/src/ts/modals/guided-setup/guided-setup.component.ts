@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, AfterContentChecked } from '@angular/core';
+import { Component, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
 import { validate as validatePhoneNumber, normalize as normalizePhoneNumber } from '@medic/phone-number';
@@ -14,7 +14,7 @@ import { COUNTRY_LIST } from '../../providers/countries.provider';
   selector: 'guided-setup',
   templateUrl: './guided-setup.component.html'
 })
-export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit, AfterContentChecked {
+export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit, AfterViewChecked {
   private globalactions;
   model:{ countryCode?, gatewayNumber? } = {};
   error:{ message? } = {};
@@ -80,7 +80,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
       this.settingsService.get().then((res: any) => {
         this.settingsLoaded = true;
         this.settings = res;
-        if (res.setup_complete) {
+        if (this.settings.setup_complete) {
           $('#guided-setup [name=gateway-number]').val(this.settings.gateway_number).trigger('input');
           $('#primary-contact-content a[data-value=' + this.settings.care_coordinator + ']').trigger('click');
           $('#registration-form-content a[data-value=' + this.settings.anc_registration_lmp + ']').trigger('click');
@@ -89,12 +89,13 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     });
   }
 
-  ngAfterContentChecked() {
-    if (this.settingsLoaded) {
+  ngAfterViewChecked() {
+    if (this.settingsLoaded && this.settings.setup_complete) {
       $('#guided-setup [name=default-country-code]').val(this.settings.default_country_code).change();
       $('#language-preference-content .locale a[data-value=' + this.settings.locale + ']').trigger('click');
       $('#language-preference-content .locale-outgoing a[data-value=' + this.settings.locale_outgoing + ']')
         .trigger('click');
+      this.settingsLoaded = false;
     }
   }
 
