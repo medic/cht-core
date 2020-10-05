@@ -40,8 +40,8 @@ export class HeaderComponent implements OnInit {
     private dbSyncService: DBSyncService,
   ) {
     combineLatest(
-      store.pipe(select(Selectors.getReplicationStatus)),
-      store.pipe(select(Selectors.getCurrentTab)),
+      store.select(Selectors.getReplicationStatus),
+      store.select(Selectors.getCurrentTab),
     ).subscribe(([
       replicationStatus,
       currentTab

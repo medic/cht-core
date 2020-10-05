@@ -1,3 +1,5 @@
+import { createSelector } from '@ngrx/store';
+
 const getGlobalState = (state) => state.global || {};
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
@@ -5,31 +7,33 @@ const getMessagesState = (state) => state.messages || {};
 
 export const Selectors = {
   // global
-  getReplicationStatus: (state) => getGlobalState(state).replicationStatus,
-  getAndroidAppVersion: (state) => getGlobalState(state).androidAppVersion,
-  getCurrentTab: (state) => getGlobalState(state).currentTab,
-  getSnackbarContent: (state) => getGlobalState(state).snackbarContent,
-  getLoadingContent: state => getGlobalState(state).loadingContent,
-  getMinimalTabs: state => getGlobalState(state).minimalTabs,
-  getShowContent: state => getGlobalState(state).showContent,
-  getSelectMode: state => getGlobalState(state).selectMode,
-  getShowActionBar: state => getGlobalState(state).showActionBar,
-  getForms: state => getGlobalState(state).forms,
-  getFilters: state => getGlobalState(state).filters,
-  getIsAdmin: state => getGlobalState(state).isAdmin,
+  getReplicationStatus: createSelector(getGlobalState, (globalState) => globalState.replicationStatus),
+  getAndroidAppVersion:  createSelector(getGlobalState, (globalState) => globalState.androidAppVersion),
+  getCurrentTab: createSelector(getGlobalState, (globalState) => globalState.currentTab),
+  getSnackbarContent: createSelector(getGlobalState, (globalState) => globalState.snackbarContent),
+  getLoadingContent: createSelector(getGlobalState, (globalState) => globalState.loadingContent),
+  getMinimalTabs: createSelector(getGlobalState, (globalState) => globalState.minimalTabs),
+  getShowContent: createSelector(getGlobalState, (globalState) => globalState.showContent),
+  getSelectMode: createSelector(getGlobalState, (globalState) => globalState.selectMode),
+  getShowActionBar: createSelector(getGlobalState, (globalState) => globalState.showActionBar),
+  getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
+  getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
+  getIsAdmin: createSelector(getGlobalState, (globalState) => globalState.isAdmin),
 
   // services
-  getLastChangedDoc: (state) => getServicesState(state).lastChangedDoc,
+  getLastChangedDoc: createSelector(getServicesState, (servicesState) => servicesState.lastChangedDoc),
 
   // reports
-  getReportsList: (state) => getReportsState(state).reports,
-  listContains: (state) => (id) => getReportsState(state).reportsById.has(id),
-  getSelectedReports: (state) => getReportsState(state).selected,
+  getReportsList: createSelector(getReportsState, (reportsState) => reportsState.reports),
+  listContains: createSelector(getReportsState, (reportsState, props) => {
+    return reportsState.reportsById.has(props.id);
+  }),
+  getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selected),
 
   // messages
-  getMessagesError: state => getMessagesState(state).error,
-  getSelectedConversation: state => getMessagesState(state).selected,
-  getConversations: state => getMessagesState(state).conversations,
+  getMessagesError: createSelector(getMessagesState, (messagesState) => messagesState.error),
+  getSelectedConversation: createSelector(getMessagesState, (messagesState) => messagesState.selected),
+  getConversations: createSelector(getMessagesState, (messagesState) => messagesState.conversations),
 };
 /*
 

@@ -53,7 +53,7 @@ export class ChangesService {
     private session: SessionService,
     private store: Store
   ) {
-    this.store.pipe(select(Selectors.getLastChangedDoc)).subscribe(obj => this.lastChangedDoc = obj);
+    this.store.select(Selectors.getLastChangedDoc).subscribe(obj => this.lastChangedDoc = obj);
     this.servicesActions = new ServicesActions(store);
 
     this.init();

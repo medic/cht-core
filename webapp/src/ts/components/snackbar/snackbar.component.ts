@@ -1,13 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { select, Store } from '@ngrx/store';
-import { Selectors } from '../../selectors';
-import { GlobalActions } from '../../actions/global';
+import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
+
+import { Selectors } from '@mm-selectors/index'
+import { GlobalActions } from '@mm-actions/global';
+
 
 @Component({
   selector: 'snackbar',
   templateUrl: './snackbar.component.html'
 })
 export class SnackbarComponent implements OnInit {
+  private subscription: Subscription = new Subscription();
+
   private readonly SHOW_DURATION = 5000;
   private readonly ANIMATION_DURATION = 250;
 
@@ -19,7 +24,10 @@ export class SnackbarComponent implements OnInit {
 
   constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
-    store.pipe(select(Selectors.getSnackbarContent)).subscribe(content => {
+  }
+
+  ngOnInit() {
+    this.store.select(Selectors.getSnackbarContent).subscribe(content => {
       if (!content) {
         return;
       }
@@ -32,9 +40,6 @@ export class SnackbarComponent implements OnInit {
 
       this.show(content);
     });
-  }
-
-  ngOnInit() {
     this.hide();
   }
 
