@@ -6,6 +6,15 @@ function writeScreenShot(data, filename) {
   stream.write(Buffer.from(data, 'base64'));
   stream.end();
 }
+function waitElementToDisappear(locator, timeout) {
+  timeout = timeout || 15000;
+  browser.wait(() => {
+    return element(locator)
+      .isDisplayed()
+      .then(presenceOfElement => !presenceOfElement);
+  }, timeout);
+}
+
 function handleUpdateModal() {
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
@@ -118,9 +127,16 @@ module.exports = {
   },
 
   isTextDisplayed: text => {
-    const selectedElement = element(
-      by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
-    );
+    // const selectedElement = element(
+    //   by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
+    // );
+    try {
+      const selectedElement = element(
+        by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
+      );
+    } catch (err) {
+      // element not showing
+    }
     return selectedElement.isDisplayed();
   },
 
@@ -129,13 +145,13 @@ module.exports = {
       .manage()
       .logs()
       .get('browser')
-      .then(function(browserLogs) {
-        browserLogs.forEach(function(log) {
+      .then(function (browserLogs) {
+        browserLogs.forEach(function (log) {
           if (log.level.value > 900) {
             fs.appendFile(
               `tests/results/${spec}-logs.txt`,
               `\r\n Console errors: ${log.message}\r\n`,
-              function(err) {
+              function (err) {
                 if (err) {
                   throw err;
                 }
@@ -228,14 +244,7 @@ module.exports = {
     browser.wait(EC.elementToBeClickable(elm), timeout);
   },
 
-  waitElementToDisappear: (locator, timeout) => {
-    timeout = timeout || 15000;
-    browser.wait(() => {
-      return element(locator)
-        .isDisplayed()
-        .then(presenceOfElement => !presenceOfElement);
-    }, timeout);
-  },
+  waitElementToDisappear,
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
