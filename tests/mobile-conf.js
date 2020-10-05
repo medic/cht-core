@@ -1,7 +1,7 @@
 const constants = require('./constants');
 const mobileConfig = require('./conf').config;
 mobileConfig.suites = {
-  mobile: 'mobile/contacts/*.js'
+  mobile: 'mobile/**/*.js'
 };
 mobileConfig.capabilities.chromeOptions = {
   w3c: false,
