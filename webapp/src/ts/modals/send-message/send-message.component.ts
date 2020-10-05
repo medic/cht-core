@@ -11,7 +11,6 @@ import { SendMessageService } from '@mm-services/send-message.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 
-
 @Component({
   selector: 'send-message',
   templateUrl: './send-message.component.html',
@@ -101,13 +100,17 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
   }
 
   private formatPlace(row) {
-    return this.translateService.get('Everyone at', {
+    return this.translateService.instant('Everyone at', {
       facility: row.doc && row.doc.name,
-      count: row.descendants && row.descendants.length
+      count: row.descendants ? row.descendants.length : ''
     });
   }
 
-  private templateResult(contactTypes, row) {
+  private templateResult(contactTypes = [], row) {
+    if (!row) {
+      return;
+    }
+
     if (row.text) {
       // Either Select2 detritus such as 'Searching…', or any custom value
       // you enter, such as a raw phone number
@@ -115,7 +118,7 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
     }
 
     const typeId = row.doc.contact_type || row.doc.type;
-    const type = contactTypes.find(type => type.id === typeId);
+    const type = contactTypes.find(type => type.id === typeId) || {};
     let contact;
 
     if (row.everyoneAt) {
@@ -132,6 +135,10 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
   }
 
   private templateSelection(row) {
+    if (!row) {
+      return;
+    }
+
     if (!row.doc) {
       return row.text;
     }
