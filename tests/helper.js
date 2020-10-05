@@ -127,16 +127,9 @@ module.exports = {
   },
 
   isTextDisplayed: text => {
-    // const selectedElement = element(
-    //   by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
-    // );
-    try {
-      const selectedElement = element(
-        by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
-      );
-    } catch (err) {
-      // element not showing
-    }
+    const selectedElement = element(
+      by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
+    );
     return selectedElement.isDisplayed();
   },
 
