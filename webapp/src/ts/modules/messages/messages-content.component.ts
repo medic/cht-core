@@ -39,7 +39,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
   send = { message: '' };
   allLoaded = false;
   // _testSelect; // See URL param "id" note at top of file. Promise exposed solely for testing purposes
-  parameters = { type: '', id: '' };
+  urlParameters = { type: '', id: '' };
   subscriptions: Subscription = new Subscription();
   textAreaFocused = false;
 
@@ -54,31 +54,31 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
     private sendMessageService: SendMessageService,
     private modalService: ModalService,
   ) {
-    const subscription = combineLatest(
+    this.globalActions = new GlobalActions(store);
+    this.messagesActions = new MessagesActions(store, this.globalActions);
+  }
+
+  ngOnInit(): void {
+    const selectorsSubscription = combineLatest(
       this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getLoadingContent)),
     ).subscribe(([selectedConversation, loadingContent]) => {
       this.selectedConversation = selectedConversation;
       this.loadingContent = loadingContent;
     });
-    this.subscriptions.add(subscription);
+    this.subscriptions.add(selectorsSubscription);
 
-    this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store, this.globalActions);
-    this.userCtx = this.sessionService.userCtx();
-  }
-
-  ngOnInit(): void {
-    const subscription = this.route.params.subscribe(params => {
-      const parts = params.type_id.split(':');
-      this.parameters.type = parts[0];
-      this.parameters.id = parts[1];
+    const routeSubscription = this.route.params.subscribe(params => {
+      const [type, id] = params.type_id ? params.type_id.split(':') : [];
+      this.urlParameters.type = type;
+      this.urlParameters.id = id;
       this.send.message = '';
       // See URL param "id" note at top of file.
-      this.selectContact(this.parameters.id, this.parameters.type);
+      this.selectContact(this.urlParameters.id, this.urlParameters.type);
     });
-    this.subscriptions.add(subscription);
+    this.subscriptions.add(routeSubscription);
 
+    this.userCtx = this.sessionService.userCtx();
     this.watchForChanges();
   }
 

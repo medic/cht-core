@@ -28,31 +28,32 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private changesService: ChangesService,
     private messageContactService: MessageContactService
   ) {
-    const subscription = combineLatest(
+    this.globalActions = new GlobalActions(store);
+    this.messagesActions = new MessagesActions(store, this.globalActions);
+  }
+
+  ngOnInit(): void {
+    const selectorsSubscription = combineLatest(
       this.store.pipe(select(Selectors.getConversations)),
       this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getLoadingContent)),
       this.store.pipe(select(Selectors.getMessagesError)),
-    ).subscribe(([
-      conversations,
+    )
+    .subscribe(([
+      conversations = [],
       selectedConversation,
       loadingContent,
       error,
     ]) => {
       // Create new reference of conversation's items
       // because the ones from store can't be modified as they are read only.
-      this.conversations = (conversations || []).map(c => ({ ...c }));
+      this.conversations = conversations.map(c => ({ ...c }));
       this.selectedConversation = selectedConversation;
       this.loadingContent = loadingContent;
       this.error = error;
     });
-    this.subscriptions.add(subscription);
+    this.subscriptions.add(selectorsSubscription);
 
-    this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store, this.globalActions);
-  }
-
-  ngOnInit(): void {
     this.updateConversations();
     this.watchForChanges();
   }
