@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, AfterContentChecked } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
 import { validate as validatePhoneNumber, normalize as normalizePhoneNumber } from '@medic/phone-number';
@@ -14,7 +14,7 @@ import { COUNTRY_LIST } from '../../providers/countries.provider';
   selector: 'guided-setup',
   templateUrl: './guided-setup.component.html'
 })
-export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit {
+export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit, AfterContentChecked {
   private globalactions;
   model:{ countryCode?, gatewayNumber? } = {};
   error:{ message? } = {};
