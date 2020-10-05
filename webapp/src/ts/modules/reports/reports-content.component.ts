@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ChangesService } from '../../services/changes.service';
-import { combineLatest, Subscription } from 'rxjs';
-import {Selectors} from '../../selectors';
-import {GlobalActions} from '../../actions/global';
-import {ReportsActions} from '../../actions/reports';
-import { select, Store } from '@ngrx/store';
 import * as _ from 'lodash-es';
+import { Store } from '@ngrx/store';
+import { combineLatest, Subscription } from 'rxjs';
+
+import { Selectors } from '@mm-selectors/index';
+import { GlobalActions } from '@mm-actions/global';
+import { ReportsActions } from '@mm-actions/reports';
+import { ChangesService } from '@mm-services/changes.service';
+
 
 @Component({
   templateUrl: './reports-content.component.html'
