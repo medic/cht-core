@@ -54,7 +54,7 @@ const _reportsReducer = createReducer(
     }
   }),
 
-  on(Actions.setSelectedReports, (state, { payload: { reports } }) => ({ ...state, selected: reports })),
+  on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
 
 
 );

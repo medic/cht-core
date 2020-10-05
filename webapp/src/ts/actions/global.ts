@@ -73,7 +73,6 @@ export class GlobalActions {
   }
 
   settingSelected(refreshing) {
-    console.log('settings selected!!!');
     this.store.dispatch(Actions.setLoadingContent(false));
     // timeout???
     this.store.dispatch(Actions.setShowContent(true));

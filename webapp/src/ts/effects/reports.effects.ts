@@ -24,11 +24,8 @@ export class ReportsEffects {
   }
 
   selectReport = createEffect(() => {
-    console.log('in select report effect');
     return this.actions$.pipe(
-      tap(() => console.log('filtering selectReport')),
       ofType(ReportActionList.selectReport),
-      tap(() => console.log('got selectReport')),
       filter(({ payload: { id } }) => !!id),
       exhaustMap(({ payload: { id, silent } }) => {
         if (!silent) {
@@ -47,18 +44,15 @@ export class ReportsEffects {
   }, { dispatch: false });
 
   setSelected = createEffect(() => {
-    console.log('in set selected effect');
     return this.actions$.pipe(
-      tap(() => console.log('filtering setSelected')),
       ofType(ReportActionList.setSelected),
-      tap(() => console.log('got setSelected')),
       concatMap(action => combineLatest(
         of(action),
         this.store.pipe(select(Selectors.getSelectMode)),
         this.store.pipe(select(Selectors.getSelectedReports)),
       )),
-      exhaustMap(([{ payload: { model } }, selectMode, selectedReports]) => {
-        console.log('aiiiiici???');
+      exhaustMap(([{ payload: { selected } }, selectMode, selectedReports]) => {
+        const model = { ...selected };
         let refreshing = true;
 
         if (selectMode) {
@@ -71,9 +65,9 @@ export class ReportsEffects {
           }
         } else {
           refreshing =
-            model.doc &&
+            selected.doc &&
             selectedReports.length &&
-            selectedReports[0]._id === model.doc._id;
+            selectedReports[0]._id === selected.doc._id;
           if (!refreshing) {
             this.reportActions.setVerifyingReport(false);
           }
@@ -86,6 +80,23 @@ export class ReportsEffects {
 
         this.reportActions.setRightActionBar();
         return of(this.globalActions.settingSelected(refreshing));
+      }),
+    );
+  }, { dispatch: false });
+
+  setTitle = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.setTitle),
+      concatMap(action => combineLatest(
+        of(action),
+        this.store.pipe(select(Selectors.getForms)),
+      )),
+      exhaustMap(([{ payload: selected }, forms]) => {
+        const formInternalId = selected.formInternalId || selected.form;
+        const form = forms.find(form => form.code === formInternalId);
+        const name = (form && form.name) || (form && form.title) || selected.form;
+        console.log(name);
+        return of(this.globalActions.setTitle(name));
       }),
     );
   }, { dispatch: false });
