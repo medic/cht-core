@@ -48,17 +48,6 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
         const text = this.translateService.instant('document.deleted');
         this.globalActions.setSnackbarContent(text); // ToDo test!!!!
         this.close();
-
-        /**
-         *  const selectMode = Selectors.getSelectMode(getState());
-         if (
-         !selectMode &&
-         ($state.includes('contacts') || $state.includes('reports'))
-         ) {
-            $state.go($state.current.name, { id: null });
-          }
-         */
-
       })
       .catch((err) => this.setError(err, 'Error deleting document'));
   }

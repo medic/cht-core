@@ -45,9 +45,9 @@ export class CountMessageService {
     this.settingsService
       .get()
       .then((settings:any) => {
-        window.jQuery('body').on('keyup', '[name=message]', (e) => {
+        $('body').on('keyup', '[name=message]', (e) => {
 
-          const target = window.jQuery(e.target);
+          const target = $(e.target);
           const message = target.val();
 
           const count = this.calculate(message);

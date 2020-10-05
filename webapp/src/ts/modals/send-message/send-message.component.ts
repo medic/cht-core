@@ -9,6 +9,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SendMessageService } from '@mm-services/send-message.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { Select2SearchService } from '@mm-services/select2-search.service';
 
 
 @Component({
@@ -32,18 +33,18 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
     private settingsService: SettingsService,
     private contactTypesService: ContactTypesService,
     private bsModalRef: BsModalRef,
-    private sendMessageService: SendMessageService
+    private sendMessageService: SendMessageService,
+    private select2SearchService: Select2SearchService
   ) {
     super();
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     const to = this.fields.to;
-    const $modal = window.jQuery('#send-message');
-    const phoneField = $modal.find('[name=phone]');
-    $modal.find('.count').text('');
+    const phoneField = $('.message-form #send-message-phone');
+    $('.message-form .count').text('');
     this.initPhoneField(phoneField, to);
   }
 
@@ -53,8 +54,10 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
       return Promise.resolve();
     }
 
+    const fieldLabel = this.translateService.instant('tasks.0.messages.0.message');
+
     return this.translateService
-      .get('field is required', { field: 'tasks.0.messages.0.message' })
+      .get('field is required', { field: fieldLabel })
       .toPromise()
       .then(error => this.errors.message = error);
   }
@@ -75,8 +78,9 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
   private validatePhoneNumbers(settings, recipients) {
     // Recipients is mandatory
     if (!recipients || !recipients.length) {
+      const fieldLabel = this.translateService.instant('tasks.0.messages.0.to');
       return this.translateService
-        .get('field is required', { field: 'tasks.0.messages.0.to' })
+        .get('field is required', { field: fieldLabel })
         .toPromise()
         .then(error => this.errors.phone = error);
     }
@@ -124,7 +128,7 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
       contact = this.formatProvider.sender(row.doc);
     }
 
-    return window.jQuery('<span class="fa fa-fw ' + type.icon + '"></span>' + contact);
+    return $('<span class="fa fa-fw ' + type.icon + '"></span>' + contact);
   }
 
   private templateSelection(row) {
@@ -175,9 +179,9 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
         const personTypes = contactTypes
           .filter(type => type.person)
           .map(type => type.id);
-        // ToDo const select2Options = this.getSelect2Options(settings, personTypes, contactTypes, initialValue);
+        const select2Options = this.getSelect2Options(settings, personTypes, contactTypes, initialValue);
 
-        // ToDo return Select2Search($phone, searchIds, select2Options);
+        return this.select2SearchService.init($phone, searchIds, select2Options);
       });
   }
 
@@ -192,7 +196,7 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
       .get()
       .then((settings) => {
         const message = this.fields.message && this.fields.message.trim();
-        const recipients = []; // ToDo window.jQuery('#send-message [name=phone]').select2('data');
+        const recipients = (<any>$('.message-form #send-message-phone')).select2('data');
         Promise
           .all([
             this.validateMessage(message),

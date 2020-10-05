@@ -84,22 +84,21 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
 
   ngAfterContentInit(): void {
     // Ensuring that any Bootstrap tooltip is removed when loading new conversation.
-    window.jQuery('.tooltip').remove();
-    window.jQuery('body')
+    $('.tooltip').remove();
+    $('body')
       .on('focus', '#message-footer textarea', () => {
-       // window.jQuery('#message-footer').addClass('sending');
         this.textAreaFocused = true;
       })
       .on('blur', '#message-footer textarea', () => {
-        // window.jQuery('#message-footer').removeClass('sending');
-        this.textAreaFocused = false;
+        // Setting timeout to give change for clicking "add recipient" before hiding section.
+        setTimeout(() => this.textAreaFocused = false, 500);
       });
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    window.jQuery('body').off('focus', '#message-footer textarea');
-    window.jQuery('body').off('blur', '#message-footer textarea');
+    $('body').off('focus', '#message-footer textarea');
+    $('body').off('blur', '#message-footer textarea');
   }
 
   listTrackBy(index, message) {
@@ -114,12 +113,12 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
   }
 
   private scrollToUnread() {
-    const content = window.jQuery('.message-content-wrapper');
+    const content = $('.message-content-wrapper');
     const markers = content.find('.marker');
     let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
 
     content.scrollTop(scrollTo);
-    window.jQuery('.message-content-wrapper').on('scroll', () => this.checkScroll(content));
+    $('.message-content-wrapper').on('scroll', () => this.checkScroll(content));
   }
 
   // See URL parameter "id" note at top of file
@@ -164,7 +163,6 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
       return;
     }
 
-    // ToDo: not sure if needed -> window.jQuery('.message-content-wrapper').off('scroll', () => this.checkScroll());
     const refreshSelected = this.selectedConversation && this.selectedConversation.id === id;
     this.messagesActions.setSelected({ id: id, messages: [] }, refreshSelected);
     this.globalActions.setLoadingShowContent(id);
@@ -202,7 +200,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
         this.messagesActions.updateSelectedConversation({ contact: contactModel, messages: conversation });
         this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();
-        setTimeout(() => this.scrollToUnread()); // Todo $timeout();
+        setTimeout(() => this.scrollToUnread());
       })
       .catch((err) => {
         this.globalActions.setLoadingContent(false);
@@ -225,7 +223,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
     const limit = !options.skip && this.selectedConversation.messages.length;
 
     if (skip) {
-      this.loadingMoreContent = true; // ToDo => $timeout(() => );
+      this.loadingMoreContent = true;
     }
 
     return this.messageContactService
@@ -245,19 +243,19 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
           this.firstUnread = null;
         }
 
-        const first = window.jQuery('.item-content .body #message-content ul > li').filter(':first');
+        const first = $('.item-content .body #message-content ul > li').filter(':first');
         this.markConversationReadIfNeeded();
 
-        let scroll: number | boolean = false; // ToDo, revisit typing and $timeout(() { }); !!!!!
+        let scroll:any = false;
         if (options.skip) {
           const spinnerHeight = 102;
-          scroll = window.jQuery('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
+          scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
         } else if (first.length && newMessageFromUser) {
-          scroll = window.jQuery('.message-content-wrapper')[0].scrollHeight;
+          scroll = $('.message-content-wrapper')[0].scrollHeight;
         }
 
         if (scroll) {
-          window.jQuery('.message-content-wrapper').scrollTop(scroll);
+          $('.message-content-wrapper').scrollTop(scroll);
         }
       })
       .catch(err => console.error('Error fetching contact conversation', err));

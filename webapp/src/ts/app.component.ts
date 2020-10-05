@@ -136,6 +136,8 @@ export class AppComponent {
       this.translateService.setDefaultLang(locale);
       return this.translateService.use(locale).toPromise();
     });
+
+    return this.translationsLoaded;
   }
 
   private setupDb() {
