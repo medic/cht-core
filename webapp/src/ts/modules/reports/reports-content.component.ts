@@ -37,14 +37,17 @@ export class ReportsContentComponent implements OnInit {
   ngOnInit() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedReports),
+      this.store.select(Selectors.getSelectedReportsSummaries),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
     ).subscribe(([
       selectedReports,
+      summaries,
       forms,
       loadingContent,
     ]) => {
       this.selectedReports = selectedReports;
+      this.summaries = summaries;
       this.loadingContent = loadingContent;
       this.forms = forms;
     });
@@ -110,6 +113,10 @@ export class ReportsContentComponent implements OnInit {
   deselect(item, event) {
 
   }
+
+  search(query) {
+    //SearchFilters.freetextSearch(query);
+  }
 }
 
 /*const _ = require('lodash/core');
@@ -166,9 +173,7 @@ export class ReportsContentComponent implements OnInit {
 
 
 
-      ctrl.search = function(query) {
-        SearchFilters.freetextSearch(query);
-      };
+
 
       ctrl.canMute = function(group) {
         return MessageState.any(group, 'scheduled');

@@ -4,7 +4,7 @@ import { Actions, ofType, createEffect, act } from '@ngrx/effects';
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { Actions as GlobalActionList, GlobalActions } from '@mm-actions/global';
 import { combineLatest, forkJoin, from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, concatMap, tap, withLatestFrom } from 'rxjs/operators';
+import { map, exhaustMap, filter, catchError, concatMap, tap, withLatestFrom, switchMap } from 'rxjs/operators';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
 
@@ -46,11 +46,10 @@ export class ReportsEffects {
   setSelected = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.setSelected),
-      concatMap(action => combineLatest(
-        of(action),
+      withLatestFrom(
         this.store.pipe(select(Selectors.getSelectMode)),
-        this.store.pipe(select(Selectors.getSelectedReports)),
-      )),
+        this.store.pipe(select(Selectors.getSelectedReports))
+      ),
       exhaustMap(([{ payload: { selected } }, selectMode, selectedReports]) => {
         const model = { ...selected };
         let refreshing = true;
@@ -87,15 +86,11 @@ export class ReportsEffects {
   setTitle = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.setTitle),
-      concatMap(action => combineLatest(
-        of(action),
-        this.store.pipe(select(Selectors.getForms)),
-      )),
+      withLatestFrom(this.store.pipe(select(Selectors.getForms))),
       exhaustMap(([{ payload: selected }, forms]) => {
         const formInternalId = selected.formInternalId || selected.form;
         const form = forms.find(form => form.code === formInternalId);
         const name = (form && form.name) || (form && form.title) || selected.form;
-        console.log(name);
         return of(this.globalActions.setTitle(name));
       }),
     );

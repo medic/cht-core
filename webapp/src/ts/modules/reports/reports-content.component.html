@@ -1,16 +1,16 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent && !selectMode">
+  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent && !selectMode">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !selectedReports.length">
+  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && !selectedReports.length">
     <div translate>No report selected</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content" ng-show="selectMode || (!loadingContent && selectedReports.length && selectedReports[0].doc.form !== undefined)">
+  <div id="reports-content" class="col-sm-8 item-content" *ngIf="selectMode || (!loadingContent && selectedReports.length && selectedReports[0].doc.form !== undefined)">
 
     <div class="selection-count" *ngIf="selectMode && selectedReports.length">
       <span *ngIf="selectedReports.length === 1" translate>select.mode.count.singular</span>
@@ -20,7 +20,7 @@
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">
 
       <div class="item-summary" (click)="toggleExpand(selection)">
-        <!--<span class="icon" [innerHTML]="summaries[$index] | formIcon:forms"></span>-->
+        <span class="icon" [innerHTML]="summaries[$index] | formIcon:forms"></span>
         <a class="deselect" *ngIf="selectMode" (click)="deselect(summaries[$index], $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
@@ -45,65 +45,68 @@
           <!--<mm-sender *ngIf="!summaries[$index].subject.type" message="selection" hide-lineage="true"></mm-sender>-->
           <div>{{summaries[$index] | title:forms}}</div>
           <div class="position small-font"
-               *ngIf="summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place || (!selection.form && selection.name)"
-               ng-bind-html="summaries[$index].subject.lineage || selection.lineage || selection.contact.parent || selection.place | lineage">
+               *ngIf="summaries[$index].subject?.lineage || selection.lineage || selection.contact?.parent || selection.place || (!selection.form && selection.name)"
+               [innerHTML]="summaries[$index].subject?.lineage || selection.lineage || selection.contact?.parent || selection.place | lineage">
           </div>
           <!--<mm-sender *ngIf="summaries[$index].subject.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>-->
-          <div class="time small-font" ng-bind-html="summaries[$index].reported_date | relativeDate"></div>
+          <div class="time small-font" [innerHTML]="summaries[$index].reported_date | relativeDate"></div>
         </div>
       </div>
 
-      <div ng-show="selection.loading">
+      <div *ngIf="selection.loading">
         <div class="loader"></div>
       </div>
 
-      <!--<div class="details" *ngIf="selection.expanded">
+      <div class="details" *ngIf="selection.expanded">
         <ul>
-          <li *ngIf="selection.formatted.form" ng-repeat="field in selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data" class="indent-{{field.depth || 0}}">
-            <label>
-              <span *ngIf="selection.formatted.content_type === 'xml'" translate>{{field.label}}</span>
-              <span *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
-              <span class="fa fa-cogs" *ngIf="field.generated" translate translate-attr-title="Generated report field"></span>
-            </label>
-            <p *ngIf="!field.imagePath">
-              <span *ngIf="field.target && field.target.filter"><a ng-click="search(field.target.filter)">{{field.value}}</a></span>
-              <span *ngIf="field.target && field.target.url"><a ui-sref="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
-              <span *ngIf="!field.target">{{field.value}}</span>
-            </p>
-            <report-image *ngIf="field.imagePath" report="{{selection.formatted._id}}" path="{{field.imagePath}}"/>
-          </li>
-          <li *ngIf="selection.formatted.errors.length">
+          <ng-container *ngIf="selection.formatted?.form">
+            <li *ngFor="let field of (selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data)" class="indent-{{field.depth || 0}}">
+              <label>
+                <span *ngIf="selection.formatted.content_type === 'xml'" translate>{{field.label}}</span>
+                <span *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
+                <span class="fa fa-cogs" *ngIf="field.generated" translate translate-attr-title="Generated report field"></span>
+              </label>
+              <p *ngIf="!field.imagePath">
+                <span *ngIf="field.target && field.target.filter"><a (click)="search(field.target.filter)">{{field.value}}</a></span>
+                <span *ngIf="field.target && field.target.url"><a routerLink="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
+                <span *ngIf="!field.target">{{field.value}}</span>
+              </p>
+              <!--<report-image *ngIf="field.imagePath" report="{{selection.formatted._id}}" path="{{field.imagePath}}"></report-image>-->
+            </li>
+          </ng-container>
+
+          <li *ngIf="selection.formatted?.errors?.length">
             <label translate>Errors</label>
             <ul>
-              <li ng-repeat="error in selection.formatted.errors">
+              <li *ngFor="let error of selection.formatted.errors">
                 <p>{{error.message}}</p>
               </li>
             </ul>
           </li>
-          <li *ngIf="selection.formatted.sms_message.message">
+          <li *ngIf="selection.formatted.sms_message?.message">
             <label translate>selection.doc.content.raw</label>
             <p>{{selection.formatted.sms_message.message}}</p>
           </li>
-          <li *ngIf="selection.formatted.tasks.length">
+          <li *ngIf="selection.formatted.tasks?.length">
             <label *ngIf="selection.formatted.kujua_message" translate>tasks.0.messages.0.to</label>
             <label *ngIf="!selection.formatted.kujua_message" translate>Automated Reply</label>
             <ul class="task-list">
-              <li ng-repeat="task in selection.formatted.tasks">
+              <li *ngFor="let task of selection.formatted.tasks">
                 <ul>
-                  <li ng-repeat="message in task.messages">
+                  <li *ngFor="let message od task.messages">
                     <p>{{selection.formatted.kujua_message ? message.to : message.message}}</p>
                   </li>
                 </ul>
-                <span class="task-state" ng-bind-html="task | state"></span>
+                <span class="task-state" [innerHTML]="task | state"></span>
               </li>
               <li class="clear"></li>
             </ul>
           </li>
         </ul>
-        <div class="scheduled-tasks" *ngIf="selection.formatted.scheduled_tasks_by_group.length">
+        <div class="scheduled-tasks" *ngIf="selection.formatted.scheduled_tasks_by_group?.length">
           <h2 translate>tasks</h2>
           <ul>
-            <li ng-repeat="group in selection.formatted.scheduled_tasks_by_group">
+            <li *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
               <h3>{{group.name}}</h3>
               <p>
                 <span ng-hide="group.loading">
@@ -111,12 +114,12 @@
                   <a class="btn btn-link" ng-click="mute(selection, group)" ng-show="canMute(group)" translate>Mute</a>
                   <a class="btn btn-link" ng-click="schedule(selection, group)" ng-show="canSchedule(group)" translate>Schedule</a>
                 </span>
-                <span class="inline loader" ng-show="group.loading"></span>
+                <span class="inline loader" *ngIf="group.loading"></span>
               </p>
               <ul class="task-list">
-                <li ng-repeat="task in group.rows | orderBy:'timestamp'">
+                <li *ngFor="let task of group.rows"> <!-- TODO orderby timestamp!!! -->
                   <ul>
-                    <li ng-repeat="message in task.messages">
+                    <li *ngFor="let message of task?.messages">
                       <p>{{message.message}}</p>
                       <div class="message-error" *ngIf="message.error">
                         <span translate>messages.errors.invalid</span>
@@ -124,17 +127,17 @@
                       </div>
                     </li>
                   </ul>
-                  <span class="task-state {{ task.error ? 'has-error' : ''}}" ng-bind-html="task | state"></span>
+                  <span class="task-state {{ task.error ? 'has-error' : ''}}" [innerHTML]="task | state"></span>
                 </li>
                 <li class="clear"></li>
               </ul>
             </li>
           </ul>
         </div>
-      </div>-->
+      </div>
     </div>
 
-    <div ng-show="loadingContent && selectMode">
+    <div *ngIf="loadingContent && selectMode">
       <div class="loader"></div>
     </div>
 

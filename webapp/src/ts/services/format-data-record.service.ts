@@ -81,9 +81,9 @@ export class FormatDataRecordService {
       data: [],
     };
 
-    _.forEach(keys, function(key) {
+    _.forEach(keys, (key) => {
       if (_.isArray(key)) {
-        const result = this.fieldsToHtml(settings, doc, key[1], labels, locale, data[key[0]], def);
+        const result:any = this.fieldsToHtml(settings, doc, key[1], labels, locale, data[key[0]], def);
         result.isArray = true;
         fields.data.push(result);
         fields.headers.push({ head: this.titleize(key[0]) });
@@ -133,7 +133,7 @@ export class FormatDataRecordService {
   private getFormKeys(def) {
     const keys = {};
 
-    const getKeys = function(key, hash) {
+    const getKeys = (key, hash) => {
       if (key.length > 1) {
         const tmp = key.shift();
         if (!hash[tmp]) {
@@ -145,10 +145,10 @@ export class FormatDataRecordService {
       }
     };
 
-    const hashToArray = function(hash) {
+    const hashToArray = (hash) => {
       const array = [];
 
-      _.forEach(hash, function(value, key) {
+      _.forEach(hash, (value, key) => {
         if (typeof value === 'string') {
           array.push(key);
         } else {
@@ -160,7 +160,7 @@ export class FormatDataRecordService {
     };
 
     if (def) {
-      Object.keys(def.fields).forEach(function(key) {
+      Object.keys(def.fields).forEach((key) => {
         getKeys(key.split('.'), keys);
       });
     }
@@ -197,13 +197,13 @@ export class FormatDataRecordService {
       target = _.last(target);
     }
 
-    return _.map(target, function(item) {
+    return _.map(target, (item) => {
       return root.concat([item]).join('.');
     });
   }
 
   /**
-    * Return a title-case version of the supplied string.
+  * Return a title-case version of the supplied string.
   * @name titleize(str)
   * @param str The string to transform.
   * @returns {String}
@@ -215,7 +215,7 @@ export class FormatDataRecordService {
       .replace(/([a-z\d])([A-Z]+)/g, '$1_$2')
       .replace(/[-\s]+/g, '_')
       .replace(/_/g, ' ')
-      .replace(/(?:^|\s|-)\S/g, function(c) {
+      .replace(/(?:^|\s|-)\S/g, (c) => {
         return c.toUpperCase();
       });
   }
@@ -400,13 +400,13 @@ export class FormatDataRecordService {
 
     return _.reduce(
       keys,
-      function(memo, key) {
+      (memo, key) => {
         const field = fields && fields[key];
 
         if (_.isString(key)) {
           memo.push(this.translateKey(settings, key, field, locale));
         } else if (_.isArray(key)) {
-          _.forEach(this.unrollKey(key), function(key) {
+          _.forEach(this.unrollKey(key), (key) => {
             const field = fields && fields[key];
             memo.push(this.translateKey(settings, key, field, locale));
           });
@@ -422,7 +422,7 @@ export class FormatDataRecordService {
     return settings.forms && settings.forms[code];
   }
 
-  private getMessage(settings, value:any, locale) {
+  private getMessage(settings, value:any, locale?) {
     const _findTranslation = (value, locale) => {
       if (value.translations) {
         const translation = _.find(value.translations, { locale: locale });
@@ -539,7 +539,7 @@ export class FormatDataRecordService {
   private formatScheduledTasks(doc, settings, language, context) {
     doc.scheduled_tasks_by_group = [];
     const groups = {};
-    doc.scheduled_tasks.forEach(function(task) {
+    doc.scheduled_tasks.forEach((task) => {
       // avoid crash if item is falsey
       if (!task) {
         return;
@@ -595,7 +595,7 @@ export class FormatDataRecordService {
       }
       group.rows.push(copy);
     });
-    Object.keys(groups).forEach(function(key) {
+    Object.keys(groups).forEach((key) => {
       doc.scheduled_tasks_by_group.push(groups[key]);
     });
   }
@@ -626,8 +626,8 @@ export class FormatDataRecordService {
   private formatOutgoingMessages(doc) {
     const outgoing_messages = [];
     const outgoing_messages_recipients = [];
-    doc.tasks.forEach(function(task) {
-      task.messages.forEach(function(msg) {
+    doc.tasks.forEach((task) => {
+      task.messages.forEach((msg) => {
         const recipient = {
           to: msg.to,
           facility: msg.facility,
@@ -636,7 +636,7 @@ export class FormatDataRecordService {
         };
         let done = false;
         // append recipient to existing
-        outgoing_messages.forEach(function(m) {
+        outgoing_messages.forEach((m) => {
           if (
             msg.message === m.message &&
             msg.sent_by === m.sent_by &&

@@ -29,6 +29,9 @@ import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
 import { ReportsEffects } from '@mm-effects/reports.effects';
 
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
+
 import { reducers } from "./reducers";
 
 const logger = reducer => {
@@ -85,6 +88,8 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BsModalRef,
     RouteGuardProvider,
     CookieService,
+    ResourceIconPipe,
+    FormIconNamePipe,
   ],
   bootstrap: [AppComponent]
 })
