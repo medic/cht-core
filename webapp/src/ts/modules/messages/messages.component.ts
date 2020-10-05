@@ -28,11 +28,16 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private changesService: ChangesService,
     private messageContactService: MessageContactService
   ) {
+    this.globalActions = new GlobalActions(store);
+    this.messagesActions = new MessagesActions(store);
+  }
+
+  ngOnInit(): void {
     const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getConversations)),
-      this.store.pipe(select(Selectors.getSelectedConversation)),
-      this.store.pipe(select(Selectors.getLoadingContent)),
-      this.store.pipe(select(Selectors.getMessagesError)),
+      this.store.select(Selectors.getConversations),
+      this.store.select(Selectors.getSelectedConversation),
+      this.store.select(Selectors.getLoadingContent),
+      this.store.select(Selectors.getMessagesError),
     ).subscribe(([
       conversations,
       selectedConversation,
@@ -46,11 +51,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(subscription);
 
-    this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store);
-  }
-
-  ngOnInit(): void {
     this.updateConversations();
     this.watchForChanges();
   }

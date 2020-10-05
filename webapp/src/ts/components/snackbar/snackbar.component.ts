@@ -27,19 +27,20 @@ export class SnackbarComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.store.select(Selectors.getSnackbarContent).subscribe(content => {
+    const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe(content => {
       if (!content) {
         return;
       }
 
       if (this.timer) {
         this.hide();
-        setTimeout(() => this.show(content), this.ANIMATION_DURATION)
+        setTimeout(() => this.show(content), this.ANIMATION_DURATION);
         return;
       }
 
       this.show(content);
     });
+    this.subscription.add(reduxSubscription);
     this.hide();
   }
 

@@ -1,10 +1,8 @@
 import { Component, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
-import { Store } from '@ngrx/store';
 import { validate as validatePhoneNumber, normalize as normalizePhoneNumber } from '@medic/phone-number';
 
 import { MmModalAbstract } from '../mm-modal/mm-modal';
-import { GlobalActions } from '../../actions/global';
 import { UpdateSettingsService } from '../../services/update-settings.service';
 import { LanguagesService } from '../../services/languages.service';
 import { SettingsService } from '../../services/settings.service';
@@ -15,7 +13,6 @@ import { COUNTRY_LIST } from '../../providers/countries.provider';
   templateUrl: './guided-setup.component.html'
 })
 export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit, AfterViewChecked {
-  private globalactions;
   model:{ countryCode?, gatewayNumber? } = {};
   error:{ message? } = {};
   enabledLocales;
@@ -25,13 +22,11 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
 
   constructor(
     public bsModalRef: BsModalRef,
-    private store: Store,
     private updateSettingsService: UpdateSettingsService,
-    private langugesService: LanguagesService,
+    private languagesService: LanguagesService,
     private settingsService: SettingsService,
   ) {
     super();
-    this.globalactions = new GlobalActions(store);
   }
 
   private updateNumbers() {
@@ -70,7 +65,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
 
   ngAfterViewInit() {
     this.bsModalRef.setClass('modal-lg');
-    this.langugesService.get().then(languages => {
+    this.languagesService.get().then(languages => {
       this.enabledLocales = languages;
       this.countryList = COUNTRY_LIST;
       $('#guided-setup').on('click', '.horizontal-options a', this.selectOption);
@@ -99,8 +94,6 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     }
   }
 
-
-
   private validatePhoneNumber() {
     const countryCode = this.model.countryCode;
     const gatewayNumber = this.model.gatewayNumber;
@@ -128,12 +121,12 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
 
     val = $('#guided-setup [name=gateway-number]').val();
     if (val) {
-      // normalise value        
-      const info = { 
+      // normalise value
+      const info = {
         default_country_code: this.model.countryCode,
         phone_validation: 'none'
       };
-      
+
       settings.gateway_number = normalizePhoneNumber(info, val);
     }
     val = $('#guided-setup [name=default-country-code]').val();
