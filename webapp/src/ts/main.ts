@@ -22,6 +22,8 @@ import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from './bootstrapper';
 
+require('select2');
+
 //const KARMA_UNIT_TEST_PORT = '9876';
 
 (function() {

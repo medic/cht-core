@@ -8,9 +8,10 @@ import {AuthService} from '../../services/auth.service';
 import {GlobalActions} from "../../actions/global";
 import {ModalService} from "../../modals/mm-modal/mm-modal";
 import {LogoutConfirmComponent} from "../../modals/logout/logout-confirm.component";
-import {FeedbackComponent} from '../../modals/feedback/feedback.component';
+import { FeedbackComponent } from '../../modals/feedback/feedback.component';
 import { combineLatest } from 'rxjs';
 import { DBSyncService } from '../../services/db-sync.service';
+import { GuidedSetupComponent } from '../../modals/guided-setup/guided-setup.component';
 
 
 @Component({
@@ -63,7 +64,7 @@ export class HeaderComponent implements OnInit {
   }
 
   openGuidedSetup() {
-
+    this.modalService.show(GuidedSetupComponent);
   }
 
   openTourSelect() {

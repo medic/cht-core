@@ -11,6 +11,7 @@ import { CookieModule } from 'ngx-cookie';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { AccordionModule } from 'ngx-bootstrap/accordion';
 
 import { environment } from './environments/environment';
 
@@ -74,6 +75,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
+    AccordionModule.forRoot(),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
