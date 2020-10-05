@@ -28,18 +28,7 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      //args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
-      args: ['--headless', '--disable-gpu'],
-      mobileEmulation: {
-        'deviceName': constants.EMULATED_DEVICE,
-        //   //To emulate a device that ChromeDriver doesn’t know of,
-        //   //enable Mobile Emulation using individual device metrics
-        //   'deviceMetrics': {
-        //     'width': 384,
-        //     'height': 640,
-        //     'pixelRatio': 2.0
-        //   }
-      }
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
     }
   },
   jasmineNodeOpts: {
