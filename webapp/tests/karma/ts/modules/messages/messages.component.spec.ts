@@ -34,22 +34,24 @@ describe('Messages Component', () => {
       { selector: 'getMessagesError', value: false },
     ];
 
-    TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule
-      ],
-      declarations: [
-        MessagesComponent,
-        RelativeDatePipe
-      ],
-      providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: ChangesService, useValue: changesServiceMock },
-        { provide: MessageContactService, useValue: messageContactServiceMock },
-        { provide: SettingsService, useValue: {} } // Needed because of ngx-translate provider's constructor.
-      ]
-    }).compileComponents()
+    TestBed
+      .configureTestingModule({
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule
+        ],
+        declarations: [
+          MessagesComponent,
+          RelativeDatePipe
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: ChangesService, useValue: changesServiceMock },
+          { provide: MessageContactService, useValue: messageContactServiceMock },
+          { provide: SettingsService, useValue: {} } // Needed because of ngx-translate provider's constructor.
+        ]
+      })
+      .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(MessagesComponent);
         component = fixture.componentInstance;
@@ -77,7 +79,7 @@ describe('Messages Component', () => {
 
     expect(spyUpdateConversations.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(1);
+    expect(spySubscriptionsAdd.callCount).to.equal(2);
   });
 
   it('listTrackBy() should return unique identifier', () => {
