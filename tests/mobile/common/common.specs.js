@@ -33,9 +33,15 @@ describe('Navigation tests : ', () => {
     expect(element(by.css('div.targets')).isPresent());
   });
 
-  xit('should open Configuration wizard', () => {
+  it('should open About', () => {
     commonElements.openMenu();
-    commonElements.checkConfigurationWizard();
+    commonElements.checkAbout();
+  });
+
+  it('should open Report bug', () => {
+    helper.handleUpdateModal();
+    commonElements.openMenu();
+    commonElements.checkReportBug();
   });
 
   it('should open Guided tour', () => {
@@ -43,25 +49,10 @@ describe('Navigation tests : ', () => {
     commonElements.checkGuidedTour();
   });
 
-  it('should open About', () => {
-    commonElements.openMenu();
-    commonElements.checkAbout();
-  });
-
-  it('should open User settings', () => {
+  xit('should open User settings', () => {
     commonElements.openMenu();
     commonElements.checkUserSettings();
   });
 
-  it('should open Report bug', () => {
-    commonElements.openMenu();
-    commonElements.checkReportBug();
-  });
-
-  xit('should open Configuration app', () => {
-    commonElements.goToConfiguration();
-    const display = element(by.css('[ui-sref="display.date-time"]'));
-    expect(display.isPresent()).toBeTruthy();
-    browser.get(utils.getBaseUrl() + 'messages/');
-  });
+  //tests only for admin removed
 });
