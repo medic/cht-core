@@ -1,24 +1,27 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Store, select } from '@ngrx/store';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { combineLatest, Subscription } from 'rxjs';
 
-import { Selectors } from '../../selectors';
-import {SettingsService} from '../../services/settings.service';
-import {HeaderTabsService} from '../../services/header-tabs.service';
-import {AuthService} from '../../services/auth.service';
-import {GlobalActions} from "../../actions/global";
-import {ModalService} from "../../modals/mm-modal/mm-modal";
-import {LogoutConfirmComponent} from "../../modals/logout/logout-confirm.component";
-import { FeedbackComponent } from '../../modals/feedback/feedback.component';
-import { combineLatest } from 'rxjs';
-import { DBSyncService } from '../../services/db-sync.service';
-import { GuidedSetupComponent } from '../../modals/guided-setup/guided-setup.component';
+import { Selectors } from '@mm-selectors/index';
+import { SettingsService } from '@mm-services/settings.service';
+import { HeaderTabsService } from '@mm-services/header-tabs.service';
+import { AuthService } from '@mm-services/auth.service';
+import { GlobalActions } from '@mm-actions/global';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
+import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
+
+import { DBSyncService } from '@mm-services/db-sync.service';
+import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 
 
 @Component({
   selector: 'mm-header',
   templateUrl: './header.component.html'
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
+  private subscription: Subscription = new Subscription();
+
   @Input() adminUrl;
   @Input() canLogOut;
   @Input() tours;
@@ -39,9 +42,13 @@ export class HeaderComponent implements OnInit {
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
   ) {
-    combineLatest(
-      store.pipe(select(Selectors.getReplicationStatus)),
-      store.pipe(select(Selectors.getCurrentTab)),
+    this.globalActions = new GlobalActions(store);
+  }
+
+  ngOnInit(): void {
+    const subscription = combineLatest(
+      this.store.select(Selectors.getReplicationStatus),
+      this.store.select(Selectors.getCurrentTab),
     ).subscribe(([
       replicationStatus,
       currentTab
@@ -49,11 +56,8 @@ export class HeaderComponent implements OnInit {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
     });
+    this.subscription.add(subscription);
 
-    this.globalActions = new GlobalActions(store);
-  }
-
-  ngOnInit(): void {
     this.settingsService.get().then(settings => {
       const tabs = this.headerTabsService.get(settings);
       return Promise.all(tabs.map(tab => this.authService.has(tab.permissions))).then(results => {
@@ -61,6 +65,10 @@ export class HeaderComponent implements OnInit {
         this.globalActions.setMinimalTabs(this.permittedTabs.length > 3);
       });
     });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   openGuidedSetup() {

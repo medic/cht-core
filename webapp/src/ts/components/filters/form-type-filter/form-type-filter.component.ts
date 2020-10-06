@@ -32,7 +32,7 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   ngOnInit() {
     const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getForms)),
+      this.store.select(Selectors.getForms),
     ).subscribe(([
       forms,
     ]) => {

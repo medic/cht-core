@@ -1,17 +1,19 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import { Store, select } from '@ngrx/store';
-import {combineLatest} from 'rxjs';
-import {TranslateService} from '@ngx-translate/core';
-import {DbService} from '../../services/db.service';
-import {ResourceIconsService} from '../../services/resource-icons.service';
-import {Selectors} from "../../selectors";
-import {SessionService} from "../../services/session.service";
-import {VersionService} from "../../services/version.service";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { combineLatest, Subscription } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+
+import { DbService } from '@mm-services/db.service';
+import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { Selectors } from '@mm-selectors/index';
+import { SessionService } from "@mm-services/session.service";
+import { VersionService } from '@mm-services/version.service';
 
 @Component({
   templateUrl: './about.component.html'
 })
 export class AboutComponent implements OnInit, OnDestroy {
+  private subscription: Subscription = new Subscription();
   private dataUsageUpdate;
 
   userCtx;
@@ -33,16 +35,18 @@ export class AboutComponent implements OnInit, OnDestroy {
     private versionService: VersionService,
     private translateService: TranslateService,
   ) {
-    combineLatest(
-      this.store.pipe(select(Selectors.getReplicationStatus)),
-      this.store.pipe(select(Selectors.getAndroidAppVersion)),
+  }
+
+  ngOnInit() {
+    const reduxSubscription = combineLatest(
+      this.store.select(Selectors.getReplicationStatus),
+      this.store.select(Selectors.getAndroidAppVersion),
     ).subscribe(([ replicationStatus, androidAppVersion ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
     });
-  }
+    this.subscription.add(reduxSubscription);
 
-  ngOnInit() {
     this.userCtx = this.sessionService.userCtx();
     this.resourceIconsService.getDocResources('partners').then(partners => {
       this.partners = partners;
@@ -83,6 +87,7 @@ export class AboutComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     clearInterval(this.dataUsageUpdate);
+    this.subscription.unsubscribe();
   }
 
   private updateAndroidDataUsage() {

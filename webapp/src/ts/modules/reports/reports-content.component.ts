@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ChangesService } from '../../services/changes.service';
-import { combineLatest, Subscription } from 'rxjs';
-import {Selectors} from '../../selectors';
-import {GlobalActions} from '../../actions/global';
-import {ReportsActions} from '../../actions/reports';
-import { select, Store } from '@ngrx/store';
 import * as _ from 'lodash-es';
+import { Store } from '@ngrx/store';
+import { combineLatest, Subscription } from 'rxjs';
+
+import { Selectors } from '@mm-selectors/index';
+import { GlobalActions } from '@mm-actions/global';
+import { ReportsActions } from '@mm-actions/reports';
+import { ChangesService } from '@mm-services/changes.service';
+
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -27,10 +29,15 @@ export class ReportsContentComponent implements OnInit {
     private changesService:ChangesService,
     private store:Store,
   ) {
-    const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getSelectedReports)),
-      this.store.pipe(select(Selectors.getForms)),
-      this.store.pipe(select(Selectors.getLoadingContent)),
+    this.globalActions = new GlobalActions(store);
+    this.reportsActions = new ReportsActions(store);
+  }
+
+  ngOnInit() {
+    const reduxSubscription = combineLatest(
+      this.store.select(Selectors.getSelectedReports),
+      this.store.select(Selectors.getForms),
+      this.store.select(Selectors.getLoadingContent),
     ).subscribe(([
       selectedReports,
       forms,
@@ -40,14 +47,9 @@ export class ReportsContentComponent implements OnInit {
       this.loadingContent = loadingContent;
       this.forms = forms;
     });
-    this.subscription.add(subscription);
+    this.subscription.add(reduxSubscription);
 
-    this.globalActions = new GlobalActions(store);
-    this.reportsActions = new ReportsActions(store);
-  }
-
-  ngOnInit() {
-    const subscription = this.changesService.subscribe({
+    const changesSubscription = this.changesService.subscribe({
       key: 'reports-content',
       filter: (change) => {
         return this.selectedReports &&
@@ -80,7 +82,7 @@ export class ReportsContentComponent implements OnInit {
         }
       }
     });
-    this.subscription.add(subscription);
+    this.subscription.add(changesSubscription);
   }
 
   trackByFn(index, item) {

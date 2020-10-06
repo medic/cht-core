@@ -52,14 +52,19 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private searchService:SearchService,
     private translateService:TranslateService,
   ) {
-    const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getReportsList)),
+    this.globalActions = new GlobalActions(store);
+    this.reportsActions = new ReportsActions(store);
+    this.servicesActions = new ServicesActions(store);
+  }
 
-      this.store.pipe(select(Selectors.getSelectedReports)),
-      this.store.pipe(select(Selectors.listContains)),
-      this.store.pipe(select(Selectors.getForms)),
-      this.store.pipe(select(Selectors.getFilters)),
-      this.store.pipe(select(Selectors.getShowContent))
+  ngOnInit() {
+    const reduxSubscription = combineLatest(
+      this.store.select(Selectors.getReportsList),
+      this.store.select(Selectors.getSelectedReports),
+      this.store.select(Selectors.listContains),
+      this.store.select(Selectors.getForms),
+      this.store.select(Selectors.getFilters),
+      this.store.select(Selectors.getShowContent)
     ).subscribe(([
       reportsList,
       selectedReports,
@@ -75,15 +80,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.filters = filters;
       this.showContent = showContent;
     });
-    this.subscription.add(subscription);
+    this.subscription.add(reduxSubscription);
 
-    this.globalActions = new GlobalActions(store);
-    this.reportsActions = new ReportsActions(store);
-    this.servicesActions = new ServicesActions(store);
-  }
-
-  ngOnInit() {
-    const subscription = this.changesService.subscribe({
+    const dbSubscription = this.changesService.subscribe({
       key: 'reports-list',
       callback: (change) => {
         if (change.deleted) {
@@ -98,7 +97,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         return change.doc && change.doc.form || this.listContains(change.id);
       },
     });
-    this.subscription.add(subscription);
+    this.subscription.add(dbSubscription);
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
     this.error = false;
@@ -152,7 +151,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.error = false;
       this.errorSyntax = false;
       this.loading = true;
-      if (this.selectedReports.length && isMobile()) {
+      if (this.selectedReports?.length && isMobile()) {
         // ctrl.unsetSelected(); todo
       }
 
