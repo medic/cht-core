@@ -5,10 +5,11 @@ import { DbService } from './db.service';
 import { FormatDateService } from './format-date.service';
 import { LanguageService } from './language.service';
 import { SettingsService } from './settings.service';
+import { TranslateLocaleService} from '@mm-services/translate-locale.service';
 
-const messages = require('@medic/message-utils');
-const lineageFactory = require('@medic/lineage');
-const registrationUtils = require('@medic/registration-utils');
+import * as messages from '@medic/message-utils';
+import * as lineageFactory from '@medic/lineage';
+import * as registrationUtils from '@medic/registration-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +21,7 @@ export class FormatDataRecordService {
     private formatDateService:FormatDateService,
     private languageService:LanguageService,
     private settingsService:SettingsService,
+    private translateLocaleService:TranslateLocaleService,
   ) {
   }
 
@@ -288,13 +290,14 @@ export class FormatDataRecordService {
     if (_.isObject(key)) {
       return this.getMessage(settings, key, locale) || key;
     }
-    const interpolation = skipInterpolation ? 'no-interpolation' : null;
+
+
     // NB: The 5th parameter must be explicitly null to disable sanitization.
     // The result will be sanitized by angular when it's rendered, so using
     // the default sanitization would result in double encoding.
     // Issue: medic/medic#4618
-    // TODO fix this
-    return this.translateService.instant(key, ctx);
+    // TODO check if sanitization is still in issue!!
+    return this.translateLocaleService.instant(key, ctx, locale, skipInterpolation);
     //return this.translateService.instant(key, ctx, interpolation, locale, null);
   }
 
@@ -555,7 +558,7 @@ export class FormatDataRecordService {
         // backwards compatibility
         copy.messages = messages.generate(
           settings,
-          (key, locale?) => this.translate.bind(this, settings, key, locale, null, true),
+          (key, locale?) => this.translate(settings, key, locale, null, true),
           doc,
           content,
           task.recipient,

@@ -24,8 +24,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private globalActions;
   private reportsActions;
   private servicesActions;
-
   private listContains;
+  private getIsSelected;
 
   reportsList;
   filteredReportsList;
@@ -64,7 +64,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.listContains),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getFilters),
-      this.store.select(Selectors.getShowContent)
+      this.store.select(Selectors.getShowContent),
     ).subscribe(([
       reportsList,
       selectedReports,
@@ -221,6 +221,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     return this.query(force);
+  }
+
+  isSelected(report) {
+    return this.selectedReports.find(selected => selected._id === report._id);
   }
 }
 /*

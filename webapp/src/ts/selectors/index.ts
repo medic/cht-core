@@ -29,8 +29,8 @@ export const Selectors = {
     return (id) => reportsState.reportsById.has(id);
   }),
   getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selected),
-  getSelectedReportsSummaries: createSelector(getReportsState, (state) => {
-    return state.selected?.map(item => item.formatted || item.summary);
+  getSelectedReportsSummaries: createSelector(getReportsState, (reportsState) => {
+    return reportsState.selected?.map(item => item.formatted || item.summary);
   }),
 
   // messages

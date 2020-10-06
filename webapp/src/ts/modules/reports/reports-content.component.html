@@ -34,21 +34,21 @@
             </span>
           </div>
 
-          <!--<div *ngIf="summaries[$index].subject.type" class="subject">
-              <a class="name" *ngIf="summaries[$index].subject._id || summaries[$index].fields.patient_uuid" ui-sref="contacts.detail({ id: summaries[$index].subject._id || summaries[$index].fields.patient_uuid })"
-                ng-bind="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
+          <div *ngIf="summaries[$index].subject?.type" class="subject">
+              <a class="name" *ngIf="summaries[$index].subject._id || summaries[$index].fields?.patient_uuid" routerLink="contacts.detail({ id: summaries[$index].subject._id || summaries[$index].fields.patient_uuid })"
+                [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
               </a>
-              <span class="name" *ngIf="!summaries[$index].subject._id && !summaries[$index].fields.patient_uuid"
-                ng-bind="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
+              <span class="name" *ngIf="!summaries[$index].subject._id && !summaries[$index].fields?.patient_uuid"
+                [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
               </span>
-          </div>-->
-          <!--<mm-sender *ngIf="!summaries[$index].subject.type" message="selection" hide-lineage="true"></mm-sender>-->
+          </div>
+          <mm-sender *ngIf="!summaries[$index].subject?.type" message="selection" hide-lineage="true"></mm-sender>
           <div>{{summaries[$index] | title:forms}}</div>
           <div class="position small-font"
                *ngIf="summaries[$index].subject?.lineage || selection.lineage || selection.contact?.parent || selection.place || (!selection.form && selection.name)"
                [innerHTML]="summaries[$index].subject?.lineage || selection.lineage || selection.contact?.parent || selection.place | lineage">
           </div>
-          <!--<mm-sender *ngIf="summaries[$index].subject.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>-->
+          <mm-sender *ngIf="summaries[$index].subject?.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>
           <div class="time small-font" [innerHTML]="summaries[$index].reported_date | relativeDate"></div>
         </div>
       </div>
@@ -71,7 +71,7 @@
                 <span *ngIf="field.target && field.target.url"><a routerLink="{{field.target.url.route}}({{field.target.url.params}})">{{field.value}}</a></span>
                 <span *ngIf="!field.target">{{field.value}}</span>
               </p>
-              <!--<report-image *ngIf="field.imagePath" report="{{selection.formatted._id}}" path="{{field.imagePath}}"></report-image>-->
+              <report-image *ngIf="field.imagePath" [report]="selection.formatted?._id" [path]="field.imagePath"></report-image>
             </li>
           </ng-container>
 
@@ -93,7 +93,7 @@
             <ul class="task-list">
               <li *ngFor="let task of selection.formatted.tasks">
                 <ul>
-                  <li *ngFor="let message od task.messages">
+                  <li *ngFor="let message of task.messages">
                     <p>{{selection.formatted.kujua_message ? message.to : message.message}}</p>
                   </li>
                 </ul>

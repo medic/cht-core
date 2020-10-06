@@ -19,6 +19,8 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
+import { SenderComponent } from '@mm-components/sender/sender.component';
+import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +36,8 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
     StatusFilterComponent,
     FreetextFilterComponent,
     ResetFiltersComponent,
+    SenderComponent,
+    ReportImageComponent,
   ],
   imports: [
     CommonModule,
@@ -56,6 +60,8 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
     StatusFilterComponent,
     FreetextFilterComponent,
     ResetFiltersComponent,
+    SenderComponent,
+    ReportImageComponent,
   ]
 })
 export class ComponentsModule { }

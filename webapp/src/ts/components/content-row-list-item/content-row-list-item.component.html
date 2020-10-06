@@ -39,7 +39,7 @@
             <report-verify-valid-icon *ngIf="valid && verified"></report-verify-valid-icon>
             <report-verify-invalid-icon *ngIf="!(valid && verified)"></report-verify-invalid-icon>
           </span>
-          <!--<span [class.verified]="valid && verified" [class.error]="!valid || !verified" class="verification-badge" [innerHTML]="statusIcon"></span>-->
+          <span [class.verified]="valid && verified" [class.error]="!valid || !verified" class="verification-badge" [innerHTML]="statusIcon"></span>
         </div>
         <div *ngIf="visits" class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
           <span>{{visits.summary}}</span>
