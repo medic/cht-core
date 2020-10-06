@@ -28,6 +28,7 @@
           [statusIcon]="report.statusIcon"
           [lineage]="report.lineage"
           [unread]="!report.read"
+          [selected]="isSelected(report)"
         >
         </mm-content-row>
       </ul>
