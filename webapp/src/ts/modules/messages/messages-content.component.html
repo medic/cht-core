@@ -33,13 +33,13 @@
                   </p>
 
                   <!-- outgoing message -->
-                  <span class="task-state" *ngIf="message.doc?.kujua_message" [innerHTML]="message.doc?.tasks[0] | state"></span>
+                  <span class="task-state" *ngIf="message.doc?.kujua_message" [innerHTML]="(message.doc?.tasks[0] | state) | async"></span>
 
                   <!-- incoming message -->
-                  <span class="task-state" *ngIf="!message.doc?.kujua_message" [innerHTML]="message.doc | state"></span>
+                  <span class="task-state" *ngIf="!message.doc?.kujua_message" [innerHTML]="(message.doc | state) | async"></span>
 
                   <!-- incoming message autoreply -->
-                  <span class="task-state" *ngIf="!message.doc?.kujua_message && message.doc?.tasks[0]" [innerHTML]="message.doc?.tasks[0] | autoreply"></span>
+                  <span class="task-state" *ngIf="!message.doc?.kujua_message && message.doc?.tasks[0]" [innerHTML]="(message.doc?.tasks[0] | autoreply) | async"></span>
                 </div>
 
                 <div class="actions">
