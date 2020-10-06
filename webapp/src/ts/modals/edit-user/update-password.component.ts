@@ -48,7 +48,7 @@ export class UpdatePasswordComponent extends EditUserAbstract {
         .toPromise()
         .then(() => {
           this.setFinished();
-          window.location.reload(true);
+          this.windowReload();
         })
         .catch(err => {
           if (err.status === 0) { //Offline Status
@@ -68,6 +68,10 @@ export class UpdatePasswordComponent extends EditUserAbstract {
     } else {
       this.setError();
     }
+  }
+
+  private windowReload() {
+    window.location.reload(true);
   }
 
   private validatePasswordFields() {

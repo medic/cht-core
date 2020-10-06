@@ -1,9 +1,9 @@
-import {Component} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {EditUserAbstract} from "./edit-user.component";
 import {BsModalRef} from "ngx-bootstrap/modal";
 import {UserSettingsService} from "@mm-services/user-settings.service";
 import {UpdateUserService} from "@mm-services/update-user.service";
-//import {LanguagesService} from "@mm-services/languages.service";
+import {LanguagesService} from "@mm-services/languages.service";
 
 @Component({
   selector: 'update-password',
@@ -11,7 +11,7 @@ import {UpdateUserService} from "@mm-services/update-user.service";
 })
 export class EditUserSettingsComponent extends EditUserAbstract {
 
-  editUserModel: {
+  @Input() editUserModel: {
     id?,
     fullname?,
     username?,
@@ -31,21 +31,20 @@ export class EditUserSettingsComponent extends EditUserAbstract {
     bsModalRef: BsModalRef,
     userSettingsService: UserSettingsService,
     private updateUserService: UpdateUserService,
-    //private languagesService: LanguagesService,
+    private languagesService: LanguagesService,
   ) {
     super(bsModalRef, userSettingsService);
-    //TODO wait LanguagesService merge
-    // this.languagesService.get().then((languages) => {
-    //   this.enabledLocales = languages;
-    // });
+    this.languagesService.get().then((languages) => {
+      this.enabledLocales = languages;
+    });
   }
 
-  editUserSettings() {
+  editUserSettings(): Promise<void> {
     this.setProcessing();
     this.errors = {};
     this.computeFields();
 
-    this.changedUpdates(this.editUserModel).then((updates: any) => {
+    return this.changedUpdates(this.editUserModel).then((updates: any) => {
       Promise.resolve().then(() => {
         if (this.haveUpdates(updates)) {
           return this.updateUserService.update(

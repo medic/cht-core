@@ -36,7 +36,7 @@ export class UpdateUserService {
       headers.Authorization = 'Basic ' + window.btoa(basicAuthUser + ':' + basicAuthPass);
     }
 
-    console.debug('UpdateUser', url, updates);
+    console.debug('UpdateUserService', url, updates);
 
     return this.http.post(url, updates || {}, {headers});
   }
