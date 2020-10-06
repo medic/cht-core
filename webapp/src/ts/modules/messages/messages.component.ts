@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
+import { Router } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -18,21 +19,17 @@ export class MessagesComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
 
   loading = false;
-  loadingContent;
+  loadingContent = false;
   conversations = [];
   selectedConversation;
-  error;
+  error = false;
 
   constructor(
+    private router: Router,
     private store: Store,
     private changesService: ChangesService,
     private messageContactService: MessageContactService
   ) {
-    this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store, this.globalActions);
-  }
-
-  ngOnInit(): void {
     const selectorsSubscription = combineLatest(
       this.store.pipe(select(Selectors.getConversations)),
       this.store.pipe(select(Selectors.getSelectedConversation)),
@@ -53,13 +50,28 @@ export class MessagesComponent implements OnInit, OnDestroy {
       this.error = error;
     });
     this.subscriptions.add(selectorsSubscription);
+    this.globalActions = new GlobalActions(store);
+    this.messagesActions = new MessagesActions(store, this.globalActions);
+  }
 
-    this.updateConversations();
+  ngOnInit(): void {
+    this.updateConversations()
+      .then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  private displayFirstConversation(conversations = []) {
+    const parts = this.router.url.split('/');
+    const lastPart = parts[parts.length - 1];
+    const [type, id] = lastPart ? lastPart.split(':') : [];
+
+    if ((!type || !id) && conversations.length) {
+      this.router.navigate(['/messages', `${conversations[0].type}:${conversations[0].key}`]);
+    }
   }
 
   private watchForChanges() {

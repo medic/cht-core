@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -27,7 +27,7 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
   selector: 'messages-content',
   templateUrl: './messages-content.component.html'
 })
-export class MessagesContentComponent implements OnInit, OnDestroy, AfterContentInit {
+export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit {
   private userCtx;
   private globalActions: GlobalActions;
   private messagesActions: MessagesActions;
@@ -38,7 +38,6 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
   firstUnread;
   send = { message: '' };
   allLoaded = false;
-  // _testSelect; // See URL param "id" note at top of file. Promise exposed solely for testing purposes
   urlParameters = { type: '', id: '' };
   subscriptions: Subscription = new Subscription();
   textAreaFocused = false;
@@ -54,11 +53,6 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
     private sendMessageService: SendMessageService,
     private modalService: ModalService,
   ) {
-    this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store, this.globalActions);
-  }
-
-  ngOnInit(): void {
     const selectorsSubscription = combineLatest(
       this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getLoadingContent)),
@@ -68,21 +62,26 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
     });
     this.subscriptions.add(selectorsSubscription);
 
+    this.globalActions = new GlobalActions(store);
+    this.messagesActions = new MessagesActions(store, this.globalActions);
+  }
+
+  ngOnInit(): void {
+    this.userCtx = this.sessionService.userCtx();
+    this.watchForChanges();
+  }
+
+  ngAfterViewInit(): void {
     const routeSubscription = this.route.params.subscribe(params => {
       const [type, id] = params.type_id ? params.type_id.split(':') : [];
       this.urlParameters.type = type;
       this.urlParameters.id = id;
       this.send.message = '';
-      // See URL param "id" note at top of file.
-      this.selectContact(this.urlParameters.id, this.urlParameters.type);
+      // Setting Timeout to select contact right after all the initialization hooks of Angular are done.
+      setTimeout(() => this.selectContact(this.urlParameters.id, this.urlParameters.type));
     });
     this.subscriptions.add(routeSubscription);
 
-    this.userCtx = this.sessionService.userCtx();
-    this.watchForChanges();
-  }
-
-  ngAfterContentInit(): void {
     // Ensuring that any Bootstrap tooltip is removed when loading new conversation.
     $('.tooltip').remove();
     $('body')
@@ -156,6 +155,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterContent
   }
 
   private selectContact(id, type) {
+    // See URL param "id" note at top of file.
     if (!id) {
       this.messagesActions.setMessagesError(false);
       this.globalActions.setLoadingContent(false);
