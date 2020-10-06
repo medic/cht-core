@@ -30,7 +30,6 @@ module.exports = {
     changeLocale(locale);
     getLoginButton().click();
     browser.waitForAngular();
-    browser.sleep(200);//seems to be failing here...maybe local browser slow
     if (shouldFail) {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }

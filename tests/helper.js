@@ -20,19 +20,10 @@ function handleUpdateModal() {
     $('body').sendKeys(protractor.Key.ENTER);
   }
 }
-function waitForLoaderToDisappear() {
-  try {
-    waitElementToDisappear(by.css('.loader'));
-  } catch (err) {
-    // element can go stale
-  }
-}
 
 module.exports = {
-  waitForLoaderToDisappear,
   clickElement: element => {
     handleUpdateModal();
-    waitForLoaderToDisappear();
     return browser
       .wait(
         EC.elementToBeClickable(element),
