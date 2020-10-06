@@ -14,7 +14,7 @@ import { ReportsContentComponent } from './reports/reports-content.component';
 import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
-import { PeopleComponent } from './people/people.component';
+import { ContactsComponent } from './contacts/contacts.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +24,7 @@ import { PeopleComponent } from './people/people.component';
     ReportsComponent,
     ReportsContentComponent,
     MessagesComponent,
-    PeopleComponent,
+    ContactsComponent,
     ReportsFiltersComponent,
   ],
   imports: [
@@ -42,7 +42,7 @@ import { PeopleComponent } from './people/people.component';
     ReportsComponent,
     ReportsContentComponent,
     MessagesComponent,
-    PeopleComponent,
+    ContactsComponent,
   ]
 })
 export class ModulesModule { }
