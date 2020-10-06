@@ -23,9 +23,13 @@ export class TranslateLocaleService {
   // todo Create issue about the use of "instant" without pre-loading translations
   // this issue existed before the migration to AngularX
   instant(key, params, locale, skipInterpolation = false) {
+    console.log(JSON.parse(JSON.stringify(this.translateService.translations)));
     if (!this.translateService.translations[locale]) {
-      this.getTranslation(locale);
+      this.getTranslation(locale).subscribe(() => {
+        console.log(...this.translateService.translations);
+      });
     }
+
 
     if (skipInterpolation) {
       return this.translateService.translations[locale] && this.translateService.translations[locale][key];
