@@ -10,8 +10,14 @@ const db = require('./db');
 const environment = require('./environment');
 const logger = require('./logger');
 
+const extractableFolders = ['audio', 'fonts', 'default-docs','img'];
+// todo the build process can be improved (maybe?) to have "build" files nicely packed into one folder so
+// we won't need to match extensions
+const extractableExtensions = ['.js', '.css', '.eot', '.svg', '.woff', '.woff2', '.html', '.js.map'];
 const isAttachmentExtractable = name => {
-  return !name.startsWith('ddoc');
+  return name === 'manifest.json' ||
+         extractableFolders.some(prefix => name.startsWith(`${prefix}/`)) ||
+         extractableExtensions.some(suffix => name.endsWith(suffix));
 };
 
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents

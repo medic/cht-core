@@ -11,9 +11,6 @@ window.$ = window.jQuery = require('jquery');
 //window.d3 = require('d3');
 
 //import * as Select2 from '../../node_modules/select2/dist/js/select2.full';
-//require('bootstrap');
-//require('./bootstrap-multidropdown');
-//require('bootstrap-daterangepicker');
 //require('nvd3');
 
 import { enableProdMode } from '@angular/core';
@@ -24,6 +21,8 @@ import { environment } from './environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from './bootstrapper';
+
+require('select2');
 
 //const KARMA_UNIT_TEST_PORT = '9876';
 

@@ -7,7 +7,7 @@ export const routes: Routes = [
   {
     path: 'messages',
     component: MessagesComponent,
-    data: {permissions: ['can_view_messages']},
+    data: { permissions: ['can_view_messages'], tab: 'messages'},
     canActivate: [RouteGuardProvider],
   },
 ];

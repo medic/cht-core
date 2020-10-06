@@ -1,4 +1,4 @@
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
+import { ActivationEnd, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
 import { Component } from '@angular/core';
 import { Store, select } from '@ngrx/store';
@@ -90,10 +90,10 @@ export class AppComponent {
     private translateFromService:TranslateFromService,
   ) {
     combineLatest(
-      store.pipe(select(Selectors.getReplicationStatus)),
-      store.pipe(select(Selectors.getAndroidAppVersion)),
-      store.pipe(select(Selectors.getCurrentTab)),
-      store.pipe(select(Selectors.getMinimalTabs)),
+      store.select(Selectors.getReplicationStatus),
+      store.select(Selectors.getAndroidAppVersion),
+      store.select(Selectors.getCurrentTab),
+      store.select(Selectors.getMinimalTabs),
     )
       .subscribe(([
         replicationStatus,
@@ -109,7 +109,6 @@ export class AppComponent {
 
     this.globalActions = new GlobalActions(store);
 
-
     moment.locale(['en']);
     this.formatDateService.init();
 
@@ -119,13 +118,13 @@ export class AppComponent {
 
     this.setupRouter();
     this.loadTranslations();
+    this.setupDb();
   }
 
   private setupRouter() {
     this.router.events.subscribe((event:RouterEvent) => {
-      console.log(event);
-      if (event instanceof NavigationEnd) {
-        return this.globalActions.setCurrentTab((event.urlAfterRedirects || event.url).split('/')[1]);
+      if (event instanceof ActivationEnd) {
+        return this.globalActions.setCurrentTab(event.snapshot.data.tab);
       }
     });
   }
@@ -138,7 +137,6 @@ export class AppComponent {
   }
 
   private setupDb() {
-
     this.globalActions.updateReplicationStatus({
       disabled: false,
       lastTrigger: undefined,
@@ -224,9 +222,10 @@ export class AppComponent {
       this.canLogOut = true;
     }
 
-
     this.setupPromise = this.sessionService.init();
     this.feedbackService.init();
+
+    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
 
     this.changesService.subscribe({
       key: 'branding-icon',
@@ -295,7 +294,7 @@ export class AppComponent {
     this.initForms();
   }
 
-  private initForms(){
+  private initForms() {
     /**
     * Translates using the key if truthy using the old style label
     * array as a fallback.
@@ -368,7 +367,7 @@ export class AppComponent {
      });*/
   };
 
-  private showUpdateReady () {
+  private showUpdateReady() {
     const TWO_HOURS = 2 * 60 * 60 * 1000;
     this.modalService.show(ReloadingComponent, {}, () => {
       console.debug('Delaying update');
@@ -379,6 +378,7 @@ export class AppComponent {
     //closeDropdowns();
   };
 }
+
 
 /*(function() {
   'use strict';
