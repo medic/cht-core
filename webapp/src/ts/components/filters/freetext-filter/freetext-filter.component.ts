@@ -42,7 +42,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   ngOnInit() {
     const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getCurrentTab)),
+      this.store.select(Selectors.getCurrentTab),
     ).subscribe(([
       currentTab,
     ]) => {

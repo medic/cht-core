@@ -39,7 +39,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   ngOnInit() {
     const subscription = combineLatest(
-      this.store.pipe(select(Selectors.getIsAdmin)),
+      this.store.select(Selectors.getIsAdmin),
     ).subscribe(([
       isAdmin,
     ]) => {
