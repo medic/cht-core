@@ -1,4 +1,4 @@
-import { Store } from '@ngrx/store';
+import { Store, createAction } from '@ngrx/store';
 
 import { createSingleValueAction } from './actionUtils';
 import { GlobalActions } from '@mm-actions/global';
@@ -10,7 +10,7 @@ export const Actions = {
 
   removeMessageFromSelectedConversation: createSingleValueAction('REMOVE_MESSAGE_FROM_SELECTED_CONVERSATION', 'id'),
   updateSelectedConversation: createSingleValueAction('UPDATE_SELECTED_CONVERSATION', 'selected'),
-  markSelectedConversationRead: createSingleValueAction('MARK_SELECTED_CONVERSATION_READ', ''),
+  markSelectedConversationRead: createAction('MARK_SELECTED_CONVERSATION_READ'),
 };
 
 export class MessagesActions {
@@ -45,6 +45,6 @@ export class MessagesActions {
   }
 
   markSelectedConversationRead() {
-    return this.store.dispatch(Actions.markSelectedConversationRead(''));
+    return this.store.dispatch(Actions.markSelectedConversationRead());
   }
 }

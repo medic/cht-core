@@ -1,7 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -23,6 +25,8 @@ describe('Form Type Filter Component', () => {
     TestBed
       .configureTestingModule({
         imports: [
+          BrowserAnimationsModule,
+          BsDropdownModule.forRoot(),
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           FormsModule,

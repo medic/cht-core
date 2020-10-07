@@ -30,7 +30,7 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit {
   private userCtx;
   private globalActions: GlobalActions;
-  private messagesActions: MessagesActions;
+  messagesActions: MessagesActions;
 
   loadingContent;
   loadingMoreContent = false;
@@ -141,6 +141,10 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   private markConversationReadIfNeeded() {
+    if (!this.selectedConversation) {
+      return;
+    }
+
     const hasUnreadDoc = this.selectedConversation.messages.some(message => !message.read && message.doc);
 
     if (hasUnreadDoc) {
@@ -154,7 +158,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     }
   }
 
-  private selectContact(id, type) {
+  selectContact(id, type) {
     // See URL param "id" note at top of file.
     if (!id) {
       this.messagesActions.setMessagesError(false);

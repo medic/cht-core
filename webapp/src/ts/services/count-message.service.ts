@@ -27,7 +27,7 @@ export class CountMessageService {
      };
   }
 
-  private label(value, many) {
+  label(value, many) {
     const count = this.calculate(value);
     let key = 'message.characters.left';
 

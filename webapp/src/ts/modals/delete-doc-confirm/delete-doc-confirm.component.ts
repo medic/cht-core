@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import * as LineageFactory from '@medic/lineage';
 import { TranslateService } from '@ngx-translate/core';
+import { Store } from '@ngrx/store';
 
 import { DbService } from '@mm-services/db.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
-import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'delete-doc-confirm',
@@ -46,7 +46,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
       .put(doc)
       .then(() => {
         const text = this.translateService.instant('document.deleted');
-        this.globalActions.setSnackbarContent(text); // ToDo test!!!!
+        this.globalActions.setSnackbarContent(text);
         this.close();
       })
       .catch((err) => this.setError(err, 'Error deleting document'));

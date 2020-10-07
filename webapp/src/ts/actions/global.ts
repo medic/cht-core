@@ -20,7 +20,7 @@ export const Actions = {
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
   setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
-  clearSelected: createSingleValueAction('CLEAR_SELECTED', ''),
+  clearSelected: createAction('CLEAR_SELECTED'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
 }
 
@@ -118,7 +118,7 @@ export class GlobalActions {
    * Warning! Use carefully because more than one reducer might be listening to this global action.
    */
   clearSelected() {
-    return this.store.dispatch(Actions.clearSelected(''));
+    return this.store.dispatch(Actions.clearSelected());
   }
 
   unsetSelected() {
