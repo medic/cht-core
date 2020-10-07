@@ -92,10 +92,10 @@ export class AppComponent {
     private countMessageService: CountMessageService
   ) {
     combineLatest(
-      store.pipe(select(Selectors.getReplicationStatus)),
-      store.pipe(select(Selectors.getAndroidAppVersion)),
-      store.pipe(select(Selectors.getCurrentTab)),
-      store.pipe(select(Selectors.getMinimalTabs)),
+      store.select(Selectors.getReplicationStatus),
+      store.select(Selectors.getAndroidAppVersion),
+      store.select(Selectors.getCurrentTab),
+      store.select(Selectors.getMinimalTabs),
     )
       .subscribe(([
         replicationStatus,

@@ -11,7 +11,10 @@ import { CookieModule } from 'ngx-cookie';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { EffectsModule } from '@ngrx/effects';
+import * as _ from 'lodash-es';
+_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 import { environment } from './environments/environment';
 
@@ -26,7 +29,7 @@ import { TranslationLoaderProvider } from './providers/translation-loader.provid
 import { DbService } from './services/db.service';
 import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
-
+import { GlobalEffects } from '@mm-effects/global';
 import { reducers } from "./reducers";
 
 const logger = reducer => {
@@ -40,10 +43,6 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     return params.key;
   }
 }
-
-import * as _ from 'lodash-es';
-import { GlobalEffects } from '@mm-effects/global';
-_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 @NgModule({
   declarations: [
@@ -76,6 +75,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
+    AccordionModule.forRoot(),
     EffectsModule.forRoot([ GlobalEffects ])
   ],
   providers: [
