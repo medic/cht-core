@@ -15,7 +15,9 @@ export class ConfigurationUserComponent {
   constructor(
     private modalService: ModalService,
     private userSettingsService: UserSettingsService,
-  ) {
+  ) { }
+
+  ngOnInit() {
     this.loading = true;
     this.userSettingsService.get().then(user => {
       this.loading = false;
