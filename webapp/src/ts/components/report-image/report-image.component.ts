@@ -1,10 +1,13 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { SecurityContext } from '@angular/core';
 
 import { DbService } from '../../services/db.service';
 
+
 @Component({
   selector: 'report-image',
-  template: '<div class="loader"></div>'
+  templateUrl: './report-image.component.html'
 })
 export class ReportImageComponent implements OnInit, OnDestroy {
   @Input() report;
@@ -15,16 +18,20 @@ export class ReportImageComponent implements OnInit, OnDestroy {
 
   constructor(
     private dbService:DbService,
+    private domSanitizer:DomSanitizer,
   ) {
-    this.loading = true;
   }
 
   ngOnInit() {
+    this.loading = true;
     return this.dbService
       .get()
       .getAttachment(this.report, this.path)
       .then(blob => {
-        this.objectUrl = (window.URL || window.webkitURL).createObjectURL(blob);
+        this.loading = false;
+        const unsafeBlob = (window.URL || window.webkitURL).createObjectURL(blob);
+        //this.objectUrl = this.domSanitizer.sanitize(SecurityContext.RESOURCE_URL, unsafeBlob);
+        this.objectUrl = this.domSanitizer.bypassSecurityTrustUrl(unsafeBlob);
       });
   }
 

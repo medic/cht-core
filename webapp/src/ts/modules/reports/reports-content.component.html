@@ -42,13 +42,13 @@
                 [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
               </span>
           </div>
-          <mm-sender *ngIf="!summaries[$index].subject?.type" message="selection" hide-lineage="true"></mm-sender>
+          <mm-sender *ngIf="!summaries[$index].subject?.type" [message]="selection" [hideLineage]="true"></mm-sender>
           <div>{{summaries[$index] | title:forms}}</div>
           <div class="position small-font"
                *ngIf="summaries[$index].subject?.lineage || selection.lineage || selection.contact?.parent || selection.place || (!selection.form && selection.name)"
                [innerHTML]="summaries[$index].subject?.lineage || selection.lineage || selection.contact?.parent || selection.place | lineage">
           </div>
-          <mm-sender *ngIf="summaries[$index].subject?.type" message="selection" hide-lineage="true" sent-by="true"></mm-sender>
+          <mm-sender *ngIf="summaries[$index].subject?.type" [message]="selection" [hideLineage]="true" [sentBy]="true"></mm-sender>
           <div class="time small-font" [innerHTML]="summaries[$index].reported_date | relativeDate"></div>
         </div>
       </div>
