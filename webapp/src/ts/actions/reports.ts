@@ -14,6 +14,7 @@ export const Actions = {
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'id'),
   setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
+  markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
@@ -99,6 +100,10 @@ export class ReportsActions {
 
   setTitle(selected) {
     return this.store.dispatch(Actions.setTitle(selected));
+  }
+
+  markReportRead(id) {
+    return this.store.dispatch(Actions.markReportRead(id));
   }
 }
 /*

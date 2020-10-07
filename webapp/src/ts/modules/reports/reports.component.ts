@@ -12,6 +12,7 @@ import { Selectors } from '../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
+import { AddReadStatusService } from '@mm-services/add-read-status.service';
 
 const PAGE_SIZE = 50;
 
@@ -51,6 +52,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
+    private addReadStatusService:AddReadStatusService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -138,7 +140,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, report) {
-    return report._id + report._rev;
+    return report._id + report._rev + report.read;
   }
 
   private query(opts) {
@@ -165,8 +167,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     return this.searchService
       .search('reports', this.filters, options)
+      .then((reports) => this.addReadStatusService.updateReports(reports))
       .then((updatedReports) => {
-        // add read status todo
         updatedReports = this.prepareReports(updatedReports);
 
         this.reportsActions.updateReportsList(updatedReports);

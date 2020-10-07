@@ -5,8 +5,8 @@ export class UniqueSortedList {
   listById;
   sortBy;
   identityProperty;
-  
-  constructor(list, listById:Set<any>, sortBy, identityProperty = '_id') {
+
+  constructor(list, listById:Map<any, any>, sortBy, identityProperty = '_id') {
     this.list = list;
     this.listById = listById;
     this.sortBy = sortBy;
@@ -21,7 +21,7 @@ export class UniqueSortedList {
     // todo this.sortBy be a function
     const idx = _sortedIndexBy(this.list, item, item => -item[this.sortBy]);
     this.list.splice(idx, 0, item);
-    this.listById.add(item[this.identityProperty]);
+    this.listById.set(item[this.identityProperty], item);
   }
 
   remove(item) {

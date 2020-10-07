@@ -1,11 +1,10 @@
 import { Actions } from '../actions/reports';
 import { createReducer, on } from '@ngrx/store';
 import { UniqueSortedList } from './utils';
-import * as _ from 'lodash-es';
 
 const initialState = {
   reports: [],
-  reportsById: new Set(),
+  reportsById: new Map(),
   selected: [],
   verifyingReport: false,
   filters: {},
@@ -13,7 +12,7 @@ const initialState = {
 
 const updateReports = (state, newReports) => {
   const reports = [...state.reports];
-  const reportsById = new Set(state.reportsById);
+  const reportsById = new Map(state.reportsById);
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
   newReports.forEach(report => {
@@ -26,7 +25,7 @@ const updateReports = (state, newReports) => {
 
 const removeReport = (state, report) => {
   const reports = [ ...state.reports];
-  const reportsById = new Set(state.reportsById);
+  const reportsById = new Map(state.reportsById);
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
   list.remove(report);
@@ -38,7 +37,7 @@ const _reportsReducer = createReducer(
   initialState,
   on(Actions.updateReportsList, (state, { payload: { reports } }) => updateReports(state, reports)),
   on(Actions.removeReportFromList, (state, { payload: { report } }) => removeReport(state, report)),
-  on(Actions.resetReportsList, (state) => ({ ...state, reports: [], reportsById: new Map })),
+  on(Actions.resetReportsList, (state) => ({ ...state, reports: [], reportsById: new Map() })),
 
   on(Actions.addSelectedReport, (state, { payload: { report } }) => {
     return {
@@ -55,8 +54,6 @@ const _reportsReducer = createReducer(
   }),
 
   on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
-
-
 );
 
 export function reportsReducer(state, action) {

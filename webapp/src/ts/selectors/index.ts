@@ -25,6 +25,16 @@ export const Selectors = {
 
   // reports
   getReportsList: createSelector(getReportsState, (reportsState) => reportsState.reports),
+  getListReport: createSelector(getReportsState, (reportsState, props:any={}) => {
+    if (!props.id) {
+      return;
+    }
+    if (!reportsState.reportsById.has(props.id)) {
+      return;
+    }
+
+    return reportsState.reportsById.get(props.id);
+  }),
   listContains: createSelector(getReportsState, (reportsState) => {
     return (id) => reportsState.reportsById.has(id);
   }),

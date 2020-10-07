@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { Actions, ofType, createEffect, act } from '@ngrx/effects';
+import { Actions, ofType, createEffect } from '@ngrx/effects';
+import { from, of } from 'rxjs';
+import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap } from 'rxjs/operators';
+
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
-import { Actions as GlobalActionList, GlobalActions } from '@mm-actions/global';
-import { combineLatest, forkJoin, from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, concatMap, tap, withLatestFrom, switchMap } from 'rxjs/operators';
+import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
+import { MarkReadService } from '@mm-services/mark-read.service';
 
 
 @Injectable()
@@ -18,6 +20,7 @@ export class ReportsEffects {
     private actions$:Actions,
     private store:Store,
     private reportViewModelGeneratorService:ReportViewModelGeneratorService,
+    private markReadService:MarkReadService,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -74,7 +77,7 @@ export class ReportsEffects {
           model.expanded = true;
           this.reportActions.setSelectedReports([model]);
           this.reportActions.setTitle(model);
-          // todo mark report as read
+          this.reportActions.markReportRead(model.doc._id);
         }
 
         this.reportActions.setRightActionBar();
@@ -92,6 +95,21 @@ export class ReportsEffects {
         const form = forms?.find(form => form.code === formInternalId);
         const name = (form && form.name) || (form && form.title) || selected.form;
         return of(this.globalActions.setTitle(name));
+      }),
+    );
+  }, { dispatch: false });
+
+  markRead = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.markReportRead),
+      concatMap(action => of(action).pipe(
+        withLatestFrom(this.store.select(Selectors.getListReport, { id: action.payload.id })),
+      )),
+      exhaustMap(([action, report]) => {
+        const readReport = { ...report };
+        readReport.read = true;
+        this.markReadService.markAsRead([report]).catch(err => console.error('Error marking read', err));
+        return of(this.reportActions.updateReportsList([readReport]));
       }),
     );
   }, { dispatch: false });
