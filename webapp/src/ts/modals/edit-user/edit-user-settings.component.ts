@@ -46,15 +46,16 @@ export class EditUserSettingsComponent extends EditUserAbstract {
     this.errors = {};
     this.computeFields();
 
-    return this.changedUpdates(this.editUserModel).then((updates: any) => {
-      Promise.resolve().then(() => {
-        if (this.haveUpdates(updates)) {
-          return this.updateUserService.update(
-            this.editUserModel.username,
-            updates
-          ).toPromise();
-        }
-      })
+    return this.changedUpdates(this.editUserModel)
+      .then((updates: any) => {
+        Promise.resolve().then(() => {
+          if (this.haveUpdates(updates)) {
+            return this.updateUserService.update(
+              this.editUserModel.username,
+              updates
+            );
+          }
+        })
         .then(() => {
           if (updates.language) {
             // editing current user, so update language

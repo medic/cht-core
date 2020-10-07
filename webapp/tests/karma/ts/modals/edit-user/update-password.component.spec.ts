@@ -21,7 +21,7 @@ describe('UpdatePasswordComponent', () => {
   let translateService: any = { get: function (key: string) {return EMPTY} };
 
   beforeEach(async(() => {
-    updateUserService.update = sinon.stub().returns(EMPTY);
+    updateUserService.update = sinon.stub().returns(Promise.resolve());
     userSettingsService.get = sinon.stub().returns(Promise.resolve(
       {
         _id: 'user123',

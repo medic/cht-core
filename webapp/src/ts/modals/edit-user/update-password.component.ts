@@ -45,7 +45,6 @@ export class UpdatePasswordComponent extends EditUserAbstract {
       const updates = { password: this.editUserModel.password };
       const username = this.editUserModel.username;
       this.updateUserService.update(username, updates, username, this.editUserModel.currentPassword)
-        .toPromise()
         .then(() => {
           this.setFinished();
           this.windowReload();

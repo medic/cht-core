@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from '@angular/common/http';
-import {Observable} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +23,7 @@ export class UpdateUserService {
    * @param      {string} [basicAuthUser]  Optional username for Basic Auth
    * @param      {string} [basicAuthPass]  Optional password for Basic Auth
    */
-  update(username, updates, basicAuthUser?, basicAuthPass?): Observable<Object> {
+  update(username, updates, basicAuthUser?, basicAuthPass?): Promise<Object> {
     const url = '/api/v1/users/' + username;
 
     const headers: any = {
@@ -38,6 +37,6 @@ export class UpdateUserService {
 
     console.debug('UpdateUserService', url, updates);
 
-    return this.http.post(url, updates || {}, {headers});
+    return this.http.post(url, updates || {}, {headers}).toPromise();
   }
 }

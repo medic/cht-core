@@ -1,7 +1,6 @@
 import sinon from 'sinon';
 import {expect} from 'chai';
 import {UpdateUserService} from '@mm-services/update-user.service';
-import {EMPTY} from 'rxjs';
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {EditUserSettingsComponent} from '@mm-modals/edit-user/edit-user-settings.component';
 import {UserSettingsService} from '@mm-services/user-settings.service';
@@ -20,7 +19,7 @@ describe('EditUserSettingsComponent', () => {
   let languagesService: any = {}
 
   beforeEach(async(() => {
-    updateUserService.update = sinon.stub().returns(EMPTY);
+    updateUserService.update = sinon.stub().returns(Promise.resolve());
     userSettingsService.get = sinon.stub().returns(Promise.resolve(
       {
         _id: 'user123',
