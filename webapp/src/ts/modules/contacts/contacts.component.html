@@ -13,7 +13,9 @@
         <mm-content-row
           *ngFor="let contact of contactsList"
           [id]="contact._id"
+          route="contacts"
           [icon]="contact.icon"
+          [heading]="contact.name"
         >
         </mm-content-row>
       </ul>

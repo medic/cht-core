@@ -11,7 +11,7 @@ const initialState = {
 };
 
 const updateContacts = (state, newContacts) => {
-  const contacts = [...state.contacts];
+  const contacts = newContacts;
   return { ...state, contacts };
 }
 

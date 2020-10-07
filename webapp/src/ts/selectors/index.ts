@@ -37,9 +37,7 @@ export const Selectors = {
   getConversations: createSelector(getMessagesState, (messagesState) => messagesState.conversations),
 
   // contacts
-  getContactsList: createSelector(getContactsState, (contactsState) => {
-    return contactsState
-  }),
+  getContactsList: createSelector(getContactsState, (contactsState) => contactsState.contacts.contacts),
 };
 /*
 
