@@ -8,13 +8,11 @@ describe('Navigation tests : ', () => {
   it('should open Messages tab', () => {
     commonElements.goToMessages();
     expect(commonElements.isAt('message-list'));
-    //expect(browser.getCurrentUrl()).toMatch(utils.getBaseUrl() + 'messages/');
   });
 
   it('should open tasks tab', () => {
     commonElements.goToTasks();
     expect(commonElements.isAt('task-list'));
-    //expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'tasks/');
   });
 
   it('should open Reports or History tab', () => {
@@ -53,6 +51,4 @@ describe('Navigation tests : ', () => {
     commonElements.openMenu();
     commonElements.checkUserSettings();
   });
-
-  //tests only for admin removed
 });
