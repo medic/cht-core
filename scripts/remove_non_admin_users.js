@@ -1,6 +1,12 @@
+/**
+ * This script will delete every user but two: the "admin" user and the "_design/_auth" user.
+ * You have been warned!
+ *
+ * Last updated 7 Oct 2020 against 3.10
+ */
+
 const https = require('https');
 const http = require('http');
-const url = require('url');
 const _ = require('underscore');
 
 let instance_url;
@@ -38,7 +44,7 @@ httpHandler.get(all_users_url, (res) => {
       const user_id = medic_user.id;
 
       if(user_id === 'org.couchdb.user:admin' || user_id === '_design/_auth'){
-        console.log('Skipping admin or _design/_auth');
+        console.log('Skipping', user_id);
       } else {
         const del_url = users_db + '/' + user_id + '?rev=' + rev_value;
         const options = url.parse(del_url);
