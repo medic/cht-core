@@ -1,13 +1,14 @@
 import sinon from 'sinon';
 import {expect} from 'chai';
-import {EMPTY} from "rxjs";
-import {async, ComponentFixture, TestBed} from "@angular/core/testing";
-import {UpdatePasswordComponent} from "@mm-modals/edit-user/update-password.component";
-import {BsModalRef} from "ngx-bootstrap/modal";
-import {UserSettingsService} from "@mm-services/user-settings.service";
-import {LanguagesService} from "@mm-services/languages.service";
-import {UpdateUserService} from "@mm-services/update-user.service";
-import {TranslateService} from "@ngx-translate/core";
+import {EMPTY} from 'rxjs';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {UpdatePasswordComponent} from '@mm-modals/edit-user/update-password.component';
+import {BsModalRef} from 'ngx-bootstrap/modal';
+import {UserSettingsService} from '@mm-services/user-settings.service';
+import {LanguagesService} from '@mm-services/languages.service';
+import {UpdateUserService} from '@mm-services/update-user.service';
+import {TranslateService} from '@ngx-translate/core';
+import {RouterTestingModule} from "@angular/router/testing";
 
 describe('UpdatePasswordComponent', () => {
 
@@ -32,9 +33,9 @@ describe('UpdatePasswordComponent', () => {
       }
     ));
     languagesService.get = sinon.stub().returns(Promise.resolve(
-      [{code: "en", name: "English"}]
+      [{code: 'en', name: 'English'}]
     ));
-    translateServiceSpy = sinon.spy(translateService, "get");
+    translateServiceSpy = sinon.spy(translateService, 'get');
     //translateService.get = sinon.stub().returns(EMPTY);
     TestBed.configureTestingModule({
       declarations: [ UpdatePasswordComponent ],
@@ -50,8 +51,12 @@ describe('UpdatePasswordComponent', () => {
     .then(() => {
       fixture = TestBed.createComponent(UpdatePasswordComponent);
       component = fixture.componentInstance;
+
       // @ts-ignore
       sinon.stub(component, 'windowReload');
+
+      fixture.detectChanges();
+      return fixture.whenStable();
     });
   }));
 

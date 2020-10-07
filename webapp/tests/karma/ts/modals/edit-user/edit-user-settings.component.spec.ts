@@ -1,14 +1,14 @@
 import sinon from 'sinon';
 import {expect} from 'chai';
-import {UpdateUserService} from "@mm-services/update-user.service";
-import {EMPTY} from "rxjs";
-import {async, ComponentFixture, TestBed} from "@angular/core/testing";
-import {EditUserSettingsComponent} from "@mm-modals/edit-user/edit-user-settings.component";
-import {UserSettingsService} from "@mm-services/user-settings.service";
-import {BsModalRef} from "ngx-bootstrap/modal";
-import {TranslateFakeLoader, TranslateLoader, TranslateModule} from "@ngx-translate/core";
-import {RouterTestingModule} from "@angular/router/testing";
-import {LanguagesService} from "@mm-services/languages.service";
+import {UpdateUserService} from '@mm-services/update-user.service';
+import {EMPTY} from 'rxjs';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {EditUserSettingsComponent} from '@mm-modals/edit-user/edit-user-settings.component';
+import {UserSettingsService} from '@mm-services/user-settings.service';
+import {BsModalRef} from 'ngx-bootstrap/modal';
+import {TranslateFakeLoader, TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {RouterTestingModule} from '@angular/router/testing';
+import {LanguagesService} from '@mm-services/languages.service';
 
 
 describe('EditUserSettingsComponent', () => {
@@ -33,9 +33,9 @@ describe('EditUserSettingsComponent', () => {
     ));
     languagesService.get = sinon.stub().returns(Promise.resolve(
       [
-        {code: "en", name: "English"},
-        {code: "es", name: "Español (Spanish)"},
-        {code: "fr", name: "Français (French)"},
+        {code: 'en', name: 'English'},
+        {code: 'es', name: 'Español (Spanish)'},
+        {code: 'fr', name: 'Français (French)'},
       ]
     ));
     TestBed.configureTestingModule({
@@ -55,7 +55,9 @@ describe('EditUserSettingsComponent', () => {
     .then(() => {
       fixture = TestBed.createComponent(EditUserSettingsComponent);
       component = fixture.componentInstance;
-      //fixture.detectChanges();
+
+      fixture.detectChanges();
+      return fixture.whenStable();
     });
   }));
 
@@ -73,9 +75,9 @@ describe('EditUserSettingsComponent', () => {
       language: { code: 'es' }
     });
     expect(component.enabledLocales).to.deep.equal([
-      {code: "en", name: "English"},
-      {code: "es", name: "Español (Spanish)"},
-      {code: "fr", name: "Français (French)"},
+      {code: 'en', name: 'English'},
+      {code: 'es', name: 'Español (Spanish)'},
+      {code: 'fr', name: 'Français (French)'},
     ]);
     expect(component.errors).to.deep.equal({});
   });

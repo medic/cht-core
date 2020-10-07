@@ -34,9 +34,11 @@ export class EditUserSettingsComponent extends EditUserAbstract {
     private languagesService: LanguagesService,
   ) {
     super(bsModalRef, userSettingsService);
-    this.languagesService.get().then((languages) => {
-      this.enabledLocales = languages;
-    });
+  }
+
+  async ngOnInit(): Promise<void> {
+    await super.ngOnInit();
+    this.enabledLocales = await this.languagesService.get();
   }
 
   editUserSettings(): Promise<void> {
