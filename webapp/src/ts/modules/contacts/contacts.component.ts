@@ -10,7 +10,9 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { Selectors } from '../../selectors';
 import { isMobile } from '../../providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
+import { ContactTypesService } from '@mm-services/contact-types.service'
 import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
+import { reportsReducer } from '@mm-reducers/reports';
 
 const PAGE_SIZE = 50;
 
@@ -31,6 +33,10 @@ export class ContactsComponent implements OnInit, OnDestroy{
   hasContacts = true;
   filters:any = {};
   moreItems;
+  usersHomePlace;
+  contactTypes;
+  isAdmin;
+  childPlaces;
 
   constructor(
     private store: Store,
@@ -38,6 +44,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private changeService: ChangesService,
     private translateService: TranslateService,
     private searchService: SearchService,
+    private contactTypesService: ContactTypesService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -47,17 +54,58 @@ export class ContactsComponent implements OnInit, OnDestroy{
   ngOnInit() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getContactsList),
-    ).subscribe(([contactsList]) => {
-      console.log('updating contacts list', contactsList);
+      this.store.select(Selectors.getIsAdmin)
+    ).subscribe(([contactsList, isAdmin]) => {
       this.contactsList = contactsList;
+      this.isAdmin = isAdmin;
     });
     this.subscription.add(reduxSubscription);
-    this.search();
+    this.contactTypesService
+      .getAll()
+      .then((types) => {
+        this.contactTypes = types;
+        return this.getChildren()
+      })
+      .then((children) => {
+        this.childPlaces = children;
+        this.filters = {
+          types: {
+            selected: this.childPlaces.map(type => type.id)
+          }
+        };
+        this.search();
+      });
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
+
+  private formatContacts(contacts) {
+    return contacts.map(contact => {
+      const typeId = contact.contact_type || contact.type;
+      const type = this.contactTypes.find(type => type.id === typeId);
+      contact.route = 'contacts';
+      contact.icon = type && type.icon;
+      contact.heading = contact.name;
+
+      return contact
+    });
+  }
+
+  private getChildren() {
+    let p;
+    if (this.usersHomePlace) {
+      // backwards compatibility with pre-flexible hierarchy users
+      const homeType = this.usersHomePlace.contact_type || this.usersHomePlace.type;
+      p = this.contactTypesService.getChildren(homeType);
+    } else if (this.isAdmin) {
+      p = this.contactTypesService.getChildren(false);
+    } else {
+      return Promise.resolve([]);
+    }
+    return p.then(children => children.filter(child => !child.person));
+  };
 
   private initScroll() {
     scrollLoaderInit(() => {
@@ -82,11 +130,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     return this.searchService
       .search('contacts', this.filters, options)
       .then((updatedContacts) => {
-        // add read status todo
-        // updatedReports = this.prepareReports(updatedReports);
-
-        // this.reportsActions.updateReportsList(updatedReports);
-        // set action bar data todo
+        updatedContacts = this.formatContacts(updatedContacts);
 
         this.contactsActions.updateContactsList(updatedContacts);
 

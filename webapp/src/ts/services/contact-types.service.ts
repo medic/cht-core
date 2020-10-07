@@ -25,7 +25,7 @@ export class ContactTypesService {
    * Returns a Promise to resolve an array of configured contact types.
    */
   getAll () {
-    this.settingsService.get().then(config => contactTypesUtils.getContactTypes(config))
+    return this.settingsService.get().then(config => contactTypesUtils.getContactTypes(config))
   }
 
   /**
