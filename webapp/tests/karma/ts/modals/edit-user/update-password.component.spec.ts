@@ -8,7 +8,6 @@ import {UserSettingsService} from '@mm-services/user-settings.service';
 import {LanguagesService} from '@mm-services/languages.service';
 import {UpdateUserService} from '@mm-services/update-user.service';
 import {TranslateService} from '@ngx-translate/core';
-import {RouterTestingModule} from "@angular/router/testing";
 
 describe('UpdatePasswordComponent', () => {
 
@@ -21,8 +20,8 @@ describe('UpdatePasswordComponent', () => {
   let translateService: any = { get: function (key: string) {return EMPTY} };
 
   beforeEach(async(() => {
-    updateUserService.update = sinon.stub().returns(Promise.resolve());
-    userSettingsService.get = sinon.stub().returns(Promise.resolve(
+    updateUserService.update = sinon.stub().resolves();
+    userSettingsService.get = sinon.stub().resolves(
       {
         _id: 'user123',
         name: 'admin',
@@ -31,12 +30,11 @@ describe('UpdatePasswordComponent', () => {
         phone: '+99 999 9999',
         language: 'es'
       }
-    ));
-    languagesService.get = sinon.stub().returns(Promise.resolve(
+    );
+    languagesService.get = sinon.stub().resolves(
       [{code: 'en', name: 'English'}]
-    ));
+    );
     translateServiceSpy = sinon.spy(translateService, 'get');
-    //translateService.get = sinon.stub().returns(EMPTY);
     TestBed.configureTestingModule({
       declarations: [ UpdatePasswordComponent ],
       providers: [

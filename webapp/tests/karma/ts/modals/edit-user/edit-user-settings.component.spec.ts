@@ -19,8 +19,8 @@ describe('EditUserSettingsComponent', () => {
   let languagesService: any = {}
 
   beforeEach(async(() => {
-    updateUserService.update = sinon.stub().returns(Promise.resolve());
-    userSettingsService.get = sinon.stub().returns(Promise.resolve(
+    updateUserService.update = sinon.stub().resolves();
+    userSettingsService.get = sinon.stub().resolves(
       {
         _id: 'user123',
         name: 'admin',
@@ -29,14 +29,14 @@ describe('EditUserSettingsComponent', () => {
         phone: '+99 999 9999',
         language: 'es'
       }
-    ));
-    languagesService.get = sinon.stub().returns(Promise.resolve(
+    );
+    languagesService.get = sinon.stub().resolves(
       [
         {code: 'en', name: 'English'},
         {code: 'es', name: 'Español (Spanish)'},
         {code: 'fr', name: 'Français (French)'},
       ]
-    ));
+    );
     TestBed.configureTestingModule({
       declarations: [ EditUserSettingsComponent ],
       imports: [
