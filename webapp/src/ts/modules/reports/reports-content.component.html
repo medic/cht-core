@@ -9,6 +9,10 @@
   <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && !selectedReports?.length">
     <div translate>No report selected</div>
   </div>
+  <!--<span>loading content {{loadingContent}}</span>
+  <span>selected reports {{selectedReports.length}}</span>
+  <span>No selected {{!loadingContent && !selectedReports.length}}</span>
+  <span>Selected {{(!loadingContent && selectedReports.length && selectedReports[0].doc.form !== undefined)}}</span>-->
 
   <div id="reports-content" class="col-sm-8 item-content" *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0].doc.form !== undefined)">
 
