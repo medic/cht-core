@@ -2,19 +2,19 @@
   <div class="inner"></div>
 </div>
 
-<div class="inner" ng-cloak>
+<div class="inner" *ngIf="user">
   <div class="col-sm-12 page configuration" ui-view="content">
-    <div class="loader" ng-show="configurationUserCtrl.loading"></div>
-    <div ng-show="!configurationUserCtrl.loading">
-      <div ng-if="!configurationUserCtrl.user.token_login">
-        <a ng-click="configurationUserCtrl.updatePassword()" class="btn btn-link">
+    <div class="loader" *ngIf="loading"></div>
+    <div *ngIf="!loading">
+      <div *ngIf="!user.token_login">
+        <a (click)="updatePassword()" class="btn btn-link">
           <i class="fa fa-fw fa-key"></i>
           <span translate>password.update</span>
         </a>
       </div>
 
       <div>
-        <a ng-click="configurationUserCtrl.editSettings()" class="btn btn-link">
+        <a (click)="editSettings()" class="btn btn-link">
           <i class="fa fa-fw fa-user"></i>
           <span translate>Edit User Profile</span>
         </a>
