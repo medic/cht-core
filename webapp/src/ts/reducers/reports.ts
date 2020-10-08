@@ -17,6 +17,8 @@ const updateReports = (state, newReports) => {
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
   newReports.forEach(report => {
+    // when linking directly to a report, the detail page loads quicker than the list
+    report = { ...report, selected: isSelected(state.selected, report) };
     list.remove(report);
     list.add(report);
   });
@@ -35,11 +37,11 @@ const removeReport = (state, report) => {
 };
 
 const isSelected = (selected, report) => {
-  return !!selected.find(selected => selected?.doc?._id === report._id);
+  return selected.some(selected => selected?.doc?._id === report._id);
 };
 
 const updateSelectedReports = (state) => {
-  const reports = state.reports.map(report => ({ ...report, selected: !!isSelected(state.selected, report) }));
+  const reports = state.reports.map(report => ({ ...report, selected: isSelected(state.selected, report) }));
   return updateReports(state, reports);
 };
 
@@ -62,9 +64,10 @@ const _reportsReducer = createReducer(
   }),
 
   on(Actions.removeSelectedReport, (state, { payload: { report } }) => {
+    const reportId = report._id || report;
     return {
       ...state,
-      selected: state.selected.filter(selectedReport => selectedReport._id !== report._id),
+      selected: state.selected.filter(selectedReport => selectedReport._id !== reportId),
     }
   }),
 

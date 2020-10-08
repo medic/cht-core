@@ -1,8 +1,8 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import * as _ from 'lodash-es';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -29,6 +29,7 @@ export class ReportsContentComponent implements OnInit {
     private changesService:ChangesService,
     private store:Store,
     private route:ActivatedRoute,
+    private router:Router,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -65,14 +66,17 @@ export class ReportsContentComponent implements OnInit {
         if (change.deleted) {
           // everything here is todo
           if (this.selectMode) {
-            //this.removeSelectedReport(change.id); todo
+            this.reportsActions.removeSelectedReport(change.id);
           } else {
-            this.globalActions.unsetSelected();
-            //$state.go($state.current.name, { id: null });
+            //this.globalActions.unsetSelected();
+            return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
           }
         } else {
           // everything here is todo
           const selectedReports = this.selectedReports;
+          this.reportsActions.selectReport(change.id, { silent: true });
+
+          // todo when adding report verification, check if this code is still needed
           /*ctrl.selectReport(change.id, { silent: true })
             .then(function() {
               if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
@@ -92,7 +96,7 @@ export class ReportsContentComponent implements OnInit {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.reportsActions.selectReport(this.route.snapshot.params.id);
-        //ctrl.clearCancelCallback();
+        this.globalActions.clearCancelCallback();
 
         $('.tooltip').remove();
       } else {
@@ -103,15 +107,15 @@ export class ReportsContentComponent implements OnInit {
   }
 
   trackByFn(index, item) {
-    return item._id;
+    return item.doc?._id + item.doc?._rev;
   }
 
   toggleExpand(report) {
-
+    // todo once we have actionbars and selectmode
   }
 
   deselect(item, event) {
-
+    // todo once we have actionbars and selectmode
   }
 
   search(query) {
