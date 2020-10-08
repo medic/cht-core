@@ -16,8 +16,6 @@ export class EditUserSettingsComponent extends EditUserAbstract {
     fullname?,
     username?,
     email?,
-    place?,
-    contact?,
     phone?,
     language?: { code? }
   } = {
@@ -44,7 +42,6 @@ export class EditUserSettingsComponent extends EditUserAbstract {
   editUserSettings(): Promise<void> {
     this.setProcessing();
     this.errors = {};
-    this.computeFields();
 
     return this.changedUpdates(this.editUserModel)
       .then((updates: any) => {
@@ -73,13 +70,6 @@ export class EditUserSettingsComponent extends EditUserAbstract {
 
   listTrackBy(index, locale) {
     return locale.code;
-  }
-
-  private computeFields() {
-    if (document.querySelector('#edit-user-profile')) {
-      this.editUserModel.place = document.querySelector('#edit-user-profile [name=facilitySelect]')['value'];
-      this.editUserModel.contact = document.querySelector('#edit-user-profile [name=contactSelect]')['value'];
-    }
   }
 
   private haveUpdates(updates) {
