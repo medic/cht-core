@@ -162,7 +162,6 @@ export class SendMessageService {
       ],
     };
     taskUtils.setTaskState(task, 'pending');
-
     return task;
   }
 

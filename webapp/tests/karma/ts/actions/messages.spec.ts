@@ -2,7 +2,6 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { Actions, MessagesActions } from '@mm-actions/messages';
-import { GlobalActions } from '@mm-actions/global';
 
 describe('Messages Action', () => {
   let store: any;

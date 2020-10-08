@@ -215,6 +215,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
   private updateConversation(options: any = {}) {
     const selectedId = this.selectedConversation && this.selectedConversation.id;
+
     if (!selectedId) {
       return;
     }
