@@ -125,10 +125,6 @@ export class ReportsContentComponent implements OnInit {
   search(query) {
     this.searchFiltersService.freetextSearch(query);
   }
-
-  search(query) {
-    //SearchFilters.freetextSearch(query);
-  }
 }
 
 /*const _ = require('lodash/core');
