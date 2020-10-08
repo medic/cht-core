@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import {expect} from 'chai';
-import {EMPTY} from 'rxjs';
+import {EMPTY, Observable} from 'rxjs';
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {UpdatePasswordComponent} from '@mm-modals/edit-user/update-password.component';
 import {BsModalRef} from 'ngx-bootstrap/modal';
@@ -14,13 +14,22 @@ describe('UpdatePasswordComponent', () => {
   let component: UpdatePasswordComponent;
   let fixture: ComponentFixture<UpdatePasswordComponent>;
   let userSettingsService: any = {};
-  let updateUserService: any = {};
-  let translateServiceSpy: any;
+  let updateUserService: any = {
+    update: function (username, updates, basicAuthUser?, basicAuthPass?): Promise<Object> {
+      return Promise.resolve({});
+    }
+  };
+  let updateUserServiceSpy: any;
   let languagesService: any = {};
-  let translateService: any = { get: function (key: string) {return EMPTY} };
+  let translateService: any = {
+    get: function (key: string): Observable<any> {
+      return EMPTY;
+    }
+  };
+  let translateServiceSpy: any;
 
   beforeEach(async(() => {
-    updateUserService.update = sinon.stub().resolves();
+    updateUserServiceSpy = sinon.spy(updateUserService, 'update');
     userSettingsService.get = sinon.stub().resolves(
       {
         _id: 'user123',
@@ -74,6 +83,15 @@ describe('UpdatePasswordComponent', () => {
     expect(component.errors).to.deep.equal({});
   });
 
+  it('password must be filled', () => {
+    component.editUserModel.password = '';
+    component.updatePassword();
+    expect(translateServiceSpy.called).to.equal(true);
+    expect(translateServiceSpy.getCall(0).args[0]).to.equal('field is required');
+    expect(translateServiceSpy.getCall(0).args[1]).to.deep.equal({ field: 'password' });
+    expect(updateUserServiceSpy.called).to.equal(false);
+  });
+
   it('password must be long enough', () => {
     component.editUserModel.password = '2sml4me';
     component.editUserModel.passwordConfirm = '2sml4me';
@@ -81,6 +99,7 @@ describe('UpdatePasswordComponent', () => {
     component.updatePassword();
     expect(translateServiceSpy.called).to.equal(true);
     expect(translateServiceSpy.getCall(0).args[0]).to.equal('password.length.minimum');
+    expect(updateUserServiceSpy.called).to.equal(false);
   });
 
   it('password must be hard to brute force', () => {
@@ -90,6 +109,7 @@ describe('UpdatePasswordComponent', () => {
     component.updatePassword();
     expect(translateServiceSpy.called).to.equal(true);
     expect(translateServiceSpy.getCall(0).args[0]).to.equal('password.weak');
+    expect(updateUserServiceSpy.called).to.equal(false);
   });
 
   it('error if password and confirm do not match', () => {
@@ -100,6 +120,23 @@ describe('UpdatePasswordComponent', () => {
     component.updatePassword();
     expect(translateServiceSpy.called).to.equal(true);
     expect(translateServiceSpy.getCall(0).args[0]).to.equal('Passwords must match');
+    expect(updateUserServiceSpy.called).to.equal(false);
+  });
+
+  it('user is updated with password change', () => {
+    const password = '1QrAs$$3%%kkkk445234234234';
+    const currentPassword = '2xml4me';
+    component.editUserModel.password = password;
+    component.editUserModel.passwordConfirm = password;
+    component.editUserModel.currentPassword = currentPassword;
+    component.updatePassword();
+    expect(translateServiceSpy.called).to.equal(false);
+    expect(component.errors).to.deep.equal({});
+    expect(updateUserServiceSpy.called).to.equal(true);
+    expect(updateUserServiceSpy.getCall(0).args[0]).to.equal('admin');
+    expect(updateUserServiceSpy.getCall(0).args[1].password).to.equal(password);
+    expect(updateUserServiceSpy.getCall(0).args[2]).to.equal('admin');
+    expect(updateUserServiceSpy.getCall(0).args[3]).to.equal(currentPassword);
   });
 
   it('errors if current password is not provided', () => {
@@ -111,15 +148,6 @@ describe('UpdatePasswordComponent', () => {
     expect(translateServiceSpy.called).to.equal(true);
     expect(translateServiceSpy.getCall(0).args[0]).to.equal('field is required');
     expect(translateServiceSpy.getCall(0).args[1]).to.deep.equal({ field: 'currentPassword' });
-  });
-
-  it('no errors if current password is provided and the new one is strong', () => {
-    const password = '1QrAs$$3%%kkkk445234234234';
-    component.editUserModel.password = password;
-    component.editUserModel.passwordConfirm = password;
-    component.editUserModel.currentPassword = '2xml4me';
-    component.updatePassword();
-    expect(translateServiceSpy.called).to.equal(false);
-    expect(component.errors).to.deep.equal({});
+    expect(updateUserServiceSpy.called).to.equal(false);
   });
 });
