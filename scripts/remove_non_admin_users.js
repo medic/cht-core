@@ -12,7 +12,7 @@ const _ = require('underscore');
 
 let instance_url;
 let httpHandler;
-let instance_url_obj
+let instance_url_obj;
 
 if (process.env.COUCH_URL) {
   instance_url_obj = url.parse(process.env.COUCH_URL);
