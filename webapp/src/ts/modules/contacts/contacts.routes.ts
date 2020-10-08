@@ -8,7 +8,7 @@ export const routes: Routes = [
   {
     path: 'contacts',
     component: ContactsComponent,
-    data: {permissions: ['can_view_contacts']},
+    data: {permissions: ['can_view_contacts'], tab: 'contacts'},
     canActivate: [RouteGuardProvider],
     children: [
       {

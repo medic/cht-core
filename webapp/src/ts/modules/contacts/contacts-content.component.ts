@@ -9,6 +9,8 @@ import { GlobalActions } from '@mm-actions/global';
 })
 export class ContactsContentComponent implements OnInit {
   private globalActions;
+  loadingContent;
+  selectedContact;
 
   constructor(
     private store: Store,
@@ -17,6 +19,6 @@ export class ContactsContentComponent implements OnInit {
   }
 
   ngOnInit() {
-    
+
   }
 }
