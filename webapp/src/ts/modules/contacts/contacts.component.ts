@@ -12,7 +12,7 @@ import { isMobile } from '../../providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service'
 import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
-import { reportsReducer } from '@mm-reducers/reports';
+import { ContactsContentComponent } from './contacts-content.component';
 
 const PAGE_SIZE = 50;
 

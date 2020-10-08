@@ -5,6 +5,7 @@ import { GlobalActions } from '@mm-actions/global';
 
 
 @Component({
+  selector: 'contacts-content',
   templateUrl: './contacts-content.component.html'
 })
 export class ContactsContentComponent implements OnInit {
