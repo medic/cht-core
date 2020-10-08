@@ -68,7 +68,7 @@ export class ReportsEffects {
         } else {
           refreshing =
             selected.doc &&
-            selectedReports.length &&
+            selectedReports?.length &&
             selectedReports[0]._id === selected.doc._id;
           if (!refreshing) {
             this.reportActions.setVerifyingReport(false);
@@ -91,9 +91,9 @@ export class ReportsEffects {
       ofType(ReportActionList.setTitle),
       withLatestFrom(this.store.pipe(select(Selectors.getForms))),
       exhaustMap(([{ payload: selected }, forms]) => {
-        const formInternalId = selected.formInternalId || selected.form;
+        const formInternalId = selected?.formInternalId || selected?.form;
         const form = forms?.find(form => form.code === formInternalId);
-        const name = (form && form.name) || (form && form.title) || selected.form;
+        const name = (form && form.name) || (form && form.title) || selected?.form;
         return of(this.globalActions.setTitle(name));
       }),
     );

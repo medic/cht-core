@@ -31,7 +31,7 @@
             </a>
           </li>
           <li role="presentation" mmAuth="can_view_reports,!can_view_reports_tab">
-            <a role="menuitem" tabindex="-1" routerLink="reports">
+            <a role="menuitem" tabindex="-1" routerLink="reports/">
               <i class="fa fa-fw fa-list-alt"></i>
               <span translate>Reports</span>
             </a>
@@ -42,6 +42,7 @@
               <span translate>Contacts</span>
             </a>
           </li>
+
           <li role="presentation" mmAuth="can_view_analytics,!can_view_analytics_tab">
             <a role="menuitem" tabindex="-1" routerLink="analytics" routerLink-opts="{reload: true}">
               <i class="fa fa-bar-chart-o"></i>
@@ -133,7 +134,6 @@
           </span>
         </div>
         <div class="button-label" translate>{{tab.translation}}</div>
-        {{tab.translation}}
       </a>
     </div>
   </div>

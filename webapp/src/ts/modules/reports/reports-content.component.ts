@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import * as _ from 'lodash-es';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -29,6 +29,7 @@ export class ReportsContentComponent implements OnInit {
     private changesService:ChangesService,
     private store:Store,
     private route:ActivatedRoute,
+    private cd: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -67,7 +68,7 @@ export class ReportsContentComponent implements OnInit {
           if (this.selectMode) {
             //this.removeSelectedReport(change.id); todo
           } else {
-            //this.unsetSelected();
+            this.globalActions.unsetSelected();
             //$state.go($state.current.name, { id: null });
           }
         } else {
@@ -96,7 +97,7 @@ export class ReportsContentComponent implements OnInit {
 
         $('.tooltip').remove();
       } else {
-        //ctrl.unsetSelected();
+        this.globalActions.unsetSelected();
       }
     });
     this.subscription.add(routeSubscription);

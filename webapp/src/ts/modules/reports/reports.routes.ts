@@ -1,7 +1,8 @@
-import {Routes} from '@angular/router';
-import {RouteGuardProvider} from '../../providers/route-guard.provider';
-import {ReportsComponent} from './reports.component';
-import {ReportsContentComponent} from './reports-content.component';
+import { Routes } from '@angular/router';
+
+import { RouteGuardProvider } from '../../providers/route-guard.provider';
+import { ReportsComponent } from './reports.component';
+import { ReportsContentComponent } from './reports-content.component';
 
 export const routes:Routes = [
   {
@@ -10,6 +11,10 @@ export const routes:Routes = [
     data: { permissions: ['can_view_reports'], tab: 'reports' },
     canActivate: [RouteGuardProvider],
     children: [
+      {
+        path: '',
+        component: ReportsContentComponent,
+      },
       {
         path: ':id',
         component: ReportsContentComponent,
