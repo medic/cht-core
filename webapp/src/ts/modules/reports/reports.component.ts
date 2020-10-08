@@ -26,7 +26,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private reportsActions;
   private servicesActions;
   private listContains;
-  private getIsSelected;
 
   reportsList;
   filteredReportsList;
@@ -139,10 +138,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
   }
 
-  listTrackBy(index, report) {
-    return report._id + report._rev + report.read;
-  }
-
   private query(opts) {
     const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
     if (options.limit < PAGE_SIZE) {
@@ -225,9 +220,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return this.query(force);
   }
 
-  isSelected(report) {
-    return this.selectedReports.find(selected => selected._id === report._id);
+  listTrackBy(index, report) {
+    return report._id + report._rev + report.read + report.selected;
   }
+
 }
 /*
 

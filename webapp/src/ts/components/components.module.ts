@@ -21,6 +21,7 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { ReportImageComponent } from '@mm-components/report-image/report-image.c
     ResetFiltersComponent,
     SenderComponent,
     ReportImageComponent,
+    NavigationComponent,
   ],
   imports: [
     CommonModule,
@@ -62,6 +64,7 @@ import { ReportImageComponent } from '@mm-components/report-image/report-image.c
     ResetFiltersComponent,
     SenderComponent,
     ReportImageComponent,
+    NavigationComponent,
   ]
 })
 export class ComponentsModule { }

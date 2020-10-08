@@ -29,7 +29,6 @@ export class ReportsContentComponent implements OnInit {
     private changesService:ChangesService,
     private store:Store,
     private route:ActivatedRoute,
-    private cd: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);

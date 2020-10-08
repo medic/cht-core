@@ -109,7 +109,7 @@ export class ReportsEffects {
         const readReport = { ...report };
         readReport.read = true;
         this.markReadService.markAsRead([report]).catch(err => console.error('Error marking read', err));
-        return of(this.reportActions.updateReportsList([readReport]));
+        return of();
       }),
     );
   }, { dispatch: false });

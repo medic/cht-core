@@ -21,6 +21,7 @@ export const Actions = {
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
 
   clearSelected: createAction('CLEAR_SELECTED'),
+  setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
 }
 
 export class GlobalActions {
@@ -118,6 +119,16 @@ export class GlobalActions {
     this.setTitle();
     this.store.dispatch(Actions.clearSelected());
   }
+
+  setCancelCallbackAction(value) {
+    return this.store.dispatch(Actions.setCancelCallback(value));
+  }
+
+  clearCancelCallback() {
+    return this.store.dispatch(Actions.setCancelCallback(null));
+  }
+
+
 }
 
 /*
@@ -155,19 +166,6 @@ angular.module('inboxServices').factory('GlobalActions',
       function setRightActionBarVerified(value) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED, 'verified', value));
       }
-
-      function createSetCancelCallbackAction(value) {
-        return ActionUtils.createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
-      }
-
-      function clearCancelCallback() {
-        dispatch(createSetCancelCallbackAction(null));
-      }
-
-      function setCancelCallback(cancelCallback) {
-        dispatch(createSetCancelCallbackAction(cancelCallback));
-      }
-
 
       function createSetEnketoStatusAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
@@ -334,39 +332,21 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       return {
-        clearCancelCallback,
-        resetFilters,
         clearRightActionBar,
         deleteDoc,
         navigationCancel,
         openGuidedSetup,
         openTourSelect,
-        setAndroidAppVersion,
-        setCancelCallback,
-        setCurrentTab,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
-        setFilter,
-        setFilters,
-        setForms,
-        setIsAdmin,
         setLeftActionBar,
-        setLoadingContent,
-        setLoadingShowContent,
         setLoadingSubActionBar,
-        setMinimalTabs,
         setRightActionBar,
         setRightActionBarVerified,
-        setSelectMode,
         setShowActionBar,
-        setShowContent,
-        setTitle,
         setUnreadCount,
-        updateReplicationStatus,
         updateUnreadCount,
-        unsetSelected,
-        settingSelected,
         setPrivacyPolicyAccepted,
         setShowPrivacyPolicy,
       };
