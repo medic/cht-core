@@ -41,7 +41,7 @@ export class UserSettingsService {
     }
   };
 
-  get() {
+  get(): Promise<Object> {
     const docId = this.userDocId();
     if (!docId) {
       return Promise.reject(new Error('UserCtx not found'));

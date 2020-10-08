@@ -7,8 +7,10 @@ import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { MmModal } from './mm-modal/mm-modal';
 import { ReloadingComponent } from './reloading/reloading.component';
 import { LogoutConfirmComponent } from './logout/logout-confirm.component';
-import { FeedbackComponent } from './feedback/feedback.component';
+import {FeedbackComponent} from './feedback/feedback.component';
 import { GuidedSetupComponent } from './guided-setup/guided-setup.component';
+import {UpdatePasswordComponent} from './edit-user/update-password.component';
+import {EditUserSettingsComponent} from './edit-user/edit-user-settings.component';
 
 
 @NgModule({
@@ -18,6 +20,8 @@ import { GuidedSetupComponent } from './guided-setup/guided-setup.component';
     LogoutConfirmComponent,
     FeedbackComponent,
     GuidedSetupComponent,
+    UpdatePasswordComponent,
+    EditUserSettingsComponent,
   ],
   imports: [
     CommonModule,
@@ -29,6 +33,8 @@ import { GuidedSetupComponent } from './guided-setup/guided-setup.component';
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
+    UpdatePasswordComponent,
+    EditUserSettingsComponent,
   ]
 })
 export class ModalsModule { }

@@ -7,6 +7,7 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { PipesModule } from '../pipes/pipes.module';
 
 import { AboutComponent } from './about/about.component';
+import {ConfigurationUserComponent} from './configuration-user/configuration-user.component';
 import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -18,6 +19,7 @@ import { MessagesComponent } from './messages/messages.component';
 @NgModule({
   declarations: [
     AboutComponent,
+    ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
@@ -35,6 +37,7 @@ import { MessagesComponent } from './messages/messages.component';
   ],
   exports: [
     AboutComponent,
+    ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
