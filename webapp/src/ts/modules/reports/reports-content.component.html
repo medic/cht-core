@@ -39,7 +39,7 @@
           </div>
 
           <div *ngIf="summaries[$index].subject?.type" class="subject">
-              <a class="name" *ngIf="summaries[$index].subject._id || summaries[$index].fields?.patient_uuid" routerLink="contacts.detail({ id: summaries[$index].subject._id || summaries[$index].fields.patient_uuid })"
+              <a class="name" *ngIf="summaries[$index].subject._id || summaries[$index].fields?.patient_uuid" [routerLink]="['/contacts', summaries[$index].subject._id || summaries[$index].fields.patient_uuid]"
                 [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
               </a>
               <span class="name" *ngIf="!summaries[$index].subject._id && !summaries[$index].fields?.patient_uuid"

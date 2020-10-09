@@ -112,7 +112,7 @@ export class FormatDataRecordService {
       const id = (doc.patient && doc.patient._id) ||
         (doc.fields && doc.fields.patient_uuid);
       if (id) {
-        return ['contacts', id];
+        return { url: ['/contacts', id] };
       }
     } else if (key === 'case_id') {
       const id = doc.case_id || doc.fields.case_id;

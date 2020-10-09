@@ -8,6 +8,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ChangesService } from '@mm-services/changes.service';
+import { SearchFiltersService } from '@mm-services/search-filters.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -30,6 +31,7 @@ export class ReportsContentComponent implements OnInit {
     private store:Store,
     private route:ActivatedRoute,
     private router:Router,
+    private searchFiltersService:SearchFiltersService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -119,7 +121,7 @@ export class ReportsContentComponent implements OnInit {
   }
 
   search(query) {
-    //SearchFilters.freetextSearch(query);
+    this.searchFiltersService.freetextSearch(query);
   }
 }
 

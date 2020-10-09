@@ -17,7 +17,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   subscription: Subscription = new Subscription();
   inputText;
 
-  private inputTextChanged: Subject<string> = new Subject<string>();
+  private inputTextChanged: Subject<any> = new Subject<any>();
 
   currentTab;
 
@@ -33,9 +33,8 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
     const inputSubscription = this
       .inputTextChanged
       .pipe(debounceTime(400), distinctUntilChanged())
-      .subscribe((value) => {
-        this.inputText = value;
-        this.applyFilter();
+      .subscribe(({ value, apply }={}) => {
+        this.applyFieldChange(value, apply);
       });
     this.subscription.add(inputSubscription);
   }
@@ -43,16 +42,24 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   ngOnInit() {
     const subscription = combineLatest(
       this.store.select(Selectors.getCurrentTab),
+      this.store.select(Selectors.getFilters),
     ).subscribe(([
       currentTab,
+      filters,
     ]) => {
       this.currentTab = currentTab;
+      this.inputText = filters.search;
     });
     this.subscription.add(subscription);
   }
 
   onFieldChange(inputText) {
-    this.inputTextChanged.next(inputText);
+    this.inputTextChanged.next({ value: inputText, apply: true });
+  }
+
+  applyFieldChange(value, apply?) {
+    this.inputText = value;
+    apply && this.applyFilter();
   }
 
   applyFilter() {
@@ -65,7 +72,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   clear() {
-    this.inputText = '';
+    this.inputTextChanged.next({ value: '', apply: false });
   }
 }
 
