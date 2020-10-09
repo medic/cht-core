@@ -31,7 +31,6 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   private userCtx;
   private globalActions: GlobalActions;
   messagesActions: MessagesActions;
-
   loadingContent;
   loadingMoreContent = false;
   selectedConversation;

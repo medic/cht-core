@@ -104,7 +104,6 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setIsAdmin(isAdmin));
   }
 
-
   setTitle(title) {
     return this.store.dispatch(Actions.setTitle(title));
   }
@@ -131,8 +130,7 @@ export class GlobalActions {
 
   /**
    * Deletes document from DB.
-   * This action has effect.
-   *
+   * This action has effect
    * @param doc
    */
   deleteDocConfirm(doc) {

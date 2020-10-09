@@ -64,7 +64,8 @@ export class Select2SearchService {
       hydrateContactNames: true,
     };
 
-    this.searchService.search('contacts', filters, searchOptions)
+    this.searchService
+      .search('contacts', filters, searchOptions)
       .then((documents) => {
         if (currentQuery === params.data.q) {
           successCb({

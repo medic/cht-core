@@ -19,7 +19,6 @@ export class ContactMutedService {
 
     if (lineage) {
       const mutedParent = _find(lineage, (parent) => parent && parent.muted);
-
       return !!mutedParent && mutedParent.muted;
     }
 

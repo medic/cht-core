@@ -32,10 +32,7 @@ export class CountMessageService {
     let key = 'message.characters.left';
 
     if (count.messages > 1) {
-      key = 'message.characters.left.multiple';
-      if (many) {
-        key = 'message.characters.left.multiple.many';
-      }
+      key = many ? 'message.characters.left.multiple.many' : 'message.characters.left.multiple';
     }
 
     return this.translateService.instant(key, count);
@@ -46,37 +43,39 @@ export class CountMessageService {
       .get()
       .then((settings:any) => {
         $('body').on('keyup', '[name=message]', (e) => {
-
           const target = $(e.target);
           const message = target.val();
 
           const count = this.calculate(message);
           const settingsMaximumSMSPart = settings.multipart_sms_limit || 10;
 
-          const alertMessage = target.closest('.message-form')
+          const alertMessage = target
+            .closest('.message-form')
             .find('.count');
-          target.closest('.message-form')
-            .find('.count')
-            .text(this.label(message, (count.messages > settingsMaximumSMSPart)));
+          alertMessage.text(this.label(message, (count.messages > settingsMaximumSMSPart)));
 
           if (count.messages > settingsMaximumSMSPart) {
             if (alertMessage.siblings('.btn.submit').length) {
-              alertMessage.addClass('alert-danger')
+              alertMessage
+                .addClass('alert-danger')
                 .siblings('.btn.submit')
                 .addClass('disabled');
             } else {
-              alertMessage.addClass('alert-danger')
+              alertMessage
+                .addClass('alert-danger')
                 .closest('mm-modal')
                 .find('.btn.submit')
                 .addClass('disabled');
             }
           } else {
             if (alertMessage.siblings('.btn.submit').length) {
-              alertMessage.removeClass('alert-danger')
+              alertMessage
+                .removeClass('alert-danger')
                 .siblings('.btn.submit')
                 .removeClass('disabled');
             } else {
-              alertMessage.removeClass('alert-danger')
+              alertMessage
+                .removeClass('alert-danger')
                 .closest('mm-modal')
                 .find('.btn.submit')
                 .removeClass('disabled');

@@ -9,7 +9,7 @@
   <form action="" method="POST" class="message-form">
     <div class="form-group" [ngClass]="{ 'has-error': errors.phone }">
       <select class="form-control" id="send-message-phone" name="phone" autocomplete="off" multiple="multiple"></select>
-      <span class="help-block" *ngIf="errors.phone">{{errors.phone}}</span>
+      <span class="help-block" *ngIf="errors.phone">{{ errors.phone }}</span>
     </div>
 
     <div class="form-group" [ngClass]="{ 'has-error': errors.message }">

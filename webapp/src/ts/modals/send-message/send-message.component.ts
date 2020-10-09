@@ -20,9 +20,9 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
     message: false,
     phone: false
   };
-  fields = {
-    to: '', // Value can be assigned by BsModal automatically, if initialState defined.
-    message: '', // Value can be assigned by BsModal automatically, if initialState defined.
+  fields = { // Field values are automatically assigned by BsModal, if initialState defined.
+    to: '',
+    message: '',
     phone: ''
   };
 
@@ -122,7 +122,6 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
     let contact;
 
     if (row.everyoneAt) {
-      // TODO: maybe with everyoneAt we want to change the icon to something else?
       contact = this.formatProvider.sender({
         name: this.formatPlace(row),
         parent: row.doc.place
@@ -147,7 +146,6 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
       return this.formatPlace(row);
     }
 
-    // TODO: should this be first_name / last_name as well? How does this work?
     return row.doc.name || row.doc.phone;
   }
 
