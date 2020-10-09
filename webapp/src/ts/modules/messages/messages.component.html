@@ -10,12 +10,13 @@
     <div id="message-list" class="col-sm-4 inbox-items left-pane">
       <ul *ngIf="!loading">
         <li class="content-row"
+          [routerLink]="msg.type + ':' + msg.key"
+          routerLinkActive="selected"
           *ngFor="let msg of conversations; trackBy: listTrackBy"
           [ngClass]="{
-            'selected': msg.key === loadingContent || (!loadingContent && selectedConversation && msg.key === selectedConversation.id),
             'unread': !msg.read
           }">
-          <a [routerLink]="msg.type + ':' + msg.key">
+          <a>
             <div class="content">
               <div class="heading">
                 <h4>{{msg.contact || msg.from || ('messages.unknown.sender' | translate)}}</h4>

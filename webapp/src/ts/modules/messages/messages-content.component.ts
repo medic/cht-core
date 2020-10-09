@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -42,6 +42,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   textAreaFocused = false;
 
   constructor(
+    private changeDetectorRef: ChangeDetectorRef,
     private route: ActivatedRoute,
     private store: Store,
     private changesService: ChangesService,
@@ -76,8 +77,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       this.urlParameters.type = type;
       this.urlParameters.id = id;
       this.send.message = '';
-      // Setting Timeout to select contact right after all the initialization hooks of Angular are done.
-      setTimeout(() => this.selectContact(this.urlParameters.id, this.urlParameters.type));
+      this.selectContact(this.urlParameters.id, this.urlParameters.type);
+      this.changeDetectorRef.detectChanges();
     });
     this.subscriptions.add(routeSubscription);
 
