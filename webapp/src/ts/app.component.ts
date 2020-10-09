@@ -5,26 +5,26 @@ import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
-
-import { DBSyncService } from './services/db-sync.service'
+import { DBSyncService } from '@mm-services/db-sync.service'
 import { Selectors } from './selectors';
 import { GlobalActions } from './actions/global';
-import { TranslationLoaderService } from './services/translation-loader.service';
-import {SessionService} from './services/session.service';
-import {AuthService} from './services/auth.service';
-import {ResourceIconsService} from './services/resource-icons.service';
-import {ChangesService} from './services/changes.service';
-import {UpdateServiceWorkerService} from './services/update-service-worker.service';
-import {LocationService} from './services/location.service';
+import { TranslationLoaderService } from '@mm-services/translation-loader.service';
+import {SessionService} from '@mm-services/session.service';
+import {AuthService} from '@mm-services/auth.service';
+import {ResourceIconsService} from '@mm-services/resource-icons.service';
+import {ChangesService} from '@mm-services/changes.service';
+import {UpdateServiceWorkerService} from '@mm-services/update-service-worker.service';
+import {LocationService} from '@mm-services/location.service';
 import {ModalService} from './modals/mm-modal/mm-modal';
 import {ReloadingComponent} from './modals/reloading/reloading.component';
-import { FeedbackService } from './services/feedback.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 import { environment } from './environments/environment';
-import { FormatDateService } from './services/format-date.service';
-import { XmlFormsService } from './services/xml-forms.service';
-import { JsonFormsService } from './services/json-forms.service';
-import { TranslateFromService } from './services/translate-from.service';
+import { FormatDateService } from '@mm-services/format-date.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { JsonFormsService } from '@mm-services/json-forms.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
+import {LanguageService, SetLanguageService} from '@mm-services/language.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -76,6 +76,8 @@ export class AppComponent {
     private store: Store,
     private translateService: TranslateService,
     private translationLoaderService: TranslationLoaderService,
+    private languageService: LanguageService,
+    private setLanguageService: SetLanguageService,
     private sessionService: SessionService,
     private authService: AuthService,
     private resourceIconsService: ResourceIconsService,
@@ -95,6 +97,7 @@ export class AppComponent {
     this.globalActions = new GlobalActions(store);
 
     moment.locale(['en']);
+
     this.formatDateService.init();
 
     this.adminUrl = this.locationService.adminPath;
@@ -102,18 +105,22 @@ export class AppComponent {
     setBootstrapTheme('bs3');
   }
 
+  private loadTranslations() {
+    this.translationsLoaded = this.languageService
+      .get()
+      .then((language) => {
+        this.setLanguageService.set(language, false);
+      })
+      .catch(err => {
+        console.error('Error loading language', err);
+      });
+  }
+
   private setupRouter() {
     this.router.events.subscribe((event:RouterEvent) => {
       if (event instanceof ActivationEnd) {
         return this.globalActions.setCurrentTab(event.snapshot.data.tab);
       }
-    });
-  }
-
-  private loadTranslations() {
-    this.translationsLoaded = this.translationLoaderService.getLocale().then(locale => {
-      this.translateService.setDefaultLang(locale);
-      return this.translateService.use(locale).toPromise();
     });
   }
 
