@@ -42,8 +42,8 @@ export class ReportsFiltersComponent {
     this.searchFiltersService.init(this.freetextFilter);
   }
 
-  applyFilters() {
-    this.search.emit();
+  applyFilters(force?) {
+    this.search.emit(force);
   }
 
   resetFilters() {

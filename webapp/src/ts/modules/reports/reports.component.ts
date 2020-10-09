@@ -11,7 +11,7 @@ import { SearchService } from '../../services/search.service';
 import { Selectors } from '../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 
 const PAGE_SIZE = 50;
@@ -48,6 +48,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   constructor(
     private store:Store,
     private route: ActivatedRoute,
+    private router:Router,
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
@@ -149,7 +150,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.errorSyntax = false;
       this.loading = true;
       if (this.selectedReports?.length && isMobile()) {
-        // ctrl.unsetSelected(); todo
+        this.globalActions.unsetSelected();
       }
 
       if (options.skip) {
@@ -208,8 +209,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
     if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
-      //$state.go('reports.detail', { id: null }, { notify: false });
-      //ctrl.clearSelection();
+      this.router.navigate(['reports']);
+      this.reportsActions.clearSelection();
     }
     if (!force && isMobile() && this.showContent) {
       // leave content shown
@@ -221,7 +222,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, report) {
-    return report._id + report._rev + report.read + report.selected;
+    return report._id + report._rev + report.read;
   }
 
 }

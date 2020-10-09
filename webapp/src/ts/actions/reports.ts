@@ -105,6 +105,12 @@ export class ReportsActions {
   markReportRead(id) {
     return this.store.dispatch(Actions.markReportRead(id));
   }
+
+  clearSelection() {
+    this.store.dispatch(Actions.setSelectedReports([]));
+    // setVerifyingReport(false);
+    // setCheckboxElements(false);
+  }
 }
 /*
 
@@ -179,13 +185,7 @@ angular.module('inboxServices').factory('ReportsActions',
         });
       }
 
-      function clearSelection() {
-        setSelectedReports([]);
-        setVerifyingReport(false);
-        LiveList.reports.clearSelected();
-        LiveList['report-search'].clearSelected();
-        setCheckboxElements(false);
-      }
+
 
       function selectAll() {
         dispatch((dispatch, getState) => {

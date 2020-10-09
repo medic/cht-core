@@ -40,11 +40,6 @@ const isSelected = (selected, report) => {
   return selected.some(selected => selected?.doc?._id === report._id);
 };
 
-const updateSelectedReports = (state) => {
-  const reports = state.reports.map(report => ({ ...report, selected: isSelected(state.selected, report) }));
-  return updateReports(state, reports);
-};
-
 const markReportRead = (state, id) => {
   const report = state.reportsById.get(id);
   return updateReports(state, [{ ...report, read: true }]);
@@ -74,13 +69,6 @@ const _reportsReducer = createReducer(
   on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
 
   on(GlobalActions.clearSelected, (state) => ({ ...state, selected: [] })),
-
-  on(
-    Actions.addSelectedReport,
-    Actions.removeSelectedReport,
-    Actions.setSelectedReports,
-    GlobalActions.clearSelected,
-    (state) => updateSelectedReports(state)),
 
   on(Actions.markReportRead, (state, { payload: { id } }) => markReportRead(state, id)),
 );

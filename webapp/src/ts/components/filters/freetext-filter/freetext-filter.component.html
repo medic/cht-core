@@ -1,4 +1,4 @@
-<span class="filter input-group freetext-filter" [class.only-filter]="currentTab === 'contacts'">
+<span class="input-group freetext-filter" [class.only-filter]="currentTab === 'contacts'">
   <input id="freetext" class="form-control" [(ngModel)]="inputText" (ngModelChange)="onFieldChange($event)" type="text" [class.disabled]="disabled" placeholder="{{'freetext.search' | translate}}">
   <span class="input-group-btn">
     <button id="search" class="btn btn-default" type="button" [class.disabled]="disabled">
@@ -7,7 +7,7 @@
   </span>
 </span>
 
-<span class="filter dropdown mobile-freetext-filter" *ngIf="currentTab === 'reports'" [class.disabled]="disabled" dropdown [insideClick]="true">
+<span class="dropdown mobile-freetext-filter" *ngIf="currentTab === 'reports'" [class.disabled]="disabled" dropdown [insideClick]="true">
   <span id="mobile-search" class="mm-button" data-toggle="dropdown" dropdownToggle>
     <span class="mm-button-icon">
       <span class="fa fa-search"></span>

@@ -1,5 +1,6 @@
 <li attr.data-record-id="{{id}}"
-    [class.selected]="selected"
+    [routerLink]="id"
+    routerLinkActive="selected"
     [class.primary]="primary"
     [class.unread]="unread"
     [class.dod]="dod"
@@ -8,7 +9,7 @@
     [class.overdue]="overdue"
     class="content-row"
 >
-  <a routerLink="{{id}}">
+  <a [routerLink]="id">
     <div><input type="checkbox"></div>
     <div *ngIf="icon" class="icon" [innerHTML]="icon | resourceIcon"></div>
     <div class="content">

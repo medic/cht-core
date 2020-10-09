@@ -57,7 +57,11 @@ export class NavigationComponent implements OnInit, OnDestroy {
     }
 
     if (routeSnapshot.params.id) {
-      return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+      return this.router.navigate([routeSnapshot.parent.routeConfig.path]);
+    }
+
+    if (routeSnapshot.firstChild.params.id) {
+      return this.router.navigate([routeSnapshot.routeConfig.path]);
     }
 
     this.globalActions.unsetSelected();

@@ -64,7 +64,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   applyFilter() {
     this.globalActions.setFilter({ search: this.inputText });
-    this.search.emit();
+    this.search.emit(true);
   }
 
   ngOnDestroy() {
