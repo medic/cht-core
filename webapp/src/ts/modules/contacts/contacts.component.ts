@@ -12,7 +12,6 @@ import { isMobile } from '../../providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service'
 import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
-import { ContactsContentComponent } from './contacts-content.component';
 
 const PAGE_SIZE = 50;
 
@@ -54,10 +53,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
   ngOnInit() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getContactsList),
-      this.store.select(Selectors.getIsAdmin)
-    ).subscribe(([contactsList, isAdmin]) => {
+      this.store.select(Selectors.getIsAdmin),
+      this.store.select(Selectors.getFilters)
+    ).subscribe(([contactsList, isAdmin, filters]) => {
       this.contactsList = contactsList;
       this.isAdmin = isAdmin;
+      this.filters = filters
     });
     this.subscription.add(reduxSubscription);
     this.contactTypesService
@@ -126,6 +127,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
       // this.errorSyntax = false;
       this.loading = true;
     }
+    console.log('this.filters::');
+    console.log(this.filters);
 
     return this.searchService
       .search('contacts', this.filters, options)
@@ -162,6 +165,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   search(force = false) {
+    console.log('search called');
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
     // if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {

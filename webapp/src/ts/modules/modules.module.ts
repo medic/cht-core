@@ -16,6 +16,7 @@ import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
 import { ContactsComponent } from './contacts/contacts.component';
 import { ContactsContentComponent } from './contacts/contacts-content.component';
+import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { ContactsContentComponent } from './contacts/contacts-content.component'
     ContactsComponent,
     ReportsFiltersComponent,
     ContactsContentComponent,
+    ContactsFiltersComponent,
   ],
   imports: [
     CommonModule,
