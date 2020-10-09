@@ -12,6 +12,10 @@ export const routes: Routes = [
     canActivate: [RouteGuardProvider],
     children: [
       {
+        path: '',
+        component: MessagesContentComponent
+      },
+      {
         path: ':type_id',
         component: MessagesContentComponent
       }
