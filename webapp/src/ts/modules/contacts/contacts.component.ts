@@ -31,6 +31,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   filtered = false;
   hasContacts = true;
   filters:any = {};
+  defaultFilters:any = {};
   moreItems;
   usersHomePlace;
   contactTypes;
@@ -69,7 +70,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       })
       .then((children) => {
         this.childPlaces = children;
-        this.filters = {
+        this.defaultFilters = {
           types: {
             selected: this.childPlaces.map(type => type.id)
           }
@@ -127,11 +128,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
       // this.errorSyntax = false;
       this.loading = true;
     }
-    console.log('this.filters::');
-    console.log(this.filters);
+
+    const searchFilters = Object.keys(this.filters).length < 1 ? this.defaultFilters : this.filters;
 
     return this.searchService
-      .search('contacts', this.filters, options)
+      .search('contacts', searchFilters, options)
       .then((updatedContacts) => {
         updatedContacts = this.formatContacts(updatedContacts);
 
