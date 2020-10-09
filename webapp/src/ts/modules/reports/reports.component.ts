@@ -20,7 +20,7 @@ const PAGE_SIZE = 50;
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit, OnDestroy {
-  private subscription: Subscription = new Subscription();
+  subscription: Subscription = new Subscription();
 
   private globalActions;
   private reportsActions;
