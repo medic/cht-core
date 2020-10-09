@@ -53,7 +53,7 @@ export class MmModalAbstract {
     this.status.severity = false;
   }
 
-  setError(err, message, severity?) {
+  setError(err?, message?, severity?) {
     console.error('Error submitting modal', err);
     this.status.processing = false;
     this.status.error = message;

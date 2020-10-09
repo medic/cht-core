@@ -11,6 +11,8 @@ import { FeedbackComponent } from './feedback/feedback.component';
 import { GuidedSetupComponent } from './guided-setup/guided-setup.component';
 import { SendMessageComponent } from './send-message/send-message.component';
 import { DeleteDocConfirmComponent } from './delete-doc-confirm/delete-doc-confirm.component';
+import { UpdatePasswordComponent } from './edit-user/update-password.component';
+import { EditUserSettingsComponent } from './edit-user/edit-user-settings.component';
 
 
 @NgModule({
@@ -22,6 +24,8 @@ import { DeleteDocConfirmComponent } from './delete-doc-confirm/delete-doc-confi
     GuidedSetupComponent,
     SendMessageComponent,
     DeleteDocConfirmComponent,
+    UpdatePasswordComponent,
+    EditUserSettingsComponent,
   ],
   imports: [
     CommonModule,
@@ -33,6 +37,8 @@ import { DeleteDocConfirmComponent } from './delete-doc-confirm/delete-doc-confi
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
+    UpdatePasswordComponent,
+    EditUserSettingsComponent,
   ]
 })
 export class ModalsModule { }

@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import  { PipesModule } from '@mm-pipes/pipes.module';
 
 import { AboutComponent } from './about/about.component';
+import {ConfigurationUserComponent} from './configuration-user/configuration-user.component';
 import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -20,6 +21,7 @@ import { MessagesContentComponent } from './messages/messages-content.component'
 @NgModule({
   declarations: [
     AboutComponent,
+    ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
@@ -39,6 +41,7 @@ import { MessagesContentComponent } from './messages/messages-content.component'
   ],
   exports: [
     AboutComponent,
+    ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
