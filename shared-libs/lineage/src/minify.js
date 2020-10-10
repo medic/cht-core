@@ -1,3 +1,4 @@
+const utils = require('./utils');
 const RECURSION_LIMIT = 50;
 
 // Minifies things you would attach to another doc:
@@ -46,6 +47,12 @@ function minify(doc) {
   if (doc.type === 'data_record') {
     delete doc.patient;
     delete doc.place;
+  }
+
+  if (utils.validLinkedDocs(doc)) {
+    Object.keys(doc.linked_docs).forEach(key => {
+      doc.linked_docs[key] = utils.getId(doc.linked_docs[key]);
+    });
   }
 }
 

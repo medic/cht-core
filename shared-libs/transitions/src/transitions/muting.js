@@ -58,6 +58,9 @@ const isRelevantContact = (doc, infoDoc = {}) =>
           !infoDoc.muting_history);
 
 module.exports = {
+  name: TRANSITION_NAME,
+  asynchronousOnly: true,
+
   init: () => {
     const forms = getConfig()[MUTE_PROPERTY];
     if (!forms || !_.isArray(forms) || !forms.length) {
@@ -152,6 +155,5 @@ module.exports = {
     } else {
       messages.addError(doc, `Failed to complete muting request, event type "${eventType}" misconfigured.`);
     }
-  },
-  asynchronousOnly: true
+  }
 };

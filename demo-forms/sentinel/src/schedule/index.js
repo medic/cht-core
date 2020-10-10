@@ -4,43 +4,16 @@ const transitionsLib = config.getTransitionsLib();
 const date = transitionsLib.date;
 const logger = require('../lib/logger');
 
-const tasks = {
-  dueTasks: transitionsLib.dueTasks,
-  reminders: require('./reminders'),
-  replications: require('./replications'),
-  outbound: require('./outbound'),
-  purging: require('./purging')
-};
+const RUN_EVERY_MS = 5 * 60 * 1000; // 5 minutes
 
-function getTime(hour, minute) {
-  return moment(0)
-    .hours(hour)
-    .minutes(minute);
-}
+const ongoingTasks = new Set();
 
-function reschedule() {
-  const now = moment();
-  const heartbeat = now
-    .clone()
-    .startOf('minute')
-    .add(5, 'minutes');
-  const duration = moment.duration(heartbeat.valueOf() - now.valueOf());
 
-  logger.info(`checking schedule again in ${moment.duration(duration).humanize()}`);
-  setTimeout(exports.checkSchedule, duration.asMilliseconds());
-}
-
-const executeIfSendable = task => {
-  if (!exports.sendable()) {
-    return Promise.resolve();
-  }
-  return task.execute();
-};
-
+const getTime = (hour, minute) => moment(0).hours(hour).minutes(minute);
 /*
  * Return true if within time window to set outgoing/pending tasks/messages.
  */
-exports.sendable = function() {
+const sendable = () => {
   const afterHours = config.get('schedule_morning_hours') || 0;
   const afterMinutes = config.get('schedule_morning_minutes') || 0;
   const untilHours = config.get('schedule_evening_hours') || 23;
@@ -54,12 +27,47 @@ exports.sendable = function() {
   return now >= after && now <= until;
 };
 
-exports.checkSchedule = function() {
-  tasks.reminders.execute()
-    .then(() => executeIfSendable(tasks.dueTasks))
-    .then(() => tasks.replications.execute())
-    .then(() => tasks.outbound.execute())
-    .then(() => tasks.purging.execute())
-    .catch(err => logger.error('Error running tasks: %o', err))
-    .then(() => reschedule());
+const executeIfSendable = task => ({
+  execute: () => {
+    if (!sendable()) {
+      return Promise.resolve();
+    }
+    return task.execute();
+  },
+});
+
+const tasks = {
+  dueTasks: executeIfSendable(transitionsLib.dueTasks),
+  reminders: require('./reminders'),
+  replications: require('./replications'),
+  outbound: require('./outbound'),
+  purging: require('./purging'),
+  backgroundCleanup: require('./background-cleanup')
+};
+
+const runTasks = () => {
+  logger.debug('Initiating all tasks');
+  Object.keys(tasks).forEach(taskName => {
+    if (ongoingTasks.has(taskName)) {
+      logger.info(`Skipping Task ${taskName} as it's still running`);
+      return;
+    }
+
+    ongoingTasks.add(taskName);
+    logger.info(`Task ${taskName} started`);
+    tasks[taskName]
+      .execute()
+      .then(() => logger.info(`Task ${taskName} completed`))
+      .catch(err => logger.error(`Task ${taskName} completed with error: %o`, err))
+      .then(() => {
+        ongoingTasks.delete(taskName);
+      });
+  });
+};
+
+// eslint-disable-next-line no-unused-vars
+let interval; // used to clear the interval in unit tests
+exports.init = () => {
+  runTasks();
+  interval = setInterval(runTasks, RUN_EVERY_MS);
 };

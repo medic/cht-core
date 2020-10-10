@@ -31,6 +31,8 @@
     "lodash": "^4.17.15",
     "moment": "^2.26.0",
     "mustache": "^4.0.1",
-    "object-path": "^0.11.4"
+    "object-path": "^0.11.4",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9"
   }
 }

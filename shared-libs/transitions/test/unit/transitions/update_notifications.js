@@ -3,11 +3,31 @@ const assert = require('chai').assert;
 const transition = require('../../../src/transitions/update_notifications');
 const utils = require('../../../src/lib/utils');
 const mutingUtils = require('../../../src/lib/muting_utils');
+const logger = require('../../../src/lib/logger.js');
 
 describe('update_notifications', () => {
   afterEach(done => {
     sinon.restore();
     done();
+  });
+
+  it('should have properties defined', () => {
+    assert.equal(transition.name, 'update_notifications');
+    assert.equal(transition.asynchronousOnly, true);
+    assert.equal(transition.deprecated, true);
+    assert.equal(transition.deprecatedIn, '3.2.x');
+  });
+
+  it('init() should log a warning when transition is deprecated.', () => {
+    const deprecatedMsg = 'Please use "muting" transition instead.';
+    sinon.stub(logger, 'warn');
+
+    transition.init();
+
+    assert.equal(logger.warn.callCount, 1);
+    assert.equal(logger.warn.args[0][0].includes(transition.name), true);
+    assert.equal(logger.warn.args[0][0].includes(transition.deprecatedIn), true);
+    assert.equal(logger.warn.args[0][0].includes(deprecatedMsg), true);
   });
 
   describe('filter', () => {

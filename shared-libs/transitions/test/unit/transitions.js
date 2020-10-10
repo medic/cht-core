@@ -327,5 +327,12 @@ describe('transitions', () => {
     assert.throws(transitions.loadTransitions);
     assert.deepEqual(transitions._transitions(), []);
   });
+
+  it('getDeprecatedTransitions() should return list of current deprecated transitions', () => {
+    const deprecatedTransitions = transitions.getDeprecatedTransitions();
+
+    assert.isDefined(deprecatedTransitions);
+    assert.equal(deprecatedTransitions.length, 3);
+  });
 });
 

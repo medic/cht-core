@@ -20,14 +20,14 @@ const enqueue = change => changeQueue.push(change);
 const updateMetadata = (change, callback) => {
   processed++;
   metadata
-    .update(change.seq)
+    .setTransitionSeq(change.seq)
     .then(() => callback())
     .catch(callback);
 };
 
-const getProcessedSeq = () => {
+const getTransitionSeq = () => {
   return metadata
-    .getProcessedSeq()
+    .getTransitionSeq()
     .catch(err => {
       logger.error('transitions: error fetching processed seq: %o', err);
       return;
@@ -59,47 +59,6 @@ const registerFeed = seq => {
   return request;
 };
 
-const deleteReadDocs = change => {
-  // we don't know if the deleted doc was a report or a message so
-  // attempt to delete both
-  const possibleReadDocIds = ['report', 'message'].map(
-    type => `read:${type}:${change.id}`
-  );
-
-  return db.allDbs().then(dbs => {
-    const userDbs = dbs.filter(dbName => dbName.indexOf(`${db.medicDbName}-user-`) === 0);
-    return userDbs.reduce((p, userDb) => {
-      return p.then(() => {
-        const metaDb = db.get(userDb);
-        return metaDb
-          .allDocs({ keys: possibleReadDocIds })
-          .then(results => {
-            const row = results.rows.find(row => !row.error);
-            if (!row) {
-              return;
-            }
-
-            return metaDb.remove(row.id, row.value.rev).catch(err => {
-              // ignore 404s or 409s - the doc was probably deleted client side already
-              if (err && err.status !== 404 && err.status !== 409) {
-                throw err;
-              }
-            });
-          })
-          .then(() => {
-            db.close(metaDb);
-          })
-          .catch(err => {
-            db.close(metaDb);
-            throw err;
-          });
-      });
-    }, Promise.resolve());
-
-  });
-};
-
-
 const changeQueue = async.queue((change, callback) => {
   if (!change) {
     return callback();
@@ -111,16 +70,7 @@ const changeQueue = async.queue((change, callback) => {
     );
   }
   if (change.deleted) {
-    // don't run transitions on deleted docs, but do clean up
-    return Promise
-      .all([
-        transitionsLib.infodoc.delete(change),
-        deleteReadDocs(change)
-      ])
-      .catch(err => {
-        logger.error('Error cleaning up deleted doc: %o', err);
-      })
-      .then(() => tombstoneUtils.processChange(Promise, db.medic, change, logger))
+    return tombstoneUtils.processChange(Promise, db.medic, change, logger)
       .then(() => updateMetadata(change, callback))
       .catch(callback);
   }
@@ -143,7 +93,7 @@ const listen = () => {
   changeQueue.resume();
   if (!request) {
     logger.info('transitions: processing enabled');
-    return getProcessedSeq().then(seq => registerFeed(seq));
+    return getTransitionSeq().then(seq => registerFeed(seq));
   }
 };
 
@@ -169,7 +119,6 @@ module.exports = {
 
   // exposed for testing
   _changeQueue: changeQueue,
-  _deleteReadDocs: deleteReadDocs,
   _transitionsLib: transitionsLib,
   _enqueue: enqueue,
 };

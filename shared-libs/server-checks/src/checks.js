@@ -1,6 +1,5 @@
 const url = require('url');
 const request = require('request');
-
 const MIN_MAJOR = 8;
 
 /* eslint-disable no-console */
@@ -49,6 +48,8 @@ const envVarsCheck = () => {
 
 const couchDbNoAdminPartyModeCheck = () => {
   const noAuthUrl = getNoAuthURL();
+
+  // require either 'http' or 'https' by removing the ":" from noAuthUrl.protocol
   const net = require(noAuthUrl.protocol.replace(':', ''));
 
   return new Promise((resolve, reject) => {
@@ -59,7 +60,42 @@ const couchDbNoAdminPartyModeCheck = () => {
       } else {
         console.error('Expected a 401 when accessing db without authentication.');
         console.error(`Instead we got a ${statusCode}`);
-        reject(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
+        reject(new Error('CouchDB security seems to be misconfigured, ' +
+          'see: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
+      }
+    }).on('error', (e) => {
+      reject(`CouchDB doesn't seem to be running on ${url.format(noAuthUrl)}. ` +
+        `Tried to connect but got an error:\n ${e.stack}`);
+    });
+  });
+};
+
+const checkNodeName = (nodeName, membership) => {
+  return membership &&
+    membership.all_nodes &&
+    membership.all_nodes.includes(nodeName);
+};
+
+const couchNodeNamesMatch = (serverUrl) => {
+  const envNodeName = process.env.COUCH_NODE_NAME;
+  const membershipUri = '/_membership';
+  const membershipUrl = serverUrl + membershipUri;
+
+  return new Promise((resolve, reject) => {
+    request.get({ url: membershipUrl, json: true }, (err, response, body) => {
+      if (err) {
+        return reject(err);
+      }
+      if (checkNodeName(envNodeName, body)) {
+        console.log(`Environment variable "COUCH_NODE_NAME" matches server "${envNodeName}"`);
+        return resolve();
+      } else {
+        // we don't want to log user and password, so strip them when we log via getNoAuthURL();
+        const noAuthUrl = getNoAuthURL();
+        noAuthUrl.pathname = membershipUri;
+        return  reject(`Environment variable 'COUCH_NODE_NAME' set to "${envNodeName}" but doesn't match ` +
+          `what's on CouchDB Membership endpoint at "${url.format(noAuthUrl)}". See ` +
+          `https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#required-environment-variables`);
       }
     });
   });
@@ -84,6 +120,7 @@ const check = (serverUrl) => {
     .then(nodeVersionCheck)
     .then(envVarsCheck)
     .then(couchDbNoAdminPartyModeCheck)
+    .then(() => couchNodeNamesMatch(serverUrl))
     .then(() => couchDbVersionCheck(serverUrl));
 };
 
@@ -93,5 +130,6 @@ module.exports = {
   _nodeVersionCheck: () => nodeVersionCheck(),
   _envVarsCheck: () => envVarsCheck(),
   _couchDbNoAdminPartyModeCheck: () => couchDbNoAdminPartyModeCheck(),
+  _couchNodeNamesMatch: () => couchNodeNamesMatch(),
   _couchDbVersionCheck: (serverUrl) => couchDbVersionCheck(serverUrl)
 };

@@ -10,6 +10,8 @@ if (UNIT_TEST_ENV) {
     process.exit(1);
   };
 
+  module.exports.couchUrl = stubMe('couchUrl');
+
   module.exports.medic = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),

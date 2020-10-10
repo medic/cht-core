@@ -66,7 +66,7 @@
 
     <div ng-hide="loading || (deployDoc && !deployDoc._deleted && (deployDoc.action !== 'stage' || !deployDoc.staging_complete))">
 
-      <div>
+      <div class="upgrade-grid">
         <legend translate>instance.upgrade.releases</legend>
         <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
         <div ng-show="versions.betas.length">
@@ -82,38 +82,49 @@
         </div>
       </div>
 
-      <div ng-show="allowPrereleaseBuilds">
-        <legend translate>instance.upgrade.betas</legend>
-        <div>
-          <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
-          <div ng-show="versions.betas.length">
-            <div class="row selection-heading">
-              <div class="col-xs-5" translate>instance.upgrade.version</div>
-              <div class="col-xs-7" translate>instance.upgrade.date</div>
-            </div>
-            <ul>
-              <li ng-repeat="release in versions.betas" class="row">
-                <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
-              </li>
-            </ul>
+      <div uib-accordion class="upgrade-accordion">
+        <div uib-accordion-group class="panel-default" is-open="status.open">
+          <div uib-accordion-heading>
+            <i class="fa" ng-class="{'fa-chevron-down': status.open, 'fa-chevron-right': !status.open}"></i>
+            <span translate>instance.upgrade.pre_releases</span>
           </div>
-        </div>
-      </div>
 
-      <div ng-show="allowPrereleaseBuilds">
-        <legend translate>instance.upgrade.branches</legend>
-        <div>
-          <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
-          <div ng-show="versions.branches.length">
-            <div class="row selection-heading">
-              <div class="col-xs-5" translate>instance.upgrade.version</div>
-              <div class="col-xs-7" translate>instance.upgrade.date</div>
+          <div class="alert alert-warning" role="alert" translate>instance.upgrade.pre_releases_warning</div>
+
+          <div class="upgrade-grid">
+            <legend translate>instance.upgrade.betas</legend>
+            <div>
+              <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
+              <div ng-show="versions.betas.length">
+                <div class="row selection-heading">
+                  <div class="col-xs-5" translate>instance.upgrade.version</div>
+                  <div class="col-xs-7" translate>instance.upgrade.date</div>
+                </div>
+                <ul>
+                  <li ng-repeat="release in versions.betas" class="row">
+                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <ul>
-              <li ng-repeat="release in versions.branches" class="row">
-                <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
-              </li>
-            </ul>
+          </div>
+
+          <div class="upgrade-grid">
+            <legend translate>instance.upgrade.branches</legend>
+            <div>
+              <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
+              <div ng-show="versions.branches.length">
+                <div class="row selection-heading">
+                  <div class="col-xs-5" translate>instance.upgrade.version</div>
+                  <div class="col-xs-7" translate>instance.upgrade.date</div>
+                </div>
+                <ul>
+                  <li ng-repeat="release in versions.branches" class="row">
+                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>

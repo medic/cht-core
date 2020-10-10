@@ -11,10 +11,10 @@ const acceptPatientReports = require('./accept_patient_reports');
 const moment = require('moment');
 const config = require('../config');
 const date = require('../date');
-const NAME = 'registration';
 
 const contactTypesUtils = require('@medic/contact-types-utils');
 
+const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
 const PARENT_FIELD_NOT_PROVIDED = 'parent_field_not_provided';
 const PARENT_INVALID = 'parent_invalid';
@@ -548,6 +548,7 @@ const addPlace = (options) => {
 };
 
 module.exports = {
+  name: NAME,
   init: () => {
     const registrations = getConfig();
     registrations.forEach(registration => {

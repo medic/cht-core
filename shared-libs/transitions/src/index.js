@@ -19,6 +19,7 @@ module.exports = (sourceDb, settings, translations, sourceLogger) => {
     loadTransitions: transitions.loadTransitions,
     processChange: transitions.processChange,
     processDocs: transitions.processDocs,
+    getDeprecatedTransitions: transitions.getDeprecatedTransitions,
     messages: require('./lib/messages'),
     date: require('./date'),
     infodoc: infodoc,

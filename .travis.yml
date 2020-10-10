@@ -39,10 +39,11 @@ before_install:
   - ./scripts/travis/couch-start
   - sudo apt-get install xsltproc
 
-install: nvm install $NODE_VERSION
+install:
+  - nvm install $NODE_VERSION
+  - mkdir tests/logs
 
 before_script:
-  - mkdir tests/logs
   - nvm use $NODE_VERSION
   - ./scripts/travis/npm-init
   - npm install -g grunt-cli
@@ -79,11 +80,10 @@ jobs:
         - ./scripts/travis/npm-init
         - npm install -g grunt-cli
         - ./scripts/travis/couch-config
-        - mkdir tests/logs
       script:
         - node --stack_size=10000 `which grunt` ci-compile
+      after_script:
         - node --stack_size=10000 `which grunt` publish-for-testing
-      after_failure: # overwrite default
     - stage: publish
       if: type != pull_request
       env: NODE_VERSION=12
@@ -101,25 +101,13 @@ after_failure:
   - node scripts/travis/cleanup.js # clean up testing ddoc
   - pip install --user awscli
   - |
-    (cd tests/logs
-      for log in $(ls *.log); do
-        echo "--------- $log ----------"
-        tail "$log"
-        echo "-------------------------"
-      done
-    )
-
-    [[ "$TRAVIS_BUILD_STAGE_NAME" = "test" ]] || return
-
-    if [[ "$TRAVIS_PULL_REQUEST" = true ]]; then
-      S3_PATH=s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST
-    else
-      S3_PATH=s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER
-    fi
+    DATE=$(date +"%Y-%M-%dT%H:%m:%S")
+    S3_PATH=s3://medic-e2e/JOB_"$TRAVIS_JOB_NUMBER"/"$DATE"
 
     echo "Uploading logs and screenshots to ${S3_PATH}..."
 
     docker logs couch > tests/logs/couch.log 2>&1
+    wget https://api.travis-ci.org/jobs/$TRAVIS_JOB_ID/log.txt -O tests/logs/travis.log
 
     aws s3 cp tests/results "$S3_PATH"/test-results --recursive
     aws s3 cp tests/logs "$S3_PATH"/ --recursive
