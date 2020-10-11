@@ -138,13 +138,13 @@ module.exports = {
       .manage()
       .logs()
       .get('browser')
-      .then(function (browserLogs) {
-        browserLogs.forEach(function (log) {
+      .then(browserLogs => {
+        browserLogs.forEach(log => {
           if (log.level.value > 900) {
             fs.appendFile(
               `tests/results/${spec}-logs.txt`,
               `\r\n Console errors: ${log.message}\r\n`,
-              function (err) {
+              err => {
                 if (err) {
                   throw err;
                 }
