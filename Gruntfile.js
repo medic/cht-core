@@ -14,7 +14,7 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
-  WEBDRIVER_VERSION = 85
+  WEBDRIVER_VERSION=85
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
@@ -29,7 +29,7 @@ const couchConfig = (() => {
     throw 'COUCH_URL must contain admin authentication information';
   }
 
-  const [username, password] = parsedUrl.auth.split(':', 2);
+  const [ username, password ] = parsedUrl.auth.split(':', 2);
 
   return {
     username,
@@ -50,7 +50,7 @@ const copySharedLibs = [
   'rm -rf ../shared-libs/*/node_modules/@medic',
   'mkdir ./node_modules/@medic',
   'cp -RP ../shared-libs/* ./node_modules/@medic'
-].join('&& ');
+].join( '&& ');
 
 const linkSharedLibs = dir => {
   const sharedLibPath = lib => path.resolve(__dirname, 'shared-libs', lib);
@@ -61,7 +61,7 @@ const linkSharedLibs = dir => {
   ].join(' && ');
 };
 
-module.exports = function (grunt) {
+module.exports = grunt => {
   'use strict';
 
   require('jit-grunt')(grunt, {
@@ -532,7 +532,7 @@ module.exports = function (grunt) {
         'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
       'check-version': `node scripts/travis/check-versions.js`,
       'undo-patches': {
-        cmd: function () {
+        cmd: () => {
           const modulesToPatch = [
             'bootstrap-daterangepicker',
             'enketo-core',
@@ -581,7 +581,7 @@ module.exports = function (grunt) {
       // 3. run `diff -c original modified > webapp/patches/my-patch.patch`
       // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
       'apply-patches': {
-        cmd: function () {
+        cmd: () => {
           const patches = [
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
@@ -615,9 +615,9 @@ module.exports = function (grunt) {
             return 'echo "Not building on Travis so not envifying"';
           }
           return 'mv build/ddocs/medic/_attachments/js/inbox.js inbox.tmp.js && ' +
-            'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
-            'rm inbox.tmp.js && ' +
-            'echo "Envify complete"';
+                 'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
+                 'rm inbox.tmp.js && ' +
+                 'echo "Envify complete"';
         }
       },
       'build-config': {
