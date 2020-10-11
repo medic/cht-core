@@ -33,20 +33,20 @@ const baseConfig = {
   },
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
-    print: () => { }
+    print: () => {}
   },
-  beforeLaunch: function () {
-    process.on('uncaughtException', function () {
+  beforeLaunch: () => {
+    process.on('uncaughtException', () => {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
     });
 
-    return new Promise(function (resolve) {
+    return new Promise(resolve => {
       utils.reporter.beforeLaunch(resolve);
     });
   },
-  afterLaunch: function (exitCode) {
-    return new Promise(function (resolve) {
+  afterLaunch: exitCode => {
+    return new Promise(resolve => {
       return request.post('http://localhost:31337/die')
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     });
