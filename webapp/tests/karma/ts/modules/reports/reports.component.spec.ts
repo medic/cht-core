@@ -15,13 +15,8 @@ import { ReportsContentComponent } from '@mm-modules/reports/reports-content.com
 import { SettingsService } from '@mm-services/settings.service';
 import { ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
-import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
-import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
-import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
-import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
-import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
-import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
+import { ComponentsModule } from '@mm-components/components.module';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -52,26 +47,22 @@ describe('Reports Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
+          RouterTestingModule,
+          ComponentsModule,
         ],
         declarations: [
           ReportsComponent,
           ReportsFiltersComponent,
           ReportsContentComponent,
-          NavigationComponent,
-          FormTypeFilterComponent,
-          FacilityFilterComponent,
-          DateFilterComponent,
-          StatusFilterComponent,
-          FreetextFilterComponent,
-          ResetFiltersComponent,
+          ComponentsModule,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ChangesService, useValue: { subscribe: sinon.stub().resolves(of({})) } },
           { provide: AddReadStatusService, useValue: { updateReports: sinon.stub().resolvesArg(0) }},
           { provide: SearchService, useValue: { search: sinon.stub().resolves() } },
-          { provide: SettingsService, useValue: {} } // Needed because of ngx-translate provider's constructor.
+          { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
+          { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } }, // Needed because of facility filter
         ]
       })
       .compileComponents()

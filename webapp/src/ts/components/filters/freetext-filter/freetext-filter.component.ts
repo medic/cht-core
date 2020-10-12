@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Input, Output, OnInit } from '@angular/core';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -47,6 +47,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
       currentTab,
       filters,
     ]) => {
+      console.log(currentTab, filters);
       this.currentTab = currentTab;
       this.inputText = filters.search;
     });

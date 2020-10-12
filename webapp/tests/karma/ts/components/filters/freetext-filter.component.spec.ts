@@ -16,6 +16,7 @@ describe('Freetext Filter Component', () => {
   beforeEach(async(() => {
     const mockedSelectors = [
       { selector: 'getCurrentTab', value: 'reports' },
+      { selector: 'getFilters', value: { search: '' } },
     ];
 
     TestBed
