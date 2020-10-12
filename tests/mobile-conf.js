@@ -7,7 +7,12 @@ mobileConfig.capabilities.chromeOptions = {
   w3c: false,
   args: ['--headless', '--disable-gpu'],
   mobileEmulation: {
-    'deviceName': constants.EMULATED_DEVICE
+    //'deviceName': constants.EMULATED_DEVICE,
+    'deviceMetrics': {
+      'width': 414,
+      'height': 736,
+      'pixelRatio': 3.0
+    }
   }
 };
 
