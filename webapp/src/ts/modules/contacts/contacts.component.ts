@@ -3,15 +3,22 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { GlobalActions } from '../../actions/global';
+import * as _ from 'lodash-es';
+import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactsActions } from '@mm-actions/contacts';
-import { Selectors } from '../../selectors';
-import { isMobile } from '../../providers/responsive.provider';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { SessionService } from '@mm-services/session.service';
+import { AuthService } from '@mm-services/auth.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { Selectors } from '@mm-selectors/index';
+import { isMobile } from '@mm-providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service'
-import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
+import { init as scrollLoaderInit } from '@mm-providers/scroll-loader.provider';
 
 const PAGE_SIZE = 50;
 
@@ -37,6 +44,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
   contactTypes;
   isAdmin;
   childPlaces;
+  lastVisitedDateExtras;
+  visitCountSettings;
+  defaultSortDirection = 'alpha';
+  sortDirection = this.defaultSortDirection;
+  additionalListItem = false;
 
   constructor(
     private store: Store,
@@ -45,6 +57,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private translateService: TranslateService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
+    private userSettingsService:UserSettingsService,
+    private getDataRecordsService: GetDataRecordsService,
+    private sessionService: SessionService,
+    private authService: AuthService,
+    private settingsService: SettingsService,
+    private UHCSettings: UHCSettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -62,25 +80,64 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.filters = filters
     });
     this.subscription.add(reduxSubscription);
-    this.contactTypesService
-      .getAll()
-      .then((types) => {
-        this.contactTypes = types;
-        return this.getChildren()
-      })
-      .then((children) => {
-        this.childPlaces = children;
-        this.defaultFilters = {
-          types: {
-            selected: this.childPlaces.map(type => type.id)
-          }
-        };
-        this.search();
-      });
+    Promise.all([
+      this.getUserHomePlaceSummary(),
+      this.canViewLastVisitedDate(),
+      this.settingsService.get(),
+      this.contactTypesService.getAll()
+    ])
+    .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
+      this.usersHomePlace = homePlaceSummary;
+      this.lastVisitedDateExtras = viewLastVisitedDate;
+      this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
+      if(this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+        this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
+      }
+      this.contactTypes = contactTypes;
+      return this.getChildren()
+    })
+    .then((children) => {
+      this.childPlaces = children;
+      this.defaultFilters = {
+        types: {
+          selected: this.childPlaces.map(type => type.id)
+        }
+      };
+      this.search();
+    })
+    .catch(() => {
+      this.error = true;
+      this.loading = false;
+      this.appending = false;
+    });
+      
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  private getUserHomePlaceSummary() {
+    return this.userSettingsService.get()
+      .then((userSettings:any) => {
+        if (userSettings.facility_id) {
+          return this.getDataRecordsService.get(userSettings.facility_id, {include_docs: false});
+        }
+      })
+      .then((summary) => {
+        if (summary) {
+          summary.home = true;
+        }
+        return summary;
+      });
+  };
+
+  private canViewLastVisitedDate() {
+    if (this.sessionService.isDbAdmin()) {
+      // disable UHC for DB admins
+      return false;
+    }
+    return this.authService.has('can_view_last_visited_date');
   }
 
   private formatContacts(contacts) {
@@ -117,6 +174,10 @@ export class ContactsComponent implements OnInit, OnDestroy{
     });
   };
 
+  private isSortedByLastVisited() {
+    return this.sortDirection === 'last_visited_date';
+  }
+
   private query(opts) {
     const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
     if (options.limit < PAGE_SIZE) {
@@ -125,16 +186,62 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
     if (!options.silent) {
       this.error = false;
-      // this.errorSyntax = false;
       this.loading = true;
     }
 
     const searchFilters = Object.keys(this.filters).length < 1 ? this.defaultFilters : this.filters;
 
+    const extensions:any = {};
+    if (this.lastVisitedDateExtras) {
+      extensions.displayLastVisitedDate = true;
+      extensions.visitCountSettings = this.visitCountSettings;
+    }
+    if (this.isSortedByLastVisited()) {
+      extensions.sortByLastVisitedDate = true;
+    }
+
     return this.searchService
-      .search('contacts', searchFilters, options)
+      .search('contacts', searchFilters, options, extensions)
       .then((updatedContacts) => {
         updatedContacts = this.formatContacts(updatedContacts);
+
+        // If you have a home place make sure its at the top
+        if(this.usersHomePlace) {
+          const homeIndex = _.findIndex(updatedContacts, (contact:any) => {
+            return contact._id === this.usersHomePlace._id;
+          })
+          this.additionalListItem = 
+            this.filters.search &&
+            this.filters.simprintsIdentities &&
+            (this.additionalListItem || !this.appending) &&
+            homeIndex === -1;
+
+          if(!this.appending) {
+            if (homeIndex !== -1) {
+              // move it to the top
+              updatedContacts.splice(homeIndex, 1);
+              updatedContacts.unshift(this.usersHomePlace);
+            } else if (
+              this.filters.search &&
+              this.filters.simprintsIdentities
+            ) {
+              updatedContacts.unshift(this.usersHomePlace);
+            }
+            if (this.filters.simprintsIdentities) {
+              updatedContacts.forEach((contact) => {
+                const identity = this.filters.simprintsIdentities.find(
+                  function(identity) {
+                    return identity.id === contact.simprints_id;
+                  }
+                );
+                contact.simprints = identity || {
+                  confidence: 0,
+                  tierNumber: 5,
+                };
+              });
+            }
+          }
+        }
 
         this.contactsActions.updateContactsList(updatedContacts);
 
@@ -143,11 +250,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.loading = false;
         this.appending = false;
         this.error = false;
-        // this.errorSyntax = false;
-
-        // set first report selected if conditions todo
-        // scrolling todo
-
         this.initScroll();
       })
       .catch(err => {
