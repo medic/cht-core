@@ -14,6 +14,7 @@ export const Actions = {
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
+  setLeftActionBar: createSingleValueAction('SET_LEFT_ACTION_BAR', 'left'),
   clearFilters: createAction('CLEAR_FILTERS'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
@@ -137,6 +138,10 @@ export class GlobalActions {
     return this.store.dispatch(Actions.deleteDocConfirm(doc));
   }
 
+  setLeftActionBar(value) {
+    return this.store.dispatch(Actions.setLeftActionBar(value));
+  }
+
 }
 
 /*
@@ -154,10 +159,6 @@ angular.module('inboxServices').factory('GlobalActions',
     'ngInject';
 
     return function(dispatch) {
-
-      function setLeftActionBar(value) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_LEFT, 'left', value));
-      }
 
       function createSetRightActionBarAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT, 'right', value);
@@ -370,7 +371,6 @@ angular.module('inboxServices').factory('GlobalActions',
         setFilters,
         setForms,
         setIsAdmin,
-        setLeftActionBar,
         setLoadingContent,
         setLoadingShowContent,
         setLoadingSubActionBar,

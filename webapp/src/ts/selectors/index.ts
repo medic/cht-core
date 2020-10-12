@@ -7,6 +7,8 @@ const getMessagesState = (state) => state.messages || {};
 
 export const Selectors = {
   // global
+  getActionBar: createSelector(getGlobalState, (globalState) => globalState.actionBar),
+  getLoadingSubActionBar: createSelector(getGlobalState, (globalState) => globalState.loadingSubActionBar),
   getReplicationStatus: createSelector(getGlobalState, (globalState) => globalState.replicationStatus),
   getAndroidAppVersion:  createSelector(getGlobalState, (globalState) => globalState.androidAppVersion),
   getCurrentTab: createSelector(getGlobalState, (globalState) => globalState.currentTab),
@@ -38,7 +40,6 @@ export const Selectors = {
 /*
 
 // Global
-const getActionBar = state => getGlobalState(state).actionBar;
 const getCancelCallback = state => getGlobalState(state).cancelCallback;
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited;
@@ -47,7 +48,6 @@ const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 const getFilters = state => getGlobalState(state).filters;
 
 const getIsAdmin = state => getGlobalState(state).isAdmin;
-const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
 
 const getTitle = state => getGlobalState(state).title;
 const getUnreadCount = state => getGlobalState(state).unreadCount;
