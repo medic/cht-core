@@ -1,4 +1,4 @@
-const constants = require('./constants');
+//const constants = require('./constants');
 const mobileConfig = require('./conf').config;
 mobileConfig.suites = {
   mobile: 'mobile/**/*.js'
