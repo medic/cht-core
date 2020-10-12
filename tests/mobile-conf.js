@@ -3,7 +3,6 @@ const mobileConfig = require('./conf').config;
 mobileConfig.suites = {
   mobile: 'mobile/**/*.js'
 };
-mobileConfig.seleniumAddress='http://localhost:4445/wd/hub';
 mobileConfig.capabilities.chromeOptions = {
   w3c: false,
   args: ['--headless', '--disable-gpu'],
