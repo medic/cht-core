@@ -61,7 +61,7 @@ const linkSharedLibs = dir => {
   ].join(' && ');
 };
 
-module.exports = grunt => {
+module.exports = function(grunt) {
   'use strict';
 
   require('jit-grunt')(grunt, {
@@ -532,7 +532,7 @@ module.exports = grunt => {
         'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
       'check-version': `node scripts/travis/check-versions.js`,
       'undo-patches': {
-        cmd: () => {
+        cmd: function() {
           const modulesToPatch = [
             'bootstrap-daterangepicker',
             'enketo-core',
@@ -581,7 +581,7 @@ module.exports = grunt => {
       // 3. run `diff -c original modified > webapp/patches/my-patch.patch`
       // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
       'apply-patches': {
-        cmd: () => {
+        cmd: function() {
           const patches = [
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
