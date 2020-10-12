@@ -38,6 +38,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
       currentTab,
       filters,
     ]) => {
+      console.log(currentTab, filters);
       this.currentTab = currentTab;
       this.inputText = filters?.search;
     });
