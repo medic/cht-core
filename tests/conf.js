@@ -3,6 +3,7 @@ const request = require('request-promise-native');
 const utils = require('./utils');
 const constants = require('./constants');
 const auth = require('./auth')();
+const _ = require('lodash');
 const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
@@ -11,6 +12,7 @@ const chai = require('chai');
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
 
+const testSuite = _.last(process.argv);
 const baseConfig = {
   params: {
     pathToConfig: false
@@ -18,6 +20,7 @@ const baseConfig = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
     e2e: 'e2e/**/*.js',
+    mobile: 'mobile/**/*.js',
     performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
@@ -28,7 +31,8 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
+      mobileEmulation: testSuite==='mobile'?{'deviceName': constants.EMULATED_DEVICE}:{}
     }
   },
   jasmineNodeOpts: {

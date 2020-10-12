@@ -779,7 +779,7 @@ module.exports = function(grunt) {
       },
       'e2e-tests-mobile': {
         options: {
-          configFile: 'tests/mobile-conf.js',
+          configFile: 'tests/conf.js',
           args: {
             suite: 'mobile'
           },
