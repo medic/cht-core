@@ -27,19 +27,11 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
-      mobileEmulation: {
-        mobileEmulation: {
-          'deviceMetrics': {
-            'width': 384,
-            'height': 640,
-            'pixelRatio': 2.0
-          }
-        }
-   
-      }
+      args: ['--headless', '--disable-gpu'],
+      mobileEmulation: { 'deviceName': 'Nexus 5' }
     }
   },
+ 
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
