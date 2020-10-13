@@ -1111,7 +1111,7 @@ module.exports = function(grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-tests',
-    'ci-mobile'
+    'protractor:e2e-tests-mobile'
   ]);
 
   grunt.registerTask('ci-mobile', 'Run e2e tests for CI', [
