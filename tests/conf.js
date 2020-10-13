@@ -13,6 +13,18 @@ const chai = require('chai');
 chai.config.truncateThreshold = 0;
 
 const testSuite = _.last(process.argv);
+const mobileOptions ={
+  args: ['--headless', '--disable-gpu'],
+  mobileEmulation: {
+  //'deviceName': constants.EMULATED_DEVICE,
+    'deviceMetrics': {
+      'width': 384,
+      'height': 640,
+      'pixelRatio': 2.0
+    }
+  }};
+
+
 const baseConfig = {
   params: {
     pathToConfig: false
@@ -32,7 +44,7 @@ const baseConfig = {
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
       args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
-      mobileEmulation: testSuite==='mobile'?{'deviceName': constants.EMULATED_DEVICE}:{}
+      mobileEmulation: testSuite==='mobile'?mobileOptions:{}
     }
   },
   jasmineNodeOpts: {
