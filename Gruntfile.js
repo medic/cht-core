@@ -768,27 +768,27 @@ module.exports = function(grunt) {
         options: {
           configFile: 'tests/conf.js',
           args: {
-            suite: 'e2e'
-          },
-          capabilities: {
-            chromeOptions: {
-              args: ['window-size=1024,768']
+            suite: 'e2e',
+            capabilities: {
+              chromeOptions: {
+                args: ['window-size=1024,768']
             }
           }
         }
+      }
       },
       'e2e-tests-mobile': {
         options: {
-          configFile: 'tests/mobile-conf.js',
+          configFile: 'tests/conf.js',
           args: {
-            suite: 'mobile'
-          },
-          capabilities: {
-            chromeOptions: {
-              mobileEmulation: { 'deviceName': 'Nexus 5' }
+            suite: 'mobile',
+            capabilities: {
+              chromeOptions: {
+                mobileEmulation: { 'deviceName': 'Nexus 5' }
             }
           }
-        }
+        }}
+
       },
       'performance-tests-and-services': {
         options: {

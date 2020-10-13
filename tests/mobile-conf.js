@@ -10,14 +10,14 @@ const browserLogStream = fs.createWriteStream(
 const chai = require('chai');
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
-
+console.log(process.argv);
 const baseConfig = {
   params: {
     pathToConfig: false
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    mobile: 'mobile/**/*.js'
+    mobile: 'mobile/login/**/*.js'
   },
   framework: 'jasmine2',
   capabilities: {
@@ -27,11 +27,10 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--headless', '--disable-gpu'],
-      mobileEmulation: { 'deviceName': 'Nexus 5' }
+      args: ['--disable-gpu']
     }
   },
- 
+
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
