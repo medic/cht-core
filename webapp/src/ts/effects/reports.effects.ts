@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap } from 'rxjs/operators';
+import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap } from 'rxjs/operators';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
+import { DefinitionKind } from '@angular/compiler/src/constant_pool';
 
 
 @Injectable()
@@ -31,6 +32,7 @@ export class ReportsEffects {
       ofType(ReportActionList.selectReport),
       filter(({ payload: { id } }) => !!id),
       exhaustMap(({ payload: { id, silent } }) => {
+        console.log('is Silent', silent);
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
         }
@@ -58,9 +60,10 @@ export class ReportsEffects {
         let refreshing = true;
 
         if (selectMode) {
-          const existing  = selectedReports?.find(report => report._id === model.doc._id);
+          const existing = selectedReports?.find(report => report._id === model.doc._id);
           if (existing) {
-            Object.assign(existing, model);
+            // todo update selected report in selectMode
+            // this.reportActions.updateSelectedReport(model);
           } else {
             model.expanded = false;
             this.reportActions.addSelectedReport(model);
@@ -90,10 +93,10 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.setTitle),
       withLatestFrom(this.store.pipe(select(Selectors.getForms))),
-      exhaustMap(([{ payload: selected }, forms]) => {
-        const formInternalId = selected?.formInternalId || selected?.form;
+      exhaustMap(([{ payload: { selected } }, forms]) => {
+        const formInternalId = selected?.doc?.formInternalId || selected?.doc?.form;
         const form = forms?.find(form => form.code === formInternalId);
-        const name = (form && form.name) || (form && form.title) || selected?.form;
+        const name = form?.name || form?.title || formInternalId;
         return of(this.globalActions.setTitle(name));
       }),
     );
@@ -103,13 +106,13 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.markReportRead),
       concatMap(action => of(action).pipe(
-        withLatestFrom(this.store.select(Selectors.getListReport, { id: action.payload.id })),
+        withLatestFrom(this.store.select(Selectors.getListReport, { id: action?.payload?.id })),
       )),
       exhaustMap(([action, report]) => {
         const readReport = { ...report };
         readReport.read = true;
         this.markReadService.markAsRead([report]).catch(err => console.error('Error marking read', err));
-        return of();
+        return of(this.reportActions.updateReportsList([readReport]));
       }),
     );
   }, { dispatch: false });
