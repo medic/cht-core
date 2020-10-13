@@ -9,7 +9,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
-import { DefinitionKind } from '@angular/compiler/src/constant_pool';
 
 
 @Injectable()
