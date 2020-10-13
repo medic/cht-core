@@ -13,7 +13,7 @@ import { VersionService } from '@mm-services/version.service';
   templateUrl: './about.component.html'
 })
 export class AboutComponent implements OnInit, OnDestroy {
-  private subscription: Subscription = new Subscription();
+  subscription: Subscription = new Subscription();
   private dataUsageUpdate;
 
   userCtx;
