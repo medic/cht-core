@@ -88,4 +88,12 @@ describe('DeleteDocConfirmComponent', () => {
     expect(component.model.doc.contact).to.deep.equal(minifiedContact);
     expect(component.model.doc.contact.parent).to.not.have.key('name');
   });
+
+  it('ngOnDestroy() should unsubscribe from observables', () => {
+    const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
+
+    component.ngOnDestroy();
+
+    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+  });
 });

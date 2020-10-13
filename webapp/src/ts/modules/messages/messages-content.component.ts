@@ -52,7 +52,9 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     private markReadService: MarkReadService,
     private sendMessageService: SendMessageService,
     private modalService: ModalService,
-  ) {
+  ) { }
+
+  ngOnInit(): void {
     const selectorsSubscription = combineLatest(
       this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getLoadingContent)),
@@ -62,17 +64,14 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     });
     this.subscriptions.add(selectorsSubscription);
 
-    this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store, this.globalActions);
-  }
-
-  ngOnInit(): void {
+    this.globalActions = new GlobalActions(this.store);
+    this.messagesActions = new MessagesActions(this.store);
     this.userCtx = this.sessionService.userCtx();
     this.watchForChanges();
   }
 
   ngAfterViewInit(): void {
-    const routeSubscription = this.route.params.subscribe(params => {
+    const routeSubscription = this.route.params.subscribe((params) => {
       const [type, id] = params.type_id ? params.type_id.split(':') : [];
       this.urlParameters.type = type;
       this.urlParameters.id = id;
@@ -101,8 +100,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   listTrackBy(index, message) {
-    const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
-    return message.key + identifier;
+    return message.doc ? message.doc._id + message.doc._rev : message.id;
   }
 
   private checkScroll(elem) {
@@ -113,6 +111,10 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
   private scrollToUnread() {
     const content = $('.message-content-wrapper');
+    if (!content || !content.length) {
+      return;
+    }
+
     const markers = content.find('.marker');
     let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
 
@@ -167,6 +169,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       return;
     }
 
+    $('.message-content-wrapper').off('scroll', this.checkScroll.bind(this));
     const refreshSelected = this.selectedConversation && this.selectedConversation.id === id;
     this.messagesActions.setSelected({ id: id, messages: [] }, refreshSelected);
     this.globalActions.setLoadingShowContent(id);
@@ -293,7 +296,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       recipient.doc = { contact: { phone: this.selectedConversation.id } };
     }
 
-    this.sendMessageService.send(recipient, this.send.message)
+    this.sendMessageService
+      .send(recipient, this.send.message)
       .then(() => {
         this.send.message = '';
       })

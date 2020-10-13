@@ -61,7 +61,7 @@
           <div class="controls">
             <textarea name="message"
               [(ngModel)]="send.message"
-              placeholder="{{ ('Reply to' | translate) + ' ' + (selectedConversation.contact?.doc?.name || selectedConversation.contact?.name || '') }}">
+              placeholder="{{ 'Reply to name' | translate:{ contact: (selectedConversation.contact?.doc?.name || selectedConversation.contact?.name || '')} }}">
             </textarea>
           </div>
         </div>
