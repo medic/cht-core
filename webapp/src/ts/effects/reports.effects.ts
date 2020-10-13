@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap } from 'rxjs/operators';
+import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap } from 'rxjs/operators';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
