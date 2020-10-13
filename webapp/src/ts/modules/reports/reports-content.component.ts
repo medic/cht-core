@@ -14,13 +14,13 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
   templateUrl: './reports-content.component.html'
 })
 export class ReportsContentComponent implements OnInit {
-  private subscription: Subscription = new Subscription();
+  subscription: Subscription = new Subscription();
   private globalActions;
   private reportsActions;
   forms;
   loadingContent;
   selectedReports;
-  selectMode = false; // todo
+  selectMode;
 
   validChecks = { }; // todo
   summaries = { }; // todo
@@ -43,16 +43,19 @@ export class ReportsContentComponent implements OnInit {
       this.store.select(Selectors.getSelectedReportsSummaries),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       selectedReports,
       summaries,
       forms,
       loadingContent,
+      selectMode,
     ]) => {
       this.selectedReports = selectedReports;
       this.summaries = summaries;
       this.loadingContent = loadingContent;
       this.forms = forms;
+      this.selectMode = selectMode;
     });
     this.subscription.add(reduxSubscription);
 
@@ -70,7 +73,6 @@ export class ReportsContentComponent implements OnInit {
           if (this.selectMode) {
             this.reportsActions.removeSelectedReport(change.id);
           } else {
-            //this.globalActions.unsetSelected();
             return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
           }
         } else {

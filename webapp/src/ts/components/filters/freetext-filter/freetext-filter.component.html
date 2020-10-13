@@ -1,7 +1,7 @@
 <span class="input-group freetext-filter" [class.only-filter]="currentTab === 'contacts'">
-  <input id="freetext" class="form-control" [(ngModel)]="inputText" (ngModelChange)="onFieldChange($event)" type="text" [class.disabled]="disabled" placeholder="{{'freetext.search' | translate}}">
+  <input id="freetext" class="form-control" [(ngModel)]="inputText" type="text" [class.disabled]="disabled" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
   <span class="input-group-btn">
-    <button id="search" class="btn btn-default" type="button" [class.disabled]="disabled">
+    <button id="search" class="btn btn-default" type="button" [class.disabled]="disabled" (click)="applyFilter()">
       <span class="fa fa-search"></span>
     </button>
   </span>
@@ -18,9 +18,9 @@
   </span>
   <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search" *dropdownMenu>
     <span class="input-group">
-      <input id="mobile-freetext" class="form-control" type="text" [(ngModel)]="inputText" (ngModelChange)="onFieldChange($event)" placeholder="{{'freetext.search' | translate}}">
+      <input id="mobile-freetext" class="form-control" type="text" [(ngModel)]="inputText" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
       <span class="input-group-btn small-font">
-        <button id="mobile-search-go" class="btn btn-default" type="button">
+        <button id="mobile-search-go" class="btn btn-default" type="button" (click)="applyFilter()">
           <span class="fa fa-search"></span>
         </button>
       </span>

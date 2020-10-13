@@ -27,16 +27,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   constructor(
     private store: Store,
   ) {
-
     this.globalActions = new GlobalActions(store);
-
-    const inputSubscription = this
-      .inputTextChanged
-      .pipe(debounceTime(400), distinctUntilChanged())
-      .subscribe(({ value, apply }={}) => {
-        this.applyFieldChange(value, apply);
-      });
-    this.subscription.add(inputSubscription);
   }
 
   ngOnInit() {
@@ -47,15 +38,10 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
       currentTab,
       filters,
     ]) => {
-      console.log(currentTab, filters);
       this.currentTab = currentTab;
-      this.inputText = filters.search;
+      this.inputText = filters?.search;
     });
     this.subscription.add(subscription);
-  }
-
-  onFieldChange(inputText) {
-    this.inputTextChanged.next({ value: inputText, apply: true });
   }
 
   applyFieldChange(value, apply?) {
@@ -65,6 +51,8 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   applyFilter() {
     this.globalActions.setFilter({ search: this.inputText });
+    // always force the search, so the user is taken from the report detail page to the list page on mobile,
+    // when clicking on a case_id link
     this.search.emit(true);
   }
 
@@ -73,7 +61,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   clear() {
-    this.inputTextChanged.next({ value: '', apply: false });
+    this.applyFieldChange('');
   }
 }
 

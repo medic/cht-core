@@ -64,7 +64,7 @@
               <label>
                 <span *ngIf="selection.formatted.content_type === 'xml'" translate>{{field.label}}</span>
                 <span *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
-                <span class="fa fa-cogs" *ngIf="field.generated" translate translate-attr-title="Generated report field"></span>
+                <span class="fa fa-cogs" *ngIf="field.generated" translate title="{{'Generated report field' | translate }}"></span>
               </label>
               <p *ngIf="!field.imagePath">
                 <span *ngIf="field.target && field.target.filter"><a (click)="search(field.target.filter)">{{field.value}}</a></span>

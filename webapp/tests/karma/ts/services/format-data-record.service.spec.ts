@@ -1,31 +1,47 @@
-describe('FormatDataRecord service', () => {
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
-  'use strict';
+import { FormatDataRecordService } from '@mm-services/format-data-record.service';
+import { DbService } from '@mm-services/db.service';
+import { LanguageService } from '@mm-services/language.service';
+import { FormatDateService } from '@mm-services/format-date.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
-  const Settings = sinon.stub();
-  const Language = sinon.stub();
-
-  let service;
+describe('FormatDataRecord Service', () => {
+  let service:FormatDataRecordService;
+  let dbService;
+  let languageService;
+  let settingService;
+  let query;
 
   beforeEach(() => {
-    module('inboxApp');
-    module(function($provide) {
-      $provide.value('Settings', Settings);
-      $provide.value('Language', Language);
-      $provide.value('FormatDate', {
-        relative: function() {
-          return 'sometime';
-        }
-      });
-      $provide.factory('DB', KarmaUtils.mockDB({ }));
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
+    query = sinon.stub();
+
+    TestBed.configureTestingModule({
+      imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+      ],
+      providers: [
+        { provide: DbService, useValue: { get: () => ({ query }) } },
+        { provide: LanguageService, useValue: { get: sinon.stub() } },
+        { provide: FormatDateService, useValue: { relative: sinon.stub().returns('sometime') } },
+        { provide: SettingsService, useValue: { get: sinon.stub() } },
+        { provide: TranslateLocaleService, useValue: { instant: sinon.stub() } },
+      ]
     });
-    inject(_FormatDataRecord_ => {
-      service = _FormatDataRecord_;
-    });
+
+    service = TestBed.inject(FormatDataRecordService);
+    dbService = TestBed.inject(DbService);
+    languageService = TestBed.inject(LanguageService);
+    settingService = TestBed.inject(SettingsService);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it('generates cleared messages', () => {
     const doc = {
@@ -38,17 +54,17 @@ describe('FormatDataRecord service', () => {
         }
       ]
     };
-    const settings = {};
-    Settings.returns(Promise.resolve(settings));
-    Language.returns(Promise.resolve('en'));
-    return service(doc).then(formatted => {
-      chai.expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
-      chai.expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
+
+    settingService.get.resolves({});
+    languageService.get.resolves('en');
+    return service.format(doc).then(formatted => {
+      expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
       const row = formatted.scheduled_tasks_by_group[0].rows[0];
-      chai.expect(row.messages.length).to.equal(1);
+      expect(row.messages.length).to.equal(1);
       const message = row.messages[0];
-      chai.expect(message.to).to.equal('+123456');
-      chai.expect(message.message).to.equal('Some message');
+      expect(message.to).to.equal('+123456');
+      expect(message.message).to.equal('Some message');
     });
   });
 
@@ -63,17 +79,16 @@ describe('FormatDataRecord service', () => {
         }
       ]
     };
-    const settings = {};
-    Settings.returns(Promise.resolve(settings));
-    Language.returns(Promise.resolve('en'));
-    return service(doc).then(formatted => {
-      chai.expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
-      chai.expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
+    settingService.get.resolves({});
+    languageService.get.resolves('en');
+    return service.format(doc).then(formatted => {
+      expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
+      expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
       const row = formatted.scheduled_tasks_by_group[0].rows[0];
-      chai.expect(row.messages.length).to.equal(1);
+      expect(row.messages.length).to.equal(1);
       const message = row.messages[0];
-      chai.expect(message.to).to.equal('+123456');
-      chai.expect(message.error).to.equal('messages.errors.message.empty');
+      expect(message.to).to.equal('+123456');
+      expect(message.error).to.equal('messages.errors.message.empty');
     });
   });
 
@@ -97,8 +112,8 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
-      chai.expect(result.fields).to.deep.equal([
+    return service.format(report).then(result => {
+      expect(result.fields).to.deep.equal([
         { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
         { label: 'report.my-form.group3', depth: 0 },
         { label: 'report.my-form.group3.field4', value: 3, depth: 1, target: undefined },
@@ -128,8 +143,8 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
-      chai.expect(result.fields).to.deep.equal([
+    return service.format(report).then(result => {
+      expect(result.fields).to.deep.equal([
         { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
         { label: 'report.my-form.fields', depth: 0 },
         { label: 'report.my-form.fields.field21', value: 1, depth: 1, target: undefined },
@@ -158,8 +173,8 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
-      chai.expect(result.fields).to.deep.equal([
+    return service.format(report).then(result => {
+      expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.image',
           value: 'some image',
@@ -196,25 +211,25 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
-      chai.expect(result.fields).to.deep.equal([
+    return service.format(report).then(result => {
+      expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.patient_id',
           value: '1234',
           depth: 0,
-          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
+          target: { url: ['/contacts', 'some-patient-id'] }
         },
         {
           label: 'report.my-form.patient_uuid',
           value: 'some-uuid',
           depth: 0,
-          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
+          target: { url: ['/contacts', 'some-patient-id'] }
         },
         {
           label: 'report.my-form.patient_name',
           value: 'linky mclinkface',
           depth: 0,
-          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
+          target: { url: ['/contacts', 'some-patient-id'] }
         },
         {
           label: 'report.my-form.not_patient_id',
@@ -237,8 +252,8 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
-      chai.expect(result.fields).to.deep.equal([
+    return service.format(report).then(result => {
+      expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.case_id',
           value: '1234',
@@ -270,8 +285,8 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
-      chai.expect(result.fields).to.deep.equal([
+    return service.format(report).then(result => {
+      expect(result.fields).to.deep.equal([
         {
           label: 'case_id',
           value: '1234',
@@ -282,7 +297,7 @@ describe('FormatDataRecord service', () => {
           label: 'patient_id',
           value: '5678',
           generated: true,
-          target: { url: { route: 'contacts.detail', params: { id: 'abc' } } }
+          target: { url: ['/contacts', 'abc'] }
         },
         {
           label: 'report.my-form.not_case_id',
@@ -293,5 +308,4 @@ describe('FormatDataRecord service', () => {
       ]);
     });
   });
-
 });
