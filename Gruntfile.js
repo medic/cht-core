@@ -772,10 +772,10 @@ module.exports = function(grunt) {
             capabilities: {
               chromeOptions: {
                 args: ['window-size=1024,768']
+              }
             }
           }
         }
-      }
       },
       'e2e-tests-mobile': {
         options: {
@@ -785,9 +785,9 @@ module.exports = function(grunt) {
             capabilities: {
               chromeOptions: {
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
+              }
             }
-          }
-        }}
+          }}
 
       },
       'performance-tests-and-services': {
