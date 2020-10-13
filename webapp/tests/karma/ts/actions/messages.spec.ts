@@ -5,9 +5,6 @@ import { Actions, MessagesActions } from '@mm-actions/messages';
 
 describe('Messages Action', () => {
   let store: any;
-  let globalActions:any = {
-    settingSelected: sinon.stub()
-  };
 
   beforeEach(() => {
     store = { dispatch: sinon.stub() };
@@ -20,7 +17,7 @@ describe('Messages Action', () => {
   it('should dispatch setSelectedConversation action', () => {
     const data = [{id: '124'}];
     const expectedAction = Actions.setSelectedConversation(data);
-    const messageAction = new MessagesActions(store, globalActions);
+    const messageAction = new MessagesActions(store);
     
     messageAction.setSelectedConversation(data);
     
@@ -30,7 +27,7 @@ describe('Messages Action', () => {
   it('should dispatch setConversations action', () => {
     const data = [{id: '124'}, {id: '567'}];
     const expectedAction = Actions.setConversations(data);
-    const messageAction = new MessagesActions(store, globalActions);
+    const messageAction = new MessagesActions(store);
 
     messageAction.setConversations(data);
 
@@ -40,7 +37,7 @@ describe('Messages Action', () => {
   it('should dispatch setMessagesError action', () => {
     const data = true;
     const expectedAction = Actions.setMessagesError(data);
-    const messageAction = new MessagesActions(store, globalActions);
+    const messageAction = new MessagesActions(store);
 
     messageAction.setMessagesError(data);
 
@@ -50,7 +47,7 @@ describe('Messages Action', () => {
   it('should dispatch removeMessageFromSelectedConversation action', () => {
     const id = '12345';
     const expectedAction = Actions.removeMessageFromSelectedConversation(id);
-    const messageAction = new MessagesActions(store, globalActions);
+    const messageAction = new MessagesActions(store);
 
     messageAction.removeMessageFromSelectedConversation(id);
 
@@ -60,7 +57,7 @@ describe('Messages Action', () => {
   it('should dispatch updateSelectedConversation action', () => {
     const data = {id: '124'};
     const expectedAction = Actions.updateSelectedConversation(data);
-    const messageAction = new MessagesActions(store, globalActions);
+    const messageAction = new MessagesActions(store);
 
     messageAction.updateSelectedConversation(data);
 
@@ -70,18 +67,21 @@ describe('Messages Action', () => {
   it('should dispatch setSelected action', () => {
     const doc = {id: '124'};
     const refresh = false;
-    const messageAction = new MessagesActions(store, globalActions);
+    const messageAction = new MessagesActions(store);
     const setSelectedConversationSpy = sinon.spy(messageAction, 'setSelectedConversation');
+    messageAction.globalActions = {
+      settingSelected: sinon.stub()
+    };
 
     messageAction.setSelected(doc, refresh);
 
-    expect(globalActions.settingSelected.withArgs(refresh).callCount).to.equal(1);
+    expect(messageAction.globalActions.settingSelected.withArgs(refresh).callCount).to.equal(1);
     expect(setSelectedConversationSpy.withArgs(doc).callCount).to.equal(1);
   });
 
   it('should dispatch markSelectedConversationRead action', () => {
     const expectedAction = Actions.markSelectedConversationRead();
-    const messageAction = new MessagesActions(store, globalActions);
+    const messageAction = new MessagesActions(store);
 
     messageAction.markSelectedConversationRead();
 

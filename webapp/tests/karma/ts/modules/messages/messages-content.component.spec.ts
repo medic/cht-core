@@ -126,8 +126,6 @@ describe('MessagesContentComponent', () => {
       };
       component.selectedConversation = selectedConversation;
 
-      component.ngOnInit();
-
       messageContactService.isRelevantChange.returns(false);
       expect(!!changesFilter(change)).to.equal(false);
       expect(messageContactService.isRelevantChange.callCount).to.deep.equal(1);

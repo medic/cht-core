@@ -1,6 +1,7 @@
 import { provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -22,6 +23,7 @@ describe('DeleteDocConfirmComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule
       ],
       declarations: [
         DeleteDocConfirmComponent,
