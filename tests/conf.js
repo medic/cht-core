@@ -15,7 +15,7 @@ const baseConfig = {
   params: {
     pathToConfig: false
   },
-  seleniumAddress: 'http://localhost:4444/wd/hub',
+  //seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
     e2e: 'e2e/**/*.js',
     mobile:'mobile/**/*.js',
@@ -32,6 +32,7 @@ const baseConfig = {
       args: ['--window-size=1024,768', '--headless', '--disable-gpu']
     }
   },
+  directConnect: true,
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
