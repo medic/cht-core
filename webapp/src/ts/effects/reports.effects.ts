@@ -32,7 +32,6 @@ export class ReportsEffects {
       ofType(ReportActionList.selectReport),
       filter(({ payload: { id } }) => !!id),
       exhaustMap(({ payload: { id, silent } }) => {
-        console.log('is Silent', silent);
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
         }
