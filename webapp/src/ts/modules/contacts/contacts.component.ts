@@ -50,6 +50,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   defaultSortDirection = 'alpha';
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
+  simprintsEnabled;
 
   constructor(
     private store: Store,
@@ -105,6 +106,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
           selected: this.childPlaces.map(type => type.id)
         }
       };
+      this.simprintsEnabled = this.simprintsService.enabled();
       this.search();
     })
     .catch(() => {
@@ -271,7 +273,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   search(force = false) {
-    console.log('search called');
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
     // if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
