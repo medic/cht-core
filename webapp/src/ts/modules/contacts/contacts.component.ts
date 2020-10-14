@@ -261,14 +261,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
       .catch(err => {
         this.error = true;
         this.loading = false;
-        if (
-          this.filters.search &&
-          err.reason &&
-          err.reason.toLowerCase().indexOf('bad query syntax') !== -1
-        ) {
-          // invalid freetext filter query
-          // this.errorSyntax = true;
-        }
         console.error('Error loading messages', err);
       });
   }

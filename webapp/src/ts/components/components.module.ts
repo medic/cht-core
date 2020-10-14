@@ -19,7 +19,7 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
-import { SimprintsFilterComponent} from '@mm-components/filters/simprints-filter/simprints-fliter.component';
+import { SimprintsFilterComponent} from '@mm-components/filters/simprints-filter/simprints-filter.component';
 
 @NgModule({
   declarations: [
