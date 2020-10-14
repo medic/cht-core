@@ -57,8 +57,8 @@ const baseConfig = {
     jasmine.getEnv().addReporter(utils.reporter);
     browser.waitForAngularEnabled(false);
 
-    // wait for startup to complete
-    browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
+    // wait for startup to complete - taking a little too long on travis
+    browser.driver.wait(prepServices(), 150 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return browser
