@@ -149,6 +149,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       contact.route = 'contacts';
       contact.icon = type && type.icon;
       contact.heading = contact.name;
+      contact.valid = true;
 
       return contact
     });
