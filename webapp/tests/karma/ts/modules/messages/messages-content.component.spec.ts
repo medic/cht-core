@@ -3,7 +3,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
-import { expect, assert } from "chai";
+import { expect } from "chai";
 
 import { MessagesContentComponent } from '@mm-modules/messages/messages-content.component';
 import { MessageContactService } from '@mm-services/message-contact.service';
