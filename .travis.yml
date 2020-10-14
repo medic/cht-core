@@ -60,6 +60,7 @@ script:
   - |
     if [[ "$TEST_SUITE" = 'integration' ]]; then
       node --stack_size=10000 `which grunt` ci-e2e
+      node --stack_size=10000 `which grunt` ci-mobile
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
     else
