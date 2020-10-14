@@ -371,7 +371,8 @@ module.exports = function(grunt) {
             .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
             .concat(paths.map(glob => `"${glob}"`))
             .join(' ');
-        }
+        },
+        stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} build/ddocs/medic/_attachments/js/service-worker.js`,
       'pack-node-modules': {
@@ -529,14 +530,16 @@ module.exports = function(grunt) {
           'cd config/standard',
           'npm ci',
           'npm run travis'
-        ].join(' && ')
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
       },
       'test-config-default': {
         cmd: [
           'cd config/default',
           'npm ci',
           'npm run travis'
-        ].join(' && ')
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
       },
       'shared-lib-unit': {
         cmd: () => {
@@ -546,6 +549,7 @@ module.exports = function(grunt) {
             ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
           ].join(' && ');
         },
+        stdio: 'inherit', // enable colors!
       },
       // To monkey patch a library...
       // 1. copy the file you want to change
@@ -599,7 +603,8 @@ module.exports = function(grunt) {
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
-        }
+        },
+        stdio: 'inherit', // enable colors!
       },
       'unit-webapp': {
         cmd: () => {
@@ -608,7 +613,8 @@ module.exports = function(grunt) {
             '../node_modules/.bin/ng test webapp --watch=false',
             'cd ../',
           ].join(' && ');
-        }
+        },
+        stdio: 'inherit', // enable colors!
       },
       'unit-webapp-continuous': {
         cmd: () => {
@@ -617,7 +623,8 @@ module.exports = function(grunt) {
             '../node_modules/.bin/ng test webapp --watch=true',
             'cd ../',
           ].join(' && ');
-        }
+        },
+        stdio: 'inherit', // enable colors!
       },
     },
     watch: {

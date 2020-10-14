@@ -1,10 +1,16 @@
+import { TestBed, async, tick, fakeAsync, flushMicrotasks } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
+
+import { SessionService } from '@mm-services/session.service';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
+import { DBSyncService } from '@mm-services/db-sync.service';
+import { DbService } from '@mm-services/db.service';
+import { AuthService } from '@mm-services/auth.service';
+
 describe('DBSync service', () => {
-
-  'use strict';
-
-  const { expect } = chai;
-
-  let service;
+  let service:DBSyncService;
   let to;
   let from;
   let isOnlineOnly;
@@ -15,7 +21,6 @@ describe('DBSync service', () => {
   let hasAuth;
   let recursiveOnTo;
   let recursiveOnFrom;
-  let $interval;
   let replicationResult;
   let getItem;
   let setItem;
@@ -28,8 +33,12 @@ describe('DBSync service', () => {
   let remoteMetaDb;
   let db;
 
+  let clock;
+
   beforeEach(() => {
-    replicationResult = Q.resolve;
+    clock = sinon.useFakeTimers();
+
+    replicationResult = () => Promise.resolve();
     to = sinon.stub();
     to.events = {};
     recursiveOnTo = sinon.stub();
@@ -54,7 +63,7 @@ describe('DBSync service', () => {
     userCtx = sinon.stub();
     sync = sinon.stub();
     sync.events = {};
-    syncResult = Q.resolve;
+    syncResult = () => Promise.resolve();
     recursiveOnSync = sinon.stub().callsFake((event, fn) => {
       sync.events[event] = fn;
       const promise = syncResult();
@@ -63,8 +72,6 @@ describe('DBSync service', () => {
     });
     sync.returns({ on: recursiveOnSync });
     hasAuth = sinon.stub();
-    setItem = sinon.stub();
-    getItem = sinon.stub();
     dbSyncRetry = sinon.stub();
     rulesEngine = { monitorExternalChanges: sinon.stub() };
 
@@ -86,26 +93,26 @@ describe('DBSync service', () => {
     db.withArgs({ meta: true }).returns(localMetaDb);
     db.withArgs({ remote: true, meta: true }).returns(remoteMetaDb);
 
-    module('inboxApp');
-    module($provide => {
-      $provide.value('DB', db);
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('Session', {
-        isOnlineOnly: isOnlineOnly,
-        userCtx: userCtx
-      } );
-      $provide.value('Auth', { has: hasAuth });
-      $provide.value('$window', { localStorage: { setItem, getItem } });
-      $provide.value('DBSyncRetry', dbSyncRetry);
-      $provide.value('RulesEngine', rulesEngine);
+    getItem = sinon.stub(window.localStorage, 'getItem');
+    setItem = sinon.stub(window.localStorage, 'setItem');
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: db } },
+        { provide: SessionService, useValue: { isOnlineOnly, userCtx } },
+        { provide: AuthService, useValue: { has: hasAuth } },
+        { provide: DbSyncRetryService, useValue: { retryForbiddenFailure: dbSyncRetry } },
+        { provide: RulesEngineService, useValue: rulesEngine },
+      ]
     });
-    inject((_DBSync_, _$interval_) => {
-      service = _DBSync_;
-      $interval = _$interval_;
-    });
+
+    service = TestBed.inject(DBSyncService);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clock.restore();
+  });
 
   describe('sync', () => {
     it('does nothing for admins', () => {
@@ -131,18 +138,15 @@ describe('DBSync service', () => {
       });
     });
 
-    it('syncs automatically after interval', done => {
+    it('syncs automatically after interval', async () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      service.sync().then(() => {
-        expect(from.callCount).to.equal(1);
-        $interval.flush(5 * 60 * 1000 + 1);
-        setTimeout(() => {
-          expect(from.callCount).to.equal(2);
-          done();
-        });
-      }).catch(err => done(err));
+      await service.sync();
+      expect(from.callCount).to.equal(1);
+      clock.tick(5 * 60 * 1000 + 1);
+      await Promise.resolve();
+      expect(from.callCount).to.equal(2);
     });
 
     it('does not attempt sync while offline', () => {
@@ -179,9 +183,9 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResult = () => Q.reject('error');
+      replicationResult = () => Promise.reject('error');
       const onUpdate = sinon.stub();
-      service.addUpdateListener(onUpdate);
+      service.subscribe(onUpdate);
       localMedicDb.info.resolves({ update_seq: 100 });
       getItem.returns('100');
 
@@ -196,9 +200,9 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResult = () => Q.reject('error');
+      replicationResult = () => Promise.reject('error');
       const onUpdate = sinon.stub();
-      service.addUpdateListener(onUpdate);
+      service.subscribe(onUpdate);
 
       return service.sync().then(() => {
         expect(onUpdate.callCount).to.eq(2);
@@ -211,9 +215,9 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      replicationResult = () => Q.resolve({ some: 'info' });
+      replicationResult = () => Promise.resolve({ some: 'info' });
       const onUpdate = sinon.stub();
-      service.addUpdateListener(onUpdate);
+      service.subscribe(onUpdate);
 
       return service.sync().then(() => {
         expect(onUpdate.callCount).to.eq(2);
@@ -222,50 +226,44 @@ describe('DBSync service', () => {
       });
     });
 
-    it('sync scenarios based on connectivity state', done => {
+    it('sync scenarios based on connectivity state', async() => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
       // sync with default online status
-      service.sync().then(() => {
-        expect(from.callCount).to.equal(1);
+      await service.sync();
+      expect(from.callCount).to.equal(1);
+      // go offline, don't attempt to sync
+      service.setOnlineStatus(false);
+      clock.tick(25 * 60 * 1000 + 1);
+      await Promise.resolve();
+      expect(from.callCount).to.equal(1);
 
-        // go offline, don't attempt to sync
-        service.setOnlineStatus(false);
-        $interval.flush(25 * 60 * 1000 + 1);
-        expect(from.callCount).to.equal(1);
+      // when you come back online eventually, sync immediately
+      service.setOnlineStatus(true);
+      expect(from.callCount).to.equal(1);
 
-        // when you come back online eventually, sync immediately
-        service.setOnlineStatus(true);
+      // wait for the inprogress sync to complete before continuing the test
+      await service.sync();
+      expect(from.callCount).to.equal(2);
 
-        expect(from.callCount).to.equal(1);
+      // don't sync if you quickly lose and regain connectivity
+      service.setOnlineStatus(false);
+      service.setOnlineStatus(true);
+      expect(from.callCount).to.equal(2);
 
-        // wait for the inprogress sync to complete before continuing the test
-        service.sync().then(() => {
+      // eventually, sync on the timer
+      clock.tick(5 * 60 * 1000 + 1);
+      await Promise.resolve();
 
-          expect(from.callCount).to.equal(2);
-
-          // don't sync if you quickly lose and regain connectivity
-          service.setOnlineStatus(false);
-          service.setOnlineStatus(true);
-          expect(from.callCount).to.equal(2);
-
-          // eventually, sync on the timer
-          $interval.flush(5 * 60 * 1000 + 1);
-
-          setTimeout(() => {
-            expect(from.callCount).to.equal(3);
-            done();
-          });
-        }).catch(err => done(err));
-      }).catch(err => done(err));
+      expect(from.callCount).to.equal(3);
     });
 
     it('does not sync to remote if user lacks "can_edit" permission', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(false);
       const onUpdate = sinon.stub();
-      service.addUpdateListener(onUpdate);
+      service.subscribe(onUpdate);
 
       return service.sync().then(() => {
         expect(hasAuth.callCount).to.equal(1);
@@ -296,10 +294,10 @@ describe('DBSync service', () => {
           if (count < retries) {
             // Too big - retry
             count++;
-            promise = Q.reject({ code: 413 });
+            promise = Promise.reject({ code: 413 });
           } else {
             // small enough - complete
-            promise = Q.resolve();
+            promise = Promise.resolve();
           }
           promise.on = () => promise;
           return promise;

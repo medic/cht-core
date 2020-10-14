@@ -21,7 +21,7 @@ export class AuthService {
     private settings: SettingsService,
   ) {}
 
-  has(permissions) {
+  has(permissions?) {
     return this
       .getRoles()
       .then(roles => {
@@ -53,9 +53,9 @@ export class AuthService {
       .catch(() => false)
   }
 
-  any(permissionsList) {
+  any(permissionsList?) {
     // The `permissionsList` is an array that contains groups of arrays mainly attributed
-    // to the complexity of permssion grouping
+    // to the complexity of permission grouping
     return this
       .getRoles()
       .then(roles => {
@@ -91,7 +91,7 @@ export class AuthService {
       .catch(() => false)
   };
 
-  online(online) {
+  online(online?) {
     const userCtx = this.session.userCtx();
     if (!userCtx) {
       return false;

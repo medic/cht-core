@@ -36,12 +36,14 @@ export class ChangesService {
       callbacks: {},
       watchIncludeDocs: true,
       observable: new Subject(),
+      subscriptions: {},
     },
     meta: {
       lastSeq: null,
       callbacks: {},
       watchIncludeDocs: true,
       observable: new Subject(),
+      subscriptions: {},
     }
   };
   private watches = [];
@@ -120,7 +122,11 @@ export class ChangesService {
 
   subscribe(options) {
     const db = options.metaDb ? this.dbs.meta : this.dbs.medic;
-    return db.observable.subscribe(change => {
+    if (db.subscriptions[options.key]) {
+      db.subscriptions[options.key].unsubscribe();
+    }
+
+    const subscription = db.observable.subscribe(change => {
       try {
         if (!options.filter || options.filter(change)) {
           options.callback(change);
@@ -128,7 +134,9 @@ export class ChangesService {
       } catch(e) {
         console.error(new Error('Error executing changes callback: ' + options.key), e);
       }
-    })
+    });
+    db.subscriptions[options.key] = subscription;
+    return subscription;
   }
 }
 
