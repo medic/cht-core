@@ -75,6 +75,7 @@ declare global {
     jQuery: any;
     d3: any;
     bootstrapFeedback: any;
+    medicmobile_android: any;
   }
 }
 (window as any).process = {

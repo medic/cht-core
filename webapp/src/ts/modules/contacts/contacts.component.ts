@@ -14,6 +14,7 @@ import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { SimprintsService } from '@mm-services/simprints.service';
 import { Selectors } from '@mm-selectors/index';
 import { isMobile } from '@mm-providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
@@ -63,6 +64,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private authService: AuthService,
     private settingsService: SettingsService,
     private UHCSettings: UHCSettingsService,
+    private simprintsService: SimprintsService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -283,4 +285,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
     return this.query(force);
   }
+
+  simprintsIdentify() {
+    this.loading = true;
+    this.simprintsService.identify().then((identities) => {
+      this.filters.simprintsIdentities = identities;
+      this.search();
+    });
+  };
 }

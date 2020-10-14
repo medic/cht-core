@@ -17,14 +17,20 @@ export class ContactsFiltersComponent {
   }
 
   @Output() search: EventEmitter<any> = new EventEmitter();
+  @Output() simIdentify: EventEmitter<any> = new EventEmitter();
   @Input() reset;
   @Input() disabled;
+  @Input() simprintsEnabled;
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter:FreetextFilterComponent;
 
   applyFilters() {
     this.search.emit();
+  }
+
+  simprintsIdentify() {
+    this.simIdentify.emit();
   }
 
   resetFilters() {
