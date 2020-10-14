@@ -51,6 +51,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
   simprintsEnabled;
+  enketoEdited;
 
   constructor(
     private store: Store,
@@ -273,12 +274,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   search(force = false) {
-    // clears report selection for any text search or filter selection
-    // does not clear selection when someone is editing a form
-    // if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
-    //   //$state.go('reports.detail', { id: null }, { notify: false });
-    //   //ctrl.clearSelection();
-    // }
     if (!force && isMobile()) {
       // leave content shown
       return;
