@@ -1,4 +1,5 @@
 import {
+  AfterViewChecked,
   AfterViewInit,
   ChangeDetectorRef,
   Component,
@@ -33,7 +34,7 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
   selector: 'messages-content',
   templateUrl: './messages-content.component.html'
 })
-export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit {
+export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;
   private globalActions: GlobalActions;
   messagesActions: MessagesActions;
@@ -42,11 +43,12 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   selectedConversation;
   firstUnread;
   send = { message: '' };
-  allLoaded = false;
   urlParameters = { type: '', id: '' };
   subscriptions: Subscription = new Subscription();
   textAreaFocused = false;
+  hasToScroll = false;
   isAddRecipientBtnActive = false;
+  allLoaded = false;
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -83,6 +85,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       this.urlParameters.type = type;
       this.urlParameters.id = id;
       this.send.message = '';
+      this.hasToScroll = false;
+      this.allLoaded = false;
       this.selectContact(this.urlParameters.id, this.urlParameters.type);
       this.changeDetectorRef.detectChanges();
     });
@@ -101,6 +105,14 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       });
   }
 
+  ngAfterViewChecked(): void {
+    const lastMessage = $('.message-content-wrapper .last-message');
+    // Scrolling only when last message is rendered.
+    if (this.hasToScroll && !this.loadingContent && lastMessage.length) {
+      this.scrollToUnread();
+    }
+  }
+
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
     $('body').off('focus', '#message-footer textarea');
@@ -112,7 +124,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   private checkScroll(elem) {
-    if (elem && elem.scrollTop === 0 && !this.allLoaded) {
+    if (elem && elem.scrollTop() === 0 && !this.allLoaded) {
       this.updateConversation({ skip: true });
     }
   }
@@ -127,6 +139,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     const markers = content.find('.marker');
     let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
     content.scrollTop(scrollTo);
+    this.hasToScroll = false;
     $('.message-content-wrapper').on('scroll', () => this.checkScroll(content));
   }
 
@@ -215,7 +228,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.messagesActions.updateSelectedConversation({ contact: contactModel, messages: conversation });
         this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();
-        setTimeout(() => this.scrollToUnread());
+        this.hasToScroll = true; // Indication to scroll to unread message.
       })
       .catch((err) => {
         this.globalActions.setLoadingContent(false);

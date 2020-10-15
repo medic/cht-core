@@ -20,9 +20,9 @@
         <p class="loading-status" *ngIf="allLoaded" translate>No more messages</p>
         <div>
           <ul>
-            <li *ngFor="let message of selectedConversation.messages; trackBy: listTrackBy" [ngClass]="{'outgoing': message.doc?.kujua_message, 'incoming': !message.doc?.kujua_message}">
+            <li *ngFor="let message of selectedConversation.messages; trackBy: listTrackBy; let lastMessage = last" [ngClass]="{'outgoing': message.doc?.kujua_message, 'incoming': !message.doc?.kujua_message}">
               <div class="marker" *ngIf="firstUnread && firstUnread.id === message.doc._id" translate>Unread below</div>
-              <span class="message-body">
+              <span class="message-body" [class.last-message]="lastMessage">
 
                 <div class="data">
                   <p>
