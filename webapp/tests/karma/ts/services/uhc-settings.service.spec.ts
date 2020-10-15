@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import sinon from 'sinon';
 import { expect } from 'chai';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 
@@ -8,10 +7,6 @@ describe('UHCSettings service', () => {
 
   beforeEach(() => {
     service = TestBed.inject(UHCSettingsService);
-  });
-
-  afterEach(() => {
-    sinon.restore()
   });
 
   describe('getMonthStartDate', () => {
