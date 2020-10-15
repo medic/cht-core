@@ -67,7 +67,13 @@
         </div>
 
         <div class="message-actions" *ngIf="textAreaFocused || send.message?.length">
-          <button class="btn btn-link" (click)="addRecipients()" translate>Add recipient</button>
+          <button class="btn btn-link btn-add-recipients"
+            (click)="addRecipients()"
+            (mouseover)="isAddRecipientBtnActive = true"
+            (mouseout)="isAddRecipientBtnActive = false"
+            translate>
+            Add recipient
+          </button>
           <!-- Count is done by CountMessageService -->
           <span class="count"></span>
           <button class="btn submit btn-primary"

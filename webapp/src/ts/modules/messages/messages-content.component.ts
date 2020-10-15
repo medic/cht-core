@@ -1,4 +1,10 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -40,6 +46,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   urlParameters = { type: '', id: '' };
   subscriptions: Subscription = new Subscription();
   textAreaFocused = false;
+  isAddRecipientBtnActive = false;
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -88,8 +95,9 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.textAreaFocused = true;
       })
       .on('blur', '#message-footer textarea', () => {
-        // Setting timeout to give change for clicking "add recipient" before hiding section.
-        setTimeout(() => this.textAreaFocused = false, 500);
+        if (!this.isAddRecipientBtnActive) {
+          this.textAreaFocused = false;
+        }
       });
   }
 
@@ -111,13 +119,13 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
   private scrollToUnread() {
     const content = $('.message-content-wrapper');
+
     if (!content || !content.length) {
       return;
     }
 
     const markers = content.find('.marker');
     let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
-
     content.scrollTop(scrollTo);
     $('.message-content-wrapper').on('scroll', () => this.checkScroll(content));
   }
@@ -313,14 +321,19 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   addRecipients() {
-    this.modalService.show(SendMessageComponent, {
-      initialState: {
-        fields: {
-          to: this.selectedConversation.id,
-          message: this.send.message
+    this.modalService.show(
+      SendMessageComponent,
+      {
+        initialState: {
+          fields: {
+            to: this.selectedConversation.id,
+            message: this.send.message
+          }
         }
-      }
-    });
+      },
+      () => $('#message-footer textarea').focus()
+    );
     this.send.message = '';
   }
+
 }
