@@ -58,7 +58,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete - taking a little too long on travis
-    browser.driver.wait(prepServices(), 200 * 1000, 'API took too long to start up');
+    browser.driver.wait(prepServices(), 300 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return browser
