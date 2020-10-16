@@ -1,14 +1,13 @@
-const assert = require('chai').assert;
-const format = require('../../../../src/js/modules/format');
+import { assert } from 'chai';
+import sinon from 'sinon';
+import { FormatProvider } from '@mm-providers/format.provider';
 
-// TODO migrate this file!
-// Moved here in advance of the migration to get the unit tests passing
-// The code this is testing was already migrated and can't be "required" anymore.
-
-let $state;
+let translate;
+let format;
 
 beforeEach(() => {
-  $state = { href: (route, params) => `${route}?id=${params.id}` };
+  translate = { instant: sinon.stub().returnsArg(0) };
+  format = new FormatProvider(translate);
 });
 
 describe('lineage', () => {
@@ -45,9 +44,9 @@ describe('lineage', () => {
         { _id: 'a', name: 'clinic' },
         { _id: 'b', contact: { phone: '+123' } }
       ];
-      const actual = format.lineage(given, $state);
-      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="contacts.detail?id=a">clinic</a></li>' +
-        '<li><a href="contacts.detail?id=b">+123</a></li></ol>');
+      const actual = format.lineage(given);
+      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="/contacts/a">clinic</a></li>' +
+        '<li><a href="/contacts/b">+123</a></li></ol>');
     });
 
     it('escapes entity names', () => {
@@ -55,10 +54,10 @@ describe('lineage', () => {
         { _id: 'a', name: '<b>clinic</b>' },
         { _id: 'b', contact: { phone: '<blink>+123</blink>' } }
       ];
-      const actual = format.lineage(given, $state);
+      const actual = format.lineage(given);
       assert.equal(actual, '<ol class="horizontal lineage">' +
-        '<li><a href="contacts.detail?id=a">&lt;b&gt;clinic&lt;/b&gt;</a></li>' +
-        '<li><a href="contacts.detail?id=b">&lt;blink&gt;+123&lt;/blink&gt;</a></li></ol>');
+        '<li><a href="/contacts/a">&lt;b&gt;clinic&lt;/b&gt;</a></li>' +
+        '<li><a href="/contacts/b">&lt;blink&gt;+123&lt;/blink&gt;</a></li></ol>');
     });
 
   });
@@ -79,9 +78,9 @@ describe('lineage', () => {
           }
         }
       };
-      const actual = format.lineage(given, $state);
-      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="contacts.detail?id=a">clinic</a></li>' +
-        '<li>centre</li><li><a href="contacts.detail?id=c">+456</a></li></ol>');
+      const actual = format.lineage(given);
+      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="/contacts/a">clinic</a></li>' +
+        '<li>centre</li><li><a href="/contacts/c">+456</a></li></ol>');
     });
 
   });
