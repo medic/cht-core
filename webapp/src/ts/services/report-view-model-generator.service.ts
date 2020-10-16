@@ -37,9 +37,11 @@ export class ReportViewModelGeneratorService {
         if (!model.doc) {
           return model;
         }
-        return this.formatDataRecordService.format(model.doc).then((formatted) => {
-          model.formatted = formatted;
-          return model;
+        return this.formatDataRecordService
+          .format(model.doc)
+          .then((formatted) => {
+            model.formatted = formatted;
+            return model;
         });
       })
       .then((model) => {

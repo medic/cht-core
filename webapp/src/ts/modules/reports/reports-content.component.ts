@@ -64,7 +64,7 @@ export class ReportsContentComponent implements OnInit {
       filter: (change) => {
         const isSelected = this.selectedReports &&
           this.selectedReports.length &&
-          _.some(this.selectedReports, (item) => item._id === change.id)
+          _.some(this.selectedReports, (item) => item._id === change.id);
         return isSelected;
       },
       callback: (change) => {

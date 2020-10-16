@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
-import { DbService } from '../../services/db.service';
+import { DbService } from '@mm-services/db.service';
 
 
 @Component({

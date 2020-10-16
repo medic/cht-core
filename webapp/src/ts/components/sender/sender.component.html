@@ -10,7 +10,7 @@
           *ngIf="!sentBy || !(message.doc?.name || message.contact?.name || (!message.form && message.name) || message.from || message.sent_by || message.doc?.from)">
       {{ message.doc?.name || message.contact?.name || (!message.form && message.name) || message.from || message.sent_by || ('messages.unknown.sender' | translate) }}
     </span>
-    <span class="phone" *ngIf="message.name && message.name === message.facility?.contact?.phone">
+    <span class="phone" *ngIf="!(message.name && message.name === message.facility?.contact?.phone)">
       {{ message.doc?.phone || message.contact?.phone || message.phone }}
     </span>
   </div>

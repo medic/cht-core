@@ -1,11 +1,7 @@
-import * as _ from 'lodash-es';
-import * as lineageFactory from '@medic/lineage';
-import { Store, createAction, select } from '@ngrx/store';
+import { Store, createAction } from '@ngrx/store';
 import { createMultiValueAction, createSingleValueAction } from './actionUtils';
-import { Actions as GlobalActions } from './global';
-import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
-import { Selectors } from '@mm-selectors/index';
-import { mod } from 'ngx-bootstrap/chronos/utils';
+import { GlobalActions } from '@mm-actions/global';
+
 
 export const Actions = {
   selectReport: createMultiValueAction('SELECT_REPORT'),
@@ -36,12 +32,12 @@ export class ReportsActions {
   }
 
   removeSelectedReport(id) {
+    this.store.dispatch(Actions.removeSelectedReport(id));
+    const globalActions = new GlobalActions(this.store);
+    globalActions.settingSelected();
     /*
-     dispatch(ActionUtils.createSingleValueAction(actionTypes.REMOVE_SELECTED_REPORT, 'id', id));
      setRightActionBar();
-     globalActions.settingSelected(true);
-     $(`#reports-list li[data-record-id="${id}"] input[type="checkbox"]`).prop('checked', false);
-     */
+    */
   }
 
   setSelectedReports(selected) {

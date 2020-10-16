@@ -109,7 +109,9 @@ export class ReportsEffects {
       exhaustMap(([action, report]) => {
         const readReport = { ...report };
         readReport.read = true;
-        this.markReadService.markAsRead([report]).catch(err => console.error('Error marking read', err));
+        this.markReadService
+          .markAsRead([report])
+          .catch(err => console.error('Error marking read', err));
         return of(this.reportActions.updateReportsList([readReport]));
       }),
     );

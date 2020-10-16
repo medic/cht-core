@@ -89,7 +89,7 @@ export class AppComponent {
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
-    private cd: ChangeDetectorRef,
+    private changeDetectorRef: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -207,7 +207,7 @@ export class AppComponent {
       this.currentTab = currentTab;
       this.minimalTabs = minimalTabs;
       this.showContent = showContent;
-      this.cd.detectChanges();
+      this.changeDetectorRef.detectChanges();
     });
 
     this.setupRouter();

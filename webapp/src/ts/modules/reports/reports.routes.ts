@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 
-import { RouteGuardProvider } from '../../providers/route-guard.provider';
-import { ReportsComponent } from './reports.component';
-import { ReportsContentComponent } from './reports-content.component';
+import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
+import { ReportsComponent } from '@mm-modules/reports/reports.component';
+import { ReportsContentComponent } from '@mm-modules/reports/reports-content.component';
 
 export const routes:Routes = [
   {

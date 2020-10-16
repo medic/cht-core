@@ -22,8 +22,19 @@ export class TranslateLocaleService {
       return;
     }
 
-    const loadingTranslations = this.translateService.currentLoader.getTranslation(locale).pipe(shareReplay(1), take(1));
-    const translationsCompiled = loadingTranslations.pipe(map(((res) => this.translateService.compiler.compileTranslations(res, locale))), shareReplay(1), take(1));
+    const loadingTranslations = this.translateService
+      .currentLoader
+      .getTranslation(locale)
+      .pipe(
+        shareReplay(1),
+        take(1)
+      );
+    const translationsCompiled = loadingTranslations
+      .pipe(
+        map((res) => this.translateService.compiler.compileTranslations(res, locale)),
+        shareReplay(1),
+        take(1)
+      );
     translationsCompiled.subscribe((res) => {
       this.translateService.translations[locale] = res;
       this.translateService.addLangs(Object.keys(this.translateService.translations));

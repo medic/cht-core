@@ -1,4 +1,3 @@
-import * as _ from 'lodash-es';
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { DbService } from './db.service';
@@ -6,6 +5,7 @@ import { FormatDateService } from './format-date.service';
 import { LanguageService } from './language.service';
 import { SettingsService } from './settings.service';
 import { TranslateLocaleService} from '@mm-services/translate-locale.service';
+import * as _ from 'lodash-es';
 
 import * as messages from '@medic/message-utils';
 import * as lineageFactory from '@medic/lineage';
@@ -160,9 +160,11 @@ export class FormatDataRecordService {
     };
 
     if (def) {
-      Object.keys(def.fields).forEach((key) => {
-        getKeys(key.split('.'), keys);
-      });
+      Object
+        .keys(def.fields)
+        .forEach((key) => {
+          getKeys(key.split('.'), keys);
+        });
     }
 
     return hashToArray(keys);
@@ -476,32 +478,34 @@ export class FormatDataRecordService {
     if (depth > 3) {
       depth = 3;
     }
-    Object.keys(values).forEach((key) => {
-      const value = values[key];
-      const label = labelPrefix + '.' + key;
-      if (_.isObject(value)) {
-        results.push({ label, depth });
-        this.getFields(doc, results, value, label, depth + 1);
-      } else {
-        const result:any = {
-          label,
-          value,
-          depth,
-          target: this.getClickTarget(key, doc),
-        };
+    Object
+      .keys(values)
+      .forEach((key) => {
+        const value = values[key];
+        const label = labelPrefix + '.' + key;
+        if (_.isObject(value)) {
+          results.push({ label, depth });
+          this.getFields(doc, results, value, label, depth + 1);
+        } else {
+          const result:any = {
+            label,
+            value,
+            depth,
+            target: this.getClickTarget(key, doc),
+          };
 
-        const filePath = 'user-file/' + label.split('.').slice(1).join('/');
-        if (doc &&
-          doc._attachments &&
-          doc._attachments[filePath] &&
-          doc._attachments[filePath].content_type &&
-          doc._attachments[filePath].content_type.startsWith('image/')) {
-          result.imagePath = filePath;
+          const filePath = 'user-file/' + label.split('.').slice(1).join('/');
+          if (doc &&
+            doc._attachments &&
+            doc._attachments[filePath] &&
+            doc._attachments[filePath].content_type &&
+            doc._attachments[filePath].content_type.startsWith('image/')) {
+            result.imagePath = filePath;
+          }
+
+          results.push(result);
         }
-
-        results.push(result);
-      }
-    });
+      });
     return results;
   }
 
@@ -597,8 +601,10 @@ export class FormatDataRecordService {
       group.rows.push(copy);
     });
     Object.keys(groups).forEach((key) => {
+      groups[key].rows = _.sortBy(groups[key].rows, 'timestamp');
       doc.scheduled_tasks_by_group.push(groups[key]);
     });
+
   }
 
   /*

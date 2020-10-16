@@ -68,7 +68,7 @@ describe('FormatDataRecord Service', () => {
     });
   });
 
-  it('errors messages when they fail to transate', () => {
+  it('errors messages when they fail to translate', () => {
     const doc = {
       from: '+123456',
       scheduled_tasks: [
@@ -307,5 +307,9 @@ describe('FormatDataRecord Service', () => {
         }
       ]);
     });
+  });
+
+  it('should sort scheduled tasks by date within groups', () => {
+    // todo
   });
 });
