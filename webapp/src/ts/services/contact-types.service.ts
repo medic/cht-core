@@ -43,7 +43,7 @@ export class ContactTypesService {
   /**
    * Returns true if the given doc is a contact type.
    */
-  includes(doc) {
+  includes(doc?) {
     const type = doc && doc.type;
     if (!type) {
       return false;
@@ -56,7 +56,7 @@ export class ContactTypesService {
    * Returns a Promise to resolve an array of child type names for the
    * given type id. If parent is falsey, returns the types with no parent.
    */
-  getChildren(parent) {
+  getChildren(parent?) {
     return this.settingsService
       .get()
       .then(config => contactTypesUtils.getChildren(config, parent))
@@ -83,14 +83,14 @@ export class ContactTypesService {
   /**
    * @returns {string} returns the contact type id of a given contact document
    */
-  getTypeId(contact) {
+  getTypeId(contact?) {
     return contactTypesUtils.getTypeId(contact);
   }
 
   /**
    *  @returns {boolean} returns whether the provided type is a person type
    */
-  isPersonType(type) {
+  isPersonType(type?) {
     return contactTypesUtils.isPersonType(type);
   }
 }

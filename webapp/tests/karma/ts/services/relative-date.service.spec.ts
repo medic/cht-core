@@ -1,61 +1,57 @@
-describe('RelativeDate Service', () => {
-  'use strict';
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
+import * as moment from 'moment';
 
+import { FormatDateService } from '@mm-services/format-date.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
+
+describe('RelativeDate Service', () => {
   let service;
   let clock;
-  const formatDateRelativeDay = sinon.stub();
-  const formatDateRelativeTime = sinon.stub();
-  const formatDateAge = sinon.stub();
-  const formatDateTime = sinon.stub();
-
-  const resetStubs = () => {
-    clock = sinon.useFakeTimers(5000);
-
-    formatDateAge.reset();
-    formatDateAge.returns('someage');
-
-    formatDateRelativeDay.reset();
-    formatDateRelativeDay.returns('somerelativeday');
-
-    formatDateRelativeTime.reset();
-    formatDateRelativeTime.returns('somerelativetime');
-
-    formatDateTime.reset();
-    formatDateTime.returns('someabsolutetime');
-  };
+  let formatDateRelativeDay;
+  let formatDateRelativeTime;
+  let formatDateAge;
+  let formatDateTime;
 
   beforeEach(() => {
-    module('inboxApp');
-    module($provide => {
-      $provide.value('FormatDate', {
-        relative: function(timestamp, options) {
-          if (options.withoutTime) {
-            return formatDateRelativeDay(timestamp, options);
-          }
-          return formatDateRelativeTime(timestamp, options);
+    formatDateRelativeDay = sinon.stub().returns('somerelativeday');
+    formatDateRelativeTime = sinon.stub().returns('somerelativetime');
+    formatDateAge = sinon.stub().returns('someage');
+    formatDateTime = sinon.stub().returns('someabsolutetime');
+
+    clock = sinon.useFakeTimers(5000);
+
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: FormatDateService,
+          useValue: {
+            relative: (timestamp, options) => options.withoutTime ?
+                                              formatDateRelativeDay(timestamp, options) :
+                                              formatDateRelativeTime(timestamp, options),
+            age: formatDateAge,
+            time: formatDateTime,
+          },
         },
-        age: formatDateAge,
-        time: formatDateTime
-      });
+      ],
     });
-    inject((_RelativeDate_) => {
-      service = _RelativeDate_;
-    });
-    resetStubs();
+    service = TestBed.inject(RelativeDateService);
   });
 
   afterEach(() => {
-    const elements = document.querySelectorAll('.update-relative-date');
-    elements.forEach(element => {
-      element.remove();
-    });
+    sinon.restore();
     clock.restore();
+    document
+      .querySelectorAll('.update-relative-date')
+      .forEach(element => element.remove());
   });
+
 
   describe('getCssSelector', () => {
     it('returns correct CSS selector', () => {
       const actual = service.getCssSelector();
-      chai.expect(actual).to.equal('update-relative-date');
+      expect(actual).to.equal('update-relative-date');
     });
   });
 
@@ -76,7 +72,7 @@ describe('RelativeDate Service', () => {
 
       const given = 2398472085558;
       const actual = service.generateDataset(given, options);
-      chai.expect(actual)
+      expect(actual)
         .to.equal(`data-date-options='{"date":${given.valueOf()},"camelCase":123456,"text":"string"}'`);
     });
   });
@@ -85,8 +81,8 @@ describe('RelativeDate Service', () => {
 
     it('does nothing with no elements are present', () => {
       service.updateRelativeDates();
-      chai.expect(formatDateRelativeTime.callCount).to.equal(0);
-      chai.expect(formatDateAge.callCount).to.equal(0);
+      expect(formatDateRelativeTime.callCount).to.equal(0);
+      expect(formatDateAge.callCount).to.equal(0);
     });
 
     it('does not update relative date when no date is present, date is undefined or incorrect', () => {
@@ -119,13 +115,13 @@ describe('RelativeDate Service', () => {
 
       service.updateRelativeDates();
 
-      chai.expect(document.getElementById('spanNoData').innerHTML).to.equal('sometext');
-      chai.expect(document.getElementById('spanEmptyData').innerHTML).to.equal('sometext');
-      chai.expect(document.getElementById('spanBadData').innerHTML).to.equal('sometext');
-      chai.expect(document.getElementById('spanBadDate').innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanNoData').innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanEmptyData').innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanBadData').innerHTML).to.equal('sometext');
+      expect(document.getElementById('spanBadDate').innerHTML).to.equal('sometext');
 
-      chai.expect(formatDateRelativeTime.callCount).to.equal(0);
-      chai.expect(formatDateAge.callCount).to.equal(0);
+      expect(formatDateRelativeTime.callCount).to.equal(0);
+      expect(formatDateAge.callCount).to.equal(0);
     });
 
     it('processes age option correctly', () => {
@@ -145,11 +141,11 @@ describe('RelativeDate Service', () => {
 
       service.updateRelativeDates();
 
-      chai.expect(document.getElementById('spanAge').innerHTML).to.equal('someage');
-      chai.expect(document.getElementById('spanNoAge').innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanAge').innerHTML).to.equal('someage');
+      expect(document.getElementById('spanNoAge').innerHTML).to.equal('somerelativetime');
 
-      chai.expect(formatDateRelativeTime.callCount).to.equal(1);
-      chai.expect(formatDateAge.callCount).to.equal(1);
+      expect(formatDateRelativeTime.callCount).to.equal(1);
+      expect(formatDateAge.callCount).to.equal(1);
     });
 
     it('processes withoutTime option correctly', () => {
@@ -166,11 +162,11 @@ describe('RelativeDate Service', () => {
       document.body.appendChild(spanNoWithoutTime);
 
       service.updateRelativeDates();
-      chai.expect(document.getElementById('spanWithoutTime').innerHTML).to.equal('somerelativeday');
-      chai.expect(document.getElementById('spanNoWithoutTime').innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanWithoutTime').innerHTML).to.equal('somerelativeday');
+      expect(document.getElementById('spanNoWithoutTime').innerHTML).to.equal('somerelativetime');
 
-      chai.expect(formatDateRelativeTime.callCount).to.equal(1);
-      chai.expect(formatDateRelativeDay.callCount).to.equal(1);
+      expect(formatDateRelativeTime.callCount).to.equal(1);
+      expect(formatDateRelativeDay.callCount).to.equal(1);
     });
 
     it('processes absoluteToday option correctly', () => {
@@ -210,15 +206,15 @@ describe('RelativeDate Service', () => {
       document.body.appendChild(spanTodayAbsoluteWitoutTime);
 
       service.updateRelativeDates();
-      chai.expect(document.getElementById('spanTodayNoAbsolute').innerHTML).to.equal('somerelativetime');
-      chai.expect(document.getElementById('spanTodayAbsolute').innerHTML).to.equal('someabsolutetime');
-      chai.expect(document.getElementById('spanOtherDayNoAbsolute').innerHTML).to.equal('somerelativetime');
-      chai.expect(document.getElementById('spanOtherDayAbsolute').innerHTML).to.equal('somerelativetime');
-      chai.expect(document.getElementById('spanTodayAbsoluteWitoutTime').innerHTML).to.equal('somerelativeday');
+      expect(document.getElementById('spanTodayNoAbsolute').innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanTodayAbsolute').innerHTML).to.equal('someabsolutetime');
+      expect(document.getElementById('spanOtherDayNoAbsolute').innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanOtherDayAbsolute').innerHTML).to.equal('somerelativetime');
+      expect(document.getElementById('spanTodayAbsoluteWitoutTime').innerHTML).to.equal('somerelativeday');
 
-      chai.expect(formatDateRelativeTime.callCount).to.equal(3);
-      chai.expect(formatDateTime.callCount).to.equal(1);
-      chai.expect(formatDateRelativeDay.callCount).to.equal(1);
+      expect(formatDateRelativeTime.callCount).to.equal(3);
+      expect(formatDateTime.callCount).to.equal(1);
+      expect(formatDateRelativeDay.callCount).to.equal(1);
     });
 
   });
@@ -230,9 +226,9 @@ describe('RelativeDate Service', () => {
       const timestamp = 100;
       const options = { age: true };
       const actual = service.getRelativeDate(timestamp, options);
-      chai.expect(actual).to.equal('15 days');
-      chai.expect(formatDateAge.callCount).to.equal(1);
-      chai.expect(formatDateAge.args[0][0]).to.equal(timestamp);
+      expect(actual).to.equal('15 days');
+      expect(formatDateAge.callCount).to.equal(1);
+      expect(formatDateAge.args[0][0]).to.equal(timestamp);
     });
 
     it('calls through to time format', () => {
@@ -242,9 +238,9 @@ describe('RelativeDate Service', () => {
         absoluteToday: true
       };
       const actual = service.getRelativeDate(timestamp, options);
-      chai.expect(actual).to.equal('12.53');
-      chai.expect(formatDateTime.callCount).to.equal(1);
-      chai.expect(formatDateTime.args[0][0]).to.equal(timestamp);
+      expect(actual).to.equal('12.53');
+      expect(formatDateTime.callCount).to.equal(1);
+      expect(formatDateTime.args[0][0]).to.equal(timestamp);
     });
 
     it('calls through to relative format if withoutTime', () => {
@@ -255,9 +251,9 @@ describe('RelativeDate Service', () => {
         withoutTime: true
       };
       const actual = service.getRelativeDate(timestamp, options);
-      chai.expect(actual).to.equal('15 Jan');
-      chai.expect(formatDateRelativeDay.callCount).to.equal(1);
-      chai.expect(formatDateRelativeDay.args[0][0]).to.equal(timestamp);
+      expect(actual).to.equal('15 Jan');
+      expect(formatDateRelativeDay.callCount).to.equal(1);
+      expect(formatDateRelativeDay.args[0][0]).to.equal(timestamp);
     });
 
     it('calls through to relative format if date not today', () => {
@@ -267,9 +263,9 @@ describe('RelativeDate Service', () => {
         absoluteToday: true
       };
       const actual = service.getRelativeDate(timestamp, options);
-      chai.expect(actual).to.equal('12.53');
-      chai.expect(formatDateRelativeTime.callCount).to.equal(1);
-      chai.expect(formatDateRelativeTime.args[0][0]).to.equal(timestamp);
+      expect(actual).to.equal('12.53');
+      expect(formatDateRelativeTime.callCount).to.equal(1);
+      expect(formatDateRelativeTime.args[0][0]).to.equal(timestamp);
     });
 
     it('calls through to relative format if default options', () => {
@@ -277,11 +273,10 @@ describe('RelativeDate Service', () => {
       const timestamp = 5100;
       const options = {};
       const actual = service.getRelativeDate(timestamp, options);
-      chai.expect(actual).to.equal('12.53');
-      chai.expect(formatDateRelativeTime.callCount).to.equal(1);
-      chai.expect(formatDateRelativeTime.args[0][0]).to.equal(timestamp);
+      expect(actual).to.equal('12.53');
+      expect(formatDateRelativeTime.callCount).to.equal(1);
+      expect(formatDateRelativeTime.args[0][0]).to.equal(timestamp);
     });
 
   });
-
 });

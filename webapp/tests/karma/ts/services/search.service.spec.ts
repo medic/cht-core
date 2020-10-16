@@ -1,159 +1,139 @@
-describe('Search service', function() {
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
+import * as moment from 'moment';
 
-  'use strict';
+import { SearchService } from '@mm-services/search.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { SessionService } from '@mm-services/session.service';
+import { SearchFactoryService } from '@mm-services/search.service';
+import { DbService } from '@mm-services/db.service';
+import { act } from '@ngrx/effects';
 
-  let service;
+describe('Search service', () => {
+  let service:SearchService;
   let GetDataRecords;
   let searchStub;
   let db;
   let clock;
   let session;
 
-  let qAll;
-
-  const objectToIterable = () => {
-    qAll = Q.all;
-
-    Q.all = map => {
-      if (!map || typeof map[Symbol.iterator] === 'function') {
-        return qAll(map);
-      }
-
-      const keys = Object.keys(map);
-      const iterable = keys.map(key => map[key]);
-
-      return qAll(iterable).then(results => {
-        const resultMap = {};
-        results.forEach((result, key) => resultMap[keys[key]] = result);
-        return resultMap;
-      });
-    };
-  };
-
-  beforeEach(function() {
-    objectToIterable();
+  beforeEach(() => {
     GetDataRecords = sinon.stub();
     searchStub = sinon.stub();
-    searchStub.returns(Promise.resolve({}));
+    searchStub.resolves({});
     db = { query: sinon.stub().resolves() };
     session = { isOnlineOnly: sinon.stub() };
-    module('inboxApp');
-    module(function ($provide) {
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('DB', sinon.stub().returns(db));
-      $provide.value('GetDataRecords', GetDataRecords);
-      $provide.value('SearchFactory', function() {
-        return searchStub;
-      });
-      $provide.value('Session', session);
-      $provide.value('Telemetry', { record: () => Promise.resolve() });
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: () => db } },
+        { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
+        { provide: SessionService, useValue: session },
+        { provide: SearchFactoryService, useValue: { get: () => searchStub } },
+        // todo add telemetry
+      ],
     });
-    inject(function($injector) {
-      service = $injector.get('Search');
-    });
+    service = TestBed.inject(SearchService);
   });
 
-  afterEach(function() {
-    KarmaUtils.restore(GetDataRecords);
-    Q.all = qAll;
-  });
+  afterEach(() => sinon.restore());
 
-  describe('debouncing', function() {
 
-    it('debounces if the same query is executed twice', function(done) {
+  describe('debouncing', () => {
+
+    it('debounces if the same query is executed twice', fakeAsync(() => {
       const expected = [ { id: 'a' } ];
-      GetDataRecords.returns(Promise.resolve(expected));
-      service('reports', {})
-        .then(function(actual) {
-          chai.expect(actual).to.deep.equal(expected);
-          setTimeout(done); // defer execution to give the second query time to execute
-        })
-        .catch((err) => {
-          done(err);
+      GetDataRecords.resolves(expected);
+      service
+        .search('reports', {})
+        .then((actual) => {
+          expect(actual).to.deep.equal(expected);
+          tick();
         });
-      service('reports', {})
-        .then(function(actual) {
-          chai.expect(actual).to.be.empty;
-        })
-        .catch((err) => done(err));
-    });
 
-    it('does not debounce if the same query is executed twice with the force option', (done) => {
+      service
+        .search('reports', {})
+        .then((actual) => {
+          expect(actual).to.be.empty;
+        });
+    }));
+
+    it('does not debounce if the same query is executed twice with the force option', fakeAsync(() => {
       const expected = [ { id: 'a' } ];
-      GetDataRecords.returns(Promise.resolve(expected));
+      GetDataRecords.resolves(expected);
       let firstReturned = false;
-      service('reports', {})
-        .then(function(actual) {
+      service
+        .search('reports', {})
+        .then((actual) => {
           firstReturned = true;
-          chai.expect(actual).to.deep.equal(expected);
-        })
-        .catch(err => done(err));
-      service('reports', {}, { force: true })
-        .then(function(actual) {
-          chai.expect(firstReturned).to.equal(true);
-          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
-          done();
-        })
-        .catch(err => done(err));
-    });
+          expect(actual).to.deep.equal(expected);
+        });
+      service
+        .search('reports', {}, { force: true })
+        .then((actual) => {
+          expect(firstReturned).to.equal(true);
+          expect(actual).to.deep.equal([ { id: 'a' } ]);
+        });
+    }));
 
-    it('does not debounce different queries - medic/medic/issues/4331)', (done) => {
+    it('does not debounce different queries - medic/medic/issues/4331)', fakeAsync(() => {
       GetDataRecords
-        .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
-        .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
+        .onFirstCall().resolves([ { id: 'a' } ])
+        .onSecondCall().resolves([ { id: 'b' } ]);
 
       let firstReturned = false;
       const filters = { foo: 'bar' };
-      service('reports', filters)
-        .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+      service
+        .search('reports', filters)
+        .then((actual) => {
+          expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
-        })
-        .catch(err => done(err));
+        });
 
       filters.foo = 'test';
-      service('reports', filters)
-        .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
-          chai.expect(firstReturned).to.equal(true);
-          done();
-        })
-        .catch(err => done(err));
-    });
+      service
+        .search('reports', filters)
+        .then((actual) => {
+          expect(actual).to.deep.equal([ { id: 'b' } ]);
+          expect(firstReturned).to.equal(true);
+        });
+    }));
 
-    it('does not debounce different queries', (done) => {
+    it('does not debounce different queries', fakeAsync(() => {
       GetDataRecords
-        .onFirstCall().returns(Promise.resolve([ { id: 'a' } ]))
-        .onSecondCall().returns(Promise.resolve([ { id: 'b' } ]));
+        .onFirstCall().resolves([ { id: 'a' } ])
+        .onSecondCall().resolves([ { id: 'b' } ]);
       let firstReturned = false;
-      service('reports', { freetext: 'first' })
-        .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+      service
+        .search('reports', { freetext: 'first' })
+        .then((actual) => {
+          expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
-        })
-        .catch(err => done(err));
-      service('reports', { freetext: 'second' })
-        .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
-          chai.expect(firstReturned).to.equal(true);
-          done();
-        })
-        .catch(err => done(err));
-    });
+        });
 
-    it('does not debounce subsequent queries', function() {
+      service
+        .search('reports', { freetext: 'second' })
+        .then((actual) => {
+          expect(actual).to.deep.equal([ { id: 'b' } ]);
+          expect(firstReturned).to.equal(true);
+        });
+    }));
+
+    it('does not debounce subsequent queries', () => {
       const expected = [ { id: 'a' } ];
-      GetDataRecords.returns(Promise.resolve(expected));
-      return service('reports', {})
-        .then(function(actual) {
-          chai.expect(actual).to.deep.equal(expected);
+      GetDataRecords.resolves(expected);
+      return service
+        .search('reports', {})
+        .then((actual) => {
+          expect(actual).to.deep.equal(expected);
         })
-        .then(function() {
-          return service('reports', {});
+        .then(() => {
+          return service.search('reports', {});
         })
-        .then(function(actual) {
-          chai.expect(actual).to.deep.equal(expected);
-          chai.expect(GetDataRecords.callCount).to.equal(2);
+        .then((actual) => {
+          expect(actual).to.deep.equal(expected);
+          expect(GetDataRecords.callCount).to.equal(2);
         });
     });
 
@@ -164,30 +144,32 @@ describe('Search service', function() {
       clock = sinon.useFakeTimers(moment('2018-08-20 18:18:18').valueOf());
     });
 
-    afterEach(function() {
+    afterEach(() => {
       clock.restore();
     });
 
     it('sends correct params to search service', () => {
       GetDataRecords.resolves([{ _id: 'a' }]);
-      return service('contacts', {}, {}, { extensions: true })
+      return service
+        .search('contacts', {}, {}, { extensions: true })
         .then(result => {
-          chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0])
+          expect(searchStub.callCount).to.equal(1);
+          expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { extensions: true }]);
-          chai.expect(result).to.deep.equal([{ _id: 'a' }]);
+          expect(result).to.deep.equal([{ _id: 'a' }]);
         });
     });
 
     it('does not query last visited dates when not set', () => {
       GetDataRecords.resolves([{ _id: 'a' }]);
-      return service('contacts', {}, {}, { displayLastVisitedDate: false })
+      return service
+        .search('contacts', {}, {}, { displayLastVisitedDate: false })
         .then(result => {
-          chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0])
+          expect(searchStub.callCount).to.equal(1);
+          expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { displayLastVisitedDate: false }]);
-          chai.expect(result).to.deep.equal([{ _id: 'a' }]);
-          chai.expect(db.query.callCount).to.equal(0);
+          expect(result).to.deep.equal([{ _id: 'a' }]);
+          expect(db.query.callCount).to.equal(0);
         });
     });
 
@@ -229,25 +211,26 @@ describe('Search service', function() {
           ]
         });
 
-      return service('contacts', {}, {}, { displayLastVisitedDate: true })
+      return service
+        .search('contacts', {}, {}, { displayLastVisitedDate: true })
         .then(result => {
-          chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0])
+          expect(searchStub.callCount).to.equal(1);
+          expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { displayLastVisitedDate: true }]);
-          chai.expect(db.query.callCount).to.equal(2);
-          chai.expect(db.query.args[0]).to.deep.equal([
+          expect(db.query.callCount).to.equal(2);
+          expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
             {
               start_key: moment('2018-08-01').startOf('day').valueOf(),
               end_key: moment('2018-08-01').endOf('month').valueOf()
             }
           ]);
-          chai.expect(db.query.args[1]).to.deep.equal([
+          expect(db.query.args[1]).to.deep.equal([
             'medic-client/contacts_by_last_visited',
             { reduce: true, group: true }
           ]);
 
-          chai.expect(result).to.deep.equal([
+          expect(result).to.deep.equal([
             {
               _id: '1',
               lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
@@ -319,23 +302,24 @@ describe('Search service', function() {
         sortByLastVisitedDate: 'yes!!!!'
       };
 
-      return service('contacts', {}, {}, extensions )
+      return service
+        .search('contacts', {}, {}, extensions )
         .then(result => {
-          chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0])
+          expect(searchStub.callCount).to.equal(1);
+          expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
-          chai.expect(db.query.callCount).to.equal(2);
-          chai.expect(db.query.args[0]).to.deep.equal([
+          expect(db.query.callCount).to.equal(2);
+          expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
             {
               start_key: moment('2018-07-25').startOf('day').valueOf(),
               end_key: moment('2018-08-24').endOf('day').valueOf()
             }
           ]);
-          chai.expect(db.query.args[1])
+          expect(db.query.args[1])
             .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: true, group: true }]);
 
-          chai.expect(result).to.deep.equal([
+          expect(result).to.deep.equal([
             {
               _id: '1',
               lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
@@ -403,8 +387,8 @@ describe('Search service', function() {
         }
       };
 
-      return service('contacts', {}, {}, extensions).then(actual => {
-        chai.expect(actual).to.deep.equal([
+      return service.search('contacts', {}, {}, extensions).then(actual => {
+        expect(actual).to.deep.equal([
           {
             _id: '1',
             lastVisitedDate: moment('2018-08-12 00:01:00').valueOf(),
@@ -460,25 +444,26 @@ describe('Search service', function() {
         sortByLastVisitedDate: 'yes!!!!'
       };
 
-      return service('contacts', {}, {}, extensions )
+      return service
+        .search('contacts', {}, {}, extensions )
         .then(result => {
-          chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0])
+          expect(searchStub.callCount).to.equal(1);
+          expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
-          chai.expect(db.query.callCount).to.equal(2);
-          chai.expect(db.query.args[0]).to.deep.equal([
+          expect(db.query.callCount).to.equal(2);
+          expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
             {
               start_key: moment('2018-07-25').startOf('day').valueOf(),
               end_key: moment('2018-08-24').endOf('day').valueOf()
             }
           ]);
-          chai.expect(db.query.args[1]).to.deep.equal([
+          expect(db.query.args[1]).to.deep.equal([
             'medic-client/contacts_by_last_visited',
             { reduce: true, group: true, keys: ['1', '2', '3'] }
           ]);
 
-          chai.expect(result).to.deep.equal([
+          expect(result).to.deep.equal([
             {
               _id: '1',
               lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
@@ -536,25 +521,26 @@ describe('Search service', function() {
         sortByLastVisitedDate: 'yes!!!!'
       };
 
-      return service('contacts', {}, {}, extensions )
+      return service
+        .search('contacts', {}, {}, extensions )
         .then(result => {
-          chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0])
+          expect(searchStub.callCount).to.equal(1);
+          expect(searchStub.args[0])
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
-          chai.expect(db.query.callCount).to.equal(2);
-          chai.expect(db.query.args[0]).to.deep.equal([
+          expect(db.query.callCount).to.equal(2);
+          expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
             {
               start_key: moment('2018-07-25').startOf('day').valueOf(),
               end_key: moment('2018-08-24').endOf('day').valueOf()
             }
           ]);
-          chai.expect(db.query.args[1]).to.deep.equal([
+          expect(db.query.args[1]).to.deep.equal([
             'medic-client/contacts_by_last_visited',
             { reduce: true, group: true, keys: ['1', '2', '3'] }
           ]);
 
-          chai.expect(result).to.deep.equal([
+          expect(result).to.deep.equal([
             {
               _id: '1',
               lastVisitedDate: 0,
@@ -615,17 +601,18 @@ describe('Search service', function() {
           ]
         });
 
-      return service('contacts', {}, {}, { displayLastVisitedDate: true, sortByLastVisitedDate: true })
+      return service
+        .search('contacts', {}, {}, { displayLastVisitedDate: true, sortByLastVisitedDate: true })
         .then(result => {
-          chai.expect(searchStub.callCount).to.equal(1);
-          chai.expect(searchStub.args[0]).to.deep.equal([
+          expect(searchStub.callCount).to.equal(1);
+          expect(searchStub.args[0]).to.deep.equal([
             'contacts',
             {},
             { limit: 50, skip: 0 },
             { displayLastVisitedDate: true, sortByLastVisitedDate: true }
           ]);
-          chai.expect(db.query.callCount).to.equal(1);
-          chai.expect(db.query.args[0]).to.deep.equal([
+          expect(db.query.callCount).to.equal(1);
+          expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
             {
               start_key: moment('2018-08-01').startOf('day').valueOf(),
@@ -633,7 +620,7 @@ describe('Search service', function() {
             }
           ]);
 
-          chai.expect(result).to.deep.equal([
+          expect(result).to.deep.equal([
             {
               _id: '1',
               lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
@@ -674,10 +661,10 @@ describe('Search service', function() {
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }, { _id: 6 }, { _id: 7 }, { _id: 8 }
       ]);
 
-      return service('contacts', {}, {}, {}, [5, 6, 7, 8]).then(result => {
-        chai.expect(GetDataRecords.callCount).to.equal(1);
-        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
-        chai.expect(result).to.deep.equal([
+      return service.search('contacts', {}, {}, {}, [5, 6, 7, 8]).then(result => {
+        expect(GetDataRecords.callCount).to.equal(1);
+        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
+        expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }, { _id: 6 }, { _id: 7 }, { _id: 8 }
         ]);
       });
@@ -689,10 +676,10 @@ describe('Search service', function() {
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
       ]);
 
-      return service('contacts', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
-        chai.expect(GetDataRecords.callCount).to.equal(1);
-        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
-        chai.expect(result).to.deep.equal([
+      return service.search('contacts', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
+        expect(GetDataRecords.callCount).to.equal(1);
+        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
+        expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
         ]);
       });
@@ -708,26 +695,26 @@ describe('Search service', function() {
       db.query
         .withArgs('medic-client/contacts_by_last_visited')
         .resolves({ rows: [
-          { key: '1', value: { max: 1 } },
-          { key: '2', value: { max: 2 } },
-          { key: '3', value: { max: 3 } },
-          { key: '4', value: { max: 4 } },
-        ]});
+            { key: '1', value: { max: 1 } },
+            { key: '2', value: { max: 2 } },
+            { key: '3', value: { max: 3 } },
+            { key: '4', value: { max: 4 } },
+          ]});
 
       const extensions = { displayLastVisitedDate: true };
 
-      return service('contacts', {}, {}, extensions, ['3', '4']).then(results => {
-        chai.expect(GetDataRecords.callCount).to.equal(1);
-        chai.expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4']);
-        chai.expect(db.query.callCount).to.equal(2);
-        chai.expect(db.query.args[0]).to.deep.equal([
+      return service.search('contacts', {}, {}, extensions, ['3', '4']).then(results => {
+        expect(GetDataRecords.callCount).to.equal(1);
+        expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4']);
+        expect(db.query.callCount).to.equal(2);
+        expect(db.query.args[0]).to.deep.equal([
           'medic-client/visits_by_date',
           { start_key: moment().startOf('month').valueOf(), end_key: moment().endOf('month').valueOf() }
         ]);
-        chai.expect(db.query.args[1])
+        expect(db.query.args[1])
           .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: true, group: true } ]);
 
-        chai.expect(results).to.deep.equal([
+        expect(results).to.deep.equal([
           { _id: '1', lastVisitedDate: 1, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },
           { _id: '2', lastVisitedDate: 2, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },
           { _id: '3', lastVisitedDate: 3, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },
@@ -742,10 +729,10 @@ describe('Search service', function() {
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
       ]);
 
-      return service('reports', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
-        chai.expect(GetDataRecords.callCount).to.equal(1);
-        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
-        chai.expect(result).to.deep.equal([
+      return service.search('reports', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
+        expect(GetDataRecords.callCount).to.equal(1);
+        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
+        expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
         ]);
       });
@@ -757,10 +744,10 @@ describe('Search service', function() {
         { _id: 1 }, { _id: 2 }, { _id: 3 }
       ]);
 
-      return service('reports', {}, {}, {}, []).then(result => {
-        chai.expect(GetDataRecords.callCount).to.equal(1);
-        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
-        chai.expect(result).to.deep.equal([
+      return service.search('reports', {}, {}, {}, []).then(result => {
+        expect(GetDataRecords.callCount).to.equal(1);
+        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
+        expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }
         ]);
       });
@@ -772,10 +759,10 @@ describe('Search service', function() {
         { _id: 1 }, { _id: 2 }, { _id: 3 }
       ]);
 
-      return service('reports', {}, {}, {}, undefined).then(result => {
-        chai.expect(GetDataRecords.callCount).to.equal(1);
-        chai.expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
-        chai.expect(result).to.deep.equal([
+      return service.search('reports', {}, {}, {}, undefined).then(result => {
+        expect(GetDataRecords.callCount).to.equal(1);
+        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
+        expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }
         ]);
       });

@@ -1,23 +1,31 @@
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
+
+import { VersionService } from '@mm-services/version.service';
+import { DbService } from '@mm-services/db.service';
+
 describe('Version service', () => {
-
-  'use strict';
-
   let get;
   let allDocs;
-  let service;
+  let service:VersionService;
 
   beforeEach(() => {
     get = sinon.stub();
     allDocs = sinon.stub();
 
-    module('inboxApp');
-    module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({ get, allDocs }));
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: () => ({ get, allDocs })  } },
+      ],
     });
-    inject($injector => {
-      service = $injector.get('Version');
-    });
+    service = TestBed.inject(VersionService);
   });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
 
   describe('getLocal', () => {
 
@@ -30,8 +38,8 @@ describe('Version service', () => {
         }
       });
       return service.getLocal().then(({ version, rev }) => {
-        chai.expect(version).to.equal('3.5.0-beta.3 (~3.5.0)');
-        chai.expect(rev).to.equal('123');
+        expect(version).to.equal('3.5.0-beta.3 (~3.5.0)');
+        expect(rev).to.equal('123');
       });
     });
 
@@ -43,7 +51,7 @@ describe('Version service', () => {
         }
       });
       return service.getLocal().then(({ version }) => {
-        chai.expect(version).to.equal('3.5.0-beta.3');
+        expect(version).to.equal('3.5.0-beta.3');
       });
     });
 
@@ -56,7 +64,7 @@ describe('Version service', () => {
         }
       });
       return service.getLocal().then(({ version }) => {
-        chai.expect(version).to.equal('3.5.0');
+        expect(version).to.equal('3.5.0');
       });
     });
 
@@ -65,7 +73,7 @@ describe('Version service', () => {
         _rev: '123-kldsjflksadjflksdjflksdjaf'
       });
       return service.getLocal().then(({ version }) => {
-        chai.expect(version).to.be.undefined;
+        expect(version).to.be.undefined;
       });
     });
 
@@ -74,14 +82,14 @@ describe('Version service', () => {
   describe('getRemoteRev', () => {
 
     it('gets the rev from the remote ddoc', () => {
-      allDocs.resolves({
-        rows: [ { value: { rev: '584-jsdfkjsdfkjh' } } ]
+      get.resolves({
+        _rev: '584-jsdfkjsdfkjh'
       });
       return service.getRemoteRev().then(rev => {
-        chai.expect(rev).to.equal('584');
+        expect(rev).to.equal('584');
       });
     });
 
   });
-  
+
 });

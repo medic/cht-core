@@ -1,7 +1,19 @@
-describe('XmlForms service', () => {
-  'use strict';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
+import * as _ from 'lodash-es';
 
-  let $injector;
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { AuthService } from '@mm-services/auth.service';
+import { ChangesService } from '@mm-services/changes.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { DbService } from '@mm-services/db.service';
+import { ParseProvider } from '@mm-providers/parse.provider';
+import { PipeProvider } from '@mm-providers/pipe.provider';
+
+describe('XmlForms service', () => {
   let dbGet;
   let dbQuery;
   let Changes;
@@ -11,7 +23,7 @@ describe('XmlForms service', () => {
   let contextUtils;
   let error;
 
-  const mockEnketoDoc = (formInternalId, docId) => {
+  const mockEnketoDoc = (formInternalId?, docId?) => {
     return {
       id: docId || 'form-0',
       doc: {
@@ -25,37 +37,37 @@ describe('XmlForms service', () => {
     return { doc: { _attachments: {} } };
   };
 
+  const getService = () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
+        { provide: ChangesService, useValue: { subscribe: Changes } },
+        { provide: AuthService, useValue: { has: hasAuth } },
+        { provide: XmlFormsContextUtilsService, useValue: contextUtils },
+        { provide: ContactTypesService, useValue: { get: getContactType } },
+        { provide: UserContactService, useValue: { get: UserContact } },
+        { provide: ParseProvider },
+        { provide: PipeProvider },
+      ],
+    });
+    return TestBed.inject(XmlFormsService);
+  }
+
   beforeEach(() => {
-    module('inboxApp');
     dbQuery = sinon.stub();
     dbGet = sinon.stub();
     Changes = sinon.stub();
     hasAuth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
-    error = sinon.stub();
     contextUtils = {};
-    module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({
-        query: dbQuery,
-        get: dbGet
-      }));
-      $provide.value('Changes', Changes);
-      $provide.value('Auth', { has: hasAuth });
-      $provide.value('UserContact', UserContact);
-      $provide.value('XmlFormsContextUtils', contextUtils);
-      $provide.value('ContactTypes', { get: getContactType });
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('$log', {error: error});
-    });
-    inject(_$injector_ => {
-      $injector = _$injector_;
-    });
+    error = sinon.stub(console, 'error');
   });
 
   afterEach(() => {
-    KarmaUtils.restore(dbQuery, Changes, hasAuth, UserContact);
+    sinon.restore();
   });
+
 
   describe('list', () => {
 
@@ -67,14 +79,14 @@ describe('XmlForms service', () => {
         mockEnketoDoc('referral'),
         mockEnketoDoc('registration'),
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       return service.list().then(actual => {
-        chai.expect(actual.length).to.equal(3);
-        chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.expect(actual[1]).to.deep.equal(given[3].doc);
-        chai.expect(actual[2]).to.deep.equal(given[4].doc);
+        expect(actual.length).to.equal(3);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(actual[1]).to.deep.equal(given[3].doc);
+        expect(actual[2]).to.deep.equal(given[4].doc);
       });
     });
 
@@ -111,26 +123,26 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       return service.list().then(actual => {
-        chai.expect(actual.length).to.equal(2);
-        chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.expect(actual[1]).to.deep.equal(given[1].doc);
+        expect(actual.length).to.equal(2);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(actual[1]).to.deep.equal(given[1].doc);
       });
     });
 
-    it('returns errors from db.query', done => {
-      dbQuery.returns(Promise.reject('boom'));
-      const service = $injector.get('XmlForms');
-      service.list('test')
+    it('returns errors from db.query', () => {
+      dbQuery.rejects('boom');
+      const service = getService();
+      return service
+        .list('test')
         .then(() => {
-          done(new Error('Expected error to be thrown'));
+          assert.fail('Expected error to be thrown');
         })
         .catch(err => {
-          chai.expect(err).to.equal('boom');
-          done();
+          expect(err.name).to.equal('boom');
         });
     });
 
@@ -192,13 +204,13 @@ describe('XmlForms service', () => {
           },
         },
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       getContactType.resolves({ person: true });
       return service.list({ doc: { type: 'person' } }).then(actual => {
-        chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.assert.deepEqual(_.map(actual, 'internalId'), [
+        expect(actual[0]).to.deep.equal(given[0].doc);
+        assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
           'two',
@@ -266,12 +278,12 @@ describe('XmlForms service', () => {
           },
         },
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       getContactType.resolves({ person: false });
       return service.list({ doc: { type: 'district_hospital' } }).then(actual => {
-        chai.assert.deepEqual(_.map(actual, 'internalId'), [
+        assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
           'three',
@@ -309,14 +321,14 @@ describe('XmlForms service', () => {
           return contact.color === 'blue';
         }
       };
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve({ name: 'Frank' }));
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves({ name: 'Frank' });
+      const service = getService();
       getContactType.resolves({ person: false });
       return service.list({ doc: { color: 'blue' } }).then(actual => {
-        chai.expect(actual.length).to.equal(1);
-        chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.expect(UserContact.callCount).to.equal(1);
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(UserContact.callCount).to.equal(1);
       });
     });
 
@@ -345,13 +357,13 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       getContactType.resolves({ person: true });
       return service.list({ doc: { sex: 'female', type: 'person' } }).then(actual => {
-        chai.expect(actual.length).to.equal(1);
-        chai.expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
       });
     });
 
@@ -380,15 +392,15 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       getContactType.resolves({ person: true });
       return service.list({ doc: { sex: 'female' } }).then(actual => {
-        chai.expect(actual.length).to.equal(1);
-        chai.expect(actual[0]).to.deep.equal(given[1].doc);
-        chai.expect(error.callCount).to.equal(1);
-        chai.expect(error.args[0][0]).to.equal('Unable to evaluate expression for form: form-0');
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[1].doc);
+        expect(error.callCount).to.equal(1);
+        expect(error.args[0][0]).to.equal('Unable to evaluate expression for form: form-0');
       });
     });
 
@@ -419,13 +431,13 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       return service.list({ contactForms: true }).then(actual => {
-        chai.expect(actual.length).to.equal(2);
-        chai.expect(actual[0]).to.deep.equal(given[1].doc);
-        chai.expect(actual[1]).to.deep.equal(given[2].doc);
+        expect(actual.length).to.equal(2);
+        expect(actual[0]).to.deep.equal(given[1].doc);
+        expect(actual[1]).to.deep.equal(given[2].doc);
       });
     });
 
@@ -456,12 +468,12 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       return service.list({ contactForms: false }).then(actual => {
-        chai.expect(actual.length).to.equal(1);
-        chai.expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
       });
     });
 
@@ -499,16 +511,16 @@ describe('XmlForms service', () => {
         }
       ];
 
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
       hasAuth.withArgs([ 'national_admin', 'district_admin' ]).resolves(false);
       hasAuth.withArgs([ 'national_admin' ]).resolves(true);
-      const service = $injector.get('XmlForms');
+      const service = getService();
       return service.list().then(actual => {
-        chai.expect(actual.length).to.equal(2);
-        chai.expect(actual[0]).to.deep.equal(given[1].doc);
-        chai.expect(actual[1]).to.deep.equal(given[2].doc);
-        chai.expect(hasAuth.callCount).to.equal(2);
+        expect(actual.length).to.equal(2);
+        expect(actual[0]).to.deep.equal(given[1].doc);
+        expect(actual[1]).to.deep.equal(given[2].doc);
+        expect(hasAuth.callCount).to.equal(2);
       });
     });
 
@@ -547,12 +559,12 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       return service.list({ ignoreContext: true }).then(actual => {
-        chai.expect(actual.length).to.equal(3);
-        chai.expect(hasAuth.callCount).to.equal(0);
+        expect(actual.length).to.equal(3);
+        expect(hasAuth.callCount).to.equal(0);
       });
     });
 
@@ -591,12 +603,12 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       return service.list({ ignoreContext: true, contactForms: false }).then(actual => {
-        chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.expect(hasAuth.callCount).to.equal(0);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(hasAuth.callCount).to.equal(0);
       });
     });
 
@@ -625,12 +637,12 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      dbQuery.returns(Promise.resolve({ rows: given }));
-      UserContact.returns(Promise.resolve());
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
       return service.list().then(actual => {
-        chai.expect(actual.length).to.equal(1);
-        chai.expect(actual[0]).to.deep.equal(given[1].doc);
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[1].doc);
       });
 
     });
@@ -639,75 +651,71 @@ describe('XmlForms service', () => {
 
   describe('listen', () => {
 
-    it('is updated when changes fires', done => {
+    it('is updated when changes fires', fakeAsync(() => {
       const original = mockEnketoDoc('registration');
       const update = mockEnketoDoc('visit');
       dbQuery
-        .onFirstCall().returns(Promise.resolve({ rows: [ original ] }))
-        .onSecondCall().returns(Promise.resolve({ rows: [ original, update ] }));
-      UserContact.returns(Promise.resolve());
+        .onFirstCall().resolves({ rows: [ original ] })
+        .onSecondCall().resolves({ rows: [ original, update ] });
+      UserContact.resolves();
       let count = 0;
-      const service = $injector.get('XmlForms');
-      service.listen('test', (err, actual) => {
-        chai.expect(err).to.equal(null);
+      const service = getService();
+      service.subscribe('test', (err, actual) => {
+        expect(err).to.equal(null);
         if (count === 0) {
-          chai.expect(actual.length).to.equal(1);
-          chai.expect(actual[0]).to.deep.equal(original.doc);
-          setTimeout(() => {
-            Changes.args[0][0].callback();
-          });
+          expect(actual.length).to.equal(1);
+          expect(actual[0]).to.deep.equal(original.doc);
+          tick();
+          Changes.args[0][0].callback();
         } else if (count === 1) {
-          chai.expect(actual.length).to.equal(2);
-          chai.expect(actual[0]).to.deep.equal(original.doc);
-          chai.expect(actual[1]).to.deep.equal(update.doc);
-          chai.expect(Changes.callCount).to.equal(1);
-          chai.expect(dbQuery.callCount).to.equal(2);
-          done();
+          expect(actual.length).to.equal(2);
+          expect(actual[0]).to.deep.equal(original.doc);
+          expect(actual[1]).to.deep.equal(update.doc);
+          expect(Changes.callCount).to.equal(1);
+          expect(dbQuery.callCount).to.equal(2);
         } else {
-          done('Update fired too many times!');
+          assert.fail('Update fired too many times!')
         }
         count++;
       });
-    });
+    }));
 
-    it('caches xml forms', done => {
+    it('caches xml forms', fakeAsync(() => {
       const original = mockEnketoDoc('registration');
       const update = mockEnketoDoc('visit');
       dbQuery
-        .onFirstCall().returns(Promise.resolve({ rows: [ original ] }))
-        .onSecondCall().returns(Promise.resolve({ rows: [ original, update ] }));
-      UserContact.returns(Promise.resolve());
+        .onFirstCall().resolves({ rows: [ original ] })
+        .onSecondCall().resolves({ rows: [ original, update ] });
+      UserContact.resolves();
       let count = 0;
-      const service = $injector.get('XmlForms');
-      service.listen('test', (err, actual) => {
-        chai.expect(err).to.equal(null);
+      const service = getService();
+      service.subscribe('test', (err, actual) => {
+        expect(err).to.equal(null);
         if (count === 0) {
-          chai.expect(actual.length).to.equal(1);
-          chai.expect(actual[0]).to.deep.equal(original.doc);
-          setTimeout(() => {
-            Changes.args[0][0].callback();
-          });
+          expect(actual.length).to.equal(1);
+          expect(actual[0]).to.deep.equal(original.doc);
+          tick();
+          Changes.args[0][0].callback();
         } else if (count === 1) {
-          chai.expect(actual.length).to.equal(2);
-          chai.expect(actual[0]).to.deep.equal(original.doc);
-          chai.expect(actual[1]).to.deep.equal(update.doc);
-          chai.expect(Changes.callCount).to.equal(1);
-          chai.expect(dbQuery.callCount).to.equal(2);
-          service.listen('test-2', (err, actual) => {
-            chai.expect(actual.length).to.equal(2);
-            chai.expect(actual[0]).to.deep.equal(original.doc);
-            chai.expect(actual[1]).to.deep.equal(update.doc);
-            chai.expect(Changes.callCount).to.equal(1);
-            chai.expect(dbQuery.callCount).to.equal(2); // db doesn't get hit again
-            done();
+          expect(actual.length).to.equal(2);
+          expect(actual[0]).to.deep.equal(original.doc);
+          expect(actual[1]).to.deep.equal(update.doc);
+          expect(Changes.callCount).to.equal(1);
+          expect(dbQuery.callCount).to.equal(2);
+          service.subscribe('test-2', (err, actual) => {
+            expect(actual.length).to.equal(2);
+            expect(actual[0]).to.deep.equal(original.doc);
+            expect(actual[1]).to.deep.equal(update.doc);
+            expect(Changes.callCount).to.equal(1);
+            expect(dbQuery.callCount).to.equal(2); // db doesn't get hit again
           });
         } else {
-          done('Update fired too many times!');
+          assert.fail('Update fired too many times!');
         }
         count++;
       });
 
-    });
+    }));
 
     describe('collect forms', () => {
 
@@ -731,23 +739,23 @@ describe('XmlForms service', () => {
       };
 
       it('are excluded by default', () => {
-        dbQuery.returns(Promise.resolve({ rows: [ collectForm, enketoForm ] }));
-        UserContact.returns(Promise.resolve());
-        const service = $injector.get('XmlForms');
+        dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
+        UserContact.resolves();
+        const service = getService();
         return service.list().then(actual => {
-          chai.expect(actual.length).to.equal(1);
-          chai.expect(actual[0]._id).to.equal('enketo');
+          expect(actual.length).to.equal(1);
+          expect(actual[0]._id).to.equal('enketo');
         });
       });
 
       it('are returned if includeCollect is true', () => {
-        dbQuery.returns(Promise.resolve({ rows: [ collectForm, enketoForm ] }));
-        UserContact.returns(Promise.resolve());
-        const service = $injector.get('XmlForms');
+        dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
+        UserContact.resolves();
+        const service = getService();
         return service.list({ includeCollect: true }).then(actual => {
-          chai.expect(actual.length).to.equal(2);
-          chai.expect(actual[0]._id).to.equal('collect');
-          chai.expect(actual[1]._id).to.equal('enketo');
+          expect(actual.length).to.equal(2);
+          expect(actual[0]._id).to.equal('collect');
+          expect(actual[1]._id).to.equal('enketo');
         });
       });
     });
@@ -762,13 +770,13 @@ describe('XmlForms service', () => {
         type: 'form',
         _attachments: { xml: { stub: true } }
       };
-      dbQuery.returns(Promise.resolve([]));
+      dbQuery.resolves([]);
       dbGet.resolves(expected);
-      const service = $injector.get('XmlForms');
+      const service = getService();
       return service.get(internalId).then(actual => {
-        chai.expect(actual).to.deep.equal(expected);
-        chai.expect(dbGet.callCount).to.equal(1);
-        chai.expect(dbGet.args[0][0]).to.equal(`form:${internalId}`);
+        expect(actual).to.deep.equal(expected);
+        expect(dbGet.callCount).to.equal(1);
+        expect(dbGet.args[0][0]).to.equal(`form:${internalId}`);
       });
     });
 
@@ -779,29 +787,29 @@ describe('XmlForms service', () => {
         _attachments: { 'something.xml': { stub: true } }
       };
       dbGet.resolves(expected);
-      dbQuery.returns(Promise.resolve([]));
-      const service = $injector.get('XmlForms');
+      dbQuery.resolves([]);
+      const service = getService();
       return service.get(internalId).then(actual => {
-        chai.expect(actual).to.equal(expected);
+        expect(actual).to.equal(expected);
       });
     });
 
-    it('returns error when cannot find xform attachment', done => {
+    it('returns error when cannot find xform attachment', () => {
       const internalId = 'birth';
       const expected = {
         type: 'form',
         _attachments: { 'something.txt': { stub: true } }
       };
       dbGet.resolves(expected);
-      dbQuery.returns(Promise.resolve([]));
-      const service = $injector.get('XmlForms');
-      service.get(internalId)
+      dbQuery.resolves([]);
+      const service = getService();
+      return service
+        .get(internalId)
         .then(() => {
-          done(new Error('expected error to be thrown'));
+          assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          chai.expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
-          done();
+          expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
         });
     });
 
@@ -811,61 +819,60 @@ describe('XmlForms service', () => {
         internalId,
         _attachments: { 'something.xml': { stub: true } }
       };
-      dbGet.returns(Promise.reject({ status: 404 }));
+      dbGet.rejects({ status: 404 });
       dbQuery.resolves({ rows: [
-        { doc: expected },
-        { doc: { internalId: 'death', _attachments: { 'something.xml': { stub: true } } } }
-      ] });
-      const service = $injector.get('XmlForms');
+          { doc: expected },
+          { doc: { internalId: 'death', _attachments: { 'something.xml': { stub: true } } } }
+        ] });
+      const service = getService();
       return service.get(internalId).then(actual => {
-        chai.expect(actual).to.deep.equal(expected);
-        chai.expect(dbQuery.callCount).to.equal(1);
-        chai.expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
+        expect(actual).to.deep.equal(expected);
+        expect(dbQuery.callCount).to.equal(1);
+        expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
         const options = dbQuery.args[0][1];
-        chai.expect(options.include_docs).to.equal(true);
-        chai.expect(options.key).to.deep.equal(['form']);
+        expect(options.include_docs).to.equal(true);
+        expect(options.key).to.deep.equal(['form']);
       });
     });
 
-    it('query fails if multiple forms found', done => {
+    it('query fails if multiple forms found', () => {
       const internalId = 'birth';
       const expected = {
         internalId,
         _attachments: { 'something.xml': { stub: true } }
       };
-      dbGet.returns(Promise.reject({ status: 404 }));
+      dbGet.rejects({ status: 404 });
       dbQuery.resolves({ rows: [
-        { doc: expected },
-        { doc: { internalId, _attachments: { 'something.xml': { stub: true } } } }
-      ] });
-      const service = $injector.get('XmlForms');
-      service.get(internalId)
+          { doc: expected },
+          { doc: { internalId, _attachments: { 'something.xml': { stub: true } } } }
+        ] });
+      const service = getService();
+      return service
+        .get(internalId)
         .then(() => {
-          done(new Error('expected error to be thrown'));
+          assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          chai.expect(err.message).to.equal(`Multiple forms found for internalId: "${internalId}"`);
-          done();
+          expect(err.message).to.equal(`Multiple forms found for internalId: "${internalId}"`);
         });
     });
 
-    it('query fails if no forms found', done => {
+    it('query fails if no forms found', () => {
       const internalId = 'birth';
-      dbGet.returns(Promise.reject({ status: 404 }));
+      dbGet.rejects({ status: 404 });
       dbQuery.resolves({ rows: [
-        { doc: { internalId: 'death', _attachments: { 'something.xml': { stub: true } } } }
-      ] });
-      const service = $injector.get('XmlForms');
-      service.get(internalId)
+          { doc: { internalId: 'death', _attachments: { 'something.xml': { stub: true } } } }
+        ] });
+      const service = getService();
+      return service
+        .get(internalId)
         .then(() => {
-          done(new Error('expected error to be thrown'));
+          assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          chai.expect(err.message).to.equal(`No form found for internalId "${internalId}"`);
-          done();
+          expect(err.message).to.equal(`No form found for internalId "${internalId}"`);
         });
     });
 
   });
-
 });

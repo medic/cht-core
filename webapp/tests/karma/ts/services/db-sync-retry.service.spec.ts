@@ -1,7 +1,12 @@
-describe('DBSyncRetry service', () => {
-  'use strict';
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
 
-  let service;
+import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
+import { DbService } from '@mm-services/db.service';
+
+describe('DBSyncRetry service', () => {
+  let service:DbSyncRetryService;
   let db;
   let medicLocalDb;
   let metaLocalDb;
@@ -11,43 +16,43 @@ describe('DBSyncRetry service', () => {
     metaLocalDb = { get: sinon.stub(), put: sinon.stub().resolves({ ok: true }) };
     db = sinon.stub().callsFake((param) => (param && param.meta) ? metaLocalDb : medicLocalDb);
 
-    module('inboxApp');
-    module($provide => {
-      $provide.value('DB', db);
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: db } },
+      ],
     });
-    inject((_DBSyncRetry_) => {
-      service = _DBSyncRetry_;
-    });
+    service = TestBed.inject(DbSyncRetryService);
   });
+
+  afterEach(() => sinon.restore());
 
 
   describe('retryForbiddenFailure', () => {
     it('should do nothing when no error', () => {
-      const result = service();
-      chai.expect(medicLocalDb.get.callCount).to.equal(0);
-      chai.expect(metaLocalDb.get.callCount).to.equal(0);
-      chai.expect(!!result).to.equal(false);
+      const result = service.retryForbiddenFailure();
+      expect(medicLocalDb.get.callCount).to.equal(0);
+      expect(metaLocalDb.get.callCount).to.equal(0);
+      expect(!!result).to.equal(false);
     });
 
     it('should do nothing when error has no id property', () => {
-      const result = service({ error: 'whatever' });
-      chai.expect(medicLocalDb.get.callCount).to.equal(0);
-      chai.expect(metaLocalDb.get.callCount).to.equal(0);
-      chai.expect(!!result).to.equal(false);
+      const result = service.retryForbiddenFailure({ error: 'whatever' });
+      expect(medicLocalDb.get.callCount).to.equal(0);
+      expect(metaLocalDb.get.callCount).to.equal(0);
+      expect(!!result).to.equal(false);
     });
 
     it('should catch 404s', () => {
       medicLocalDb.get.rejects({ status: 404 });
       metaLocalDb.get.rejects({ status: 404 });
-      return service({ id: 'some_uuid' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(medicLocalDb.get.args[0]).to.deep.equal(['some_uuid', { revs: true }]);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/some_uuid']);
-        chai.expect(medicLocalDb.put.callCount).to.equal(0);
-        chai.expect(metaLocalDb.put.callCount).to.equal(0);
-        chai.expect(!!result).to.equal(false);
+      return service.retryForbiddenFailure({ id: 'some_uuid' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(medicLocalDb.get.args[0]).to.deep.equal(['some_uuid', { revs: true }]);
+        expect(metaLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/some_uuid']);
+        expect(medicLocalDb.put.callCount).to.equal(0);
+        expect(metaLocalDb.put.callCount).to.equal(0);
+        expect(!!result).to.equal(false);
       });
     });
 
@@ -59,26 +64,26 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.rejects({ status: 404 });
 
-      return service({ id: 'random' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(medicLocalDb.get.args[0]).to.deep.equal(['random', { revs: true }]);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/random']);
+      return service.retryForbiddenFailure({ id: 'random' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(medicLocalDb.get.args[0]).to.deep.equal(['random', { revs: true }]);
+        expect(metaLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/random']);
 
-        chai.expect(medicLocalDb.put.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.args[0]).to.deep.equal([{
+        expect(medicLocalDb.put.callCount).to.equal(1);
+        expect(medicLocalDb.put.args[0]).to.deep.equal([{
           _id: 'random',
           _rev: '3-rev',
         }]);
-        chai.expect(metaLocalDb.put.callCount).to.equal(1);
-        chai.expect(metaLocalDb.put.args[0]).to.deep.equal([{
+        expect(metaLocalDb.put.callCount).to.equal(1);
+        expect(metaLocalDb.put.args[0]).to.deep.equal([{
           _id: '_local/random',
           replication_retry: {
             rev: '3-rev',
             count: 1
           },
         }]);
-        chai.expect(!!result).to.equal(true);
+        expect(!!result).to.equal(true);
       });
     });
 
@@ -94,27 +99,27 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.rejects({ status: 404 });
 
-      return service({ id: 'demo_report' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(medicLocalDb.get.args[0]).to.deep.equal(['demo_report', { revs: true }]);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/demo_report']);
+      return service.retryForbiddenFailure({ id: 'demo_report' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(medicLocalDb.get.args[0]).to.deep.equal(['demo_report', { revs: true }]);
+        expect(metaLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/demo_report']);
 
-        chai.expect(medicLocalDb.put.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.args[0]).to.deep.equal([{
+        expect(medicLocalDb.put.callCount).to.equal(1);
+        expect(medicLocalDb.put.args[0]).to.deep.equal([{
           _id: 'demo_report',
           _rev: '3-rev',
         }]);
 
-        chai.expect(metaLocalDb.put.callCount).to.equal(1);
-        chai.expect(metaLocalDb.put.args[0]).to.deep.equal([{
+        expect(metaLocalDb.put.callCount).to.equal(1);
+        expect(metaLocalDb.put.args[0]).to.deep.equal([{
           _id: '_local/demo_report',
           replication_retry: {
             rev: '3-rev',
             count: 1
           },
         }]);
-        chai.expect(!!result).to.equal(true);
+        expect(!!result).to.equal(true);
       });
     });
 
@@ -138,17 +143,17 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service({ id: 'uuid' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
+      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.callCount).to.equal(1);
 
-        chai.expect(medicLocalDb.put.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.args[0]).to.deep.equal([{
+        expect(medicLocalDb.put.callCount).to.equal(1);
+        expect(medicLocalDb.put.args[0]).to.deep.equal([{
           _id: 'uuid',
           _rev: '3-rev',
         }]);
-        chai.expect(metaLocalDb.put.callCount).to.equal(1);
-        chai.expect(metaLocalDb.put.args[0]).to.deep.equal([{
+        expect(metaLocalDb.put.callCount).to.equal(1);
+        expect(metaLocalDb.put.args[0]).to.deep.equal([{
           _id: '_local/uuid',
           _rev: '1-rev',
           replication_retry: {
@@ -156,7 +161,7 @@ describe('DBSyncRetry service', () => {
             count: 1
           },
         }]);
-        chai.expect(!!result).to.equal(true);
+        expect(!!result).to.equal(true);
       });
     });
 
@@ -181,16 +186,16 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service({ id: 'uuid' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.args[0]).to.deep.equal([{
+      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.callCount).to.equal(1);
+        expect(medicLocalDb.put.callCount).to.equal(1);
+        expect(medicLocalDb.put.args[0]).to.deep.equal([{
           _id: 'uuid',
           _rev: '3-rev',
         }]);
-        chai.expect(metaLocalDb.put.callCount).to.equal(1);
-        chai.expect(metaLocalDb.put.args[0]).to.deep.equal([{
+        expect(metaLocalDb.put.callCount).to.equal(1);
+        expect(metaLocalDb.put.args[0]).to.deep.equal([{
           _id: '_local/uuid',
           _rev: '23-rev',
           replication_retry: {
@@ -198,7 +203,7 @@ describe('DBSyncRetry service', () => {
             count: 3
           },
         }]);
-        chai.expect(!!result).to.equal(true);
+        expect(!!result).to.equal(true);
       });
     });
 
@@ -223,17 +228,17 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service({ id: 'uuid' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
+      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.callCount).to.equal(1);
 
-        chai.expect(medicLocalDb.put.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.args[0]).to.deep.equal([{
+        expect(medicLocalDb.put.callCount).to.equal(1);
+        expect(medicLocalDb.put.args[0]).to.deep.equal([{
           _id: 'uuid',
           _rev: '4-rev',
         }]);
-        chai.expect(metaLocalDb.put.callCount).to.equal(1);
-        chai.expect(metaLocalDb.put.args[0]).to.deep.equal([{
+        expect(metaLocalDb.put.callCount).to.equal(1);
+        expect(metaLocalDb.put.args[0]).to.deep.equal([{
           _id: '_local/uuid',
           _rev: '33-rev',
           replication_retry: {
@@ -241,7 +246,7 @@ describe('DBSyncRetry service', () => {
             count: 1
           },
         }]);
-        chai.expect(!!result).to.equal(true);
+        expect(!!result).to.equal(true);
       });
     });
 
@@ -267,17 +272,17 @@ describe('DBSyncRetry service', () => {
       metaLocalDb.get.resolves(localDoc);
       medicLocalDb.put.rejects({ status: 409 });
 
-      return service({ id: 'uuid' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
+      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.callCount).to.equal(1);
 
-        chai.expect(medicLocalDb.put.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.args[0]).to.deep.equal([{
+        expect(medicLocalDb.put.callCount).to.equal(1);
+        expect(medicLocalDb.put.args[0]).to.deep.equal([{
           _id: 'uuid',
           _rev: '4-rev',
         }]);
-        chai.expect(metaLocalDb.put.callCount).to.equal(0);
-        chai.expect(!!result).to.equal(false);
+        expect(metaLocalDb.put.callCount).to.equal(0);
+        expect(!!result).to.equal(false);
       });
     });
 
@@ -302,13 +307,13 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service({ id: 'uuid' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
+      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.callCount).to.equal(1);
 
-        chai.expect(medicLocalDb.put.callCount).to.equal(0);
-        chai.expect(metaLocalDb.put.callCount).to.equal(0);
-        chai.expect(!!result).to.equal(false);
+        expect(medicLocalDb.put.callCount).to.equal(0);
+        expect(metaLocalDb.put.callCount).to.equal(0);
+        expect(!!result).to.equal(false);
       });
     });
 
@@ -334,20 +339,19 @@ describe('DBSyncRetry service', () => {
       metaLocalDb.get.resolves(localDoc);
       medicLocalDb.put.rejects({ err: 'boom' });
 
-      return service({ id: 'the_id' }).then(result => {
-        chai.expect(medicLocalDb.get.callCount).to.equal(1);
-        chai.expect(medicLocalDb.get.args[0]).to.deep.equal(['the_id', { revs: true }]);
-        chai.expect(metaLocalDb.get.callCount).to.equal(1);
-        chai.expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/the_id']);
-        chai.expect(medicLocalDb.put.callCount).to.equal(1);
-        chai.expect(medicLocalDb.put.args[0]).to.deep.equal([{
+      return service.retryForbiddenFailure({ id: 'the_id' }).then(result => {
+        expect(medicLocalDb.get.callCount).to.equal(1);
+        expect(medicLocalDb.get.args[0]).to.deep.equal(['the_id', { revs: true }]);
+        expect(metaLocalDb.get.callCount).to.equal(1);
+        expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/the_id']);
+        expect(medicLocalDb.put.callCount).to.equal(1);
+        expect(medicLocalDb.put.args[0]).to.deep.equal([{
           _id: 'the_id',
           _rev: '4-rev',
         }]);
-        chai.expect(metaLocalDb.put.callCount).to.equal(0);
-        chai.expect(!!result).to.equal(false);
+        expect(metaLocalDb.put.callCount).to.equal(0);
+        expect(!!result).to.equal(false);
       });
     });
   });
-
 });

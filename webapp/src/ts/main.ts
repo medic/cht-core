@@ -14,6 +14,8 @@ window.$ = window.jQuery = require('jquery');
 //require('nvd3');
 
 import { enableProdMode } from '@angular/core';
+import '@angular/compiler';
+
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app.module';

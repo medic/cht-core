@@ -67,7 +67,7 @@ export class DbSyncRetryService {
   // we store the rev of the doc we touch and we only increase the replication_retry if the calculated previous
   // rev matches the previous retry rev. This ensures that external updates (for example user updates) would reset
   // the retry counter.
-  retryForbiddenFailure(err) {
+  retryForbiddenFailure(err?) {
     if (!err || !err.id) {
       return;
     }
