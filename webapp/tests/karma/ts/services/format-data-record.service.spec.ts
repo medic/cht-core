@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import * as chai from 'chai'
+chai.use(require('chai-exclude'));
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { FormatDataRecordService } from '@mm-services/format-data-record.service';
@@ -310,6 +312,274 @@ describe('FormatDataRecord Service', () => {
   });
 
   it('should sort scheduled tasks by date within groups', () => {
-    // todo
+    const report = {
+      _id: 'report',
+      form: 'form',
+      content_type: 'xml',
+      fields: {
+        field: '123456',
+      },
+      scheduled_tasks: [
+        {
+          due: 100,
+          group: 1,
+          type: 'type1',
+          recipient: 'clinic',
+          translation_key: 'key',
+          message: 'message1',
+        },
+        {
+          timestamp: 200,
+          group: 2,
+          type: 'type2',
+          recipient: 'reporting_unit',
+          message: 'message2',
+        },
+        {
+          timestamp: 50,
+          group: 1,
+          type: 'type1',
+          recipient: 'ancestor:clinic',
+          message: 'message3',
+        },
+        {
+          due: 100,
+          group: 2,
+          type: 'type2',
+          recipient: 'ancestor:whatever',
+          message: 'message4',
+        },
+        {
+          due: 40,
+          group: 1,
+          type: 'type1',
+          recipient: 'clinic',
+          message: 'message5',
+        },
+        {
+          timestamp: 15,
+          group: 1,
+          type: 'type4',
+          recipient: 'clinic',
+          message: 'message6',
+        },
+        {
+          timestamp: 200,
+          group: 1,
+          type: 'type4',
+          recipient: 'clinic',
+          message: 'message7',
+        },
+        {
+          timestamp: 15,
+          group: 3,
+          type: 'type4',
+          recipient: 'clinic',
+          message: 'message8',
+        },
+      ],
+    };
+
+    settingService.get.resolves({});
+
+    return service.format(report).then(result => {
+      // @ts-ignore
+      expect(result).excludingEvery('uuid').to.deep.equal({
+        _id: 'report',
+        form: 'form',
+        content_type: 'xml',
+        fields: [{
+          label: 'report.form.field',
+          value: '123456',
+          target: undefined,
+          depth: 0,
+        }],
+        scheduled_tasks: [
+          {
+            due: 100,
+            group: 1,
+            type: 'type1',
+            recipient: 'clinic',
+            translation_key: 'key',
+            message: 'message1',
+          },
+          {
+            timestamp: 200,
+            group: 2,
+            type: 'type2',
+            recipient: 'reporting_unit',
+            message: 'message2',
+          },
+          {
+            timestamp: 50,
+            group: 1,
+            type: 'type1',
+            recipient: 'ancestor:clinic',
+            message: 'message3',
+          },
+          {
+            due: 100,
+            group: 2,
+            type: 'type2',
+            recipient: 'ancestor:whatever',
+            message: 'message4',
+          },
+          {
+            due: 40,
+            group: 1,
+            type: 'type1',
+            recipient: 'clinic',
+            message: 'message5',
+          },
+          {
+            timestamp: 15,
+            group: 1,
+            type: 'type4',
+            recipient: 'clinic',
+            message: 'message6',
+          },
+          {
+            timestamp: 200,
+            group: 1,
+            type: 'type4',
+            recipient: 'clinic',
+            message: 'message7',
+          },
+          {
+            timestamp: 15,
+            group: 3,
+            type: 'type4',
+            recipient: 'clinic',
+            message: 'message8',
+          },
+        ],
+        scheduled_tasks_by_group: [
+          {
+            group: 'type1:1',
+            type: 'type1',
+            name: undefined,
+            number: 1,
+            rows: [
+              {
+                due: 40,
+                group: 1,
+                type: 'type1',
+                recipient: 'clinic',
+                message: 'message5',
+                messages: [{
+                  to: 'clinic',
+                  message: 'message5'
+                }],
+                timestamp: 40,
+              },
+              {
+                timestamp: 50,
+                group: 1,
+                type: 'type1',
+                recipient: 'ancestor:clinic',
+                message: 'message3',
+                messages: [{
+                  to: 'ancestor:clinic',
+                  message: 'message3',
+                }],
+              },
+              {
+                timestamp: 100,
+                due: 100,
+                group: 1,
+                type: 'type1',
+                recipient: 'clinic',
+                translation_key: 'key',
+                message: 'message1',
+                messages: [{
+                  to: 'clinic',
+                  message: 'message1',
+                }],
+              },
+            ],
+          },
+          {
+            group: 'type2:2',
+            name: 'type2:2',
+            type: 'type2',
+            number: 2,
+            rows: [
+              {
+                due: 100,
+                timestamp: 100,
+                group: 2,
+                type: 'type2',
+                recipient: 'ancestor:whatever',
+                message: 'message4',
+                messages: [{
+                  to: 'ancestor:whatever',
+                  message: 'message4',
+                }],
+              },
+              {
+                timestamp: 200,
+                group: 2,
+                type: 'type2',
+                recipient: 'reporting_unit',
+                message: 'message2',
+                messages: [{
+                  to: 'reporting_unit',
+                  message: 'message2',
+                }],
+              },
+            ]
+          },
+          {
+            group: 'type4:1',
+            name: 'type4:1',
+            type: 'type4',
+            number: 1,
+            rows: [
+              {
+                timestamp: 15,
+                group: 1,
+                type: 'type4',
+                recipient: 'clinic',
+                message: 'message6',
+                messages: [{
+                  to: 'clinic',
+                  message: 'message6',
+                }],
+              },
+              {
+                timestamp: 200,
+                group: 1,
+                type: 'type4',
+                recipient: 'clinic',
+                message: 'message7',
+                messages: [{
+                  to: 'clinic',
+                  message: 'message7',
+                }]
+              }
+            ]
+          },
+          {
+            group: 'type4:3',
+            name: 'type4:3',
+            type: 'type4',
+            number: 3,
+            rows: [
+              {
+                timestamp: 15,
+                group: 3,
+                type: 'type4',
+                recipient: 'clinic',
+                message: 'message8',
+                messages: [{
+                  to: 'clinic',
+                  message: 'message8',
+                }],
+              },
+            ],
+          },
+        ],
+      });
+    });
   });
 });
