@@ -3,7 +3,7 @@ const SETTING_NAME = 'contact_summary';
 /**
  * Service for generating summary information based on a given
  * contact and reports about them.
- * Documentation: https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md
+ * Documentation: https://docs.communityhealthtoolkit.org/apps/reference/contact-page/#contact-summary
  */
 angular.module('inboxServices').service('ContactSummary',
   function(

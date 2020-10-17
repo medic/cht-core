@@ -36,5 +36,5 @@ By default all transitions are disabled, to enable a transition modify the
 
 ## Additional documentation
 
- * [Configuration guide](https://github.com/medic/medic-docs/blob/master/configuration/transitions.md)
- * [Development guide](https://github.com/medic/medic-docs/blob/master/development/transitions.md)
+ * [Configuration guide](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/transitions/)
+ * [Development guide](https://docs.communityhealthtoolkit.org/core/overview/transitions/)
