@@ -10,7 +10,6 @@ const browserLogStream = fs.createWriteStream(
 const chai = require('chai');
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
-console.log(process.argv);
 const baseConfig = {
   params: {
     pathToConfig: false
@@ -57,7 +56,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete
-    //browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
+    browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return browser
@@ -83,7 +82,7 @@ const runAndLog = (msg, func) => {
   console.log(`API startup: ${msg}`);
   return func();
 };
-/*
+
 const prepServices = () => {
   let apiReady;
   if (constants.IS_TRAVIS) {
@@ -98,13 +97,14 @@ const prepServices = () => {
   } else {
     // Locally we just need to start them and can do so straight away
     apiReady = request.post('http://localhost:31337/all/start');
+    console.log('API already running');
   }
 
   return apiReady
     .then(() => listenForApi())
     .then(() => runAndLog('Settings setup', setupSettings))
     .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
-};*/
+};
 
 const listenForApi = () => {
   console.log('Checking API');
