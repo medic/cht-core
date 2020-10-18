@@ -1115,9 +1115,6 @@ module.exports = function(grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-tests',
-    'e2e-deploy',
-    'protractor:e2e-tests-mobile',
-    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('ci-mobile', 'Run e2e tests for CI', [
