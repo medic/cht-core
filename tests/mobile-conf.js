@@ -83,7 +83,7 @@ const runAndLog = (msg, func) => {
   console.log(`API startup: ${msg}`);
   return func();
 };
-
+/*
 const prepServices = () => {
   let apiReady;
   if (constants.IS_TRAVIS) {
@@ -104,7 +104,7 @@ const prepServices = () => {
     .then(() => listenForApi())
     .then(() => runAndLog('Settings setup', setupSettings))
     .then(() => runAndLog('User contact doc setup', utils.setUserContactDoc));
-};
+};*/
 
 const listenForApi = () => {
   console.log('Checking API');
