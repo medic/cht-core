@@ -46,7 +46,7 @@ const baseConfig = {
   },
   afterLaunch: exitCode => {
     return new Promise(resolve => {
-      return request.post('http://localhost:31337/die') && request.post('http://localhost:4444/die')
+      return request.post('http://localhost:31337/die')
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     });
   },

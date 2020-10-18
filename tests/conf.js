@@ -48,8 +48,10 @@ const baseConfig = {
   },
   afterLaunch: exitCode => {
     return new Promise(resolve => {
-      return request.post('http://localhost:3133700/die')
+      console.log('Keeping API running for mobile test suite ');
+      return request.post('http://localhost:31337/die')
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
+      //utils.reporter.afterLaunch(resolve.bind(this, exitCode));
     });
   },
   onPrepare: () => {
@@ -58,7 +60,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete - taking a little too long on travis
-    browser.driver.wait(prepServices(), 500 * 1000, 'API took too long to start up');
+    browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return browser
