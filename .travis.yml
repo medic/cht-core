@@ -60,8 +60,6 @@ script:
   - |
     if [[ "$TEST_SUITE" = 'integration' ]]; then
       node --stack_size=10000 `which grunt` ci-e2e-all
-      kill $(ps -ef | grep webdriver | grep -v grep | awk '{ print $2 }')
-      node --stack_size=10000 `which grunt` ci-mobile
     elif [[ "$TEST_SUITE" = 'performance' ]]; then
       node --stack_size=10000 `which grunt` ci-performance
     else
