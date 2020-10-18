@@ -18,7 +18,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private messagesActions: MessagesActions;
   subscriptions: Subscription = new Subscription();
 
-  loading = false;
+  loading = true;
   loadingContent = false;
   conversations = [];
   selectedConversation;
@@ -101,8 +101,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   updateConversations({merge = false} = {}) {
-    this.loading = true;
-
     return this.messageContactService
       .getList()
       .then((conversations = []) => {

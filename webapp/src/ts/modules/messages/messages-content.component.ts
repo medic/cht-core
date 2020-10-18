@@ -49,6 +49,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   hasToScroll = false;
   isAddRecipientBtnActive = false;
   allLoaded = false;
+  checkScrollFnDef;
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -140,7 +141,10 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
     content.scrollTop(scrollTo);
     this.hasToScroll = false;
-    $('.message-content-wrapper').on('scroll', () => this.checkScroll(content));
+
+    this.checkScrollFnDef = () => this.checkScroll(content);
+    $('.message-content-wrapper').off('scroll', this.checkScrollFnDef);
+    $('.message-content-wrapper').on('scroll', this.checkScrollFnDef);
   }
 
   // See URL parameter "id" note at top of file
@@ -190,7 +194,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       return;
     }
 
-    $('.message-content-wrapper').off('scroll', this.checkScroll.bind(this));
+    $('.message-content-wrapper').off('scroll', this.checkScrollFnDef);
     const refreshSelected = this.selectedConversation && this.selectedConversation.id === id;
     this.messagesActions.setSelected({ id: id, messages: [] }, refreshSelected);
     this.globalActions.setLoadingShowContent(id);
@@ -202,16 +206,16 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       ])
       .then(([contactModel, conversation]) => {
         if (!contactModel && conversation.length) {
-          const firstTaskWithContact = conversation[0].doc.tasks.find((task) => {
+          const firstTaskWithContact = conversation[0].doc?.tasks?.find((task) => {
             const message = task.messages && task.messages[0];
             return message && message.contact && message.contact._id === id;
           });
 
-          const firstMessageWithContact = firstTaskWithContact.messages.find(message => message.contact._id === id);
+          const firstMessageWithContact = firstTaskWithContact?.messages?.find(message => message.contact._id === id);
           contactModel = {
             doc: {
               name: '',
-              phone: firstMessageWithContact.to
+              phone: firstMessageWithContact?.to
             }
           };
         }
