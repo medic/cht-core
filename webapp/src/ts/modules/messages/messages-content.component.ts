@@ -71,6 +71,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     ).subscribe(([selectedConversation, loadingContent]) => {
       this.selectedConversation = selectedConversation;
       this.loadingContent = loadingContent;
+      this.changeDetectorRef.detectChanges();
     });
     this.subscriptions.add(selectorsSubscription);
 
