@@ -27,7 +27,7 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--disable-gpu']
+      args: ['--headless', '--disable-gpu']
     }
   },
 
@@ -57,7 +57,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete
-    browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
+    //browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return browser

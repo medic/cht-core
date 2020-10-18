@@ -17,7 +17,7 @@ const baseConfig = {
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    e2e: 'e2e/**/*.js',
+    e2e: 'e2e/login/login.specs.js',
     mobile:'mobile/**/*.js',
     performance: 'performance/**/*.js'
   },
@@ -48,7 +48,7 @@ const baseConfig = {
   },
   afterLaunch: exitCode => {
     return new Promise(resolve => {
-      return request.post('http://localhost:31337/die')
+      return request.post('http://localhost:3133700/die')
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     });
   },

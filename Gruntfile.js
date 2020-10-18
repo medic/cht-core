@@ -779,7 +779,7 @@ module.exports = function(grunt) {
       },
       'e2e-tests-mobile': {
         options: {
-          configFile: 'tests/conf.js',
+          configFile: 'tests/mobile-conf.js',
           args: {
             suite: 'mobile',
             capabilities: {
@@ -1050,8 +1050,14 @@ module.exports = function(grunt) {
     'exec:clean-test-database'
   ]);
   grunt.registerTask('ci-e2e-all', 'Deploy app for testing and run e2e tests on a mobile emulator', [
-    'e2e',
-    'e2e-mobile'
+    'start-webdriver',
+    'exec:clean-test-database',
+    'exec:setup-test-database',
+    'couch-push:test',
+    'exec:e2e-servers',
+    'protractor:e2e-tests',
+    'protractor:e2e-tests-mobile',
+    'exec:clean-test-database'
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
