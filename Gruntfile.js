@@ -757,45 +757,14 @@ module.exports=function (grunt) {
     },
     protractor: {
       'e2e-tests': {
-        configFile: path.join(__dirname, 'tests', 'conf.js'),//'tests/conf.js',
+        configFile: path.join(__dirname, 'tests', 'conf.js'),
         keepAlive: true,
-        // options: {
-        //   // args: {
-        //   //   suite: 'e2e'
-        //   // },
-
-        //   maxSessions: 1,
-        //   multiCapabilities: [ {
-        //     browserName: 'chrome',
-        //     'chromeOptions': {
-        //       args: [ '--window-size=1024,768', '--disable-gpu' ]
-        //     },
-
-        //     name: 'chrome-tests',
-        //     count: 1,
-        //     shardTestFiles: true,
-        //     maxInstances: 1,
-        //     specs: [ 'e2e/login/login.specs.js' ]
-        //    }, {
-        //     browserName: 'chrome',
-        //     'chromeOptions': {
-        //       args: [ '--disable-gpu' ],
-        //       mobileEmulation: { 'deviceName': 'Nexus 5' }
-        //     },
-        //     name: 'mobile-tests',
-        //     count: 1,
-        //     shardTestFiles: true,
-        //     maxInstances: 1,
-        //     specs: [ 'e2e/login/login.specs.js' ]
-        //   } ]
-        // }
       },
 
       'e2e-tests-debug': {
         options: {
           configFile: 'tests/conf.js',
           args: {
-            suite: 'e2e',
             capabilities: {
               chromeOptions: {
                 args: [ 'window-size=1024,768' ]
@@ -804,28 +773,11 @@ module.exports=function (grunt) {
           }
         }
       },
-      'e2e-tests-mobile': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'mobile',
-            capabilities: {
-              chromeOptions: {
-                mobileEmulation: { 'deviceName': 'Nexus 5' }
-              }
-            }
-          }
-        }
-
-      },
       'performance-tests-and-services': {
         options: {
           specs: [
             path.join(__dirname, 'tests', 'performance', '**/*.js')
           ],
-          // args: {
-          //   suite: 'performance'
-          // },
           configFile: 'tests/conf.js'
         }
       }
@@ -1075,12 +1027,6 @@ module.exports=function (grunt) {
     'protractor:e2e-tests-debug',
     'exec:clean-test-database',
   ]);
-  grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests on a mobile emulator', [
-    'e2e-deploy',
-    'protractor:e2e-tests',
-    'protractor:e2e-tests-mobile',
-    'exec:clean-test-database'
-  ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:clean-test-database',
@@ -1143,20 +1089,6 @@ module.exports=function (grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-tests',
-  ]);
-
-  grunt.registerTask('ci-e2e-all', 'Deploy app for testing and run e2e tests on a mobile emulator', [
-    'start-webdriver',
-    'exec:e2e-servers',
-    'protractor:e2e-tests',
-    'protractor:e2e-tests-mobile',
-    'exec:clean-test-database'
-  ]);
-
-  grunt.registerTask('ci-mobile', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'exec:e2e-servers',
-    'protractor:e2e-tests-mobile'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [

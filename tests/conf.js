@@ -16,11 +16,6 @@ const baseConfig={
     pathToConfig: false
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  // suites: {
-  //   //e2e: 'e2e/login/**/*.js',
-  //   //mobile: 'mobile/**/*.js',
-  //  // performance: 'performance/**/*.js'
-  // },
   maxSessions: 1,
   framework: 'jasmine2',
   multiCapabilities: [ {
@@ -36,7 +31,7 @@ const baseConfig={
     count: 1,
     shardTestFiles: true,
     maxInstances: 1,
-    specs:['e2e/login/login.specs.js']
+    specs:['e2e/**/*.js']
   }, {
     browserName: 'chrome',
     'chromeOptions': {
@@ -47,19 +42,9 @@ const baseConfig={
     count: 1,
     shardTestFiles: true,
     maxInstances: 1,
-    specs:['mobile/login/login.specs.js']
+    specs:['mobile/**/*.js']
   } ],
-  //maxSessions: 1,
-  // capabilities: {
-  //   browserName: 'chrome',
-  //   chromeOptions: {
-  //     // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
-  //     // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
-  //     // https://github.com/angular/protractor/issues/5261
-  //     w3c: false,
-  //     args: ['--window-size=1024,768', '--headless', '--disable-gpu']
-  //   }
-  // },
+
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
     print: () => { }
@@ -79,7 +64,6 @@ const baseConfig={
       console.log('Keeping API running for mobile test suite ');
       return request.post('http://localhost:31337/die')
         .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
-      //utils.reporter.afterLaunch(resolve.bind(this, exitCode));
     });
   },
   onPrepare: () => {
