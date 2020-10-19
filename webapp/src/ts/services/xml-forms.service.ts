@@ -8,7 +8,6 @@ import { DbService } from './db.service';
 import { UserContactService } from './user-contact.service';
 import { XmlFormsContextUtilsService } from './xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
-import { PipeProvider } from '@mm-providers/pipe.provider';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +24,6 @@ export class XmlFormsService {
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
     private parseProvider:ParseProvider,
-    private pipeProvider:PipeProvider,
   ) {
     this.init = this.getForms();
 
@@ -85,7 +83,7 @@ export class XmlFormsService {
       summary: contactSummary
     };
 
-    return this.parseProvider.parse(expression, this.pipeProvider)(this.xmlFormsContextUtilsService, context);
+    return this.parseProvider.parse(expression)(this.xmlFormsContextUtilsService, context);
   };
 
   private filterAll(forms, options) {

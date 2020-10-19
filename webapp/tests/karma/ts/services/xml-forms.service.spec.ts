@@ -11,7 +11,6 @@ import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-util
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
-import { PipeProvider } from '@mm-providers/pipe.provider';
 
 describe('XmlForms service', () => {
   let dbGet;
@@ -46,8 +45,7 @@ describe('XmlForms service', () => {
         { provide: XmlFormsContextUtilsService, useValue: contextUtils },
         { provide: ContactTypesService, useValue: { get: getContactType } },
         { provide: UserContactService, useValue: { get: UserContact } },
-        { provide: ParseProvider },
-        { provide: PipeProvider },
+        ParseProvider,
       ],
     });
     return TestBed.inject(XmlFormsService);

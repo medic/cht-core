@@ -2,7 +2,6 @@ import {
   Lexer,
   Parser,
   BindingPipe,
-  ReadPropExpr,
   PropertyRead,
   ImplicitReceiver,
   LiteralPrimitive,
@@ -364,7 +363,7 @@ const nullPipe = () => {
 
 @Injectable()
 export class ParseProvider {
-  parse(expr, pipeProvider) {
+  parse(expr) {
 
     if (!isString(expr)) {
       return noop;
@@ -390,40 +389,10 @@ export class ParseProvider {
       const errors = ast.errors.map(error => error.message).join('; ');
       throw new Error(errors);
     } else {
-      let pipeNameVsIsPureMap = pipeProvider.getPipeNameVsIsPureMap()
+      let pipeNameVsIsPureMap = new Map();
       let astCompiler = new ASTCompiler(ast.ast, pipeNameVsIsPureMap);
       fn = astCompiler.compile();
       boundFn = fn;
-      if (fn.usedPipes.length) {
-        let usedPurePipes = new Map();
-        let pipeArgs = [];
-        let hasPurePipe = false;
-        for (let [pipeName] of fn.usedPipes) {
-          let pipeInfo = pipeProvider.meta(pipeName);
-          let pipeInstance;
-          if (!pipeInfo) {
-            pipeInstance = nullPipe;
-          } else {
-            if (pipeInfo.pure) {
-              hasPurePipe = true;
-              pipeInstance = purePipes.get(pipeName);
-            }
-
-            if (!pipeInstance) {
-              pipeInstance = pipeProvider.getInstance(pipeName);
-            }
-
-            if (pipeInfo.pure) {
-              purePipes.set(pipeName, pipeInstance);
-            }
-          }
-          pipeArgs.push(pipeInstance);
-        }
-
-        pipeArgs.unshift(hasPurePipe ? new Map() : undefined);
-
-        boundFn = fn.bind(undefined, ...pipeArgs);
-      }
     }
     fnCache.set(expr, fn);
 
