@@ -122,7 +122,7 @@ require('select2');
       return;
     }
     window.startupTimes.bootstrapped = performance.now();
-    if (environment.production || true) {
+    if (environment.production) {
       enableProdMode();
     }
 

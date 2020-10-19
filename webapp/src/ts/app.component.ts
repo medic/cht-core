@@ -1,7 +1,7 @@
 import { ActivationEnd, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { ChangeDetectorRef, Component } from '@angular/core';
-import { Store, select } from '@ngrx/store';
+import { Component } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
@@ -24,7 +24,6 @@ import { FormatDateService } from './services/format-date.service';
 import { XmlFormsService } from './services/xml-forms.service';
 import { JsonFormsService } from './services/json-forms.service';
 import { TranslateFromService } from './services/translate-from.service';
-import { delay } from 'rxjs/operators';
 import { CountMessageService } from '@mm-services/count-message.service';
 
 const SYNC_STATUS = {
