@@ -26,8 +26,6 @@ import * as bootstrapper from './bootstrapper';
 
 require('select2');
 
-//const KARMA_UNIT_TEST_PORT = '9876';
-
 (function() {
   'use strict';
 
@@ -73,13 +71,6 @@ require('select2');
 
     const isDevelopment = window.location.hostname === 'localhost' && window.location.port !== KARMA_UNIT_TEST_PORT;
     $compileProvider.debugInfoEnabled(isDevelopment);
-
-    const middlewares = [reduxThunk];
-    if (isDevelopment) {
-      const reduxLogger = require('redux-logger');
-      middlewares.push(reduxLogger.createLogger(createReduxLoggerConfig(Selectors)));
-    }
-    $ngReduxProvider.createStoreWith(RootReducer, middlewares);
   });
 
   // 32 million characters is guaranteed to be rejected by the API JSON
@@ -116,41 +107,6 @@ require('select2');
     }
   };
 
-  angular.module('inboxApp').constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
-
-  if (window.location.href === 'http://localhost:9876/context.html') {
-    // karma unit testing - do not bootstrap
-    return;
-  }
-
-  const ROUTE_PERMISSIONS = {
-    tasks: 'can_view_tasks',
-    messages: 'can_view_messages',
-    contacts: 'can_view_contacts',
-    analytics: 'can_view_analytics',
-    reports: 'can_view_reports',
-    'reports.edit': ['can_update_reports', 'can_view_reports']
-  };
-
-  const getRequiredPermissions = function(route) {
-    return ROUTE_PERMISSIONS[route] || ROUTE_PERMISSIONS[route.split('.')[0]];
-  };
-
-  // Detects reloads or route updates (#/something)
-  angular.module('inboxApp').run(function($state, $transitions, AuthService) {
-    $transitions.onBefore({}, function(trans) {
-      if (trans.to().name.indexOf('error') === -1) {
-        const permissions = getRequiredPermissions(trans.to().name);
-        if (permissions && permissions.length) {
-          return AuthService.has(permissions).then(hasPermission => {
-            if (!hasPermission) {
-              $state.target('error', { code: 403 });
-            }
-          });
-        }
-      }
-    });
-  });
   */
   bootstrapper(POUCHDB_OPTIONS, function(err) {
     if (err) {
@@ -166,7 +122,7 @@ require('select2');
       return;
     }
     window.startupTimes.bootstrapped = performance.now();
-    if (environment.production) {
+    if (environment.production || true) {
       enableProdMode();
     }
 
