@@ -31,6 +31,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   private globalActions;
   private contactsActions;
   private servicesActions;
+  private listContains;
 
   contactsList;
   loading = false;
@@ -56,7 +57,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   constructor(
     private store: Store,
     private route: ActivatedRoute,
-    private changeService: ChangesService,
+    private changesService: ChangesService,
     private translateService: TranslateService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
@@ -77,13 +78,44 @@ export class ContactsComponent implements OnInit, OnDestroy{
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getContactsList),
       this.store.select(Selectors.getIsAdmin),
-      this.store.select(Selectors.getFilters)
-    ).subscribe(([contactsList, isAdmin, filters]) => {
+      this.store.select(Selectors.getFilters),
+      this.store.select(Selectors.contactListContains)
+    ).subscribe(([contactsList, isAdmin, filters, listContains]) => {
       this.contactsList = contactsList;
       this.isAdmin = isAdmin;
-      this.filters = filters
+      this.filters = filters;
+      this.listContains = listContains;
     });
     this.subscription.add(reduxSubscription);
+
+    const changesSubscription = this.changesService.subscribe({
+      key: 'contacts-list',
+      callback: (change) => {
+        if (change.deleted) {
+          // TODO: implement deletion logic
+        }
+        if (change.doc) {}
+        const withIds =
+          this.isSortedByLastVisited() &&
+          !!this.isRelevantVisitReport(change.doc) &&
+          !change.deleted;
+        return this.query({
+          limit: this.contactsList.length,
+          withIds,
+          silent: true,
+          reuseExistingDom: true,
+        });
+      },
+      filter: (change) => {
+        return (
+          this.contactTypes.includes(change.doc) ||
+          (change.deleted && this.listContains(change.id)) ||
+          this.isRelevantVisitReport(change.doc)
+        );
+      },
+    });
+    this.subscription.add(changesSubscription);
+
     Promise.all([
       this.getUserHomePlaceSummary(),
       this.canViewLastVisitedDate(),
@@ -121,6 +153,20 @@ export class ContactsComponent implements OnInit, OnDestroy{
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
+
+  private isRelevantVisitReport (doc) {
+    const isRelevantDelete = doc && doc._deleted && this.isSortedByLastVisited();
+    return (
+      doc &&
+      this.lastVisitedDateExtras &&
+      doc.type === 'data_record' &&
+      doc.form &&
+      doc.fields &&
+      doc.fields.visited_contact_uuid &&
+      (this.listContains(doc.fields.visited_contact_uuid) ||
+        isRelevantDelete)
+    );
+  };
 
   private getUserHomePlaceSummary() {
     return this.userSettingsService.get()
@@ -195,7 +241,10 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.loading = true;
     }
 
-    const searchFilters = Object.keys(this.filters).length < 1 ? this.defaultFilters : this.filters;
+    let searchFilters = this.defaultFilters;
+    if (this.filters && Object.keys(this.filters).length < 1) {
+      searchFilters = this.filters;
+    }
 
     const extensions:any = {};
     if (this.lastVisitedDateExtras) {
@@ -271,7 +320,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
       return;
     }
     this.loading = true;
-
     return this.query(force);
   }
 
