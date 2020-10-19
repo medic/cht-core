@@ -9,6 +9,7 @@ import { MarkReadService } from '@mm-services/mark-read.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { ServicesActions } from '@mm-actions/services';
 
 describe('SendMessageService', () => {
   let service: SendMessageService;
@@ -92,6 +93,7 @@ describe('SendMessageService', () => {
       contact: { phone: '+5552' }
     };
     allDocs.returns(mockAllDocs(recipient));
+    const setLastChangedDocStub = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
     await service.send(select2Wrap(recipient), 'hello');
 
@@ -104,6 +106,8 @@ describe('SendMessageService', () => {
       to: '+5552',
       contact: { _id: recipient._id }
     });
+    expect(setLastChangedDocStub.callCount).to.equal(1);
+    expect(setLastChangedDocStub.args[0]).to.deep.equal([post.args[0][0]]);
     expect(markReadService.markAsRead.callCount).to.equal(1);
     const readDocs = markReadService.markAsRead.args[0][0];
     expect(readDocs.length).to.equal(1);
@@ -164,6 +168,7 @@ describe('SendMessageService', () => {
       }
     ];
     allDocs.returns(mockAllDocs(recipients));
+    const setLastChangedDocStub = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
     await service.send(select2Wrap(recipients), 'hello');
 
@@ -184,6 +189,8 @@ describe('SendMessageService', () => {
     const task1Id = post.args[0][0].tasks[0].messages[0].uuid;
     const task2Id = post.args[0][0].tasks[1].messages[0].uuid;
     expect(task1Id).to.not.equal(task2Id);
+    expect(setLastChangedDocStub.callCount).to.equal(1);
+    expect(setLastChangedDocStub.args[0]).to.deep.equal([post.args[0][0]]);
   });
 
   it('create doc for everyoneAt recipients', async() => {

@@ -67,6 +67,7 @@ describe('Messages Reducer', () => {
 
     const result = messagesReducer(state, action);
 
+    expect(result.selected).to.not.equal(null);
     expect(result).to.deep.include(expectedState);
   });
 
@@ -93,21 +94,6 @@ describe('Messages Reducer', () => {
       selected: {id: '124', date: 111, messages: [{id: 'm123'}]}
     };
     state.selected = {id: '124', date: 111, messages: [{id: 'm123'}, {id: 'm567'}]};
-
-    const result = messagesReducer(state, action);
-
-    expect(result).to.deep.include(expectedState);
-  });
-
-  it('should update selected conversation in the state', () => {
-    const data = {id: '124', date: 555, messages: [{id: 'm123'}]};
-    const action = Actions.updateSelectedConversation(data);
-    const expectedState = {
-      conversations: [],
-      error: false,
-      selected: {id: '124', date: 555, messages: [{id: 'm123'}]}
-    };
-    state.selected = {id: '124', date: 111};
 
     const result = messagesReducer(state, action);
 
@@ -142,5 +128,100 @@ describe('Messages Reducer', () => {
     const result = messagesReducer(state, action);
 
     expect(result).to.deep.include(expectedState);
+  });
+
+  describe('update selected conversation', () => {
+    it('should update selected conversation in the state', () => {
+      const data = { id: '124', date: 555, messages: [ {id: 'm123'} ] };
+      const action = Actions.updateSelectedConversation(data);
+      const expectedState = {
+        conversations: [],
+        error: false,
+        selected: { id: '124', date: 555, messages: [ { id: 'm123' } ] }
+      };
+      const oldSelected = { id: '124', date: 111 };
+      state.selected = oldSelected;
+
+      const result = messagesReducer(state, action);
+
+      expect(result.selected).to.not.deep.include(oldSelected);
+      expect(result).to.deep.include(expectedState);
+    });
+
+    it('should add a message to selected conversation', () => {
+      const message1 = { id: '1', doc: { reported_date: 1 } };
+      const message2 = { id: '2', doc: { reported_date: 2 } };
+      const data = { id: '124', messages: [ message2 ] };
+      const action = Actions.updateSelectedConversation(data);
+      const expectedState = {
+        conversations: [],
+        error: false,
+        selected: { id: '124', messages: [ message1, message2 ] }
+      };
+      const oldSelected = { id: '124', messages: [ message1 ] };
+      state.selected = oldSelected;
+
+      const result = messagesReducer(state, action);
+
+      expect(result.selected).to.not.deep.include(oldSelected);
+      expect(result).to.deep.include(expectedState);
+    });
+
+    it('should remove a message from selected conversation', () => {
+      const message1 = { id: '1', doc: { reported_date: 1 } };
+      const message2 = { id: '2', doc: { reported_date: 2 } };
+      const action = Actions.removeMessageFromSelectedConversation('1');
+      const expectedState = {
+        conversations: [],
+        error: false,
+        selected: { id: '124', messages: [ message2 ] }
+      };
+      const oldSelected = { id: '124', messages: [ message1, message2 ] };
+      state.selected = oldSelected;
+
+      const result = messagesReducer(state, action);
+
+      expect(result.selected).to.not.deep.include(oldSelected);
+      expect(result).to.deep.include(expectedState);
+    });
+
+    it('should update a message from the selected conversation', () => {
+      const messages = [
+        { id: '1', doc: { reported_date: 1 } },
+        { id: '2', doc: { reported_date: 2 } },
+        { id: '3', doc: { reported_date: 3 } },
+        { id: '4', doc: { reported_date: 4 } },
+      ];
+      const data = {
+        id: '124',
+        messages: [
+          { id: '1', doc: { reported_date: 1 }, updated: true },
+          { id: '3', doc: { reported_date: 3 }, updated: true },
+          { id: '5', doc: { reported_date: 5 } },
+        ]
+      };
+      const action = Actions.updateSelectedConversation(data);
+      const expectedState = {
+        conversations: [],
+        error: false,
+        selected: {
+          id: '124',
+          messages: [
+            { id: '1', doc: { reported_date: 1 }, updated: true },
+            { id: '2', doc: { reported_date: 2 } },
+            { id: '3', doc: { reported_date: 3 }, updated: true },
+            { id: '4', doc: { reported_date: 4 } },
+            { id: '5', doc: { reported_date: 5 } },
+          ]
+        }
+      };
+      const oldSelected = { id: '124', messages };
+      state.selected = oldSelected;
+
+      const result = messagesReducer(state, action);
+
+      expect(result.selected).to.not.deep.include(oldSelected);
+      expect(result).to.deep.include(expectedState);
+    });
   });
 });
