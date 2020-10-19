@@ -757,7 +757,7 @@ module.exports=function (grunt) {
     },
     protractor: {
       'e2e-tests': {
-        configFile: path.join(__dirname, 'tests', 'conf.js'),
+        configFile: 'tests/conf.js',
         keepAlive: true,
       },
 
@@ -775,9 +775,7 @@ module.exports=function (grunt) {
       },
       'performance-tests-and-services': {
         options: {
-          specs: [
-            path.join(__dirname, 'tests', 'performance', '**/*.js')
-          ],
+          specs: ['tests/performance/**/*.js'],
           configFile: 'tests/conf.js'
         }
       }
