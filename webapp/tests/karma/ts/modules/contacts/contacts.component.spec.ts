@@ -35,9 +35,13 @@ describe('Contacts component', () => {
 
   beforeEach(async(() => {
     district = { _id: 'abcde', name: 'My District', type: 'district_hospital' };
+    const userSettingsServiceMock = {
+      get: sinon.stub().resolves({})
+    };
 
     const mockedSelectors = [
-      { selector: Selectors.getContactsList, value: [] }
+      { selector: Selectors.getContactsList, value: [] },
+      { selector: Selectors.getFilters, value: {} },
     ];
     const changesServiceMock = {
       subscribe: sinon.stub().resolves(of({}))
@@ -64,7 +68,7 @@ describe('Contacts component', () => {
             getContactsDefaultSort: sinon.stub().resolves([]),
           }},
           { provide: SettingsService, useValue: { get: sinon.stub().resolves([]) } },
-          { provide: UserSettingsService, useValue: { get: sinon.stub().resolves([]) } },
+          { provide: UserSettingsService, useValue: userSettingsServiceMock },
           { provide: GetDataRecordsService, useValue: { get: sinon.stub().resolves([]) } },
           { provide: SessionService, useValue: { isDbAdmin: sinon.stub().resolves([]) } },
           { provide: AuthService, useValue: { has: sinon.stub().resolves([]) } },
@@ -115,4 +119,46 @@ describe('Contacts component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
+  describe('Search', () => {
+    it('Puts the home place at the top of the list', () => {
+      userSettingsService.get.reset();
+      userSettingsService.get.resolves({ facility_id: 'abcde' });
+      fixture.detectChanges();
+
+      searchResults = [
+        {
+          _id: 'search-result',
+        },
+      ];
+      store.overrideSelector(Selectors.getContactsList, searchResults);
+      store.refreshState();
+      // TestBed.overrideProvider(
+      //   UserSettingsService,
+      //   { useValue: { get: sinon.stub().resolves({ facility_id: 'abcde' }) } }
+      // );
+      // TestBed.compileComponents();
+      // fixture = TestBed.createComponent(ContactsComponent);
+      // component = fixture.componentInstance;
+      // fixture.detectChanges();
+
+      // getDataRecordsService.get.resolves(
+      //   { _id: 'abcde', name: 'My District', type: 'district_hospital' }
+      // );
+
+      const lhs = component.contactsList;
+      console.log('LHS::');
+      console.log(lhs);
+      assert.equal(
+        lhs.length,
+        2,
+        'both home place and search results are shown'
+      );
+      assert.equal(lhs[0]._id, district._id, 'first item is home place');
+      assert.equal(
+        lhs[1]._id,
+        'search-result',
+        'second item is search result'
+      );
+    });
+  });
 });
