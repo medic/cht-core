@@ -10,40 +10,30 @@ const browserLogStream=fs.createWriteStream(
 const chai=require('chai');
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold=0;
+let suite;
 
 const baseConfig={
   params: {
     pathToConfig: false
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  maxSessions: 1,
+  suites: {
+    e2e: 'e2e/login/login.specs.js',
+    mobile: 'mobile/login/login.specs.js',
+    performance: 'performance/**/*.js'
+  },
   framework: 'jasmine2',
-  multiCapabilities: [ {
+  capabilities: {
     browserName: 'chrome',
-    'chromeOptions': {
+    chromeOptions: {
       // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
+      // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', 'headless', '--disable-gpu']
-    },
-
-    name: 'chrome-tests',
-    count: 1,
-    shardTestFiles: true,
-    maxInstances: 1,
-    specs:['e2e/**/*.js']
-  }, {
-    browserName: 'chrome',
-    'chromeOptions': {
-      args: ['--headless', '--disable-gpu'],
-      mobileEmulation: { 'deviceName': 'Nexus 5' }
-    },
-    name: 'mobile-tests',
-    count: 1,
-    shardTestFiles: true,
-    maxInstances: 1,
-    specs:['mobile/**/*.js']
-  } ],
+      args: [ '--window-size=1024,768', '--headless', '--disable-gpu' ]
+      //args: [ '--window-size=1024,768', '--disable-gpu' ]
+    }
+  },
 
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
@@ -53,6 +43,8 @@ const baseConfig={
     process.on('uncaughtException', () => {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
+      console.log('bede starts services............... ');
+      //prepServices();
     });
 
     return new Promise(resolve => {
@@ -60,20 +52,29 @@ const baseConfig={
     });
   },
   afterLaunch: exitCode => {
-    return new Promise(resolve => {
-      console.log('Keeping API running for mobile test suite ');
-      return request.post('http://localhost:31337/die')
-        .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
-    });
+    if (suite==='mobile') {
+      return new Promise(resolve => {
+        return request.post('http://localhost:31337/die')
+          .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
+      });
+    }
   },
+
   onPrepare: () => {
+    console.log('on prepare.....', 'testing what happened before each spec');
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);
     browser.waitForAngularEnabled(false);
+    browser.getProcessedConfig().then(config => {
+      // only start services when running the chrome tests and keep them running for mobile tests
+      suite = config.suite;
+      if (suite==='e2e') {
+        browser.driver.wait(prepServices(), 135*1000, 'API took too long to start up');
+      }
+    }).catch(() => null);
 
     // wait for startup to complete - taking a little too long on travis
-    browser.driver.wait(prepServices(), 135*1000, 'API took too long to start up');
-
+    //browser.driver.wait(prepServices(), 135*1000, 'API took too long to start up');
     afterEach(() => {
       return browser
         .manage()
@@ -87,8 +88,9 @@ const baseConfig={
         });
     });
 
-    return login(browser).then(() => runAndLog('User setup', setupUser));
+    if (suite==='e2e') { return login(browser).then(() => runAndLog('User setup', setupUser)); }
   }
+
 };
 
 

@@ -757,8 +757,26 @@ module.exports=function (grunt) {
     },
     protractor: {
       'e2e-tests': {
-        configFile: 'tests/conf.js',
-        keepAlive: true,
+        options: {
+          configFile: 'tests/conf.js',
+          args: {
+            suite: 'e2e',
+
+          }
+        }
+      },
+      'e2e-tests-mobile': {
+        options: {
+          configFile: 'tests/conf.js',
+          args: {
+            suite: 'mobile',
+            capabilities: {
+              chromeOptions: {
+                mobileEmulation: { 'deviceName': 'Nexus 5' }
+              }
+            }
+          }
+        }
       },
 
       'e2e-tests-debug': {
@@ -1019,6 +1037,17 @@ module.exports=function (grunt) {
     'protractor:e2e-tests',
     'exec:clean-test-database',
   ]);
+  grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests on mobile', [
+    'e2e-deploy',
+    'protractor:e2e-tests-mobile',
+    'exec:clean-test-database',
+  ]);
+  grunt.registerTask('e2e-all', 'Deploy app for testing and run e2e tests on mobile', [
+    'e2e-deploy',
+    'protractor:e2e-tests',
+    'protractor:e2e-tests-mobile',
+    'exec:clean-test-database',
+  ]);
 
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
     'e2e-deploy',
@@ -1087,6 +1116,7 @@ module.exports=function (grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-tests',
+    'protractor:e2e-tests-mobile',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
