@@ -793,7 +793,9 @@ module.exports=function (grunt) {
       },
       'performance-tests-and-services': {
         options: {
-          specs: ['tests/performance/**/*.js'],
+          args: {
+            suite: 'performance'
+          },
           configFile: 'tests/conf.js'
         }
       }
