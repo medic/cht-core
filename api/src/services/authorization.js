@@ -385,9 +385,19 @@ const getScopedAuthorizationContext = (userCtx, scopeDocsCtx = []) => {
   });
 };
 
-
-// Method to ensure users don't see reports submitted by their boss about the user
-const isSensitive = function(userCtx, subject, submitter, isPrivate, allowedSubmitter) {
+/**
+ * Method to ensure users don't see private reports submitted by their boss about the user's contact
+ * @param {Object} userCtx                    User context object
+ * @param {string} userCtx.contact_id         _id of the user's contact
+ * @param {string} userCtx.facility_id        _id of the user's place
+ * @param {string|undefined} subject          report's subject
+ * @param {string|undefined} submitter        report's submitter
+ * @param {boolean} isPrivate                 whether the report is private
+ * @param {boolean|function} allowedSubmitter boolean or function that returns a boolean representing whether the user
+ *                                            can see the submitter of the report
+ * @returns {boolean}
+ */
+const isSensitive = (userCtx, subject, submitter, isPrivate, allowedSubmitter) => {
   if (!subject || !submitter || !isPrivate) {
     return false;
   }
@@ -396,7 +406,7 @@ const isSensitive = function(userCtx, subject, submitter, isPrivate, allowedSubm
     return false;
   }
 
-  return !allowedSubmitter;
+  return typeof allowedSubmitter === 'function' ? !allowedSubmitter() : !allowedSubmitter;
 };
 
 /**
@@ -442,15 +452,22 @@ const groupViewResultsById = (authorizationContext, viewResults) => {
   return _.groupBy(viewResults.rows, 'id');
 };
 
+// casting everything to string to insure that comparisons are against the same type to avoid 5 > 'a' || 5 < 'a'
+const prepareForSortedSearch = array => array.map(element => String(element)).sort();
+const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, String(element)) !== -1;
+
 const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
   return db.medic.query('medic/docs_by_replication_key', { keys: feed.subjectIds }).then(results => {
     const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(feed.userCtx.name)];
     const tombstoneIds = [];
     const viewResultsById = groupViewResultsById(feed, results);
 
+    // leverage binary search when looking up subjects
+    const sortedSubjects = prepareForSortedSearch(feed.subjectIds);
+
     results.rows.forEach(row => {
       const { key: subject, value: { submitter, private } = {} } = row;
-      if (isSensitive(feed.userCtx, subject, submitter, private, feed.subjectIds.includes(submitter))) {
+      if (isSensitive(feed.userCtx, subject, submitter, private, () => sortedIncludes(sortedSubjects, submitter))) {
         return;
       }
 
@@ -463,14 +480,17 @@ const getAllowedDocIds = (feed, { includeTombstones = true } = {}) => {
       }
     });
 
-    // only include tombstones if the winning rev of the document is deleted
-    // if a doc appears in the view results, it means that the winning rev is not deleted
-    tombstoneIds.forEach(tombstoneId => {
-      const docId = tombstoneUtils.extractStub(tombstoneId).id;
-      if (!validatedIds.includes(docId)) {
-        validatedIds.push(tombstoneId);
-      }
-    });
+    if (tombstoneIds.length) {
+      // only include tombstones if the winning rev of the document is deleted
+      // if a doc appears in the view results, it means that the winning rev is not deleted
+      const sortedValidatedIds = prepareForSortedSearch(validatedIds);
+      tombstoneIds.forEach(tombstoneId => {
+        const docId = tombstoneUtils.extractStub(tombstoneId).id;
+        if (!sortedIncludes(sortedValidatedIds, docId)) {
+          validatedIds.push(tombstoneId);
+        }
+      });
+    }
 
     return _.uniq(validatedIds);
   });
