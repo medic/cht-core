@@ -1037,16 +1037,6 @@ module.exports=function (grunt) {
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-tests',
-    'exec:clean-test-database',
-  ]);
-  grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests on mobile', [
-    'e2e-deploy',
-    'protractor:e2e-tests-mobile',
-    'exec:clean-test-database',
-  ]);
-  grunt.registerTask('e2e-all', 'Deploy app for testing and run e2e tests on mobile', [
-    'e2e-deploy',
-    'protractor:e2e-tests',
     'protractor:e2e-tests-mobile',
     'exec:clean-test-database',
   ]);

@@ -43,8 +43,6 @@ const baseConfig={
     process.on('uncaughtException', () => {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
-      console.log('bede starts services............... ');
-      //prepServices();
     });
 
     return new Promise(resolve => {
@@ -61,20 +59,18 @@ const baseConfig={
   },
 
   onPrepare: () => {
-    console.log('on prepare.....', 'testing what happened before each spec');
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);
     browser.waitForAngularEnabled(false);
     browser.getProcessedConfig().then(config => {
-      // only start services when running the chrome tests and keep them running for mobile tests
+      //  keep API mobile tests
       suite = config.suite;
       if (suite!=='mobile') {
+        // wait for startup to complete - taking a little too long on travis
         browser.driver.wait(prepServices(), 135*1000, 'API took too long to start up');
       }
     }).catch(() => null);
 
-    // wait for startup to complete - taking a little too long on travis
-    //browser.driver.wait(prepServices(), 135*1000, 'API took too long to start up');
     afterEach(() => {
       return browser
         .manage()
@@ -92,7 +88,6 @@ const baseConfig={
   }
 
 };
-
 
 exports.config=baseConfig;
 
