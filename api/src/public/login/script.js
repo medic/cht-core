@@ -1,6 +1,8 @@
 let selectedLocale;
 let translations;
 
+const urlParams = new URLSearchParams(window.location.search);
+
 const setState = function(className) {
   document.getElementById('form').className = className;
 };
@@ -32,7 +34,7 @@ const submit = function(e) {
   const payload = JSON.stringify({
     user: document.getElementById('user').value.toLowerCase().trim(),
     password: document.getElementById('password').value,
-    redirect: getRedirectUrl(),
+    redirect: checkUsername() ? getRedirectUrl() : null,
     locale: selectedLocale
   });
   request('POST', url, payload, function(xmlhttp) {
@@ -152,8 +154,13 @@ const parseTranslations = function() {
   return JSON.parse(decodeURIComponent(raw));
 };
 
+const checkUsername = function() {
+  const usernameQueryParam = urlParams.get('username');
+  const usernameEntered    = document.getElementById('user').value.toLowerCase().trim();
+  return usernameQueryParam === usernameEntered;
+}
+
 const getRedirectUrl = function() {
-  const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('redirect');
 };
 
