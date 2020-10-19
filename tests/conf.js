@@ -52,7 +52,7 @@ const baseConfig={
     });
   },
   afterLaunch: exitCode => {
-    if (suite==='mobile') {
+    if (suite!=='e2e') {
       return new Promise(resolve => {
         return request.post('http://localhost:31337/die')
           .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
@@ -68,7 +68,7 @@ const baseConfig={
     browser.getProcessedConfig().then(config => {
       // only start services when running the chrome tests and keep them running for mobile tests
       suite = config.suite;
-      if (suite==='e2e') {
+      if (suite!=='mobile') {
         browser.driver.wait(prepServices(), 135*1000, 'API took too long to start up');
       }
     }).catch(() => null);
@@ -88,7 +88,7 @@ const baseConfig={
         });
     });
 
-    if (suite==='e2e') { return login(browser).then(() => runAndLog('User setup', setupUser)); }
+    return login(browser).then(() => runAndLog('User setup', setupUser));
   }
 
 };
