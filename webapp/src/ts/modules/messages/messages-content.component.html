@@ -4,11 +4,11 @@
     <div><div class="loader"></div></div>
   </div>
 
-  <div class="item-content empty-selection" *ngIf="!selectedConversation?.messages[0] && !loadingContent">
+  <div class="item-content empty-selection" *ngIf="(!selectedConversation?.messages || !selectedConversation?.messages[0]) && !loadingContent">
     <div translate>No message selected</div>
   </div>
 
-  <div class="message-content-wrapper item-content" *ngIf="selectedConversation?.messages[0] && !loadingContent">
+  <div class="message-content-wrapper item-content" *ngIf="selectedConversation?.messages && selectedConversation?.messages[0] && !loadingContent">
     <div class="body">
 
       <div id="message-header" class="name-header">
@@ -21,25 +21,25 @@
         <div>
           <ul>
             <li *ngFor="let message of selectedConversation.messages; trackBy: listTrackBy; let lastMessage = last" [ngClass]="{'outgoing': message.doc?.kujua_message, 'incoming': !message.doc?.kujua_message}">
-              <div class="marker" *ngIf="firstUnread && firstUnread.id === message.doc._id" translate>Unread below</div>
+              <div class="marker" *ngIf="firstUnread && firstUnread.id === message.doc?._id" translate>Unread below</div>
               <span class="message-body" [class.last-message]="lastMessage">
 
                 <div class="data">
                   <p>
                     {{message.doc?.sms_message?.message}}
-                    <span *ngIf="message.doc?.kujua_message">
+                    <span *ngIf="message.doc?.kujua_message && message.doc?.tasks && message.doc?.tasks[0]?.messages">
                       {{message.doc?.tasks[0]?.messages[0]?.message}}
                     </span>
                   </p>
 
                   <!-- outgoing message -->
-                  <span class="task-state" *ngIf="message.doc?.kujua_message" [innerHTML]="(message.doc?.tasks[0] | state) | async"></span>
+                  <span class="task-state" *ngIf="message.doc?.kujua_message && message.doc?.tasks" [innerHTML]="(message.doc?.tasks[0] | state) | async"></span>
 
                   <!-- incoming message -->
                   <span class="task-state" *ngIf="!message.doc?.kujua_message" [innerHTML]="(message.doc | state) | async"></span>
 
                   <!-- incoming message autoreply -->
-                  <span class="task-state" *ngIf="!message.doc?.kujua_message && message.doc?.tasks[0]" [innerHTML]="(message.doc?.tasks[0] | autoreply) | async"></span>
+                  <span class="task-state" *ngIf="!message.doc?.kujua_message && message.doc?.tasks" [innerHTML]="(message.doc?.tasks[0] | autoreply) | async"></span>
                 </div>
 
                 <div class="actions">
