@@ -11,6 +11,7 @@ import sinon from 'sinon';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Form Type Filter Component', () => {
   let component:FormTypeFilterComponent;
@@ -19,7 +20,7 @@ describe('Form Type Filter Component', () => {
 
   beforeEach(async(() => {
     const mockedSelectors = [
-      { selector: 'getForms', value: [] },
+      { selector: Selectors.getForms, value: [] },
     ];
 
     TestBed

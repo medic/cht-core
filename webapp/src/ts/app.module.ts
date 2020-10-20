@@ -7,7 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { storeLogger } from 'ngrx-store-logger';
-import { CookieModule } from 'ngx-cookie';
+import { CookieService } from 'ngx-cookie-service';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -30,6 +30,11 @@ import { DbService } from './services/db.service';
 import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
 import { GlobalEffects } from '@mm-effects/global';
+import { ReportsEffects } from '@mm-effects/reports.effects';
+
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
+
 import { reducers } from "./reducers";
 
 const logger = reducer => {
@@ -57,7 +62,6 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     DirectivesModule,
     PipesModule,
     RouterModule,
-    CookieModule.forRoot(),
     HttpClientModule,
     StoreModule.forRoot(reducers, { metaReducers }),
     TranslateModule.forRoot({
@@ -76,13 +80,16 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BsDropdownModule.forRoot(),
     FormsModule,
     AccordionModule.forRoot(),
-    EffectsModule.forRoot([ GlobalEffects ])
+    EffectsModule.forRoot([ GlobalEffects, ReportsEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
     { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
     BsModalRef,
     RouteGuardProvider,
+    CookieService,
+    ResourceIconPipe,
+    FormIconNamePipe,
   ],
   bootstrap: [AppComponent]
 })

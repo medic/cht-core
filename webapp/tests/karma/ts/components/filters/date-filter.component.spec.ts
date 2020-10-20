@@ -10,6 +10,7 @@ import * as moment from 'moment';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { provideMockStore } from '@ngrx/store/testing';
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Date Filter Component', () => {
   let component:DateFilterComponent;
@@ -19,7 +20,7 @@ describe('Date Filter Component', () => {
 
   beforeEach(async(() => {
     const mockedSelectors = [
-      { selector: 'getCurrentTab', value: 'reports' },
+      { selector: Selectors.getCurrentTab, value: 'reports' },
     ];
 
     dateRangePicker = (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });

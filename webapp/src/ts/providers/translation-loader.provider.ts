@@ -11,8 +11,15 @@ import { DbService } from '../services/db.service';
 export class TranslationLoaderProvider implements TranslateLoader {
   constructor(private db:DbService) {}
 
+  private loadingPromises = {};
+
   getTranslation(locale) {
-    const promise =  this.db.get()
+    if (this.loadingPromises[locale]) {
+      return from(this.loadingPromises[locale]);
+    }
+
+    const promise =  this.db
+      .get()
       .get(DOC_ID_PREFIX + locale)
       .then(doc => {
         const values = Object.assign(doc.generic || {}, doc.custom || {});
@@ -23,7 +30,13 @@ export class TranslationLoaderProvider implements TranslateLoader {
           throw err;
         }
         return {};
+      })
+      .finally(() => {
+        delete this.loadingPromises[locale];
       });
+
+    this.loadingPromises[locale] = promise;
+
     return from(promise);
   };
 }

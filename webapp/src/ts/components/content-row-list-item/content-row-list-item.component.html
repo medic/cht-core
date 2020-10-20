@@ -1,5 +1,6 @@
 <li attr.data-record-id="{{id}}"
-    [class.selected]="selected"
+    [routerLink]="id"
+    routerLinkActive="selected"
     [class.primary]="primary"
     [class.unread]="unread"
     [class.dod]="dod"
@@ -8,7 +9,7 @@
     [class.overdue]="overdue"
     class="content-row"
 >
-  <a routerLink="{{id}}">
+  <a [routerLink]="id">
     <div><input type="checkbox"></div>
     <div *ngIf="icon" class="icon" [innerHTML]="icon | resourceIcon"></div>
     <div class="content">
@@ -39,7 +40,7 @@
             <report-verify-valid-icon *ngIf="valid && verified"></report-verify-valid-icon>
             <report-verify-invalid-icon *ngIf="!(valid && verified)"></report-verify-invalid-icon>
           </span>
-          <!--<span [class.verified]="valid && verified" [class.error]="!valid || !verified" class="verification-badge" [innerHTML]="statusIcon"></span>-->
+          <span [class.verified]="valid && verified" [class.error]="!valid || !verified" class="verification-badge" [innerHTML]="statusIcon"></span>
         </div>
         <div *ngIf="visits" class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
           <span>{{visits.summary}}</span>

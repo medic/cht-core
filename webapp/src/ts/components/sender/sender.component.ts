@@ -11,5 +11,4 @@ export class SenderComponent {
   @Input() hideLineage;
 
   constructor() { }
-
 }

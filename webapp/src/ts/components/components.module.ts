@@ -11,7 +11,6 @@ import { DirectivesModule } from '../directives/directives.module';
 import { SnackbarComponent } from './snackbar/snackbar.component';
 import { ContentRowListItemComponent } from './content-row-list-item/content-row-list-item.component';
 import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from './status-icons/status-icons.template';
-import { SenderComponent } from './sender/sender.component';
 
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
@@ -20,6 +19,9 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
+import { SenderComponent } from '@mm-components/sender/sender.component';
+import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +38,8 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
     FreetextFilterComponent,
     ResetFiltersComponent,
     SenderComponent,
+    ReportImageComponent,
+    NavigationComponent,
   ],
   imports: [
     CommonModule,
@@ -59,6 +63,8 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
     FreetextFilterComponent,
     ResetFiltersComponent,
     SenderComponent,
+    ReportImageComponent,
+    NavigationComponent,
   ]
 })
 export class ComponentsModule { }

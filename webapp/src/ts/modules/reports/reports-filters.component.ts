@@ -6,6 +6,7 @@ import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
+import { SearchFiltersService } from '@mm-services/search-filters.service';
 
 @Component({
   selector: 'reports-filters',
@@ -18,6 +19,7 @@ export class ReportsFiltersComponent {
 
   constructor(
     private store: Store,
+    private searchFiltersService:SearchFiltersService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -36,8 +38,12 @@ export class ReportsFiltersComponent {
   @ViewChild(StatusFilterComponent)
   statusFilter:StatusFilterComponent;
 
-  applyFilters() {
-    this.search.emit();
+  ngAfterViewInit() {
+    this.searchFiltersService.init(this.freetextFilter);
+  }
+
+  applyFilters(force?) {
+    this.search.emit(force);
   }
 
   resetFilters() {

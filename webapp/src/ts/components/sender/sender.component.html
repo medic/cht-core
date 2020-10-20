@@ -17,6 +17,6 @@
 
   <div class="position small-font"
        *ngIf="!hideLineage && (message.lineage || (message.contact && message.contact.parent) || message.place || (!message.form && message.name))"
-      [innerHTML]="(message.lineage || (message.contact && message.contact.parent) || message.place) | lineage">
+       [innerHTML]="(message.lineage || (message.contact && message.contact.parent) || message.place) | lineage">
   </div>
 </div>
