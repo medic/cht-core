@@ -6,15 +6,6 @@ function writeScreenShot(data, filename) {
   stream.write(Buffer.from(data, 'base64'));
   stream.end();
 }
-function waitElementToDisappear(locator, timeout) {
-  timeout = timeout || 15000;
-  browser.wait(() => {
-    return element(locator)
-      .isDisplayed()
-      .then(presenceOfElement => !presenceOfElement);
-  }, timeout);
-}
-
 function handleUpdateModal() {
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
@@ -138,13 +129,13 @@ module.exports = {
       .manage()
       .logs()
       .get('browser')
-      .then(browserLogs => {
-        browserLogs.forEach(log => {
+      .then(function(browserLogs) {
+        browserLogs.forEach(function(log) {
           if (log.level.value > 900) {
             fs.appendFile(
               `tests/results/${spec}-logs.txt`,
               `\r\n Console errors: ${log.message}\r\n`,
-              err => {
+              function(err) {
                 if (err) {
                   throw err;
                 }
@@ -237,7 +228,14 @@ module.exports = {
     browser.wait(EC.elementToBeClickable(elm), timeout);
   },
 
-  waitElementToDisappear,
+  waitElementToDisappear: (locator, timeout) => {
+    timeout = timeout || 15000;
+    browser.wait(() => {
+      return element(locator)
+        .isDisplayed()
+        .then(presenceOfElement => !presenceOfElement);
+    }, timeout);
+  },
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;

@@ -6,7 +6,7 @@ jdk: oraclejdk9
 dist: xenial
 
 addons:
-  chrome: "stable"
+  chrome: 'stable'
 
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
@@ -118,6 +118,6 @@ notifications:
       - https://hooks.zapier.com/hooks/catch/3653132/j182m9/
     on_success: change
     on_failure: always
-    on_start: never
-    on_cancel: never
-    on_error: always
+    on_start:   never
+    on_cancel:  never
+    on_error:   always
