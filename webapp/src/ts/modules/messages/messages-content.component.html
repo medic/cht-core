@@ -20,10 +20,12 @@
         <p class="loading-status" *ngIf="allLoaded" translate>No more messages</p>
         <div>
           <ul>
-            <li *ngFor="let message of selectedConversation.messages; trackBy: listTrackBy; let lastMessage = last" [ngClass]="{'outgoing': message.doc?.kujua_message, 'incoming': !message.doc?.kujua_message}">
+            <li *ngFor="let message of selectedConversation.messages; trackBy: listTrackBy; let lastMessage = last"
+              [ngClass]="{'outgoing': message.doc?.kujua_message, 'incoming': !message.doc?.kujua_message}"
+              [attr.data-id]="message.doc?._id">
+
               <div class="marker" *ngIf="firstUnread && firstUnread.id === message.doc?._id" translate>Unread below</div>
               <span class="message-body" [class.last-message]="lastMessage">
-
                 <div class="data">
                   <p>
                     {{message.doc?.sms_message?.message}}
@@ -45,8 +47,8 @@
                 <div class="actions">
                   <a class="btn btn-link fa fa-trash-o" (click)="deleteDoc(message.doc)" title="{{ 'Delete' | translate }}" mm-auth="can_delete_messages"></a>
                 </div>
-
               </span>
+
             </li>
           </ul>
         </div>

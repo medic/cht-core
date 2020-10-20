@@ -110,7 +110,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     const lastMessage = $('.message-content-wrapper .last-message');
     // Scrolling only when last message is rendered.
     if (this.hasToScroll && !this.loadingContent && lastMessage.length) {
-      this.scrollToUnread();
+      // ToDo: Determine when the view has finished rendering and scroll to unread messages. To avoid timeouts (performance costly)
+      setTimeout(() => this.scrollToUnread());
     }
   }
 
@@ -228,7 +229,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.globalActions.setLoadingShowContent(false);
         this.messagesActions.setMessagesError(false);
         const unread = conversation.filter(message => !message.read);
-        this.firstUnread = _minBy(unread, message => message.doc.reported_date);
+        this.firstUnread = _minBy(unread, message => message.doc?.reported_date);
         this.messagesActions.updateSelectedConversation({ contact: contactModel, messages: conversation });
         this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();
@@ -278,18 +279,20 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
         const first = $('.item-content .body #message-content ul > li').filter(':first');
         this.markConversationReadIfNeeded();
+        // ToDo: determine when view had finished rendering to the scrolling can be calculated correctly.
+        setTimeout(() => {
+          let scroll:any = false;
+          if (options.skip) {
+            const spinnerHeight = 102;
+            scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
+          } else if (first.length && newMessageFromUser) {
+            scroll = $('.message-content-wrapper')[0].scrollHeight;
+          }
 
-        let scroll:any = false;
-        if (options.skip) {
-          const spinnerHeight = 102;
-          scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
-        } else if (first.length && newMessageFromUser) {
-          scroll = $('.message-content-wrapper')[0].scrollHeight;
-        }
-
-        if (scroll) {
-          $('.message-content-wrapper').scrollTop(scroll);
-        }
+          if (scroll) {
+            $('.message-content-wrapper').scrollTop(scroll);
+          }
+        });
       })
       .catch(err => console.error('Error fetching contact conversation', err));
   }
