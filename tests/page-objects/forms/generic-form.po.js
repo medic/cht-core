@@ -1,11 +1,4 @@
 const helper = require('../../helper');
-const waitForLoaderToDisappear = () => {
-  try {
-    helper.waitElementToDisappear(by.css('.loader'));
-  } catch (err) {
-    // element can go stale
-  }
-};
 
 module.exports = {
   editForm: () => {
@@ -57,14 +50,10 @@ module.exports = {
     const addButton = element(
       by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus')
     );
-    waitForLoaderToDisappear();
     helper.waitUntilReady(addButton);
     helper.waitElementToBeClickable(addButton);
     helper.waitForAngularComplete();
-    //addButton.click();
-    helper.clickElement(addButton);
-    //browser.executeScript('arguments[0].scrollIntoView();', addButton);
-
+    addButton.click();
     element(
       by.css(
         '.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'
