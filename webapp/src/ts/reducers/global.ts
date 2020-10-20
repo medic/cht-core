@@ -1,5 +1,6 @@
-import { Actions } from '../actions/global';
 import { createReducer, on } from '@ngrx/store';
+
+import { Actions } from '@mm-actions/global';
 
 const initialState = {
   actionBar: {
@@ -86,8 +87,6 @@ const _globalReducer = createReducer(
   on(Actions.setSelectMode, (state, { payload: { selectMode } }) => {
     return { ...state, selectMode };
   }),
-
-
 );
 
 

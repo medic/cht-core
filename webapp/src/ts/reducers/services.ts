@@ -8,9 +8,7 @@ const initialState = {
 const _servicesReducer = createReducer(
   initialState,
   on(Actions.setLastChangedDoc, (state, { payload: { lastChangedDoc } }) => {
-    return Object.assign({}, state, {
-      lastChangedDoc: Object.assign({}, { lastChangedDoc })
-    });
+    return { ...state, lastChangedDoc };
   })
 );
 

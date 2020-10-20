@@ -25,6 +25,7 @@ import { XmlFormsService } from './services/xml-forms.service';
 import { JsonFormsService } from './services/json-forms.service';
 import { TranslateFromService } from './services/translate-from.service';
 import { delay } from 'rxjs/operators';
+import { CountMessageService } from '@mm-services/count-message.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -90,6 +91,7 @@ export class AppComponent {
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
     private changeDetectorRef: ChangeDetectorRef,
+    private countMessageService: CountMessageService
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -295,6 +297,8 @@ export class AppComponent {
       filter: change => change.id === 'branding',
       callback: () => this.setAppTitle(),
     });
+
+    this.countMessageService.init();
 
     this.initForms();
   }

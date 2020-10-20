@@ -6,8 +6,10 @@ import { FormatDateService } from '../services/format-date.service';
 import { RelativeDateService } from '../services/relative-date.service';
 
 const getState = (state, translateService) => {
-  const label = translateService.instant('state.' + state);
-  return '<span class="state ' + state + '">' + label + '</span>';
+  return translateService
+    .get('state.' + state)
+    .toPromise()
+    .then(label => '<span class="state ' + state + '">' + label + '</span>');
 };
 
 const getRelativeDate = (date, options) => {
@@ -92,26 +94,31 @@ export class AutoreplyPipe implements PipeTransform {
     private formatDateService:FormatDateService,
     private relativeDateService:RelativeDateService,
     private sanitizer: DomSanitizer,
-  ) {
-  }
+  ) { }
 
   transform(task) {
-    if (!task || !task.state) {
-      return '';
-    }
+    return new Promise((resolve, reject) => {
+      if (!task) {
+        resolve('');
+      }
 
-    const content = getState(task.state, this.translateService) + '&nbsp;' +
-      '<span class="autoreply" title="' + task.messages[0].message + '">' +
-      '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
-      '</span>&nbsp';
+      getState(task.state, this.translateService)
+        .then(state => {
+          const content = state + '&nbsp;' +
+            '<span class="autoreply" title="' + task.messages[0].message + '">' +
+            '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
+            '</span>&nbsp';
 
-    const transformedContent = getRelativeDate(getTaskDate(task), {
-      FormatDate: this.formatDateService,
-      RelativeDate: this.relativeDateService,
-      prefix: content,
+          const transformedContent = getRelativeDate(getTaskDate(task), {
+            FormatDate: this.formatDateService,
+            RelativeDate: this.relativeDateService,
+            prefix: content,
+          });
+
+          resolve(this.sanitizer.bypassSecurityTrustHtml(transformedContent));
+
+        }, reject);
     });
-
-    return this.sanitizer.bypassSecurityTrustHtml(transformedContent);
   }
 }
 
@@ -124,20 +131,27 @@ export class StatePipe implements PipeTransform {
     private formatDateService:FormatDateService,
     private relativeDateService:RelativeDateService,
     private sanitizer: DomSanitizer,
-  ) {
-  }
+  ) { }
 
   transform(task) {
-    if (!task) {
-      return '';
-    }
+    return new Promise((resolve, reject) => {
+      if (!task) {
+        resolve('');
+      }
 
-    return this.sanitizer.bypassSecurityTrustHtml(getRelativeDate(getTaskDate(task), {
-      FormatDate: this.formatDateService,
-      RelativeDate: this.relativeDateService,
-      prefix: getState(task.state || 'received', this.translateService) + '&nbsp;',
-      suffix: getRecipient(task, this.translateService),
-    }));
+      getState(task.state || 'received', this.translateService)
+        .then(state => {
+          const relativeDate = getRelativeDate(getTaskDate(task), {
+            FormatDate: this.formatDateService,
+            RelativeDate: this.relativeDateService,
+            prefix: state + '&nbsp;',
+            suffix: getRecipient(task, this.translateService),
+          });
+
+          resolve(this.sanitizer.bypassSecurityTrustHtml(relativeDate));
+
+        }, reject);
+    });
   }
 }
 

@@ -1,13 +1,17 @@
+import { FormsModule } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 import sinon from 'sinon';
-import {expect} from 'chai';
-import {EMPTY, Observable} from 'rxjs';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {UpdatePasswordComponent} from '@mm-modals/edit-user/update-password.component';
-import {BsModalRef} from 'ngx-bootstrap/modal';
-import {UserSettingsService} from '@mm-services/user-settings.service';
-import {LanguagesService} from '@mm-services/languages.service';
-import {UpdateUserService} from '@mm-services/update-user.service';
-import {TranslateService} from '@ngx-translate/core';
+import { expect } from 'chai';
+import { EMPTY, Observable } from 'rxjs';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { BsModalRef } from 'ngx-bootstrap/modal';
+
+import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguagesService } from '@mm-services/languages.service';
+import { UpdateUserService } from '@mm-services/update-user.service';
+
+import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 
 describe('UpdatePasswordComponent', () => {
 
@@ -45,7 +49,13 @@ describe('UpdatePasswordComponent', () => {
     );
     translateServiceSpy = sinon.spy(translateService, 'get');
     TestBed.configureTestingModule({
-      declarations: [ UpdatePasswordComponent ],
+      imports: [
+        FormsModule,
+      ],
+      declarations: [
+        UpdatePasswordComponent,
+        MmModal,
+      ],
       providers: [
         {provide: UpdateUserService, useValue: updateUserService},
         {provide: UserSettingsService, useValue: userSettingsService},

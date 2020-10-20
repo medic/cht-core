@@ -1,5 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
+
 import { createSingleValueAction } from './actionUtils';
 import { Selectors } from '../selectors';
 
@@ -22,6 +23,7 @@ export const Actions = {
 
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
+  deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
 }
 
 export class GlobalActions {
@@ -117,7 +119,7 @@ export class GlobalActions {
     this.setLoadingContent(false);
     this.setShowActionBar(false);
     this.setTitle();
-    this.store.dispatch(Actions.clearSelected());
+    this.clearSelected();
   }
 
   setCancelCallbackAction(value) {
@@ -128,7 +130,21 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setCancelCallback(null));
   }
 
+  /**
+   * Warning! Use carefully because more than one reducer might be listening to this global action.
+   */
+  clearSelected() {
+    return this.store.dispatch(Actions.clearSelected());
+  }
 
+  /**
+   * Deletes document from DB.
+   * This action has effect
+   * @param doc
+   */
+  deleteDocConfirm(doc) {
+    return this.store.dispatch(Actions.deleteDocConfirm(doc));
+  }
 }
 
 /*
