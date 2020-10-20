@@ -9,6 +9,7 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { FormsModule } from '@angular/forms';
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Form Type Filter Component', () => {
   let component:FormTypeFilterComponent;
@@ -17,7 +18,7 @@ describe('Form Type Filter Component', () => {
 
   beforeEach(async(() => {
     const mockedSelectors = [
-      { selector: 'getForms', value: [] },
+      { selector: Selectors.getForms, value: [] },
     ];
 
     TestBed

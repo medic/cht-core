@@ -1,7 +1,7 @@
 <div class="filters">
   <div class="inner">
-    <reports-filters (search)="search()" [disabled]="selectMode && selectedReports?.length"></reports-filters>
-    <!--<mm-navigation></mm-navigation>-->
+    <reports-filters (search)="search($event)" [disabled]="selectMode && selectedReports?.length"></reports-filters>
+    <mm-navigation></mm-navigation>
   </div>
 </div>
 
@@ -40,6 +40,7 @@
       <p class="loading-status" *ngIf="!error && !loading && !hasReports" translate>reports.none</p>
       <p class="loading-status" *ngIf="!loading && hasReports && !moreItems" translate>No more reports</p>
       <div class="loader" *ngIf="loading"></div>
+
       <div class="padding"></div>
     </div>
     <router-outlet></router-outlet>
