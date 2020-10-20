@@ -14,6 +14,7 @@ import { GlobalActions } from '@mm-actions/global';
 export class NavigationComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();
   private globalActions;
+  private routeSnapshot;
 
   cancelCallback;
   title;
@@ -24,10 +25,11 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private router:Router,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.routeSnapshot = this.route.snapshot;
   }
 
   ngOnInit(): void {
-    const subscription = combineLatest(
+    const stateSubscription = combineLatest(
       this.store.select(Selectors.getCancelCallback),
       this.store.select(Selectors.getTitle),
       //this.store.select(Selectors.getEnketoSavingStatus),
@@ -38,7 +40,17 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.cancelCallback = cancelCallback;
       this.title = title;
     });
-    this.subscription.add(subscription);
+    this.subscription.add(stateSubscription);
+
+    const routeSubscription =  this.route.url.subscribe(() => {
+      this.routeSnapshot = this.route.snapshot;
+    });
+    const routeParamsSubscription =  this.route.params.subscribe(() => {
+      this.routeSnapshot = this.route.snapshot;
+    });
+
+    this.subscription.add(routeSubscription);
+    this.subscription.add(routeParamsSubscription);
   }
 
   ngOnDestroy() {
@@ -49,19 +61,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
   * Navigate back to the previous view
   */
   navigateBack() {
-    const routeSnapshot = this.route.snapshot;
-
-    if (routeSnapshot.data.name === 'contacts.deceased') {
+    if (this.routeSnapshot.data.name === 'contacts.deceased') {
       // todo check if this works when we have migrated the contacts tabs
-      return this.router.navigate(['contacts', routeSnapshot.params.id]);
+      return this.router.navigate(['contacts', this.routeSnapshot.params.id]);
     }
 
-    if (routeSnapshot.params.id) {
-      return this.router.navigate([routeSnapshot.parent.routeConfig.path]);
-    }
-
-    if (routeSnapshot.firstChild.params.id) {
-      return this.router.navigate([routeSnapshot.routeConfig.path]);
+    if (this.routeSnapshot.params.id) {
+      return this.router.navigate([this.routeSnapshot.parent.routeConfig.path]);
     }
 
     this.globalActions.unsetSelected();
