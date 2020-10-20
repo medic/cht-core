@@ -1,14 +1,16 @@
+import { FormsModule } from '@angular/forms';
+import { RouterTestingModule } from '@angular/router/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import {expect} from 'chai';
-import {UpdateUserService} from '@mm-services/update-user.service';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {EditUserSettingsComponent} from '@mm-modals/edit-user/edit-user-settings.component';
-import {UserSettingsService} from '@mm-services/user-settings.service';
-import {BsModalRef} from 'ngx-bootstrap/modal';
-import {TranslateFakeLoader, TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {RouterTestingModule} from '@angular/router/testing';
-import {LanguagesService} from '@mm-services/languages.service';
+import { expect } from 'chai';
+import { BsModalRef } from 'ngx-bootstrap/modal';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
+import { UpdateUserService } from '@mm-services/update-user.service';
+import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguagesService } from '@mm-services/languages.service';
+import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 
 describe('EditUserSettingsComponent', () => {
 
@@ -38,10 +40,14 @@ describe('EditUserSettingsComponent', () => {
       ]
     );
     TestBed.configureTestingModule({
-      declarations: [ EditUserSettingsComponent ],
+      declarations: [
+        EditUserSettingsComponent,
+        MmModal
+      ],
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
+        FormsModule,
       ],
       providers: [
         {provide: UpdateUserService, useValue: updateUserService},

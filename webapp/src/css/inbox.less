@@ -529,7 +529,7 @@ body {
       overflow: hidden;
     }
     .message-actions {
-      display: none;
+      display: block;
       text-align: right;
       .btn-link {
         float: left;
@@ -542,9 +542,6 @@ body {
       textarea {
         height: 100px;
         overflow: auto;
-      }
-      .message-actions {
-        display: block;
       }
     }
   }
@@ -664,6 +661,7 @@ body {
 .task-state {
   color: @label-color;
   font-size: @font-small;
+  min-height: 20px;
   .state {
     font-weight: bold;
     &:before {

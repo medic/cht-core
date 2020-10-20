@@ -2,8 +2,10 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import {
@@ -20,8 +22,10 @@ describe('Status Filter Component', () => {
     TestBed
       .configureTestingModule({
         imports: [
+          BsDropdownModule.forRoot(),
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
+          BrowserAnimationsModule
         ],
         declarations: [
           StatusFilterComponent,

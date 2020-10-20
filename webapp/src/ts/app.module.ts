@@ -13,6 +13,8 @@ import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { EffectsModule } from '@ngrx/effects';
+import * as _ from 'lodash-es';
+_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 import { environment } from './environments/environment';
 
@@ -27,6 +29,7 @@ import { TranslationLoaderProvider } from './providers/translation-loader.provid
 import { DbService } from './services/db.service';
 import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
+import { GlobalEffects } from '@mm-effects/global';
 import { ReportsEffects } from '@mm-effects/reports.effects';
 
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
@@ -45,9 +48,6 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     return params.key;
   }
 }
-
-import * as _ from 'lodash-es';
-_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 @NgModule({
   declarations: [
@@ -80,7 +80,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BsDropdownModule.forRoot(),
     FormsModule,
     AccordionModule.forRoot(),
-    EffectsModule.forRoot([ReportsEffects]),
+    EffectsModule.forRoot([ GlobalEffects, ReportsEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
