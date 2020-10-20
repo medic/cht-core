@@ -9,6 +9,7 @@ import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/
 import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Facility Filter Component', () => {
   let component:FacilityFilterComponent;
@@ -22,7 +23,7 @@ describe('Facility Filter Component', () => {
     };
 
     const mockedSelectors = [
-      { selector: 'getIsAdmin', value: true },
+      { selector: Selectors.getIsAdmin, value: true },
     ];
 
     TestBed
@@ -279,15 +280,25 @@ describe('Facility Filter Component', () => {
       const facility = { doc: { name: 'fancy' } };
       component.itemLabel(facility).subscribe(value => {
         expect(value).to.equal('fancy');
-      })
+      });
     }));
 
-    it('should return deleted for admins when name is not set', () => {
+    it('should return deleted for admins when name is not set', async(() => {
+      const facility = { doc: { _id: 'fancy' } };
+      component.itemLabel(facility).subscribe(value => {
+        expect(value).to.equal('place.deleted');
+      });
+    }));
+
+    it('should return unavailable for non-admins when name is not set', async(() => {
+      store.overrideSelector(Selectors.getIsAdmin, false);
+      store.refreshState();
+      fixture.detectChanges();
       const facility = { doc: { _id: 'fancy' } };
       component.itemLabel(facility).subscribe(value => {
         expect(value).to.equal('place.unavailable');
-      })
-    });
+      });
+    }));
   });
 
   it('clear should clear dropdown filter', () => {

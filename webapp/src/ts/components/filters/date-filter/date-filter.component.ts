@@ -82,8 +82,11 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter {
   }
 
   ngOnDestroy() {
-    // avoid dom-nodes leaks
-    (<any>$('#date-filter')).data('daterangepicker').remove();
+    const daterangepicker = (<any>$('#date-filter')).data('daterangepicker');
+    if (daterangepicker) {
+      // avoid dom-nodes leaks
+      daterangepicker.remove();
+    }
   }
 
   clear() {

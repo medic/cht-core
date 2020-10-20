@@ -3,7 +3,7 @@ const ONLINE_ROLE = 'mm-online';
 import * as _ from 'lodash-es';
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CookieService } from 'ngx-cookie';
+import { CookieService } from 'ngx-cookie-service';
 import { DOCUMENT } from '@angular/common';
 import { LocationService } from './location.service';
 
@@ -22,7 +22,7 @@ export class SessionService {
 
   navigateToLogin() {
     console.warn('User must reauthenticate');
-    this.cookieService.remove(COOKIE_NAME, { path: '/' });
+    this.cookieService.delete(COOKIE_NAME, '/');
     this.userCtxCookieValue = undefined;
     this.document.location.href = `/${this.location.dbName}/login?redirect=${encodeURIComponent(this.document.location.href)}`;
   };
@@ -33,7 +33,7 @@ export class SessionService {
       .toPromise()
       .catch(() => {
         // Set cookie to force login before using app
-        this.cookieService.put('login', 'force', { path: '/' });
+        this.cookieService.set('login', 'force', undefined, '/');
       })
       .then(() => {
         this.navigateToLogin();
