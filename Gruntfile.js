@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 
-const url=require('url');
-const packageJson=require('./package.json');
-const fs=require('fs');
-const path=require('path');
+const url = require('url');
+const packageJson = require('./package.json');
+const fs = require('fs');
+const path = require('path');
 
 const {
   TRAVIS_TAG,
@@ -15,21 +15,21 @@ const {
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
   WEBDRIVER_VERSION=85
-}=process.env;
+} = process.env;
 
-const releaseName=TRAVIS_TAG||TRAVIS_BRANCH||'local-development';
-const ESLINT_COMMAND='./node_modules/.bin/eslint --color';
+const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
+const ESLINT_COMMAND = './node_modules/.bin/eslint --color';
 
-const couchConfig=(() => {
+const couchConfig = (() => {
   if (!COUCH_URL) {
     throw 'Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)';
   }
-  const parsedUrl=url.parse(COUCH_URL);
+  const parsedUrl = url.parse(COUCH_URL);
   if (!parsedUrl.auth) {
     throw 'COUCH_URL must contain admin authentication information';
   }
 
-  const [ username, password ]=parsedUrl.auth.split(':', 2);
+  const [ username, password ] = parsedUrl.auth.split(':', 2);
 
   return {
     username,
@@ -40,28 +40,28 @@ const couchConfig=(() => {
   };
 })();
 
-const getSharedLibDirs=() => {
+const getSharedLibDirs = () => {
   return fs
     .readdirSync('shared-libs')
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
 };
 
-const copySharedLibs=[
+const copySharedLibs = [
   'rm -rf ../shared-libs/*/node_modules/@medic',
   'mkdir ./node_modules/@medic',
   'cp -RP ../shared-libs/* ./node_modules/@medic'
-].join('&& ');
+].join( '&& ');
 
-const linkSharedLibs=dir => {
-  const sharedLibPath=lib => path.resolve(__dirname, 'shared-libs', lib);
-  const symlinkPath=lib => path.resolve(__dirname, dir, 'node_modules', '@medic', lib);
+const linkSharedLibs = dir => {
+  const sharedLibPath = lib => path.resolve(__dirname, 'shared-libs', lib);
+  const symlinkPath = lib => path.resolve(__dirname, dir, 'node_modules', '@medic', lib);
   return [
     'mkdir ./node_modules/@medic',
     ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
   ].join(' && ');
 };
 
-module.exports=function (grunt) {
+module.exports = function(grunt) {
   'use strict';
 
   require('jit-grunt')(grunt, {
@@ -79,7 +79,7 @@ module.exports=function (grunt) {
   grunt.initConfig({
     replace: {
       'change-ddoc-id-for-testing': {
-        src: [ 'build/ddocs/medic.json' ],
+        src: ['build/ddocs/medic.json'],
         overwrite: true,
         replacements: [
           {
@@ -89,7 +89,7 @@ module.exports=function (grunt) {
         ],
       },
       'webdriver-version': {
-        src: [ 'node_modules/protractor/node_modules/webdriver-manager/built/config.json' ],
+        src: ['node_modules/protractor/node_modules/webdriver-manager/built/config.json'],
         overwrite: true,
         replacements: [
           {
@@ -121,7 +121,7 @@ module.exports=function (grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [ couchConfig.withPathNoAuth(couchConfig.dbName) ]: 'build/ddocs/medic.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic.json',
         },
       },
       // push just the secondary ddocs to save time in dev
@@ -131,15 +131,15 @@ module.exports=function (grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [ couchConfig.withPathNoAuth(couchConfig.dbName) ]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
-          [ couchConfig.withPathNoAuth(couchConfig.dbName+'-sentinel') ]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
-          [ couchConfig.withPathNoAuth(couchConfig.dbName+'-users-meta') ]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
-          [ couchConfig.withPathNoAuth(couchConfig.dbName+'-logs') ]: 'build/ddocs/medic/_attachments/ddocs/logs.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/medic/_attachments/ddocs/logs.json',
         }
       },
       test: {
         files: {
-          [ 'http://admin:pass@localhost:4984/medic-test' ]: 'build/ddocs/medic.json',
+          ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
         },
       },
       staging: {
@@ -172,7 +172,7 @@ module.exports=function (grunt) {
           detectGlobals: false,
         },
         options: {
-          transform: [ 'browserify-ngannotate' ],
+          transform: ['browserify-ngannotate'],
           alias: {
             'enketo-config': './webapp/src/js/enketo/config.json',
             'widgets': './webapp/src/js/enketo/widgets',
@@ -200,7 +200,7 @@ module.exports=function (grunt) {
         src: 'admin/src/js/main.js',
         dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
         options: {
-          transform: [ 'browserify-ngannotate' ],
+          transform: ['browserify-ngannotate'],
           alias: {
             'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
             'google-libphonenumber': './admin/node_modules/google-libphonenumber',
@@ -373,7 +373,7 @@ module.exports=function (grunt) {
       // run ~4x faster. For some reason. Maybe cpu core related.
       'eslint': {
         cmd: () => {
-          const paths=[
+          const paths = [
             'Gruntfile.js',
             'admin/**/*.js',
             'api/**/*.js',
@@ -386,7 +386,7 @@ module.exports=function (grunt) {
             'config/**/*.js',
             'scripts/**/*.js',
           ];
-          const ignore=[
+          const ignore = [
             'webapp/src/js/modules/xpath-element-path.js',
             'api/src/extracted-resources/**/*',
             'api/build/**/*',
@@ -395,7 +395,7 @@ module.exports=function (grunt) {
             'shared-libs/transitions/src/lib/pupil/**',
           ];
 
-          return [ ESLINT_COMMAND ]
+          return [ESLINT_COMMAND]
             .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
             .concat(paths.map(glob => `"${glob}"`))
             .join(' ');
@@ -403,7 +403,7 @@ module.exports=function (grunt) {
       },
       'eslint-sw': `${ESLINT_COMMAND} build/ddocs/medic/_attachments/js/service-worker.js`,
       'pack-node-modules': {
-        cmd: [ 'api', 'sentinel' ]
+        cmd: ['api', 'sentinel']
           .map(module =>
             [
               `cd ${module}`,
@@ -420,14 +420,14 @@ module.exports=function (grunt) {
       },
       'bundle-dependencies': {
         cmd: () => {
-          [ 'api', 'sentinel' ].forEach(module => {
-            const filePath=`${module}/package.json`;
-            const pkg=this.file.readJSON(filePath);
-            pkg.bundledDependencies=Object.keys(pkg.dependencies);
+          ['api', 'sentinel'].forEach(module => {
+            const filePath = `${module}/package.json`;
+            const pkg = this.file.readJSON(filePath);
+            pkg.bundledDependencies = Object.keys(pkg.dependencies);
             if (pkg.sharedLibs) {
               pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
             }
-            this.file.write(filePath, JSON.stringify(pkg, undefined, '  ')+'\n');
+            this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
             console.log(`Updated 'bundledDependencies' for ${filePath}`); // eslint-disable-line no-console
           });
           return 'echo "Node module dependencies updated"';
@@ -437,11 +437,11 @@ module.exports=function (grunt) {
         cmd: () => {
           let version;
           if (TRAVIS_TAG) {
-            version=TRAVIS_TAG;
+            version = TRAVIS_TAG;
           } else {
-            version=packageJson.version;
-            if (TRAVIS_BRANCH==='master') {
-              version+=`-alpha.${TRAVIS_BUILD_NUMBER}`;
+            version = packageJson.version;
+            if (TRAVIS_BRANCH === 'master') {
+              version += `-alpha.${TRAVIS_BUILD_NUMBER}`;
             }
           }
           return `echo "${version}" > build/ddocs/medic/version`;
@@ -473,9 +473,9 @@ module.exports=function (grunt) {
       },
       'setup-admin': {
         cmd:
-          ` curl -X PUT ${couchConfig.withPath('_node/'+COUCH_NODE_NAME+'/_config/admins/admin')} -d '"${couchConfig.password}"'`+
-          ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/'+COUCH_NODE_NAME+'/_config/chttpd/require_valid_user')}`+
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/'+COUCH_NODE_NAME+'/_config/httpd/max_http_request_size')}`+
+          ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
+          ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
       'setup-test-database': {
@@ -492,7 +492,7 @@ module.exports=function (grunt) {
         cmd: [
           'docker stop e2e-couchdb'
         ].join('&& '),
-        exitCodes: [ 0, 1 ] // 1 if e2e-couchdb doesn't exist, which is fine
+        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'e2e-servers': {
         cmd: 'node ./scripts/e2e/e2e-servers.js &'
@@ -515,33 +515,33 @@ module.exports=function (grunt) {
         }
       },
       'npm-ci-modules': {
-        cmd: [ 'webapp', 'api', 'sentinel', 'admin' ]
+        cmd: ['webapp', 'api', 'sentinel', 'admin']
           .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs(dir)} && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
         cmd:
-          'mkdir -p tests/logs && '+
-          './node_modules/.bin/webdriver-manager update && '+
-          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & '+
+          'mkdir -p tests/logs && ' +
+          './node_modules/.bin/webdriver-manager update && ' +
+          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
-        'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then '+
-        'echo "Missing required env var.  Check that all are set: '+
+        'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+        'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
       'check-version': `node scripts/travis/check-versions.js`,
       'undo-patches': {
-        cmd: function () {
-          const modulesToPatch=[
+        cmd: function() {
+          const modulesToPatch = [
             'bootstrap-daterangepicker',
             'enketo-core',
             'font-awesome',
             'moment',
           ];
           return modulesToPatch.map(module => {
-            const backupPath='webapp/node_modules_backup/'+module;
-            const modulePath='webapp/node_modules/'+module;
+            const backupPath = 'webapp/node_modules_backup/' + module;
+            const modulePath = 'webapp/node_modules/' + module;
             return `
               [ -d ${backupPath} ] &&
               rm -rf ${modulePath} &&
@@ -568,7 +568,7 @@ module.exports=function (grunt) {
       },
       'shared-lib-unit': {
         cmd: () => {
-          const sharedLibs=getSharedLibDirs();
+          const sharedLibs = getSharedLibDirs();
           return [
             ...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
             ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
@@ -581,8 +581,8 @@ module.exports=function (grunt) {
       // 3. run `diff -c original modified > webapp/patches/my-patch.patch`
       // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
       'apply-patches': {
-        cmd: function () {
-          const patches=[
+        cmd: function() {
+          const patches = [
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
             'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
@@ -614,18 +614,18 @@ module.exports=function (grunt) {
           if (!TRAVIS_BUILD_NUMBER) {
             return 'echo "Not building on Travis so not envifying"';
           }
-          return 'mv build/ddocs/medic/_attachments/js/inbox.js inbox.tmp.js && '+
-            'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && '+
-            'rm inbox.tmp.js && '+
-            'echo "Envify complete"';
+          return 'mv build/ddocs/medic/_attachments/js/inbox.js inbox.tmp.js && ' +
+                 'NODE_ENV=production node node_modules/loose-envify/cli.js inbox.tmp.js > build/ddocs/medic/_attachments/js/inbox.js && ' +
+                 'rm inbox.tmp.js && ' +
+                 'echo "Envify complete"';
         }
       },
       'build-config': {
         cmd: () => {
-          const medicConfPath=path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
-          const configPath=path.resolve('./config/default');
-          const buildPath=path.resolve('./build/ddocs/medic/_attachments/default-docs');
-          const actions=[ 'upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations' ];
+          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
+          const configPath = path.resolve('./config/default');
+          const buildPath = path.resolve('./build/ddocs/medic/_attachments/default-docs');
+          const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
       }
@@ -635,13 +635,13 @@ module.exports=function (grunt) {
         interval: 1000,
       },
       'config-files': {
-        files: [ 'Gruntfile.js', 'package.json' ],
+        files: ['Gruntfile.js', 'package.json'],
         options: {
           reload: true,
         },
       },
       'admin-css': {
-        files: [ 'admin/src/css/**/*' ],
+        files: ['admin/src/css/**/*'],
         tasks: [
           'less:admin',
           'couch-compile:secondary',
@@ -650,7 +650,7 @@ module.exports=function (grunt) {
         ],
       },
       'admin-js': {
-        files: [ 'admin/src/js/**/*', 'webapp/src/js/**/*', 'shared-libs/*/src/**/*' ],
+        files: ['admin/src/js/**/*', 'webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
           'couch-compile:secondary',
@@ -659,7 +659,7 @@ module.exports=function (grunt) {
         ],
       },
       'admin-index': {
-        files: [ 'admin/src/templates/index.html' ],
+        files: ['admin/src/templates/index.html'],
         tasks: [
           'copy:admin-resources',
           'couch-compile:secondary',
@@ -668,7 +668,7 @@ module.exports=function (grunt) {
         ],
       },
       'admin-templates': {
-        files: [ 'admin/src/templates/**/*', '!admin/src/templates/index.html' ],
+        files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
         tasks: [
           'ngtemplates:adminApp',
           'couch-compile:secondary',
@@ -677,7 +677,7 @@ module.exports=function (grunt) {
         ],
       },
       'webapp-css': {
-        files: [ 'webapp/src/css/**/*' ],
+        files: ['webapp/src/css/**/*'],
         tasks: [
           'sass',
           'less:webapp',
@@ -687,7 +687,7 @@ module.exports=function (grunt) {
         ],
       },
       'webapp-js': {
-        files: [ 'webapp/src/js/**/*', 'shared-libs/*/src/**/*' ],
+        files: ['webapp/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:webapp',
           'generate-service-worker',
@@ -717,11 +717,11 @@ module.exports=function (grunt) {
         ],
       },
       'primary-ddoc': {
-        files: [ 'ddocs/medic/**/*' ],
-        tasks: [ 'copy:ddocs', 'couch-compile:primary', 'deploy' ],
+        files: ['ddocs/medic/**/*'],
+        tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
       },
       'secondary-ddocs': {
-        files: [ 'ddocs/*-db/**/*' ],
+        files: ['ddocs/*-db/**/*'],
         tasks: [
           'copy:ddocs',
           'couch-compile:secondary',
@@ -742,17 +742,17 @@ module.exports=function (grunt) {
       unit: {
         configFile: './webapp/tests/karma/karma-unit.conf.js',
         singleRun: true,
-        browsers: [ 'Chrome_Headless' ],
+        browsers: ['Chrome_Headless'],
       },
       'unit-continuous': {
         configFile: './webapp/tests/karma/karma-unit.conf.js',
         singleRun: false,
-        browsers: [ 'Chrome_Headless' ],
+        browsers: ['Chrome_Headless'],
       },
       admin: {
         configFile: './admin/tests/karma-unit.conf.js',
         singleRun: true,
-        browsers: [ 'Chrome_Headless' ],
+        browsers: ['Chrome_Headless'],
       },
     },
     protractor: {
@@ -850,7 +850,7 @@ module.exports=function (grunt) {
       },
       adminApp: {
         cwd: 'admin/src',
-        src: [ 'templates/**/*.html', '!templates/index.html' ],
+        src: ['templates/**/*.html', '!templates/index.html'],
         dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
         options: {
           htmlmin: {
@@ -921,7 +921,7 @@ module.exports=function (grunt) {
         }
       },
       'shared-libs': {
-        src: getSharedLibDirs().map(lib => path.resolve(__dirname, 'shared-libs', lib, 'src')+'/**/*.js'),
+        src: getSharedLibDirs().map(lib => path.resolve(__dirname, 'shared-libs', lib, 'src') + '/**/*.js'),
         options: {
           destination: 'jsdocs/shared-libs'
         }
