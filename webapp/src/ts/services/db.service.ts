@@ -6,7 +6,7 @@ const USER_DB_SUFFIX = 'user';
 const META_DB_SUFFIX = 'meta';
 const USERS_DB_SUFFIX = 'users';
 
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
 import { SessionService } from './session.service'
 import { LocationService } from './location.service';
@@ -19,10 +19,11 @@ export class DbService {
   private cache = {};
   private isOnlineOnly;
 
-  constructor(private session:SessionService, private location:LocationService) {
-
-
-    this.isOnlineOnly = this.session.isOnlineOnly();
+  constructor(
+    private sessionService:SessionService,
+    private locationService:LocationService,
+  ) {
+    this.isOnlineOnly = this.sessionService.isOnlineOnly();
 
     if (!this.isOnlineOnly) {
       // delay the cleanup so it's out of the main startup sequence
@@ -34,7 +35,7 @@ export class DbService {
   }
 
   private getUsername(remote){
-    const username = this.session.userCtx().name;
+    const username = this.sessionService.userCtx().name;
     if (!remote) {
       return username;
     }
@@ -45,9 +46,9 @@ export class DbService {
   private getDbName(remote, meta, usersMeta) {
     const parts = [];
     if (remote) {
-      parts.push(this.location.url);
+      parts.push(this.locationService.url);
     } else {
-      parts.push(this.location.dbName);
+      parts.push(this.locationService.dbName);
     }
     if ((!remote || meta) && !usersMeta) {
       parts.push(USER_DB_SUFFIX);
@@ -77,7 +78,7 @@ export class DbService {
   get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
     const name = this.getDbName(remote, meta, usersMeta);
     if (!this.cache[name]) {
-      this.cache[name] = (<any>window).PouchDB(name, this.getParams(remote, meta, usersMeta));
+      this.cache[name] = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
     }
     return this.cache[name];
   }

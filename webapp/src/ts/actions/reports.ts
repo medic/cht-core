@@ -6,8 +6,8 @@ import { GlobalActions } from '@mm-actions/global';
 export const Actions = {
   selectReport: createMultiValueAction('SELECT_REPORT'),
   setSelected: createSingleValueAction('SET_SELECTED_REPORT', 'selected'),
-  addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'selected'),
-  removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'id'),
+  addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'report'),
+  removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
   setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),

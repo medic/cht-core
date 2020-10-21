@@ -36,12 +36,14 @@ export class ChangesService {
       callbacks: {},
       watchIncludeDocs: true,
       observable: new Subject(),
+      subscriptions: {},
     },
     meta: {
       lastSeq: null,
       callbacks: {},
       watchIncludeDocs: true,
       observable: new Subject(),
+      subscriptions: {},
     }
   };
   private watches = [];
@@ -49,15 +51,34 @@ export class ChangesService {
   private servicesActions;
 
   constructor(
-    private db: DbService,
-    private session: SessionService,
-    private store: Store,
-    private ngZone: NgZone
+    private db:DbService,
+    private session:SessionService,
+    private store:Store,
+    private ngZone:NgZone,
   ) {
     this.store.select(Selectors.getLastChangedDoc).subscribe(obj => this.lastChangedDoc = obj);
     this.servicesActions = new ServicesActions(store);
 
     this.init();
+  }
+
+  private onChangeHandler(db, meta, change) {
+    if (this.lastChangedDoc && this.lastChangedDoc._id === change.id) {
+      change.doc = change.doc || this.lastChangedDoc;
+      this.servicesActions.setLastChangedDoc(false);
+    }
+
+    console.debug('Change notification firing', meta, change);
+    db.observable.next(change);
+    db.lastSeq = change.seq;
+  }
+
+  private onErrorHandler(err, meta) {
+    console.error('Error watching for db changes', err);
+    console.error('Attempting changes reconnection in ' + (RETRY_MILLIS / 1000) + ' seconds');
+    setTimeout(() => {
+      this.watchChanges(meta);
+    }, RETRY_MILLIS);
   }
 
   private watchChanges(meta) {
@@ -72,29 +93,18 @@ export class ChangesService {
         return_docs: false,
       })
       .on('change', change => {
-        this.ngZone.run(() => {
-          if (this.lastChangedDoc && this.lastChangedDoc._id === change.id) {
-            change.doc = change.doc || this.lastChangedDoc;
-            this.servicesActions.setLastChangedDoc(false);
-          }
-
-          console.debug('Change notification firing', meta, change);
-          db.observable.next(change);
-          db.lastSeq = change.seq;
-        });
+        NgZone.isInAngularZone() ?
+        this.onChangeHandler(db, meta, change) :
+        this.ngZone.run(() => this.onChangeHandler(db, meta, change));
       })
       .on('error', (err) => {
-        this.ngZone.run(() => {
-          console.error('Error watching for db changes', err);
-          console.error('Attempting changes reconnection in ' + (RETRY_MILLIS / 1000) + ' seconds');
-          setTimeout(() => {
-            this.watchChanges(meta);
-          }, RETRY_MILLIS);
-        });
+        NgZone.isInAngularZone() ?
+        this.onErrorHandler(err, meta) :
+        this.ngZone.run(() => this.onErrorHandler(err, meta));
       });
 
     this.watches.push(watch);
-  };
+  }
 
   private init() {
     console.info('Initiating changes service');
@@ -120,7 +130,11 @@ export class ChangesService {
 
   subscribe(options) {
     const db = options.metaDb ? this.dbs.meta : this.dbs.medic;
-    return db.observable.subscribe(change => {
+    if (db.subscriptions[options.key]) {
+      db.subscriptions[options.key].unsubscribe();
+    }
+
+    const subscription = db.observable.subscribe(change => {
       try {
         if (!options.filter || options.filter(change)) {
           options.callback(change);
@@ -128,45 +142,15 @@ export class ChangesService {
       } catch(e) {
         console.error(new Error('Error executing changes callback: ' + options.key), e);
       }
-    })
+    });
+    db.subscriptions[options.key] = subscription;
+    return subscription;
+  }
+
+  killWatchers() {
+    this.watches.forEach(watch => {
+      watch.cancel();
+    });
+    this.watches = [];
   }
 }
-
-/*
-angular.module('inboxServices').factory('ChangesService',
-  function(
-    $log,
-    $ngRedux,
-    $q,
-    $timeout,
-    DB,
-    Selectors,
-    ServicesActions,
-    SessionService
-  ) {
-
-    'use strict';
-    'ngInject';
-
-    const self = this;
-    const mapStateToTarget = (state) => ({
-      lastChangedDoc: Selectors.getLastChangedDoc(state),
-    });
-    const mapDispatchToTarget = (dispatch) => {
-      const servicesActions = ServicesActions(dispatch);
-      return {
-        setLastChangedDoc: servicesActions.setLastChangedDoc
-      };
-    };
-
-    $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(self);
-
-    service.killWatchers = function() {
-      watches.forEach(function(watch) {
-        watch.cancel();
-      });
-    };
-
-    return service;
-  }
-);*/

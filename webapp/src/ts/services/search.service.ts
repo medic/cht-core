@@ -1,12 +1,23 @@
+import { Injectable } from '@angular/core';
 import * as _ from 'lodash-es';
 import * as moment from 'moment';
 import * as Search from '@medic/search';
 import * as CalendarInterval from '@medic/calendar-interval';
 
-import { Injectable } from '@angular/core';
-import { DbService } from './db.service';
-import { SessionService } from './session.service';
-import { GetDataRecordsService } from './get-data-records.service';
+import { DbService } from '@mm-services/db.service';
+import { SessionService } from '@mm-services/session.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SearchFactoryService {
+  constructor() {}
+
+  get(dbService) {
+    return Search(Promise, dbService.get());
+  }
+}
 
 @Injectable({
   providedIn: 'root'
@@ -17,9 +28,10 @@ export class SearchService {
     private dbService:DbService,
     private sessionService:SessionService,
     private getDataRecordsService:GetDataRecordsService,
+    private searchFactoryService:SearchFactoryService,
     //private telemetry todo
   ) {
-    this.searchFactory = Search(Promise, this.dbService.get());
+    this.searchFactory = this.searchFactoryService.get(this.dbService);
   }
 
   private _currentQuery:any = {};

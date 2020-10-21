@@ -192,7 +192,7 @@ export class AgePipe implements PipeTransform {
   ) {
   }
 
-  transform(dob, dod) {
+  transform(dob, dod?) {
     return this.sanitizer.bypassSecurityTrustHtml(getRelativeDate(dob, {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
@@ -253,7 +253,7 @@ export class RelativeDayPipe implements PipeTransform {
     private relativeDateService:RelativeDateService,
   ) {}
 
-  transform(date, raw) {
+  transform(date, raw?) {
     const options = {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
