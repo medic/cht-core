@@ -1,19 +1,23 @@
-(function () {
+import { Injectable } from '@angular/core';
 
-  'use strict';
+@Injectable({
+  providedIn: 'root'
+})
+export class AjaxDownloadProvider {
+  DEFAULT_FILE_NAME = 'download';
 
-  const DEFAULT_FILE_NAME = 'download';
+  constructor() { }
 
   /**
    * Prompts the user to download a file given a url.
    */
-  exports.download = function(url) {
+  download(url) {
     const element = document.createElement('a');
     element.setAttribute('href', url);
-    element.setAttribute('download', DEFAULT_FILE_NAME);
+    element.setAttribute('download', this.DEFAULT_FILE_NAME);
     element.style.display = 'none';
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-  };
-}());
+  }
+}

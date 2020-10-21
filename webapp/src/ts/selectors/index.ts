@@ -7,6 +7,8 @@ const getMessagesState = (state) => state.messages || {};
 
 export const Selectors = {
   // global
+  getActionBar: createSelector(getGlobalState, (globalState) => globalState.actionBar),
+  getLoadingSubActionBar: createSelector(getGlobalState, (globalState) => globalState.loadingSubActionBar),
   getReplicationStatus: createSelector(getGlobalState, (globalState) => globalState.replicationStatus),
   getAndroidAppVersion:  createSelector(getGlobalState, (globalState) => globalState.androidAppVersion),
   getCurrentTab: createSelector(getGlobalState, (globalState) => globalState.currentTab),

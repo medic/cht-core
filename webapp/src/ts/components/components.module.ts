@@ -22,6 +22,7 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { ActionbarComponent } from './actionbar/actionbar.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,
+    ActionbarComponent,
   ],
   imports: [
     CommonModule,
@@ -65,6 +67,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,
+    ActionbarComponent,
   ]
 })
 export class ComponentsModule { }

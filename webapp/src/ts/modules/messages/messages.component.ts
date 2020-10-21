@@ -9,6 +9,9 @@ import { GlobalActions } from '@mm-actions/global';
 import { MessagesActions } from '@mm-actions/messages';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
+import { ExportService } from '@mm-services/export.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -28,7 +31,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private router: Router,
     private store: Store,
     private changesService: ChangesService,
-    private messageContactService: MessageContactService
+    private messageContactService: MessageContactService,
+    private exportService: ExportService,
+    private modalService: ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -84,10 +89,23 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private updateActionBar() {
-    /* ToDo: this.globalActions.setLeftActionBar({
+    const leftActionBar = {
       hasResults: this.conversations && this.conversations.length > 0,
-      exportFn: () => Export('messages', {}, { humanReadable: true })
-    });*/
+      exportFn: () => this.exportService.export('messages', {}, { humanReadable: true }),
+      openSendMessageModal: (event) => this.openSendMessageModal(event)
+    };
+    this.globalActions.setLeftActionBar(leftActionBar);
+  }
+
+  private openSendMessageModal(event) {
+    const target = $(event.target).closest('.send-message');
+
+    if (target.hasClass('mm-icon-disabled')) {
+      return;
+    }
+
+    event.preventDefault();
+    this.modalService.show(SendMessageComponent);
   }
 
   private setConversations(conversations = [], {merge = false} = {}) {
