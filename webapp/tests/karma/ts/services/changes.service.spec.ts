@@ -214,7 +214,6 @@ describe('Changes service', () => {
 
     changesCalls.medic.callbacks.change({ id: 'x', changes: [ { rev: '2-abc' } ] });
 
-    // expect(log.error.callCount).to.equal(0);
     expect(changesCalls.medic.callCount).to.equal(1);
     expect(changesCalls.meta.callCount).to.equal(1);
 

@@ -84,8 +84,6 @@ describe('date pipe', () => {
     it('should return nicely-formatted output', () => {
       relativeDateService.getRelativeDate.returns('76 years');
       const pipe = new AgePipe(formatDateService, relativeDateService, sanitizer);
-
-      // expect
       const expected = '<span class="relative-date future age" title="2046-01-02">' +
         '<span class="relative-date-content update-relative-date" ' +
         'data-date-options="someOptions"' +
@@ -100,16 +98,15 @@ describe('date pipe', () => {
   describe('autoreply', () => {
     it('should return nicely-formatted output', () => {
       const pipe = new AutoreplyPipe(translateService, formatDateService, relativeDateService, sanitizer);
-      // expect
-      assert.equal(pipe.transform(TEST_TASK), '<span><span class="state STATE">state.STATE</span>&nbsp;' +
-        '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>');
+      const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;' +
+        '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>';
+      assert.equal(pipe.transform(TEST_TASK), expected);
     });
   });
 
   describe('dayMonth', () => {
     it('should return nicely-formatted output', () => {
       const pipe = new DayMonthPipe(sanitizer);
-      // expect
       assert.equal(pipe.transform(TEST_DATE), '<span>2 Jan</span>');
     });
   });
@@ -118,7 +115,7 @@ describe('date pipe', () => {
     it('should return nicely-formatted output', () => {
       relativeDateService.getRelativeDate.returns('0 days');
       const pipe = new FullDatePipe(sanitizer, formatDateService, relativeDateService);
-      // expect
+
       const expected = '<div class="relative-date-content update-relative-date" ' +
         'data-date-options="someOptions"' +
         '>' +
@@ -133,7 +130,7 @@ describe('date pipe', () => {
     it('should return nicely-formatted output', () => {
       relativeDateService.getRelativeDate.returns('0 days');
       const pipe = new RelativeDatePipe(sanitizer, formatDateService, relativeDateService);
-      // expect
+
       const expected = '<span class="relative-date future" title="2046-01-02T02:14:45.558Z">' +
         '<span class="relative-date-content update-relative-date" ' +
         'data-date-options="someOptions">0 days</span>' +
@@ -146,7 +143,7 @@ describe('date pipe', () => {
     it('should return nicely-formatted output', () => {
       relativeDateService.getRelativeDate.returns('0 days');
       const pipe = new RelativeDayPipe(sanitizer, formatDateService, relativeDateService);
-      // expect
+
       const expected = '<span class="relative-date future" title="2046-01-02">' +
         '<span class="relative-date-content update-relative-date" ' +
         'data-date-options="someOptions"' +
@@ -161,7 +158,6 @@ describe('date pipe', () => {
   describe('simpleDate', () => {
     it('should return nicely-formatted output', () => {
       const pipe = new SimpleDatePipe(formatDateService);
-      // expect
       assert.equal(pipe.transform(TEST_DATE), '2046-01-02');
     });
   });
@@ -169,7 +165,6 @@ describe('date pipe', () => {
   describe('simpleDateTime', () => {
     it('should return nicely-formatted output', () => {
       const pipe = new SimpleDateTimePipe(formatDateService);
-      // expect
       assert.equal(pipe.transform(TEST_DATE), '2046-01-02T02:14:45.558Z');
     });
   });
@@ -177,28 +172,24 @@ describe('date pipe', () => {
   describe('state', () => {
     it('should return nicely-formatted output', () => {
       const pipe = new StatePipe(translateService, formatDateService, relativeDateService, sanitizer);
-      // expect
-      assert.equal(pipe.transform(TEST_TASK), '<span><span class="state STATE">state.STATE</span>&nbsp;</span>');
+      const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;</span>';
+      assert.equal(pipe.transform(TEST_TASK), expected);
     });
   });
 
   describe('weeksPregnant', () => {
     const pipe = new WeeksPregnantPipe();
     it('adds class for full term', () => {
-      // given
       const weeks = { number: 37 };
-
-      // expect
-      assert.equal(pipe.transform(weeks), '<span class="weeks-pregnant upcoming-edd">37</span>');
+      const expected = '<span class="weeks-pregnant upcoming-edd">37</span>';
+      assert.equal(pipe.transform(weeks), expected);
     });
 
 
     it('adds class for approximate dates', () => {
-      // given
       const weeks = { number: 37, approximate: true };
-
-      // expect
-      assert.equal(pipe.transform(weeks), '<span class="weeks-pregnant upcoming-edd approximate">37</span>');
+      const expected = '<span class="weeks-pregnant upcoming-edd approximate">37</span>';
+      assert.equal(pipe.transform(weeks), expected);
     });
   });
 });

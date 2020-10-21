@@ -41,14 +41,14 @@ describe('UserContact service', () => {
       });
   });
 
-  it('returns null when no configured contact', () => {
+  it('returns undefined when no configured contact', () => {
     UserSettings.resolves({});
     return service.get().then(function(contact) {
       expect(contact).to.equal(undefined);
     });
   });
 
-  it('returns null when configured contact not in the database', () => {
+  it('returns undefined when configured contact not in the database', () => {
     UserSettings.resolves({ contact_id: 'not-found' });
     contact.rejects({ code: 404, reason: 'missing' });
     return service.get().then((contact) => {

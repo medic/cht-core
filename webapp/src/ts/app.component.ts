@@ -1,6 +1,6 @@
 import { ActivationEnd, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';

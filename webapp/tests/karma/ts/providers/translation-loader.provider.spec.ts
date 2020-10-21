@@ -50,7 +50,7 @@ describe('Translations Loader provider', () => {
     });
   }));
 
-  it('returns "en" wrapped in hypens for test locale', async(() => {
+  it('returns "en" wrapped in hyphens for test locale', async(() => {
     const doc = {
       prawn: 'prawn',
       bbq: 'barbeque'

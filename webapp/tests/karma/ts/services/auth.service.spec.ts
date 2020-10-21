@@ -73,7 +73,7 @@ describe('Auth Service', () => {
 
     describe('unconfigured permissions', () => {
 
-      // Unconfigured permissions should be have the same as having the permission
+      // Unconfigured permissions should behave the same as having the permission
       // configured to false
 
       it('false when unknown permission', async () => {
