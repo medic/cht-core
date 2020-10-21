@@ -1,10 +1,43 @@
-const uuid = require('uuid/v4');
-const pojo2xml = require('pojo2xml');
-const xpathPath = require('../modules/xpath-element-path');
-const medicXpathExtensions = require('../enketo/medic-xpath-extensions');
+import { Injectable } from '@angular/core';
+import { v4 as uuid } from 'uuid';
+import * as pojo2xml from 'pojo2xml';
+
+import * as xpathPath from '@mm-providers/xpath-element-path.provider';
+import * as medicXpathExtensions from '../enketo/medic-xpath-extensions';
+import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { DbService } from '@mm-services/db.service';
+import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
+import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
+import { GetReportContentService } from '@mm-services/get-report-content.service';
+import { LanguageService } from '@mm-services/language.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { SearchService } from '@mm-services/search.service';
 
 /* globals EnketoForm */
-angular.module('inboxServices').service('Enketo',
+@Injectable({
+  providedIn: 'root'
+})
+export class EnketoService {
+  constructor(
+    private addAttachmentService:AddAttachmentService,
+    // todo contact summary
+    private dbService:DbService,
+    private enketoPrepopulationDataService:EnketoPrepopulationDataService,
+    private enketoTranslationService:EnketoTranslationService,
+    private extractLineageService:ExtractLineageService,
+    private fileReaderService:FileReaderService,
+    private getReportContentService:GetReportContentService,
+    private languageService:LanguageService,
+    private lineageModelGeneratorService:LineageModelGeneratorService,
+    private searchService:SearchService,
+
+  ) {
+  }
+}
+
+/*angular.module('inboxServices').service('Enketo',
   function(
     $log,
     $ngRedux,
@@ -449,7 +482,7 @@ angular.module('inboxServices').service('Enketo',
         return docToStore;
       }).get();
 
-      doc._id = getId('/*');
+      doc._id = getId('/!*');
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
       const attach = function(elem, file, type, alreadyEncoded, xpath) {
@@ -620,4 +653,4 @@ angular.module('inboxServices').service('Enketo',
     };
 
   }
-);
+);*/

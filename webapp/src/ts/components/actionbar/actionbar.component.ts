@@ -44,6 +44,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingSubActionBar),
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getShowActionBar),
+      this.store.select(Selectors.getSelectedReportsDocs),
     )
     .subscribe(([
       actionBar,
@@ -52,7 +53,8 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       loadingContent,
       loadingSubActionBar,
       selectMode,
-      showActionBar
+      showActionBar,
+      selectedReportsDocs,
     ]) => {
       this.currentTab = currentTab;
       this.selectMode = selectMode;
@@ -61,8 +63,8 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.showActionBar = showActionBar;
       this.loadingContent = loadingContent;
       this.loadingSubActionBar = loadingSubActionBar;
-      /* ToDo: enable these once reports and contact features completed.
       this.selectedReportsDocs = selectedReportsDocs;
+      /* ToDo: enable these once reports and contact features completed.
       this.selectedContactDoc = selectedContactDoc;
        */
     });
@@ -117,5 +119,9 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       initialState: { docs }
     });
     */
+  }
+
+  trackByForms(idx, form) {
+    return form.code;
   }
 }

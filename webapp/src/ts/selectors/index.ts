@@ -48,6 +48,9 @@ export const Selectors = {
   getSelectedReportsSummaries: createSelector(getReportsState, (reportsState) => {
     return reportsState.selected?.map(item => item.formatted || item.summary);
   }),
+  getSelectedReportsDocs: createSelector(getReportsState, (reportsState) => {
+    return reportsState.selected?.map(item => item.doc || item.summary);
+  }),
 
   // messages
   getMessagesError: createSelector(getMessagesState, (messagesState) => messagesState.error),
@@ -96,10 +99,7 @@ const getSelectedReportsValidChecks = reselect.createSelector(
   selected => selected.map(item => item.summary && item.summary.valid || item.formatted &&
     !(item.formatted.errors && item.formatted.errors.length))
 );
-const getSelectedReportsDocs = reselect.createSelector(
-  getSelectedReports,
-  selected => selected.map(item => item.doc || item.summary)
-);
+
 const getVerifyingReport = state => getReportsState(state).verifyingReport;
 
 // Tasks
