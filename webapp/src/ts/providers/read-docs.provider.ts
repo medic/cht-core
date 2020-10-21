@@ -8,7 +8,7 @@ export class ReadDocsProvider {
   constructor() { }
 
   getId(doc) {
-    const type = doc.form ? 'report' : 'message';
-    return [ 'read', type, doc._id ].join(':');
+    const type = doc?.form ? 'report' : 'message';
+    return [ 'read', type, doc?._id ].join(':');
   }
 }

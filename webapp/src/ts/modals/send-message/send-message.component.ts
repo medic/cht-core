@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import * as phoneNumber from '@medic/phone-number';
 import { TranslateService } from '@ngx-translate/core';
 import { filter as _filter, map as _map, partial as _partial } from 'lodash-es';
@@ -15,7 +15,7 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
   selector: 'send-message',
   templateUrl: './send-message.component.html',
 })
-export class SendMessageComponent extends MmModalAbstract implements OnInit, AfterViewInit {
+export class SendMessageComponent extends MmModalAbstract implements AfterViewInit {
   errors = {
     message: false,
     phone: false
@@ -38,8 +38,6 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
     super();
   }
 
-  ngOnInit(): void {}
-
   ngAfterViewInit(): void {
     const to = this.fields.to;
     const phoneField = $('.message-form #send-message-phone');
@@ -50,15 +48,11 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
   private validateMessage(message) {
     if (message) {
       this.errors.message = false;
-      return Promise.resolve();
+      return;
     }
 
     const fieldLabel = this.translateService.instant('tasks.0.messages.0.message');
-
-    return this.translateService
-      .get('field is required', { field: fieldLabel })
-      .toPromise()
-      .then(error => this.errors.message = error);
+    this.errors.message = this.translateService.instant('field is required', { field: fieldLabel });
   }
 
   private validatePhoneNumber(settings, data) {
@@ -78,10 +72,8 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
     // Recipients is mandatory
     if (!recipients || !recipients.length) {
       const fieldLabel = this.translateService.instant('tasks.0.messages.0.to');
-      return this.translateService
-        .get('field is required', { field: fieldLabel })
-        .toPromise()
-        .then(error => this.errors.phone = error);
+      this.errors.phone = this.translateService.instant('field is required', { field: fieldLabel });
+      return;
     }
 
     // All recipients must have a valid phone number
@@ -89,11 +81,8 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
 
     if (errors.length) {
       const errorRecipients = _map(errors, (error) => this.templateSelection(error)).join(', ');
-
-      return this.translateService
-        .get('Invalid contact numbers', { recipients: errorRecipients })
-        .toPromise()
-        .then(error => this.errors.phone = error);
+      this.errors.phone = this.translateService.instant('Invalid contact numbers', { recipients: errorRecipients });
+      return;
     }
 
     this.errors.phone = false;
@@ -122,6 +111,7 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
     let contact;
 
     if (row.everyoneAt) {
+      // TODO: maybe with everyone at we want to change the icon to something else?
       contact = this.formatProvider.sender({
         name: this.formatPlace(row),
         parent: row.doc.place
@@ -146,6 +136,7 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
       return this.formatPlace(row);
     }
 
+    // TODO: should this be first_name / last_name as well? How does this work?
     return row.doc.name || row.doc.phone;
   }
 
@@ -202,20 +193,16 @@ export class SendMessageComponent extends MmModalAbstract implements OnInit, Aft
       .then((settings) => {
         const message = this.fields.message && this.fields.message.trim();
         const recipients = (<any>$('.message-form #send-message-phone')).select2('data');
-        Promise
-          .all([
-            this.validateMessage(message),
-            this.validatePhoneNumbers(settings, recipients)
-          ])
-          .then(() => {
-            if (!this.errors.message && !this.errors.phone) {
-              return this.sendMessageService
-                .send(recipients, message)
-                .then(() => this.close());
-            }
-          })
-          .then(() => this.setFinished());
+        this.validateMessage(message);
+        this.validatePhoneNumbers(settings, recipients);
+
+        if (!this.errors.message && !this.errors.phone) {
+          return this.sendMessageService
+            .send(recipients, message)
+            .then(() => this.close());
+        }
       })
+      .then(() => this.setFinished())
       .catch((err) => this.setError(err, 'Error sending message'));
   }
 }

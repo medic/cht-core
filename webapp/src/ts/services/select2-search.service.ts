@@ -140,10 +140,6 @@ export class Select2SearchService {
   }
 
   private initSelect2(selectEl, options, types) {
-    if (options.allowNew && types.length !== 1) {
-      throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
-    }
-
     selectEl.select2({
       ajax: {
         delay: 500,
@@ -199,6 +195,10 @@ export class Select2SearchService {
       tags: _options.tags || false,
       templateResult: _options.templateResult || this.defaultTemplateResult.bind(this)
     };
+
+    if (options.allowNew && types.length !== 1) {
+      throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
+    }
 
     this.initSelect2(selectEl, options, types);
 

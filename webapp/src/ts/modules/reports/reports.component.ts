@@ -11,7 +11,8 @@ import { SearchService } from '../../services/search.service';
 import { Selectors } from '../../selectors';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AddReadStatusService } from '@mm-services/add-read-status.service';
 
 const PAGE_SIZE = 50;
 
@@ -19,12 +20,11 @@ const PAGE_SIZE = 50;
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit, OnDestroy {
-  private subscription: Subscription = new Subscription();
+  subscription: Subscription = new Subscription();
 
   private globalActions;
   private reportsActions;
   private servicesActions;
-
   private listContains;
 
   reportsList;
@@ -48,9 +48,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
   constructor(
     private store:Store,
     private route: ActivatedRoute,
+    private router:Router,
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
+    private addReadStatusService:AddReadStatusService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -64,7 +66,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.listContains),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getFilters),
-      this.store.select(Selectors.getShowContent)
+      this.store.select(Selectors.getShowContent),
     ).subscribe(([
       reportsList,
       selectedReports,
@@ -137,10 +139,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
   }
 
-  listTrackBy(index, report) {
-    return report._id + report._rev;
-  }
-
   private query(opts) {
     const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
     if (options.limit < PAGE_SIZE) {
@@ -152,12 +150,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.errorSyntax = false;
       this.loading = true;
       if (this.selectedReports?.length && isMobile()) {
-        // ctrl.unsetSelected(); todo
+        this.globalActions.unsetSelected();
       }
 
       if (options.skip) {
         this.appending = true;
-        options.skip = this.reportsList.length;
+        options.skip = this.reportsList?.length;
       } else if (!options.silent) {
         this.reportsActions.resetReportsList();
       }
@@ -165,8 +163,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     return this.searchService
       .search('reports', this.filters, options)
+      .then((reports) => this.addReadStatusService.updateReports(reports))
       .then((updatedReports) => {
-        // add read status todo
         updatedReports = this.prepareReports(updatedReports);
 
         this.reportsActions.updateReportsList(updatedReports);
@@ -211,8 +209,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
     if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
-      //$state.go('reports.detail', { id: null }, { notify: false });
-      //ctrl.clearSelection();
+      this.router.navigate(['reports']);
+      this.reportsActions.clearSelection();
     }
     if (!force && isMobile() && this.showContent) {
       // leave content shown
@@ -222,6 +220,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     return this.query(force);
   }
+
+  listTrackBy(index, report) {
+    return report._id + report._rev + report.read;
+  }
+
 }
 /*
 

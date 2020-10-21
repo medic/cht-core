@@ -16,7 +16,7 @@ const initialState: MessagesState = {
 };
 
 const sortMessages = (a, b) => {
-  return a.doc.reported_date - b.doc.reported_date;
+  return a.doc?.reported_date - b.doc?.reported_date;
 };
 
 const setConversations = (state, newConversions) => {

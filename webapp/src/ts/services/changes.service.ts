@@ -16,10 +16,10 @@
  *   - unsubscribe (function): Invoke this function to stop being notified of
  *        any further changes.
  */
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { DbService } from './db.service';
 import { SessionService } from './session.service';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { Selectors } from "../selectors";
 import { ServicesActions } from "../actions/services";
 import { Subject } from 'rxjs';
@@ -51,7 +51,8 @@ export class ChangesService {
   constructor(
     private db: DbService,
     private session: SessionService,
-    private store: Store
+    private store: Store,
+    private ngZone: NgZone
   ) {
     this.store.select(Selectors.getLastChangedDoc).subscribe(obj => this.lastChangedDoc = obj);
     this.servicesActions = new ServicesActions(store);
@@ -71,21 +72,25 @@ export class ChangesService {
         return_docs: false,
       })
       .on('change', change => {
-        if (this.lastChangedDoc && this.lastChangedDoc._id === change.id) {
-          change.doc = change.doc || this.lastChangedDoc;
-          this.servicesActions.setLastChangedDoc(false);
-        }
+        this.ngZone.run(() => {
+          if (this.lastChangedDoc && this.lastChangedDoc._id === change.id) {
+            change.doc = change.doc || this.lastChangedDoc;
+            this.servicesActions.setLastChangedDoc(false);
+          }
 
-        console.debug('Change notification firing', meta, change);
-        db.observable.next(change);
-        db.lastSeq = change.seq;
+          console.debug('Change notification firing', meta, change);
+          db.observable.next(change);
+          db.lastSeq = change.seq;
+        });
       })
       .on('error', (err) => {
-        console.error('Error watching for db changes', err);
-        console.error('Attempting changes reconnection in ' + (RETRY_MILLIS / 1000) + ' seconds');
-        setTimeout(() => {
-          this.watchChanges(meta);
-        }, RETRY_MILLIS);
+        this.ngZone.run(() => {
+          console.error('Error watching for db changes', err);
+          console.error('Attempting changes reconnection in ' + (RETRY_MILLIS / 1000) + ' seconds');
+          setTimeout(() => {
+            this.watchChanges(meta);
+          }, RETRY_MILLIS);
+        });
       });
 
     this.watches.push(watch);

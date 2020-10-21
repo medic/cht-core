@@ -1,6 +1,6 @@
 import { ActivationEnd, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -24,6 +24,7 @@ import { FormatDateService } from './services/format-date.service';
 import { XmlFormsService } from './services/xml-forms.service';
 import { JsonFormsService } from './services/json-forms.service';
 import { TranslateFromService } from './services/translate-from.service';
+import { delay } from 'rxjs/operators';
 import { CountMessageService } from '@mm-services/count-message.service';
 
 const SYNC_STATUS = {
@@ -89,26 +90,9 @@ export class AppComponent {
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
+    private changeDetectorRef: ChangeDetectorRef,
     private countMessageService: CountMessageService
   ) {
-    combineLatest(
-      store.select(Selectors.getReplicationStatus),
-      store.select(Selectors.getAndroidAppVersion),
-      store.select(Selectors.getCurrentTab),
-      store.select(Selectors.getMinimalTabs),
-    )
-      .subscribe(([
-        replicationStatus,
-        androidAppVersion,
-        currentTab,
-        minimalTabs,
-      ]) => {
-        this.replicationStatus = replicationStatus;
-        this.androidAppVersion = androidAppVersion;
-        this.currentTab = currentTab;
-        this.minimalTabs = minimalTabs;
-      });
-
     this.globalActions = new GlobalActions(store);
 
     moment.locale(['en']);
@@ -117,10 +101,6 @@ export class AppComponent {
     this.adminUrl = this.locationService.adminPath;
 
     setBootstrapTheme('bs3');
-
-    this.setupRouter();
-    this.loadTranslations();
-    this.setupDb();
   }
 
   private setupRouter() {
@@ -211,6 +191,31 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
+    combineLatest(
+      this.store.select(Selectors.getReplicationStatus),
+      this.store.select(Selectors.getAndroidAppVersion),
+      this.store.select(Selectors.getCurrentTab),
+      this.store.select(Selectors.getMinimalTabs),
+      this.store.select(Selectors.getShowContent),
+    ).subscribe(([
+      replicationStatus,
+      androidAppVersion,
+      currentTab,
+      minimalTabs,
+      showContent,
+    ]) => {
+      this.replicationStatus = replicationStatus;
+      this.androidAppVersion = androidAppVersion;
+      this.currentTab = currentTab;
+      this.minimalTabs = minimalTabs;
+      this.showContent = showContent;
+      this.changeDetectorRef.detectChanges();
+    });
+
+    this.setupRouter();
+    this.loadTranslations();
+    this.setupDb();
+
     if (
       (<any>window).medicmobile_android &&
       typeof (<any>window).medicmobile_android.getAppVersion === 'function'
@@ -382,6 +387,7 @@ export class AppComponent {
     //closeDropdowns();
   };
 }
+
 
 
 /*(function() {
@@ -580,9 +586,6 @@ export class AppComponent {
     };
 
     // get the forms for the forms filter
-
-
-    moment.locale(['en']);
 
     Language()
       .then(function(language) {

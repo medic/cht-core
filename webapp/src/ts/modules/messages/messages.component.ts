@@ -21,7 +21,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private messagesActions: MessagesActions;
   subscriptions: Subscription = new Subscription();
 
-  loading = false;
+  loading = true;
   loadingContent = false;
   conversations = [];
   selectedConversation;
@@ -36,7 +36,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store, this.globalActions);
+    this.messagesActions = new MessagesActions(store);
   }
 
   ngOnInit(): void {
@@ -119,8 +119,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   updateConversations({merge = false} = {}) {
-    this.loading = true;
-
     return this.messageContactService
       .getList()
       .then((conversations = []) => {

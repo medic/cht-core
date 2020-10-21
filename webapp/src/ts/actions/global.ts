@@ -21,7 +21,9 @@ export const Actions = {
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
   setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
+
   clearSelected: createAction('CLEAR_SELECTED'),
+  setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
 }
 
@@ -74,15 +76,14 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setShowActionBar(showActionBar));
   }
 
-  settingSelected(refreshing) {
+  settingSelected() {
     this.store.dispatch(Actions.setLoadingContent(false));
-    setTimeout(() => {
-      this.store.dispatch(Actions.setShowContent(true));
-      this.store.dispatch(Actions.setShowActionBar(true));
-      if (!refreshing) {
-        // TODO scroll body to top
-      }
-    });
+    // todo The original code wrapped these 2 next lines in a $timeout
+    // I can't see a reason for this, maybe it's because of the actionbar?
+    // Test if the actionbar appears before the content is loaded, we might need to refactor this action into two
+    // actions that are called from the component and use lifecycle hooks
+    this.store.dispatch(Actions.setShowContent(true));
+    this.store.dispatch(Actions.setShowActionBar(true));
   }
 
   clearFilters() {
@@ -105,13 +106,29 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setIsAdmin(isAdmin));
   }
 
-  setTitle(title) {
-    return this.store.dispatch(Actions.setTitle(title));
-  }
-
   setLoadingShowContent(id) {
     this.setLoadingContent(id);
     this.setShowContent(true);
+  }
+
+  setTitle(title='') {
+    return this.store.dispatch(Actions.setTitle(title));
+  }
+
+  unsetSelected() {
+    this.setShowContent(false);
+    this.setLoadingContent(false);
+    this.setShowActionBar(false);
+    this.setTitle();
+    this.clearSelected();
+  }
+
+  setCancelCallbackAction(value) {
+    return this.store.dispatch(Actions.setCancelCallback(value));
+  }
+
+  clearCancelCallback() {
+    return this.store.dispatch(Actions.setCancelCallback(null));
   }
 
   /**
@@ -119,14 +136,6 @@ export class GlobalActions {
    */
   clearSelected() {
     return this.store.dispatch(Actions.clearSelected());
-  }
-
-  unsetSelected() {
-    this.setShowContent(false);
-    this.setLoadingContent(false);
-    this.setShowActionBar(false);
-    this.setTitle('');
-    this.clearSelected();
   }
 
   /**
@@ -141,7 +150,6 @@ export class GlobalActions {
   setLeftActionBar(value) {
     return this.store.dispatch(Actions.setLeftActionBar(value));
   }
-
 }
 
 /*
@@ -175,19 +183,6 @@ angular.module('inboxServices').factory('GlobalActions',
       function setRightActionBarVerified(value) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED, 'verified', value));
       }
-
-      function createSetCancelCallbackAction(value) {
-        return ActionUtils.createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
-      }
-
-      function clearCancelCallback() {
-        dispatch(createSetCancelCallbackAction(null));
-      }
-
-      function setCancelCallback(cancelCallback) {
-        dispatch(createSetCancelCallbackAction(cancelCallback));
-      }
-
 
       function createSetEnketoStatusAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
@@ -354,38 +349,20 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       return {
-        clearCancelCallback,
-        resetFilters,
         clearRightActionBar,
         deleteDoc,
         navigationCancel,
         openGuidedSetup,
         openTourSelect,
-        setAndroidAppVersion,
-        setCancelCallback,
-        setCurrentTab,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
-        setFilter,
-        setFilters,
-        setForms,
-        setIsAdmin,
-        setLoadingContent,
-        setLoadingShowContent,
         setLoadingSubActionBar,
-        setMinimalTabs,
         setRightActionBar,
         setRightActionBarVerified,
-        setSelectMode,
         setShowActionBar,
-        setShowContent,
-        setTitle,
         setUnreadCount,
-        updateReplicationStatus,
         updateUnreadCount,
-        unsetSelected,
-        settingSelected,
         setPrivacyPolicyAccepted,
         setShowPrivacyPolicy,
       };

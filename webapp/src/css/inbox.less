@@ -363,6 +363,9 @@ body {
     .dropdown-menu {
       padding-top: 0;
     }
+    .mm-dropdown {
+      display: block;
+    }
   }
 
   .dropdown-menu .fa {
@@ -389,6 +392,8 @@ body {
     top: 0;
     left: 0;
     right: 0;
+    display: flex;
+
   }
 
   .freetext-filter {
@@ -656,6 +661,7 @@ body {
 .task-state {
   color: @label-color;
   font-size: @font-small;
+  min-height: 20px;
   .state {
     font-weight: bold;
     &:before {
@@ -1331,7 +1337,7 @@ a.fa:hover {
       }
     }
     .mobile-freetext-filter {
-      display: inline-block;
+      display: block;
       .search-pane {
         padding: 10px;
       }

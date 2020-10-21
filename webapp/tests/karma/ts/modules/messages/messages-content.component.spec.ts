@@ -102,6 +102,59 @@ describe('MessagesContentComponent', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
+  describe('Messages without contact', () => {
+    it('should pull the contact phone number from the first message and show empty user name', async () => {
+      const id = '12';
+      const type = 'contact';
+      const phone = '+12';
+      const res = {
+        doc: {
+          tasks: [
+            { messages: [ { to: phone, contact: { _id: id }} ] },
+            { messages: [ { to: phone, contact: { _id: id }} ] }
+          ]
+        }
+      };
+      component.urlParameters.id = id;
+      component.urlParameters.type = type;
+      lineageModelGeneratorService.contact.rejects({ code: 404 });
+      messageContactService.getConversation.resolves([res]);
+      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation')
+
+      await component.selectContact(id, type);
+
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+      expect(lineageModelGeneratorService.contact.getCall(0).args[0]).to.equal(id);
+      expect(messageContactService.getConversation.callCount).to.equal(1);
+      expect(messageContactService.getConversation.getCall(0).args[0]).to.equal(id);
+      expect(updateSelectedConversationSpy.callCount).to.equal(1);
+      expect(updateSelectedConversationSpy.getCall(0).args[0].contact.doc.name).to.equal('');
+      expect(updateSelectedConversationSpy.getCall(0).args[0].contact.doc.phone).to.equal(phone);
+    });
+
+    it('should not fail when no contact and no conversation', () => {
+      const id = '12';
+      const type = 'contact';
+      component.urlParameters.id = id;
+      component.urlParameters.type = type;
+      lineageModelGeneratorService.contact.rejects({ code: 404 });
+      messageContactService.getConversation.resolves([]);
+      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation')
+
+      return component
+        .selectContact(id, type)
+        .then(() => {
+          expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+          expect(lineageModelGeneratorService.contact.getCall(0).args[0]).to.equal(id);
+          expect(messageContactService.getConversation.callCount).to.equal(1);
+          expect(messageContactService.getConversation.getCall(0).args[0]).to.equal(id);
+          expect(updateSelectedConversationSpy.callCount).to.equal(1);
+          expect(updateSelectedConversationSpy.args[0][0]).to.deep.include({ contact: undefined, messages: [] });
+        })
+        .catch(() => assert.fail('Should not fail'));
+    });
+  });
+
   describe('Watching changesService.subscribe', () => {
     it('should start watching changesService.subscribe', () => {
       component.ngOnInit();
@@ -125,8 +178,6 @@ describe('MessagesContentComponent', () => {
         ]
       };
       component.selectedConversation = selectedConversation;
-
-      component.ngOnInit();
 
       messageContactService.isRelevantChange.returns(false);
       expect(!!changesFilter(change)).to.equal(false);

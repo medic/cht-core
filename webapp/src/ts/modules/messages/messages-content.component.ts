@@ -1,4 +1,11 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -27,7 +34,7 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
   selector: 'messages-content',
   templateUrl: './messages-content.component.html'
 })
-export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit {
+export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;
   private globalActions: GlobalActions;
   messagesActions: MessagesActions;
@@ -36,10 +43,13 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   selectedConversation;
   firstUnread;
   send = { message: '' };
-  allLoaded = false;
   urlParameters = { type: '', id: '' };
   subscriptions: Subscription = new Subscription();
   textAreaFocused = false;
+  hasToScroll = false;
+  isAddRecipientBtnActive = false;
+  allLoaded = false;
+  checkScrollFnDef;
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -52,7 +62,9 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     private markReadService: MarkReadService,
     private sendMessageService: SendMessageService,
     private modalService: ModalService,
-  ) {
+  ) { }
+
+  ngOnInit(): void {
     const selectorsSubscription = combineLatest(
       this.store.pipe(select(Selectors.getSelectedConversation)),
       this.store.pipe(select(Selectors.getLoadingContent)),
@@ -62,21 +74,20 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     });
     this.subscriptions.add(selectorsSubscription);
 
-    this.globalActions = new GlobalActions(store);
-    this.messagesActions = new MessagesActions(store, this.globalActions);
-  }
-
-  ngOnInit(): void {
+    this.globalActions = new GlobalActions(this.store);
+    this.messagesActions = new MessagesActions(this.store);
     this.userCtx = this.sessionService.userCtx();
     this.watchForChanges();
   }
 
   ngAfterViewInit(): void {
-    const routeSubscription = this.route.params.subscribe(params => {
+    const routeSubscription = this.route.params.subscribe((params) => {
       const [type, id] = params.type_id ? params.type_id.split(':') : [];
       this.urlParameters.type = type;
       this.urlParameters.id = id;
       this.send.message = '';
+      this.hasToScroll = false;
+      this.allLoaded = false;
       this.selectContact(this.urlParameters.id, this.urlParameters.type);
       this.changeDetectorRef.detectChanges();
     });
@@ -89,9 +100,19 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.textAreaFocused = true;
       })
       .on('blur', '#message-footer textarea', () => {
-        // Setting timeout to give change for clicking "add recipient" before hiding section.
-        setTimeout(() => this.textAreaFocused = false, 500);
+        if (!this.isAddRecipientBtnActive) {
+          this.textAreaFocused = false;
+        }
       });
+  }
+
+  ngAfterViewChecked(): void {
+    const lastMessage = $('.message-content-wrapper .last-message');
+    // Scrolling only when last message is rendered.
+    if (this.hasToScroll && !this.loadingContent && lastMessage.length) {
+      // ToDo: Determine when the view has finished rendering and scroll to unread messages. To avoid timeouts (performance costly)
+      setTimeout(() => this.scrollToUnread());
+    }
   }
 
   ngOnDestroy(): void {
@@ -101,23 +122,30 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   listTrackBy(index, message) {
-    const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
-    return message.key + identifier;
+    return message.doc ? message.doc._id + message.doc._rev : message.id;
   }
 
   private checkScroll(elem) {
-    if (elem && elem.scrollTop === 0 && !this.allLoaded) {
+    if (elem && elem.scrollTop() === 0 && !this.allLoaded) {
       this.updateConversation({ skip: true });
     }
   }
 
   private scrollToUnread() {
     const content = $('.message-content-wrapper');
+
+    if (!content || !content.length) {
+      return;
+    }
+
     const markers = content.find('.marker');
     let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
-
     content.scrollTop(scrollTo);
-    $('.message-content-wrapper').on('scroll', () => this.checkScroll(content));
+    this.hasToScroll = false;
+
+    this.checkScrollFnDef = () => this.checkScroll(content);
+    $('.message-content-wrapper').off('scroll', this.checkScrollFnDef);
+    $('.message-content-wrapper').on('scroll', this.checkScrollFnDef);
   }
 
   // See URL parameter "id" note at top of file
@@ -167,6 +195,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       return;
     }
 
+    $('.message-content-wrapper').off('scroll', this.checkScrollFnDef);
     const refreshSelected = this.selectedConversation && this.selectedConversation.id === id;
     this.messagesActions.setSelected({ id: id, messages: [] }, refreshSelected);
     this.globalActions.setLoadingShowContent(id);
@@ -178,16 +207,16 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       ])
       .then(([contactModel, conversation]) => {
         if (!contactModel && conversation.length) {
-          const firstTaskWithContact = conversation[0].doc.tasks.find((task) => {
+          const firstTaskWithContact = conversation[0].doc?.tasks?.find((task) => {
             const message = task.messages && task.messages[0];
             return message && message.contact && message.contact._id === id;
           });
 
-          const firstMessageWithContact = firstTaskWithContact.messages.find(message => message.contact._id === id);
+          const firstMessageWithContact = firstTaskWithContact?.messages?.find(message => message.contact._id === id);
           contactModel = {
             doc: {
               name: '',
-              phone: firstMessageWithContact.to
+              phone: firstMessageWithContact?.to
             }
           };
         }
@@ -200,11 +229,11 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.globalActions.setLoadingShowContent(false);
         this.messagesActions.setMessagesError(false);
         const unread = conversation.filter(message => !message.read);
-        this.firstUnread = _minBy(unread, message => message.doc.reported_date);
+        this.firstUnread = _minBy(unread, message => message.doc?.reported_date);
         this.messagesActions.updateSelectedConversation({ contact: contactModel, messages: conversation });
         this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();
-        setTimeout(() => this.scrollToUnread());
+        this.hasToScroll = true; // Indication to scroll to unread message.
       })
       .catch((err) => {
         this.globalActions.setLoadingContent(false);
@@ -250,18 +279,20 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
         const first = $('.item-content .body #message-content ul > li').filter(':first');
         this.markConversationReadIfNeeded();
+        // ToDo: determine when view had finished rendering to the scrolling can be calculated correctly.
+        setTimeout(() => {
+          let scroll:any = false;
+          if (options.skip) {
+            const spinnerHeight = 102;
+            scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
+          } else if (first.length && newMessageFromUser) {
+            scroll = $('.message-content-wrapper')[0].scrollHeight;
+          }
 
-        let scroll:any = false;
-        if (options.skip) {
-          const spinnerHeight = 102;
-          scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
-        } else if (first.length && newMessageFromUser) {
-          scroll = $('.message-content-wrapper')[0].scrollHeight;
-        }
-
-        if (scroll) {
-          $('.message-content-wrapper').scrollTop(scroll);
-        }
+          if (scroll) {
+            $('.message-content-wrapper').scrollTop(scroll);
+          }
+        });
       })
       .catch(err => console.error('Error fetching contact conversation', err));
   }
@@ -293,7 +324,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       recipient.doc = { contact: { phone: this.selectedConversation.id } };
     }
 
-    this.sendMessageService.send(recipient, this.send.message)
+    this.sendMessageService
+      .send(recipient, this.send.message)
       .then(() => {
         this.send.message = '';
       })
@@ -309,14 +341,19 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   addRecipients() {
-    this.modalService.show(SendMessageComponent, {
-      initialState: {
-        fields: {
-          to: this.selectedConversation.id,
-          message: this.send.message
+    this.modalService.show(
+      SendMessageComponent,
+      {
+        initialState: {
+          fields: {
+            to: this.selectedConversation.id,
+            message: this.send.message
+          }
         }
-      }
-    });
+      },
+      () => $('#message-footer textarea').focus()
+    );
     this.send.message = '';
   }
+
 }

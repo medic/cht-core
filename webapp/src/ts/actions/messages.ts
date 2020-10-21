@@ -14,10 +14,13 @@ export const Actions = {
 };
 
 export class MessagesActions {
+  globalActions;
+
   constructor(
     private store: Store,
-    private globalActions: GlobalActions
-  ) { }
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   setSelectedConversation(selected) {
     return this.store.dispatch(Actions.setSelectedConversation(selected));

@@ -21,16 +21,31 @@ export const Selectors = {
   getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
   getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
   getIsAdmin: createSelector(getGlobalState, (globalState) => globalState.isAdmin),
+  getCancelCallback: createSelector(getGlobalState, (globalState) => globalState.cancelCallback),
+  getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
 
   // services
   getLastChangedDoc: createSelector(getServicesState, (servicesState) => servicesState.lastChangedDoc),
 
   // reports
   getReportsList: createSelector(getReportsState, (reportsState) => reportsState.reports),
+  getListReport: createSelector(getReportsState, (reportsState, props:any={}) => {
+    if (!props.id) {
+      return;
+    }
+    if (!reportsState.reportsById.has(props.id)) {
+      return;
+    }
+
+    return reportsState.reportsById.get(props.id);
+  }),
   listContains: createSelector(getReportsState, (reportsState) => {
     return (id) => reportsState.reportsById.has(id);
   }),
   getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selected),
+  getSelectedReportsSummaries: createSelector(getReportsState, (reportsState) => {
+    return reportsState.selected?.map(item => item.formatted || item.summary);
+  }),
 
   // messages
   getMessagesError: createSelector(getMessagesState, (messagesState) => messagesState.error),
@@ -40,16 +55,14 @@ export const Selectors = {
 /*
 
 // Global
-const getCancelCallback = state => getGlobalState(state).cancelCallback;
+const getActionBar = state => getGlobalState(state).actionBar;
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited;
 const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving;
 const getEnketoError = state => getGlobalState(state).enketoStatus.error;
-const getFilters = state => getGlobalState(state).filters;
 
-const getIsAdmin = state => getGlobalState(state).isAdmin;
+const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
 
-const getTitle = state => getGlobalState(state).title;
 const getUnreadCount = state => getGlobalState(state).unreadCount;
 const getPrivacyPolicyAccepted = state => getGlobalState(state).privacyPolicyAccepted;
 const getShowPrivacyPolicy = state => getGlobalState(state).showPrivacyPolicy;
@@ -78,10 +91,6 @@ const getConversations = state => getMessagesState(state).conversations;
 // Reports
 const getReportsState = state => state.reports;
 const getSelectedReports = state => getReportsState(state).selected;
-const getSelectedReportsSummaries = reselect.createSelector(
-  getSelectedReports,
-  selected => selected.map(item => item.formatted || item.summary)
-);
 const getSelectedReportsValidChecks = reselect.createSelector(
   getSelectedReports,
   selected => selected.map(item => item.summary && item.summary.valid || item.formatted &&
@@ -109,22 +118,12 @@ angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getActionBar,
   getAndroidAppVersion,
-  getCancelCallback,
   getEnketoStatus,
   getEnketoEditedStatus,
   getEnketoSavingStatus,
   getEnketoError,
-  getFilters,
-  getForms,
-  getIsAdmin,
-  getLoadingContent,
   getLoadingSubActionBar,
-  getMinimalTabs,
-  getReplicationStatus,
-  getSelectMode,
   getShowActionBar,
-  getShowContent,
-  getTitle,
   getUnreadCount,
   getPrivacyPolicyAccepted,
   getShowPrivacyPolicy,
@@ -145,13 +144,9 @@ angular.module('inboxServices').constant('Selectors', {
   getConversations,
 
   getReportsState,
-  getSelectedReports,
-  getSelectedReportsSummaries,
   getSelectedReportsValidChecks,
   getSelectedReportsDocs,
   getVerifyingReport,
-
-  getLastChangedDoc,
 
   getTasksState,
   getSelectedTask,

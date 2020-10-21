@@ -19,6 +19,8 @@ import {
 import {
   ClinicPipe, LineagePipe, SummaryPipe, TitlePipe
 } from './message.pipe'
+import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
+import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 
 @NgModule({
   declarations: [
@@ -41,6 +43,8 @@ import {
     TaskDueDatePipe,
     TitlePipe,
     WeeksPregnantPipe,
+    FormIconNamePipe,
+    FormIconPipe,
   ],
   imports: [
     CommonModule,
@@ -65,6 +69,8 @@ import {
     TaskDueDatePipe,
     TitlePipe,
     WeeksPregnantPipe,
+    FormIconNamePipe,
+    FormIconPipe,
   ]
 })
 export class PipesModule { }

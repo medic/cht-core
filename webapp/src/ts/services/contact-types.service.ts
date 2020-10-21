@@ -18,14 +18,18 @@ export class ContactTypesService {
    * Returns a Promise to resolve the configured contact type identified by the given id.
    */
   get(id) {
-    return this.settingsService.get().then(config => contactTypesUtils.getTypeById(config, id));
+    return this.settingsService
+      .get()
+      .then(config => contactTypesUtils.getTypeById(config, id));
   }
 
   /**
    * Returns a Promise to resolve an array of configured contact types.
    */
   getAll () {
-    this.settingsService.get().then(config => contactTypesUtils.getContactTypes(config))
+    return this.settingsService
+      .get()
+      .then(config => contactTypesUtils.getContactTypes(config));
   }
 
   /**
@@ -53,21 +57,27 @@ export class ContactTypesService {
    * given type id. If parent is falsey, returns the types with no parent.
    */
   getChildren(parent) {
-    return this.settingsService.get().then(config => contactTypesUtils.getChildren(config, parent))
+    return this.settingsService
+      .get()
+      .then(config => contactTypesUtils.getChildren(config, parent))
   }
 
   /**
    * Returns a Promise to resolve all the configured place contact types
    */
   getPlaceTypes() {
-    return this.settingsService.get().then(config => contactTypesUtils.getPlaceTypes(config))
+    return this.settingsService
+      .get()
+      .then(config => contactTypesUtils.getPlaceTypes(config))
   }
 
   /**
    * Returns a Promise to resolve all the configured person contact types
    */
   getPersonTypes() {
-    this.settingsService.get().then(config => contactTypesUtils.getPersonTypes(config))
+    this.settingsService
+      .get()
+      .then(config => contactTypesUtils.getPersonTypes(config))
   }
 
   /**
