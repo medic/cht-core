@@ -87,6 +87,9 @@ const _globalReducer = createReducer(
   on(Actions.setSelectMode, (state, { payload: { selectMode } }) => {
     return { ...state, selectMode };
   }),
+  on(Actions.setLeftActionBar, (state, { payload: { left } }) => {
+    return { ...state, actionBar: { ...state.actionBar, left } };
+  }),
 );
 
 

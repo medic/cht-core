@@ -11,6 +11,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -18,8 +19,11 @@ describe('Messages Component', () => {
   let store: MockStore;
   let messageContactService;
   let changesService;
+  let exportService;
+  let modalService;
 
   beforeEach(async(() => {
+    modalService = { show: sinon.stub() };
     const messageContactServiceMock = {
       getList: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
@@ -48,7 +52,9 @@ describe('Messages Component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ChangesService, useValue: changesServiceMock },
           { provide: MessageContactService, useValue: messageContactServiceMock },
-          { provide: SettingsService, useValue: {} } // Needed because of ngx-translate provider's constructor.
+          { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
+          { provide: exportService, useValue: {} },
+          { provide: ModalService, useValue: modalService }
         ]
       })
       .compileComponents()
@@ -58,6 +64,7 @@ describe('Messages Component', () => {
         store = TestBed.inject(MockStore);
         messageContactService = TestBed.inject(MessageContactService);
         changesService = TestBed.inject(ChangesService);
+        modalService = TestBed.inject(ModalService);
         fixture.detectChanges();
       });
   }));
