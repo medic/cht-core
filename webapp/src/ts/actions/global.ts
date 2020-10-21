@@ -200,21 +200,11 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetEnketoStatusAction({ saving }));
       }
 
-
-
-
-
-
-
-
       function setLoadingSubActionBar(loading) {
         dispatch(ActionUtils.createSingleValueAction(
           actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
         ));
       }
-
-
-
 
 
       function setTitle(title) {

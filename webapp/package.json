@@ -22,7 +22,6 @@
     "@angular/router": "^10.0.14",
     "@ngrx/effects": "^10.0.0",
     "@ngrx/store": "^10.0.0",
-    "@ngrx/effects": "^10.0.0",
     "@ngx-translate/core": "^13.0.0",
     "bikram-sambat": "^1.6.0",
     "bikram-sambat-bootstrap": "^1.5.0",
