@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as _ from 'lodash-es';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -13,7 +13,7 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
 @Component({
   templateUrl: './reports-content.component.html'
 })
-export class ReportsContentComponent implements OnInit {
+export class ReportsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   private globalActions;
   private reportsActions;
@@ -110,6 +110,10 @@ export class ReportsContentComponent implements OnInit {
     this.subscription.add(routeSubscription);
   }
 
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
   trackByFn(index, item) {
     return item.doc?._id + item.doc?._rev;
   }
@@ -125,6 +129,7 @@ export class ReportsContentComponent implements OnInit {
   search(query) {
     this.searchFiltersService.freetextSearch(query);
   }
+
 }
 
 /*const _ = require('lodash/core');

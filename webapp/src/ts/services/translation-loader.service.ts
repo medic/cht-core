@@ -18,11 +18,11 @@ export class TranslationLoaderService {
     });
   }
 
-  test(docId) {
+  test(docId?) {
     return docId && this.re.test(docId);
   }
 
-  getCode(docId) {
+  getCode(docId?) {
     if (!docId) {
       return false;
     }

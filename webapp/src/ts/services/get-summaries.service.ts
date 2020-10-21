@@ -64,7 +64,7 @@ export class GetSummariesService {
   // with some minor modifications and needs to be kept in sync until
   // this workaround is no longer needed.
   // https://github.com/medic/medic/issues/4666
-  summarise(doc) {
+  private summarise(doc) {
     if (!doc) {
       // happens when the doc with the requested id wasn't found in the DB
       return;
@@ -104,7 +104,7 @@ export class GetSummariesService {
     }
   }
 
-  getRemote(ids) {
+  private getRemote(ids) {
     return this.dbService.get().query('medic/doc_summaries_by_id', { keys: ids }).then(response => {
       return response.rows.map(row => {
         row.value._id = row.id;
@@ -113,7 +113,7 @@ export class GetSummariesService {
     });
   }
 
-  getLocal(ids) {
+  private getLocal(ids) {
     return this.dbService.get().allDocs({ keys: ids, include_docs: true }).then(response => {
       return response.rows
         .map(row => this.summarise(row.doc))
@@ -121,7 +121,7 @@ export class GetSummariesService {
     });
   }
 
-  get(ids) {
+  get(ids?) {
     if (!ids || !ids.length) {
       return Promise.resolve([]);
     }

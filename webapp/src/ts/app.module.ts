@@ -31,9 +31,9 @@ import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
 import { GlobalEffects } from '@mm-effects/global';
 import { ReportsEffects } from '@mm-effects/reports.effects';
-
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
+import { ParseProvider } from '@mm-providers/parse.provider';
 
 import { reducers } from "./reducers";
 
@@ -90,6 +90,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     CookieService,
     ResourceIconPipe,
     FormIconNamePipe,
+    ParseProvider,
   ],
   bootstrap: [AppComponent]
 })

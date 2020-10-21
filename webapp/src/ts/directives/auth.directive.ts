@@ -50,7 +50,6 @@ export class AuthDirective implements OnInit {
             return true;
           }
 
-          console.debug('mmAuth failed authorization check');
           this.hidden = true;
           return false;
         });
@@ -62,7 +61,7 @@ export class AuthDirective implements OnInit {
         promises.push(this.authService.has(this.mmAuth.split(',')));
       }
 
-      if (this.mmAuthOnline) {
+      if (this.mmAuthOnline !== undefined) {
         const onlineResult = this.authService.online(this.mmAuthOnline);
         promises.push(Promise.resolve(onlineResult));
       }
