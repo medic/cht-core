@@ -75,7 +75,7 @@ export class ContactTypesService {
    * Returns a Promise to resolve all the configured person contact types
    */
   getPersonTypes() {
-    this.settingsService
+    return this.settingsService
       .get()
       .then(config => contactTypesUtils.getPersonTypes(config))
   }

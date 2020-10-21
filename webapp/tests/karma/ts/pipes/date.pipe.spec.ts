@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { async, TestBed } from '@angular/core/testing';
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as moment from 'moment';
@@ -19,6 +19,7 @@ import {
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { TranslateService } from '@ngx-translate/core';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { of } from 'rxjs';
 
 
 describe('date pipe', () => {
@@ -47,12 +48,16 @@ describe('date pipe', () => {
       datetime: d => `${d.toISOString()}`,
       relative: (d:number) => `${Math.floor((d - TEST_DATE.valueOf()) / 86400000)} days`,
     };
+    const translateServiceMock = {
+      instant: sinon.stub().returnsArg(0),
+      get: sinon.stub().callsFake(arg => of([arg])),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: RelativeDateService, useValue: RelativeDateMock },
         { provide: FormatDateService, useValue: FormatDateMock },
-        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
+        { provide: TranslateService, useValue: translateServiceMock },
         { provide: DomSanitizer, useValue: { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) } },
       ],
       declarations: [
@@ -96,11 +101,12 @@ describe('date pipe', () => {
   });
 
   describe('autoreply', () => {
-    it('should return nicely-formatted output', () => {
+    it('should return nicely-formatted output', async () => {
       const pipe = new AutoreplyPipe(translateService, formatDateService, relativeDateService, sanitizer);
       const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;' +
         '<span class="autoreply" title="MESSAGE"><span class="autoreply-content">autoreply</span></span>&nbsp</span>';
-      assert.equal(pipe.transform(TEST_TASK), expected);
+      const actual = await pipe.transform(TEST_TASK);
+      assert.equal(actual, expected);
     });
   });
 
@@ -170,10 +176,11 @@ describe('date pipe', () => {
   });
 
   describe('state', () => {
-    it('should return nicely-formatted output', () => {
+    it('should return nicely-formatted output', async () => {
       const pipe = new StatePipe(translateService, formatDateService, relativeDateService, sanitizer);
       const expected = '<span><span class="state STATE">state.STATE</span>&nbsp;</span>';
-      assert.equal(pipe.transform(TEST_TASK), expected);
+      const actual = await pipe.transform(TEST_TASK);
+      assert.equal(actual, expected);
     });
   });
 
