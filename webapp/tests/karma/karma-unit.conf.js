@@ -12,7 +12,7 @@ module.exports = function (config) {
       require('@angular-devkit/build-angular/plugins/karma')
     ],
     client: {
-      captureConsole: true
+      captureConsole: true,
     },
     reporters: ['mocha'],
     mochaReporter: {
@@ -34,5 +34,10 @@ module.exports = function (config) {
       }
     },
     files: [],
+    browserConsoleLogOptions: {
+      level: 'log',
+      format: '%b %T: %m',
+      terminal: true,
+    },
   });
 };

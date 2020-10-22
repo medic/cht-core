@@ -1,4 +1,12 @@
-import { AuthService } from './auth.service';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
+
+import { SessionService } from '@mm-services/session.service';
+import * as purger from '../bootstrapper/purger';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
+import { DbService } from '@mm-services/db.service';
+import { AuthService } from '@mm-services/auth.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -7,17 +15,6 @@ const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
-
-import { Injectable } from '@angular/core';
-
-import { SessionService } from './session.service'
-import { LocationService } from './location.service';
-import { POUCHDB_OPTIONS } from '../constants';
-import * as purger from '../bootstrapper/purger';
-import { RulesEngineService } from './rules-engine.service';
-import {DbSyncRetryService} from './db-sync-retry.service';
-import { DbService } from './db.service';
-import { Subject } from 'rxjs';
 
 const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
@@ -132,7 +129,7 @@ export class DBSyncService {
     return this.dbService.get().info().then(info => info.update_seq + '');
   }
   private getLastReplicatedSeq() {
-    window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
+    return window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
   }
 
   private syncMedic(force?) {
@@ -241,7 +238,7 @@ export class DBSyncService {
     }
 
     if (!this.intervalPromises.meta) {
-      this.intervalPromises.meta = setInterval(this.syncMeta, META_SYNC_INTERVAL);
+      this.intervalPromises.meta = setInterval(this.syncMeta.bind(this), META_SYNC_INTERVAL);
       this.syncMeta();
     }
 

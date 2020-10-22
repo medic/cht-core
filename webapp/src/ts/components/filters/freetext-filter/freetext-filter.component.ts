@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Input, Output, OnInit } from '@angular/core';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -17,7 +17,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   subscription: Subscription = new Subscription();
   inputText;
 
-  private inputTextChanged: Subject<string> = new Subject<string>();
+  private inputTextChanged: Subject<any> = new Subject<any>();
 
   currentTab;
 
@@ -27,37 +27,33 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   constructor(
     private store: Store,
   ) {
-
     this.globalActions = new GlobalActions(store);
-
-    const inputSubscription = this
-      .inputTextChanged
-      .pipe(debounceTime(400), distinctUntilChanged())
-      .subscribe((value) => {
-        this.inputText = value;
-        this.applyFilter();
-      });
-    this.subscription.add(inputSubscription);
   }
 
   ngOnInit() {
     const subscription = combineLatest(
       this.store.select(Selectors.getCurrentTab),
+      this.store.select(Selectors.getFilters),
     ).subscribe(([
       currentTab,
+      filters,
     ]) => {
       this.currentTab = currentTab;
+      this.inputText = filters?.search;
     });
     this.subscription.add(subscription);
   }
 
-  onFieldChange(inputText) {
-    this.inputTextChanged.next(inputText);
+  applyFieldChange(value, apply?) {
+    this.inputText = value;
+    apply && this.applyFilter();
   }
 
   applyFilter() {
     this.globalActions.setFilter({ search: this.inputText });
-    this.search.emit();
+    // always force the search, so the user is taken from the report detail page to the list page on mobile,
+    // when clicking on a case_id link
+    this.search.emit(true);
   }
 
   ngOnDestroy() {
@@ -65,7 +61,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   clear() {
-    this.inputText = '';
+    this.applyFieldChange('');
   }
 }
 

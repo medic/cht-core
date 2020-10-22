@@ -7,6 +7,13 @@ export const createSingleValueAction = (type, valueName:string) => {
   );
 };
 
+export const createMultiValueAction = (type) => {
+  return createAction(
+    type,
+    (payload) => ({ payload: payload }),
+  );
+};
+
 /*
 module.exports = {
   // Global

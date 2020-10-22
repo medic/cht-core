@@ -7,11 +7,14 @@ import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { storeLogger } from 'ngrx-store-logger';
-import { CookieModule } from 'ngx-cookie';
+import { CookieService } from 'ngx-cookie-service';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
+import { EffectsModule } from '@ngrx/effects';
+import * as _ from 'lodash-es';
+_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 import { environment } from './environments/environment';
 
@@ -26,6 +29,11 @@ import { TranslationLoaderProvider } from './providers/translation-loader.provid
 import { DbService } from './services/db.service';
 import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
+import { GlobalEffects } from '@mm-effects/global';
+import { ReportsEffects } from '@mm-effects/reports.effects';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
+import { ParseProvider } from '@mm-providers/parse.provider';
 
 import { reducers } from "./reducers";
 
@@ -41,9 +49,6 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
   }
 }
 
-import * as _ from 'lodash-es';
-_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
-
 @NgModule({
   declarations: [
     AppComponent
@@ -57,7 +62,6 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     DirectivesModule,
     PipesModule,
     RouterModule,
-    CookieModule.forRoot(),
     HttpClientModule,
     StoreModule.forRoot(reducers, { metaReducers }),
     TranslateModule.forRoot({
@@ -76,12 +80,17 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
     BsDropdownModule.forRoot(),
     FormsModule,
     AccordionModule.forRoot(),
+    EffectsModule.forRoot([ GlobalEffects, ReportsEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
     { provide: ErrorHandler, useClass: ExceptionHandlerProvider },
     BsModalRef,
     RouteGuardProvider,
+    CookieService,
+    ResourceIconPipe,
+    FormIconNamePipe,
+    ParseProvider,
   ],
   bootstrap: [AppComponent]
 })

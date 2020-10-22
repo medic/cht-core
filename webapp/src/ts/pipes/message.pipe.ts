@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import * as _ from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
 import { FormatProvider } from '../providers/format.provider';
+import { DomSanitizer } from '@angular/platform-browser';
 
 const getFormName = (record, forms) => {
   const form = _.find(forms, { code: record.form });
@@ -84,9 +85,10 @@ export class LineagePipe implements PipeTransform {
   constructor(
     private translateService:TranslateService,
     private formatProvider:FormatProvider,
+    private sanitizer:DomSanitizer,
   ) {}
 
   transform(entity) {
-    return this.formatProvider.lineage(entity);
+    return this.sanitizer.bypassSecurityTrustHtml(this.formatProvider.lineage(entity));
   };
 }

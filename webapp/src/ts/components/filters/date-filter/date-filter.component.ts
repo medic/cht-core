@@ -11,7 +11,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { isMobile } from '@mm-providers/responsive.provider';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
-
 @Component({
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html'
@@ -82,8 +81,12 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter {
   }
 
   ngOnDestroy() {
-    // avoid dom-nodes leaks
-    (<any>$('#date-filter')).data('daterangepicker').remove();
+    const datePicker = (<any>$('#date-filter')).data('daterangepicker');
+
+    if (datePicker) {
+      // avoid dom-nodes leaks
+      datePicker.remove();
+    }
   }
 
   clear() {

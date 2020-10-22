@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
@@ -7,20 +8,22 @@ import sinon from 'sinon';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { provideMockStore } from '@ngrx/store/testing';
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Freetext Filter Component', () => {
   let component:FreetextFilterComponent;
   let fixture:ComponentFixture<FreetextFilterComponent>;
-  let clock;
 
   beforeEach(async(() => {
     const mockedSelectors = [
-      { selector: 'getCurrentTab', value: 'reports' },
+      { selector: Selectors.getCurrentTab, value: 'reports' },
+      { selector: Selectors.getFilters, value: { search: '' } },
     ];
 
     TestBed
       .configureTestingModule({
         imports: [
+          FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
         ],
@@ -41,7 +44,6 @@ describe('Freetext Filter Component', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock && clock.restore();
   });
 
   it('should create Freetext Filter', () => {
@@ -54,36 +56,23 @@ describe('Freetext Filter Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  it('should debounce searches on typing', () => {
-    clock = sinon.useFakeTimers();
+  it('clear should apply and clear the value', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
-
-    const applyFilterSpy = sinon.spy(component, 'applyFilter');
-    component.onFieldChange('v');
-    expect(applyFilterSpy.callCount).to.equal(0);
-    expect(setFilter.callCount).to.equal(0);
-    component.onFieldChange('va');
-    expect(applyFilterSpy.callCount).to.equal(0);
-    clock.tick(100);
-    component.onFieldChange('val');
-    expect(applyFilterSpy.callCount).to.equal(0);
-    clock.tick(100);
-    component.onFieldChange('valu');
-    expect(applyFilterSpy.callCount).to.equal(0);
-    expect(setFilter.callCount).to.equal(0);
-    clock.tick(1000);
-    expect(applyFilterSpy.callCount).to.equal(1);
-    expect(component.inputText).to.equal('valu');
-    expect(setFilter.callCount).to.equal(1);
-    expect(setFilter.args[0]).to.deep.equal([{ search: 'valu' }]);
-  });
-
-  it('clear should clear the value', () => {
-    clock = sinon.useFakeTimers();
-    component.onFieldChange('value');
-    clock.tick(1000);
+    component.applyFieldChange('value');
     expect(component.inputText).to.equal('value');
+    expect(setFilter.callCount).to.equal(0);
     component.clear();
     expect(component.inputText).to.equal('');
+    expect(setFilter.callCount).to.equal(0);
+  });
+
+  it('should set the filter correctly', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+    const emitSpy = sinon.spy(component.search, 'emit');
+    component.applyFieldChange('new value', true);
+    expect(setFilter.callCount).to.equal(1);
+    expect(setFilter.args[0]).to.deep.equal([{ search: 'new value' }]);
+    expect(emitSpy.callCount).to.equal(1);
+    expect(emitSpy.args[0]).to.deep.equal([true]);
   });
 });

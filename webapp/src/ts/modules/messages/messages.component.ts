@@ -2,12 +2,16 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
+import { Router } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
 import { MessagesActions } from '@mm-actions/messages';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
+import { ExportService } from '@mm-services/export.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -17,46 +21,62 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private messagesActions: MessagesActions;
   subscriptions: Subscription = new Subscription();
 
-  loading = false;
-  loadingContent;
+  loading = true;
+  loadingContent = false;
   conversations = [];
   selectedConversation;
-  error;
+  error = false;
 
   constructor(
+    private router: Router,
     private store: Store,
     private changesService: ChangesService,
-    private messageContactService: MessageContactService
+    private messageContactService: MessageContactService,
+    private exportService: ExportService,
+    private modalService: ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
   }
 
   ngOnInit(): void {
-    const subscription = combineLatest(
+    const selectorsSubscription = combineLatest(
       this.store.select(Selectors.getConversations),
       this.store.select(Selectors.getSelectedConversation),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getMessagesError),
-    ).subscribe(([
-      conversations,
+    )
+    .subscribe(([
+      conversations = [],
       selectedConversation,
       loadingContent,
       error,
     ]) => {
-      this.conversations = conversations;
+      // Create new reference of conversation's items
+      // because the ones from store can't be modified as they are read only.
+      this.conversations = conversations.map(c => ({ ...c }));
       this.selectedConversation = selectedConversation;
       this.loadingContent = loadingContent;
       this.error = error;
     });
-    this.subscriptions.add(subscription);
+    this.subscriptions.add(selectorsSubscription);
 
-    this.updateConversations();
+    this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  private displayFirstConversation(conversations = []) {
+    const parts = this.router.url.split('/');
+    const lastPart = parts[parts.length - 1];
+    const [type, id] = lastPart ? lastPart.split(':') : [];
+
+    if ((!type || !id) && conversations.length) {
+      this.router.navigate(['/messages', `${conversations[0].type}:${conversations[0].key}`]);
+    }
   }
 
   private watchForChanges() {
@@ -69,10 +89,23 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private updateActionBar() {
-    /* ToDo: this.globalActions.setLeftActionBar({
+    const leftActionBar = {
       hasResults: this.conversations && this.conversations.length > 0,
-      exportFn: () => Export('messages', {}, { humanReadable: true })
-    });*/
+      exportFn: () => this.exportService.export('messages', {}, { humanReadable: true }),
+      openSendMessageModal: (event) => this.openSendMessageModal(event)
+    };
+    this.globalActions.setLeftActionBar(leftActionBar);
+  }
+
+  private openSendMessageModal(event) {
+    const target = $(event.target).closest('.send-message');
+
+    if (target.hasClass('mm-icon-disabled')) {
+      return;
+    }
+
+    event.preventDefault();
+    this.modalService.show(SendMessageComponent);
   }
 
   private setConversations(conversations = [], {merge = false} = {}) {
@@ -86,11 +119,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   updateConversations({merge = false} = {}) {
-    this.loading = true;
-
     return this.messageContactService
       .getList()
-      .then(conversations => {
+      .then((conversations = []) => {
         this.setConversations(conversations, { merge });
         this.loading = false;
       });

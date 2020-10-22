@@ -1,11 +1,13 @@
 import {Injectable} from '@angular/core';
+import { Subject } from 'rxjs';
+
 import { AuthService } from './auth.service';
 import { ChangesService } from './changes.service';
 import { ContactTypesService } from './contact-types.service';
 import { DbService } from './db.service';
 import { UserContactService } from './user-contact.service';
 import { XmlFormsContextUtilsService } from './xml-forms-context-utils.service';
-import { Subject } from 'rxjs';
+import { ParseProvider } from '@mm-providers/parse.provider';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +23,7 @@ export class XmlFormsService {
     private dbService:DbService,
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
+    private parseProvider:ParseProvider,
   ) {
     this.init = this.getForms();
 
@@ -79,9 +82,8 @@ export class XmlFormsService {
       user: user,
       summary: contactSummary
     };
-    return true;
-    // todo
-    //return $parse(expression)(XmlFormsContextUtils, context);
+
+    return this.parseProvider.parse(expression)(this.xmlFormsContextUtilsService, context);
   };
 
   private filterAll(forms, options) {
@@ -199,7 +201,7 @@ export class XmlFormsService {
    *
    * @param {Function} callback Invoked when complete and again when results have changed.
    */
-  subscribe(name, options, callback) {
+  subscribe(name, options, callback?) {
     if (!callback) {
       callback = options;
       options = {};
@@ -259,7 +261,7 @@ export class XmlFormsService {
    * @returns {Promise} Resolves an array of docs which contain an
    *   xform the user is allow to complete.
    */
-  list(options) {
+  list(options?) {
     return this.init.then(forms => this.filterAll(forms, options || {}));
   }
 }

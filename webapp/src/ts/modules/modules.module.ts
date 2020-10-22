@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { FormsModule } from '@angular/forms';
 
-import { PipesModule } from '../pipes/pipes.module';
+import  { PipesModule } from '@mm-pipes/pipes.module';
 
 import { AboutComponent } from './about/about.component';
+import {ConfigurationUserComponent} from './configuration-user/configuration-user.component';
 import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -17,10 +19,12 @@ import { MessagesComponent } from './messages/messages.component';
 import { ContactsComponent } from './contacts/contacts.component';
 import { ContactsContentComponent } from './contacts/contacts-content.component';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
+import { MessagesContentComponent } from './messages/messages-content.component';
 
 @NgModule({
   declarations: [
     AboutComponent,
+    ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
@@ -30,6 +34,7 @@ import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.
     ReportsFiltersComponent,
     ContactsContentComponent,
     ContactsFiltersComponent,
+    MessagesContentComponent,
   ],
   imports: [
     CommonModule,
@@ -38,9 +43,11 @@ import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.
     RouterModule,
     ComponentsModule,
     BsDropdownModule,
+    FormsModule,
   ],
   exports: [
     AboutComponent,
+    ConfigurationUserComponent,
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,

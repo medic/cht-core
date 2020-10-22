@@ -50,7 +50,7 @@ export class GetDataRecordsService {
       });
   };
 
-  get(ids, options) {
+  get(ids?, options?) {
     const opts = Object.assign({ hydrateContactNames: false, include_docs: false }, options);
 
     if (!ids) {

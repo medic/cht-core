@@ -106,7 +106,7 @@ export class ResourceIconsService {
       });
   };
 
-  getImg(name, docId, faPlaceholder?) {
+  getImg(name?, docId?, faPlaceholder?) {
     if (!name || !docId) {
       return '';
     }

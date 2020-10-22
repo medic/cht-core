@@ -1,5 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
+
 import { createSingleValueAction } from './actionUtils';
 import { Selectors } from '../selectors';
 
@@ -13,11 +14,17 @@ export const Actions = {
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
+  setLeftActionBar: createSingleValueAction('SET_LEFT_ACTION_BAR', 'left'),
   clearFilters: createAction('CLEAR_FILTERS'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
   setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
+  setTitle: createSingleValueAction('SET_TITLE', 'title'),
+
+  clearSelected: createAction('CLEAR_SELECTED'),
+  setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
+  deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
 }
 
 export class GlobalActions {
@@ -69,15 +76,14 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setShowActionBar(showActionBar));
   }
 
-  settingSelected(refreshing) {
+  settingSelected() {
     this.store.dispatch(Actions.setLoadingContent(false));
-    setTimeout(() => {
-      this.store.dispatch(Actions.setShowContent(true));
-      this.store.dispatch(Actions.setShowActionBar(true));
-      if (!refreshing) {
-        // TODO scroll body to top
-      }
-    });
+    // todo The original code wrapped these 2 next lines in a $timeout
+    // I can't see a reason for this, maybe it's because of the actionbar?
+    // Test if the actionbar appears before the content is loaded, we might need to refactor this action into two
+    // actions that are called from the component and use lifecycle hooks
+    this.store.dispatch(Actions.setShowContent(true));
+    this.store.dispatch(Actions.setShowActionBar(true));
   }
 
   clearFilters() {
@@ -100,6 +106,50 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setIsAdmin(isAdmin));
   }
 
+  setLoadingShowContent(id) {
+    this.setLoadingContent(id);
+    this.setShowContent(true);
+  }
+
+  setTitle(title='') {
+    return this.store.dispatch(Actions.setTitle(title));
+  }
+
+  unsetSelected() {
+    this.setShowContent(false);
+    this.setLoadingContent(false);
+    this.setShowActionBar(false);
+    this.setTitle();
+    this.clearSelected();
+  }
+
+  setCancelCallbackAction(value) {
+    return this.store.dispatch(Actions.setCancelCallback(value));
+  }
+
+  clearCancelCallback() {
+    return this.store.dispatch(Actions.setCancelCallback(null));
+  }
+
+  /**
+   * Warning! Use carefully because more than one reducer might be listening to this global action.
+   */
+  clearSelected() {
+    return this.store.dispatch(Actions.clearSelected());
+  }
+
+  /**
+   * Deletes document from DB.
+   * This action has effect
+   * @param doc
+   */
+  deleteDocConfirm(doc) {
+    return this.store.dispatch(Actions.deleteDocConfirm(doc));
+  }
+
+  setLeftActionBar(value) {
+    return this.store.dispatch(Actions.setLeftActionBar(value));
+  }
 }
 
 /*
@@ -118,10 +168,6 @@ angular.module('inboxServices').factory('GlobalActions',
 
     return function(dispatch) {
 
-      function setLeftActionBar(value) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_LEFT, 'left', value));
-      }
-
       function createSetRightActionBarAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT, 'right', value);
       }
@@ -137,19 +183,6 @@ angular.module('inboxServices').factory('GlobalActions',
       function setRightActionBarVerified(value) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED, 'verified', value));
       }
-
-      function createSetCancelCallbackAction(value) {
-        return ActionUtils.createSingleValueAction(actionTypes.SET_CANCEL_CALLBACK, 'cancelCallback', value);
-      }
-
-      function clearCancelCallback() {
-        dispatch(createSetCancelCallbackAction(null));
-      }
-
-      function setCancelCallback(cancelCallback) {
-        dispatch(createSetCancelCallbackAction(cancelCallback));
-      }
-
 
       function createSetEnketoStatusAction(value) {
         return ActionUtils.createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
@@ -167,21 +200,11 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(createSetEnketoStatusAction({ saving }));
       }
 
-
-
-
-
-
-
-
       function setLoadingSubActionBar(loading) {
         dispatch(ActionUtils.createSingleValueAction(
           actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
         ));
       }
-
-
-
 
 
       function setTitle(title) {
@@ -316,39 +339,20 @@ angular.module('inboxServices').factory('GlobalActions',
       }
 
       return {
-        clearCancelCallback,
-        resetFilters,
         clearRightActionBar,
         deleteDoc,
         navigationCancel,
         openGuidedSetup,
         openTourSelect,
-        setAndroidAppVersion,
-        setCancelCallback,
-        setCurrentTab,
         setEnketoError,
         setEnketoEditedStatus,
         setEnketoSavingStatus,
-        setFilter,
-        setFilters,
-        setForms,
-        setIsAdmin,
-        setLeftActionBar,
-        setLoadingContent,
-        setLoadingShowContent,
         setLoadingSubActionBar,
-        setMinimalTabs,
         setRightActionBar,
         setRightActionBarVerified,
-        setSelectMode,
         setShowActionBar,
-        setShowContent,
-        setTitle,
         setUnreadCount,
-        updateReplicationStatus,
         updateUnreadCount,
-        unsetSelected,
-        settingSelected,
         setPrivacyPolicyAccepted,
         setShowPrivacyPolicy,
       };

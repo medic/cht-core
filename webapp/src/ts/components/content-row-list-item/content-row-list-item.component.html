@@ -1,5 +1,6 @@
 <li attr.data-record-id="{{id}}"
-    [class.selected]="selected"
+    [routerLink]="id"
+    routerLinkActive="selected"
     [class.primary]="primary"
     [class.unread]="unread"
     [class.dod]="dod"
@@ -8,14 +9,14 @@
     [class.overdue]="overdue"
     class="content-row"
 >
-  <a routerLink="{{id}}">
+  <a [routerLink]="id">
     <div><input type="checkbox"></div>
     <div *ngIf="icon" class="icon" [innerHTML]="icon | resourceIcon"></div>
     <div class="content">
       <div class="heading">
         <h4>
           <i *ngIf="primaryContact" class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
-          <span>{{heading}}</span>
+          <span [innerHTML]="heading | safe"></span>
         </h4>
         <div class="date">
           <span *ngIf="dateFormat === 'taskDueDate'" [innerHTML]="date | taskDueDate"></span>
@@ -23,33 +24,32 @@
           <span *ngIf="!date && dod" [innerHTML]="dod | dateOfDeath"></span>
         </div>
         <div *ngIf="taskCount" class="status tasks-count">
-          <span class="badge">{{taskCount}}</span>
+          <span class="badge" [innerHTML]="taskCount | safe"></span>
         </div>
         <div *ngIf="visits" class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
-          <span>{{visits && visits.count}}</span>
+          <span [innerHTML]="visits && visits.count | safe"></span>
         </div>
         <div *ngIf="aggregate" class="aggregate-status" [class.error]="aggregate.hasGoal && !aggregate.goalMet" [class.success]="aggregate.hasGoal && aggregate.goalMet">
-          <span>{{aggregate.summary}}</span>
+          <span [innerHTML]="aggregate.summary | safe"></span>
         </div>
       </div>
       <div class="summary">
-        <p>{{summary}}</p>
+        <p [innerHTML]="summary | safe"></p>
         <div *ngIf="!valid || verified !== undefined" class="status">
           <span [class.verified]="valid && verified" [class.error]="!(valid && verified)" class="verification-badge">
             <report-verify-valid-icon *ngIf="valid && verified"></report-verify-valid-icon>
             <report-verify-invalid-icon *ngIf="!(valid && verified)"></report-verify-invalid-icon>
           </span>
-          <!--<span [class.verified]="valid && verified" [class.error]="!valid || !verified" class="verification-badge" [innerHTML]="statusIcon"></span>-->
         </div>
         <div *ngIf="visits" class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
-          <span>{{visits.summary}}</span>
+          <span [innerHTML]="visits.summary | safe"></span>
         </div>
       </div>
-      <p [innerHTML]="dob | age:dod"></p>
+      <p *ngIf="dob" [innerHTML]="dob | age:dod"></p>
       <span *ngIf="muted && displayMuted" translate>contact.muted</span>
       <div *ngIf="simprintsTier" class="simprints-stars tier-{{simprintsTier}}"></div>
       <div *ngIf="lineage && lineage.length" class="detail" [innerHTML]="lineage | lineage"></div>
-      <div class="warning">{{warning}}</div>
+      <div *ngIf="warning" class="warning" [innerHTML]="warning | safe"></div>
     </div>
   </a>
 </li>

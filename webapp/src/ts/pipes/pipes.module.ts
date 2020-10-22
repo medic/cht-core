@@ -19,6 +19,9 @@ import {
 import {
   ClinicPipe, LineagePipe, SummaryPipe, TitlePipe
 } from './message.pipe'
+import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
+import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
+import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
 
 @NgModule({
   declarations: [
@@ -41,6 +44,9 @@ import {
     TaskDueDatePipe,
     TitlePipe,
     WeeksPregnantPipe,
+    FormIconNamePipe,
+    FormIconPipe,
+    SafeHtmlPipe,
   ],
   imports: [
     CommonModule,
@@ -65,6 +71,9 @@ import {
     TaskDueDatePipe,
     TitlePipe,
     WeeksPregnantPipe,
+    FormIconNamePipe,
+    FormIconPipe,
+    SafeHtmlPipe,
   ]
 })
 export class PipesModule { }
