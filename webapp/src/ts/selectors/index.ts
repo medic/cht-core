@@ -40,15 +40,12 @@ export const Selectors = {
   // reports
   getReportsList: createSelector(getReportsState, (reportsState) => reportsState.reports),
   getListReport: createSelector(getReportsState, (reportsState, props:any={}) => {
-    console.log(props);
     if (!props.id) {
       return;
     }
-    console.log(reportsState.reportsById);
     if (!reportsState.reportsById.has(props.id)) {
       return;
     }
-    console.log(reportsState.reportsById.get(props.id));
     return reportsState.reportsById.get(props.id);
   }),
   listContains: createSelector(getReportsState, (reportsState) => {
