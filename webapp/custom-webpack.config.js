@@ -14,6 +14,15 @@ module.exports = {
       // https://github.com/enketo/enketo-core/issues/454
       '../../js/dropdown.jquery': 'node_modules/bootstrap/js/dropdown',
       'bikram-sambat': 'node_modules/bikram-sambat',
+
+      // enketo geopicker widget css requires these two images as backgrounds
+      // they don't exist in the enketo source and the styles are commented out in the lastest version
+      // https://github.com/enketo/enketo-core/blob/master/src/widget/geo/geopicker.scss#L1119
+      // the builder throws an error if the paths are not resolved
+      // TODO: I just copied and renamed a random PNG to see that this is working, ideally find the original image or
+      // create a 1x1px white png to replace
+      '../../../build/images/layers.png': 'src/img/layers.png',
+      '../../../build/images/layers-2x.png': 'src/img/layers.png',
     }
   },
   plugins: [
