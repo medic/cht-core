@@ -6,6 +6,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'mm-actionbar',
@@ -27,12 +28,16 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   loadingSubActionBar;
   selectedContactDoc;
 
+  routeSnapshot;
+
   constructor(
     private store: Store,
     private modalService: ModalService,
+    private route:ActivatedRoute,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
+    this.routeSnapshot = this.route.snapshot;
   }
 
   ngOnInit(): void {
@@ -69,6 +74,9 @@ export class ActionbarComponent implements OnInit, OnDestroy {
        */
     });
     this.subscription.add(subscription);
+
+    this.subscription.add(this.route.url.subscribe(() => this.routeSnapshot = this.route.snapshot));
+    this.subscription.add(this.route.params.subscribe(() => this.routeSnapshot = this.route.snapshot));
   }
 
   ngOnDestroy() {

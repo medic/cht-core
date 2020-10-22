@@ -58,7 +58,7 @@ export class ReportsEffects {
         let refreshing = true;
 
         if (selectMode) {
-          const existing = selectedReports?.find(report => report._id === model.doc._id);
+          const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
             // todo update selected report in selectMode
             // this.reportActions.updateSelectedReport(model);
@@ -70,7 +70,7 @@ export class ReportsEffects {
           refreshing =
             selected.doc &&
             selectedReports?.length &&
-            selectedReports[0]._id === selected.doc._id;
+            selectedReports[0]._id === selected?.doc?._id;
           if (!refreshing) {
             this.reportActions.setVerifyingReport(false);
           }
@@ -78,7 +78,7 @@ export class ReportsEffects {
           model.expanded = true;
           this.reportActions.setSelectedReports([model]);
           this.reportActions.setTitle(model);
-          this.reportActions.markReportRead(model.doc._id);
+          this.reportActions.markReportRead(model?.doc?._id);
         }
 
         this.reportActions.setRightActionBar();

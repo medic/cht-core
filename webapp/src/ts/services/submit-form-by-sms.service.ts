@@ -1,57 +1,61 @@
-angular.module('inboxServices').service('SubmitFormBySms',
-  function(
-    $log,
-    $q,
-    $window,
-    Form2Sms,
-    Settings
-  ) {
-    'use strict';
-    'ngInject';
+import { Injectable } from '@angular/core';
 
-    return doc => {
-      if(!$window.medicmobile_android) {
-        $log.info('Not in android wrapper.');
-        return;
-      }
+import { Form2smsService } from '@mm-services/form2sms.service';
+import { SettingsService } from '@mm-services/settings.service';
 
-      if(!$window.medicmobile_android.sms_available) {
-        $log.info('Android wrapper does not have SMS hooks.');
-        return;
-      }
+@Injectable({
+  providedIn: 'root'
+})
+export class SubmitFormBySmsService {
+  constructor(
+    private form2SmsService:Form2smsService,
+    private settingsService:SettingsService,
+  ) {}
 
-      if(!$window.medicmobile_android.sms_available()) {
-        $log.warn(
-          'Android wrapper does not have SMS enabled. Check stacktrace to see why the SmsSender failed to initialise.'
-        );
-        return;
-      }
+  submit(doc){
+    if(!window.medicmobile_android) {
+      console.info('Not in android wrapper.');
+      return;
+    }
 
-      $q.resolve()
-        .then(function() {
-          return Form2Sms(doc)
-            .then(function(smsContent) {
+    if(!window.medicmobile_android.sms_available) {
+      console.info('Android wrapper does not have SMS hooks.');
+      return;
+    }
 
-              if(!smsContent) {
-                $log.debug('Form2Sms did not return any form content for doc:', doc);
-                return;
-              }
+    if(!window.medicmobile_android.sms_available()) {
+      console.warn(
+        'Android wrapper does not have SMS enabled. Check stacktrace to see why the SmsSender failed to initialise.'
+      );
+      return;
+    }
 
-              Settings()
-                .then(function(settings) {
-                  const gatewayPhoneNumber = settings.gateway_number;
-                  if(gatewayPhoneNumber) {
-                    $window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
-                  } else {
-                    $log.error('No gateway_number provided in app_settings.  Form cannot be submitted by SMS.');
-                  }
-                })
-                .catch(function(err) {
-                  $log.error('submitFormBySmsIfApplicable() failed: ' + err);
-                });
+    return Promise
+      .resolve()
+      .then(() => {
+        return this.form2SmsService
+          .transform(doc)
+          .then((smsContent) => {
+            if(!smsContent) {
+              console.debug('Form2Sms did not return any form content for doc:', doc);
+              return;
+            }
 
-            });
-        });
-    };
+            return this.settingsService
+              .get()
+              .then((settings:any) => {
+                const gatewayPhoneNumber = settings.gateway_number;
+                if(gatewayPhoneNumber) {
+                  window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
+                } else {
+                  console.error('No gateway_number provided in app_settings.  Form cannot be submitted by SMS.');
+                }
+              })
+              .catch((err) => {
+                console.error('submitFormBySmsIfApplicable() failed: ' + err);
+              });
+
+          });
+      });
   }
-);
+}

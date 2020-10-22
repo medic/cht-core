@@ -1,190 +1,182 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
+'use strict';
+const _ = require('lodash/core');
+const Widget = require('enketo-core/src/js/Widget');
+const $ = require('jquery');
+const CONTACT_TYPE_CLASS_PREFIX = 'or-appearance-type-';
+
+require('enketo-core/src/js/plugins');
+
+const pluginName = 'dbobjectwidget';
+
+/**
+ * Allows drop-down selectors for db objects.
+ *
+ * @constructor
+ * @param {Element} element [description]
+ * @param {(boolean|{touch: boolean, repeat: boolean})} options options
+ * @param {*=} e     event
+ */
+
+function Dbobjectwidget( element, options ) {
+  this.namespace = pluginName;
+  Widget.call( this, element, options );
+  this._init();
 }
 
-define( function( require, exports, module ) {
-  'use strict';
-  const _ = require('lodash/core');
-  const Widget = require('enketo-core/src/js/Widget');
-  const $ = require('jquery');
-  const CONTACT_TYPE_CLASS_PREFIX = 'or-appearance-type-';
+//copy the prototype functions from the Widget super class
+Dbobjectwidget.prototype = Object.create( Widget.prototype );
 
-  require('enketo-core/src/js/plugins');
+//ensure the constructor is the new one
+Dbobjectwidget.prototype.constructor = Dbobjectwidget;
 
-  const pluginName = 'dbobjectwidget';
+Dbobjectwidget.prototype._init = function() {
+  construct( this.element );
+};
 
-  /**
-     * Allows drop-down selectors for db objects.
-     *
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
-     */
+function service(serviceName) {
+  return angular.element(document.body).injector().get(serviceName);
+}
 
-  function Dbobjectwidget( element, options ) {
-    this.namespace = pluginName;
-    Widget.call( this, element, options );
-    this._init();
-  }
-
-  //copy the prototype functions from the Widget super class
-  Dbobjectwidget.prototype = Object.create( Widget.prototype );
-
-  //ensure the constructor is the new one
-  Dbobjectwidget.prototype.constructor = Dbobjectwidget;
-
-  Dbobjectwidget.prototype._init = function() {
-    construct( this.element );
-  };
-
-  function service(serviceName) {
-    return angular.element(document.body).injector().get(serviceName);
-  }
-
-  function construct( element ) {
-    // timeout needed to let setting the value complete before rendering
-    setTimeout(function() {
-      const $question = $( element );
-
-      const Select2Search = service('Select2Search');
-
-      let $textInput = $question.find('input');
-
-      const value = $textInput.val();
-      const disabled = $textInput.prop('readonly');
-      $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
-      $textInput = $question.find('select');
-      const preSelectedOption = $('<option></option>')
-        .attr('value', value)
-        .text(value);
-      $textInput.append(preSelectedOption);
-
-      const contactTypes = getContactTypes($question, $textInput);
-
-      if (!$question.hasClass('or-appearance-bind-id-only')) {
-        $textInput.on('change.dbobjectwidget', changeHandler);
-      }
-      const allowNew = $question.hasClass('or-appearance-allow-new');
-      Select2Search($textInput, contactTypes, { allowNew }).then(function() {
-        // select2 doesn't understand readonly
-        $textInput.prop('disabled', disabled);
-      });
-    });
-  }
-
-  const getContactTypes = function($question, $textInput) {
-    const dbObjectType = $textInput.attr('data-type-xml');
-    if (dbObjectType !== 'string') {
-      // deprecated db-object widget
-      return [ dbObjectType ];
-    }
-    const types = [];
-    const names = $question.attr('class').split(/\s+/);
-    for (const name of names) {
-      if (name.startsWith(CONTACT_TYPE_CLASS_PREFIX)) {
-        types.push(name.slice(CONTACT_TYPE_CLASS_PREFIX.length));
-      }
-    }
-    return types;
-  };
-
-  const changeHandler = function() {
-    const $this = $(this);
-    const selected = $this.select2('data');
-    const doc = selected && selected[0] && selected[0].doc;
-    if (doc) {
-      const field = $this.attr('name');
-      const index = $('[name="' + field + '"]').index(this);
-      const keyRoot = field.substring(0, field.lastIndexOf('/'));
-      updateFields(doc, keyRoot, index, field);
-    }
-  };
-
-  const updateFields = function(data, keyRoot, index, originatingKeyPath) {
-    const Enketo = service('Enketo');
-
-    Object.keys(data).forEach(function(key) {
-      const path = keyRoot + '/' + key;
-      if (path === originatingKeyPath) {
-        // don't update the field that fired the update
-        return;
-      }
-      const value = data[key];
-      if (_.isArray(value)) {
-        // arrays aren't currently handled
-        return;
-      }
-      if (_.isObject(value)) {
-        // recursively set fields for children
-        return updateFields(value, path, index, originatingKeyPath);
-      }
-
-      const node = Enketo.getCurrentForm().model.node(path, index);
-
-      // Non-existant nodes still return a value, it's just an empty array
-      // Real nodes have a value, or at minimum [""]
-      if (node.getVal().length) {
-        node.setVal(value);
-      }
-    });
-  };
-
-  /**
-     * This function, implemented on all enketo widgets, is only called when
-     * cloning repeated sections of a form.  It's actually called on the cloned
-     * copy of a question, and for some reason for this widget needs to destroy
-     * and then re-create the select2.
-     * @see https://github.com/medic/medic/issues/3487
-     */
-  Dbobjectwidget.prototype.destroy = function( element ) {
-    deconstruct( element );
-    construct( element );
-  };
-
-  /** Reverse the select2 setup steps performed in construct() */
-  function deconstruct( element ) {
+function construct( element ) {
+  // timeout needed to let setting the value complete before rendering
+  setTimeout(function() {
     const $question = $( element );
 
-    $question.find( '.select2-container' ).remove();
+    const Select2Search = service('Select2Search');
 
-    const $selectInput = $question.find( 'select' );
+    let $textInput = $question.find('input');
 
-    // At this stage in construct(), the select2 jquery plugin is
-    // initialised.  To reverse this, we would call:
-    //     $selectInput.data( 'select2' ).destroy();
-    // However, calling this here would destroy the select2 for the original
-    // widget, so -do not do it-.
+    const value = $textInput.val();
+    const disabled = $textInput.prop('readonly');
+    $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+    $textInput = $question.find('select');
+    const preSelectedOption = $('<option></option>')
+      .attr('value', value)
+      .text(value);
+    $textInput.append(preSelectedOption);
 
-    $selectInput.off( 'change.dbobjectwidget' );
+    const contactTypes = getContactTypes($question, $textInput);
 
-    $selectInput.find( 'option' ).remove();
+    if (!$question.hasClass('or-appearance-bind-id-only')) {
+      $textInput.on('change.dbobjectwidget', changeHandler);
+    }
+    const allowNew = $question.hasClass('or-appearance-allow-new');
+    Select2Search($textInput, contactTypes, { allowNew }).then(function() {
+      // select2 doesn't understand readonly
+      $textInput.prop('disabled', disabled);
+    });
+  });
+}
 
-    const replacementHtml = $selectInput[0].outerHTML
-      .replace( /^<select /, '<input ' )
-      .replace( /<\/select>/, '</input>' );
-    $selectInput.replaceWith( replacementHtml );
+const getContactTypes = function($question, $textInput) {
+  const dbObjectType = $textInput.attr('data-type-xml');
+  if (dbObjectType !== 'string') {
+    // deprecated db-object widget
+    return [ dbObjectType ];
   }
+  const types = [];
+  const names = $question.attr('class').split(/\s+/);
+  for (const name of names) {
+    if (name.startsWith(CONTACT_TYPE_CLASS_PREFIX)) {
+      types.push(name.slice(CONTACT_TYPE_CLASS_PREFIX.length));
+    }
+  }
+  return types;
+};
 
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
+const changeHandler = function() {
+  const $this = $(this);
+  const selected = $this.select2('data');
+  const doc = selected && selected[0] && selected[0].doc;
+  if (doc) {
+    const field = $this.attr('name');
+    const index = $('[name="' + field + '"]').index(this);
+    const keyRoot = field.substring(0, field.lastIndexOf('/'));
+    updateFields(doc, keyRoot, index, field);
+  }
+};
 
-      options = options || {};
+const updateFields = function(data, keyRoot, index, originatingKeyPath) {
+  const Enketo = service('Enketo');
 
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Dbobjectwidget( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
+  Object.keys(data).forEach(function(key) {
+    const path = keyRoot + '/' + key;
+    if (path === originatingKeyPath) {
+      // don't update the field that fired the update
+      return;
+    }
+    const value = data[key];
+    if (_.isArray(value)) {
+      // arrays aren't currently handled
+      return;
+    }
+    if (_.isObject(value)) {
+      // recursively set fields for children
+      return updateFields(value, path, index, originatingKeyPath);
+    }
 
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-db-object,.or-appearance-select-contact',
-  };
-} );
+    const node = Enketo.getCurrentForm().model.node(path, index);
+
+    // Non-existant nodes still return a value, it's just an empty array
+    // Real nodes have a value, or at minimum [""]
+    if (node.getVal().length) {
+      node.setVal(value);
+    }
+  });
+};
+
+/**
+ * This function, implemented on all enketo widgets, is only called when
+ * cloning repeated sections of a form.  It's actually called on the cloned
+ * copy of a question, and for some reason for this widget needs to destroy
+ * and then re-create the select2.
+ * @see https://github.com/medic/medic/issues/3487
+ */
+Dbobjectwidget.prototype.destroy = function( element ) {
+  deconstruct( element );
+  construct( element );
+};
+
+/** Reverse the select2 setup steps performed in construct() */
+function deconstruct( element ) {
+  const $question = $( element );
+
+  $question.find( '.select2-container' ).remove();
+
+  const $selectInput = $question.find( 'select' );
+
+  // At this stage in construct(), the select2 jquery plugin is
+  // initialised.  To reverse this, we would call:
+  //     $selectInput.data( 'select2' ).destroy();
+  // However, calling this here would destroy the select2 for the original
+  // widget, so -do not do it-.
+
+  $selectInput.off( 'change.dbobjectwidget' );
+
+  $selectInput.find( 'option' ).remove();
+
+  const replacementHtml = $selectInput[0].outerHTML
+    .replace( /^<select /, '<input ' )
+    .replace( /<\/select>/, '</input>' );
+  $selectInput.replaceWith( replacementHtml );
+}
+
+$.fn[ pluginName ] = function( options, event ) {
+  return this.each( function() {
+    const $this = $( this );
+    let data = $this.data( pluginName );
+
+    options = options || {};
+
+    if ( !data && typeof options === 'object' ) {
+      $this.data( pluginName, ( data = new Dbobjectwidget( this, options, event ) ) );
+    } else if ( data && typeof options === 'string' ) {
+      data[ options ]( this );
+    }
+  } );
+};
+
+module.exports = {
+  'name': pluginName,
+  'selector': '.or-appearance-db-object,.or-appearance-select-contact',
+};

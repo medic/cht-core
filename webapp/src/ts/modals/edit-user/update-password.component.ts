@@ -1,11 +1,11 @@
-import {EditUserAbstract} from "@mm-modals/edit-user/edit-user.component";
+import { Component } from "@angular/core";
+import * as passwordTester from 'simple-password-tester';
+import { TranslateService } from "@ngx-translate/core";
+import { BsModalRef } from "ngx-bootstrap/modal";
 
-const passwordTester = require('simple-password-tester');
-import {Component} from "@angular/core";
-import {UserSettingsService} from "@mm-services/user-settings.service";
-import {TranslateService} from "@ngx-translate/core";
-import {UpdateUserService} from "@mm-services/update-user.service";
-import {BsModalRef} from "ngx-bootstrap/modal";
+import { EditUserAbstract } from "@mm-modals/edit-user/edit-user.component";
+import { UserSettingsService } from "@mm-services/user-settings.service";
+import { UpdateUserService } from "@mm-services/update-user.service";
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;

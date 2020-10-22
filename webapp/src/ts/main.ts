@@ -10,7 +10,6 @@ window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 //window.d3 = require('d3');
 
-//import * as Select2 from '../../node_modules/select2/dist/js/select2.full';
 //require('nvd3');
 
 import { enableProdMode } from '@angular/core';
@@ -25,6 +24,8 @@ import { POUCHDB_OPTIONS } from './constants';
 import * as bootstrapper from './bootstrapper';
 
 require('select2');
+require('./enketo/main');
+
 
 (function() {
   'use strict';

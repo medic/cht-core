@@ -8,9 +8,11 @@ function translate(key) {
     return moment().month(parseInt(key.substring(11)) - 1).format('MMM');
   }
 
-  const angularServices = angular.element( document.body ).injector();
-  const $translate = angularServices.get( '$translate' );
-  return $translate.instant('enketo.' + key);
+  // todo
+  //const angularServices = angular.element( document.body ).injector();
+  //const $translate = angularServices.get( '$translate' );
+  //return $translate.instant('enketo.' + key);
+  return 'enketo.' + key;
 }
 
 module.exports = {

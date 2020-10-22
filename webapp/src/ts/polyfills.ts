@@ -76,6 +76,7 @@ declare global {
     d3: any;
     bootstrapFeedback: any;
     medicmobile_android:any;
+    EnketoForm:any;
   }
 }
 (window as any).process = {

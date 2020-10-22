@@ -25,14 +25,14 @@
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'reports' && !selectMode">
         <div class="actions dropup" dropdown [dropup]="true">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" dropdownToggle dropdata-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms.length}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" dropdownToggle dropdata-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}">
             <span class="fa fa-plus"></span>
             <p translate>Submit Report</p>
           </a>
           <ng-container *ngIf="nonContactForms?.length">
             <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
               <li *ngFor="let form of nonContactForms; trackBy: trackByForms">
-                <a ui-sref="reports.add({ formId: form.code })">
+                <a [routerLink]="['/reports', 'add', form.code]">
                   <span [innerHTML]="form.icon | resourceIcon"></span>
                   <span class="content">{{ form.title }}</span>
                 </a>
@@ -97,7 +97,7 @@
 
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'reports'">
         <div *ngIf="selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent)"> <!-- && 'reports.detail' | isState -->
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && routeSnapshot.data?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
               <span class="fa fa-trash-o"></span>
               <p translate>select.mode.delete.all</p>
@@ -106,7 +106,7 @@
         </div>
 
         <div *ngIf="!selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent">  <!--&& ('reports.detail' | isState)-->
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && routeSnapshot.data?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{ actionBar?.right?.sendTo?.phone }}" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
@@ -132,7 +132,7 @@
               <span class="fa fa-check"></span>
               <p translate>reports.verify</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_update_reports" ui-sref="reports.edit({ reportId: selectedReportsDocs[0]._id })">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_update_reports" [routerLink]="['/reports', 'edit', selectedReportsDocs[0]?._id]">
               <span class="fa fa-pencil"></span>
               <p translate>Edit</p>
             </a>

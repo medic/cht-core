@@ -128,7 +128,7 @@ export class EnketoTranslationService {
     return fields;
   }
 
-  reportRecordToJs(record, formXml) {
+  reportRecordToJs(record, formXml?) {
     const root = $.parseXML(record).firstChild;
     if (!formXml) {
       return this.nodesToJs(root.childNodes);
