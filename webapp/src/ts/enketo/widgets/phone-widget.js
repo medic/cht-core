@@ -10,11 +10,8 @@ const pluginName = 'phonewidget';
 // Set up enketo validation for `phone` input type
 FormModel.prototype.types.tel = {
   validate: function( fieldValue ) {
-    // todo
-    const angularServices = angular.element( document.body ).injector();
-    const Settings = angularServices.get( 'Settings' );
-
-    return Settings()
+    return window.CHTCore.Settings
+      .get()
       .then( function( settings ) {
         if ( !phoneNumber.validate( settings, fieldValue ) ) {
           throw new Error( 'invalid phone number: "' + fieldValue + '"' );
@@ -26,8 +23,8 @@ FormModel.prototype.types.tel = {
         // assumption that we have an object type `person` with a
         // field `phone`.
 
-        const DB = angularServices.get( 'DB' );
-        return DB().query('medic-client/contacts_by_phone', { key: phoneNumber });
+        const DB = window.CHTCore.DB;
+        return DB.get().query('medic-client/contacts_by_phone', { key: phoneNumber });
       } )
       .then( function( res ) {
         if ( res.rows.length === 0 ) {

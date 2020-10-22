@@ -107,11 +107,16 @@ export class ReportsEffects {
         withLatestFrom(this.store.select(Selectors.getListReport, { id: action?.payload?.id })),
       )),
       exhaustMap(([action, report]) => {
-        const readReport = { ...report };
-        readReport.read = true;
+        // we could be reaching this effect before the list is loaded
+        // in these cases, we skip updating the list and just update the database
+        const readReport = report ? { ...report, read: true } : { _id: action.payload?.id, form: true };
         this.markReadService
-          .markAsRead([report])
+          .markAsRead([readReport])
           .catch(err => console.error('Error marking read', err));
+
+        if (!report) {
+          return of();
+        }
         return of(this.reportActions.updateReportsList([readReport]));
       }),
     );

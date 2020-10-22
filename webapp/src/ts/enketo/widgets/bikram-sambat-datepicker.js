@@ -20,10 +20,9 @@ Bikramsambatdatepicker.prototype.constructor = Bikramsambatdatepicker;
 
 Bikramsambatdatepicker.prototype._init = function() {
   const el = this.element;
-  const angularServices = angular.element( document.body ).injector();
-  const Language = angularServices.get( 'Language' );
 
-  Language()
+  window.CHTCore.Language
+    .get()
     .then( function( language ) {
       const $el = $( el );
 

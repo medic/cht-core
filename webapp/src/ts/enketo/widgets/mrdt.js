@@ -34,19 +34,18 @@ Mrdtwidget.prototype._init = function() {
     .replace(/^<input /, '<textarea ')
     .replace(/<\/input>/, '</textarea>');
   $input.replaceWith(textarea);
-  const angularServices = angular.element( document.body ).injector();
-  const $translate = angularServices.get( '$translate' );
-  const service = angularServices.get( 'MRDT' );
+  const $translate = window.CHTCore.Translate;
+  const MRDT = window.CHTCore.MRDT;
 
-  if ( !service.enabled() ) {
-    $translate( 'mrdt.disabled' ).then(function( label ) {
+  if ( !MRDT.enabled() ) {
+    $translate.get( 'mrdt.disabled' ).toPromise().then(function( label ) {
       $el.append( '<p>' + label + '</p>' );
     });
     return;
   }
 
   $el.on( 'click', '.btn.mrdt-verify', function() {
-    service.verify().then( function(data) {
+    MRDT.verify().then( function(data) {
       const image = data.image;
       const timeTaken = data.timeTaken;
       $( self.element )

@@ -8,7 +8,12 @@ import { StoreModule } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { storeLogger } from 'ngrx-store-logger';
 import { CookieService } from 'ngx-cookie-service';
-import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
+import {
+  TranslateModule,
+  TranslateLoader,
+  MissingTranslationHandler,
+  MissingTranslationHandlerParams,
+} from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
@@ -36,6 +41,7 @@ import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { ParseProvider } from '@mm-providers/parse.provider';
 
 import { reducers } from "./reducers";
+import { IntegrationApiService } from '@mm-services/integration-api.service';
 
 const logger = reducer => {
   // default, no options
@@ -51,7 +57,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
     BrowserModule,
@@ -92,6 +98,18 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     FormIconNamePipe,
     ParseProvider,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {
+  integration;
+
+  constructor(
+    integrationApiService:IntegrationApiService
+  ) {
+    //console.log(integrationApiService.);
+    this.integration = integrationApiService;
+    this.integration.Language.get().then(value => {
+      console.log('language', value);
+    })
+  }
+}

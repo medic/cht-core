@@ -246,6 +246,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
         this.globalActions.setSnackbarContent(true ? 'report.updated' : 'report.created');
         // todo
         this.globalActions.setEnketoEditedStatus(false);
+        console.log('redirecting!');
         this.router.navigate(['/reports', docs[0]._id]);
       })
       .then(() => {

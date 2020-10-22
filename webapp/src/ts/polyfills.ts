@@ -77,6 +77,7 @@ declare global {
     bootstrapFeedback: any;
     medicmobile_android:any;
     EnketoForm:any;
+    CHTCore:any;
   }
 }
 (window as any).process = {
@@ -86,5 +87,6 @@ declare global {
 
 interface JQuery {
   daterangepicker(options?: any, callback?: Function) : any;
+  select2(event?:any, options?:any):any;
 }
 

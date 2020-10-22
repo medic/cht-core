@@ -127,8 +127,12 @@ require('./enketo/main');
       enableProdMode();
     }
 
+
     platformBrowserDynamic()
       .bootstrapModule(AppModule, { preserveWhitespaces: true })
+      .then((moduleRef) => {
+        window.CHTCore = moduleRef.instance.integration;
+      })
       .catch(err => console.error(err));
   });
 

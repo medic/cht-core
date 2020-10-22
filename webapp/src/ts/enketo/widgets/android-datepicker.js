@@ -58,10 +58,11 @@ Androiddatepicker.prototype._init = function() {
   }
 
   const el = this.element;
-  const angularServices = angular.element( document.body ).injector();
-  const Language = angularServices.get( 'Language' );
+  //const angularServices = angular.element( document.body ).injector();
+  //const Language = angularServices.get( 'Language' );
 
-  Language()
+  window.CHTCore.Language
+    .get()
     .then( function( language ) {
       if ( language.indexOf( 'ne' ) === 0 ) {
         return;

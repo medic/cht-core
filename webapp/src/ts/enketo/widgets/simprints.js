@@ -27,12 +27,16 @@ Simprintswidget.prototype._init = function() {
   const $el = $( this.element );
   const $input = $el.find( 'input' );
   $input.attr( 'disabled', true );
-  const angularServices = angular.element( document.body ).injector();
-  const $translate = angularServices.get( '$translate' );
-  const service = angularServices.get( 'Simprints' );
+
+  const $translate = window.CHTCore.Translate;
+  //const service = angularServices.get( 'Simprints' );
+  const service = {
+    enabled: () => {},
+    register: () => Promise.resolve(),
+  };
 
   if ( !service.enabled() ) {
-    $translate( 'simprints.disabled' ).then(function( label ) {
+    $translate.get( 'simprints.disabled' ).toPromise().then(function( label ) {
       $el.append( '<p>' + label + '</p>' );
     });
     return;
@@ -44,7 +48,7 @@ Simprintswidget.prototype._init = function() {
     } );
   } );
 
-  $translate( 'simprints.register' ).then( function( label ) {
+  $translate.get( 'simprints.register' ).toPromise().then( function( label ) {
     $el.append( '<div><a class="btn btn-default simprints-register">' +
                 '<img src="/img/simprints.png" width="20" height="20"/> ' + label + '</a>' +
                 '</div>' );

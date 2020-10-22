@@ -33,16 +33,12 @@ Dbobjectwidget.prototype._init = function() {
   construct( this.element );
 };
 
-function service(serviceName) {
-  return angular.element(document.body).injector().get(serviceName);
-}
-
 function construct( element ) {
   // timeout needed to let setting the value complete before rendering
   setTimeout(function() {
     const $question = $( element );
 
-    const Select2Search = service('Select2Search');
+    const Select2Search = window.CHTCore.Select2Search;
 
     let $textInput = $question.find('input');
 
@@ -61,7 +57,7 @@ function construct( element ) {
       $textInput.on('change.dbobjectwidget', changeHandler);
     }
     const allowNew = $question.hasClass('or-appearance-allow-new');
-    Select2Search($textInput, contactTypes, { allowNew }).then(function() {
+    Select2Search.init($textInput, contactTypes, { allowNew }).then(function() {
       // select2 doesn't understand readonly
       $textInput.prop('disabled', disabled);
     });
@@ -97,7 +93,8 @@ const changeHandler = function() {
 };
 
 const updateFields = function(data, keyRoot, index, originatingKeyPath) {
-  const Enketo = service('Enketo');
+  //const Enketo = service('Enketo');
+  const Enketo = window.CHTCore.Enketo;
 
   Object.keys(data).forEach(function(key) {
     const path = keyRoot + '/' + key;
