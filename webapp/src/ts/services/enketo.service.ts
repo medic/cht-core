@@ -292,7 +292,6 @@ export class EnketoService {
   }
 
   private renderFromXmls(doc, wrapper, instanceData) {
-    console.log(wrapper, 'wrapper');
     wrapper
       .find('.form-footer')
       .addClass('end')
@@ -476,12 +475,13 @@ export class EnketoService {
 
     const docsToStore = $record.find('[db-doc=true]').map(function() {
       const docToStore:any = $service.enketoTranslationService.reportRecordToJs(getOuterHTML(this));
+      console.log(this);
       docToStore._id = getId(Xpath.getElementXPath(this));
       docToStore.reported_date = Date.now();
       return docToStore;
     }).get();
 
-    doc._id = getId('/!*');
+    doc._id = getId('/*');
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record);
 
     const attach = (elem, file, type, alreadyEncoded, xpath?) => {
@@ -534,11 +534,8 @@ export class EnketoService {
             console.error('Error saving report', result);
             throw new Error('Error saving report');
           }
-          docs.forEach((doc) => {
-            if (doc._id === result.id) {
-              doc._rev = result.rev;
-            }
-          });
+          const idx = docs.findIndex(doc => doc._id === result._id);
+          docs[idx] = { ...docs[idx], _rev: result.rev };
         });
         return docs;
       });
