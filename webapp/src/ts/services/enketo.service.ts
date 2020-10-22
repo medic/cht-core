@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
-import * as medicXpathExtensions from '../enketo/medic-xpath-extensions';
+import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { AddAttachmentService } from '@mm-services/add-attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';

@@ -24,8 +24,7 @@ import { POUCHDB_OPTIONS } from './constants';
 import * as bootstrapper from './bootstrapper';
 
 require('select2');
-require('./enketo/main');
-
+require('../js/enketo/main');
 
 (function() {
   'use strict';
