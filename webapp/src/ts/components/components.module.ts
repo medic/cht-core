@@ -23,6 +23,7 @@ import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { ActionbarComponent } from './actionbar/actionbar.component';
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     ReportImageComponent,
     NavigationComponent,
     ActionbarComponent,
+    PrivacyPolicyComponent,
   ],
   imports: [
     CommonModule,
@@ -68,6 +70,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     ReportImageComponent,
     NavigationComponent,
     ActionbarComponent,
+    PrivacyPolicyComponent,
   ]
 })
 export class ComponentsModule { }

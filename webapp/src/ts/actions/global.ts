@@ -21,6 +21,8 @@ export const Actions = {
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
   setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
+  setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
+  setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
 
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
@@ -149,6 +151,14 @@ export class GlobalActions {
 
   setLeftActionBar(value) {
     return this.store.dispatch(Actions.setLeftActionBar(value));
+  }
+
+  setPrivacyPolicyAccepted(accepted) {
+    return this.store.dispatch(Actions.setPrivacyPolicyAccepted(accepted));
+  }
+
+  setShowPrivacyPolicy(show) {
+    return this.store.dispatch(Actions.setShowPrivacyPolicy(show));
   }
 }
 
@@ -317,27 +327,6 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
-
-      function setPrivacyPolicyAccepted(accepted) {
-        dispatch(
-          ActionUtils.createSingleValueAction(
-            actionTypes.SET_PRIVACY_POLICY_ACCEPTED,
-            'privacyPolicyAccepted',
-            accepted
-          )
-        );
-      }
-
-      function setShowPrivacyPolicy(show) {
-        dispatch(
-          ActionUtils.createSingleValueAction(
-            actionTypes.SET_SHOW_PRIVACY_POLICY,
-            'showPrivacyPolicy',
-            show
-          )
-        );
-      }
-
       return {
         clearRightActionBar,
         deleteDoc,
@@ -353,8 +342,6 @@ angular.module('inboxServices').factory('GlobalActions',
         setShowActionBar,
         setUnreadCount,
         updateUnreadCount,
-        setPrivacyPolicyAccepted,
-        setShowPrivacyPolicy,
       };
     };
   }
