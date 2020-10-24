@@ -31,9 +31,10 @@ const _ = require('lodash/core');
         const userCtx = getUserCtx();
         const username = userCtx && userCtx.name;
         const usernameQueryParam = username ? `username=${username}&` : '';
+        const windowLocationHrefEncoded = encodeURIComponent($window.location.href);
         ipCookie.remove(COOKIE_NAME, { path: '/' });
         userCtxCookieValue = undefined;
-        $window.location.href = `/${Location.dbName}/login?${usernameQueryParam}redirect=${encodeURIComponent($window.location.href)}`;
+        $window.location.href = `/${Location.dbName}/login?${usernameQueryParam}redirect=${windowLocationHrefEncoded}`;
       };
 
       const logout = function() {

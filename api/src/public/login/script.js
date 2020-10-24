@@ -158,7 +158,7 @@ const checkUsername = function() {
   const usernameQueryParam = urlParams.get('username');
   const usernameEntered    = document.getElementById('user').value.toLowerCase().trim();
   return usernameQueryParam === usernameEntered;
-}
+};
 
 const getRedirectUrl = function() {
   return urlParams.get('redirect');
