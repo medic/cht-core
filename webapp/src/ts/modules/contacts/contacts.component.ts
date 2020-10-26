@@ -18,7 +18,7 @@ import { SimprintsService } from '@mm-services/simprints.service';
 import { Selectors } from '@mm-selectors/index';
 import { isMobile } from '@mm-providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
-import { ContactTypesService } from '@mm-services/contact-types.service'
+import { ContactTypesService } from '@mm-services/contact-types.service';
 import { init as scrollLoaderInit } from '@mm-providers/scroll-loader.provider';
 
 const PAGE_SIZE = 50;
@@ -103,7 +103,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
           limit: this.contactsList.length,
           withIds,
           silent: true,
-          reuseExistingDom: true,
         });
       },
       filter: (change) => {
@@ -211,7 +210,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       const homeType = this.usersHomePlace.contact_type || this.usersHomePlace.type;
       p = this.contactTypesService.getChildren(homeType);
     } else if (this.isAdmin) {
-      p = this.contactTypesService.getChildren(false);
+      p = this.contactTypesService.getChildren();
     } else {
       return Promise.resolve([]);
     }
@@ -221,7 +220,9 @@ export class ContactsComponent implements OnInit, OnDestroy{
   private initScroll() {
     scrollLoaderInit(() => {
       if (!this.loading && this.moreItems) {
-        this.query({ skip: true });
+        this.query({
+          paginating: true,
+        });
       }
     });
   };
@@ -239,6 +240,20 @@ export class ContactsComponent implements OnInit, OnDestroy{
     if (!options.silent) {
       this.error = false;
       this.loading = true;
+    }
+    if (options.paginating) {
+      this.appending = true;
+      options.skip = this.contactsList.length;
+    } else if (!options.silent) {
+      this.additionalListItem = false;
+    }
+
+    if (this.additionalListItem) {
+      if (options.skip) {
+        options.skip -= 1;
+      } else {
+        options.limit -= 1;
+      }
     }
 
     let searchFilters = this.defaultFilters;
@@ -277,9 +292,10 @@ export class ContactsComponent implements OnInit, OnDestroy{
               updatedContacts.splice(homeIndex, 1);
               updatedContacts.unshift(this.usersHomePlace);
             } else if (
-              this.filters.search &&
-              this.filters.simprintsIdentities
+              !this.filters.search &&
+              !this.filters.simprintsIdentities
             ) {
+              
               updatedContacts.unshift(this.usersHomePlace);
             }
             if (this.filters.simprintsIdentities) {
@@ -297,7 +313,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
             }
           }
         }
-
+        
         this.contactsActions.updateContactsList(updatedContacts);
 
         this.moreItems = updatedContacts.length >= options.limit;

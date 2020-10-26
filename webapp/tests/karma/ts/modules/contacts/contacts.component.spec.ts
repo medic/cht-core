@@ -1,8 +1,8 @@
-import { async, TestBed, ComponentFixture } from '@angular/core/testing';
+import { async, TestBed, ComponentFixture, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import sinon from 'sinon';
 import { of } from 'rxjs';
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
@@ -16,6 +16,8 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { ContactsActions } from '@mm-actions/contacts';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -31,6 +33,7 @@ describe('Contacts component', () => {
   let getDataRecordsService;
   let sessionService;
   let authService;
+  let contactTypesService;
   let district;
 
   beforeEach(async(() => {
@@ -42,6 +45,7 @@ describe('Contacts component', () => {
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getFilters, value: {} },
+      { selector: Selectors.getIsAdmin, value: false },
     ];
     const changesServiceMock = {
       subscribe: sinon.stub().resolves(of({}))
@@ -69,9 +73,13 @@ describe('Contacts component', () => {
           }},
           { provide: SettingsService, useValue: { get: sinon.stub().resolves([]) } },
           { provide: UserSettingsService, useValue: userSettingsServiceMock },
-          { provide: GetDataRecordsService, useValue: { get: sinon.stub().resolves([]) } },
+          { provide: GetDataRecordsService, useValue: { get: sinon.stub().resolves({}) } },
           { provide: SessionService, useValue: { isDbAdmin: sinon.stub().resolves([]) } },
           { provide: AuthService, useValue: { has: sinon.stub().resolves([]) } },
+          { provide: ContactTypesService, useValue: {
+            getChildren: sinon.stub().resolves([]),
+            getAll: sinon.stub().resolves([])
+          }},
         ]
       })
       .compileComponents().then(() => {
@@ -88,6 +96,7 @@ describe('Contacts component', () => {
         getDataRecordsService = TestBed.inject(GetDataRecordsService);
         sessionService = TestBed.inject(SessionService);
         authService = TestBed.inject(AuthService);
+        contactTypesService = TestBed.inject(ContactTypesService);
       });
   }));
 
@@ -120,45 +129,107 @@ describe('Contacts component', () => {
   });
 
   describe('Search', () => {
-    it('Puts the home place at the top of the list', () => {
-      userSettingsService.get.reset();
-      userSettingsService.get.resolves({ facility_id: 'abcde' });
-      fixture.detectChanges();
-
+    it('Puts the home place at the top of the list', fakeAsync(() => {
       searchResults = [
         {
           _id: 'search-result',
         },
       ];
-      store.overrideSelector(Selectors.getContactsList, searchResults);
-      store.refreshState();
-      // TestBed.overrideProvider(
-      //   UserSettingsService,
-      //   { useValue: { get: sinon.stub().resolves({ facility_id: 'abcde' }) } }
-      // );
-      // TestBed.compileComponents();
-      // fixture = TestBed.createComponent(ContactsComponent);
-      // component = fixture.componentInstance;
-      // fixture.detectChanges();
-
-      // getDataRecordsService.get.resolves(
-      //   { _id: 'abcde', name: 'My District', type: 'district_hospital' }
-      // );
-
-      const lhs = component.contactsList;
-      console.log('LHS::');
-      console.log(lhs);
-      assert.equal(
-        lhs.length,
-        2,
-        'both home place and search results are shown'
+      userSettingsService.get.resolves({ facility_id: 'abcde' });
+      getDataRecordsService.get.resolves(
+        { _id: 'abcde', name: 'My District', type: 'district_hospital' }
       );
-      assert.equal(lhs[0]._id, district._id, 'first item is home place');
-      assert.equal(
-        lhs[1]._id,
-        'search-result',
-        'second item is search result'
+      sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      searchService.search.resolves(searchResults);
+      component.contactsActions.updateContactsList = sinon.stub();
+      component.ngOnInit();
+      flush();
+      const argument = component.contactsActions.updateContactsList.args[0][0];
+
+      expect(argument.length).to.equal(2);
+      expect(argument[0]._id).to.equal('abcde');
+      expect(argument[1]._id).to.equal('search-result');
+    }));
+
+    it('Only displays the home place once', fakeAsync(() => {
+      searchResults = [
+        {
+          _id: 'search-result',
+        },
+        {
+          _id: 'abcde',
+        },
+      ];
+
+      userSettingsService.get.resolves({ facility_id: 'abcde' });
+      getDataRecordsService.get.resolves(
+        { _id: 'abcde', name: 'My District', type: 'district_hospital' }
       );
-    });
+      sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      searchService.search.resolves(searchResults);
+      component.contactsActions.updateContactsList = sinon.stub();
+      component.ngOnInit();
+      flush();
+      const argument = component.contactsActions.updateContactsList.args[0][0];
+
+      expect(argument.length).to.equal(2);
+      expect(argument[0]._id).to.equal('abcde');
+      expect(argument[1]._id).to.equal('search-result');
+    }));
+
+    it('Only searches for top-level places as an admin', fakeAsync(() => {
+      store.overrideSelector(Selectors.getIsAdmin, true);
+      userSettingsService.get.resolves({ facility_id: undefined });
+      searchResults = [
+        {
+          _id: 'search-result',
+        },
+      ];
+      component.ngOnInit();
+      flush();
+
+      expect(contactTypesService.getChildren.args[0].length).to.equal(0);
+    }));
+
+    it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
+      store.overrideSelector(Selectors.getIsAdmin, true);
+      userSettingsService.get.resolves({ facility_id: undefined });
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(50).fill(searchResult);
+      searchService.search.resolves(searchResults);
+      component.contactsActions.updateContactsList = sinon.stub();
+      component.ngOnInit();
+      flush();
+      const argument = component.contactsActions.updateContactsList.args[0][0];
+
+      expect(argument.length).to.equal(50);
+      // expect(searchService.search.args[1][2]).to.deep.equal({
+      //   paginating: true,
+      //   limit: 50,
+      //   skip: 50,
+      // });
+    }));
+
+    it('when paginating, does modify skip for non-admins #4085', fakeAsync(() => {
+      userSettingsService.get.resolves({ facility_id: 'abcde' });
+      getDataRecordsService.get.resolves(
+        { _id: 'abcde', name: 'My District', type: 'district_hospital' }
+      );
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(50).fill(searchResult);
+      searchService.search.resolves(searchResults);
+      component.contactsActions.updateContactsList = sinon.stub();
+      component.ngOnInit();
+      flush();
+      const argument = component.contactsActions.updateContactsList.args[0][0];
+
+      expect(argument.length).to.equal(51);
+      // TODO: fix this test
+      // expect(searchService.search.args[1][2]).to.deep.equal({
+      //   paginating: true,
+      //   limit: 50,
+      //   skip: 50,
+      // });
+    }));
   });
 });
