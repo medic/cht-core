@@ -12,7 +12,7 @@ window.$ = window.jQuery = require('jquery');
 
 //require('nvd3');
 
-import { enableProdMode } from '@angular/core';
+import { enableProdMode, ViewEncapsulation } from '@angular/core';
 import '@angular/compiler';
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
@@ -128,7 +128,7 @@ require('../js/enketo/main');
 
 
     platformBrowserDynamic()
-      .bootstrapModule(AppModule, { preserveWhitespaces: true })
+      .bootstrapModule(AppModule, { preserveWhitespaces: true, defaultEncapsulation: ViewEncapsulation.None, useJit: true })
       .then((moduleRef) => {
         window.CHTCore = moduleRef.instance.integration;
       })

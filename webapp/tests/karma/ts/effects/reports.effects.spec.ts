@@ -310,7 +310,7 @@ describe('Reports effects', () => {
 
       effects.markRead.subscribe();
       expect(markReadService.markAsRead.callCount).to.equal(1);
-      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report' }]]);
+      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report', read: true }]]);
       expect(updateReportsList.callCount).to.equal(1);
       expect(updateReportsList.args[0]).to.deep.equal([[{ _id: 'report', read: true }]]);
     });
@@ -323,9 +323,20 @@ describe('Reports effects', () => {
 
       effects.markRead.subscribe();
       expect(markReadService.markAsRead.callCount).to.equal(1);
-      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'my_report' }]]);
+      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'my_report', read: true }]]);
       expect(updateReportsList.callCount).to.equal(1);
       expect(updateReportsList.args[0]).to.deep.equal([[{ _id: 'my_report', read: true }]]);
+    });
+
+    it('should mark read even if report is not found in list', () => {
+      const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');
+      store.overrideSelector(Selectors.getListReport, null);
+      actions$ = of(ReportActionList.markReportRead('report'));
+
+      effects.markRead.subscribe();
+      expect(markReadService.markAsRead.callCount).to.equal(1);
+      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report', form: true }]]);
+      expect(updateReportsList.callCount).to.equal(0);
     });
   });
 });

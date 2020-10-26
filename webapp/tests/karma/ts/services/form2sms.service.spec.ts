@@ -1,4 +1,13 @@
-describe('Form2Sms service', function() {
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { assert } from 'chai';
+
+import { Form2smsService } from '@mm-services/form2sms.service';
+import { DbService } from '@mm-services/db.service';
+import { GetReportContentService } from '@mm-services/get-report-content.service';
+import { ParseProvider } from '@mm-providers/parse.provider';
+
+describe('Form2Sms service', () => {
   'use strict';
 
   const TEST_FORM_NAME = 'form:test';
@@ -6,38 +15,48 @@ describe('Form2Sms service', function() {
 
   /** @return a mock form ready for putting in #dbContent */
   let service;
-  const dbGet = sinon.stub();
-  const GetReportContent = sinon.stub();
+  let dbGet;
+  let GetReportContent;
 
-  beforeEach(function() {
-    module('inboxApp');
+  const testFormExists = () => {
+    testFormExistsWithAttachedCode(undefined);
+  }
 
-    module(function($provide) {
-      $provide.value('$log', { debug: sinon.stub(), error: sinon.stub() });
-      $provide.value('$q', Q);
-      $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet }));
-      $provide.value('GetReportContent', GetReportContent);
-      $provide.value('Settings', Promise.resolve({ gateway_number: '+1234567890' }));
+  const testFormExistsWithAttachedCode = (code?) => {
+    dbGet.withArgs(TEST_FORM_ID).resolves({ xml2sms:code });
+  }
+
+  const aFormSubmission = (xml?) => {
+    GetReportContent.resolves(xml);
+    return { _id:'abc-123', form:TEST_FORM_NAME };
+  }
+
+  beforeEach(() => {
+    dbGet = sinon.stub();
+    GetReportContent = sinon.stub();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
+        { provide: GetReportContentService, useValue: { getReportContent: GetReportContent } },
+        ParseProvider,
+      ]
     });
-    inject(function(_Form2Sms_) {
-      service = _Form2Sms_;
-    });
+    service = TestBed.inject(Form2smsService);
   });
 
-  afterEach(function() {
+  afterEach(() => {
     sinon.restore();
   });
 
-  describe('#()', function() {
+  describe('#()', () => {
     it('should throw for a non-existent doc', () => {
       // given
       let NO_FORM;
 
       // when
-      return service(NO_FORM)
-
+      return service
+        .transform(NO_FORM)
         .then(smsContent => assert.fail(`Should have thrown, but instead returned ${smsContent}`))
-
         .catch(err => assert.notEqual(err.name, 'AssertionError'));
     });
 
@@ -48,23 +67,22 @@ describe('Form2Sms service', function() {
       dbGet.withArgs(TEST_FORM_ID).rejects(new Error('expected'));
 
       // when
-      return service(doc)
-
+      return service
+        .transform(doc)
         .then(smsContent => assert.fail(`Should have thrown, but instead returned ${smsContent}`))
-
         .catch(err => assert.equal(err.message, 'expected'));
     });
 
     it('should parse attached code for a form', () => {
       // given
-      const doc = aFormSubmission();
+      const doc:any = aFormSubmission();
       doc.fields = { a:1, b:2, c:3 };
       // and
       testFormExistsWithAttachedCode('spaced("T", doc.a, doc.b, doc.c)');
 
       // when
-      return service(doc)
-
+      return service
+        .transform(doc)
         .then(smsContent => assert.equal(smsContent, 'T 1 2 3'));
     });
 
@@ -81,8 +99,8 @@ describe('Form2Sms service', function() {
       testFormExistsWithAttachedCode(true);
 
       // when
-      return service(doc)
-
+      return service
+        .transform(doc)
         .then(smsContent => assert.equal(smsContent, 'T#f1#une#f2#deux'));
     });
 
@@ -96,7 +114,9 @@ describe('Form2Sms service', function() {
       `);
 
       testFormExists();
-      return service(doc).then(smsContent => assert.isUndefined(smsContent));
+      return service
+        .transform(doc)
+        .then(smsContent => assert.isUndefined(smsContent));
     });
 
     it('should do nothing if xml2sms field is false', () => {
@@ -109,7 +129,9 @@ describe('Form2Sms service', function() {
       `);
 
       testFormExistsWithAttachedCode(false);
-      return service(doc).then(smsContent => assert.isUndefined(smsContent));
+      return service
+        .transform(doc)
+        .then(smsContent => assert.isUndefined(smsContent));
     });
 
     it('should return nothing if neither code nor ODK compact format are provided', () => {
@@ -119,15 +141,15 @@ describe('Form2Sms service', function() {
       testFormExistsWithAttachedCode(true);
 
       // when
-      return service(doc)
-
+      return service
+        .transform(doc)
         .then(smsContent => assert.isUndefined(smsContent));
     });
   });
 
   it('should allow nice encoding of danger signs', () => {
     // given
-    const doc = aFormSubmission();
+    const doc:any = aFormSubmission();
     doc.fields = {
       s_acc_danger_signs: {
         s_acc_danger_sign_seizure: 'no',
@@ -162,21 +184,8 @@ describe('Form2Sms service', function() {
     `);
 
     // when
-    return service(doc)
-
+    return service
+      .transform(doc)
       .then(smsContent => assert.equal(smsContent, 'U5 DANGER LCIB'));
   });
-
-  function testFormExists() {
-    testFormExistsWithAttachedCode(undefined);
-  }
-
-  function testFormExistsWithAttachedCode(code) {
-    dbGet.withArgs(TEST_FORM_ID).resolves({ xml2sms:code });
-  }
-
-  function aFormSubmission(xml) {
-    GetReportContent.resolves(xml);
-    return { _id:'abc-123', form:TEST_FORM_NAME };
-  }
 });

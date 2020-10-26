@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';

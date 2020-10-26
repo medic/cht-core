@@ -1,7 +1,10 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'formIconName'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class FormIconNamePipe implements PipeTransform {
   constructor() {}

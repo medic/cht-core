@@ -100,7 +100,6 @@
               "src/audio"
             ],
             "styles": [
-              "src/css/inbox.less"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [

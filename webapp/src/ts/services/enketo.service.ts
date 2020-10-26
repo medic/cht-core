@@ -22,6 +22,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
+import { ContactSummaryService } from '@mm-services/contact-summary.service';
 
 
 /* globals EnketoForm */
@@ -32,7 +33,7 @@ export class EnketoService {
   constructor(
     private store:Store,
     private addAttachmentService:AddAttachmentService,
-    // todo contact summary
+    private contactSummaryService:ContactSummaryService,
     private dbService:DbService,
     private enketoPrepopulationDataService:EnketoPrepopulationDataService,
     private enketoTranslationService:EnketoTranslationService,
@@ -87,16 +88,16 @@ export class EnketoService {
   }
 
   private replaceMediaLoaders(formContainer, formDoc) {
-    const $service = this;
+    const enketoService = this;
     formContainer.find('[data-media-src]').each(function() {
       const elem = $(this);
       const src = elem.attr('data-media-src');
-      $service.dbService
+      enketoService.dbService
         .get()
         .getAttachment(formDoc._id, src)
         .then((blob) => {
           const objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
-          $service.objUrls.push(objUrl);
+          enketoService.objUrls.push(objUrl);
           elem
             .attr('src', objUrl)
             .css('visibility', '')
@@ -128,10 +129,10 @@ export class EnketoService {
       ])
       .then(([html, model]) => {
         const $html = $(html);
-        const $translate = this.translateService;
+        const translateService = this.translateService;
         $html.find('[data-i18n]').each(function() {
           const $this = $(this);
-          $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
+          $this.text(translateService.instant('enketo.' + $this.attr('data-i18n')));
         });
 
         // TODO remove this when our enketo-core dependency is updated as the latest
@@ -250,9 +251,7 @@ export class EnketoService {
         this.getLineage(contact)
       ])
       .then(([reports, lineage]) => {
-        return {};
-        // todo
-        //return this.contactSummaryService(contact, reports, lineage);
+        return this.contactSummaryService.get(contact, reports, lineage);
       })
       .then((summary:any) => {
         if (!summary) {
@@ -407,8 +406,8 @@ export class EnketoService {
           this.registerAddrepeatListener($selector, formDoc);
           this.registerEditedListener($selector, editedListener);
           this.registerValuechangeListener($selector, valuechangeListener);
-          // todo move this to the new API
-          //window.debugFormModel = () => form.model.getStr();
+
+          window.CHTCore.debugFormModel = () => form.model.getStr();
           return form;
         });
     });
@@ -425,7 +424,7 @@ export class EnketoService {
   }
 
   private xmlToDocs(doc, record) {
-    const $service = this;
+    const enketoService = this;
     const mapOrAssignId = (e, id?) => {
       if (!id) {
         const $id = $(e).children('_id');
@@ -463,7 +462,7 @@ export class EnketoService {
       .filter(function() {
         return $(this).attr('db-doc').toLowerCase() === 'true';
       })
-      .each(() => {
+      .each(function() {
         mapOrAssignId(this);
       });
 
@@ -474,8 +473,7 @@ export class EnketoService {
     });
 
     const docsToStore = $record.find('[db-doc=true]').map(function() {
-      const docToStore:any = $service.enketoTranslationService.reportRecordToJs(getOuterHTML(this));
-      console.log(this);
+      const docToStore:any = enketoService.enketoTranslationService.reportRecordToJs(getOuterHTML(this));
       docToStore._id = getId(Xpath.getElementXPath(this));
       docToStore.reported_date = Date.now();
       return docToStore;
@@ -489,7 +487,7 @@ export class EnketoService {
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      $service.addAttachmentService.add(doc, filename, file, type, alreadyEncoded);
+      enketoService.addAttachmentService.add(doc, filename, file, type, alreadyEncoded);
     };
 
     $record.find('[type=file]').each(function() {
@@ -534,7 +532,7 @@ export class EnketoService {
             console.error('Error saving report', result);
             throw new Error('Error saving report');
           }
-          const idx = docs.findIndex(doc => doc._id === result._id);
+          const idx = docs.findIndex(doc => doc._id === result.id);
           docs[idx] = { ...docs[idx], _rev: result.rev };
         });
         return docs;
@@ -628,13 +626,10 @@ export class EnketoService {
       .then((doc) => {
         return this.xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
       })
-      .then(docs => this.saveGeo(geoHandle, docs))
-      .then(docs => {
-        this.servicesActions.setLastChangedDoc(docs[0]);
-        return docs;
-      })
-      .then(docs => this.saveDocs(docs))
+      .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.saveDocs(docs))
       .then((docs) => {
+        this.servicesActions.setLastChangedDoc(docs[0]);
         // submit by sms _after_ saveDocs so that the main doc's ID is available
         this.submitFormBySmsService.submit(docs[0]);
         return docs;
@@ -650,8 +645,8 @@ export class EnketoService {
     this.objUrls.forEach(function(url) {
       (window.URL || window.webkitURL).revokeObjectURL(url);
     });
-    // todo
-    //delete $window.debugFormModel;
+
+    delete window.CHTCore.debugFormModel;
     this.objUrls.length = 0;
   };
 }

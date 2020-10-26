@@ -1,9 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import * as moment from 'moment';
-import { FormatDateService } from '../services/format-date.service';
-import { RelativeDateService } from '../services/relative-date.service';
+
+import { FormatDateService } from '@mm-services/format-date.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
 
 const getState = (state, translateService) => {
   return translateService
@@ -78,11 +79,16 @@ const getTaskDate = (task) => {
 
 const getRecipient = (task, translateService) => {
   const recipient = task && task.messages && task.messages.length && task.messages[0].to;
-  if (recipient) {
-    const label = translateService.instant('to recipient', { recipient: recipient });
-    return '<span class="recipient">&nbsp;' + label + '</span>';
+  if (!recipient) {
+    return Promise.resolve('');
   }
-  return '';
+
+  return translateService
+    .get('to recipient', { recipient: recipient })
+    .toPromise()
+    .then(label => {
+      return '<span class="recipient">&nbsp;' + label + '</span>';
+    });
 };
 
 @Pipe({
@@ -97,27 +103,23 @@ export class AutoreplyPipe implements PipeTransform {
   ) { }
 
   transform(task) {
-    return new Promise((resolve, reject) => {
-      if (!task) {
-        resolve('');
-      }
+    if (!task) {
+      return Promise.resolve('');
+    }
 
-      getState(task.state, this.translateService)
-        .then(state => {
-          const content = state + '&nbsp;' +
-            '<span class="autoreply" title="' + task.messages[0].message + '">' +
-            '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
-            '</span>&nbsp';
+    return getState(task.state, this.translateService).then(state => {
+      const content = state + '&nbsp;' +
+        '<span class="autoreply" title="' + task.messages[0].message + '">' +
+        '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
+        '</span>&nbsp';
 
-          const transformedContent = getRelativeDate(getTaskDate(task), {
-            FormatDate: this.formatDateService,
-            RelativeDate: this.relativeDateService,
-            prefix: content,
-          });
+      const transformedContent = getRelativeDate(getTaskDate(task), {
+        FormatDate: this.formatDateService,
+        RelativeDate: this.relativeDateService,
+        prefix: content,
+      });
 
-          resolve(this.sanitizer.bypassSecurityTrustHtml(transformedContent));
-
-        }, reject);
+      return this.sanitizer.bypassSecurityTrustHtml(transformedContent);
     });
   }
 }
@@ -134,24 +136,25 @@ export class StatePipe implements PipeTransform {
   ) { }
 
   transform(task) {
-    return new Promise((resolve, reject) => {
-      if (!task) {
-        resolve('');
-      }
+    if (!task) {
+      return Promise.resolve('');
+    }
 
-      getState(task.state || 'received', this.translateService)
-        .then(state => {
-          const relativeDate = getRelativeDate(getTaskDate(task), {
-            FormatDate: this.formatDateService,
-            RelativeDate: this.relativeDateService,
-            prefix: state + '&nbsp;',
-            suffix: getRecipient(task, this.translateService),
-          });
+    return Promise
+      .all([
+        getState(task.state || 'received', this.translateService),
+        getRecipient(task, this.translateService),
+      ])
+      .then(([ state, recipient ]) => {
+        const relativeDate = getRelativeDate(getTaskDate(task), {
+          FormatDate: this.formatDateService,
+          RelativeDate: this.relativeDateService,
+          prefix: state + '&nbsp;',
+          suffix: recipient,
+        });
 
-          resolve(this.sanitizer.bypassSecurityTrustHtml(relativeDate));
-
-        }, reject);
-    });
+        return this.sanitizer.bypassSecurityTrustHtml(relativeDate);
+      });
   }
 }
 
@@ -228,10 +231,9 @@ export class RelativeDatePipe implements PipeTransform {
   ) {}
 
   transform(date, raw = false) {
-    const options = {
+    const options:any = {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
-      raw: undefined,
     };
 
     if (raw) {
@@ -344,26 +346,6 @@ export class FullDatePipe implements PipeTransform {
   }
 }
 
-/*
- angular.module('inboxFilters').filter('fullDate', function(
- $sce,
- FormatDate,
- RelativeDate
- ) {
- return function (date) {
- if (!date) {
- return '';
- }
- const cssSelector = RelativeDate.getCssSelector();
- const dataset = RelativeDate.generateDataset(date);
- const relative = FormatDate.relative(date);
- const absolute = FormatDate.datetime(date);
- return $sce.trustAsHtml(
- `<div class="relative-date-content ${cssSelector}" ${dataset}>${relative}</div>` +
- `<div class="full-date">${absolute}</div>`
- );
- };
- });*/
 
 @Pipe({
   name: 'weeksPregnant'

@@ -1,10 +1,15 @@
-describe('EnketoPrepopulationData service', function() {
-  'use strict';
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
+
+import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+
+describe('EnketoPrepopulationData service', () => {
+
 
   let service;
-  let rootScope;
-  const UserSettings = sinon.stub();
-  let $window;
+  let UserSettings;
 
   const generatedForm =
   '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
@@ -135,129 +140,109 @@ describe('EnketoPrepopulationData service', function() {
     '</model>' +
   '</h:head></h:html>';
 
-  beforeEach(function() {
-    $window = { angular: { callbacks: [] } };
-    module('inboxApp');
-    module(function($provide) {
-      $provide.value('$window', $window);
-      $provide.value('UserSettings', UserSettings);
+  beforeEach(() => {
+    UserSettings = sinon.stub();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: UserSettingsService, useValue: { get: UserSettings } },
+      ]
     });
-    inject(function(_EnketoPrepopulationData_, _$rootScope_) {
-      service = _EnketoPrepopulationData_;
-      rootScope = _$rootScope_;
-    });
+    service = TestBed.inject(EnketoPrepopulationDataService);
   });
 
-  afterEach(function() {
-    KarmaUtils.restore(UserSettings);
+  afterEach(() => {
+    sinon.restore();
   });
 
   it('exists', function() {
-    chai.assert.isDefined(service);
+    assert.isDefined(service);
   });
 
-  it('returns the given string', function(done) {
+  it('returns the given string', () => {
     const model = '';
     const data = '<some_data/>';
-    service(model, data)
-      .then(function(actual) {
-        chai.expect(actual).to.equal(data);
-        done();
-      })
-      .catch(done);
-    rootScope.$digest();
+    return service.get(model, data).then((actual) => {
+      expect(actual).to.equal(data);
+    });
   });
 
-  it('rejects when user settings fails', function(done) {
+  it('rejects when user settings fails', () => {
     const model = '';
     const data = {};
-    UserSettings.returns(Promise.reject('phail'));
-    service(model, data)
-      .then(function() {
-        done('Expected fail');
-      })
-      .catch(function(err) {
-        chai.expect(err).to.equal('phail');
-        chai.expect(UserSettings.callCount).to.equal(1);
-        done();
+    UserSettings.rejects('phail');
+    return service
+      .get(model, data)
+      .then(() => assert.fail('Expected fail'))
+      .catch((err) => {
+        expect(err.name).to.equal('phail');
+        expect(UserSettings.callCount).to.equal(1);
       });
-    rootScope.$digest();
   });
 
-  it('binds user details into model', function(done) {
+  it('binds user details into model', () => {
     const data = {};
     const user = { name: 'geoff' };
-    UserSettings.returns(Promise.resolve(user));
-    service(editPersonForm, data)
-      .then(function(actual) {
+    UserSettings.resolves(user);
+    return service
+      .get(editPersonForm, data)
+      .then((actual) => {
         const xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
-        chai.expect(UserSettings.callCount).to.equal(1);
-        done();
-      })
-      .catch(done);
-    rootScope.$digest();
+        expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+        expect(UserSettings.callCount).to.equal(1);
+      });
   });
 
-  it('binds form content into model', function(done) {
+  it('binds form content into model', () => {
     const data = { person: { last_name: 'salmon' } };
     const user = { name: 'geoff' };
-    UserSettings.returns(Promise.resolve(user));
-    service(editPersonFormWithoutInputs, data)
-      .then(function(actual) {
+    UserSettings.resolves(user);
+    return service
+      .get(editPersonFormWithoutInputs, data)
+      .then((actual) => {
         const xml = $($.parseXML(actual));
-        chai.expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
-        chai.expect(UserSettings.callCount).to.equal(1);
-        done();
-      })
-      .catch(done);
-    rootScope.$digest();
+        expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
+        expect(UserSettings.callCount).to.equal(1);
+      });
   });
 
-  it('binds form content into generated form model', function(done) {
+  it('binds form content into generated form model', () => {
     const data = { person: { name: 'sally' } };
     const user = { name: 'geoff' };
-    UserSettings.returns(Promise.resolve(user));
-    service(generatedForm, data)
-      .then(function(actual) {
+    UserSettings.resolves(user);
+    return service
+      .get(generatedForm, data)
+      .then((actual) => {
         const xml = $($.parseXML(actual));
-        chai.expect(xml.find('data > person > name')[0].innerHTML).to.equal(data.person.name);
-        chai.expect(UserSettings.callCount).to.equal(1);
-        done();
-      })
-      .catch(done);
-    rootScope.$digest();
+        expect(xml.find('data > person > name')[0].innerHTML).to.equal(data.person.name);
+        expect(UserSettings.callCount).to.equal(1);
+      });
   });
 
-  it('binds user details and form content into model', function(done) {
+  it('binds user details and form content into model', () => {
     const data = { person: { last_name: 'salmon' } };
     const user = { name: 'geoff' };
-    UserSettings.returns(Promise.resolve(user));
-    service(editPersonForm, data)
-      .then(function(actual) {
+    UserSettings.resolves(user);
+    return service
+      .get(editPersonForm, data)
+      .then((actual) => {
         const xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
-        chai.expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
-        chai.expect(UserSettings.callCount).to.equal(1);
-        done();
-      })
-      .catch(done);
-    rootScope.$digest();
+        expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+        expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
+        expect(UserSettings.callCount).to.equal(1);
+      });
   });
 
-  it('binds form content into model with custom root node', function(done) {
+  it('binds form content into model with custom root node', () => {
     const data = { person: { last_name: 'salmon' } };
     const user = { name: 'geoff' };
-    UserSettings.returns(Promise.resolve(user));
-    service(pregnancyForm, data)
-      .then(function(actual) {
+    UserSettings.resolves(user);
+    return service
+      .get(pregnancyForm, data)
+      .then((actual) => {
         const xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
-        chai.expect(xml.find('pregnancy > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
-        chai.expect(UserSettings.callCount).to.equal(1);
-        done();
-      })
-      .catch(done);
-    rootScope.$digest();
+        expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+        expect(xml.find('pregnancy > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
+        expect(UserSettings.callCount).to.equal(1);
+      });
   });
 });

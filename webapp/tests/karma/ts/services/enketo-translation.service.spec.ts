@@ -1,21 +1,22 @@
-describe('EnketoTranslation service', () => {
-  'use strict';
+import { TestBed } from '@angular/core/testing';
+import { assert } from 'chai';
 
-  const assert = chai.assert;
+import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+
+
+describe('EnketoTranslation service', () => {
   let service;
 
   beforeEach(() => {
-    module('inboxApp');
-    inject(_EnketoTranslation_ => {
-      service = _EnketoTranslation_;
-    });
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(EnketoTranslationService);
   });
 
   describe('#contactRecordToJs()', () => {
     it('should convert a simple record to JS', () => {
       // given
       const xml =
-        `<data id="person" version="1">
+              `<data id="person" version="1">
           <person>
             <name>Denise Degraffenreid</name>
             <phone>+123456789</phone>
@@ -43,7 +44,7 @@ describe('EnketoTranslation service', () => {
     it('should convert a complex record without new instance to JS', () => {
       // given
       const xml =
-        `<data id="clinic" version="1">
+              `<data id="clinic" version="1">
           <clinic>
             <name>A New Catchmnent Area</name>
             <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
@@ -79,7 +80,7 @@ describe('EnketoTranslation service', () => {
     it('should convert a complex record with new instance to JS', () => {
       // given
       const xml =
-        `<data id="clinic" version="1">
+              `<data id="clinic" version="1">
           <clinic>
             <name>A New Catchmnent Area</name>
             <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
@@ -115,7 +116,7 @@ describe('EnketoTranslation service', () => {
     it('should support repeated elements', () => {
       // given
       const xml =
-        `<data id="clinic" version="1">
+              `<data id="clinic" version="1">
           <clinic>
             <name>A House in the Woods</name>
             <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
@@ -170,7 +171,7 @@ describe('EnketoTranslation service', () => {
     it('should ignore text in repeated elements', () => {
       // given
       const xml =
-        `<data id="clinic" version="1">
+              `<data id="clinic" version="1">
           <clinic>
             <name>A House in the Woods</name>
             <parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>
@@ -231,7 +232,7 @@ describe('EnketoTranslation service', () => {
     it('should convert nested nodes to nested JSON', () => {
       // given
       const xml =
-        `<treatments id="ASDF" version="abc123">
+              `<treatments id="ASDF" version="abc123">
           <inputs>
             <meta>
               <location>
@@ -363,7 +364,7 @@ describe('EnketoTranslation service', () => {
     it('returns of one an empty array if no fields are hidden', () => {
       // given
       const xml =
-        `<doc>
+              `<doc>
           <name>Sally</name>
           <lmp>10</lmp>
         </doc>`;
@@ -378,7 +379,7 @@ describe('EnketoTranslation service', () => {
     it('returns an array containing fields tagged `hidden`', () => {
       // given
       const xml =
-        `<doc>
+              `<doc>
           <name>Sally</name>
           <secret_code_name_one tag="hidden">S4L</secret_code_name_one>
           <secret_code_name_two tag="hidden">S5L</secret_code_name_two>
@@ -395,7 +396,7 @@ describe('EnketoTranslation service', () => {
     it('hides sections tagged `hidden`', () => {
       // given
       const xml =
-        `<doc>
+              `<doc>
           <name>Sally</name>
           <secret tag="hidden">
             <first>a</first>
@@ -414,7 +415,7 @@ describe('EnketoTranslation service', () => {
     it('recurses to find `hidden` children', () => {
       // given
       const xml =
-        `<doc>
+              `<doc>
           <name>Sally</name>
           <secret>
             <first tag="hidden">a</first>
@@ -435,7 +436,7 @@ describe('EnketoTranslation service', () => {
     it('binds simple data', () => {
       // given
       const model =
-        `<data id="district_hospital" version="1">
+              `<data id="district_hospital" version="1">
           <district_hospital>
             <name/>
             <external_id/>
@@ -467,7 +468,7 @@ describe('EnketoTranslation service', () => {
     it('binds embedded objects to id-only fields', () => {
       // given
       const model =
-        `<data id="district_hospital" version="1">
+              `<data id="district_hospital" version="1">
           <district_hospital>
             <name/>
             <contact/>
@@ -505,7 +506,7 @@ describe('EnketoTranslation service', () => {
     it('binds embedded objects to trees', () => {
       // given
       const model =
-        `<data id="district_hospital" version="1">
+              `<data id="district_hospital" version="1">
           <district_hospital>
             <name/>
             <contact>
@@ -605,5 +606,4 @@ describe('EnketoTranslation service', () => {
       assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
     });
   });
-
 });

@@ -1,10 +1,13 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { ResourceIconsService } from '../services/resource-icons.service';
 
 @Pipe({
   name: 'resourceIcon'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class ResourceIconPipe implements PipeTransform {
   constructor(
