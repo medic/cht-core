@@ -30,11 +30,12 @@ const submit = function(e) {
     return;
   }
   setState('loading');
+  const user = document.getElementById('user').value.toLowerCase().trim();
   const url = document.getElementById('form').action;
   const payload = JSON.stringify({
-    user: document.getElementById('user').value.toLowerCase().trim(),
+    user: user,
     password: document.getElementById('password').value,
-    redirect: checkUsername() ? getRedirectUrl() : null,
+    redirect: checkUsername(user) ? getRedirectUrl() : null,
     locale: selectedLocale
   });
   request('POST', url, payload, function(xmlhttp) {
@@ -154,10 +155,9 @@ const parseTranslations = function() {
   return JSON.parse(decodeURIComponent(raw));
 };
 
-const checkUsername = function() {
+const checkUsername = function(user) {
   const usernameQueryParam = urlParams.get('username');
-  const usernameEntered    = document.getElementById('user').value.toLowerCase().trim();
-  return usernameQueryParam === usernameEntered;
+  return usernameQueryParam === user;
 };
 
 const getRedirectUrl = function() {
