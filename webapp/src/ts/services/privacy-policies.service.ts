@@ -38,7 +38,7 @@ export class PrivacyPoliciesService {
 
         return this.dbService
           .get()
-          .put(userSettings);
+          .put(settings);
       });
   }
 

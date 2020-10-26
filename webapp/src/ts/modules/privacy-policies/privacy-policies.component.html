@@ -1,8 +1,8 @@
-<section class="privacy-policies-component">
+<section class="privacyPolicy">
   <div class="filters">
     <div class="inner"></div>
   </div>
-  <div class="inner" ng-cloak>
+  <div class="inner">
     <div class="loader" *ngIf="this.loading"></div>
     <div class="col-sm-12 page configuration privacy-policy" *ngIf="!loading">
       <div *ngIf="privacyPolicy" [innerHTML]="privacyPolicy.html"></div>
