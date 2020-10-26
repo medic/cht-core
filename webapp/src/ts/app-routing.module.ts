@@ -7,7 +7,7 @@ import { routes as analyticsRoutes } from '@mm-modules/analytics/analytics.route
 import { routes as errorRoutes } from '@mm-modules/error/error.routes';
 import { routes as reportRoutes } from '@mm-modules/reports/reports.routes';
 import { routes as messagesRoutes } from '@mm-modules/messages/messages.routes'
-import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policies/privacy-policies.routes'
+import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policy/privacy-policy.routes'
 
 const routes: Routes = [
   ...aboutRoutes,

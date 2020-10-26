@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
 
-import { PrivacyPoliciesComponent } from './privacy-policies.component';
+import { PrivacyPolicyComponent } from './privacy-policy.component';
 
 export const routes: Routes = [
   {
     path: 'privacy-policy',
-    component: PrivacyPoliciesComponent,
+    component: PrivacyPolicyComponent,
     data: { tab: 'privacy-policy' },
   }
 ];

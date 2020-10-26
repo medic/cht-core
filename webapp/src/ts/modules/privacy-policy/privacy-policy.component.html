@@ -1,0 +1,32 @@
+<ng-container>
+
+  <div class="no-overlay" *ngIf="!overlay">
+    <div class="filters">
+      <div class="inner"></div>
+    </div>
+    <div class="inner">
+      <div class="loader" *ngIf="this.loading"></div>
+      <div class="col-sm-12 page configuration privacy-policy" *ngIf="!loading">
+        <div *ngIf="privacyPolicy" [innerHTML]="privacyPolicy.html"></div>
+        <p *ngIf="!privacyPolicy" translate>privacy.policy.not.found</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="privacy-policy-wrapper" class="overlay" *ngIf="overlay">
+    <div class="container">
+      <div class="loader" *ngIf="loading"></div>
+      <div class="content" *ngIf="!loading && privacyPolicy">
+        <div class="html-content" [innerHTML]="privacyPolicy?.html"></div>
+        <div class="footer text-right">
+          <button class="btn btn-primary" *ngIf="!accepting && !loading" (click)="accept()" translate>privacy.policy.accept</button>
+          <div *ngIf="accepting">
+            <span class="loader inline small"></span>
+            <button class="btn btn-primary disabled" translate>privacy.policy.accept</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ng-container>

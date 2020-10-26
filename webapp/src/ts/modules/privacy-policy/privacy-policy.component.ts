@@ -1,13 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 
 @Component({
-  templateUrl: './privacy-policies.component.html',
+  selector: 'mm-privacy-policy',
+  templateUrl: './privacy-policy.component.html',
 })
-export class PrivacyPoliciesComponent implements OnInit {
+export class PrivacyPolicyComponent implements OnInit {
+  @Input() overlay;
   private globalActions: GlobalActions;
   loading = false;
   accepting = false;

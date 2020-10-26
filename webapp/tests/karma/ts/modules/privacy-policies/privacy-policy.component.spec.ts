@@ -3,13 +3,13 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { PrivacyPoliciesComponent } from '@mm-modules/privacy-policies/privacy-policies.component';
+import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('PrivacyPoliciesComponent', () => {
-  let component: PrivacyPoliciesComponent;
-  let fixture: ComponentFixture<PrivacyPoliciesComponent>;
+  let component: PrivacyPolicyComponent;
+  let fixture: ComponentFixture<PrivacyPolicyComponent>;
   let privacyPoliciesService;
 
   beforeEach(async(() => {
@@ -22,7 +22,7 @@ describe('PrivacyPoliciesComponent', () => {
 
     TestBed
     .configureTestingModule({
-      declarations: [ PrivacyPoliciesComponent ],
+      declarations: [ PrivacyPolicyComponent ],
       providers: [
         provideMockStore(),
         { provide: PrivacyPoliciesService, useValue: privacyPoliciesService }
@@ -30,7 +30,7 @@ describe('PrivacyPoliciesComponent', () => {
     })
     .compileComponents()
     .then(() => {
-      fixture = TestBed.createComponent(PrivacyPoliciesComponent);
+      fixture = TestBed.createComponent(PrivacyPolicyComponent);
       component = fixture.componentInstance;
       privacyPoliciesService = TestBed.inject(PrivacyPoliciesService);
       fixture.detectChanges();
