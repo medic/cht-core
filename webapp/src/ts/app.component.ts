@@ -61,7 +61,7 @@ export class AppComponent {
 
   currentTab = '';
   showContent = false;
-  privacyPolicyAccepted = false;
+  privacyPolicyAccepted = true;
   showPrivacyPolicy = false;
   selectMode = false;
   minimalTabs = false;

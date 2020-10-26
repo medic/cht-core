@@ -24,9 +24,9 @@ export class PrivacyPoliciesComponent implements OnInit {
     this.getPrivatePolicy();
   }
 
-  private getPrivatePolicy() {
+  getPrivatePolicy() {
     this.loading = true;
-    this.privacyPoliciesService
+    return this.privacyPoliciesService
       .getPrivacyPolicy()
       .then(privacyPolicy => {
         this.loading = false;
