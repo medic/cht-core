@@ -778,20 +778,6 @@ module.exports = function(grunt) {
           }
         }
       },
-      // 'e2e-all-tests': {
-      //   options: {
-      //     configFile: 'tests/conf.js',
-      //     args: {
-      //       suite: ['web','mobile'],
-      //       capabilities: {
-      //         chromeOptions: {
-      //           mobileEmulation:{ 'deviceName': 'Nexus 5' }
-      //         }
-      //       }
-      //     }
-      //   }
-      // },
-
       'e2e-tests-debug': {
         options: {
           configFile: 'tests/conf.js',
@@ -1059,8 +1045,8 @@ module.exports = function(grunt) {
   ]);
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
-    //'protractor:e2e-tests',
-    'protractor:e2e-all-tests',
+    'protractor:e2e-web-tests',
+    'protractor:e2e-mobile-tests',
     'exec:clean-test-database',
   ]);
 
