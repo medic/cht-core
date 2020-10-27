@@ -84,7 +84,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
 
     if (this.routeSnapshot.params && (this.routeSnapshot.params.reportsId || this.routeSnapshot.params.formId)) {
       this.globalActions.setCancelCallback(() => {
-        // Note : if no $state.params.reportId, goes to "No report selected".
+        // Note : if no routeSnapshot.params.reportId, goes to "No report selected".
         this.router.navigate(['/reports', this.routeSnapshot.params.reportsId]);
       });
     } else {
@@ -124,7 +124,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
           ])
           .then(([ reportContent, form ]) => {
             this.globalActions.setEnketoEditedStatus(false);
-            console.log('future wrapper', $('#report-form'));
 
             this.enketoService
               .render(
@@ -260,11 +259,9 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);
-        // todo
-        this.globalActions.setSnackbarContent(true ? 'report.updated' : 'report.created');
-        // todo
+        const snackBarTranslationKey = this.routeSnapshot.params.reportId ? 'report.updated' : 'report.created';
+        this.globalActions.setSnackbarContent(this.translateService.instant(snackBarTranslationKey));
         this.globalActions.setEnketoEditedStatus(false);
-        console.log('redirecting!');
         this.router.navigate(['/reports', docs[0]._id]);
       })
       .then(() => {

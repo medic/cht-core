@@ -8,7 +8,7 @@ function translate(key) {
     return moment().month(parseInt(key.substring(11)) - 1).format('MMM');
   }
 
-  return window.CHTCore.Translator.instant('enketo.' + key);
+  return window.CHTCore.Translate.instant('enketo.' + key);
 }
 
 module.exports = {

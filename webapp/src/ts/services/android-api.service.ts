@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { FeedbackService } from '@mm-services/feedback.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
@@ -15,13 +16,37 @@ import { SessionService } from '@mm-services/session.service';
   providedIn: 'root',
 })
 export class AndroidApiService {
+  private routeSnapshot;
   constructor(
     private feedbackService:FeedbackService,
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
     private sessionService:SessionService,
+    private router:Router,
     // todo simprints service
-  ) {}
+    private zone:NgZone,
+  ) {
+  }
+
+  private runInZone(property:string, ...args:any[]) {
+    if (!this[property] || typeof this[property] !== 'function') {
+      return;
+    }
+
+    if (NgZone.isInAngularZone()) {
+      return this[property](...args);
+    }
+
+    return this.zone.run(() => this[property](...args));
+  }
+
+  private getRouteSnapshot() {
+    let route = this.router.routerState.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route.snapshot;
+  }
 
   /**
    * Close all select2 dropdowns
@@ -43,6 +68,7 @@ export class AndroidApiService {
       });
     return closed;
   }
+
 
   /**
    * Close the highest-priority dropdown within a particular container.
@@ -134,30 +160,31 @@ export class AndroidApiService {
       return true;
     }
 
-    /*if ($state.current.name === 'contacts.deceased') {
-     $state.go('contacts.detail', { id: $stateParams.id });
-     return true;
-     }*/
+    const routeSnapshot = this.getRouteSnapshot();
+    if (routeSnapshot.data?.name === 'contacts.deceased') {
+      this.router.navigate(['/contacts', routeSnapshot.params.id]);
+      return true;
+    }
 
-    /*if ($stateParams.id) {
-     $state.go($state.current.name, { id: null }, { reload: true });
-     return true;
-     }*/
+    if (routeSnapshot.params.id) {
+      this.router.navigate(['/', routeSnapshot.parent.routeConfig.path]);
+      return true;
+    }
 
     // If we're viewing a tab, but not the primary tab, go to primary tab
     const primaryTab = $('.header .tabs').find('> a:visible:first');
-    /*if (!primaryTab.is('.selected')) {
-     const uiSref = primaryTab.attr('ui-sref');
-     if (uiSref) {
-     $state.go(uiSref);
-     return true;
-     } else {
-     const message = 'Attempt to back to an undefined state [AndroidApi.back()]';
-     Feedback.submit(message).catch(err => {
-     console.error('Error saving feedback', err);
-     });
-     }
-     }*/
+    if (!primaryTab.is('.selected')) {
+      const href = primaryTab.attr('href');
+      if (href) {
+        this.router.navigate([href.replace('#','')]);
+        return true;
+      } else {
+        const message = 'Attempt to back to an undefined state [AndroidApi.back()]';
+        this.feedbackService.submit(message).catch(err => {
+          console.error('Error saving feedback', err);
+        });
+      }
+    }
 
     return false;
   }
@@ -226,7 +253,17 @@ export class AndroidApiService {
     // TODO storing status updates for SMS should be implemented as part of #4812
   }
 
-  locationPermissionRequestResolve(){
+  locationPermissionRequestResolve() {
     this.geolocationService.permissionRequestResolved();
+  }
+
+  v1 = {
+    back: () => this.runInZone('back'),
+    logout: () => this.runInZone('logout'),
+    mrdtResponse: (...args) => this.runInZone('mrdtResponse', args),
+    mrdtTimeTakenResponse: (...args) => this.runInZone('mrdtTimeTakenResponse', args),
+    simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
+    smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
+    locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
   }
 }

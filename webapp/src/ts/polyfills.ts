@@ -78,6 +78,7 @@ declare global {
     medicmobile_android:any;
     EnketoForm:any;
     CHTCore:any;
+    angular:any;
   }
 }
 (window as any).process = {

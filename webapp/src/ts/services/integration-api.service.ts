@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { LanguageService } from '@mm-services/language.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { EnketoService } from '@mm-services/enketo.service';
@@ -22,6 +22,7 @@ export class IntegrationApiService {
   Settings;
   AndroidApi;
   DB;
+
   constructor(
     dbService:DbService,
     languageService:LanguageService,
@@ -42,5 +43,10 @@ export class IntegrationApiService {
     this.Markdown = markdownService;
     this.Settings = settingsService;
     this.AndroidApi = androidApiService;
+    this.Translate = translateService;
+  }
+
+  get(service) {
+    return this[service];
   }
 }
