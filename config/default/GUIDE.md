@@ -2,7 +2,7 @@
 
 These instructions are aimed at developers and technical people who are exploring the Reference Application and want to make small changes to see what is possible.
 
-Detailed tutorials on how to build apps from scratch with the Core Framework will be available soon. In the meantime the best source for detailed documentation is available in the [Developing Community Health Applications](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) page.
+Detailed tutorials on how to build apps from scratch with the Core Framework will be available soon. In the meantime the best source for detailed documentation is available in the [Developing Community Health Applications](https://docs.communityhealthtoolkit.org/apps/) page.
 
 ## Modifying the Reference Application
 
@@ -46,7 +46,7 @@ More information: https://xlsform.org/en/#grouping-questions
 
 You can remove a question by removing the row specific to that question in XLS form. However, you should first ensure that no other row depends on it.
 
-For example, before removing a question that asks for the date of birth (DOB) for a user, you need to make sure that DOB is not used anywhere else (to calculate the age of the user, etc). Without the original row, all rows depending on it will fail. 
+For example, before removing a question that asks for the date of birth (DOB) for a user, you need to make sure that DOB is not used anywhere else (to calculate the age of the user, etc). Without the original row, all rows depending on it will fail.
 
 The question being removed may also be used outsie of forms in the configuration, such as in Tasks, Targets or Contact-summary. One easy way to find the usage of the question is by searching the configuration for its name.
 
@@ -67,7 +67,7 @@ The following conditions need to be satisfied for a Task to show:
 - `resolvedIf` results to false
 - Current day/time falls in the time window
 
-For more information: [Tasks documentation](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#tasks).
+For more information: [Tasks documentation](https://docs.communityhealthtoolkit.org/apps/features/tasks/).
 
 ### Changing the time window
 
@@ -84,7 +84,7 @@ It is easy to change the start and end days of the time window. Changing a dueDa
 
 The Targets are configured inside the file `targets.js`.
 
-For more information: [Targets documentation](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#targets).
+For more information: [Targets documentation](https://docs.communityhealthtoolkit.org/apps/features/targets/).
 
 ### Editing a goal
 
@@ -100,4 +100,4 @@ To add a condition card, add it to the "cards" section.
 To add a field inside an existing condition card, add it to the "fields" section of that card.
 You can remove the fields or condition cards that you don't want to show by deleting the whole code block belonging to that field/card.
 
-For more information: [Condition Cards documentation](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#cards)
+For more information: [Condition Cards documentation](https://docs.communityhealthtoolkit.org/apps/reference/contact-page/#condition-cards)
