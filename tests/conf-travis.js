@@ -10,7 +10,7 @@ const browserLogStream = fs.createWriteStream(
 const chai = require('chai');
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
-const web = true;
+let suite;
 
 const baseConfig = {
   params:{
@@ -18,20 +18,20 @@ const baseConfig = {
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
   suites: {
-    web:'e2e/login/purge.spec.js',
-    mobile:'mobile/login/**/*.js',
+    web:'e2e/login/login.specs.js',
+    mobile:'mobile/login/login.specs.js',
     performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
   capabilities: {
     browserName: 'chrome',
-    chromeOptions:web? {
+    chromeOptions: {
       // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
       args: ['--window-size=1024,768', '--headless', '--disable-gpu']
-    }:{mobileEmulation: { 'deviceName': 'Nexus 5' }}
+    }
   },
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
@@ -48,18 +48,25 @@ const baseConfig = {
     });
   },
   afterLaunch: function(exitCode) {
-    return new Promise(function(resolve) {
-      return request.post('http://localhost:31337/die')
-        .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
-    });
+    if (suite!=='web') {
+      return new Promise(resolve => {
+        return request.post('http://localhost:31337/die')
+          .then(() => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
+      });
+    }
   },
   onPrepare: () => {
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);
     browser.waitForAngularEnabled(false);
-    
-    // wait for startup to complete
-    browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
+
+    browser.getProcessedConfig().then(config => {
+      suite = config.suite;
+      if (suite!=='mobile') {
+        // wait for startup to complete - taking a little too long on travis
+        browser.driver.wait(prepServices(), 135*1000, 'API took too long to start up');
+      }
+    }).catch((err) => err);
 
     afterEach(() => {
       return browser
