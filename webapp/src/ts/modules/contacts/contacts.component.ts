@@ -19,7 +19,7 @@ import { Selectors } from '@mm-selectors/index';
 import { isMobile } from '@mm-providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { init as scrollLoaderInit } from '@mm-providers/scroll-loader.provider';
+import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 
 const PAGE_SIZE = 50;
 
@@ -68,6 +68,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private settingsService: SettingsService,
     private UHCSettings: UHCSettingsService,
     private simprintsService: SimprintsService,
+    private scrollLoaderProvider: ScrollLoaderProvider,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -221,7 +222,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   };
 
   private initScroll() {
-    scrollLoaderInit(() => {
+    this.scrollLoaderProvider.init(() => {
       if (!this.loading && this.moreItems) {
         this.query({
           paginating: true,

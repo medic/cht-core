@@ -1,6 +1,6 @@
 import * as _ from 'lodash-es';
 import { isMobile } from '../../providers/responsive.provider';
-import { init as scrollLoaderInit } from '../../providers/scroll-loader.provider';
+import { ScrollLoaderProvider } from '../../providers/scroll-loader.provider';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { GlobalActions } from '../../actions/global';
@@ -53,6 +53,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private searchService:SearchService,
     private translateService:TranslateService,
     private addReadStatusService:AddReadStatusService,
+    private scrollLoaderProvider:ScrollLoaderProvider,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -198,7 +199,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   private initScroll() {
-    scrollLoaderInit(() => {
+    this.scrollLoaderProvider.init(() => {
       if (!this.loading && this.moreItems) {
         this.query({ skip: true });
       }

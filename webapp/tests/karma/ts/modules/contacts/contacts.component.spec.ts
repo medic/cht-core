@@ -10,7 +10,6 @@ import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchService } from '@mm-services/search.service';
 import { SimprintsService } from '@mm-services/simprints.service';
-import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -18,6 +17,7 @@ import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ContactsActions } from '@mm-actions/contacts';
+import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -33,6 +33,8 @@ describe('Contacts component', () => {
   let sessionService;
   let authService;
   let contactTypesService;
+  let scrollLoaderProvider;
+  let scrollLoaderCallback;
 
   beforeEach(async(() => {
     const mockedSelectors = [
@@ -82,6 +84,9 @@ describe('Contacts component', () => {
             ]),
             getAll: sinon.stub().resolves([])
           }},
+          { provide: ScrollLoaderProvider, useValue: { init: (callback) => {
+            scrollLoaderCallback = callback;
+          } }},
         ]
       })
       .compileComponents().then(() => {
@@ -98,6 +103,7 @@ describe('Contacts component', () => {
         sessionService = TestBed.inject(SessionService);
         authService = TestBed.inject(AuthService);
         contactTypesService = TestBed.inject(ContactTypesService);
+        scrollLoaderProvider = TestBed.inject(ScrollLoaderProvider);
       });
   }));
 
@@ -191,35 +197,38 @@ describe('Contacts component', () => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
+      store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
       const argument = component.contactsActions.updateContactsList.args[0][0];
+      scrollLoaderCallback();
 
       expect(argument.length).to.equal(50);
-      // expect(searchService.search.args[1][2]).to.deep.equal({
-      //   paginating: true,
-      //   limit: 50,
-      //   skip: 50,
-      // });
+      expect(searchService.search.args[2][2]).to.deep.equal({
+        paginating: true,
+        limit: 50,
+        skip: 50,
+      });
     }));
 
     it('when paginating, does modify skip for non-admins #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
+      store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
       const argument = component.contactsActions.updateContactsList.args[0][0];
+      scrollLoaderCallback();
 
       expect(argument.length).to.equal(51);
-      // TODO: fix this test
-      // expect(searchService.search.args[1][2]).to.deep.equal({
-      //   paginating: true,
-      //   limit: 50,
-      //   skip: 50,
-      // });
+      expect(searchService.search.args[2][2]).to.deep.equal({
+        paginating: true,
+        limit: 50,
+        skip: 50,
+      });
     }));
   });
 
@@ -342,7 +351,6 @@ describe('Contacts component', () => {
           undefined,
         ]
       );
-      // TODO: reset filter test
     }));
 
     it('saves uhc default sorting', fakeAsync(() => {
