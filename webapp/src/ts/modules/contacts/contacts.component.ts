@@ -183,11 +183,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
   };
 
   private canViewLastVisitedDate() {
-    if (this.sessionService.isDbAdmin()) {
-      // disable UHC for DB admins
-      return false;
-    }
-    return this.authService.has('can_view_last_visited_date');
+    return new Promise((resolve) => {
+      if (this.sessionService.isDbAdmin()) {
+        // disable UHC for DB admins
+        resolve(false);
+      } else {
+        resolve(this.authService.has('can_view_last_visited_date'));
+      }
+    });
   }
 
   private formatContacts(contacts) {
@@ -232,7 +235,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private query(opts) {
-    const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+    const options = Object.assign({ limit: PAGE_SIZE }, opts);
     if (options.limit < PAGE_SIZE) {
       options.limit = PAGE_SIZE;
     }
@@ -257,7 +260,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     let searchFilters = this.defaultFilters;
-    if (this.filters && Object.keys(this.filters).length < 1) {
+    if (this.filters && Object.keys(this.filters).length > 0) {
       searchFilters = this.filters;
     }
 
@@ -270,8 +273,15 @@ export class ContactsComponent implements OnInit, OnDestroy{
       extensions.sortByLastVisitedDate = true;
     }
 
+    let docIds;
+      if (options.withIds) {
+        docIds = this.contactsList.map((item) => {
+          return item._id;
+        });
+      }
+
     return this.searchService
-      .search('contacts', searchFilters, options, extensions)
+      .search('contacts', searchFilters, options, extensions, docIds)
       .then((updatedContacts) => {
         updatedContacts = this.formatContacts(updatedContacts);
 

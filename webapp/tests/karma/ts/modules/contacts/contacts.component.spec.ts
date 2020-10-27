@@ -27,21 +27,14 @@ describe('Contacts component', () => {
   let changesService;
   let searchService;
   let simprintsService;
-  let UHCSettings;
   let settingsService;
   let userSettingsService;
   let getDataRecordsService;
   let sessionService;
   let authService;
   let contactTypesService;
-  let district;
 
   beforeEach(async(() => {
-    district = { _id: 'abcde', name: 'My District', type: 'district_hospital' };
-    const userSettingsServiceMock = {
-      get: sinon.stub().resolves({})
-    };
-
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getFilters, value: {} },
@@ -66,18 +59,27 @@ describe('Contacts component', () => {
           { provide: SimprintsService, useValue: {
             enabled: sinon.stub().resolves([]),
             identify: sinon.stub().resolves([])
-          } },
-          { provide: UHCSettingsService, useValue: {
-            getVisitCountSettings: sinon.stub().resolves([]),
-            getContactsDefaultSort: sinon.stub().resolves([]),
           }},
           { provide: SettingsService, useValue: { get: sinon.stub().resolves([]) } },
-          { provide: UserSettingsService, useValue: userSettingsServiceMock },
-          { provide: GetDataRecordsService, useValue: { get: sinon.stub().resolves({}) } },
-          { provide: SessionService, useValue: { isDbAdmin: sinon.stub().resolves([]) } },
-          { provide: AuthService, useValue: { has: sinon.stub().resolves([]) } },
+          { provide: UserSettingsService, useValue: {
+            get: sinon.stub().resolves({ facility_id: 'abcde' })
+          }},
+          { provide: GetDataRecordsService, useValue: {
+            get: sinon.stub().resolves({
+              _id: 'abcde',
+              name: 'My District',
+              type: 'district_hospital'
+            })
+          }},
+          { provide: SessionService, useValue: { isDbAdmin: sinon.stub().returns(false) } },
+          { provide: AuthService, useValue: { has: sinon.stub().resolves(false) } },
           { provide: ContactTypesService, useValue: {
-            getChildren: sinon.stub().resolves([]),
+            getChildren: sinon.stub().resolves([
+              {
+                id: 'childType',
+                icon: 'icon'
+              }
+            ]),
             getAll: sinon.stub().resolves([])
           }},
         ]
@@ -90,7 +92,6 @@ describe('Contacts component', () => {
         changesService = TestBed.inject(ChangesService);
         searchService = TestBed.inject(SearchService);
         simprintsService = TestBed.inject(SimprintsService);
-        UHCSettings = TestBed.inject(UHCSettingsService);
         settingsService = TestBed.inject(SettingsService);
         userSettingsService = TestBed.inject(UserSettingsService);
         getDataRecordsService = TestBed.inject(GetDataRecordsService);
@@ -135,10 +136,6 @@ describe('Contacts component', () => {
           _id: 'search-result',
         },
       ];
-      userSettingsService.get.resolves({ facility_id: 'abcde' });
-      getDataRecordsService.get.resolves(
-        { _id: 'abcde', name: 'My District', type: 'district_hospital' }
-      );
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
       searchService.search.resolves(searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
@@ -161,10 +158,6 @@ describe('Contacts component', () => {
         },
       ];
 
-      userSettingsService.get.resolves({ facility_id: 'abcde' });
-      getDataRecordsService.get.resolves(
-        { _id: 'abcde', name: 'My District', type: 'district_hospital' }
-      );
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
       searchService.search.resolves(searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
@@ -180,6 +173,7 @@ describe('Contacts component', () => {
     it('Only searches for top-level places as an admin', fakeAsync(() => {
       store.overrideSelector(Selectors.getIsAdmin, true);
       userSettingsService.get.resolves({ facility_id: undefined });
+      getDataRecordsService.get.resolves({});
       searchResults = [
         {
           _id: 'search-result',
@@ -188,7 +182,7 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
-      expect(contactTypesService.getChildren.args[0].length).to.equal(0);
+      expect(contactTypesService.getChildren.args[1].length).to.equal(0);
     }));
 
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
@@ -211,10 +205,6 @@ describe('Contacts component', () => {
     }));
 
     it('when paginating, does modify skip for non-admins #4085', fakeAsync(() => {
-      userSettingsService.get.resolves({ facility_id: 'abcde' });
-      getDataRecordsService.get.resolves(
-        { _id: 'abcde', name: 'My District', type: 'district_hospital' }
-      );
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -230,6 +220,168 @@ describe('Contacts component', () => {
       //   limit: 50,
       //   skip: 50,
       // });
+    }));
+  });
+
+  describe('last visited date', () => {
+    it('does not enable LastVisitedDate features not allowed', () => {
+      expect(authService.has.callCount).equal(1);
+      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
+      expect(component.lastVisitedDateExtras).to.equal(false);
+      expect(component.visitCountSettings).to.deep.equal({});
+      expect(component.sortDirection).to.equal('alpha');
+      expect(component.defaultSortDirection).to.equal('alpha');
+      expect(userSettingsService.get.callCount).to.equal(1);
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal(
+        [
+          'contacts',
+          { types: { selected: ['childType'] } },
+          { limit: 50 },
+          {},
+          undefined,
+        ]
+      );
+    });
+
+    it('enables LastVisitedDate features when allowed', fakeAsync(() => {
+      authService.has.resolves(true);
+      component.ngOnInit();
+      flush();
+      expect(authService.has.callCount).equal(2);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(component.lastVisitedDateExtras).to.equal(true);
+      expect(component.visitCountSettings).to.deep.equal({});
+      expect(component.sortDirection).to.equal('alpha');
+      expect(component.defaultSortDirection).to.equal('alpha');
+      expect(userSettingsService.get.callCount).to.equal(2);
+      expect(searchService.search.callCount).to.equal(2);
+      expect(searchService.search.args[1]).to.deep.equal(
+        [
+          'contacts',
+          { types: { selected: ['childType'] } },
+          { limit: 50 },
+          {
+            displayLastVisitedDate: true,
+            visitCountSettings: {},
+          },
+          undefined,
+        ]
+      );
+    }));
+
+    it('saves uhc home_visits settings and default sort when correct', fakeAsync(() => {
+      authService.has.resolves(true);
+      settingsService.get.resolves({
+        uhc: {
+          contacts_default_sort: false,
+          visit_count: {
+            month_start_date: false,
+            visit_count_goal: 1,
+          },
+        },
+      });
+      component.ngOnInit();
+      flush();
+
+      expect(authService.has.callCount).equal(2);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(component.lastVisitedDateExtras).to.equal(true);
+      expect(component.visitCountSettings).to.deep.equal({
+        monthStartDate: false,
+        visitCountGoal: 1,
+      });
+      expect(component.sortDirection).to.equal('alpha');
+      expect(searchService.search.callCount).to.equal(2);
+      expect(searchService.search.args[1]).to.deep.equal(
+        [
+          'contacts',
+          { types: { selected: ['childType'] } },
+          { limit: 50 },
+          {
+            displayLastVisitedDate: true,
+            visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
+          },
+          undefined,
+        ]
+      );
+    }));
+
+    it('always saves default sort', fakeAsync(() => {
+      authService.has.resolves(true);
+      settingsService.get.resolves({
+        uhc: {
+          contacts_default_sort: 'something',
+          visit_count: {
+            month_start_date: false,
+            visit_count_goal: 1,
+          },
+        },
+      });
+      component.ngOnInit();
+      flush();
+
+      expect(authService.has.callCount).equal(2);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(component.lastVisitedDateExtras).to.equal(true);
+      expect(component.visitCountSettings).to.deep.equal({
+        monthStartDate: false,
+        visitCountGoal: 1,
+      });
+      expect(component.sortDirection).to.equal('something');
+      expect(searchService.search.callCount).to.equal(2);
+      expect(searchService.search.args[1]).to.deep.equal(
+        [
+          'contacts',
+          { types: { selected: ['childType'] } },
+          { limit: 50 },
+          {
+            displayLastVisitedDate: true,
+            visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
+          },
+          undefined,
+        ]
+      );
+      // TODO: reset filter test
+    }));
+
+    it('saves uhc default sorting', fakeAsync(() => {
+      authService.has.resolves(true);
+      settingsService.get.resolves({
+        uhc: {
+          contacts_default_sort: 'last_visited_date',
+          visit_count: {
+            month_start_date: 25,
+            visit_count_goal: 125,
+          },
+        },
+      });
+      component.ngOnInit();
+      flush();
+
+      expect(authService.has.callCount).equal(2);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(component.lastVisitedDateExtras).to.equal(true);
+      expect(component.visitCountSettings).to.deep.equal({
+        monthStartDate: 25,
+        visitCountGoal: 125,
+      });
+      expect(component.sortDirection).to.equal('last_visited_date');
+      expect(component.defaultSortDirection).to.equal('last_visited_date');
+      expect(searchService.search.callCount).to.equal(2);
+      expect(searchService.search.args[1]).to.deep.equal(
+        [
+          'contacts',
+          { types: { selected: ['childType'] } },
+          { limit: 50 },
+          {
+            displayLastVisitedDate: true,
+            visitCountSettings: { monthStartDate: 25, visitCountGoal: 125 },
+            sortByLastVisitedDate: true,
+          },
+          undefined,
+        ]
+      );
     }));
   });
 });
