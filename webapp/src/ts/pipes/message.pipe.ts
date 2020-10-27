@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import * as _ from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
 import { FormatProvider } from '../providers/format.provider';
@@ -14,6 +14,9 @@ const getFormName = (record, forms) => {
 
 @Pipe({
   name: 'summary'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class SummaryPipe implements PipeTransform {
   constructor(
@@ -43,6 +46,9 @@ export class SummaryPipe implements PipeTransform {
 @Pipe({
   name: 'title'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class TitlePipe implements PipeTransform {
   constructor(
     private translateService:TranslateService,
@@ -66,6 +72,9 @@ export class TitlePipe implements PipeTransform {
 @Pipe({
   name: 'clinic'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class ClinicPipe implements PipeTransform {
   constructor(
     private translateService:TranslateService,
@@ -80,6 +89,9 @@ export class ClinicPipe implements PipeTransform {
 
 @Pipe({
   name: 'lineage'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class LineagePipe implements PipeTransform {
   constructor(

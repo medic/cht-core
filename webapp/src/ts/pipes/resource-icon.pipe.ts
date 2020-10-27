@@ -23,6 +23,9 @@ export class ResourceIconPipe implements PipeTransform {
 @Pipe({
   name: 'headerLogo'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class HeaderLogoPipe implements PipeTransform {
   constructor(
     private resourceIcons: ResourceIconsService,
@@ -36,6 +39,9 @@ export class HeaderLogoPipe implements PipeTransform {
 
 @Pipe({
   name: 'partnerImage'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class PartnerImagePipe implements PipeTransform {
   constructor(

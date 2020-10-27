@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import * as phoneNumber from '@medic/phone-number';
@@ -7,6 +7,9 @@ import { SettingsService } from '@mm-services/settings.service';
 
 @Pipe({
   name: 'phone'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class PhonePipe implements PipeTransform {
   private settings;

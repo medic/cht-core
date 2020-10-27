@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 
 import { TranslateFromService } from '@mm-services/translate-from.service';
 
@@ -18,6 +18,9 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
  */
 @Pipe({
   name: 'translateFrom'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class TranslateFromPipe implements PipeTransform {
   constructor(

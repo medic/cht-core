@@ -3,6 +3,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { isEqual as _isEqual } from 'lodash-es';
 
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -53,6 +54,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
   private telemetryData:any = {
     preRender: Date.now()
   };
+  private routeSnapshot;
 
   ngOnInit() {
     const reduxSubscription = combineLatest(
@@ -78,20 +80,36 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
 
     this.globalActions.setLoadingContent(true);
     this.contentError = false;
+    this.routeSnapshot = this.route.snapshot;
 
-    if (this.route.snapshot.params && (this.route.snapshot.params.reportsId || this.route.snapshot.params.formId)) {
+    if (this.routeSnapshot.params && (this.routeSnapshot.params.reportsId || this.routeSnapshot.params.formId)) {
       this.globalActions.setCancelCallback(() => {
         // Note : if no $state.params.reportId, goes to "No report selected".
-        this.router.navigate(['/reports', this.route.snapshot.params.reportsId]);
+        this.router.navigate(['/reports', this.routeSnapshot.params.reportsId]);
       });
     } else {
       this.globalActions.clearCancelCallback();
     }
 
     this.resetFormError();
+
+    const routeSubscription = this.route.params.subscribe((params) => {
+      if (_isEqual(this.routeSnapshot.params, params)) {
+        // the 1st time we load the form, we must wait for the view to be initialized
+        // if we don't skip, it will result in the form being loaded twice
+        return;
+      }
+      this.routeSnapshot = this.route.snapshot;
+      this.loadForm();
+    });
+    this.subscription.add(routeSubscription);
   }
 
   ngAfterViewInit() {
+    this.loadForm();
+  }
+
+  private loadForm() {
     this
       .getSelected()
       .then((model:any) => {
@@ -188,15 +206,15 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
     this.geoHandle && this.geoHandle.cancel();
     this.geoHandle = this.geolocationService.init();
 
-    if (this.route.snapshot.params.formId) { // adding
+    if (this.routeSnapshot.params.formId) { // adding
       return Promise.resolve({
-        formInternalId: this.route.snapshot.params.formId,
+        formInternalId: this.routeSnapshot.params.formId,
       });
     }
 
-    if (this.route.snapshot.params.reportId) { // editing
+    if (this.routeSnapshot.params.reportId) { // editing
       return this.lineageModelGeneratorService
-        .report(this.route.snapshot.params.reportId)
+        .report(this.routeSnapshot.params.reportId)
         .then((result) => {
           return {
             doc: result.doc,

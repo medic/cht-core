@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import * as moment from 'moment';
@@ -94,6 +94,9 @@ const getRecipient = (task, translateService) => {
 @Pipe({
   name: 'autoreply'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class AutoreplyPipe implements PipeTransform {
   constructor(
     private translateService:TranslateService,
@@ -126,6 +129,9 @@ export class AutoreplyPipe implements PipeTransform {
 
 @Pipe({
   name: 'state'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class StatePipe implements PipeTransform {
   constructor(
@@ -161,6 +167,9 @@ export class StatePipe implements PipeTransform {
 @Pipe({
   name: 'dateOfDeath'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class DateOfDeathPipe implements PipeTransform {
   constructor(
     private translateService:TranslateService,
@@ -187,6 +196,9 @@ export class DateOfDeathPipe implements PipeTransform {
 @Pipe({
   name: 'age'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class AgePipe implements PipeTransform {
   constructor(
     private formatDateService:FormatDateService,
@@ -210,6 +222,9 @@ export class AgePipe implements PipeTransform {
 @Pipe({
   name: 'dayMonth'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class DayMonthPipe implements PipeTransform {
   constructor(
     private sanitizer: DomSanitizer,
@@ -222,6 +237,9 @@ export class DayMonthPipe implements PipeTransform {
 
 @Pipe({
   name: 'relativeDate'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class RelativeDatePipe implements PipeTransform {
   constructor(
@@ -247,6 +265,9 @@ export class RelativeDatePipe implements PipeTransform {
 
 @Pipe({
   name: 'relativeDay'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class RelativeDayPipe implements PipeTransform {
   constructor(
@@ -276,6 +297,9 @@ export class RelativeDayPipe implements PipeTransform {
 @Pipe({
   name: 'taskDueDate'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class TaskDueDatePipe implements PipeTransform {
   constructor(
     private sanitizer: DomSanitizer,
@@ -296,6 +320,9 @@ export class TaskDueDatePipe implements PipeTransform {
 @Pipe({
   name: 'simpleDate'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class SimpleDatePipe implements PipeTransform {
   constructor(
     private formatDateService: FormatDateService,
@@ -310,6 +337,9 @@ export class SimpleDatePipe implements PipeTransform {
 @Pipe({
   name: 'simpleDateTime'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class SimpleDateTimePipe implements PipeTransform {
   constructor(
     private formatDateService: FormatDateService,
@@ -323,6 +353,9 @@ export class SimpleDateTimePipe implements PipeTransform {
 
 @Pipe({
   name: 'fullDate'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class FullDatePipe implements PipeTransform {
   constructor(
@@ -349,6 +382,9 @@ export class FullDatePipe implements PipeTransform {
 
 @Pipe({
   name: 'weeksPregnant'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class WeeksPregnantPipe implements PipeTransform {
   constructor() {}
