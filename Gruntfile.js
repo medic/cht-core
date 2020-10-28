@@ -761,7 +761,16 @@ module.exports = function(grunt) {
           configFile: TRAVIS_TAG || TRAVIS_BRANCH?'tests/conf-travis.js':'tests/conf.js',
           args: {
             suite: 'web',
-
+            capabilities: {
+              browserName: 'chrome',
+              chromeOptions: {
+      // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
+      // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
+      // https://github.com/angular/protractor/issues/5261
+      w3c: false,
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
+    }
+  },
           }
         }
       },
@@ -772,7 +781,6 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                args:['--headless', '--disable-gpu'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }
