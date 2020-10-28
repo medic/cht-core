@@ -772,7 +772,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                args:['--headless', '--disable-gpu']
+                args:['--headless', '--disable-gpu'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }
