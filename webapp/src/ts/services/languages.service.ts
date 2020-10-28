@@ -10,7 +10,7 @@ export class LanguagesService {
     private dbService:DbService,
   ){}
 
-  get() {
+  get(): Promise<Object> {
     return this.dbService.get()
       .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
       .then((result) => {
