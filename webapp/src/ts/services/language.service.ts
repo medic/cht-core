@@ -16,6 +16,10 @@ export class SetLanguageCookieService {
   ) {
   }
 
+  /**
+   * Set the language for the current session.
+   * @param value the language code, eg. 'en', 'es' ...
+   */
   set(value) {
     this.cookieService.set(localeCookieKey, value, 365, '/');
     return value;
@@ -33,13 +37,13 @@ export class SetLanguageService {
   }
 
   private setDatepickerLanguage(language) {
-    // TODO
-    /*const availableCalendarLanguages = Object.keys($.fn.datepicker.dates);
-    const calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
-    $.fn.datepicker.defaults.language = calendarLanguage;*/
-  };
+    //TODO Uncomment the code below once fn.datepicker is migrated to Angular 10
+    //const availableCalendarLanguages = Object.keys((<any>$.fn).datepicker.dates);
+    //const calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
+    //(<any>$.fn).datepicker.defaults.language = calendarLanguage;
+  }
 
-  set(code, setLanguageCookie) {
+  set(code, setLanguageCookie?) {
     moment.locale([ code, 'en' ]);
     this.setDatepickerLanguage(code);
     this.translateService.use(code);
@@ -90,4 +94,3 @@ export class LanguageService {
       .then(locale => this.setLanguageCookieService.set(locale));
   }
 }
-
