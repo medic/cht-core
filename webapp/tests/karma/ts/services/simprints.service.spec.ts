@@ -9,7 +9,7 @@ describe('SimprintsService', () => {
   let simprints_reg;
   let simprints_ident;
 
-  const assertCalledOnCorrectObject = () => {
+  const assertCalledOnCorrectObject = function () {
     // If the medicmobile_android functions are not called with `this` parameter
     // correctly set, we receive the cryptic error:
     //   Java bridge method cannot be invoked on a non-injected object
@@ -30,7 +30,6 @@ describe('SimprintsService', () => {
     };
 
     window.medicmobile_android = medicmobile_android;
-
     service = TestBed.inject(SimprintsService);
   });
 

@@ -21,7 +21,7 @@ export class SimprintsService {
     };
     // `call` needed to specify context: #3511
     endpoint.call(window.medicmobile_android, this.currentRequest.id);
-    return this.currentRequest.deferred.promise;
+    return this.currentRequest.deferred;
   };
 
   private isCurrentRequest(requestId) {
