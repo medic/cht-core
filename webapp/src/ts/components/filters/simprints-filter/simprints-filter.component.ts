@@ -8,6 +8,7 @@ import { Store } from '@ngrx/store';
 export class SimprintsFilterComponent {
   @Input() simprintsEnabled;
   @Output() identify: EventEmitter<any> = new EventEmitter();
+  
   simprintsIdentify() {
     this.identify.emit();
   }

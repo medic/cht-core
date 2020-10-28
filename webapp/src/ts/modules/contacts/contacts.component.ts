@@ -202,6 +202,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       contact.icon = type && type.icon;
       contact.heading = contact.name;
       contact.valid = true;
+      contact.summary = null;
 
       return contact
     });
