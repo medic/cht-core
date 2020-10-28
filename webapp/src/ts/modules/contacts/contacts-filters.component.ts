@@ -2,6 +2,7 @@ import { Component, ViewChild, Output, Input, EventEmitter } from '@angular/core
 import { GlobalActions } from '@mm-actions/global';
 import { Store } from '@ngrx/store';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
+import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
 
 @Component({
   selector: 'contacts-filters',
@@ -25,8 +26,11 @@ export class ContactsFiltersComponent {
   @ViewChild(FreetextFilterComponent)
   freetextFilter:FreetextFilterComponent;
 
-  applyFilters() {
-    this.search.emit();
+  @ViewChild(SimprintsFilterComponent)
+  simprintsFilter:SimprintsFilterComponent;
+
+  applyFilters(force?) {
+    this.search.emit(force);
   }
 
   simprintsIdentify() {
