@@ -13,6 +13,7 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
+import {TourSelectComponent} from '@mm-modals/tour/tour-select.component';
 
 
 @Component({
@@ -81,7 +82,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openTourSelect() {
-
+    this.modalService.show(TourSelectComponent);
   }
 
   openFeedback() {

@@ -14,6 +14,7 @@ import { DeleteDocConfirmComponent } from './delete-doc-confirm/delete-doc-confi
 import { UpdatePasswordComponent } from './edit-user/update-password.component';
 import { EditUserSettingsComponent } from './edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
+import { TourSelectComponent } from './tour/tour-select.component';
 
 
 @NgModule({
@@ -28,6 +29,7 @@ import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/naviga
     UpdatePasswordComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
+    TourSelectComponent,
   ],
   imports: [
     CommonModule,
@@ -42,6 +44,7 @@ import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/naviga
     UpdatePasswordComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
+    TourSelectComponent,
   ]
 })
 export class ModalsModule { }
