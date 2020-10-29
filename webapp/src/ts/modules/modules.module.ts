@@ -17,6 +17,7 @@ import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.com
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { MessagesContentComponent } from './messages/messages-content.component'
     MessagesComponent,
     ReportsFiltersComponent,
     MessagesContentComponent,
+    PrivacyPolicyComponent,
   ],
   imports: [
     CommonModule,
@@ -47,6 +49,7 @@ import { MessagesContentComponent } from './messages/messages-content.component'
     ReportsComponent,
     ReportsContentComponent,
     MessagesComponent,
+    PrivacyPolicyComponent,
   ]
 })
 export class ModulesModule { }
