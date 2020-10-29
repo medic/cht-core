@@ -32,6 +32,7 @@ const reportConnectedByPatientAndPlaceUuid = {
     place_uuid: 'place',
   },
   patient_id: 'patient',
+  reported_date: 100,
 };
 const reportConnectedByPlaceUuid = {
   _id: 'reportByPlaceUuid',
@@ -40,6 +41,7 @@ const reportConnectedByPlaceUuid = {
   fields: {
     place_uuid: 'place',
   },
+  reported_date: 300,
 };
 const taskOwnedByChtContact = {
   _id: 'taskOwnedBy',
@@ -103,15 +105,121 @@ describe('pouchdb provider', () => {
     expect(await pouchdbProvider(db).allTaskData(mockUserSettingsDoc)).excludingEvery('_rev').to.deep.eq({
       contactDocs: [chtDocs.place, chtDocs.contact],
       reportDocs: [
-        headlessReport,
         chtDocs.pregnancyReport,
         reportConnectedByPatientAndPlaceUuid,
-        reportConnectedByPlace,
         reportConnectedByPlaceUuid,
+        headlessReport,
+        reportConnectedByPlace,
       ],
       taskDocs: [headlessTask, taskRequestedByChtContact, taskRequestedByChtPlace], // not owner
       userSettingsId: mockUserSettingsDoc._id,
     });
+  });
+
+  it('allTaskData should return reports in chronological order by reported_date', async () => {
+    const reports = [
+      {
+        _id: 'a_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 900,
+      },
+      {
+        _id: 'b_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 500,
+      },
+      {
+        _id: 'c_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 1000,
+      },
+      {
+        _id: 'd_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 600,
+      },
+      {
+        _id: 'e_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 700,
+      },
+    ];
+
+    await db.bulkDocs(reports);
+
+    const reportDocs = (await pouchdbProvider(db).allTaskData(mockUserSettingsDoc)).reportDocs;
+    expect(reportDocs).excludingEvery('_rev').to.deep.equal([
+      chtDocs.pregnancyReport,
+      reportConnectedByPatientAndPlaceUuid,
+      reportConnectedByPlaceUuid,
+      {
+        _id: 'b_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 500,
+      },
+      {
+        _id: 'd_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 600,
+      },
+      {
+        _id: 'e_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 700,
+      },
+      {
+        _id: 'a_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 900,
+      },
+      headlessReport,
+      {
+        _id: 'c_report',
+        type: 'data_record',
+        form: 'form',
+        fields: {
+          patient_id: 'patient',
+        },
+        reported_date: 1000,
+      },
+      reportConnectedByPlace,
+    ]);
   });
 
   describe('commitTargetDoc', () => {
@@ -244,9 +352,9 @@ describe('pouchdb provider', () => {
       chai.expect(forPlace).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.place, chtDocs.contact],
         reportDocs: [
+          chtDocs.pregnancyReport,
           reportConnectedByPatientAndPlaceUuid,
           reportConnectedByPlaceUuid,
-          chtDocs.pregnancyReport,
           reportConnectedByPlace,
         ],
         taskDocs: [taskRequestedByChtPlace, taskRequestedByChtContact],
