@@ -33,12 +33,13 @@ We recommend using Docker to install and use CouchDB. This ensures you are getti
 After [installing docker](https://docs.docker.com/get-docker/), you can create a docker container like so:
 
 ```sh
-docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -v <path>:/opt/couchdb/data apache/couchdb:2
+docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -e COUCHDB_USER=myAdminUser -e COUCHDB_PASSWORD=myAdminPass --rm -v <data path>:/opt/couchdb/data <config path>:/opt/couchdb/etc/local.d apache/couchdb:2
 ```
 
 Notes before copy pasting:
  - `--name` creates a container called `medic-couchdb`. You can name it whatever you want, but this is how you refer to it later
- - `-v` maps where couchdb stores data to your local file system for performance, using the path *before* the `:` (the path after the colon is the internal path inside the docker image). This should be somewhere in your home directory you have write access to, and want this data to be stored.
+ - `-e` sets an environment variable inside the container. Two are set here, for a user and password for the initial admin user. 
+ - `-v` maps where couchdb stores data to your local file system to ensure persistence without depending on the container, using the path *before* the `:` (the path after the colon is the internal path inside the docker image). This should be somewhere in your home directory you have write access to, and want this data to be stored. The second mounted volume is for the couch configuration, which will retain settings so if your container is removed, the settings will persisted. This is especially important after running the command to secure the instance (done in steps below).
  - `apache/couchdb:2` will install the latest package for CouchDB 2.x
 
 Once this downloads and starts, you will need to [initialise CouchDB](http://localhost:5984/_utils/#/setup) as noted in [their install instructions](https://docs.couchdb.org/en/2.3.1/setup/index.html#setup).
@@ -74,7 +75,7 @@ npm ci
 
 By default CouchDB runs in *admin party mode*, which means you do not need users to read or edit any data. This is great for some, but to use your application safely we're going to disable this feature.
 
-First, add an admin user. When prompted to create an admin [during installation](https://docs.couchdb.org/en/2.3.1/setup/index.html#setup), use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.3.1/install/).
+First, add an admin user (unless you did via the docker `-e` switches as described above). When prompted to create an admin [during installation](https://docs.couchdb.org/en/2.3.1/setup/index.html#setup), use a strong username and password. Passwords can be changed via [Fauxton](http://localhost:5984/_utils). For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.3.1/install/).
 
 Once you have an admin user you can proceed with securing CouchDB:
 
