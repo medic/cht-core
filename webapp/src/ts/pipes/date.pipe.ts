@@ -1,9 +1,10 @@
-import { Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Pipe, PipeTransform, Injectable } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import * as moment from 'moment';
-import { FormatDateService } from '../services/format-date.service';
-import { RelativeDateService } from '../services/relative-date.service';
+
+import { FormatDateService } from '@mm-services/format-date.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
 
 const getState = (state, translateService) => {
   return translateService
@@ -78,15 +79,23 @@ const getTaskDate = (task) => {
 
 const getRecipient = (task, translateService) => {
   const recipient = task && task.messages && task.messages.length && task.messages[0].to;
-  if (recipient) {
-    const label = translateService.instant('to recipient', { recipient: recipient });
-    return '<span class="recipient">&nbsp;' + label + '</span>';
+  if (!recipient) {
+    return Promise.resolve('');
   }
-  return '';
+
+  return translateService
+    .get('to recipient', { recipient: recipient })
+    .toPromise()
+    .then(label => {
+      return '<span class="recipient">&nbsp;' + label + '</span>';
+    });
 };
 
 @Pipe({
   name: 'autoreply'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class AutoreplyPipe implements PipeTransform {
   constructor(
@@ -97,33 +106,32 @@ export class AutoreplyPipe implements PipeTransform {
   ) { }
 
   transform(task) {
-    return new Promise((resolve, reject) => {
-      if (!task) {
-        resolve('');
-      }
+    if (!task) {
+      return Promise.resolve('');
+    }
 
-      getState(task.state, this.translateService)
-        .then(state => {
-          const content = state + '&nbsp;' +
-            '<span class="autoreply" title="' + task.messages[0].message + '">' +
-            '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
-            '</span>&nbsp';
+    return getState(task.state, this.translateService).then(state => {
+      const content = state + '&nbsp;' +
+        '<span class="autoreply" title="' + task.messages[0].message + '">' +
+        '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
+        '</span>&nbsp';
 
-          const transformedContent = getRelativeDate(getTaskDate(task), {
-            FormatDate: this.formatDateService,
-            RelativeDate: this.relativeDateService,
-            prefix: content,
-          });
+      const transformedContent = getRelativeDate(getTaskDate(task), {
+        FormatDate: this.formatDateService,
+        RelativeDate: this.relativeDateService,
+        prefix: content,
+      });
 
-          resolve(this.sanitizer.bypassSecurityTrustHtml(transformedContent));
-
-        }, reject);
+      return this.sanitizer.bypassSecurityTrustHtml(transformedContent);
     });
   }
 }
 
 @Pipe({
   name: 'state'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class StatePipe implements PipeTransform {
   constructor(
@@ -134,29 +142,33 @@ export class StatePipe implements PipeTransform {
   ) { }
 
   transform(task) {
-    return new Promise((resolve, reject) => {
-      if (!task) {
-        resolve('');
-      }
+    if (!task) {
+      return Promise.resolve('');
+    }
 
-      getState(task.state || 'received', this.translateService)
-        .then(state => {
-          const relativeDate = getRelativeDate(getTaskDate(task), {
-            FormatDate: this.formatDateService,
-            RelativeDate: this.relativeDateService,
-            prefix: state + '&nbsp;',
-            suffix: getRecipient(task, this.translateService),
-          });
+    return Promise
+      .all([
+        getState(task.state || 'received', this.translateService),
+        getRecipient(task, this.translateService),
+      ])
+      .then(([ state, recipient ]) => {
+        const relativeDate = getRelativeDate(getTaskDate(task), {
+          FormatDate: this.formatDateService,
+          RelativeDate: this.relativeDateService,
+          prefix: state + '&nbsp;',
+          suffix: recipient,
+        });
 
-          resolve(this.sanitizer.bypassSecurityTrustHtml(relativeDate));
-
-        }, reject);
-    });
+        return this.sanitizer.bypassSecurityTrustHtml(relativeDate);
+      });
   }
 }
 
 @Pipe({
   name: 'dateOfDeath'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class DateOfDeathPipe implements PipeTransform {
   constructor(
@@ -184,6 +196,9 @@ export class DateOfDeathPipe implements PipeTransform {
 @Pipe({
   name: 'age'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class AgePipe implements PipeTransform {
   constructor(
     private formatDateService:FormatDateService,
@@ -207,6 +222,9 @@ export class AgePipe implements PipeTransform {
 @Pipe({
   name: 'dayMonth'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class DayMonthPipe implements PipeTransform {
   constructor(
     private sanitizer: DomSanitizer,
@@ -219,6 +237,9 @@ export class DayMonthPipe implements PipeTransform {
 
 @Pipe({
   name: 'relativeDate'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class RelativeDatePipe implements PipeTransform {
   constructor(
@@ -245,6 +266,9 @@ export class RelativeDatePipe implements PipeTransform {
 
 @Pipe({
   name: 'relativeDay'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class RelativeDayPipe implements PipeTransform {
   constructor(
@@ -274,6 +298,9 @@ export class RelativeDayPipe implements PipeTransform {
 @Pipe({
   name: 'taskDueDate'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class TaskDueDatePipe implements PipeTransform {
   constructor(
     private sanitizer: DomSanitizer,
@@ -294,6 +321,9 @@ export class TaskDueDatePipe implements PipeTransform {
 @Pipe({
   name: 'simpleDate'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class SimpleDatePipe implements PipeTransform {
   constructor(
     private formatDateService: FormatDateService,
@@ -308,6 +338,9 @@ export class SimpleDatePipe implements PipeTransform {
 @Pipe({
   name: 'simpleDateTime'
 })
+@Injectable({
+  providedIn: 'root'
+})
 export class SimpleDateTimePipe implements PipeTransform {
   constructor(
     private formatDateService: FormatDateService,
@@ -321,6 +354,9 @@ export class SimpleDateTimePipe implements PipeTransform {
 
 @Pipe({
   name: 'fullDate'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class FullDatePipe implements PipeTransform {
   constructor(
@@ -344,29 +380,11 @@ export class FullDatePipe implements PipeTransform {
   }
 }
 
-/*
- angular.module('inboxFilters').filter('fullDate', function(
- $sce,
- FormatDate,
- RelativeDate
- ) {
- return function (date) {
- if (!date) {
- return '';
- }
- const cssSelector = RelativeDate.getCssSelector();
- const dataset = RelativeDate.generateDataset(date);
- const relative = FormatDate.relative(date);
- const absolute = FormatDate.datetime(date);
- return $sce.trustAsHtml(
- `<div class="relative-date-content ${cssSelector}" ${dataset}>${relative}</div>` +
- `<div class="full-date">${absolute}</div>`
- );
- };
- });*/
-
 @Pipe({
   name: 'weeksPregnant'
+})
+@Injectable({
+  providedIn: 'root'
 })
 export class WeeksPregnantPipe implements PipeTransform {
   constructor() {}
