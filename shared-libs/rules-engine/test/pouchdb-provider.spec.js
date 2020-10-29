@@ -361,5 +361,112 @@ describe('pouchdb provider', () => {
         userSettingsId: 'org.couchdb.user:username',
       });
     });
+
+    it('should sort reports by reported_date', async () => {
+      const reports = [
+        {
+          _id: 'a_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 900,
+        },
+        {
+          _id: 'b_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 500,
+        },
+        {
+          _id: 'c_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 1000,
+        },
+        {
+          _id: 'd_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 600,
+        },
+        {
+          _id: 'e_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 700,
+        },
+      ];
+
+      await db.bulkDocs(reports);
+
+      const result = await pouchdbProvider(db)
+        .taskDataFor([chtDocs.place._id, chtDocs.contact._id], mockUserSettingsDoc);
+      const reportDocs = result.reportDocs;
+      expect(reportDocs).excludingEvery('_rev').to.deep.equal([
+        chtDocs.pregnancyReport,
+        reportConnectedByPatientAndPlaceUuid,
+        reportConnectedByPlaceUuid,
+        {
+          _id: 'b_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 500,
+        },
+        {
+          _id: 'd_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 600,
+        },
+        {
+          _id: 'e_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 700,
+        },
+        {
+          _id: 'a_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 900,
+        },
+        {
+          _id: 'c_report',
+          type: 'data_record',
+          form: 'form',
+          fields: {
+            patient_id: 'patient',
+          },
+          reported_date: 1000,
+        },
+        reportConnectedByPlace,
+      ]);
+    });
   });
 });
