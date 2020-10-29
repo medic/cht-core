@@ -19,9 +19,12 @@ export class ContactsFiltersComponent {
 
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Output() simIdentify: EventEmitter<any> = new EventEmitter();
+  @Output() sort: EventEmitter<any> = new EventEmitter();
   @Input() reset;
   @Input() disabled;
   @Input() simprintsEnabled;
+  @Input() sortDirection;
+  @Input() lastVisitedDateExtras;
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter:FreetextFilterComponent;
@@ -41,5 +44,9 @@ export class ContactsFiltersComponent {
     this.globalActions.clearFilters();
     this.freetextFilter?.clear();
     this.applyFilters();
+  }
+
+  applySort(direction) {
+    this.sort.emit(direction);
   }
 }

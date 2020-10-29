@@ -18,6 +18,7 @@ const updateContacts = (state, newContacts) => {
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
+  on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
 );
 
 export function contactsReducer(state, action) {

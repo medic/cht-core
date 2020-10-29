@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import * as _ from 'lodash-es';
+
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
 import { ServicesActions } from '@mm-actions/services';
@@ -115,6 +116,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       },
     });
     this.subscription.add(changesSubscription);
+    this.simprintsEnabled = this.simprintsService.enabled();
 
     Promise.all([
       this.getUserHomePlaceSummary(),
@@ -139,18 +141,19 @@ export class ContactsComponent implements OnInit, OnDestroy{
           selected: this.childPlaces.map(type => type.id)
         }
       };
-      this.simprintsEnabled = this.simprintsService.enabled();
       this.search();
     })
-    .catch(() => {
+    .catch((err) => {
       this.error = true;
       this.loading = false;
       this.appending = false;
+      console.error('Error searching for contacts', err);
     });
       
   }
 
   ngOnDestroy() {
+    this.contactsActions.updateContactsList([]);
     this.subscription.unsubscribe();
   }
 
@@ -184,14 +187,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
   };
 
   private canViewLastVisitedDate() {
-    return new Promise((resolve) => {
-      if (this.sessionService.isDbAdmin()) {
-        // disable UHC for DB admins
-        resolve(false);
-      } else {
-        resolve(this.authService.has('can_view_last_visited_date'));
-      }
-    });
+    if (this.sessionService.isDbAdmin()) {
+    // disable UHC for DB admins
+      return Promise.resolve(false);
+    }
+    return this.authService.has('can_view_last_visited_date');
   }
 
   private formatContacts(contacts) {
@@ -203,6 +203,44 @@ export class ContactsComponent implements OnInit, OnDestroy{
       contact.heading = contact.name;
       contact.valid = true;
       contact.summary = null;
+      contact.primary = contact.home;
+      contact.simprintsTier = contact.simprints && contact.simprints.tierNumber;
+      contact.dod = contact.date_of_death;
+      contact.muted = contact.muted;
+      if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
+        if (contact.lastVisitedDate === 0) {
+          contact.overdue = true;
+          contact.summary = this.translateService.instant('contact.last.visited.unknown');
+        } else {
+          const now = new Date().getTime();
+          const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+          contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
+          // TODO: fix this
+          // contact.summary = this.translateService.instant(
+          //   'contact.last.visited.date',
+          //   { date: relativeDayFilter(contact.lastVisitedDate, true) }
+          // );
+        }
+
+        const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
+        contact.visits = {
+          count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
+          summary: this.translateService.instant(
+            'contacts.visits.visits',
+            { VISITS: contact.visitCount }
+          )
+        };
+
+        if (contact.visitCountGoal) {
+          if (!contact.visitCount) {
+            contact.visits.status = 'pending';
+          } else if (contact.visitCount < contact.visitCountGoal) {
+            contact.visits.status = 'started';
+          } else {
+            contact.visits.status = 'done';
+          }
+        }
+      }
 
       return contact
     });
@@ -250,6 +288,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.appending = true;
       options.skip = this.contactsList.length;
     } else if (!options.silent) {
+      this.contactsActions.updateContactsList([]);
       this.additionalListItem = false;
     }
 
@@ -342,13 +381,28 @@ export class ContactsComponent implements OnInit, OnDestroy{
       });
   }
 
-  search(force = false) {
-    if (!force && isMobile()) {
-      // leave content shown
-      return;
+  search() {
+    if(this.filters.search && !this.enketoEdited) {
+      // TODO: migrate line below
+      // $state.go('contacts.detail', { id: null }, { notify: false });
+      this.contactsActions.clearSelection();
     }
+
     this.loading = true;
-    return this.query(force);
+    if (this.filters.search || this.filters.simprintsIdentities) {
+      this.filtered = true;
+      this.contactsActions.updateContactsList([]);
+      return this.query({});
+    } else {
+      this.filtered = false;
+      return this.query({});
+    }
+  }
+
+  sort(sortDirection) {
+    this.sortDirection = sortDirection;
+    this.contactsActions.updateContactsList([]);
+    this.query({});
   }
 
   simprintsIdentify() {
@@ -358,4 +412,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.search();
     });
   };
+
+  listTrackBy(index, contact) {
+    return contact._id + contact._rev;
+  }
 }

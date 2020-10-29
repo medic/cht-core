@@ -20,6 +20,7 @@ import { StatusFilterComponent } from '@mm-components/filters/status-filter/stat
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { SimprintsFilterComponent} from '@mm-components/filters/simprints-filter/simprints-filter.component';
+import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
@@ -40,6 +41,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     FreetextFilterComponent,
     ResetFiltersComponent,
     SimprintsFilterComponent,
+    SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,
@@ -67,6 +69,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     FreetextFilterComponent,
     ResetFiltersComponent,
     SimprintsFilterComponent,
+    SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
     NavigationComponent,

@@ -1,4 +1,4 @@
-<span ng-if="$ctrl.lastVisitedDateExtras" class="dropdown mm-dropdown sort-dropdown no-reset">
+<span *ngIf="lastVisitedDateExtras" class="dropdown mm-dropdown sort-dropdown no-reset">
   <span class="sort-results" data-toggle="dropdown">
     <a tabindex="-1" translate-attr-title="contacts.results.sort">
       <i class="fa fa-sort-amount-desc"></i>
@@ -8,10 +8,10 @@
     <ul>
       <li role="presentation" class="dropdown-header" translate>contacts.results.sort.title</li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" ng-class="{selected: $ctrl.sortDirection === 'alpha'}" ng-click="$ctrl.sort('alpha')" translate>contacts.results.sort.alpha</a>
+        <a role="menuitem" tabindex="-1" [class.selected]="{selected: sortDirection === 'alpha'}" (click)="applySort('alpha')" translate>contacts.results.sort.alpha</a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" ng-class="{selected: $ctrl.sortDirection === 'last_visited_date'}" ng-click="$ctrl.sort('last_visited_date')" translate>contacts.results.sort.date.last.visited</a>
+        <a role="menuitem" tabindex="-1" [class.selected]="{selected: sortDirection === 'last_visited_date'}" (click)="applySort('last_visited_date')" translate>contacts.results.sort.date.last.visited</a>
       </li>
     </ul>
   </span>

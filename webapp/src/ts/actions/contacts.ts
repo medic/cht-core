@@ -2,7 +2,8 @@ import { Store, createAction } from '@ngrx/store';
 import { createSingleValueAction } from './actionUtils';
 
 export const Actions = {
-  updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts')
+  updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts'),
+  setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
 };
 
 export class ContactsActions {
@@ -12,5 +13,9 @@ export class ContactsActions {
 
   updateContactsList(contacts) {
     return this.store.dispatch(Actions.updateContactsList(contacts));
+  }
+
+  clearSelection() {
+    return this.store.dispatch(Actions.setSelectedReports([]));
   }
 }

@@ -3,8 +3,11 @@
     <contacts-filters
       (search)="search()"
       (simIdentify)="simprintsIdentify()"
+      (sort)="sort($event)"
       [simprintsEnabled]="simprintsEnabled"
-      [disabled]="false">
+      [disabled]="false"
+      [sortDirection]="sortDirection"
+      [lastVisitedDateExtras]="lastVisitedDateExtras">
     </contacts-filters>
   </div>
 </div>
@@ -14,7 +17,7 @@
     <div id="contacts-list" class="col-sm-4 inbox-items left-pane">
       <ul [hidden]="loading && !appending">
         <mm-content-row
-          *ngFor="let contact of contactsList"
+          *ngFor="let contact of contactsList; trackBy: listTrackBy"
           [id]="contact._id"
           route="contacts"
           [icon]="contact.icon"
@@ -30,6 +33,6 @@
       <div class="loader" *ngIf="loading"></div>
       <div class="padding"></div>
     </div>
-    <contacts-content></contacts-content>
+    <router-outlet></router-outlet>
   </div>
 </div>

@@ -147,7 +147,7 @@ describe('Contacts component', () => {
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0];
+      const argument = component.contactsActions.updateContactsList.args[1][0];
 
       expect(argument.length).to.equal(2);
       expect(argument[0]._id).to.equal('abcde');
@@ -169,7 +169,7 @@ describe('Contacts component', () => {
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0];
+      const argument = component.contactsActions.updateContactsList.args[1][0];
 
       expect(argument.length).to.equal(2);
       expect(argument[0]._id).to.equal('abcde');
@@ -201,7 +201,7 @@ describe('Contacts component', () => {
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0];
+      const argument = component.contactsActions.updateContactsList.args[1][0];
       scrollLoaderCallback();
 
       expect(argument.length).to.equal(50);
@@ -220,7 +220,7 @@ describe('Contacts component', () => {
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0];
+      const argument = component.contactsActions.updateContactsList.args[1][0];
       scrollLoaderCallback();
 
       expect(argument.length).to.equal(51);

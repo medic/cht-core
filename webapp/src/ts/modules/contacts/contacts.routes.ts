@@ -12,6 +12,10 @@ export const routes: Routes = [
     canActivate: [RouteGuardProvider],
     children: [
       {
+        path: '',
+        component: ContactsContentComponent,
+      },
+      {
         path: ':id',
         component: ContactsContentComponent,
       }
