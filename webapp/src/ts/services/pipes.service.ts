@@ -29,7 +29,7 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
   providedIn: 'root'
 })
 export class PipesService {
-  pipesMap = new Map();
+  private pipesMap = new Map();
 
   constructor(
     private headerLogoPipe:HeaderLogoPipe,

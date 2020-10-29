@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { DbService } from './db.service';
-import { FormatDateService } from './format-date.service';
-import { LanguageService } from './language.service';
-import { SettingsService } from './settings.service';
-import { TranslateLocaleService} from '@mm-services/translate-locale.service';
 import * as _ from 'lodash-es';
+
+import { DbService } from '@mm-services/db.service';
+import { FormatDateService } from '@mm-services/format-date.service';
+import { LanguageService } from '@mm-services/language.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+
 
 import * as messages from '@medic/message-utils';
 import * as lineageFactory from '@medic/lineage';
@@ -16,7 +17,6 @@ import * as registrationUtils from '@medic/registration-utils';
 })
 export class FormatDataRecordService {
   constructor(
-    private translateService:TranslateService,
     private dbService:DbService,
     private formatDateService:FormatDateService,
     private languageService:LanguageService,

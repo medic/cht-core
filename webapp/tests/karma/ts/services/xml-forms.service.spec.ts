@@ -11,6 +11,7 @@ import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-util
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
+import { PipesService } from '@mm-services/pipes.service';
 
 describe('XmlForms service', () => {
   let dbGet;
@@ -20,6 +21,7 @@ describe('XmlForms service', () => {
   let UserContact;
   let getContactType;
   let contextUtils;
+  let pipesService;
   let error;
 
   const mockEnketoDoc = (formInternalId?, docId?) => {
@@ -36,6 +38,13 @@ describe('XmlForms service', () => {
     return { doc: { _attachments: {} } };
   };
 
+  pipesService = {
+    transform: sinon.stub().returnsArg(1),
+    getPipeNameVsIsPureMap: sinon.stub().returns(new Map()),
+    meta: sinon.stub(),
+    getInstance: sinon.stub(),
+  };
+
   const getService = () => {
     TestBed.configureTestingModule({
       providers: [
@@ -46,6 +55,7 @@ describe('XmlForms service', () => {
         { provide: ContactTypesService, useValue: { get: getContactType } },
         { provide: UserContactService, useValue: { get: UserContact } },
         ParseProvider,
+        { provide: PipesService, useValue: pipesService },
       ],
     });
     return TestBed.inject(XmlFormsService);
@@ -325,6 +335,45 @@ describe('XmlForms service', () => {
       getContactType.resolves({ person: false });
       return service.list({ doc: { color: 'blue' } }).then(actual => {
         expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[1].doc);
+        expect(UserContact.callCount).to.equal(1);
+      });
+    });
+
+    it('filter with custom function x2', () => {
+      const given = [
+        {
+          id: 'form-0',
+          doc: {
+            internalId: 'visit',
+            context: {
+              expression: '!isBlue(contact) && user.name === "Frank"'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-1',
+          doc: {
+            internalId: 'stock-report',
+            context: {
+              expression: 'isBlue(contact) && user.name === "Frank"'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        }
+      ];
+      contextUtils = {
+        isBlue: contact => {
+          return contact.color === 'blue';
+        }
+      };
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves({ name: 'Frank' });
+      const service = getService();
+      getContactType.resolves({ person: false });
+      return service.list({ doc: { color: 'red' } }).then(actual => {
+        expect(actual.length).to.equal(1);
         expect(actual[0]).to.deep.equal(given[0].doc);
         expect(UserContact.callCount).to.equal(1);
       });
@@ -364,6 +413,7 @@ describe('XmlForms service', () => {
         expect(actual[0]).to.deep.equal(given[0].doc);
       });
     });
+
 
     it('broken custom functions log clean errors and count as filtered', () => {
       const given = [

@@ -27,6 +27,7 @@ const noop = () => {};
 
 const fnCache = new Map();
 const purePipes = new Map();
+const purePipeCache = new Map();
 
 const primitiveEquals = (a, b) => {
   if (typeof a === "object" || typeof b === "object") {
@@ -66,6 +67,7 @@ const getPurePipeVal = (pipe, cache, identifier, ...args) => {
       return lastResult.result;
     }
   }
+  console.log(pipe);
   result = pipe.transform(...args);
   lastResult = {args, result};
   cache.set(identifier, lastResult);
@@ -315,8 +317,8 @@ class ASTCompiler {
   extendCtxWithLocals() {
     const v1 = this.createVar();
     this.stmts.push(
-      `${v1}=Object.assign({}, locals)`,
-      `ctx=Object.setPrototypeOf(${v1}, ctx)`
+      `${v1}=Object.assign({}, locals || {})`,
+      `ctx=Object.setPrototypeOf(${v1}, ctx || {})`
     );
   }
 
@@ -349,7 +351,7 @@ class ASTCompiler {
     this.addReturnStmt(this.build(this.ast));
 
     const fn = new Function(this.fnArgs(), this.fnBody());
-    const boundFn = fn.bind(undefined, plus, minus, isDef, getPurePipeVal);
+    const boundFn = fn.bind(undefined, plus, minus, isDef, getPurePipeVal, purePipeCache);
     boundFn.usedPipes = this.pipes.slice(0); // clone
     this.cleanup();
     return boundFn;

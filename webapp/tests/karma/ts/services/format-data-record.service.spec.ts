@@ -7,6 +7,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { LanguageService } from '@mm-services/language.service';
 import { DbService } from '@mm-services/db.service';
+import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
 describe('FormatDataRecord service', () => {
 
@@ -25,6 +26,7 @@ describe('FormatDataRecord service', () => {
         { provide: LanguageService, useValue: { get: Language } },
         { provide: FormatDateService, useValue: { relative: sinon.stub().returns('sometime') } },
         { provide: DbService, useValue: { get: () => ({}) } },
+        { provide: TranslateLocaleService, useValue: { instant: sinon.stub().returnsArg(0) } },
       ]
     });
     service = TestBed.inject(FormatDataRecordService);
@@ -46,7 +48,7 @@ describe('FormatDataRecord service', () => {
     const settings = {};
     Settings.resolves(settings);
     Language.resolves('en');
-    return service(doc).then(formatted => {
+    return service.format(doc).then(formatted => {
       expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
       expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
       const row = formatted.scheduled_tasks_by_group[0].rows[0];
@@ -57,7 +59,7 @@ describe('FormatDataRecord service', () => {
     });
   });
 
-  it('errors messages when they fail to transate', () => {
+  it('errors messages when they fail to translate', () => {
     const doc = {
       from: '+123456',
       scheduled_tasks: [
@@ -71,7 +73,7 @@ describe('FormatDataRecord service', () => {
     const settings = {};
     Settings.resolves(settings);
     Language.resolves('en');
-    return service(doc).then(formatted => {
+    return service.format(doc).then(formatted => {
       expect(formatted.scheduled_tasks_by_group.length).to.equal(1);
       expect(formatted.scheduled_tasks_by_group[0].rows.length).to.equal(1);
       const row = formatted.scheduled_tasks_by_group[0].rows[0];
@@ -102,7 +104,7 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
+    return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
         { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
         { label: 'report.my-form.group3', depth: 0 },
@@ -133,7 +135,7 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
+    return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
         { label: 'report.my-form.field1', value: 1, depth: 0, target: undefined },
         { label: 'report.my-form.fields', depth: 0 },
@@ -163,7 +165,7 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
+    return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.image',
@@ -201,25 +203,25 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
+    return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.patient_id',
           value: '1234',
           depth: 0,
-          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
+          target: { url: ['/contacts', 'some-patient-id'] }
         },
         {
           label: 'report.my-form.patient_uuid',
           value: 'some-uuid',
           depth: 0,
-          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
+          target: { url: ['/contacts', 'some-patient-id'] }
         },
         {
           label: 'report.my-form.patient_name',
           value: 'linky mclinkface',
           depth: 0,
-          target: { url: { route: 'contacts.detail', params: { id: 'some-patient-id' } } }
+          target: { url: ['/contacts', 'some-patient-id'] }
         },
         {
           label: 'report.my-form.not_patient_id',
@@ -242,7 +244,7 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
+    return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.case_id',
@@ -275,7 +277,7 @@ describe('FormatDataRecord service', () => {
       }
     };
 
-    return service(report).then(result => {
+    return service.format(report).then(result => {
       expect(result.fields).to.deep.equal([
         {
           label: 'case_id',
@@ -287,7 +289,7 @@ describe('FormatDataRecord service', () => {
           label: 'patient_id',
           value: '5678',
           generated: true,
-          target: { url: { route: 'contacts.detail', params: { id: 'abc' } } }
+          target: { url: ['/contacts', 'abc'] }
         },
         {
           label: 'report.my-form.not_case_id',
