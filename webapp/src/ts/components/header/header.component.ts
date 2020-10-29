@@ -49,12 +49,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const subscription = combineLatest(
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getCurrentTab),
+      this.store.select(Selectors.getShowPrivacyPolicy),
     ).subscribe(([
       replicationStatus,
-      currentTab
+      currentTab,
+      showPrivacyPolicy
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
+      this.showPrivacyPolicy = showPrivacyPolicy;
     });
     this.subscription.add(subscription);
 

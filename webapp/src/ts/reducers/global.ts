@@ -90,8 +90,13 @@ const _globalReducer = createReducer(
   on(Actions.setLeftActionBar, (state, { payload: { left } }) => {
     return { ...state, actionBar: { ...state.actionBar, left } };
   }),
+  on(Actions.setPrivacyPolicyAccepted, (state, { payload: { accepted } }) => {
+    return { ...state, privacyPolicyAccepted: accepted };
+  }),
+  on(Actions.setShowPrivacyPolicy, (state, { payload: { show } }) => {
+    return { ...state, showPrivacyPolicy: show };
+  }),
 );
-
 
 export const globalReducer = (state, action) => {
   return _globalReducer(state, action);
@@ -129,10 +134,6 @@ module.exports = function(state, action) {
     });
   case actionTypes.SET_LOADING_SUB_ACTION_BAR:
     return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
-  case actionTypes.SET_PRIVACY_POLICY_ACCEPTED:
-    return Object.assign({}, state, { privacyPolicyAccepted: action.payload.privacyPolicyAccepted });
-  case actionTypes.SET_SHOW_PRIVACY_POLICY:
-    return Object.assign({}, state, { showPrivacyPolicy: action.payload.showPrivacyPolicy });
   case actionTypes.SET_UNREAD_COUNT:
     return Object.assign({}, state, { unreadCount: action.payload.unreadCount });
   case actionTypes.SET_VERSION:

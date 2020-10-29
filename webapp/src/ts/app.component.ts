@@ -5,18 +5,19 @@ import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
+
 import { DBSyncService } from '@mm-services/db-sync.service'
 import { Selectors } from './selectors';
-import { GlobalActions } from './actions/global';
+import { GlobalActions } from '@mm-actions/global';
 import { TranslationLoaderService } from '@mm-services/translation-loader.service';
-import {SessionService} from '@mm-services/session.service';
-import {AuthService} from '@mm-services/auth.service';
-import {ResourceIconsService} from '@mm-services/resource-icons.service';
-import {ChangesService} from '@mm-services/changes.service';
-import {UpdateServiceWorkerService} from '@mm-services/update-service-worker.service';
-import {LocationService} from '@mm-services/location.service';
-import {ModalService} from './modals/mm-modal/mm-modal';
-import {ReloadingComponent} from './modals/reloading/reloading.component';
+import { SessionService } from '@mm-services/session.service';
+import { AuthService } from '@mm-services/auth.service';
+import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { ChangesService } from '@mm-services/changes.service';
+import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
+import { LocationService } from '@mm-services/location.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { environment } from './environments/environment';
 import { FormatDateService } from '@mm-services/format-date.service';
@@ -24,7 +25,8 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { JsonFormsService } from '@mm-services/json-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
-import {LanguageService, SetLanguageService} from '@mm-services/language.service';
+import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
+import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -92,7 +94,8 @@ export class AppComponent {
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
     private changeDetectorRef: ChangeDetectorRef,
-    private countMessageService: CountMessageService
+    private countMessageService: CountMessageService,
+    private privacyPoliciesService: PrivacyPoliciesService
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -203,18 +206,24 @@ export class AppComponent {
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getMinimalTabs),
       this.store.select(Selectors.getShowContent),
+      this.store.select(Selectors.getPrivacyPolicyAccepted),
+      this.store.select(Selectors.getShowPrivacyPolicy),
     ).subscribe(([
       replicationStatus,
       androidAppVersion,
       currentTab,
       minimalTabs,
       showContent,
+      privacyPolicyAccepted,
+      showPrivacyPolicy,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
       this.minimalTabs = minimalTabs;
       this.showContent = showContent;
+      this.showPrivacyPolicy = showPrivacyPolicy;
+      this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.changeDetectorRef.detectChanges();
     });
 
@@ -305,7 +314,7 @@ export class AppComponent {
     });
 
     this.countMessageService.init();
-
+    this.checkPrivacyPolicy();
     this.initForms();
   }
 
@@ -392,6 +401,16 @@ export class AppComponent {
     });
     //closeDropdowns();
   };
+
+  private checkPrivacyPolicy() {
+    return this.privacyPoliciesService
+      .hasAccepted()
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        this.globalActions.setPrivacyPolicyAccepted(accepted);
+        this.globalActions.setShowPrivacyPolicy(privacyPolicy);
+      })
+      .catch(err => console.error('Failed to load privacy policy', err));
+  }
 }
 
 
@@ -424,7 +443,6 @@ export class AppComponent {
     Language,
     LiveListConfig,
     LocationService,
-    PrivacyPolicies,
     RecurringProcessManager,
 
     RulesEngine,
@@ -578,18 +596,6 @@ export class AppComponent {
     const initRulesEngine = () => RulesEngine.isEnabled()
       .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
       .catch(err => $log.error('RuleEngine failed to initialize', err));
-
-    const checkPrivacyPolicy = () => {
-      return PrivacyPolicies
-        .hasAccepted()
-        .then(({ privacyPolicy, accepted }={}) => {
-          ctrl.setPrivacyPolicyAccepted(accepted);
-          ctrl.setShowPrivacyPolicy(privacyPolicy);
-        })
-        .catch(err => {
-          $log.error('Failed to load privacy policy', err);
-        });
-    };
 
     // get the forms for the forms filter
 
