@@ -1,9 +1,10 @@
-import {Component, Input} from "@angular/core";
-import {EditUserAbstract} from "./edit-user.component";
-import {BsModalRef} from "ngx-bootstrap/modal";
-import {UserSettingsService} from "@mm-services/user-settings.service";
-import {UpdateUserService} from "@mm-services/update-user.service";
-import {LanguagesService} from "@mm-services/languages.service";
+import {Component, Input} from '@angular/core';
+import {EditUserAbstract} from './edit-user.component';
+import {BsModalRef} from 'ngx-bootstrap/modal';
+import {UserSettingsService} from '@mm-services/user-settings.service';
+import {UpdateUserService} from '@mm-services/update-user.service';
+import {LanguagesService} from '@mm-services/languages.service';
+import {SetLanguageService} from '@mm-services/language.service';
 
 @Component({
   selector: 'update-password',
@@ -30,6 +31,7 @@ export class EditUserSettingsComponent extends EditUserAbstract {
     userSettingsService: UserSettingsService,
     private updateUserService: UpdateUserService,
     private languagesService: LanguagesService,
+    private setLanguageService: SetLanguageService,
   ) {
     super(bsModalRef, userSettingsService);
   }
@@ -55,9 +57,7 @@ export class EditUserSettingsComponent extends EditUserAbstract {
         })
         .then(() => {
           if (updates.language) {
-            // editing current user, so update language
-            // TODO once SetLanguage migrated refactor the commented code below
-            //SetLanguage(updates.language);
+            this.setLanguageService.set(updates.language);
           }
           this.setFinished();
           this.cancel();

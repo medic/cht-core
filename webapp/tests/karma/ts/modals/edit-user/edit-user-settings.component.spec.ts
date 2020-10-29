@@ -10,6 +10,7 @@ import { UpdateUserService } from '@mm-services/update-user.service';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
+import {SetLanguageService} from '@mm-services/language.service';
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 
 describe('EditUserSettingsComponent', () => {
@@ -18,7 +19,10 @@ describe('EditUserSettingsComponent', () => {
   let fixture: ComponentFixture<EditUserSettingsComponent>;
   let userSettingsService: any = {};
   let updateUserService: any = {};
-  let languagesService: any = {}
+  let languagesService: any = {};
+  let setLanguageService: any = {
+    set(code, setLanguageCookie) { }
+  };
 
   beforeEach(async(() => {
     updateUserService.update = sinon.stub().resolves();
@@ -53,6 +57,7 @@ describe('EditUserSettingsComponent', () => {
         {provide: UpdateUserService, useValue: updateUserService},
         {provide: UserSettingsService, useValue: userSettingsService},
         {provide: LanguagesService, useValue: languagesService},
+        {provide: SetLanguageService, useValue: setLanguageService},
         {provide: BsModalRef, useValue: new BsModalRef()},
       ]
     })

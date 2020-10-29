@@ -26,6 +26,7 @@ import { JsonFormsService } from '@mm-services/json-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
+import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -77,6 +78,8 @@ export class AppComponent {
     private store: Store,
     private translateService: TranslateService,
     private translationLoaderService: TranslationLoaderService,
+    private languageService: LanguageService,
+    private setLanguageService: SetLanguageService,
     private sessionService: SessionService,
     private authService: AuthService,
     private resourceIconsService: ResourceIconsService,
@@ -97,6 +100,7 @@ export class AppComponent {
     this.globalActions = new GlobalActions(store);
 
     moment.locale(['en']);
+
     this.formatDateService.init();
 
     this.adminUrl = this.locationService.adminPath;
@@ -104,18 +108,22 @@ export class AppComponent {
     setBootstrapTheme('bs3');
   }
 
+  private loadTranslations() {
+    this.translationsLoaded = this.languageService
+      .get()
+      .then((language) => {
+        this.setLanguageService.set(language, false);
+      })
+      .catch(err => {
+        console.error('Error loading language', err);
+      });
+  }
+
   private setupRouter() {
     this.router.events.subscribe((event:RouterEvent) => {
       if (event instanceof ActivationEnd) {
         return this.globalActions.setCurrentTab(event.snapshot.data.tab);
       }
-    });
-  }
-
-  private loadTranslations() {
-    this.translationsLoaded = this.translationLoaderService.getLocale().then(locale => {
-      this.translateService.setDefaultLang(locale);
-      return this.translateService.use(locale).toPromise();
     });
   }
 
