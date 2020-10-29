@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
+import { SecurityContext } from '@angular/core';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 
@@ -23,7 +24,7 @@ describe('PrivacyPoliciesService', () => {
     languageService = { get: sinon.stub() };
     userSettingsService = { get: sinon.stub() };
     sanitizer = {
-      bypassSecurityTrustHtml: sinon.stub().callsFake(args => args)
+      sanitize: sinon.stub().callsFake((context, html) => html)
     };
 
     TestBed.configureTestingModule({
@@ -378,7 +379,7 @@ describe('PrivacyPoliciesService', () => {
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
       expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-      expect(sanitizer.bypassSecurityTrustHtml.callCount).to.equal(0);
+      expect(sanitizer.sanitize.callCount).to.equal(0);
     });
 
     it('should return nothing when no attachment found', async () => {
@@ -403,7 +404,7 @@ describe('PrivacyPoliciesService', () => {
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
       expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-      expect(sanitizer.bypassSecurityTrustHtml.callCount).to.equal(0);
+      expect(sanitizer.sanitize.callCount).to.equal(0);
     });
 
     it('should return nothing when attachment is wrong type', async () => {
@@ -428,7 +429,7 @@ describe('PrivacyPoliciesService', () => {
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
       expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-      expect(sanitizer.bypassSecurityTrustHtml.callCount).to.equal(0);
+      expect(sanitizer.sanitize.callCount).to.equal(0);
     });
 
     it('should return decoded content when found', async () => {
@@ -458,8 +459,8 @@ describe('PrivacyPoliciesService', () => {
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
       expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
-      expect(sanitizer.bypassSecurityTrustHtml.callCount).to.equal(1);
-      expect(sanitizer.bypassSecurityTrustHtml.args[0]).to.deep.equal([html]);
+      expect(sanitizer.sanitize.callCount).to.equal(1);
+      expect(sanitizer.sanitize.args[0]).to.deep.equal([SecurityContext.HTML, html]);
     });
 
     it('should handle utf8 characters', async () => {

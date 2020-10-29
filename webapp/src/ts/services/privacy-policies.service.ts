@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, SecurityContext } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { DbService } from './db.service';
@@ -30,15 +30,15 @@ export class PrivacyPoliciesService {
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        const settings = {
+        const updatedUserSettings = {
           ...userSettings,
           privacy_policy_acceptance_log: userSettings.privacy_policy_acceptance_log || [],
         };
-        settings.privacy_policy_acceptance_log.push({ language, digest, accepted_at: new Date().getTime() });
+        updatedUserSettings.privacy_policy_acceptance_log.push({ language, digest, accepted_at: new Date().getTime() });
 
         return this.dbService
           .get()
-          .put(settings);
+          .put(updatedUserSettings);
       });
   }
 
@@ -142,7 +142,7 @@ export class PrivacyPoliciesService {
         return {
           language: languageCode,
           digest: attachment.digest,
-          html: this.sanitizer.bypassSecurityTrustHtml(decodedContent),
+          html: this.sanitizer.sanitize(SecurityContext.HTML, decodedContent),
         };
       })
       .catch(err => console.error('Error while fetching privacy policies', err));

@@ -91,7 +91,7 @@ describe('PrivacyPoliciesComponent', () => {
       digest: 'my_digest',
       language: 'fr',
     };
-   component.privacyPolicy = policy;
+    component.privacyPolicy = { ...policy };
     const setPrivacyPolicyAcceptedSpy = sinon.spy(GlobalActions.prototype, 'setPrivacyPolicyAccepted');
 
     await component.accept();
