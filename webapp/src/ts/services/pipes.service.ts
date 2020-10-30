@@ -86,14 +86,20 @@ export class PipesService {
     this.pipesMap.set('date', this.datePipe);
   }
 
-  transform(pipe, value, ...params) {
-    if (!pipe || this.pipesMap.has(pipe)) {
+  transform(pipe, value?, ...params) {
+    if (!pipe) {
       return;
+    }
+
+    if (!this.pipesMap.has(pipe)) {
+      console.error('Invalid pipe', pipe);
+      return value;
     }
 
     return this.pipesMap.get(pipe).transform(value, ...params);
   }
 
+  // all pipes are pure (for now)
   getPipeNameVsIsPureMap() {
     const pureMap = new Map();
     this.pipesMap.forEach((value, key) => pureMap.set(key, true));
