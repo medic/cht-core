@@ -381,7 +381,6 @@ export class ParseProvider {
     let fn = fnCache.get(expr);
 
     if (fn) {
-      console.log(fn);
       return fn;
     }
 
