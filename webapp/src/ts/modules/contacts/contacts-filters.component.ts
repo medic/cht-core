@@ -44,6 +44,7 @@ export class ContactsFiltersComponent {
     this.globalActions.clearFilters();
     this.freetextFilter?.clear();
     this.applyFilters();
+    this.sort.emit();
   }
 
   applySort(direction) {

@@ -35,12 +35,15 @@ describe('Contacts component', () => {
   let contactTypesService;
   let scrollLoaderProvider;
   let scrollLoaderCallback;
+  let contactListContains;
 
   beforeEach(async(() => {
+    contactListContains = sinon.stub();
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getFilters, value: {} },
       { selector: Selectors.getIsAdmin, value: false },
+      { selector: Selectors.contactListContains, value: contactListContains },
     ];
     const changesServiceMock = {
       subscribe: sinon.stub().resolves(of({}))
@@ -144,7 +147,6 @@ describe('Contacts component', () => {
       ];
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
       searchService.search.resolves(searchResults);
-      component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
       const argument = component.contactsActions.updateContactsList.args[1][0];
@@ -185,10 +187,19 @@ describe('Contacts component', () => {
           _id: 'search-result',
         },
       ];
+      searchService.search.resolves(searchResults);
+      component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
 
       expect(contactTypesService.getChildren.args[1].length).to.equal(0);
+      expect(searchService.search.args[1][1]).to.deep.equal(
+        {
+          types: { selected: ['childType'] },
+        }
+      );
+      const argument = component.contactsActions.updateContactsList.args[1][0];
+      expect(argument.length).to.equal(1);
     }));
 
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
@@ -230,6 +241,32 @@ describe('Contacts component', () => {
         skip: 50,
       });
     }));
+  });
+
+  describe('Changes feed filtering', () => {
+    it('filtering returns true for `contact` type documents #4080', () => {
+      contactListContains.returns(true);
+      expect(changesService.subscribe.callCount).to.equal(1);
+      const changesFilter = changesService.subscribe.args[0][0].filter;
+      expect(!!changesFilter({ doc: { type: 'person' } })).to.equal(true);
+      expect(!!changesFilter({ doc: { type: 'clinic' } })).to.equal(true);
+      expect(!!changesFilter({ doc: { type: 'health_center' } })).to.equal(true);
+      expect(!!changesFilter({ doc: { type: 'district_hospital' } })).to.equal(true);
+    });
+
+    it('filtering returns false for non-`contact` type documents #4080', () => {
+      const changesFilter = changesService.subscribe.args[0][0].filter;
+      expect(!!changesFilter({ doc: {} })).to.equal(false);
+      expect(!!changesFilter({ doc: { type: 'data_record' } })).to.equal(false);
+      expect(!!changesFilter({ doc: { type: '' } })).to.equal(false);
+    });
+
+    it('refreshes contacts list when receiving a contact change #4080', () => {
+      const changesCallback = changesService.subscribe.args[0][0].callback;
+      changesCallback({ doc: { _id: '123' } });
+      expect(searchService.search.callCount).to.equal(2);
+      expect(searchService.search.args[1][2].limit).to.equal(50);
+    });
   });
 
   describe('last visited date', () => {
@@ -351,6 +388,9 @@ describe('Contacts component', () => {
           undefined,
         ]
       );
+      component.sortDirection = 'somethingElse';
+      component.sort();
+      expect(component.sortDirection).to.equal('something');
     }));
 
     it('saves uhc default sorting', fakeAsync(() => {
@@ -390,6 +430,9 @@ describe('Contacts component', () => {
           undefined,
         ]
       );
+      component.sortDirection = 'somethingElse';
+      component.sort();
+      expect(component.sortDirection).to.equal('last_visited_date');
     }));
   });
 });

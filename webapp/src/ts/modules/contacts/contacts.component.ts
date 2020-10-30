@@ -93,7 +93,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
       callback: (change) => {
-        console.log('change detected');
         if (change.deleted) {
           // TODO: implement deletion logic
         }
@@ -108,7 +107,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
         });
       },
       filter: (change) => {
-        console.log('changing', change);
         return (
           this.contactTypes.includes(change.doc) ||
           (change.deleted && this.listContains(change.id)) ||
@@ -401,8 +399,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
   }
 
-  sort(sortDirection) {
-    this.sortDirection = sortDirection;
+  sort(sortDirection?) {
+    this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
     this.contactsActions.updateContactsList([]);
     this.query({});
   }
