@@ -27,7 +27,6 @@ const noop = () => {};
 
 const fnCache = new Map();
 const purePipes = new Map();
-const purePipeCache = new Map();
 
 const primitiveEquals = (a, b) => {
   if (typeof a === "object" || typeof b === "object") {
@@ -67,7 +66,6 @@ const getPurePipeVal = (pipe, cache, identifier, ...args) => {
       return lastResult.result;
     }
   }
-  console.log(pipe);
   result = pipe.transform(...args);
   lastResult = {args, result};
   cache.set(identifier, lastResult);
@@ -170,7 +168,7 @@ class ASTCompiler {
     return v;
   }
 
-  handleBinaryAND_OR(){
+  handleBinaryAND_OR() {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const _s1 = [];
@@ -351,7 +349,7 @@ class ASTCompiler {
     this.addReturnStmt(this.build(this.ast));
 
     const fn = new Function(this.fnArgs(), this.fnBody());
-    const boundFn = fn.bind(undefined, plus, minus, isDef, getPurePipeVal, purePipeCache);
+    const boundFn = fn.bind(undefined, plus, minus, isDef, getPurePipeVal);
     boundFn.usedPipes = this.pipes.slice(0); // clone
     this.cleanup();
     return boundFn;
@@ -383,6 +381,7 @@ export class ParseProvider {
     let fn = fnCache.get(expr);
 
     if (fn) {
+      console.log(fn);
       return fn;
     }
 
@@ -426,9 +425,11 @@ export class ParseProvider {
         pipeArgs.unshift(hasPurePipe ? new Map() : undefined);
 
         boundFn = fn.bind(undefined, ...pipeArgs);
+      } else {
+        boundFn = fn.bind(undefined, undefined);
       }
     }
-    fnCache.set(expr, fn);
+    fnCache.set(expr, boundFn);
 
     return boundFn;
   }

@@ -1,11 +1,16 @@
-//import { async } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import * as moment from 'moment';
+import { DatePipe } from '@angular/common';
+import { of } from 'rxjs';
 
 import { ParseProvider } from '@mm-providers/parse.provider';
-import { pipe } from 'rxjs';
-import { DatePipe } from '@angular/common';
+import { AgePipe, } from '@mm-pipes/date.pipe'
+import { TitlePipe } from '@mm-pipes/message.pipe';
+import { PhonePipe } from '@mm-pipes/phone.pipe';
+import { FormatDateService } from '@mm-services/format-date.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
+
 
 describe('Parse provider', () => {
   let provider:ParseProvider;
@@ -82,7 +87,33 @@ describe('Parse provider', () => {
   });
 
   describe('with pipes', () => {
+    let translateService;
+    let settingsService;
+
+    let formatDateService;
+    let relativeDateService;
+    let sanitizer;
+    let clock;
+
     beforeEach(() => {
+      translateService = {
+        get: sinon.stub().callsFake((e) => of([e])),
+        instant: sinon.stub().returnsArg(0),
+      };
+      settingsService = {
+        get: sinon.stub().resolves({
+          date_format: 'd-m-Y',
+          reported_date_format: 'd-m-Y',
+          default_country_code: 'RO',
+        }),
+      };
+      sanitizer = {
+        bypassSecurityTrustHtml: sinon.stub().returnsArg(0),
+      };
+
+      formatDateService = new FormatDateService(translateService, settingsService);
+      relativeDateService = new RelativeDateService(formatDateService);
+
       pipesService = {
         getPipeNameVsIsPureMap: sinon.stub().returns(new Map()),
         meta: sinon.stub(),
@@ -90,15 +121,111 @@ describe('Parse provider', () => {
       };
     });
 
+    afterEach(() => {
+      clock && clock.restore();
+    });
+
     it('should work with built-in date', () => {
       pipesService = {
         getPipeNameVsIsPureMap: sinon.stub().returns(new Map([['date', { pure: true }]])),
         meta: sinon.stub().returns({ pure: true }),
         getInstance: sinon.stub().returns(new DatePipe('en')),
-      }
+      };
       provider = new ParseProvider(pipesService);
       const date = moment('2020-01-01').valueOf();
-      expect(parse(`${date} | date:'d-m-Y'`)()).to.equal('aaa');
+      expect(parse(`${date} | date:'d-M-y'`)).to.equal('1-1-2020');
+      expect(parse(`"2020-08-23" | date:'d-M-y'`)).to.equal('23-8-2020');
+    });
+
+    it('should work with custom age pipe', () => {
+      pipesService = {
+        getPipeNameVsIsPureMap: sinon.stub().returns(new Map([['age', { pure: true }]])),
+        meta: sinon.stub().returns({ pure: true }),
+        getInstance: sinon.stub().returns(new AgePipe(formatDateService, relativeDateService, sanitizer)),
+      };
+      const today = moment('2020-10-30');
+      clock = sinon.useFakeTimers(today.valueOf());
+
+      provider = new ParseProvider(pipesService);
+      let birthDate = moment('2019-01-01').valueOf();
+      let result = parse(`${birthDate} | age`);
+      // result will be html like:
+      /*
+       <span class="relative-date past age" title="01-Jan-2019">
+         <span class="relative-date-content update-relative-date"
+         data-date-options='{"date":1546293600000,"absoluteToday":true,"withoutTime":true,"age":true}'>
+           21 months
+         </span>
+       </span>
+      */
+      let html = $(result);
+      expect(html.hasClass('age')).to.equal(true);
+      expect(html.attr('title')).to.equal('01-Jan-2019');
+      expect(html.find('.relative-date-content').html()).to.equal('21 months');
+
+      birthDate = moment('1956-02-01').valueOf();
+      result = parse(`${birthDate} | age`);
+      html = $(result);
+      expect(html.hasClass('age')).to.equal(true);
+      expect(html.attr('title')).to.equal('01-Feb-1956');
+      expect(html.find('.relative-date-content').html()).to.equal('64 years');
+    });
+
+    it('should work with title pipe', () => {
+      pipesService = {
+        getPipeNameVsIsPureMap: sinon.stub().returns(new Map([['title', { pure: true }]])),
+        meta: sinon.stub().returns({ pure: true }),
+        getInstance: sinon.stub().returns(new TitlePipe(translateService)),
+      };
+      provider = new ParseProvider(pipesService);
+      const forms = [
+        { code: 'forma', title: 'Form A' },
+        { code: 'formb', title: 'Form B' },
+      ];
+      const report1 = { no: 'form' };
+      const report2 = { kujua_message: true };
+      const report3 = { form: 'other' };
+      const report4 = { form: 'forma' };
+      const report5 = { form: 'formb' };
+
+      // no report and no forms
+      expect(parse('report | title:forms', {} )).to.equal('');
+
+      let context:any = { report: report1, forms }; // report without form
+      expect(parse('report | title:forms', context)).to.equal('sms_message.message');
+
+      context.report = report2; // kujua message
+      expect(parse('report | title:forms', context)).to.equal('Outgoing Message');
+
+      context.report = report3; // missing form
+      expect(parse('report | title:forms', context)).to.equal('other');
+
+      context.report = report4;
+      expect(parse('report | title:forms', context)).to.equal('Form A');
+      context.report = report5;
+      expect(parse('report | title:forms', context)).to.equal('Form B');
+      context.forms = [];
+      expect(parse('report | title:forms', context)).to.equal('formb');
+    });
+
+    it('should work with phone pipe', async () => {
+      pipesService = {
+        getPipeNameVsIsPureMap: sinon.stub().returns(new Map([['phone', { pure: true }]])),
+        meta: sinon.stub().returns({ pure: true }),
+        getInstance: sinon.stub().returns(new PhonePipe(settingsService, sanitizer)),
+      };
+      provider = new ParseProvider(pipesService);
+      await Promise.resolve(); // wait for phonePipe to get settings
+
+      let html = $(parse('"+40 (0744) 36 36 36" | phone'));
+      expect(html.find('.desktop-only').html()).to.equal('+40 744 363 636'); // formatted visible
+      expect(html.find('.mobile-only').html()).to.equal('+40 744 363 636'); // formatted visible
+      expect(html.find('.mobile-only').attr('href')).to.equal('tel:+40 (0744) 36 36 36');
+
+      html = $(parse('phoneNumber | phone', { phoneNumber: '+254722547527' }));
+      expect(html.find('.desktop-only').html()).to.equal('+254 722 547527'); // formatted visible
+      expect(html.find('.mobile-only').html()).to.equal('+254 722 547527'); // formatted visible
+      expect(html.find('.mobile-only').attr('href')).to.equal('tel:+254722547527');
     });
   });
 });

@@ -43,7 +43,7 @@ export class ContactSummaryService {
       try {
         field.value = this.pipesService.transform(field.filter, field.value);
       } catch(e) {
-        console.log(e);
+        console.error(e);
         throw new Error('Unknown filter: ' + field.filter + '. Check your configuration.');
       }
     }
