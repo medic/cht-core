@@ -469,13 +469,9 @@ describe('Rules Engine Integration Tests', () => {
     const pregnancyRegistrationReport2 = Object.assign(
       {},
       pregnancyRegistrationReport,
-      {
-        _id: '2pregReg',
-        fields: {
-          lmp_date_8601: THE_FUTURE,
-          patient_id: patientContact2._id,
-        },
-        reported_date: THE_FUTURE+2
+      { _id: 'pregReg2', fields: {
+        lmp_date_8601: THE_FUTURE, patient_id: patientContact2.patient_id
+      }, reported_date: THE_FUTURE+2
       });
     await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
 
@@ -499,6 +495,94 @@ describe('Rules Engine Integration Tests', () => {
       total: 1,
       pass: 1,
     });
+  });
+
+  it('targets for three pregnancy registrations for the same patient', async () => {
+    const pregnancyRegistrationReport2 = Object.assign(
+      {},
+      pregnancyRegistrationReport,
+      {
+        _id: '2nd-pregReg',
+        fields: { lmp_date_8601: THE_FUTURE, patient_id: patientContact._id, },
+        reported_date: THE_FUTURE + 2
+      });
+    const pregnancyRegistrationReport3 = Object.assign(
+      {},
+      pregnancyRegistrationReport,
+      {
+        _id: '3rd-pregReg',
+        fields: { lmp_date_8601: THE_FUTURE - 3, patient_id: patientContact.patient_id, },
+        reported_date: THE_FUTURE - 3
+      });
+
+    await db.bulkDocs([
+      patientContact,
+      pregnancyRegistrationReport,
+      pregnancyRegistrationReport2,
+      pregnancyRegistrationReport3,
+    ]);
+
+    sinon.spy(db, 'bulkDocs');
+    sinon.spy(db, 'query');
+    const targets = await fetchTargets();
+    expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
+    expect(targets[['pregnancy-registrations-this-month']].value).to.deep.eq({
+      total: 1,
+      pass: 1,
+    });
+
+    const sameTargets = await fetchTargets();
+    expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
+    expect(sameTargets).to.deep.eq(targets);
+
+    // the latest report, 2nd-pregReg is in this interval
+    let interval = { start: THE_FUTURE + 1, end: THE_FUTURE + 2 };
+    let filteredTargets = await fetchTargets(interval);
+    expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
+    expect(filteredTargets['pregnancy-registrations-this-month'].value).to.deep.eq({
+      total: 1,
+      pass: 1,
+    });
+
+    // pregReg is in this interval
+    interval = { start: THE_FUTURE - 1, end: THE_FUTURE };
+    filteredTargets = await fetchTargets(interval);
+    expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
+    expect(filteredTargets['pregnancy-registrations-this-month'].value).to.deep.eq({
+      total: 0,
+      pass: 0,
+    });
+
+    // 3rd-pregReg is in this interval
+    interval = { start: THE_FUTURE - 3, end: THE_FUTURE - 2 };
+    filteredTargets = await fetchTargets(interval);
+    expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
+    expect(filteredTargets['pregnancy-registrations-this-month'].value).to.deep.eq({
+      total: 0,
+      pass: 0,
+    });
+
+    // delete the "latest" report
+    const report = await db.get('2nd-pregReg');
+    await db.remove(report);
+    await rulesEngine.updateEmissionsFor([patientContact._id]);
+
+    // the latest report, 2nd-pregReg was in this interval
+    interval = { start: THE_FUTURE + 1, end: THE_FUTURE + 2 };
+    filteredTargets = await fetchTargets(interval);
+    expect(filteredTargets['pregnancy-registrations-this-month'].value).to.deep.eq({
+      total: 0,
+      pass: 0,
+    });
+
+    // pregReg is in this interval and is now the latest report
+    interval = { start: THE_FUTURE - 1, end: THE_FUTURE };
+    filteredTargets = await fetchTargets(interval);
+    expect(filteredTargets['pregnancy-registrations-this-month'].value).to.deep.eq({
+      total: 1,
+      pass: 1,
+    });
+
   });
 
   it('targets on interval turnover only recalculates targets when interval changes', async () => {

@@ -158,6 +158,36 @@ describe('rules-emitter', () => {
     });
   });
 
+  it('reports are sorted by reported_date before being pushed into nools', async () => {
+    const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c }));`, { includeTasks: true });
+    const settingsDoc = settingsWithRules(rules);
+    const contactDoc = { _id: 'contact', patient_id: 'foo' };
+    const report1 = { _id: 'report1', type: 'data_record', patient_id: 'foo', reported_date: 5 };
+    const report2 = { _id: 'report2', type: 'data_record', patient_id: 'contact', reported_date: 4 };
+    const report3 = { _id: 'report3', type: 'data_record', patient_id: 'foo', reported_date: 3 };
+    const report4 = { _id: 'report4', type: 'data_record', patient_id: 'contact', reported_date: 9 };
+    const report5 = { _id: 'report5', type: 'data_record', patient_id: 'foo', reported_date: 7 };
+    const report6 = { _id: 'report6', type: 'data_record', patient_id: 'contact', reported_date: 2 };
+    const reports = [ report1, report2, report3, report4, report5, report6 ];
+
+    const initialized = rulesEmitter.initialize(settingsDoc);
+    expect(initialized).to.be.true;
+    const actual = await rulesEmitter.getEmissionsFor([contactDoc], reports, []);
+    expect(actual.tasks).to.have.property('length', 1);
+    expect(actual.tasks[0].data).to.deep.eq({
+      contact: contactDoc,
+      reports: [
+        report6,
+        report3,
+        report2,
+        report1,
+        report5,
+        report4,
+      ],
+      tasks: [],
+    });
+  });
+
   describe('integration', () => {
     it('isLatestNoolsSchema as true', () => {
       const initialized = rulesEmitter.initialize(chtRulesSettings());

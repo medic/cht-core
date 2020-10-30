@@ -241,7 +241,7 @@ describe('provider-wireup integration tests', () => {
       expect(refreshRulesEmissions.callCount).to.eq(1);
       expect(refreshRulesEmissions.args[0][0]).excludingEvery('_rev').to.deep.eq({
         contactDocs: [chtDocs.contact],
-        reportDocs: [chtDocs.pregnancyReport, headlessReport, reportConnectedByPlace],
+        reportDocs: [headlessReport, chtDocs.pregnancyReport, reportConnectedByPlace],
         taskDocs: [headlessTask, taskRequestedByChtContact],
         userSettingsId: 'org.couchdb.user:username',
       });

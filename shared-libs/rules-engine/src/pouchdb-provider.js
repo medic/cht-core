@@ -9,17 +9,12 @@
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const uniqBy = require('lodash/uniqBy');
-const sortBy = require('lodash/sortBy');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
-const docsOf = (query, sort) => {
+const docsOf = (query) => {
   return query.then(result => {
-    let rows = uniqBy(result.rows, 'id');
-    if (sort) {
-      rows = sortBy(rows, 'value');
-    }
+    const rows = uniqBy(result.rows, 'id');
     return rows.map(row => row.doc).filter(existing => existing);
-
   });
 };
 
@@ -37,7 +32,7 @@ const medicPouchProvider = db => {
       const userSettingsId = userSettingsDoc && userSettingsDoc._id;
       return Promise.all([
         docsOf(db.query('medic-client/contacts_by_type', { include_docs: true })),
-        docsOf(db.query('medic-client/reports_by_subject', { include_docs: true }), true),
+        docsOf(db.query('medic-client/reports_by_subject', { include_docs: true })),
         self.allTasks('requester'),
       ])
         .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userSettingsId }));
@@ -113,7 +108,7 @@ const medicPouchProvider = db => {
 
           const keys = Array.from(subjectIds);
           return Promise.all([
-            docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true }), true),
+            docsOf(db.query('medic-client/reports_by_subject', { keys, include_docs: true })),
             self.tasksByRelation(contactIds, 'requester'),
           ])
             .then(([reportDocs, taskDocs]) => {
