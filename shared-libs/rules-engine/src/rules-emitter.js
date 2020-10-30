@@ -180,7 +180,6 @@ const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
   };
 
   reportDocs = reportDocs.sort((a, b) => a.reported_date - b.reported_date);
-  console.log(reportDocs);
   for (const report of reportDocs) {
     const subjectIdInReport = registrationUtils.getSubjectId(report);
     const factOfPatient = factBySubjectId[subjectIdInReport] || addHeadlessContact(subjectIdInReport);
