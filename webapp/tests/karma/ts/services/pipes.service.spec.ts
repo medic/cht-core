@@ -122,9 +122,9 @@ describe('PipesService', () => {
     });
 
     it('should return true for known pipes', () => {
-      expect(service.meta('summary')).to.equal({ pure: true });
-      expect(service.meta('safeHtml')).to.equal({ pure: true });
-      expect(service.meta('resourceIcon')).to.equal({ pure: true });
+      expect(service.meta('summary')).to.deep.equal({ pure: true });
+      expect(service.meta('safeHtml')).to.deep.equal({ pure: true });
+      expect(service.meta('resourceIcon')).to.deep.equal({ pure: true });
     });
   });
 });
