@@ -93,10 +93,10 @@ export class ContactsComponent implements OnInit, OnDestroy{
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
       callback: (change) => {
+        console.log('change detected');
         if (change.deleted) {
           // TODO: implement deletion logic
         }
-        if (change.doc) {}
         const withIds =
           this.isSortedByLastVisited() &&
           !!this.isRelevantVisitReport(change.doc) &&
@@ -108,10 +108,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
         });
       },
       filter: (change) => {
+        console.log('changing', change);
         return (
           this.contactTypes.includes(change.doc) ||
           (change.deleted && this.listContains(change.id)) ||
-          this.isRelevantVisitReport(change.doc)
+          this.isRelevantVisitReport(change.doc) ||
+          this.listContains(change.id)
         );
       },
     });
@@ -301,7 +303,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     let searchFilters = this.defaultFilters;
-    if (this.filters && Object.keys(this.filters).length > 0) {
+    if (this.filters.search || this.filters.simprintsIdentities) {
       searchFilters = this.filters;
     }
 

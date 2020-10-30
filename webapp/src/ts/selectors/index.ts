@@ -56,7 +56,7 @@ export const Selectors = {
   // contacts
   getContactsList: createSelector(getContactsState, (contactsState) => contactsState.contacts.contacts),
   contactListContains: createSelector(getContactsState, (contactsState) => {
-    return (id) => contactsState.reportsById.has(id);
+    return (id) => contactsState.contacts.contactsById.has(id);
   }),
 };
 /*
