@@ -34,7 +34,7 @@ import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { ParseProvider } from '@mm-providers/parse.provider';
-
+import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { reducers } from "./reducers";
 
 const logger = reducer => {
@@ -94,4 +94,11 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+  integration;
+  constructor(
+    private integrationApiService:IntegrationApiService,
+  ) {
+    this.integration = integrationApiService;
+  }
+}

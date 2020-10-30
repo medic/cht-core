@@ -1,35 +1,36 @@
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
+
+import { AndroidApiService } from '@mm-services/android-api.service';
+import { SessionService } from '@mm-services/session.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
+import { FeedbackService } from '@mm-services/feedback.service';
+
 describe('AndroidApi service', () => {
 
-  'use strict';
-
   let service;
-  let $log;
   let identifyResponse;
   let registerResponse;
 
   beforeEach(() => {
-    module('inboxApp');
-    identifyResponse = sinon.stub();
-    registerResponse = sinon.stub();
-    module($provide => {
-      $provide.value('Session', sinon.stub());
-      $provide.value('Geolocation', { permissionRequestResolved: sinon.stub() });
-      $provide.value('Simprints', {
-        identifyResponse: identifyResponse,
-        registerResponse: registerResponse
-      });
-      $provide.value('Feedback', {
-        init: sinon.stub(),
-        submit: sinon.stub()
-      });
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: SessionService, useValue: { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() } },
+        { provide: GeolocationService, useValue: { permissionRequestResolved: sinon.stub() } },
+        // todo simprints
+        { provide: FeedbackService, useValue: { init: sinon.stub(), submit: sinon.stub() } },
+      ]
     });
-    inject((_AndroidApi_, _$log_) => {
-      service = _AndroidApi_;
-      $log = _$log_;
-    });
-    $log.reset();
+
+    service = TestBed.inject(AndroidApiService);
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+  // todo migrate when simprints service has been migrated
+/*
   describe('simprintsResponse', () => {
 
     it('errors when given string id', () => {
@@ -81,5 +82,5 @@ describe('AndroidApi service', () => {
       chai.expect(registerResponse.args[0][1]).to.deep.equal(expectedResponse);
     });
   });
-
+*/
 });

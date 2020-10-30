@@ -128,6 +128,18 @@ require('select2');
 
     platformBrowserDynamic()
       .bootstrapModule(AppModule, { preserveWhitespaces: true })
+      .then((moduleRef) => {
+        window.CHTCore = moduleRef.instance.integration;
+        // backwards compatibility with the old way of reaching these services, the syntax looked like:
+        // angular.element(document.body).injector().get(<serviceName>);
+        window.angular = {
+          element: () => ({
+            injector: () => ({
+              get: service => moduleRef.instance.integration.get(service),
+            })
+          })
+        }
+      })
       .catch(err => console.error(err));
   });
 
