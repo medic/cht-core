@@ -22,16 +22,6 @@ const baseConfig = {
     performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
-  capabilities: {
-    browserName: 'chrome',
-    chromeOptions:{
-      // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
-      // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
-      // https://github.com/angular/protractor/issues/5261
-      w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
-    }
-  },
   jasmineNodeOpts: {
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
@@ -56,7 +46,7 @@ const baseConfig = {
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);
     browser.waitForAngularEnabled(false);
-    
+
     // wait for startup to complete
     browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
 
