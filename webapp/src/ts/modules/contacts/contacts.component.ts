@@ -288,7 +288,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.appending = true;
       options.skip = this.contactsList.length;
     } else if (!options.silent) {
-      this.contactsActions.updateContactsList([]);
+      this.contactsActions.resetContactsList();
       this.additionalListItem = false;
     }
 
