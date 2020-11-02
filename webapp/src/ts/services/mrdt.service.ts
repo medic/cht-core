@@ -9,6 +9,7 @@ export class MRDTService {
 
   enabled() {
     try {
+      return true;
       return !!(
         window.medicmobile_android &&
         typeof window.medicmobile_android.mrdt_available === 'function' &&
@@ -21,12 +22,8 @@ export class MRDTService {
   }
 
   verify() {
-    this.current = {
-      promise: new Promise((resolve, reject) => {
-        this.current.resolve = resolve;
-        this.current.reject = reject;
-      }),
-    };
+    this.current = {};
+    this.current.promise = new Promise((resolve) => this.current.resolve = resolve);
     window.medicmobile_android.mrdt_verify();
     return this.current.promise;
   }

@@ -37,10 +37,9 @@ export class SetLanguageService {
   }
 
   private setDatepickerLanguage(language) {
-    //TODO Uncomment the code below once fn.datepicker is migrated to Angular 10
-    //const availableCalendarLanguages = Object.keys((<any>$.fn).datepicker.dates);
-    //const calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
-    //(<any>$.fn).datepicker.defaults.language = calendarLanguage;
+    const availableCalendarLanguages = Object.keys((<any>$.fn).datepicker.dates);
+    const calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
+    (<any>$.fn).datepicker.defaults.language = calendarLanguage;
   }
 
   set(code, setLanguageCookie?) {

@@ -65,7 +65,7 @@ Mrdtwidget.prototype._init = function() {
     } );
   } );
 
-  $translate( 'mrdt.verify' ).then( function( label ) {
+  $translate.get( 'mrdt.verify' ).toPromise().then( function( label ) {
     $el.append(
       '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
       '<div><img class="mrdt-preview"/></div>'
