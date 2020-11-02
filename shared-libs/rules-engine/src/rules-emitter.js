@@ -179,7 +179,6 @@ const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
     return newFact;
   };
 
-  reportDocs = reportDocs.sort((a, b) => a.reported_date - b.reported_date);
   for (const report of reportDocs) {
     const subjectIdInReport = registrationUtils.getSubjectId(report);
     const factOfPatient = factBySubjectId[subjectIdInReport] || addHeadlessContact(subjectIdInReport);
@@ -194,5 +193,9 @@ const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
     }
   }
 
-  return Object.keys(factByContactId).map(key => factByContactId[key]); // Object.values(factByContactId)
+
+  return Object.keys(factByContactId).map(key => {
+    factByContactId[key].reports = factByContactId[key].reports.sort((a, b) => a.reported_date - b.reported_date);
+    return factByContactId[key];
+  }); // Object.values(factByContactId)
 };
