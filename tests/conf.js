@@ -24,7 +24,7 @@ const baseConfig = {
   framework: 'jasmine2',
   capabilities: {
     browserName: 'chrome',
-    chromeOptions:{
+    chromeOptions: {
       // chromedriver 75 is w3c enabled by default and causes some actions to be impossible to perform
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
