@@ -5,6 +5,7 @@ export const Actions = {
   updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts'),
   setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
   resetContactsList: createAction('RESET_CONTACTS_LIST'),
+  removeContactFromList: createSingleValueAction('REMOVE_CONTACT_FROM_LIST', 'contact'),
 };
 
 export class ContactsActions {
@@ -22,5 +23,9 @@ export class ContactsActions {
 
   resetContactsList() {
     return this.store.dispatch(Actions.resetContactsList());
+  }
+
+  removeContactFromList(contact) {
+    return this.store.dispatch(Actions.removeContactFromList(contact));
   }
 }

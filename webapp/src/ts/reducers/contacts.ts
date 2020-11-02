@@ -25,11 +25,22 @@ const updateContacts = (state, newContacts) => {
   return { ...state, contacts, contactsById };
 };
 
+const removeContact = (state, contact) => {
+  const contacts = [ ...state.contacts];
+  const contactsById = new Map(state.contactsById);
+
+  const list = new UniqueSortedList(contacts, contactsById, 'name');
+  list.remove(contact);
+
+  return { ...state, contacts, contactsById };
+};
+
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
   on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
+  on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),
 );
 
 export function contactsReducer(state, action) {

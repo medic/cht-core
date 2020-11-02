@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import * as _ from 'lodash-es';
 
@@ -17,9 +17,9 @@ import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { SimprintsService } from '@mm-services/simprints.service';
 import { Selectors } from '@mm-selectors/index';
-import { isMobile } from '@mm-providers/responsive.provider';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 
 const PAGE_SIZE = 50;
@@ -70,6 +70,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private UHCSettings: UHCSettingsService,
     private simprintsService: SimprintsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
+    private dateService: RelativeDateService,
+    private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -94,7 +96,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
       key: 'contacts-list',
       callback: (change) => {
         if (change.deleted) {
-          // TODO: implement deletion logic
+          this.contactsActions.removeContactFromList({ _id: change.id });
+          this.hasContacts = this.contactsList.length;
         }
         const withIds =
           this.isSortedByLastVisited() &&
@@ -215,11 +218,10 @@ export class ContactsComponent implements OnInit, OnDestroy{
           const now = new Date().getTime();
           const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
           contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
-          // TODO: fix this
-          // contact.summary = this.translateService.instant(
-          //   'contact.last.visited.date',
-          //   { date: relativeDayFilter(contact.lastVisitedDate, true) }
-          // );
+          contact.summary = this.translateService.instant(
+            'contact.last.visited.date',
+            { date: this.dateService.getRelativeDate(contact.lastVisitedDate, {}) }
+          );
         }
 
         const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
@@ -383,8 +385,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   search() {
     if(this.filters.search && !this.enketoEdited) {
-      // TODO: migrate line below
-      // $state.go('contacts.detail', { id: null }, { notify: false });
+      this.router.navigate(['contacts']);
       this.contactsActions.clearSelection();
     }
 
