@@ -8,7 +8,7 @@ export class GeolocationService {
     enableHighAccuracy: true,
     timeout: 30 * 1000, // give up if coords not received within 30 seconds
     maximumAge: 5 * 60 * 1000 // coords from up to 5 minutes ago are acceptable
-  }
+  };
 
   private deferred;
   private geo;
@@ -90,7 +90,7 @@ export class GeolocationService {
 
   private defer() {
     this.deferred = {};
-    this.deferred.promise  = new Promise((resolve, reject) => {
+    this.deferred.promise = new Promise((resolve, reject) => {
       this.deferred.resolve = resolve;
       this.deferred.reject = reject;
     });

@@ -6,20 +6,63 @@ import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { Router } from '@angular/router';
+import { MRDTService } from '@mm-services/mrdt.service';
+import { NgZone } from '@angular/core';
 
 describe('AndroidApi service', () => {
 
   let service;
   let identifyResponse;
   let registerResponse;
+  let sessionService;
+  let router;
+  let feedbackService;
+  let mrdtService;
+  let geolocationService;
+  let ngZone;
 
   beforeEach(() => {
+    sessionService = {
+      userCtx: sinon.stub(),
+      isOnlineOnly: sinon.stub(),
+      logout: sinon.stub(),
+    };
+
+    router = {
+      navigate: sinon.stub(),
+      routerState: {
+        root: {
+          snapshot: {  }
+        }
+      }
+    };
+
+    feedbackService = {
+      init: sinon.stub(),
+      submit: sinon.stub(),
+    };
+
+    mrdtService = {
+      respond: sinon.stub(),
+      respondTimeTaken: sinon.stub(),
+    };
+
+    geolocationService = { permissionRequestResolved: sinon.stub() };
+
+    ngZone = {
+      run: sinon.stub().callsArg(0),
+    };
+
     TestBed.configureTestingModule({
       providers: [
-        { provide: SessionService, useValue: { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() } },
-        { provide: GeolocationService, useValue: { permissionRequestResolved: sinon.stub() } },
+        { provide: SessionService, useValue: sessionService },
+        { provide: GeolocationService, useValue: geolocationService },
         // todo simprints
-        { provide: FeedbackService, useValue: { init: sinon.stub(), submit: sinon.stub() } },
+        { provide: FeedbackService, useValue: feedbackService },
+        { provide: Router, useValue: router },
+        { provide: MRDTService, useValue: mrdtService },
+        { provide: NgZone, useValue: ngZone },
       ]
     });
 
@@ -83,4 +126,111 @@ describe('AndroidApi service', () => {
     });
   });
 */
+
+  describe('logout', () => {
+    it('should call sessionService logout', () => {
+      service.logout();
+      expect(sessionService.logout.callCount).to.equal(1);
+    });
+  });
+
+  describe('back', () => {
+    it('should route to contacts from deceased', () => {
+      router.routerState.root.snapshot = {
+        data: { name: 'contacts.deceased' },
+        params: { id: 'my-contact-id' },
+      };
+      service.back();
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'my-contact-id']]);
+    });
+
+    it('should route to contacts from contact detail', () => {
+      router.routerState.root.snapshot = {
+        params: { id: 'my-contact-id' },
+        parent: { routeConfig: { path: 'contacts' } },
+      };
+      service.back();
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/', 'contacts']]);
+    });
+
+    it('should route to reports from report detail', () => {
+      router.routerState.root.snapshot = {
+        params: { id: 'my-report-id' },
+        parent: { routeConfig: { path: 'reports' } },
+      };
+      service.back();
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/', 'reports']]);
+    });
+
+    it('should route to reports from random child route', () => {
+      router.routerState.root.snapshot = {
+        params: { id: 'my-random-id' },
+        parent: { routeConfig: { path: 'something' } },
+      };
+      service.back();
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/', 'something']]);
+    });
+
+    it('should handle other routes', () => {
+      feedbackService.submit.resolves();
+      service.back();
+      // this test is temporary
+      // issue: https://github.com/medic/cht-core/issues/6698
+      expect(feedbackService.submit.callCount).to.equal(1);
+      expect(feedbackService.submit.args[0]).to.deep.equal(
+        ['Attempt to back to an undefined state [AndroidApi.back()]']
+      );
+    });
+  });
+
+  describe('mrdtResponse', () => {
+    it('should call mrdt.respond with parsed json', () => {
+      const response = JSON.stringify({ some: 'response' });
+      service.mrdtResponse(response);
+      expect(mrdtService.respond.callCount).to.equal(1);
+      expect(mrdtService.respond.args[0]).to.deep.equal([{ some: 'response' }]);
+    });
+
+    it('should catch parse errors', () => {
+      const response = '{ this:  }is not valid json';
+      service.mrdtResponse(response);
+      expect(mrdtService.respond.callCount).to.equal(0);
+    });
+  });
+
+  describe('mrdtTimeTakenResponse', () => {
+    it('should call mrdt.respondTimeTaken with parsed json', () => {
+      const response = JSON.stringify({ some: 'response' });
+      service.respondTimeTaken(response);
+      expect(mrdtService.respondTimeTaken.callCount).to.equal(1);
+      expect(mrdtService.respondTimeTaken.args[0]).to.deep.equal([{ some: 'response' }]);
+    });
+
+    it('should catch parse errors', () => {
+      const response = '{ this:  }is not valid json';
+      service.mrdtTimeTakenResponse(response);
+      expect(mrdtService.respondTimeTaken.callCount).to.equal(0);
+    });
+  });
+
+  describe('locationPermissionRequestResolve', () => {
+    it('should call geolocation permissionRequestResolved', () => {
+      service.locationPermissionRequestResolve();
+      expect(geolocationService.permissionRequestResolved.callCount).to.equal(1);
+    });
+  });
+
+  describe('v1 api runs everything in zone', () => {
+    it('should not run in zone if already in zone', () => {
+      sinon.stub(NgZone, 'isInAngularZone').returns(true);
+      service.v1.back();
+      //@ts-ignore
+      expect(NgZone.isInAngularZone.callCount).to.equal(1);
+      expect(ngZone.run.callCount).to.equal(0);
+    });
+  });
 });

@@ -115,8 +115,9 @@ export class AndroidApiService {
     if (!this.closeDropdownsIn($topModal)) {
       // Try to close by clicking modal's top-right `X` or `[ Cancel ]`
       // button.
-      $topModal.find('.btn.cancel:visible:not(:disabled),' +
-        'button.close:visible:not(:disabled)').click();
+      $topModal
+        .find('.btn.cancel:visible:not(:disabled), button.close:visible:not(:disabled)')
+        .click();
     }
   }
 
@@ -160,12 +161,12 @@ export class AndroidApiService {
     }
 
     const routeSnapshot = this.getRouteSnapshot();
-    if (routeSnapshot.data?.name === 'contacts.deceased') {
+    if (routeSnapshot?.data?.name === 'contacts.deceased') {
       this.router.navigate(['/contacts', routeSnapshot.params.id]);
       return true;
     }
 
-    if (routeSnapshot.params.id) {
+    if (routeSnapshot?.params?.id) {
       this.router.navigate(['/', routeSnapshot.parent.routeConfig.path]);
       return true;
     }
@@ -179,9 +180,11 @@ export class AndroidApiService {
         return true;
       } else {
         const message = 'Attempt to back to an undefined state [AndroidApi.back()]';
-        this.feedbackService.submit(message).catch(err => {
-          console.error('Error saving feedback', err);
-        });
+        this.feedbackService
+          .submit(message)
+          .catch(err => {
+            console.error('Error saving feedback', err);
+          });
       }
     }
 
@@ -264,5 +267,5 @@ export class AndroidApiService {
     simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
-  }
+  };
 }

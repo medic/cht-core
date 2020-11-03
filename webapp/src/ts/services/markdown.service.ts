@@ -43,18 +43,24 @@ export class MarkdownService {
     return e.each(function() {
       let html;
       const $childStore = $('<div/>');
-      $(this).children(':not(input, select, textarea)').each(function(index) {
-        const name = '$$$' + index;
-        $service.translateElement($(this).clone()).appendTo($childStore);
-        $(this).replaceWith(name);
-      });
+      $(this)
+        .children(':not(input, select, textarea)')
+        .each(function(index) {
+          const name = '$$$' + index;
+          $service
+            .translateElement($(this).clone())
+            .appendTo($childStore);
+          $(this).replaceWith(name);
+        });
 
       html = $service.basic($(this).html());
 
-      $childStore.children().each(function(i) {
-        const regex = new RegExp('\\$\\$\\$' + i);
-        html = html.replace(regex, $(this)[ 0 ].outerHTML);
-      });
+      $childStore
+        .children()
+        .each(function(i) {
+          const regex = new RegExp('\\$\\$\\$' + i);
+          html = html.replace(regex, $(this)[ 0 ].outerHTML);
+        });
       $(this).text('').append(html);
     });
   }
