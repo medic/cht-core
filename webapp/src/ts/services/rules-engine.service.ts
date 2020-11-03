@@ -1,7 +1,22 @@
-import {Injectable} from '@angular/core';
-import * as _ from 'lodash';
-import * as registrationUtils from '@medic/registration-utils';
-import * as rulesEngineCore from '@medic/rules-engine';
+import { Injectable, OnDestroy } from '@angular/core';
+import * as RegistrationUtils from '@medic/registration-utils';
+import * as RulesEngineCore from '@medic/rules-engine';
+import * as CalendarInterval from '@medic/calendar-interval';
+import { TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+import { debounce as _debounce } from 'lodash-es';
+
+import { AuthService } from '@mm-services/auth.service';
+import { SessionService } from '@mm-services/session.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
+import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ParseProvider } from '@mm-providers/parse.provider';
+import { ChangesService } from '@mm-services/changes.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 
 const MAX_LINEAGE_DEPTH = 50;
 const ENSURE_FRESHNESS_SECS = 120;
@@ -9,96 +24,101 @@ const ENSURE_FRESHNESS_SECS = 120;
 @Injectable({
   providedIn: 'root'
 })
-export class RulesEngineService {
-  monitorExternalChanges() {
+export class RulesEngineService implements OnDestroy {
+  subscriptions: Subscription = new Subscription();
+  initialized;
+  uhcMonthStartDate;
+  ensureTaskFreshness;
+  ensureTargetFreshness;
+  ensureTaskFreshnessTelemetryData;
+  ensureTargetFreshnessTelemetryData;
 
+  constructor(
+    private translateService: TranslateService,
+    private authService: AuthService,
+    private sessionService: SessionService,
+    private settingsService: SettingsService,
+    private telemetryService: TelemetryService,
+    private uhcSettingsService: UHCSettingsService,
+    private userContactService: UserContactService,
+    private userSettingsService: UserSettingsService,
+    private parseProvider: ParseProvider,
+    private changesService: ChangesService,
+    private contactTypesService: ContactTypesService,
+    private translateFromService: TranslateFromService
+  ) {
+    this.initialized = this.initialize();
   }
-}
-/*
-angular.module('inboxServices').factory('RulesEngine', function(
-  $parse,
-  $translate,
-  Auth,
-  CalendarInterval,
-  Changes,
-  ContactTypes,
-  Debounce,
-  RulesEngineCore,
-  Session,
-  Settings,
-  Telemetry,
-  TranslateFrom,
-  UHCSettings,
-  UserContact,
-  UserSettings
-) {
-  'ngInject';
 
-  let uhcMonthStartDate;
-  let ensureTaskFreshness;
-  let ensureTargetFreshness;
-  let ensureTaskFreshnessTelemetryData;
-  let ensureTargetFreshnessTelemetryData;
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 
-  const initialize = () => (
-    Promise.all([Auth.has('can_view_tasks'), Auth.has('can_view_analytics')])
+  private initialize() {
+    return Promise
+      .all([
+        this.authService.has('can_view_tasks'),
+        this.authService.has('can_view_analytics')
+      ])
       .then(([canViewTasks, canViewTargets]) => {
         const hasPermission = canViewTargets || canViewTasks;
-        if (!hasPermission || Session.isOnlineOnly()) {
+        if (!hasPermission || this.sessionService.isOnlineOnly()) {
           return false;
         }
 
-        return Promise.all([ Settings(), UserContact(), UserSettings() ])
+        return Promise
+          .all([
+            this.settingsService.get(),
+            this.userContactService.get(),
+            this.userSettingsService.get()
+          ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
-            const rulesSettings = getRulesSettings(
-              settingsDoc,
-              userContactDoc,
-              userSettingsDoc,
-              canViewTasks,
-              canViewTargets
-            );
-            const initializeTelemetryData = telemetryEntry('rules-engine:initialize', true);
-            return RulesEngineCore.initialize(rulesSettings)
+            const rulesSettings = this.getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+            const initializeTelemetryData = this.telemetryEntry('rules-engine:initialize', true);
+
+            return RulesEngineCore
+              .initialize(rulesSettings)
               .then(() => {
                 const isEnabled = RulesEngineCore.isEnabled();
+
                 if (isEnabled) {
-                  assignMonthStartDate(settingsDoc);
-                  monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+                  this.assignMonthStartDate(settingsDoc);
+                  this.monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
 
-                  ensureTaskFreshness = Debounce(self.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
-                  ensureTaskFreshness();
-                  ensureTaskFreshnessTelemetryData =
-                    telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true);
+                  this.ensureTaskFreshness = _debounce(this.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
+                  this.ensureTaskFreshness();
+                  this.ensureTaskFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true);
 
-                  ensureTargetFreshness = Debounce(self.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
-                  ensureTargetFreshness();
-                  ensureTargetFreshnessTelemetryData =
-                    telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true);
+                  this.ensureTargetFreshness = _debounce(this.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
+                  this.ensureTargetFreshness();
+                  this.ensureTargetFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true);
                 }
 
                 initializeTelemetryData.record();
               });
           });
       })
-  );
-  const initialized = initialize();
+  }
 
-  const telemetryEntry = (entry, startNow = false) => {
-    const data = { entry };
-    const queued = () => {
-      data.queued = Date.now();
-    };
+  private telemetryEntry(entry, startNow = false) {
+    const data: any = { entry };
+    const queued = () => data.queued = Date.now();
 
     const start = () => {
       data.start = Date.now();
-      data.queued && Telemetry.record(`${data.entry}:queued`, data.start - data.queued);
+      data.queued && this.telemetryService.record(`${data.entry}:queued`, data.start - data.queued);
     };
 
     const record = () => {
       data.start = data.start || Date.now();
       data.end = Date.now();
-      Telemetry.record(data.entry, data.end - data.start);
+      this.telemetryService.record(data.entry, data.end - data.start);
     };
+
+    const passThrough = (result) => {
+      record();
+      return result;
+    }
 
     if (startNow) {
       start();
@@ -108,25 +128,22 @@ angular.module('inboxServices').factory('RulesEngine', function(
       start,
       queued,
       record,
-      passThrough: (result) => {
-        record();
-        return result;
-      },
+      passThrough,
     };
-  };
+  }
 
-  const cancelDebounce = (debounce, telemetryDataEntry) => {
+  private cancelDebounce(debounce, telemetryDataEntry) {
     if (debounce) {
       if (!debounce.executed() && !debounce.cancelled()) {
         telemetryDataEntry.record();
       }
       debounce.cancel();
     }
-  };
+  }
 
-  const getRulesSettings = (settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) => {
+  private getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) {
     const settingsTasks = settingsDoc && settingsDoc.tasks || {};
-    const filterTargetByContext = target => target.context ? !!$parse(target.context)({ user: userContactDoc }) : true;
+    const filterTargetByContext = (target) => target.context ? !!this.parseProvider.parse(target.context)({ user: userContactDoc }) : true;
     const targets = settingsTasks.targets && settingsTasks.targets.items || [];
 
     return {
@@ -137,153 +154,143 @@ angular.module('inboxServices').factory('RulesEngine', function(
       enableTargets,
       contact: userContactDoc,
       user: userSettingsDoc,
-      monthStartDate: UHCSettings.getMonthStartDate(settingsDoc),
+      monthStartDate: this.uhcSettingsService.getMonthStartDate(settingsDoc),
     };
-  };
+  }
 
-  const monitorChanges = (settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) => {
+  private monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
-    Changes({
+
+    const dirtyContactsSubscription = this.changesService.subscribe({
       key: 'mark-contacts-dirty',
-      filter: change => !!change.doc && (ContactTypes.includes(change.doc) || isReport(change.doc)),
+      filter: change => !!change.doc && (this.contactTypesService.includes(change.doc) || isReport(change.doc)),
       callback: change => {
-        const subjectIds = isReport(change.doc) ? registrationUtils.getSubjectId(change.doc) : change.id;
-        const telemetryData = telemetryEntry('rules-engine:update-emissions', true);
+        const subjectIds = isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id;
+        const telemetryData = this.telemetryEntry('rules-engine:update-emissions', true);
+
         return RulesEngineCore
           .updateEmissionsFor(subjectIds)
           .then(telemetryData.passThrough);
-      },
+      }
     });
+    this.subscriptions.add(dirtyContactsSubscription);
 
     const userLineage = [];
     for (let current = userContactDoc; !!current && userLineage.length < MAX_LINEAGE_DEPTH; current = current.parent) {
       userLineage.push(current._id);
     }
 
-    const rulesConfigChange = () => {
-      const rulesSettings = getRulesSettings(
-        settingsDoc,
-        userContactDoc,
-        userSettingsDoc,
-        canViewTasks,
-        canViewTargets
-      );
-      RulesEngineCore.rulesConfigChange(rulesSettings);
-      assignMonthStartDate(settingsDoc);
-    };
-
-    Changes({
+    const rulesUpdateSubscription = this.changesService.subscribe({
       key: 'rules-config-update',
       filter: change => change.id === 'settings' || userLineage.includes(change.id),
       callback: change => {
         if (change.id !== 'settings') {
-          return UserContact()
+          return this.userContactService
+            .get()
             .then(updatedUser => {
               userContactDoc = updatedUser;
-              rulesConfigChange();
+              this.rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
             });
         }
 
         settingsDoc = change.doc.settings;
-        rulesConfigChange();
+        this.rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
       },
     });
-  };
+    this.subscriptions.add(rulesUpdateSubscription);
+  }
 
-  const monitorExternalChanges = (changedDocs) => {
-    const contactsWithUpdatedTasks = changedDocs
-      .filter(doc => doc.type === 'task')
-      .map(doc => doc.requester);
-    if (!contactsWithUpdatedTasks.length) {
-      return;
+  private rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) {
+    const rulesSettings = this.getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+    RulesEngineCore.rulesConfigChange(rulesSettings);
+    this.assignMonthStartDate(settingsDoc);
+  }
+
+  private translateProperty(property, task) {
+    if (typeof property === 'string') {
+      // new translation key style
+      return this.translateService.instant(property, task);
     }
+    // old message array style
+    return this.translateFromService.get(property, task);
+  }
 
-    return RulesEngineCore.updateEmissionsFor(_.uniq(contactsWithUpdatedTasks));
-  };
-
-  const translateTaskDocs = taskDocs => {
-    const translateProperty = (property, task) => {
-      if (typeof property === 'string') {
-        // new translation key style
-        return $translate.instant(property, task);
-      }
-      // old message array style
-      return TranslateFrom(property, task);
-    };
-
-    for (const taskDoc of taskDocs) {
+  private translateTaskDocs(taskDocs = []) {
+    taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
+
       if (emission) {
-        emission.title = translateProperty(emission.title, emission);
-        emission.priorityLabel = translateProperty(emission.priorityLabel, emission);
+        emission.title = this.translateProperty(emission.title, emission);
+        emission.priorityLabel = this.translateProperty(emission.priorityLabel, emission);
       }
-    }
+    });
 
     return taskDocs;
-  };
+  }
 
-  const assignMonthStartDate = settingsDoc => {
-    uhcMonthStartDate = UHCSettings.getMonthStartDate(settingsDoc);
-  };
+  private assignMonthStartDate(settingsDoc) {
+    this.uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settingsDoc);
+  }
 
-  const self = {
-    isEnabled: () => initialized.then(RulesEngineCore.isEnabled),
+  isEnabled() {
+    return this.initialized.then(RulesEngineCore.isEnabled);
+  }
 
-    fetchTaskDocsForAllContacts: () => {
-      const telemetryData = telemetryEntry('rules-engine:tasks:all-contacts');
+  fetchTaskDocsForAllContacts() {
+    const telemetryData = this.telemetryEntry('rules-engine:tasks:all-contacts');
 
-      return initialized
-        .then(() => {
-          Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
-          cancelDebounce(ensureTaskFreshness, ensureTaskFreshnessTelemetryData);
-          return RulesEngineCore.fetchTasksFor()
-            .on('queued', telemetryData.queued)
-            .on('running', telemetryData.start);
-        })
-        .then(telemetryData.passThrough)
-        .then(translateTaskDocs);
-    },
+    return this.initialized
+      .then(() => {
+        this.telemetryService.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
+        this.cancelDebounce(this.ensureTaskFreshness, this.ensureTaskFreshnessTelemetryData);
 
-    fetchTaskDocsFor: contactIds => {
-      const telemetryData = telemetryEntry('rules-engine:tasks:some-contacts');
-      return initialized
-        .then(() => {
-          Telemetry.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
-          return RulesEngineCore
-            .fetchTasksFor(contactIds)
-            .on('queued', telemetryData.queued)
-            .on('running', telemetryData.start);
-        })
-        .then(telemetryData.passThrough)
-        .then(translateTaskDocs);
-    },
-
-    fetchTargets: () => {
-      const telemetryData = telemetryEntry('rules-engine:targets');
-      return initialized
-        .then(() => {
-          Telemetry.record('rules-engine:targets:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
-          cancelDebounce(ensureTargetFreshness, ensureTargetFreshnessTelemetryData);
-          const relevantInterval = CalendarInterval.getCurrent(uhcMonthStartDate);
-          return RulesEngineCore
-            .fetchTargets(relevantInterval)
-            .on('queued', telemetryData.queued)
-            .on('running', telemetryData.start);
-        })
-        .then(telemetryData.passThrough);
-    },
-
-    monitorExternalChanges: (replicationResult) => (
-      initialized.then(() => {
-        return replicationResult &&
-               replicationResult.docs &&
-               monitorExternalChanges(replicationResult.docs);
+        return RulesEngineCore
+          .fetchTasksFor()
+          .on('queued', telemetryData.queued)
+          .on('running', telemetryData.start);
       })
-    ),
-  };
+      .then(telemetryData.passThrough)
+      .then(this.translateTaskDocs);
+  }
 
-  return self;
-});
+  fetchTaskDocsFor(contactIds) {
+    const telemetryData = this.telemetryEntry('rules-engine:tasks:some-contacts');
 
-// RulesEngineCore allows for karma to test using a mock shared-lib
-angular.module('inboxServices').factory('RulesEngineCore', function(DB) { return rulesEngineCore(DB()); });*/
+    return this.initialized
+    .then(() => {
+      this.telemetryService.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
+
+      return RulesEngineCore
+        .fetchTasksFor(contactIds)
+        .on('queued', telemetryData.queued)
+        .on('running', telemetryData.start);
+    })
+    .then(telemetryData.passThrough)
+    .then(this.translateTaskDocs);
+  }
+
+  fetchTargets() {
+    const telemetryData = this.telemetryEntry('rules-engine:targets');
+
+    return this.initialized
+    .then(() => {
+      this.telemetryService.record('rules-engine:targets:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
+      this.cancelDebounce(this.ensureTargetFreshness, this.ensureTargetFreshnessTelemetryData);
+      const relevantInterval = CalendarInterval.getCurrent(this.uhcMonthStartDate);
+      return RulesEngineCore
+        .fetchTargets(relevantInterval)
+        .on('queued', telemetryData.queued)
+        .on('running', telemetryData.start);
+    })
+    .then(telemetryData.passThrough);
+  }
+
+  monitorExternalChanges(replicationResult) {
+    return this.initialized
+      .then(() => {
+        return replicationResult
+          && replicationResult.docs
+          && this.monitorExternalChanges(replicationResult.docs);
+      });
+  }
+}

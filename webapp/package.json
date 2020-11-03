@@ -7,6 +7,10 @@
     "type": "git",
     "url": "git://github.com/medic/medic.git"
   },
+  "browser": {
+    "fs": false,
+    "path": false
+  },
   "engines": {
     "node": ">=8.11.0",
     "npm": ">=6.4.1"

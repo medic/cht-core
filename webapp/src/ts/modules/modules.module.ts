@@ -18,6 +18,7 @@ import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
+import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
     ReportsFiltersComponent,
     MessagesContentComponent,
     PrivacyPolicyComponent,
+    AnalyticsTargetsComponent,
   ],
   imports: [
     CommonModule,
