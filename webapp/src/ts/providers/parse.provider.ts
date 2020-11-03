@@ -253,7 +253,7 @@ class ASTCompiler {
     }
     const fn = this.build(ast.receiver);
     const v = this.createVar();
-    stmts.push(`${v}=${fn}.${ast.name}&&${fn}.${ast.name}(${_args.join(',')})`);
+    stmts.push(`${v}=${fn}&&${fn}.${ast.name}&&${fn}.${ast.name}(${_args.join(',')})`);
     return v;
   }
 
