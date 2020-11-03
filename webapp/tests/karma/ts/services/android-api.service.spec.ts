@@ -20,7 +20,6 @@ describe('AndroidApi service', () => {
   let feedbackService;
   let mrdtService;
   let geolocationService;
-  let ngZone;
 
   beforeEach(() => {
     sessionService = {
@@ -52,10 +51,6 @@ describe('AndroidApi service', () => {
       permissionRequestResolved: sinon.stub()
     };
 
-    /*ngZone = {
-      run: sinon.stub().callsArg(0),
-    };*/
-
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
@@ -64,7 +59,6 @@ describe('AndroidApi service', () => {
         { provide: FeedbackService, useValue: feedbackService },
         { provide: Router, useValue: router },
         { provide: MRDTService, useValue: mrdtService },
-        //{ provide: NgZone, useValue: ngZone },
       ],
     });
 
