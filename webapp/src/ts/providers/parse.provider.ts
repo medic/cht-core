@@ -14,6 +14,7 @@ import {
   LiteralArray
 } from '@angular/compiler';
 import { Injectable } from '@angular/core';
+import { PipesService } from '@mm-services/pipes.service';
 
 // taken from https://github.com/vinayk406/angular-expression-parser
 
@@ -167,7 +168,7 @@ class ASTCompiler {
     return v;
   }
 
-  handleBinaryAND_OR(){
+  handleBinaryAND_OR() {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const _s1 = [];
@@ -314,8 +315,8 @@ class ASTCompiler {
   extendCtxWithLocals() {
     const v1 = this.createVar();
     this.stmts.push(
-      `${v1}=Object.assign({}, locals)`,
-      `ctx=Object.setPrototypeOf(${v1}, ctx)`
+      `${v1}=Object.assign({}, locals || {})`,
+      `ctx=Object.setPrototypeOf(${v1}, ctx || {})`
     );
   }
 
@@ -347,8 +348,8 @@ class ASTCompiler {
     this.extendCtxWithLocals();
     this.addReturnStmt(this.build(this.ast));
 
-    let fn = new Function(this.fnArgs(), this.fnBody());
-    let boundFn = fn.bind(undefined, plus, minus, isDef, getPurePipeVal);
+    const fn = new Function(this.fnArgs(), this.fnBody());
+    const boundFn = fn.bind(undefined, plus, minus, isDef, getPurePipeVal);
     boundFn.usedPipes = this.pipes.slice(0); // clone
     this.cleanup();
     return boundFn;
@@ -363,6 +364,8 @@ const nullPipe = () => {
 
 @Injectable()
 export class ParseProvider {
+  constructor(private pipesService:PipesService) {}
+
   parse(expr) {
 
     if (!isString(expr)) {
@@ -381,20 +384,51 @@ export class ParseProvider {
       return fn;
     }
 
-    let parser = new Parser(new Lexer);
-    let ast = parser.parseBinding(expr, '', 0);
+    const parser = new Parser(new Lexer);
+    const ast = parser.parseBinding(expr, '', 0);
     let boundFn;
 
     if (ast.errors.length) {
       const errors = ast.errors.map(error => error.message).join('; ');
       throw new Error(errors);
     } else {
-      let pipeNameVsIsPureMap = new Map();
-      let astCompiler = new ASTCompiler(ast.ast, pipeNameVsIsPureMap);
+      const pipeNameVsIsPureMap = this.pipesService.getPipeNameVsIsPureMap();
+      const astCompiler = new ASTCompiler(ast.ast, pipeNameVsIsPureMap);
       fn = astCompiler.compile();
       boundFn = fn;
+      if (fn.usedPipes.length) {
+        const pipeArgs = [];
+        let hasPurePipe = false;
+        for (let [pipeName] of fn.usedPipes) {
+          const pipeInfo = this.pipesService.meta(pipeName);
+          let pipeInstance;
+          if (!pipeInfo) {
+            pipeInstance = nullPipe;
+          } else {
+            if (pipeInfo.pure) {
+              hasPurePipe = true;
+              pipeInstance = purePipes.get(pipeName);
+            }
+
+            if (!pipeInstance) {
+              pipeInstance = this.pipesService.getInstance(pipeName);
+            }
+
+            if (pipeInfo.pure) {
+              purePipes.set(pipeName, pipeInstance);
+            }
+          }
+          pipeArgs.push(pipeInstance);
+        }
+
+        pipeArgs.unshift(hasPurePipe ? new Map() : undefined);
+
+        boundFn = fn.bind(undefined, ...pipeArgs);
+      } else {
+        boundFn = fn.bind(undefined, undefined);
+      }
     }
-    fnCache.set(expr, fn);
+    fnCache.set(expr, boundFn);
 
     return boundFn;
   }

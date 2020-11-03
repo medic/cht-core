@@ -22,7 +22,8 @@ import {
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
-import { TranslateFromPipe } from '@mm-pipes/./translate-from.pipe';
+import { PhonePipe } from '@mm-pipes/phone.pipe';
+import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { TranslateFromPipe } from '@mm-pipes/./translate-from.pipe';
     FormIconNamePipe,
     FormIconPipe,
     SafeHtmlPipe,
-    TranslateFromPipe
+    PhonePipe,
+    TranslateFromPipe,
   ],
   imports: [
     CommonModule,
@@ -76,7 +78,8 @@ import { TranslateFromPipe } from '@mm-pipes/./translate-from.pipe';
     FormIconNamePipe,
     FormIconPipe,
     SafeHtmlPipe,
-    TranslateFromPipe
+    PhonePipe,
+    TranslateFromPipe,
   ]
 })
 export class PipesModule { }

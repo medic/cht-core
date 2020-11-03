@@ -7,14 +7,14 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
  * Filter version of TranslateFrom service.
  *
  * Example of use :
- * // In controller :
- * $scope.task = {
- *	intructionsLabel: [ { locale: 'en', content: 'Go visit {{task.patient.name}}' }],
+ * // In component :
+ * this.task = {
+ *	instructionsLabel: [ { locale: 'en', content: 'Go visit {{task.patient.name}}' }],
  *	patient: { name: 'Estelle'}
  * };
  *
  * // In template : (yields 'Go visit Estelle')
- * {{task.intructionsLabel | translateFrom:task}}
+ * {{task.instructionsLabel | translateFrom:task}}
  */
 @Pipe({
   name: 'translateFrom'
