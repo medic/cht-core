@@ -12,7 +12,7 @@ export class XmlFormsContextUtilsService {
   constructor() {}
 
   private getDateDiff(contact, unit) {
-    if (!contact.date_of_birth) {
+    if (!contact || !contact.date_of_birth) {
       return;
     }
     const dob = moment(contact.date_of_birth).startOf('day');
