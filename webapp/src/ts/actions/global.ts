@@ -24,7 +24,7 @@ export const Actions = {
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
   setEnketoStatus: createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus'),
-
+  navigationCancel: createSingleValueAction('NAVIGATION_CANCEL', 'transition'),
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
@@ -172,6 +172,10 @@ export class GlobalActions {
 
   setEnketoSavingStatus(saving) {
     return this.store.dispatch(Actions.setEnketoStatus({ saving }));
+  }
+
+  navigationCancel(transition) {
+    return this.store.dispatch(Actions.navigationCancel(transition));
   }
 }
 

@@ -84,8 +84,11 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
 
     if (this.routeSnapshot.params && (this.routeSnapshot.params.reportsId || this.routeSnapshot.params.formId)) {
       this.globalActions.setCancelCallback(() => {
-        // Note : if no routeSnapshot.params.reportId, goes to "No report selected".
-        this.router.navigate(['/reports', this.routeSnapshot.params.reportsId]);
+        if (this.routeSnapshot.params.reportsId) {
+          this.router.navigate(['/reports', this.routeSnapshot.params.reportsId]);
+        } else {
+          this.router.navigate(['/reports']);
+        }
       });
     } else {
       this.globalActions.clearCancelCallback();
@@ -254,7 +257,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
     const reportId = model.doc && model.doc._id;
     const formInternalId = model.formInternalId;
 
-    this.enketoService
+    return this.enketoService
       .save(formInternalId, this.form, this.geoHandle, reportId)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);

@@ -7,7 +7,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 export class EnketoComponent {
   // string: (optional) modal element id
   @Input() id;
-  // string: (optional) data to enclude in the data-editing attribute
+  // string: (optional) data to include in the data-editing attribute
   @Input() editing;
   // object: object with 'saving', and 'error' properties to update form status
   @Input() status;

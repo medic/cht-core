@@ -43,7 +43,6 @@ Notewidget.prototype.constructor = Notewidget;
 
 Notewidget.prototype._init = function() {
   const $el = $( this.element );
-  //const markdownToHtml = angular.element(document.body).injector().get('Markdown').element;
   const markdownToHtml = window.CHTCore.Markdown;
 
   applyLiveLinkHtml( $el );

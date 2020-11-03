@@ -96,7 +96,7 @@ const _globalReducer = createReducer(
   on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
     return {
       ...state,
-      enketoStatus: { ...state.enketoStatus, enketoStatus, },
+      enketoStatus: { ...state.enketoStatus, ...enketoStatus },
     };
   }),
   on(Actions.setPrivacyPolicyAccepted, (state, { payload: { accepted } }) => {
@@ -104,6 +104,9 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setShowPrivacyPolicy, (state, { payload: { show } }) => {
     return { ...state, showPrivacyPolicy: show };
+  }),
+  on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
+    return { ...state, cancelCallback };
   }),
 );
 
@@ -135,8 +138,6 @@ module.exports = function(state, action) {
         right: Object.assign({}, state.actionBar.right, { verified: action.payload.verified })
       })
     });
-  case actionTypes.SET_CANCEL_CALLBACK:
-    return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
   case actionTypes.SET_LOADING_SUB_ACTION_BAR:
     return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
   case actionTypes.SET_UNREAD_COUNT:

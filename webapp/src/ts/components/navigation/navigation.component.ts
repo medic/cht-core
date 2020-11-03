@@ -14,10 +14,10 @@ import { GlobalActions } from '@mm-actions/global';
 export class NavigationComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();
   private globalActions;
-  private routeSnapshot;
 
   cancelCallback;
   title;
+  enketoSaving;
 
   constructor(
     private store: Store,
@@ -25,56 +25,57 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private router:Router,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.routeSnapshot = this.route.snapshot;
   }
 
   ngOnInit(): void {
     const stateSubscription = combineLatest(
       this.store.select(Selectors.getCancelCallback),
       this.store.select(Selectors.getTitle),
-      //this.store.select(Selectors.getEnketoSavingStatus),
+      this.store.select(Selectors.getEnketoSavingStatus),
     ).subscribe(([
       cancelCallback,
       title,
+      enketoSaving,
     ]) => {
       this.cancelCallback = cancelCallback;
       this.title = title;
+      this.enketoSaving = enketoSaving;
     });
     this.subscription.add(stateSubscription);
-
-    const routeSubscription =  this.route.url.subscribe(() => {
-      this.routeSnapshot = this.route.snapshot;
-    });
-    const routeParamsSubscription =  this.route.params.subscribe(() => {
-      this.routeSnapshot = this.route.snapshot;
-    });
-
-    this.subscription.add(routeSubscription);
-    this.subscription.add(routeParamsSubscription);
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
+  // todo this is duplicated code
+  // merge into a provider or service!
+  private getRouteSnapshot() {
+    let route = this.router.routerState.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route.snapshot;
+  }
+
   /**
   * Navigate back to the previous view
   */
   navigateBack() {
-    if (this.routeSnapshot.data.name === 'contacts.deceased') {
+    const routeSnapshot = this.getRouteSnapshot();
+    if (routeSnapshot.data.name === 'contacts.deceased') {
       // todo check if this works when we have migrated the contacts tabs
-      return this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
+      return this.router.navigate(['/contacts', routeSnapshot.params.id]);
     }
 
-    if (this.routeSnapshot.params.id) {
-      return this.router.navigate(['/', this.routeSnapshot.parent.routeConfig.path]);
+    if (routeSnapshot.params.id) {
+      return this.router.navigate(['/', routeSnapshot.parent.routeConfig.path]);
     }
 
     this.globalActions.unsetSelected();
   }
 
   navigationCancel() {
-    // todo
-    // this.globalActions.navigationCancel();
+    this.globalActions.navigationCancel();
   }
 }

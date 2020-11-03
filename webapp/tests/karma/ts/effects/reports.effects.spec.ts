@@ -238,10 +238,10 @@ describe('Reports effects', () => {
 
     it('should work when there are no forms with formInternalId', () => {
       const selected = {
+        formInternalId: 'internalID',
         doc: {
-          formInternalId: 'internalID',
           form: 'someForm',
-        }
+        },
       };
       actions$ = of(ReportActionList.setTitle(selected));
       effects.setTitle.subscribe();
@@ -251,10 +251,10 @@ describe('Reports effects', () => {
 
     it('should work with forms, but not matching report form', () => {
       const selected = {
+        formInternalId: 'internalID',
         doc: {
-          formInternalId: 'internalID',
           form: 'someForm',
-        }
+        },
       };
       store.overrideSelector(Selectors.getForms, [{ code: 'form1' }, { code: 'form2' }]);
       actions$ = of(ReportActionList.setTitle(selected));
@@ -265,10 +265,10 @@ describe('Reports effects', () => {
 
     it('should work with forms and matching report form', () => {
       const selected = {
+        formInternalId: 'form1',
         doc: {
-          formInternalId: 'form1',
           form: 'someForm',
-        }
+        },
       };
       store.overrideSelector(Selectors.getForms, [{ code: 'form1', name: 'form1name' }, { code: 'form2' }]);
       actions$ = of(ReportActionList.setTitle(selected));
@@ -279,10 +279,10 @@ describe('Reports effects', () => {
 
     it('should work with forms and matching report form with form title', () => {
       const selected = {
+        formInternalId: 'form1',
         doc: {
-          formInternalId: 'form1',
           form: 'someForm',
-        }
+        },
       };
       store.overrideSelector(Selectors.getForms, [{ code: 'form1', title: 'form1title' }, { code: 'form2' }]);
       actions$ = of(ReportActionList.setTitle(selected));

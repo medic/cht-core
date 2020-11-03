@@ -92,7 +92,7 @@ export class ReportsEffects {
       ofType(ReportActionList.setTitle),
       withLatestFrom(this.store.pipe(select(Selectors.getForms))),
       exhaustMap(([{ payload: { selected } }, forms]) => {
-        const formInternalId = selected?.doc?.formInternalId || selected?.doc?.form;
+        const formInternalId = selected.formInternalId || selected?.doc?.form;
         const form = forms?.find(form => form.code === formInternalId);
         const name = form?.name || form?.title || formInternalId;
         return of(this.globalActions.setTitle(name));
