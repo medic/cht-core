@@ -54,8 +54,7 @@ function PhoneWidget( element, options, Settings ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   if ( !Settings ) {
-    const angularInjector = angular.element( document.body ).injector();
-    Settings = angularInjector.get( 'Settings' );
+    Settings = window.CHTCore.Settings;
   }
   this._init( Settings );
 }
@@ -83,7 +82,7 @@ PhoneWidget.prototype._init = function( Settings ) {
   // TODO(estellecomment): move this to a catch clause, when settings aren't found.
   formatAndCopy( $proxyInput, $input, {} );
 
-  this.builtPromise = Settings()
+  this.builtPromise = Settings.get()
     .then( function( settings ) {
       formatAndCopy( $proxyInput, $input, settings );
     } );
