@@ -48,11 +48,13 @@ describe('AndroidApi service', () => {
       respondTimeTaken: sinon.stub(),
     };
 
-    geolocationService = { permissionRequestResolved: sinon.stub() };
-
-    ngZone = {
-      run: sinon.stub().callsArg(0),
+    geolocationService = {
+      permissionRequestResolved: sinon.stub()
     };
+
+    /*ngZone = {
+      run: sinon.stub().callsArg(0),
+    };*/
 
     TestBed.configureTestingModule({
       providers: [
@@ -62,8 +64,8 @@ describe('AndroidApi service', () => {
         { provide: FeedbackService, useValue: feedbackService },
         { provide: Router, useValue: router },
         { provide: MRDTService, useValue: mrdtService },
-        { provide: NgZone, useValue: ngZone },
-      ]
+        //{ provide: NgZone, useValue: ngZone },
+      ],
     });
 
     service = TestBed.inject(AndroidApiService);
@@ -205,7 +207,7 @@ describe('AndroidApi service', () => {
   describe('mrdtTimeTakenResponse', () => {
     it('should call mrdt.respondTimeTaken with parsed json', () => {
       const response = JSON.stringify({ some: 'response' });
-      service.respondTimeTaken(response);
+      service.mrdtTimeTakenResponse(response);
       expect(mrdtService.respondTimeTaken.callCount).to.equal(1);
       expect(mrdtService.respondTimeTaken.args[0]).to.deep.equal([{ some: 'response' }]);
     });
@@ -225,12 +227,67 @@ describe('AndroidApi service', () => {
   });
 
   describe('v1 api runs everything in zone', () => {
+    let ngZoneRun;
+    beforeEach(() => {
+      ngZoneRun = sinon.stub(NgZone.prototype, 'run').callsArg(0);
+    });
+
     it('should not run in zone if already in zone', () => {
       sinon.stub(NgZone, 'isInAngularZone').returns(true);
-      service.v1.back();
+      service.v1.logout();
       //@ts-ignore
       expect(NgZone.isInAngularZone.callCount).to.equal(1);
-      expect(ngZone.run.callCount).to.equal(0);
+      expect(ngZoneRun.callCount).to.equal(0);
+      expect(sessionService.logout.callCount).to.equal(1);
+    });
+
+    it('should run in zone if not already in zone', () => {
+      sinon.stub(NgZone, 'isInAngularZone').returns(false);
+      service.v1.logout();
+      //@ts-ignore
+      expect(NgZone.isInAngularZone.callCount).to.equal(1);
+      expect(ngZoneRun.callCount).to.equal(1);
+      expect(sessionService.logout.callCount).to.equal(1);
+    });
+
+    it('should pass parameters correctly when in zone', () => {
+      sinon.stub(console, 'debug');
+      sinon.stub(NgZone, 'isInAngularZone').returns(true);
+      service.v1.smsStatusUpdate('the_id', 'the_dest', 'the_content', 'the_status', 'the_detail');
+      //@ts-ignore
+      expect(NgZone.isInAngularZone.callCount).to.equal(1);
+      expect(ngZoneRun.callCount).to.equal(0);
+      //@ts-ignore
+      expect(console.debug.callCount).to.equal(1);
+      //@ts-ignore
+      expect(console.debug.args[0]).to.deep.equal([
+        'smsStatusUpdate() :: ' +
+        ' id=the_id,' +
+        ' destination=the_dest,' +
+        ' content=the_content,' +
+        ' status=the_status,' +
+        ' detail=the_detail'
+      ]);
+    });
+
+    it('should pass parameters correctly when outside zone', () => {
+      sinon.stub(console, 'debug');
+      sinon.stub(NgZone, 'isInAngularZone').returns(false);
+      service.v1.smsStatusUpdate('an_id', 'a_dest', 'a_content', 'a_status', 'a_detail');
+      //@ts-ignore
+      expect(NgZone.isInAngularZone.callCount).to.equal(1);
+      expect(ngZoneRun.callCount).to.equal(1);
+      //@ts-ignore
+      expect(console.debug.callCount).to.equal(1);
+      //@ts-ignore
+      expect(console.debug.args[0]).to.deep.equal([
+        'smsStatusUpdate() :: ' +
+        ' id=an_id,' +
+        ' destination=a_dest,' +
+        ' content=a_content,' +
+        ' status=a_status,' +
+        ' detail=a_detail'
+      ]);
     });
   });
 });

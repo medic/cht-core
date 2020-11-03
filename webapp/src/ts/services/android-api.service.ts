@@ -27,7 +27,7 @@ export class AndroidApiService {
   ) {
   }
 
-  private runInZone(property:string, ...args:any[]) {
+  private runInZone(property:string, args:any[]=[]) {
     if (!this[property] || typeof this[property] !== 'function') {
       return;
     }
@@ -237,8 +237,10 @@ export class AndroidApiService {
       return console.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
     }
     if (requestType === 'identify') {
+      // todo migrate when Simprints is migrated
       //Simprints.identifyResponse(requestId, response);
     } else if (requestType === 'register') {
+      // todo migrate when Simprints is migrated
       //Simprints.registerResponse(requestId, response);
     } else {
       return console.error(new Error('Unknown request type: "' + requestType + '"'));
