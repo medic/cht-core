@@ -207,7 +207,7 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 
 ## End to End tests
 
-They live in [tests](tests). Run them with grunt: `grunt e2e`. Docker is required (it should be available on the command line as `docker`).
+They live in [tests](tests). Run them with grunt: `grunt e2e-web` for web tests,`grunt e2e-mobile` for mobile resolution or `grunt e2e` for all e2e tests.  Docker is required (it should be available on the command line as `docker`).
 
 ## API integration tests
 

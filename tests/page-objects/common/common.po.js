@@ -4,8 +4,8 @@ const utils = require('../../utils');
 const medicLogo = element(by.className('logo-full'));
 const genericSubmitButton = element(by.css('.btn.btn-primary'));
 const genericCancelBtn = element(by.css('.modal .btn.cancel'));
-const messagesLink = element(by.id('messages-tab'));
-const analyticsLink = element(by.id('analytics-tab'));
+const messagesTab = element(by.id('messages-tab'));
+const analyticsTab = element(by.id('analytics-tab'));
 const hamburgerMenu = element(by.css('.dropdown.options>a'));
 const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
 const logoutButton = $('[ng-click=logout]');
@@ -30,7 +30,7 @@ module.exports = {
     const bootstrapperSelector = by.css('.bootstrap-layer');
     helper.waitElementToPresent(element(bootstrapperSelector));
     helper.waitElementToDisappear(bootstrapperSelector);
-    helper.waitUntilReady(medicLogo);
+    helper.waitUntilReady(messagesTab);
   },
 
   checkAbout: () => {
@@ -78,12 +78,12 @@ module.exports = {
   },
 
   goToAnalytics: () => {
-    analyticsLink.click();
-    helper.waitUntilReady(medicLogo);
+    analyticsTab.click();
+    helper.waitForAngularComplete();
   },
 
   goToConfiguration: () => {
-    helper.waitUntilReady(medicLogo);
+    helper.waitForAngularComplete();
     browser.get(utils.getAdminBaseUrl());
   },
 
@@ -94,13 +94,12 @@ module.exports = {
 
   goToMessages: () => {
     browser.get(utils.getBaseUrl() + 'messages/');
-    helper.waitUntilReady(medicLogo);
+    helper.waitForAngularComplete();
     helper.waitUntilReady(element(by.id('message-list')));
   },
 
   goToPeople: async () => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
-    await helper.waitUntilReady(medicLogo);
     await helper.waitUntilReady(element(by.id('contacts-list')));
   },
 
@@ -129,12 +128,11 @@ module.exports = {
 
   goToTasks: () => {
     browser.get(utils.getBaseUrl() + 'tasks/');
-    helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('tasks-list')));
   },
 
   isAt: list => {
-    helper.waitUntilReady(medicLogo);
+    helper.waitForAngularComplete();
     return element(by.id(list)).isPresent();
   },
 
@@ -145,7 +143,7 @@ module.exports = {
   },
 
   openMenu: () => {
-    helper.waitUntilReady(messagesLink);
+    helper.waitUntilReady(messagesTab);
     hamburgerMenu.click();
     helper.waitUntilReady(hamburgerMenuOptions);
   },
