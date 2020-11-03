@@ -284,7 +284,6 @@ describe('date pipes rendering', () => {
 
     it('should render date', async () => {
       await override(`<div [innerHTML]="date | fullDate"></div>`, { date: moment().valueOf() });
-      console.log(fixture.nativeElement.querySelector('.relative-date-content'));
       expect(fixture.nativeElement.querySelector('.relative-date-content').innerText).to.equal('somerelativetime');
       expect(fixture.nativeElement.querySelector('.full-date').innerText).to.equal('day 0');
     });
@@ -359,7 +358,6 @@ describe('date pipes rendering', () => {
         const expected = 'reçu';
         translate.get.withArgs('state.received').returns(of(expected));
         await override(`<div class="task-state" [innerHTML]="task | state | async"></div>`, { task });
-        console.log(fixture.nativeElement);
 
         expect(fixture.nativeElement.querySelector('.state').innerText).to.equal(expected);
       });
