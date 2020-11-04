@@ -1,55 +1,38 @@
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
+
+import { GeolocationService } from '@mm-services/geolocation.service';
+//todo import telemetry
+
 describe('Geolocation service', () => {
-
-  'use strict';
-
-  let $log;
-  let $window;
   let Telemetry;
   let medicmobileAndroid;
   let service;
+  let navigator;
 
   beforeEach(() => {
-    module('inboxApp');
-    $log = {
-      debug: sinon.stub(),
-      info: sinon.stub(),
-      error: sinon.stub()
-    };
-    $window = {
-      navigator: {
-        geolocation: {
-          watchPosition: sinon.stub(),
-          clearWatch: sinon.stub()
-        }
-      },
-      medicmobile_android: medicmobileAndroid,
-    };
+    navigator = window.navigator;
+
+    window.medicmobile_android = medicmobileAndroid;
+    sinon.stub(window.navigator.geolocation, 'watchPosition');
+    sinon.stub(window.navigator.geolocation, 'clearWatch');
+
     Telemetry = {
       record: sinon.stub()
     };
-    module($provide => {
-      $provide.value('$window', $window);
-      $provide.value('$log', $log);
-      $provide.value('Telemetry', Telemetry);
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
+
+    TestBed.configureTestingModule({
+      // todo add telemetry
     });
-    inject(_Geolocation_ => service = _Geolocation_);
+    service = TestBed.inject(GeolocationService);
   });
 
-  afterEach(() => { sinon.restore(); });
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe('Geolocation', () => {
-    it('Errors if geolocation navigator fn not available', () => {
-      delete $window.navigator.geolocation;
-
-      return service
-        .init()()
-        .catch(err => err)
-        .then(err => {
-          chai.expect(err.code).to.equal(-1);
-        });
-    });
-
     it('correctly returns a successful geo result', () => {
       const position = {
         latitude: 1,
@@ -60,21 +43,23 @@ describe('Geolocation service', () => {
         heading: 6,
         speed: 7,
       };
-      $window.navigator.geolocation.watchPosition.callsArgWith(0, {coords: position});
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(0, {coords: position});
 
       return service.init()().then(returned => {
-        chai.expect(returned).to.deep.equal(position);
+        expect(returned).to.deep.equal(position);
       });
     });
 
     it('correctly returns an unsuccessful geo result', () => {
-      $window.navigator.geolocation.watchPosition.callsArgWith(1, {code: 42, message: 'An error!'});
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(1, {code: 42, message: 'An error!'});
 
       return service
         .init()()
         .catch(err => err)
         .then(err => {
-          chai.expect(err.code).to.equal(42);
+          expect(err.code).to.equal(42);
         });
     });
 
@@ -97,13 +82,14 @@ describe('Geolocation service', () => {
         heading: 13,
         speed: 14,
       };
-      $window.navigator.geolocation.watchPosition.callsFake(success => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(success => {
         success({coords: first});
         success({coords: second});
       });
 
       return service.init()().then(returned => {
-        chai.expect(returned).to.deep.equal(second);
+        expect(returned).to.deep.equal(second);
       });
     });
 
@@ -117,13 +103,14 @@ describe('Geolocation service', () => {
         heading: 13,
         speed: 14,
       };
-      $window.navigator.geolocation.watchPosition.callsFake((success, failure) => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake((success, failure) => {
         failure({code: 1, message: 'some error'});
         success({coords: second});
       });
 
       return service.init()().then(returned => {
-        chai.expect(returned).to.deep.equal(second);
+        expect(returned).to.deep.equal(second);
       });
     });
 
@@ -137,13 +124,14 @@ describe('Geolocation service', () => {
         heading: 6,
         speed: 7,
       };
-      $window.navigator.geolocation.watchPosition.callsFake((success, failure) => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake((success, failure) => {
         success({coords: first});
         failure({code: 2, message: 'some later error'});
       });
 
       return service.init()().then(returned => {
-        chai.expect(returned).to.deep.equal(first);
+        expect(returned).to.deep.equal(first);
       });
     });
 
@@ -158,12 +146,13 @@ describe('Geolocation service', () => {
         speed: 7,
       };
       let successFn;
-      $window.navigator.geolocation.watchPosition.callsFake(success => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(success => {
         successFn = success;
       });
 
       const promise = service.init()().then(returned => {
-        chai.expect(returned).to.deep.equal(position);
+        expect(returned).to.deep.equal(position);
       });
       successFn({coords: position});
 
@@ -172,7 +161,8 @@ describe('Geolocation service', () => {
 
     it('blocks promise completion until at least one error', () => {
       let failureFn;
-      $window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
         failureFn = failure;
       });
 
@@ -180,7 +170,7 @@ describe('Geolocation service', () => {
         .init()()
         .catch(err => err)
         .then(returned => {
-          chai.expect(returned.code).to.equal(43);
+          expect(returned.code).to.equal(43);
         });
 
       failureFn({code: 43, message: 'oh no!'});
@@ -201,63 +191,73 @@ describe('Geolocation service', () => {
 
       it('should not crash if api not available', () => {
         medicmobileAndroid = { other: () => {} };
-        $window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
         const deferred = service.init();
-        chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(1);
+        // @ts-ignore
+        expect(window.navigator.geolocation.watchPosition.callCount).to.equal(1);
         return deferred().then(returned => {
-          chai.expect(returned).to.deep.equal(position);
+          expect(returned).to.deep.equal(position);
         });
       });
 
       it('should not crash if api is not a function', () => {
         medicmobileAndroid = { getLocationPermissions: 'string' };
-        $window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
         return service.init()().then(returned => {
-          chai.expect(returned).to.deep.equal(position);
+          expect(returned).to.deep.equal(position);
         });
       });
 
       it('should not crash if api throws an error', () => {
-        $window.medicmobile_android = { getLocationPermissions: sinon.stub().throws(new Error('error')) };
-        $window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().throws(new Error('error')) };
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
         return service.init()().then(returned => {
-          chai.expect(returned).to.deep.equal(position);
-          chai.expect($window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+          expect(returned).to.deep.equal(position);
+          expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
         });
       });
 
       it('should start watcher immediately if the app has required permissions', () => {
-        $window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(true) };
-        $window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(true) };
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
         const deferred = service.init();
-        chai.expect($window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
-        chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(1);
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+        // @ts-ignore
+        expect(window.navigator.geolocation.watchPosition.callCount).to.equal(1);
         return deferred().then(returned => {
-          chai.expect(returned).to.deep.equal(position);
+          expect(returned).to.deep.equal(position);
         });
       });
 
       it('should defer starting watcher until response from Android is received', () => {
-        $window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
-        $window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
         const deferred = service.init();
-        chai.expect($window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
-        chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(0);
-        chai.expect().to.equal();
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+        // @ts-ignore
+        expect(window.navigator.geolocation.watchPosition.callCount).to.equal(0);
         const nextTick = () => new Promise(resolve => setTimeout(resolve));
         return nextTick()
           .then(() => {
-            chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(0);
+            // @ts-ignore
+            expect(window.navigator.geolocation.watchPosition.callCount).to.equal(0);
             return nextTick();
           })
           .then(() => {
-            chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(0);
+            // @ts-ignore
+            expect(window.navigator.geolocation.watchPosition.callCount).to.equal(0);
             service.permissionRequestResolved();
-            chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(1);
+            // @ts-ignore
+            expect(window.navigator.geolocation.watchPosition.callCount).to.equal(1);
             return deferred();
           })
           .then(returned => {
-            chai.expect(returned).to.deep.equal(position);
+            expect(returned).to.deep.equal(position);
           });
       });
 
