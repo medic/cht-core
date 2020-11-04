@@ -17,6 +17,7 @@ import { ParseProvider } from '@mm-providers/parse.provider';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { DbService } from '@mm-services/db.service';
 
 const MAX_LINEAGE_DEPTH = 50;
 const ENSURE_FRESHNESS_SECS = 120;
@@ -24,7 +25,19 @@ const ENSURE_FRESHNESS_SECS = 120;
 @Injectable({
   providedIn: 'root'
 })
+export class RulesEngineCoreFactoryService {
+  constructor(private dbService: DbService) {}
+
+  get() {
+    return RulesEngineCore(this.dbService.get());
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class RulesEngineService implements OnDestroy {
+  private rulesEngineCore;
   subscriptions: Subscription = new Subscription();
   initialized;
   uhcMonthStartDate;
@@ -32,6 +45,8 @@ export class RulesEngineService implements OnDestroy {
   ensureTargetFreshness;
   ensureTaskFreshnessTelemetryData;
   ensureTargetFreshnessTelemetryData;
+  isTaskDebounceActive;
+  isTargetDebounceActive;
 
   constructor(
     private translateService: TranslateService,
@@ -45,9 +60,11 @@ export class RulesEngineService implements OnDestroy {
     private parseProvider: ParseProvider,
     private changesService: ChangesService,
     private contactTypesService: ContactTypesService,
-    private translateFromService: TranslateFromService
+    private translateFromService: TranslateFromService,
+    private rulesEngineCoreFactoryService: RulesEngineCoreFactoryService
   ) {
     this.initialized = this.initialize();
+    this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
   }
 
   ngOnDestroy(): void {
@@ -76,20 +93,22 @@ export class RulesEngineService implements OnDestroy {
             const rulesSettings = this.getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
             const initializeTelemetryData = this.telemetryEntry('rules-engine:initialize', true);
 
-            return RulesEngineCore
+            return this.rulesEngineCore
               .initialize(rulesSettings)
               .then(() => {
-                const isEnabled = RulesEngineCore.isEnabled();
+                const isEnabled = this.rulesEngineCore.isEnabled();
 
                 if (isEnabled) {
                   this.assignMonthStartDate(settingsDoc);
                   this.monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
 
                   this.ensureTaskFreshness = _debounce(this.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
+                  this.isTaskDebounceActive = true;
                   this.ensureTaskFreshness();
                   this.ensureTaskFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true);
 
                   this.ensureTargetFreshness = _debounce(this.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
+                  this.isTargetDebounceActive = true;
                   this.ensureTargetFreshness();
                   this.ensureTargetFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true);
                 }
@@ -132,9 +151,9 @@ export class RulesEngineService implements OnDestroy {
     };
   }
 
-  private cancelDebounce(debounce, telemetryDataEntry) {
+  private cancelDebounce(debounce, telemetryDataEntry, isDebounceActive) {
     if (debounce) {
-      if (!debounce.executed() && !debounce.cancelled()) {
+      if (isDebounceActive) { // Debounced function is not executed or cancelled yet.
         telemetryDataEntry.record();
       }
       debounce.cancel();
@@ -168,7 +187,7 @@ export class RulesEngineService implements OnDestroy {
         const subjectIds = isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id;
         const telemetryData = this.telemetryEntry('rules-engine:update-emissions', true);
 
-        return RulesEngineCore
+        return this.rulesEngineCore
           .updateEmissionsFor(subjectIds)
           .then(telemetryData.passThrough);
       }
@@ -202,7 +221,7 @@ export class RulesEngineService implements OnDestroy {
 
   private rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) {
     const rulesSettings = this.getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
-    RulesEngineCore.rulesConfigChange(rulesSettings);
+    this.rulesEngineCore.rulesConfigChange(rulesSettings);
     this.assignMonthStartDate(settingsDoc);
   }
 
@@ -233,18 +252,19 @@ export class RulesEngineService implements OnDestroy {
   }
 
   isEnabled() {
-    return this.initialized.then(RulesEngineCore.isEnabled);
+    return this.initialized.then(this.rulesEngineCore.isEnabled);
   }
 
   fetchTaskDocsForAllContacts() {
+    this.isTaskDebounceActive = false;
     const telemetryData = this.telemetryEntry('rules-engine:tasks:all-contacts');
 
     return this.initialized
       .then(() => {
-        this.telemetryService.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
-        this.cancelDebounce(this.ensureTaskFreshness, this.ensureTaskFreshnessTelemetryData);
-
-        return RulesEngineCore
+        this.telemetryService.record('rules-engine:tasks:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+        this.cancelDebounce(this.ensureTaskFreshness, this.ensureTaskFreshnessTelemetryData, this.isTaskDebounceActive);
+        this.isTaskDebounceActive = false;
+        return this.rulesEngineCore
           .fetchTasksFor()
           .on('queued', telemetryData.queued)
           .on('running', telemetryData.start);
@@ -258,9 +278,9 @@ export class RulesEngineService implements OnDestroy {
 
     return this.initialized
     .then(() => {
-      this.telemetryService.record('rules-engine:tasks:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
+      this.telemetryService.record('rules-engine:tasks:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
 
-      return RulesEngineCore
+      return this.rulesEngineCore
         .fetchTasksFor(contactIds)
         .on('queued', telemetryData.queued)
         .on('running', telemetryData.start);
@@ -270,14 +290,16 @@ export class RulesEngineService implements OnDestroy {
   }
 
   fetchTargets() {
+    this.isTargetDebounceActive = false;
     const telemetryData = this.telemetryEntry('rules-engine:targets');
 
     return this.initialized
     .then(() => {
-      this.telemetryService.record('rules-engine:targets:dirty-contacts', RulesEngineCore.getDirtyContacts().length);
-      this.cancelDebounce(this.ensureTargetFreshness, this.ensureTargetFreshnessTelemetryData);
+      this.telemetryService.record('rules-engine:targets:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+      this.cancelDebounce(this.ensureTargetFreshness, this.ensureTargetFreshnessTelemetryData, this.isTargetDebounceActive);
+      this.isTargetDebounceActive = false;
       const relevantInterval = CalendarInterval.getCurrent(this.uhcMonthStartDate);
-      return RulesEngineCore
+      return this.rulesEngineCore
         .fetchTargets(relevantInterval)
         .on('queued', telemetryData.queued)
         .on('running', telemetryData.start);

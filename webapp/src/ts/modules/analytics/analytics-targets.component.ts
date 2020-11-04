@@ -39,5 +39,4 @@ export class AnalyticsTargetsComponent implements OnInit {
         this.telemetryService.record(`analytics:targets:load`, this.telemetryData.end - this.telemetryData.start);
       });
   }
-
 }
