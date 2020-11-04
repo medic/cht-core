@@ -1,4 +1,4 @@
-import { ActivationEnd, Router, RouterEvent } from '@angular/router';
+import { ActivationEnd, NavigationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { Store } from '@ngrx/store';

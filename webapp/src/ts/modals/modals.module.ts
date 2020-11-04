@@ -13,7 +13,7 @@ import { SendMessageComponent } from './send-message/send-message.component';
 import { DeleteDocConfirmComponent } from './delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from './edit-user/update-password.component';
 import { EditUserSettingsComponent } from './edit-user/edit-user-settings.component';
-
+import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +26,7 @@ import { EditUserSettingsComponent } from './edit-user/edit-user-settings.compon
     DeleteDocConfirmComponent,
     UpdatePasswordComponent,
     EditUserSettingsComponent,
+    NavigationConfirmComponent,
   ],
   imports: [
     CommonModule,
@@ -39,6 +40,7 @@ import { EditUserSettingsComponent } from './edit-user/edit-user-settings.compon
     FeedbackComponent,
     UpdatePasswordComponent,
     EditUserSettingsComponent,
+    NavigationConfirmComponent,
   ]
 })
 export class ModalsModule { }

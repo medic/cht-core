@@ -4,25 +4,29 @@ import { exhaustMap, tap, withLatestFrom } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 
-import { Actions as GlobalActions } from '@mm-actions/global';
+import { Actions as GlobalActionsList, GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
-import { Actions as ReportActionList } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
-
+import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class GlobalEffects {
+  private globalActions;
 
   constructor(
     private actions$: Actions,
     private modalService: ModalService,
     private store:Store,
-  ) { }
+    private router:Router,
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   deleteDocConfirm$ = createEffect(
     ():any => this.actions$.pipe(
-      ofType(GlobalActions.deleteDocConfirm),
+      ofType(GlobalActionsList.deleteDocConfirm),
       tap(({ payload: { doc } }) => {
         this.modalService.show(DeleteDocConfirmComponent, { initialState: { model: { doc } } });
       })
@@ -32,13 +36,13 @@ export class GlobalEffects {
 
   setTitle = createEffect(() => {
     return this.actions$.pipe(
-      ofType(GlobalActions.navigationCancel),
+      ofType(GlobalActionsList.navigationCancel),
       withLatestFrom(
         this.store.pipe(select(Selectors.getEnketoSavingStatus)),
         this.store.pipe(select(Selectors.getEnketoEditedStatus)),
         this.store.pipe(select(Selectors.getCancelCallback)),
       ),
-      exhaustMap(([{ payload: { transition } }, enketoSaving, enketoEdited, cancelCallback]) => {
+      exhaustMap(([{ payload: { nextUrl } }, enketoSaving, enketoEdited, cancelCallback]) => {
         if (enketoSaving) {
           // wait for save to finish
           return of();
@@ -52,26 +56,25 @@ export class GlobalEffects {
           return of();
         }
 
-        // otherwise data will be discarded so confirm navigation
-        // TODO migrate Navigation confirm modal
-        /* Modal({
-          templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'NavigationConfirmCtrl',
-          controllerAs: 'navigationConfirmCtrl',
-        }).then(() => {
-          setEnketoEditedStatus(false);
-          if (transition) {
-            return $state.go(transition.to, transition.params);
+        this.modalService.show(
+          NavigationConfirmComponent,
+          {
+            initialState: {
+              callback: () => {
+                this.globalActions.setEnketoEditedStatus(false);
+                if (nextUrl) {
+                  this.router.navigate([nextUrl]);
+                  return;
+                }
+
+                if (cancelCallback) {
+                  cancelCallback();
+                }
+              }
+            }
           }
-          const cb = Selectors.getCancelCallback(getState());
-          if (cb) {
-            cb();
-          }
-        });*/
-        // until navigation confirm modal is implemented, just cancelCallback
-        if (cancelCallback) {
-          cancelCallback();
-        }
+        );
+
         return of();
       }),
     );

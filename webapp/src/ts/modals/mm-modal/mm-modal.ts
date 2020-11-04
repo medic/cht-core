@@ -31,7 +31,7 @@ export class MmModal {
   }
 }
 
-Injectable({
+@Injectable({
   providedIn: 'root'
 })
 export class MmModalAbstract {
@@ -74,7 +74,7 @@ export class ModalService {
 
   private modalRefs = {};
 
-  constructor(private modalService:BsModalService) {
+  constructor(private bsModalService:BsModalService) {
 
   }
 
@@ -84,7 +84,7 @@ export class ModalService {
       return;
     }
     config = Object.assign(this.config, config);
-    const ref:BsModalRef = this.modalService.show(template, config);
+    const ref:BsModalRef = this.bsModalService.show(template, config);
     this.modalRefs[modalId] = ref;
     if (onHide) {
       ref.onHide.subscribe(() => onHide());
