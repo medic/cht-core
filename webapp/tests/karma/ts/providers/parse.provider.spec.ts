@@ -84,6 +84,56 @@ describe('Parse provider', () => {
       expect(parse('array1.concat(array2)', context, locals)).to.deep.equal([7, 8, 9, 4, 5, 6]);
       expect(parse('array2.concat(array1)', context, locals)).to.deep.equal([4, 5, 6, 7, 8, 9]);
     });
+
+    it('should process methods correctly', () => {
+      const userContactDoc:any = {
+        'name': 'Hanry',
+        'phone': '+61466661112',
+        'contact_type': 'chp',
+        'type': 'person',
+        'reported_date': 1602853017680,
+        'parent': {
+          'name': 'Sushi Roll Clinic',
+          'type': 'district_hospital',
+          'reported_date': 1602852999338,
+          'place_id': '40046',
+          'contact': {
+            'name': 'Hanry',
+            'phone': '+61466661112',
+            'contact_type': 'chp',
+            'type': 'person',
+            'reported_date': 1602853017680,
+            'parent': {
+              '_id': 'dcf86fe98aa9fe2ddb207e4483006f69'
+            },
+            'patient_id': '57848',
+            '_id': 'dcf86fe98aa9fe2ddb207e44830078b0',
+          },
+          'parent': {
+            '_id': 'dcf86fe98aa9fe2ddb207e4483006f69',
+          },
+          '_id': 'dcf86fe98aa9fe2ddb207e4483006f69',
+        },
+        'patient_id': '57848',
+      };
+      const expression = '(user.parent.use_cases && user.parent.use_cases.split(" ").indexOf("pnc") !== -1) ' +
+        '|| (user.parent.parent.use_cases && user.parent.parent.use_cases.split(" ").indexOf("pnc") !== -1)';
+      const result = parse(expression, { user: userContactDoc });
+      expect(result).to.equal(undefined);
+
+      userContactDoc.parent.use_cases = 'some pnc thing';
+      const result2 = parse(expression, { user: userContactDoc });
+      expect(result2).to.equal(true);
+
+      userContactDoc.parent.use_cases = undefined;
+      userContactDoc.parent.parent.use_cases = 'some other pnc thing';
+      const result3 = parse(expression, { user: userContactDoc });
+      expect(result3).to.equal(true);
+
+      userContactDoc.parent.parent.use_cases = 'some other nopnc thing';
+      const result4 = parse(expression, { user: userContactDoc });
+      expect(result4).to.equal(false);
+    });
   });
 
   describe('with pipes', () => {
