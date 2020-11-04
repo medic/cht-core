@@ -174,7 +174,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setEnketoStatus({ saving }));
   }
 
-  navigationCancel(nextUrl) {
+  navigationCancel(nextUrl?) {
     return this.store.dispatch(Actions.navigationCancel(nextUrl));
   }
 }

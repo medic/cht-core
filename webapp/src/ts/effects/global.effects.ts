@@ -8,7 +8,6 @@ import { Actions as GlobalActionsList, GlobalActions } from '@mm-actions/global'
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { Selectors } from '@mm-selectors/index';
-import { Router } from '@angular/router';
 
 @Injectable()
 export class GlobalEffects {
@@ -18,7 +17,6 @@ export class GlobalEffects {
     private actions$: Actions,
     private modalService: ModalService,
     private store:Store,
-    private router:Router,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -33,7 +31,7 @@ export class GlobalEffects {
     { dispatch: false }
   );
 
-  setTitle = createEffect(() => {
+  navigationCancel = createEffect(() => {
     return this.actions$.pipe(
       ofType(GlobalActionsList.navigationCancel),
       withLatestFrom(

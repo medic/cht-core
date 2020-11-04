@@ -1,5 +1,5 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { async, fakeAsync, TestBed } from '@angular/core/testing';
+import { async, TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';

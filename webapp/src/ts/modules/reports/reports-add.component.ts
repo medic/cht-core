@@ -113,7 +113,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
   }
 
   private loadForm() {
-    this
+    return this
       .getSelected()
       .then((model:any) => {
         console.debug('setting selected', model);
@@ -128,7 +128,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
           .then(([ reportContent, form ]) => {
             this.globalActions.setEnketoEditedStatus(false);
 
-            this.enketoService
+            return this.enketoService
               .render(
                 '#report-form',
                 form,
@@ -204,7 +204,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
      }*/
   }
 
-  getSelected() {
+  private getSelected() {
     this.geoHandle && this.geoHandle.cancel();
     this.geoHandle = this.geolocationService.init();
 
