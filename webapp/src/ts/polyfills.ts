@@ -79,6 +79,7 @@ declare global {
     CHTCore: any;
     angular: any;
     EnketoForm:any;
+    Tour: any;
   }
   interface JQuery {
     daterangepicker(options?: any, callback?: Function) : any;

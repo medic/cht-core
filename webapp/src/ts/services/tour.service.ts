@@ -8,7 +8,6 @@ import {SessionService} from "./session.service";
 const _ = require('lodash/core');
 import { isMobile } from '@mm-providers/responsive.provider';
 import {Router} from "@angular/router";
-const Tour = require('bootstrap-tour');
 
 //(<any>$.fn).tooltip.Constructor.DEFAULTS.whiteList.button = ['data-role'];
 
@@ -554,7 +553,7 @@ export class TourService {
 
   private createTour(name) {
     const settings = this.getSettings(name);
-    const tour = new Tour(settings);
+    const tour = new window.Tour(settings);
     tour.init();
     tour.restart();
     this.current = {
