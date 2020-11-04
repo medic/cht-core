@@ -86,7 +86,7 @@ export class TourService {
   private mmOpenDropdown(elem) {
     if (!isMobile()) {
       setTimeout(function() {
-        $(elem).addClass('open');
+        (<any>document.querySelector(elem + ' multi-dropdown-filter a.mm-button')).click();
       }, 1);
     }
   }
@@ -226,35 +226,25 @@ export class TourService {
           onShow: () => this.mmShowReportList()
         },
         {
-          element: '#formTypeDropdown',
+          element: 'mm-form-type-filter',
           placement: 'right',
           mobilePlacement: 'bottom',
           title: 'tour.reports.types-filter.title',
           content: 'tour.reports.types-filter.description',
           onShow: () => this.mmShowReportList(),
-          onShown: () => {
-            this.mmOpenDropdown('#formTypeDropdown');
-          },
-          onHide: () => {
-            $('#formTypeDropdown').removeClass('open');
-          }
+          onShown: () => this.mmOpenDropdown('mm-form-type-filter')
         },
         {
-          element: '#facilityDropdown',
+          element: 'mm-facility-filter',
           placement: 'right',
           mobilePlacement: 'bottom',
           title: 'tour.reports.facilities-filter.title',
           content: 'tour.reports.facilities-filter.description',
           onShow: () => this.mmShowReportList(),
-          onShown: () => {
-            this.mmOpenDropdown('#facilityDropdown');
-          },
-          onHide: () => {
-            $('#facilityDropdown').removeClass('open');
-          }
+          onShown: () => this.mmOpenDropdown('mm-facility-filter')
         },
         {
-          element: '#dateRangeDropdown',
+          element: 'mm-date-filter',
           placement: 'left',
           mobilePlacement: 'bottom',
           title: 'tour.reports.date-filter.title',
@@ -270,18 +260,13 @@ export class TourService {
           }
         },
         {
-          element: '#statusDropdown',
+          element: 'mm-status-filter',
           placement: 'left',
           mobilePlacement: 'bottom',
           title: 'tour.reports.status-filter.title',
           content: 'tour.reports.status-filter.description',
           onShow: () => this.mmShowReportList(),
-          onShown: () => {
-            this.mmOpenDropdown('#statusDropdown');
-          },
-          onHide: () => {
-            $('#statusDropdown').removeClass('open');
-          }
+          onShown: () => this.mmOpenDropdown('mm-status-filter')
         },
         {
           element: '#freetext',
