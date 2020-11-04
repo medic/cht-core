@@ -5,6 +5,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -24,7 +25,7 @@ export class AndroidApiService {
     private router:Router,
     // todo simprints service
     private zone:NgZone,
-    // todo route snapshot service
+    private routeSnapshotService:RouteSnapshotService,
   ) {
   }
 
@@ -38,14 +39,6 @@ export class AndroidApiService {
     }
 
     return this.zone.run(() => this[property](...args));
-  }
-
-  private getRouteSnapshot() {
-    let route = this.router.routerState.root;
-    while (route.firstChild) {
-      route = route.firstChild;
-    }
-    return route.snapshot;
   }
 
   /**
@@ -161,7 +154,7 @@ export class AndroidApiService {
       return true;
     }
 
-    const routeSnapshot = this.getRouteSnapshot();
+    const routeSnapshot = this.routeSnapshotService.get();
     if (routeSnapshot?.data?.name === 'contacts.deceased') {
       this.router.navigate(['/contacts', routeSnapshot.params.id]);
       return true;
