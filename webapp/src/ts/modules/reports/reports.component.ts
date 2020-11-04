@@ -246,7 +246,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
         });
         const $link = $(e.target).closest('a');
         $link.addClass('mm-icon-disabled');
-        // todo
+        // todo in the PR that will migrate full functionality of the actionbar
+        // ideally, this should be a new redux action + reducer instead of jquery and timeout
         /*$timeout(function() {
          $link.removeClass('mm-icon-disabled');
          }, 2000);*/
