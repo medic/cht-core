@@ -1,10 +1,4 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
-
-define( function( require, exports, module ) {
+{
   'use strict';
   const Widget = require( 'enketo-core/src/js/Widget' );
   const $ = require( 'jquery' );
@@ -27,10 +21,9 @@ define( function( require, exports, module ) {
 
   Bikramsambatdatepicker.prototype._init = function() {
     const el = this.element;
-    const angularServices = angular.element( document.body ).injector();
-    const Language = angularServices.get( 'Language' );
 
-    Language()
+    window.CHTCore.Language
+      .get()
       .then( function( language ) {
         const $el = $( el );
 
@@ -85,7 +78,7 @@ define( function( require, exports, module ) {
     'name': pluginName,
     'selector': 'input[type=date]'
   };
-} );
+}
 
 const TEMPLATE =
   '<div class="input-group bikram-sambat-input-group">' +

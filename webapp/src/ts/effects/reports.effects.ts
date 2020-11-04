@@ -58,7 +58,7 @@ export class ReportsEffects {
         let refreshing = true;
 
         if (selectMode) {
-          const existing = selectedReports?.find(report => report._id === model.doc._id);
+          const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
             // todo update selected report in selectMode
             // this.reportActions.updateSelectedReport(model);
@@ -70,7 +70,7 @@ export class ReportsEffects {
           refreshing =
             selected.doc &&
             selectedReports?.length &&
-            selectedReports[0]._id === selected.doc._id;
+            selectedReports[0]._id === selected?.doc?._id;
           if (!refreshing) {
             this.reportActions.setVerifyingReport(false);
           }
@@ -78,7 +78,7 @@ export class ReportsEffects {
           model.expanded = true;
           this.reportActions.setSelectedReports([model]);
           this.reportActions.setTitle(model);
-          this.reportActions.markReportRead(model.doc._id);
+          this.reportActions.markReportRead(model?.doc?._id);
         }
 
         this.reportActions.setRightActionBar();
@@ -92,7 +92,7 @@ export class ReportsEffects {
       ofType(ReportActionList.setTitle),
       withLatestFrom(this.store.pipe(select(Selectors.getForms))),
       exhaustMap(([{ payload: { selected } }, forms]) => {
-        const formInternalId = selected?.doc?.formInternalId || selected?.doc?.form;
+        const formInternalId = selected.formInternalId || selected?.doc?.form;
         const form = forms?.find(form => form.code === formInternalId);
         const name = form?.name || form?.title || formInternalId;
         return of(this.globalActions.setTitle(name));
@@ -107,11 +107,16 @@ export class ReportsEffects {
         withLatestFrom(this.store.select(Selectors.getListReport, { id: action?.payload?.id })),
       )),
       exhaustMap(([action, report]) => {
-        const readReport = { ...report };
-        readReport.read = true;
+        // we could be reaching this effect before the list is loaded
+        // in these cases, we skip updating the list and just update the database
+        const readReport = report ? { ...report, read: true } : { _id: action.payload?.id, form: true };
         this.markReadService
-          .markAsRead([report])
+          .markAsRead([readReport])
           .catch(err => console.error('Error marking read', err));
+
+        if (!report) {
+          return of();
+        }
         return of(this.reportActions.updateReportsList([readReport]));
       }),
     );

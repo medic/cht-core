@@ -24,6 +24,7 @@ export class AndroidApiService {
     private router:Router,
     // todo simprints service
     private zone:NgZone,
+    // todo route snapshot service
   ) {
   }
 

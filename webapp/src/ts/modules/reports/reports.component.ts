@@ -13,6 +13,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
+import { ExportService } from '@mm-services/export.service';
 
 const PAGE_SIZE = 50;
 
@@ -42,8 +43,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   filtered;
   verifyingReport;
   showContent;
-
-  enketoEdited = false; //todo
+  enketoEdited;
 
   constructor(
     private store:Store,
@@ -53,6 +53,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private searchService:SearchService,
     private translateService:TranslateService,
     private addReadStatusService:AddReadStatusService,
+    private exportService:ExportService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -67,6 +68,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getFilters),
       this.store.select(Selectors.getShowContent),
+      this.store.select(Selectors.getEnketoEditedStatus),
     ).subscribe(([
       reportsList,
       selectedReports,
@@ -74,6 +76,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       forms,
       filters,
       showContent,
+      enketoEdited,
     ]) => {
       this.reportsList = reportsList;
       this.selectedReports = selectedReports;
@@ -81,6 +84,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.forms = forms;
       this.filters = filters;
       this.showContent = showContent;
+      this.enketoEdited = enketoEdited;
     });
     this.subscription.add(reduxSubscription);
 
@@ -90,7 +94,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         if (change.deleted) {
           this.reportsActions.removeReportFromList({ _id: change.id });
           this.hasReports = this.reportsList.length;
-          // setActionBarData(); todo
+          this.setActionBarData();
         } else {
           this.query({ silent: true, limit: this.reportsList.length });
         }
@@ -107,10 +111,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
     this.search();
+    this.setActionBarData();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    // when navigating back from another tab, if there are reports in the state, angular will try to render them
+    this.reportsActions.resetReportsList();
+    this.reportsActions.setSelectedReports([]);
   }
 
   private getReportHeading(form, report) {
@@ -181,6 +189,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         // scrolling todo
 
         this.initScroll();
+        this.setActionBarData();
       })
       .catch(err => {
         this.error = true;
@@ -225,6 +234,27 @@ export class ReportsComponent implements OnInit, OnDestroy {
     return report._id + report._rev + report.read;
   }
 
+  private setActionBarData() {
+    this.globalActions.setLeftActionBar({
+      hasResults: this.hasReports,
+      exportFn: (e) => {
+        const exportFilters = _.assignIn({}, this.filters);
+        ['forms', 'facilities'].forEach((type) => {
+          if (exportFilters[type]) {
+            delete exportFilters[type].options;
+          }
+        });
+        const $link = $(e.target).closest('a');
+        $link.addClass('mm-icon-disabled');
+        // todo
+        /*$timeout(function() {
+         $link.removeClass('mm-icon-disabled');
+         }, 2000);*/
+
+        this.exportService.export('reports', exportFilters, { humanReadable: true });
+      },
+    });
+  }
 }
 /*
 
@@ -442,27 +472,6 @@ angular
         $(this)
           .find('input[type="checkbox"]')
           .prop('checked', found);
-      });
-    };
-
-    const setActionBarData = function() {
-      ctrl.setLeftActionBar({
-        hasResults: ctrl.hasReports,
-        exportFn: function(e) {
-          const exportFilters = _.assignIn({}, ctrl.filters);
-          ['forms', 'facilities'].forEach(function(type) {
-            if (exportFilters[type]) {
-              delete exportFilters[type].options;
-            }
-          });
-          const $link = $(e.target).closest('a');
-          $link.addClass('mm-icon-disabled');
-          $timeout(function() {
-            $link.removeClass('mm-icon-disabled');
-          }, 2000);
-
-          Export('reports', exportFilters, { humanReadable: true });
-        },
       });
     };
 

@@ -88,13 +88,25 @@ const _globalReducer = createReducer(
     return { ...state, selectMode };
   }),
   on(Actions.setLeftActionBar, (state, { payload: { left } }) => {
-    return { ...state, actionBar: { ...state.actionBar, left } };
+    return {
+      ...state,
+      actionBar: { ...state.actionBar, left }
+    };
+  }),
+  on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
+    return {
+      ...state,
+      enketoStatus: { ...state.enketoStatus, ...enketoStatus },
+    };
   }),
   on(Actions.setPrivacyPolicyAccepted, (state, { payload: { accepted } }) => {
     return { ...state, privacyPolicyAccepted: accepted };
   }),
   on(Actions.setShowPrivacyPolicy, (state, { payload: { show } }) => {
     return { ...state, showPrivacyPolicy: show };
+  }),
+  on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
+    return { ...state, cancelCallback };
   }),
 );
 

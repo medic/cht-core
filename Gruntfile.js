@@ -674,7 +674,7 @@ module.exports = function(grunt) {
         ],
       },
       'webapp-js': {
-        files: ['webapp/src/ts/**/*', 'webapp/src/css/**/*', 'shared-libs/*/src/**/*', 'webapp/*.json'],
+        files: ['webapp/src/ts/**/*', 'webapp/src/js/**/*', 'webapp/src/css/**/*', 'shared-libs/*/src/**/*', 'webapp/*.json'],
         tasks: [
           //'browserify:webapp',
           'exec:build-webapp',

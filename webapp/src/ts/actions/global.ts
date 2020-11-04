@@ -23,7 +23,8 @@ export const Actions = {
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
-
+  setEnketoStatus: createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus'),
+  navigationCancel: createSingleValueAction('NAVIGATION_CANCEL', 'nextUrl'),
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
@@ -125,7 +126,7 @@ export class GlobalActions {
     this.clearSelected();
   }
 
-  setCancelCallbackAction(value) {
+  setCancelCallback(value) {
     return this.store.dispatch(Actions.setCancelCallback(value));
   }
 
@@ -159,6 +160,22 @@ export class GlobalActions {
 
   setShowPrivacyPolicy(show) {
     return this.store.dispatch(Actions.setShowPrivacyPolicy(show));
+  }
+
+  setEnketoError(error) {
+    return this.store.dispatch(Actions.setEnketoStatus({ error }));
+  }
+
+  setEnketoEditedStatus(edited) {
+    return this.store.dispatch(Actions.setEnketoStatus({ edited }));
+  }
+
+  setEnketoSavingStatus(saving) {
+    return this.store.dispatch(Actions.setEnketoStatus({ saving }));
+  }
+
+  navigationCancel(nextUrl) {
+    return this.store.dispatch(Actions.navigationCancel(nextUrl));
   }
 }
 
@@ -194,31 +211,10 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED, 'verified', value));
       }
 
-      function createSetEnketoStatusAction(value) {
-        return ActionUtils.createSingleValueAction(actionTypes.SET_ENKETO_STATUS, 'enketoStatus', value);
-      }
-
-      function setEnketoError(error) {
-        dispatch(createSetEnketoStatusAction({ error }));
-      }
-
-      function setEnketoEditedStatus(edited) {
-        dispatch(createSetEnketoStatusAction({ edited }));
-      }
-
-      function setEnketoSavingStatus(saving) {
-        dispatch(createSetEnketoStatusAction({ saving }));
-      }
-
       function setLoadingSubActionBar(loading) {
         dispatch(ActionUtils.createSingleValueAction(
           actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
         ));
-      }
-
-
-      function setTitle(title) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_TITLE, 'title', title));
       }
 
       function setUnreadCount(unreadCount) {
@@ -227,30 +223,6 @@ angular.module('inboxServices').factory('GlobalActions',
 
       function updateUnreadCount(unreadCount) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
-      }
-
-
-      function setLoadingShowContent(id) {
-        setLoadingContent(id);
-        setShowContent(true);
-      }
-
-
-
-      /!**
-       * Unset the selected item
-       *!/
-      function unsetSelected() {
-        setShowContent(false);
-        setLoadingContent(false);
-        setShowActionBar(false);
-        setTitle();
-        dispatch({ type: actionTypes.CLEAR_SELECTED });
-        LiveList['contacts'].clearSelected();
-        LiveList['contact-search'].clearSelected();
-        LiveList['reports'].clearSelected();
-        LiveList['report-search'].clearSelected();
-        $('#reports-list input[type="checkbox"]').prop('checked', false);
       }
 
       // User wants to cancel current flow, or pressed back button, etc.
@@ -333,9 +305,6 @@ angular.module('inboxServices').factory('GlobalActions',
         navigationCancel,
         openGuidedSetup,
         openTourSelect,
-        setEnketoError,
-        setEnketoEditedStatus,
-        setEnketoSavingStatus,
         setLoadingSubActionBar,
         setRightActionBar,
         setRightActionBarVerified,

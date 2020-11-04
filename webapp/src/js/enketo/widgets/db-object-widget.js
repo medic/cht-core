@@ -1,10 +1,4 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
-
-define( function( require, exports, module ) {
+{
   'use strict';
   const _ = require('lodash/core');
   const Widget = require('enketo-core/src/js/Widget');
@@ -40,16 +34,12 @@ define( function( require, exports, module ) {
     construct( this.element );
   };
 
-  function service(serviceName) {
-    return angular.element(document.body).injector().get(serviceName);
-  }
-
   function construct( element ) {
     // timeout needed to let setting the value complete before rendering
     setTimeout(function() {
       const $question = $( element );
 
-      const Select2Search = service('Select2Search');
+      const Select2Search = window.CHTCore.Select2Search;
 
       let $textInput = $question.find('input');
 
@@ -68,7 +58,7 @@ define( function( require, exports, module ) {
         $textInput.on('change.dbobjectwidget', changeHandler);
       }
       const allowNew = $question.hasClass('or-appearance-allow-new');
-      Select2Search($textInput, contactTypes, { allowNew }).then(function() {
+      Select2Search.init($textInput, contactTypes, { allowNew }).then(function() {
         // select2 doesn't understand readonly
         $textInput.prop('disabled', disabled);
       });
@@ -104,7 +94,7 @@ define( function( require, exports, module ) {
   };
 
   const updateFields = function(data, keyRoot, index, originatingKeyPath) {
-    const Enketo = service('Enketo');
+    const Enketo = window.CHTCore.Enketo;
 
     Object.keys(data).forEach(function(key) {
       const path = keyRoot + '/' + key;
@@ -187,4 +177,4 @@ define( function( require, exports, module ) {
     'name': pluginName,
     'selector': '.or-appearance-db-object,.or-appearance-select-contact',
   };
-} );
+}
