@@ -212,8 +212,7 @@ export class EnketoService {
     if(next.length) {
       next.trigger('click');
     } else {
-      //todo
-      //angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
+      enketoContainer.find('.btn.submit').trigger('click');
     }
   }
 
