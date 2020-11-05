@@ -109,7 +109,7 @@
             <li *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
               <h3>{{group.name}}</h3>
               <p>
-                <span ng-hide="group.loading">
+                <span *ngIf="!group.loading">
                   <!--TODO migrate these functions-->
                   <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
                   <a class="btn btn-link" ng-click="mute(selection, group)" ng-show="canMute(group)" translate>Mute</a>
