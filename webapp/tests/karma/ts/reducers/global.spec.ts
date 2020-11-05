@@ -131,4 +131,27 @@ describe('Global Reducer', () => {
     expect(globalReducer(state, Actions.setLeftActionBar(left))).to.deep.equal({ actionBar: { left } });
     expect(globalReducer(state, Actions.setLeftActionBar(null))).to.deep.equal({ actionBar: { left: null } });
   });
+
+  it('should set correct enketo status', () => {
+    state = globalReducer(state, Actions.setEnketoStatus({ edited: true }));
+    expect(state).to.deep.equal({ enketoStatus: { edited: true } });
+
+    state = globalReducer(state, Actions.setEnketoStatus({ saving: true }));
+    expect(state).to.deep.equal({ enketoStatus: { edited: true, saving: true }});
+
+    state = globalReducer(state, Actions.setEnketoStatus({ saving: false, edited: false }));
+    expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false }});
+  });
+
+  it('should set cancel callback', () => {
+    const callback = () => 'anything';
+    state = globalReducer(state, Actions.setCancelCallback(callback));
+    expect(state).to.deep.equal({ cancelCallback: callback });
+    expect(state.cancelCallback()).to.equal('anything');
+
+    const otherCallback = () => 'otherthing';
+    state = globalReducer(state, Actions.setCancelCallback(otherCallback));
+    expect(state).to.deep.equal({ cancelCallback: otherCallback });
+    expect(state.cancelCallback()).to.equal('otherthing');
+  });
 });
