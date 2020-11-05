@@ -22,7 +22,8 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { ActionbarComponent } from './actionbar/actionbar.component';
+import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
+import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     ReportImageComponent,
     NavigationComponent,
     ActionbarComponent,
+    AnalyticsTargetsProgressComponent,
   ],
   imports: [
     CommonModule,
@@ -68,6 +70,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     ReportImageComponent,
     NavigationComponent,
     ActionbarComponent,
+    AnalyticsTargetsProgressComponent,
   ]
 })
 export class ComponentsModule { }

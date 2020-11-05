@@ -9,7 +9,8 @@
   },
   "browser": {
     "fs": false,
-    "path": false
+    "path": false,
+    "os": false
   },
   "engines": {
     "node": ">=8.11.0",

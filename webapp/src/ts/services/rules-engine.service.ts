@@ -4,7 +4,7 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import * as CalendarInterval from '@medic/calendar-interval';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import { debounce as _debounce } from 'lodash-es';
+import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
@@ -18,9 +18,6 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
-
-const MAX_LINEAGE_DEPTH = 50;
-const ENSURE_FRESHNESS_SECS = 120;
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +35,8 @@ export class RulesEngineCoreFactoryService {
 })
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
+  MAX_LINEAGE_DEPTH = 50;
+  ENSURE_FRESHNESS_SECS = 120;
   subscriptions: Subscription = new Subscription();
   initialized;
   uhcMonthStartDate;
@@ -71,7 +70,7 @@ export class RulesEngineService implements OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  private initialize() {
+  initialize() {
     return Promise
       .all([
         this.authService.has('can_view_tasks'),
@@ -102,12 +101,12 @@ export class RulesEngineService implements OnDestroy {
                   this.assignMonthStartDate(settingsDoc);
                   this.monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
 
-                  this.ensureTaskFreshness = _debounce(this.fetchTaskDocsForAllContacts, ENSURE_FRESHNESS_SECS * 1000);
+                  this.ensureTaskFreshness = _debounce(this.fetchTaskDocsForAllContacts, this.ENSURE_FRESHNESS_SECS * 1000);
                   this.isTaskDebounceActive = true;
                   this.ensureTaskFreshness();
                   this.ensureTaskFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true);
 
-                  this.ensureTargetFreshness = _debounce(this.fetchTargets, ENSURE_FRESHNESS_SECS * 1000);
+                  this.ensureTargetFreshness = _debounce(this.fetchTargets, this.ENSURE_FRESHNESS_SECS * 1000);
                   this.isTargetDebounceActive = true;
                   this.ensureTargetFreshness();
                   this.ensureTargetFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true);
@@ -195,7 +194,7 @@ export class RulesEngineService implements OnDestroy {
     this.subscriptions.add(dirtyContactsSubscription);
 
     const userLineage = [];
-    for (let current = userContactDoc; !!current && userLineage.length < MAX_LINEAGE_DEPTH; current = current.parent) {
+    for (let current = userContactDoc; !!current && userLineage.length < this.MAX_LINEAGE_DEPTH; current = current.parent) {
       userLineage.push(current._id);
     }
 
@@ -234,6 +233,18 @@ export class RulesEngineService implements OnDestroy {
     return this.translateFromService.get(property, task);
   }
 
+  private updateEmissionExternalChanges(changedDocs) {
+    const contactsWithUpdatedTasks = changedDocs
+      .filter(doc => doc.type === 'task')
+      .map(doc => doc.requester);
+
+    if (!contactsWithUpdatedTasks.length) {
+      return;
+    }
+
+    return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
+  }
+
   private translateTaskDocs(taskDocs = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
@@ -270,7 +281,7 @@ export class RulesEngineService implements OnDestroy {
           .on('running', telemetryData.start);
       })
       .then(telemetryData.passThrough)
-      .then(this.translateTaskDocs);
+      .then(this.translateTaskDocs.bind(this));
   }
 
   fetchTaskDocsFor(contactIds) {
@@ -286,7 +297,7 @@ export class RulesEngineService implements OnDestroy {
         .on('running', telemetryData.start);
     })
     .then(telemetryData.passThrough)
-    .then(this.translateTaskDocs);
+    .then(this.translateTaskDocs.bind(this));
   }
 
   fetchTargets() {
@@ -307,12 +318,12 @@ export class RulesEngineService implements OnDestroy {
     .then(telemetryData.passThrough);
   }
 
-  monitorExternalChanges(replicationResult) {
+  monitorExternalChanges(replicationResult?) {
     return this.initialized
       .then(() => {
         return replicationResult
           && replicationResult.docs
-          && this.monitorExternalChanges(replicationResult.docs);
+          && this.updateEmissionExternalChanges(replicationResult.docs);
       });
   }
 }

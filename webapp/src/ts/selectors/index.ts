@@ -4,6 +4,7 @@ const getGlobalState = (state) => state.global || {};
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
+const getAnalyticsState = (state) => state.analytics || {};
 
 export const Selectors = {
   // global
@@ -53,6 +54,9 @@ export const Selectors = {
   getMessagesError: createSelector(getMessagesState, (messagesState) => messagesState.error),
   getSelectedConversation: createSelector(getMessagesState, (messagesState) => messagesState.selected),
   getConversations: createSelector(getMessagesState, (messagesState) => messagesState.conversations),
+
+  // analytics
+  getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 };
 /*
 

@@ -21,7 +21,11 @@ export class AnalyticsTargetsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.rulesEngineService
+    this.getTargets();
+  }
+
+  getTargets() {
+    return this.rulesEngineService
       .isEnabled()
       .then(isEnabled => {
         this.targetsDisabled = !isEnabled;
@@ -34,7 +38,6 @@ export class AnalyticsTargetsComponent implements OnInit {
       .then((targets = []) => {
         this.loading = false;
         this.targets = targets.filter(target => target.visible !== false);
-
         this.telemetryData.end = Date.now();
         this.telemetryService.record(`analytics:targets:load`, this.telemetryData.end - this.telemetryData.start);
       });
