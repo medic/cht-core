@@ -20,6 +20,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ComponentsModule } from '@mm-components/components.module';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { TourService } from '@mm-services/tour.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -42,6 +43,9 @@ describe('Reports Component', () => {
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getEnketoSavingStatus, value: false },
     ];
+    const tourServiceMock = {
+      start: (name) => {}
+    };
 
     searchService = { search: sinon.stub().resolves([]) };
     changesService = { subscribe: sinon.stub().resolves(of({})) };
@@ -71,6 +75,7 @@ describe('Reports Component', () => {
           { provide: SettingsService, useValue: {} },
           // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
+          { provide: TourService, useValue: tourServiceMock },
         ]
       })
       .compileComponents()
