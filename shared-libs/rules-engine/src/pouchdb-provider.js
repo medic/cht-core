@@ -11,12 +11,13 @@ const registrationUtils = require('@medic/registration-utils');
 const uniqBy = require('lodash/uniqBy');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
-const docsOf = query => {
+const docsOf = (query) => {
   return query.then(result => {
     const rows = uniqBy(result.rows, 'id');
     return rows.map(row => row.doc).filter(existing => existing);
   });
 };
+
 
 const medicPouchProvider = db => {
   const self = {
