@@ -1,7 +1,8 @@
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
-import {Injectable} from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { Injectable } from '@angular/core';
+import { from, Observable, of } from 'rxjs';
+
 import { AuthService } from '../services/auth.service';
-import { from } from 'rxjs';
 
 @Injectable()
 export class RouteGuardProvider implements CanActivate {
@@ -10,9 +11,9 @@ export class RouteGuardProvider implements CanActivate {
     private router:Router,
   ) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+  canActivate(route: ActivatedRouteSnapshot):Observable<boolean> {
     if (!route.data || !route.data.permissions) {
-      return true;
+      return of(true);
     }
 
     return from(

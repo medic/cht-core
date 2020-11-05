@@ -1,5 +1,6 @@
 <div class="app-root {{currentTab}}" [class.show-content]="showContent" [class.bootstrapped]="privacyPolicyAccepted" [class.select-mode]="selectMode" [class.hide-mobile-tab-labels]="minimalTabs">
-  <!--<mm-privacy-policy ng-if="inboxCtrl.showPrivacyPolicy && !inboxCtrl.privacyPolicyAccepted"></mm-privacy-policy>-->
+
+  <mm-privacy-policy [overlay]="true" *ngIf="showPrivacyPolicy && !privacyPolicyAccepted"></mm-privacy-policy>
 
   <mm-actionbar [nonContactForms]="nonContactForms"></mm-actionbar>
 

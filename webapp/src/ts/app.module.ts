@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { ErrorHandler, NgModule } from '@angular/core';
-import { APP_BASE_HREF } from '@angular/common';
+import { APP_BASE_HREF, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
@@ -31,10 +31,8 @@ import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
 import { GlobalEffects } from '@mm-effects/global';
 import { ReportsEffects } from '@mm-effects/reports.effects';
-import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
-import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { ParseProvider } from '@mm-providers/parse.provider';
-
+import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { reducers } from "./reducers";
 
 const logger = reducer => {
@@ -88,10 +86,16 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BsModalRef,
     RouteGuardProvider,
     CookieService,
-    ResourceIconPipe,
-    FormIconNamePipe,
     ParseProvider,
+    DatePipe,
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+  integration;
+  constructor(
+    private integrationApiService:IntegrationApiService,
+  ) {
+    this.integration = integrationApiService;
+  }
+}

@@ -10,7 +10,6 @@ import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.co
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
-
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 
 describe('UpdatePasswordComponent', () => {

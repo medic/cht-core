@@ -24,6 +24,8 @@ export const Selectors = {
   getIsAdmin: createSelector(getGlobalState, (globalState) => globalState.isAdmin),
   getCancelCallback: createSelector(getGlobalState, (globalState) => globalState.cancelCallback),
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
+  getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
+  getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
 
   // services
   getLastChangedDoc: createSelector(getServicesState, (servicesState) => servicesState.lastChangedDoc),
@@ -71,8 +73,6 @@ const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
 
 const getUnreadCount = state => getGlobalState(state).unreadCount;
-const getPrivacyPolicyAccepted = state => getGlobalState(state).privacyPolicyAccepted;
-const getShowPrivacyPolicy = state => getGlobalState(state).showPrivacyPolicy;
 
 // Analytics
 const getAnalyticsState = state => state.analytics;
@@ -132,8 +132,6 @@ angular.module('inboxServices').constant('Selectors', {
   getLoadingSubActionBar,
   getShowActionBar,
   getUnreadCount,
-  getPrivacyPolicyAccepted,
-  getShowPrivacyPolicy,
 
   getAnalyticsState,
   getSelectedAnalytics,

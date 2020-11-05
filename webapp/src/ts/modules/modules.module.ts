@@ -20,6 +20,7 @@ import { ContactsComponent } from './contacts/contacts.component';
 import { ContactsContentComponent } from './contacts/contacts-content.component';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { MessagesContentComponent } from './messages/messages-content.component'
     ContactsContentComponent,
     ContactsFiltersComponent,
     MessagesContentComponent,
+    PrivacyPolicyComponent,
   ],
   imports: [
     CommonModule,
@@ -55,6 +57,7 @@ import { MessagesContentComponent } from './messages/messages-content.component'
     MessagesComponent,
     ContactsComponent,
     ContactsContentComponent,
+    PrivacyPolicyComponent,
   ]
 })
 export class ModulesModule { }
