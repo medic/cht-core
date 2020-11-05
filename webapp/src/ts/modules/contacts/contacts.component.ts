@@ -340,8 +340,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
       .then((updatedContacts) => {
-        updatedContacts = this.formatContacts(updatedContacts);
-
         const orderBy = (c1, c2) => {
           if (!c1 || !c2) {
             return;
@@ -410,7 +408,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
             }
           }
         }
-        
+
+        updatedContacts = this.formatContacts(updatedContacts);
         this.contactsActions.updateContactsList({ updatedContacts, orderBy });
 
         this.moreItems = updatedContacts.length >= options.limit;
