@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import { find as _find } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 
+import { TourService } from '@mm-services/tour.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { GlobalActions } from '@mm-actions/global';
@@ -23,7 +24,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     private analyticsModulesService: AnalyticsModulesService,
     private route: ActivatedRoute,
     private router: Router,
-    //private tour:Tour Todo: integrate once tour feature is complete
+    private tourService: TourService,
   ) {
     this.analyticsActions = new AnalyticsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -35,12 +36,10 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     this.globalActions.unsetSelected();
     this.getAnalyticsModules();
 
-    /*
-    Todo: integrate once tour feature is complete
-    if ($stateParams.tour) {
-      Tour.start($stateParams.tour);
-    }
-    */
+    // TODO uncomment once this component is working-
+    /*if (this.route.snapshot.queryParams.tour) {
+      this.tourService.start(this.route.snapshot.queryParams.tour);
+    }*/
   }
 
   ngOnDestroy(): void {
