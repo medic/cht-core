@@ -1,10 +1,22 @@
-<span *ngIf="lastVisitedDateExtras" class="dropdown mm-dropdown sort-dropdown no-reset">
+<span *ngIf="lastVisitedDateExtras" class="dropdown mm-dropdown sort-dropdown no-reset" dropdown>
   <span class="sort-results" data-toggle="dropdown">
-    <a tabindex="-1" translate-attr-title="contacts.results.sort">
+    <a
+      id="sort-results"
+      translate-attr-title="contacts.results.sort"
+      dropdownToggle
+      (click)="false"
+      aria-controls="sort-results-dropdown"
+    >
       <i class="fa fa-sort-amount-desc"></i>
     </a>
   </span>
-  <span role="menu" aria-labelledby="sort-results" class="dropdown-menu mm-dropdown-menu">
+  <span
+    id="sort-results-dropdown"
+    role="menu"
+    *dropdownMenu
+    aria-labelledby="sort-results"
+    class="dropdown-menu mm-dropdown-menu"
+  >
     <ul>
       <li role="presentation" class="dropdown-header" translate>contacts.results.sort.title</li>
       <li role="presentation">
