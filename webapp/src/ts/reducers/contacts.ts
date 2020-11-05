@@ -15,9 +15,9 @@ const initialState = {
 const updateContacts = (state, newContacts) => {
   const contacts = [...state.contacts];
   const contactsById = new Map(state.contactsById);
-  const list = new UniqueSortedList(contacts, contactsById, 'name');
+  const list = new UniqueSortedList(contacts, contactsById, newContacts.orderBy);
 
-  newContacts.forEach(contact => {
+  newContacts.updatedContacts.forEach(contact => {
     list.remove(contact);
     list.add(contact);
   });

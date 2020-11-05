@@ -18,8 +18,22 @@ export class UniqueSortedList {
       return;
     }
 
-    // todo this.sortBy be a function
-    const idx = _sortedIndexBy(this.list, item, item => -item[this.sortBy]);
+    let idx;
+    if (typeof(this.sortBy) === 'function') {
+      // start at the end of the list?
+      let insertIndex = this.list.length;
+
+      // search to find where to insert this item
+      // TODO binary search more efficient here?  Maybe best to check first if
+      // item can go at end of list, and if not _then_ do binary search
+      while (insertIndex && this.sortBy(item, this.list[insertIndex - 1]) < 0) {
+        --insertIndex;
+      }
+
+      idx = insertIndex;
+    } else {
+      idx = _sortedIndexBy(this.list, item, item => -item[this.sortBy]);
+    }
     this.list.splice(idx, 0, item);
     this.listById.set(item[this.identityProperty], item);
   }
