@@ -8,7 +8,7 @@ const initialState = {
   selected: [],
   filters: {},
   loadingSelectedChildren: false,
-  loadingSelectedReports: false,
+  loadingSelectedcontacts: false,
   loadingSummary: false,
 };
 
@@ -38,7 +38,7 @@ const removeContact = (state, contact) => {
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
-  on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
+  on(Actions.setSelectedContacts, (state, { payload: { selected } }) => ({ ...state, selected })),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
   on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),
 );

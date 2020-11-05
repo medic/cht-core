@@ -3,7 +3,7 @@ import { createSingleValueAction } from './actionUtils';
 
 export const Actions = {
   updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts'),
-  setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
+  setSelectedContacts: createSingleValueAction('SET_SELECTED_CONTACTS', 'selected'),
   resetContactsList: createAction('RESET_CONTACTS_LIST'),
   removeContactFromList: createSingleValueAction('REMOVE_CONTACT_FROM_LIST', 'contact'),
 };
@@ -18,7 +18,7 @@ export class ContactsActions {
   }
 
   clearSelection() {
-    return this.store.dispatch(Actions.setSelectedReports([]));
+    return this.store.dispatch(Actions.setSelectedContacts([]));
   }
 
   resetContactsList() {
