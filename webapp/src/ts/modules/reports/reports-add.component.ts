@@ -172,7 +172,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
                 this.telemetryData.postRender = Date.now();
                 this.telemetryData.action = model.doc ? 'edit' : 'add';
                 this.telemetryData.form = model.formInternalId;
-                // todo telemetry
+                // todo migrate this when Telemetry is migrated
                 /*
                  Telemetry.record(
                  `enketo:reports:${telemetryData.form}:${telemetryData.action}:render`,
@@ -196,12 +196,14 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.geoHandle && this.geoHandle.cancel();
-    // todo evaluate if checking for current route snapshot is still necessary.
-    // is there a case where this component is destroyed but we want to keep the enketo form in memory?
+    // old code checked whether the component is reused before unloading the form
+    // this is because AngularJS created the new "controller" before destroying the old one
+    // in Angular, unless specific RouteReuseStrategies are employed, components are always
+    // destroyed before new ones are created
+    // see https://github.com/angular/angular/blob/10.2.x/packages/router/src/operators/activate_routes.ts#L37
+    // for Angular behavior
+    // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.enketoService.unload(this.form);
-    /*if (!$state.includes('reports.add') && !$state.includes('reports.edit')) {
-     Enketo.unload(ctrl.form);
-     }*/
   }
 
   private getSelected() {
@@ -245,7 +247,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
     }
 
     this.telemetryData.preSave = Date.now();
-    // todo
+    // todo migrate this when Telemetry is migrated
     /*
      Telemetry.record(
      `enketo:reports:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
@@ -269,6 +271,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
       })
       .then(() => {
         this.telemetryData.postSave = Date.now();
+        // todo migrate this when Telemetry is migrated
         /*
          Telemetry.record(
          `enketo:reports:${telemetryData.form}:${telemetryData.action}:save`,
