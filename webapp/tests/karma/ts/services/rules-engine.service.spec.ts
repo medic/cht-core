@@ -1,8 +1,7 @@
-/*import { TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import * as RulesEngineCore from '@medic/rules-engine';
 
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -15,10 +14,11 @@ import { ParseProvider } from '@mm-providers/parse.provider';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
+import { PipesService } from '@mm-services/pipes.service';
 
 describe('RulesEngineService', () => {
-  let service;
+  let service: RulesEngineService;
   let authService;
   let sessionService;
   let settingsService;
@@ -26,11 +26,11 @@ describe('RulesEngineService', () => {
   let uhcSettingsService;
   let userContactService;
   let userSettingsService;
-  let parseProvider;
   let changesService;
   let contactTypesService;
   let translateFromService;
   let rulesEngineCoreStubs;
+  let pipesService;
 
   let fetchTasksFor;
   let fetchTasksForRecursive;
@@ -86,16 +86,20 @@ describe('RulesEngineService', () => {
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
     changesService = { subscribe: sinon.stub() };
-    sessionService = { isOnlineOnly: sinon.stub().returns(false) };
+    sessionService = { isOnlineOnly: sinon.stub().returns(false), userCtx: () => ({ name: 'fred' }) };
     settingsService = { get: sinon.stub().resolves(settingsDoc) };
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };
     userContactService = { get: sinon.stub().resolves(userContactDoc) };
     userSettingsService = { get: sinon.stub().resolves(userSettingsDoc) };
     uhcSettingsService = { getMonthStartDate: sinon.stub().returns(1) };
     telemetryService = { record: sinon.stub() };
+    pipesService = {
+      pipesMap: new Map(),
+      getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
+    };
 
     fetchTasksResult = Promise.resolve;
-    fetchTasksFor = sinon.stub(RulesEngineCore, 'fetchTasksFor');
+    fetchTasksFor = sinon.stub();
     fetchTasksForRecursive = sinon.stub();
     fetchTasksFor.events = {};
     fetchTasksForRecursive.callsFake((event, fn) => {
@@ -108,7 +112,7 @@ describe('RulesEngineService', () => {
     fetchTasksFor.returns({ on: fetchTasksForRecursive });
 
     fetchTargetsResult = Promise.resolve;
-    fetchTargets = sinon.stub(RulesEngineCore, 'fetchTargets');
+    fetchTargets = sinon.stub();
     fetchTargets.events = {};
     fetchTargetsRecursive = sinon.stub();
     fetchTargetsRecursive.callsFake((event, fn) => {
@@ -121,20 +125,23 @@ describe('RulesEngineService', () => {
     fetchTargets.returns({ on: fetchTargetsRecursive });
 
     rulesEngineCoreStubs = {
-      initialize: sinon.stub(RulesEngineCore, 'initialize').resolves(true),
-      isEnabled: sinon.stub(RulesEngineCore, 'isEnabled').returns(true),
+      initialize: sinon.stub().resolves(true),
+      isEnabled: sinon.stub().returns(true),
       fetchTasksFor: fetchTasksFor,
       fetchTargets: fetchTargets,
-      updateEmissionsFor: sinon.stub(RulesEngineCore, 'updateEmissionsFor').resolves(),
-      rulesConfigChange: sinon.stub(RulesEngineCore, 'updateEmissionsFor').returns(true),
-      getDirtyContacts: sinon.stub(RulesEngineCore, 'updateEmissionsFor').returns([]),
+      updateEmissionsFor: sinon.stub().resolves(true),
+      rulesConfigChange: sinon.stub().returns(true),
+      getDirtyContacts: sinon.stub().returns([]),
     };
+    const rulesEngineCoreFactory= { get: () => rulesEngineCoreStubs };
 
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
       ],
       providers: [
+        ParseProvider,
+        ContactTypesService,
         { provide: AuthService, useValue: authService },
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
@@ -142,14 +149,13 @@ describe('RulesEngineService', () => {
         { provide: UHCSettingsService, useValue: uhcSettingsService },
         { provide: UserContactService, useValue: userContactService },
         { provide: UserSettingsService, useValue: userSettingsService },
-        { provide: ParseProvider, useValue: parseProvider },
         { provide: ChangesService, useValue: changesService },
-        { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: TranslateFromService, useValue: translateFromService }
+        { provide: TranslateFromService, useValue: translateFromService },
+        { provide: RulesEngineCoreFactoryService, useValue: rulesEngineCoreFactory },
+        { provide: PipesService, useValue: pipesService }
       ]
     });
 
-    service = TestBed.inject(RulesEngineService);
     authService = TestBed.inject(AuthService);
     sessionService = TestBed.inject(SessionService);
     settingsService = TestBed.inject(SettingsService);
@@ -157,7 +163,6 @@ describe('RulesEngineService', () => {
     uhcSettingsService = TestBed.inject(UHCSettingsService);
     userContactService = TestBed.inject(UserContactService);
     userSettingsService = TestBed.inject(UserSettingsService);
-    parseProvider = TestBed.inject(ParseProvider);
     changesService = TestBed.inject(ChangesService);
     contactTypesService = TestBed.inject(ContactTypesService);
     translateFromService = TestBed.inject(TranslateFromService);
@@ -178,17 +183,17 @@ describe('RulesEngineService', () => {
     };
 
     it('should disable when user has no permissions', async () => {
-      authService.has.resolves(true);
+      service = TestBed.inject(RulesEngineService);
 
       expectAsyncToThrow(service.isEnabled, 'permission');
-
       expect(telemetryService.record.callCount).to.equal(0);
     });
 
-    it('tasks disabled', async () => {
+    it('should initialize enableTasks as disabled', async () => {
       authService.has.withArgs('can_view_tasks').resolves(false);
+      service = TestBed.inject(RulesEngineService);
 
-      const result = service.isEnabled();
+      const result = await service.isEnabled();
 
       expect(result).to.be.true;
       expect(rulesEngineCoreStubs.initialize.callCount).to.equal(1);
@@ -202,28 +207,39 @@ describe('RulesEngineService', () => {
       expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
     });
 
-    it('targets disabled', async () => {
-      hasAuth.withArgs('can_view_analytics').resolves(false);
-      expect(await getService().isEnabled()).to.be.true;
-      expect(RulesEngineCore.initialize.callCount).to.eq(1);
-      expect(RulesEngineCore.initialize.args[0][0]).to.nested.include({ enableTasks: true, enableTargets: false });
+    it('should initialize enableTargets as disabled', async () => {
+      authService.has.withArgs('can_view_analytics').resolves(false);
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expect(result).to.be.true;
+      expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
+      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.nested.include({ enableTasks: true, enableTargets: false });
     });
 
-    it('disabled for online users', async () => {
-      Session.isOnlineOnly.returns(true);
-      expectAsyncToThrow(getService().isEnabled, 'permission');
+    it('should be disabled for online users', async () => {
+      sessionService.isOnlineOnly.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expectAsyncToThrow(result, 'permission');
     });
 
-    it('disabled if initialize throws', async () => {
-      RulesEngineCore.initialize.rejects('error');
-      expectAsyncToThrow(getService().isEnabled, 'error');
+    it('should be disabled if initialize throws', async () => {
+      rulesEngineCoreStubs.initialize.rejects('error');
+      service = TestBed.inject(RulesEngineService);
+
+      expectAsyncToThrow(service.isEnabled(),  'error');
     });
 
-    it('targets are filtered by context', async () => {
+    it('should filter targets by context', async () => {
       const allContexts = { id: 'all' };
       const emptyContext = { id: 'empty', context: '' };
       const matchingContext = { id: 'match', context: 'user.parent._id === "parent"' };
       const noMatchingContext = { id: 'no-match', context: '!!user.dne' };
+      const expectedParams = [allContexts.id, emptyContext.id, matchingContext.id];
       const settingsDoc = {
         _id: 'settings',
         tasks: {
@@ -232,20 +248,372 @@ describe('RulesEngineService', () => {
           }
         }
       };
+      settingsService.get.resolves(settingsDoc);
+      service = TestBed.inject(RulesEngineService);
 
-      Settings.resolves(settingsDoc);
-      expect(await getService().isEnabled()).to.be.true;
+      const result = await service.isEnabled();
 
-      const { targets } = RulesEngineCore.initialize.args[0][0];
-      expect(targets.map(target => target.id)).to.deep.eq([allContexts.id, emptyContext.id, matchingContext.id]);
+      expect(result).to.be.true;
+      const targetsResult = rulesEngineCoreStubs.initialize.args[0][0].targets;
+      expect(targetsResult.map(t => t.id)).to.deep.eq(expectedParams);
     });
 
-    it('parameters to shared-lib', async () => {
-      expect(await getService().isEnabled()).to.be.true;
-      expect(RulesEngineCore.initialize.callCount).to.eq(1);
-      expect(RulesEngineCore.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
+    it('should send parameters to shared-lib', async () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expect(result).to.be.true;
+      expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
+      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
+    });
+  });
+
+  describe('changes feeds', () => {
+    const changeFeedFormat = doc => ({ id: doc._id, doc });
+    const scenarios = [
+      {
+        doc: { _id: 'person', type: 'person' },
+        expected: 'person',
+      },
+      {
+        doc: { _id: 'contact', type: 'contact', contact_type: 'person' },
+        expected: 'contact',
+      },
+      {
+        doc: { _id: 'report', type: 'data_record', form: 'form', patient_id: 'patient' },
+        expected: 'patient',
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      it(`should trigger update for ${scenario.doc._id}`, async () => {
+        service = TestBed.inject(RulesEngineService);
+
+        const result = await service.isEnabled();
+
+        expect(result).to.be.true;
+        const change = changesService.subscribe.args[0][0];
+        expect(change.filter(changeFeedFormat(scenario.doc))).to.be.true;
+        await change.callback(changeFeedFormat(scenario.doc));
+        expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.eq(1);
+        expect(rulesEngineCoreStubs.updateEmissionsFor.args[0][0]).to.deep.eq(scenario.expected);
+        expect(telemetryService.record.callCount).to.equal(2);
+        expect(telemetryService.record.args[1][0]).to.equal('rules-engine:update-emissions');
+      });
+    }
+
+    it(`should not trigger`, async () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expect(result).to.be.true;
+      const changeFeed = changesService.subscribe.args[0][0];
+      expect(changeFeed.filter({ id: 'id' })).to.be.false;
+      expect(changeFeed.filter({ id: 'id', doc: { _id: 'task', type: 'task', requester: 'requester' } })).to.be.false;
+      expect(changeFeed.filter(changeFeedFormat({ _id: 'doc' }))).to.be.false;
+      expect(changeFeed.filter(changeFeedFormat({ _id: 'a', type: 'data_record', form: undefined }))).to.be.false;
     });
 
+    const cachebustScenarios = [
+      { _id: 'settings', settings: settingsDoc },
+      userContactDoc,
+      userContactGrandparent,
+    ];
+
+    for (const scenarioDoc of cachebustScenarios) {
+      it(`bust cache for settings ${scenarioDoc._id}`, async () => {
+        service = TestBed.inject(RulesEngineService);
+
+        const result = await service.isEnabled();
+
+        expect(result).to.be.true;
+        const change = changeFeedFormat(scenarioDoc);
+        const changeFeed = changesService.subscribe.args[1][0];
+        expect(changeFeed.filter(change)).to.be.true;
+        await changeFeed.callback(change);
+        expect(rulesEngineCoreStubs.rulesConfigChange.callCount).to.eq(1);
+        expect(rulesEngineCoreStubs.rulesConfigChange.args[0]).to.deep.eq([expectedRulesConfig]);
+      });
+    }
+
+    it('should not bust cache for unknown id', async () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expect(result).to.be.true;
+      const changeFeed = changesService.subscribe.args[1][0];
+      expect(changeFeed.filter({ id: 'id' })).to.be.false;
+      expect(changeFeed.filter(changeFeedFormat({ _id: 'task', type: 'task' }))).to.be.false;
+    });
+  });
+
+  describe('monitorExternalChanges', () => {
+    it('should null check and do nothing when no docs', async () => {
+      service = TestBed.inject(RulesEngineService);
+
+      await service.monitorExternalChanges();
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
+
+      await service.monitorExternalChanges({});
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
+
+      await service.monitorExternalChanges({ docs: [] });
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
+
+      const docs = [
+        { _id: 'report', type: 'data_record' },
+        { _id: 'contact', type: 'contact' },
+        { _id: 'target', type: 'target' },
+        { _id: 'whatever', type: 'whatever' },
+      ];
+      await service.monitorExternalChanges({ docs });
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
+    });
+
+    it('should only filter tasks and refresh requesters', async () => {
+      service = TestBed.inject(RulesEngineService);
+      const replicationResult = {
+        doc_write_failures: 0,
+        docs_read: 6,
+        docs_written: 6,
+        errors: [],
+        ok: true,
+        last_seq: 20,
+        docs: [
+          { _id: 'report1', fields: { patient_id: 'patient' }, type: 'data_record' },
+          { _id: 'task~1', emission: { _id: '??' }, requester: 'patient_uuid', type: 'task' },
+          { _id: 'contact2', type: 'contact', name: 'C', patient_id: 'patient2' },
+          { _id: 'task~2', emission: { _id: '??' }, requester: 'other_patient', type: 'task' },
+          { _id: 'task~3', emission: { _id: '!!' }, requester: 'other_patient', type: 'task' },
+          { _id: 'report2', fields: { patient_uuid: 'etc' }, type: 'data_record' },
+        ]
+      };
+
+      await service.monitorExternalChanges(replicationResult);
+
+      expect(rulesEngineCoreStubs.updateEmissionsFor.args[0]).to.deep.equal([['patient_uuid', 'other_patient']]);
+      expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(1);
+    });
+  });
+
+  it('fetchTaskDocsForAllContacts() should fetch task for all contacts', async () => {
+    const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
+    fetchTasksResult = sinon.stub().resolves([taskDoc]);
+    rulesEngineCoreStubs.getDirtyContacts.returns(['a', 'b', 'c']);
+    service = TestBed.inject(RulesEngineService);
+
+    const actual = await service.fetchTaskDocsForAllContacts();
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.be.undefined;
+    expect(actual.length).to.eq(1);
+    expect(actual[0]).to.nested.include({
+      _id: 'taskdoc',
+      'emission.other': true,
+    });
+    expect(telemetryService.record.callCount).to.equal(4);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 3]);
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
+    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:tasks:all-contacts');
+  });
+
+  it('fetchTaskDocsFor() should fetch task docs', async () => {
+    const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
+    const contactIds = ['a', 'b', 'c'];
+    fetchTasksResult = sinon.stub().resolves([taskDoc]);
+    rulesEngineCoreStubs.getDirtyContacts.returns(['a', 'b']);
+    service = TestBed.inject(RulesEngineService);
+
+    const actual = await service.fetchTaskDocsFor(contactIds);
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.eq(contactIds);
+    expect(actual.length).to.eq(1);
+    expect(actual[0]).to.nested.include({
+      _id: 'taskdoc',
+      'emission.other': true,
+    });
+    expect(telemetryService.record.callCount).to.equal(3);
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 2]);
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:tasks:some-contacts');
+  });
+
+  it('fetchTargets() should send correct range to Rules Engine Core when getting targets', async () => {
+    fetchTargetsResult = sinon.stub().resolves([]);
+    service = TestBed.inject(RulesEngineService);
+
+    const actual = await service.fetchTargets();
+
+    expect(actual).to.deep.eq([]);
+    expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTargets.args[0][0]).to.have.keys('start', 'end');
+  });
+
+  it('should ensure freshness of tasks and targets', async () => {
+    rulesEngineCoreStubs.getDirtyContacts.returns(Array.from({ length: 20 }).map(i => i));
+    const clock = sinon.useFakeTimers(1000);
+    service = TestBed.inject(RulesEngineService);
+
+    await service.isEnabled();
+    clock.tick(500 * 1000);
+    await service.isEnabled(); // to resolve promises
+    
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
+    expect(telemetryService.record.callCount).to.equal(3);
+    expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 20]);
+    expect(telemetryService.record.args[2]).to.deep.equal(['rules-engine:targets:dirty-contacts', 20]);
+  });
+
+  it('should ensure freshness of tasks only', async () => {
+    fetchTargetsResult = sinon.stub().resolves([]);
+    const clock = sinon.useFakeTimers(1000);
+    service = TestBed.inject(RulesEngineService);
+
+    await service.fetchTargets();
+    clock.tick(500 * 1000);
+    await service.isEnabled(); // to resolve promises
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
+    expect(telemetryService.record.callCount).to.equal(5);
+    expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
+    expect(telemetryService.record.args[1][0]).to.equal('rules-engine:targets:dirty-contacts');
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
+    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets');
+    expect(telemetryService.record.args[4][0]).to.equal('rules-engine:tasks:dirty-contacts');
+  });
+
+  it('should cancel all ensure freshness threads', async () => {
+    fetchTargetsResult = sinon.stub().resolves([]);
+    fetchTasksResult = sinon.stub().resolves([]);
+    const clock = sinon.useFakeTimers(1000);
+    service = TestBed.inject(RulesEngineService);
+
+    service.fetchTaskDocsForAllContacts();
+    await service.fetchTargets();
+    clock.tick(500 * 1000);
+    await service.isEnabled(); // to resolve promises
+    
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
+    expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
+    expect(telemetryService.record.callCount).to.equal(7);
+    expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
+    expect(telemetryService.record.args[1][0]).to.equal('rules-engine:tasks:dirty-contacts');
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
+    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets:dirty-contacts');
+    expect(telemetryService.record.args[4][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
+    expect(telemetryService.record.args[5][0]).to.equal('rules-engine:tasks:all-contacts');
+    expect(telemetryService.record.args[6][0]).to.equal('rules-engine:targets');
+  });
+
+  it('should record correct telemetry data with emitted events', async () => {
+    const realSetTimeout = setTimeout;
+    const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+    const clock = sinon.useFakeTimers(1000);
+    let fetchTargetResultPromise;
+    const fetchTasksResultPromise = [];
+    fetchTargetsResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTargetResultPromise = resolve));
+    fetchTasksResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTasksResultPromise.push(resolve)));
+    service = TestBed.inject(RulesEngineService);
+
+    service.fetchTargets();
+    service.fetchTaskDocsForAllContacts();
+    service.fetchTaskDocsFor(['a']);
+    await service.isEnabled();
+    
+    expect(fetchTargets.events).to.have.keys(['queued', 'running']);
+    expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
+    expect(telemetryService.record.callCount).to.equal(6);
+    expect(telemetryService.record.args.map(arg => arg[0])).to.deep.equal([
+      'rules-engine:initialize',
+      'rules-engine:targets:dirty-contacts',
+      'rules-engine:ensureTargetFreshness:cancel',
+      'rules-engine:tasks:dirty-contacts',
+      'rules-engine:ensureTaskFreshness:cancel',
+      'rules-engine:tasks:dirty-contacts',
+    ]);
+
+    fetchTargets.events.queued[0]();
+    fetchTasksFor.events.queued[0]();
+    fetchTasksFor.events.queued[1]();
+
+    expect(telemetryService.record.callCount).to.equal(6);
+    fetchTargets.events.running[0]();
+    expect(telemetryService.record.callCount).to.equal(7);
+    expect(telemetryService.record.args[6]).to.deep.equal(['rules-engine:targets:queued', 0]);
+
+    await Promise.resolve();
+    clock.tick(5000);
+    fetchTargetResultPromise([]);
+    await nextTick();
+
+    expect(telemetryService.record.callCount).to.equal(8);
+    expect(telemetryService.record.args[7]).to.deep.equal(['rules-engine:targets', 5000]);
+    fetchTasksFor.events.running[0]();
+    expect(telemetryService.record.callCount).to.equal(9);
+    expect(telemetryService.record.args[8]).to.deep.equal(['rules-engine:tasks:all-contacts:queued', 5000]);
+    clock.tick(10000);
+    fetchTasksResultPromise[1]([]);
+
+    await nextTick();
+    expect(telemetryService.record.callCount).to.equal(10);
+    expect(telemetryService.record.args[9]).to.deep.equal(['rules-engine:tasks:all-contacts', 10000]);
+    fetchTasksFor.events.running[1]();
+    expect(telemetryService.record.callCount).to.equal(11);
+    expect(telemetryService.record.args[10]).to.deep.equal(['rules-engine:tasks:some-contacts:queued', 15000]);
+    clock.tick(550);
+    fetchTasksResultPromise[3]([]);
+
+    await nextTick();
+    expect(telemetryService.record.callCount).to.equal(12);
+    expect(telemetryService.record.args[11]).to.deep.equal(['rules-engine:tasks:some-contacts', 550]);
+    clock.restore();
+  });
+
+  it('should record correct telemetry data for disabled actions', async () => {
+    authService.has.withArgs('can_view_tasks').resolves(false);
+    const realSetTimeout = setTimeout;
+    const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+    const clock = sinon.useFakeTimers(1000);
+    fetchTargetsResult = sinon.stub().resolves([]);
+    fetchTasksResult = sinon.stub().resolves([]);
+    service = TestBed.inject(RulesEngineService);
+
+    service.fetchTargets();
+    service.fetchTaskDocsForAllContacts();
+    service.fetchTaskDocsFor(['a']);
+    await service.isEnabled();
+
+    expect(fetchTargets.events).to.have.keys(['queued', 'running']);
+    expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
+
+    expect(telemetryService.record.callCount).to.equal(9);
+    expect(telemetryService.record.args.map(arg => arg[0])).to.include.members([
+      'rules-engine:initialize',
+      'rules-engine:targets:dirty-contacts',
+      'rules-engine:ensureTargetFreshness:cancel',
+      'rules-engine:tasks:dirty-contacts',
+      'rules-engine:ensureTaskFreshness:cancel',
+      'rules-engine:tasks:dirty-contacts',
+      'rules-engine:targets',
+      'rules-engine:tasks:all-contacts',
+      'rules-engine:tasks:some-contacts'
+    ]);
+
+    await nextTick();
+
+    // queued and running events are not emitted!
+
+    expect(telemetryService.record.callCount).to.equal(9);
+    expect(telemetryService.record.args[6]).to.deep.equal(['rules-engine:targets', 0]);
+    expect(telemetryService.record.args[7]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
+    expect(telemetryService.record.args[8]).to.deep.equal(['rules-engine:tasks:some-contacts', 0]);
+
+    clock.restore();
   });
 });
-*/
