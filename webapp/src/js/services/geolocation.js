@@ -34,6 +34,7 @@ angular.module('inboxServices').service('Geolocation',
     };
 
     const finalise = () => {
+      $timeout.cancel(timeout);
       $log.debug('Finalising geolocation');
       $window.navigator.geolocation && $window.navigator.geolocation.clearWatch(watcher);
 
@@ -85,11 +86,10 @@ angular.module('inboxServices').service('Geolocation',
       } else {
         watcher = $window.navigator.geolocation.watchPosition(success, failure, GEO_OPTIONS);
         timeout = $timeout(() => {
-          geoError = {
+          failure({
             code: -1,
             message: 'Geolocation timeout exceeded',
-          };
-          finalise();
+          });
         }, GEO_OPTIONS.timeout + 1);
       }
     };
@@ -97,7 +97,7 @@ angular.module('inboxServices').service('Geolocation',
     const stopWatching = () => {
       $log.debug('Cancelling geolocation');
       watcher && $window.navigator.geolocation && $window.navigator.geolocation.clearWatch(watcher);
-      timeout && clearTimeout(timeout);
+      $timeout.cancel(timeout);
     };
 
     return {

@@ -268,12 +268,11 @@ describe('Geolocation service', () => {
       });
 
       it('should resolve promise even if watcher never calls any callback', () => {
-        $window.navigator.geolocation.watchPosition = sinon.stub();
+        $window.navigator.geolocation.watchPosition = sinon.stub(); // make sure this never calls anything!
         const deferred = service.init();
         chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(1);
-        const promise = deferred();
         $timeout.flush(31 * 1000);
-        return promise
+        return deferred()
           .then(() => chai.assert.fail('Should have thrown'))
           .catch(error => {
             chai.expect(error).to.deep.equal({
@@ -283,6 +282,31 @@ describe('Geolocation service', () => {
           });
       });
 
+      it('timeout should prioritize success from geolocation', () => {
+        $window.navigator.geolocation.watchPosition.callsFake(success => {
+          $timeout(() => success({ coords: position }), 30 * 1000);
+        });
+        const deferred = service.init();
+        chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(1);
+        $timeout.flush(31 * 1000);
+        return deferred().then(result => {
+          chai.expect(result).to.deep.equal(position);
+        });
+      });
+
+      it('timeout should prioritize failure from geolocation', () => {
+        $window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
+          $timeout(() => failure({ code: 'true', message: 'no' }), 30 * 1000);
+        });
+        const deferred = service.init();
+        chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(1);
+        $timeout.flush(31 * 1000);
+        return deferred()
+          .then(() => chai.assert.fail('should have thrown'))
+          .catch(error => {
+            chai.expect(error).to.deep.equal({ code: 'true', message: 'no' });
+          });
+      });
     });
   });
 });
