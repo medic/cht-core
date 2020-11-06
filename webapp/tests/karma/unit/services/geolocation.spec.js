@@ -7,6 +7,7 @@ describe('Geolocation service', () => {
   let Telemetry;
   let medicmobileAndroid;
   let service;
+  let $timeout;
 
   beforeEach(() => {
     module('inboxApp');
@@ -33,10 +34,15 @@ describe('Geolocation service', () => {
       $provide.value('Telemetry', Telemetry);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject(_Geolocation_ => service = _Geolocation_);
+    inject((_Geolocation_, _$timeout_) => {
+      service = _Geolocation_;
+      $timeout = _$timeout_;
+    });
   });
 
-  afterEach(() => { sinon.restore(); });
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe('Geolocation', () => {
     it('Errors if geolocation navigator fn not available', () => {
@@ -258,6 +264,22 @@ describe('Geolocation service', () => {
           })
           .then(returned => {
             chai.expect(returned).to.deep.equal(position);
+          });
+      });
+
+      it('should resolve promise even if watcher never calls any callback', () => {
+        $window.navigator.geolocation.watchPosition = sinon.stub();
+        const deferred = service.init();
+        chai.expect($window.navigator.geolocation.watchPosition.callCount).to.equal(1);
+        const promise = deferred();
+        $timeout.flush(31 * 1000);
+        return promise
+          .then(() => chai.assert.fail('Should have thrown'))
+          .catch(error => {
+            chai.expect(error).to.deep.equal({
+              code: -1,
+              message: 'Geolocation timeout exceeded'
+            });
           });
       });
 

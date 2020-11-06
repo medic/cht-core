@@ -89,6 +89,7 @@ angular.module('inboxServices').service('Geolocation',
             code: -1,
             message: 'Geolocation timeout exceeded',
           };
+          finalise();
         }, GEO_OPTIONS.timeout + 1);
       }
     };
