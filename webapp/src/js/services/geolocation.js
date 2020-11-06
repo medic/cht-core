@@ -2,6 +2,7 @@ angular.module('inboxServices').service('Geolocation',
   function(
     $log,
     $q,
+    $timeout,
     $window,
     Telemetry
   ) {
@@ -18,6 +19,7 @@ angular.module('inboxServices').service('Geolocation',
     let geo;
     let geoError;
     let watcher;
+    let timeout;
 
     const getAndroidPermission = () => {
       try {
@@ -82,12 +84,19 @@ angular.module('inboxServices').service('Geolocation',
         };
       } else {
         watcher = $window.navigator.geolocation.watchPosition(success, failure, GEO_OPTIONS);
+        timeout = $timeout(() => {
+          geoError = {
+            code: -1,
+            message: 'Geolocation timeout exceeded',
+          };
+        }, GEO_OPTIONS.timeout + 1);
       }
     };
 
     const stopWatching = () => {
       $log.debug('Cancelling geolocation');
       watcher && $window.navigator.geolocation && $window.navigator.geolocation.clearWatch(watcher);
+      timeout && clearTimeout(timeout);
     };
 
     return {
