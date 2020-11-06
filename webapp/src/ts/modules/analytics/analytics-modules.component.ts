@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { Selectors } from '@mm-selectors/index';
 import { Router } from '@angular/router';
+
+import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'analytics-modules',

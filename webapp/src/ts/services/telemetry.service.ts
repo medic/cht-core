@@ -78,7 +78,8 @@ export class TelemetryService {
     const dbDate = moment(this.getLastAggregatedDate());
 
     if (dbDate.isBefore(monthStart)) {
-      return this.aggregate(db)
+      return this
+        .aggregate(db)
         .then(() => this.reset(db));
     }
   }
