@@ -20,6 +20,7 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
   compile(value, lang) {
     // use default interpolation for these values
     // message-format doesn't support the double curly braces notation
+    // TODO find a better way to determine if the value should be compiled via messgeformat
     if (value.includes('{{') || !value.includes('{')) {
       return value;
     }
