@@ -19,7 +19,11 @@ describe('restrict-access-to-sentinel-db migration', () => {
   });
 
   it('should request with the right parameters', () => {
-    const putStub = sinon.stub(request, 'put').resolves(Promise.resolve());
+    const putStub = sinon.stub(request, 'put').resolves();
+    sinon.stub(environment, 'protocol').value('http:');
+    sinon.stub(environment, 'host').value('host');
+    sinon.stub(environment, 'port').value('port');
+    sinon.stub(environment, 'db').returns('database');
     const url = `${environment.protocol}//${environment.host}:${environment.port}/${environment.db}-sentinel/_security`;
     const auth = {
       user: environment.username,

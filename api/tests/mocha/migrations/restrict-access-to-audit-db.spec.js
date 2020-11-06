@@ -19,7 +19,11 @@ describe('restrict-access-to-audit-db', () => {
   });
 
   it('should request with the right parameters', () => {
-    const putStub = sinon.stub(request, 'put').resolves(Promise.resolve());
+    const putStub = sinon.stub(request, 'put').resolves();
+    sinon.stub(environment, 'protocol').value('http:');
+    sinon.stub(environment, 'host').value('host');
+    sinon.stub(environment, 'port').value('port');
+    sinon.stub(environment, 'db').returns('database');
     const url = `${environment.protocol}//${environment.host}:${environment.port}/${environment.db}-audit/_security`;
     const auth = {
       user: environment.username,
