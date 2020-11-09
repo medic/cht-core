@@ -47,7 +47,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 # Communicating
 
 - [ ] Create a Google Doc in the [blog posts folder](https://drive.google.com/drive/u/0/folders/0B2PTUNZFwxEvMHRWNTBjY2ZHNHc) with the draft of a blog post promoting the release based on the release notes above. Once it's ready ask Max and Kelly to review it.
-- [ ] Create release artwork
+- [ ] Ask Nicole to create release artwork
 - [ ] Announce the release in #products using this template:
 ```
 @channel *We're excited to announce the release of {{version}}*
