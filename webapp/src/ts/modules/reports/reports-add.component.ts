@@ -87,6 +87,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
         return;
       }
       this.routeSnapshot = this.route.snapshot;
+      this.reset();
       this.loadForm();
     });
     this.subscription.add(routeSubscription);
@@ -107,10 +108,15 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
     }
   }
 
-  ngOnInit() {
-    this.subscribeToStore();
-
+  private reset() {
+    this.resetFormError();
+    this.contentError = false;
     this.globalActions.setLoadingContent(true);
+  }
+
+  ngOnInit() {
+    this.reset();
+    this.subscribeToStore();
     this.setCancelCallback();
     this.subscribeToRoute();
   }
@@ -120,10 +126,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
   }
 
   private loadForm() {
-    this.resetFormError();
-    this.contentError = false;
-    this.globalActions.setLoadingContent(true);
-
     return this
       .getSelected()
       .then((model:any) => {

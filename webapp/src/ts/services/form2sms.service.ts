@@ -5,22 +5,6 @@ import { DbService } from '@mm-services/db.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 
-
-const concat = (...args) => args.join('');
-const spaced = (...args) => args.join(' ');
-
-function match(val, matchers) {
-  const matchMap = {};
-  matchers
-    .split(',')
-    .map(it => it.trim())
-    .forEach(it => {
-      const [ k, v ] = it.split(':');
-      matchMap[k] = v;
-    });
-  return matchMap[val] || '';
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -31,6 +15,27 @@ export class Form2smsService {
     private parseProvider:ParseProvider,
   ) {
   }
+
+  private concat(...args) {
+    return args.join('');
+  }
+
+  private spaced(...args) {
+    return args.join(' ');
+  }
+
+  private match(val, matchers) {
+    const matchMap = {};
+    matchers
+      .split(',')
+      .map(it => it.trim())
+      .forEach(it => {
+        const [ k, v ] = it.split(':');
+        matchMap[k] = v;
+      });
+    return matchMap[val] || '';
+  }
+
 
   transform(doc) {
     if(!doc) {
@@ -46,8 +51,14 @@ export class Form2smsService {
           return;
         }
 
+        const context = {
+          concat: this.concat,
+          spaced: this.spaced,
+          match: this.match,
+        };
+
         if (typeof form.xml2sms === 'string') {
-          return this.parseProvider.parse(form.xml2sms)({}, { doc:doc.fields, concat, spaced, match });
+          return this.parseProvider.parse(form.xml2sms)(context, { doc:doc.fields });
         } else {
           console.debug('Checking for standard odk tags in form submission...');
           return this.getReportContentService.getReportContent(doc).then(odkForm2sms);

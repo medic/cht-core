@@ -152,7 +152,7 @@ describe('Reports Add Component', () => {
     });
 
     it('should reset enketo error if existent', () => {
-      store.overrideSelector(Selectors.getEnketoError, 'error');
+      component.enketoError = 'some_error';
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
       component.ngOnInit();
@@ -163,24 +163,26 @@ describe('Reports Add Component', () => {
     it('route params subscription should not fire when params do not change', fakeAsync (() => {
       route.snapshot.params = { formId: 'some_form' };
       const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+      const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
-      component.ngOnInit();
-      expect(setSelected.callCount).to.equal(0);
+      component.enketoError = 'some_error';
       route.params.next({ formId: 'some_form' });
       tick();
       expect(setSelected.callCount).to.equal(0);
+      expect(setEnketoError.callCount).to.equal(0);
     }));
 
     it('route params subscription should fire when params change', fakeAsync(() => {
       route.snapshot.params = { formId: 'some_form' };
       const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+      const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
-      component.ngOnInit();
-      expect(setSelected.callCount).to.equal(0);
+      component.enketoError = 'some_error';
       route.params.next({ formId: 'otherform' });
       tick();
-      expect(setSelected.callCount).to.equal(2);
-      // the 2 count is because we've actually subscribed twice by calling ngOnInit manually
+      expect(setSelected.callCount).to.equal(1);
+      expect(setEnketoError.callCount).to.equal(1);
+      // the 2 count is because we've actually subscribed to the params change twice by calling ngOnInit manually
     }));
   });
 
