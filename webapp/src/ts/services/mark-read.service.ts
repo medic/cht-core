@@ -18,9 +18,13 @@ export class MarkReadService {
       return Promise.resolve();
     }
 
-    const metaDocs = docs.map(doc => {
-      return { _id: this.readDocsProvider.getId(doc) };
-    });
+    const metaDocs = docs
+      .map(doc => ({ _id: this.readDocsProvider.getId(doc) }))
+      .filter(doc => doc._id);
+
+    if (!metaDocs.length) {
+      return;
+    }
 
     return this.dbService
       .get({ meta: true })
