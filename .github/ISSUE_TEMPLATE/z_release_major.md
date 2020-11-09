@@ -7,12 +7,13 @@ assignees: ''
 
 ---
 
-# Planning
+# Planning - Product Manager
 
 - [ ] Create an [organisation wide project](https://github.com/orgs/medic/projects?query=is%3Aopen+sort%3Aname-asc) and add this issue to it. We use [semver](http://semver.org) so if there are breaking changes increment the major, otherwise if there are new features increment the minor, otherwise increment the service pack. Breaking changes in our case relate to updated software requirements (egs: CouchDB, node, minimum browser versions), broken backwards compatibility in an api, or a major visual update that requires user retraining.
 - [ ] Add all the issues to be worked on to the project. Ideally each minor release will have one or two features, a handful of improvements, and plenty of bug fixes.
+- [ ] Assign an engineer as Release Manager for this release.
 
-# Development
+# Development - Release Manager
 
 When development is ready to begin one of the engineers should be nominated as a Release Manager. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
@@ -22,7 +23,7 @@ When development is ready to begin one of the engineers should be nominated as a
 - [ ] Write an update in the weekly Product Team call agenda summarising development and acceptance testing progress and identifying any blockers. The release manager is to update this every week until the version is released.
 - [ ] Announce the kickoff of development for the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 
-# Releasing
+# Releasing - Release Manager
 
 Once all issues have passed acceptance testing and have been merged into `master` release testing can begin.
 
