@@ -1,27 +1,21 @@
 import { TranslateCompiler } from '@ngx-translate/core';
 import * as MessageFormat from 'messageformat';
 
-const defaultConfig = {
-  biDiSupport: false,
-  formatters: undefined,
-  locales: undefined,
-  strictNumberSign: false,
-  disablePluralKeyChecks: false,
-};
-
 export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
   private messageFormat;
+  private readonly doubleOrNoneCurlyBraces = new RegExp(/\{{|^[^{]+$/);
 
   constructor() {
     super();
-    this.messageFormat = new MessageFormat(defaultConfig.locales);
+    this.messageFormat = new MessageFormat([]);
   }
 
   compile(value, lang) {
-    // use default interpolation for these values
-    // message-format doesn't support the double curly braces notation
-    // TODO find a better way to determine if the value should be compiled via messgeformat
-    if (value.includes('{{') || !value.includes('{')) {
+    // message-format uses single curly braces for defining parameters( like `His name is {NAME}` )
+    // passing a string that contains open double curly braces to message-format produces an error
+    // if the message has either double curly braces or no curly braces at all, bypass message-format entirely
+    const hasDoubleOrNoCurlyBraces = this.doubleOrNoneCurlyBraces.test(value);
+    if (hasDoubleOrNoCurlyBraces) {
       return value;
     }
 
