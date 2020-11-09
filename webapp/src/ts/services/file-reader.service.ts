@@ -10,13 +10,13 @@ export class FileReaderService {
     return (blob) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.addEventListener('loadend', function() {
+        reader.addEventListener('loadend', () => {
           resolve(reader.result);
         });
-        reader.addEventListener('error', function() {
+        reader.addEventListener('error', () => {
           reject(reader.error);
         });
-        reader.addEventListener('abort', function() {
+        reader.addEventListener('abort', () => {
           reject(new Error('FileReader aborted.'));
         });
         reader[readMethod](blob);

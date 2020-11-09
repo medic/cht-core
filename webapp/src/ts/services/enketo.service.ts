@@ -71,14 +71,14 @@ export class EnketoService {
       .then((zscoreUtil) => {
         medicXpathExtensions.init(zscoreUtil);
       })
-      .catch(function(err) {
+      .catch((err) => {
         console.error('Error initialising zscore util', err);
       });
   }
 
   private replaceJavarosaMediaWithLoaders(formDoc, formHtml) {
-    formHtml.find('[data-media-src]').each(function() {
-      const $img = $(this);
+    formHtml.find('[data-media-src]').each((idx, element) => {
+      const $img = $(element);
       const lang = $img.attr('lang');
       const active = $img.is('.active') ? 'active' : '';
       $img
@@ -88,22 +88,21 @@ export class EnketoService {
   }
 
   private replaceMediaLoaders(formContainer, formDoc) {
-    const enketoService = this;
-    formContainer.find('[data-media-src]').each(function() {
-      const elem = $(this);
+    formContainer.find('[data-media-src]').each((idx, element) => {
+      const elem = $(element);
       const src = elem.attr('data-media-src');
-      enketoService.dbService
+      this.dbService
         .get()
         .getAttachment(formDoc._id, src)
         .then((blob) => {
           const objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
-          enketoService.objUrls.push(objUrl);
+          this.objUrls.push(objUrl);
           elem
             .attr('src', objUrl)
             .css('visibility', '')
             .unwrap();
         })
-        .catch(function(err) {
+        .catch((err) => {
           console.error('Error fetching media file', formDoc._id, src, err);
           elem.closest('.loader').hide();
         });
@@ -129,10 +128,9 @@ export class EnketoService {
       ])
       .then(([html, model]) => {
         const $html = $(html);
-        const translateService = this.translateService;
-        $html.find('[data-i18n]').each(function() {
-          const $this = $(this);
-          $this.text(translateService.instant('enketo.' + $this.attr('data-i18n')));
+        $html.find('[data-i18n]').each((idx, element) => {
+          const $element = $(element);
+          $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
         });
 
         // TODO remove this when our enketo-core dependency is updated as the latest
@@ -144,12 +142,12 @@ export class EnketoService {
             .find('[lang]')
             .removeClass('active')
             .filter('[lang="' + language + '"], [lang=""]')
-            .filter(function() {
+            .filter((idx, element) => {
               // localized forms can support a short and long version for labels
               // Enketo takes this into account when switching languages
               // https://opendatakit.github.io/xforms-spec/#languages
-              return !$(this).hasClass('or-form-short') ||
-                ($(this).hasClass('or-form-short') && $(this).siblings( '.or-form-long' ).length === 0 );
+              return !$(element).hasClass('or-form-short') ||
+                ($(element).hasClass('or-form-short') && $(element).siblings( '.or-form-long' ).length === 0 );
             })
             .addClass( 'active' );
         }
@@ -170,12 +168,12 @@ export class EnketoService {
       return;
     }
 
-    const $this = $(this);
+    const $input = $(this);
 
     // stop the keypress from being handled elsewhere
     e.preventDefault();
 
-    const $thisQuestion = $this.closest('.question');
+    const $thisQuestion = $input.closest('.question');
 
     // If there's another question on the current page, focus on that
     if($thisQuestion.attr('role') !== 'page') {
@@ -187,7 +185,7 @@ export class EnketoService {
           // The next question is something complicated, so we can't just
           // focus on it.  Next best thing is to blur the current selection
           // so the on-screen keyboard closes.
-          $this.trigger('blur');
+          $input.trigger('blur');
         } else {
           // Delay focussing on the next field, so that keybaord close and
           // open events both register.  This should mean that the on-screen
@@ -202,7 +200,7 @@ export class EnketoService {
 
     // Trigger the change listener on the current field to update the enketo
     // model
-    $this.trigger('change');
+    $input.trigger('change');
 
     const enketoContainer = $thisQuestion.closest('.enketo');
 
@@ -364,7 +362,10 @@ export class EnketoService {
 
         if ($wrapper.find('.container').not(':empty')) {
           const pages = form.pages;
-          pages.flipTo(pages.getAllActive()[targetPage], targetPage);
+          const activePages = pages.getAllActive();
+          if (activePages) {
+            pages.flipTo(activePages[targetPage], targetPage);
+          }
         }
       }
     });
@@ -413,9 +414,14 @@ export class EnketoService {
   }
 
   render(selector, form, instanceData, editedListener, valuechangeListener) {
-    return Promise.all([this.inited, this.getUserContact()]).then(() => {
-      return this.renderForm(selector, form, instanceData, editedListener, valuechangeListener);
-    });
+    return Promise
+      .all([
+        this.inited,
+        this.getUserContact(),
+      ])
+      .then(() => {
+        return this.renderForm(selector, form, instanceData, editedListener, valuechangeListener);
+      });
   }
 
   renderContactForm(selector, formDoc, instanceData, editedListener, valuechangeListener) {
@@ -423,7 +429,6 @@ export class EnketoService {
   }
 
   private xmlToDocs(doc, record) {
-    const enketoService = this;
     const mapOrAssignId = (e, id?) => {
       if (!id) {
         const $id = $(e).children('_id');
@@ -457,26 +462,32 @@ export class EnketoService {
     const $record = $($(recordDoc).children()[0]);
     mapOrAssignId($record[0], doc._id || uuid());
 
-    $record.find('[db-doc]')
-      .filter(function() {
-        return $(this).attr('db-doc').toLowerCase() === 'true';
+    $record
+      .find('[db-doc]')
+      .filter((idx, element) => {
+        return $(element).attr('db-doc').toLowerCase() === 'true';
       })
-      .each(function() {
-        mapOrAssignId(this);
+      .each((idx, element) => {
+        mapOrAssignId(element);
       });
 
-    $record.find('[db-doc-ref]').each(function() {
-      const $ref = $(this);
-      const refId = getId($ref.attr('db-doc-ref'));
-      $ref.text(refId);
-    });
+    $record
+      .find('[db-doc-ref]')
+      .each((idx, element) => {
+        const $ref = $(element);
+        const refId = getId($ref.attr('db-doc-ref'));
+        $ref.text(refId);
+      });
 
-    const docsToStore = $record.find('[db-doc=true]').map(function() {
-      const docToStore:any = enketoService.enketoTranslationService.reportRecordToJs(getOuterHTML(this));
-      docToStore._id = getId(Xpath.getElementXPath(this));
-      docToStore.reported_date = Date.now();
-      return docToStore;
-    }).get();
+    const docsToStore = $record
+      .find('[db-doc=true]')
+      .map((idx, element) => {
+        const docToStore:any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
+        docToStore._id = getId(Xpath.getElementXPath(element));
+        docToStore.reported_date = Date.now();
+        return docToStore;
+      })
+      .get();
 
     doc._id = getId('/*');
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record);
@@ -486,25 +497,29 @@ export class EnketoService {
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      enketoService.addAttachmentService.add(doc, filename, file, type, alreadyEncoded);
+      this.addAttachmentService.add(doc, filename, file, type, alreadyEncoded);
     };
 
-    $record.find('[type=file]').each(function() {
-      const xpath = Xpath.getElementXPath(this);
-      const $input:any = $('input[type=file][name="' + xpath + '"]');
-      const file = $input[0].files[0];
-      if (file) {
-        attach(this, file, file.type, false, xpath);
-      }
-    });
+    $record
+      .find('[type=file]')
+      .each((idx, element) => {
+        const xpath = Xpath.getElementXPath(element);
+        const $input:any = $('input[type=file][name="' + xpath + '"]');
+        const file = $input[0].files[0];
+        if (file) {
+          attach(element, file, file.type, false, xpath);
+        }
+      });
 
-    $record.find('[type=binary]').each(function() {
-      const file = $(this).text();
-      if (file) {
-        $(this).text('');
-        attach(this, file, 'image/png', true);
-      }
-    });
+    $record
+      .find('[type=binary]')
+      .each((idx, element) => {
+        const file = $(element).text();
+        if (file) {
+          $(element).text('');
+          attach(element, file, 'image/png', true);
+        }
+      });
 
     record = getOuterHTML($record[0]);
 
@@ -514,7 +529,7 @@ export class EnketoService {
 
     return this.xmlFormsService
       .get(doc.form)
-      .then(form => this.getFormAttachment(form))
+      .then((form) => this.getFormAttachment(form))
       .then((form) => {
         doc.fields = this.enketoTranslationService.reportRecordToJs(record, form);
         return docsToStore;
@@ -641,7 +656,7 @@ export class EnketoService {
       form.resetView();
     }
     // unload blobs
-    this.objUrls.forEach(function(url) {
+    this.objUrls.forEach((url) => {
       (window.URL || window.webkitURL).revokeObjectURL(url);
     });
 

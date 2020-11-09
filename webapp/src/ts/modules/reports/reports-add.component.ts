@@ -56,7 +56,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
   };
   private routeSnapshot;
 
-  ngOnInit() {
+  private subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getSelectedReports),
@@ -77,8 +77,26 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
       this.enketoError = enketoError;
     });
     this.subscription.add(reduxSubscription);
+  }
+
+  private subscribeToRoute() {
+    const routeSubscription = this.route.params.subscribe((params) => {
+      if (_isEqual(this.routeSnapshot.params, params)) {
+        // the 1st time we load the form, we must wait for the view to be initialized
+        // if we don't skip, it will result in the form being loaded twice
+        return;
+      }
+      this.routeSnapshot = this.route.snapshot;
+      this.loadForm();
+    });
+    this.subscription.add(routeSubscription);
+  }
+
+  ngOnInit() {
+    this.subscribeToStore();
 
     this.globalActions.setLoadingContent(true);
+    this.resetFormError();
     this.contentError = false;
     this.routeSnapshot = this.route.snapshot;
 
@@ -94,18 +112,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
       this.globalActions.clearCancelCallback();
     }
 
-    this.resetFormError();
-
-    const routeSubscription = this.route.params.subscribe((params) => {
-      if (_isEqual(this.routeSnapshot.params, params)) {
-        // the 1st time we load the form, we must wait for the view to be initialized
-        // if we don't skip, it will result in the form being loaded twice
-        return;
-      }
-      this.routeSnapshot = this.route.snapshot;
-      this.loadForm();
-    });
-    this.subscription.add(routeSubscription);
+    this.subscribeToRoute();
   }
 
   ngAfterViewInit() {
@@ -145,19 +152,19 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
                   return;
                 }
 
-                const $component = this;
                 return Promise
-                  .all($('#report-form input[type=file]')
-                    .map(function() {
-                      const $this = $(this);
-                      const attachmentName = 'user-file' + $this.attr('name');
+                    .all($('#report-form input[type=file]')
+                    .map((idx, element) => {
+                      const $element = $(element);
+                      const attachmentName = 'user-file' + $element.attr('name');
 
-                      return $component.dbService
+                      return this.dbService
                         .get()
                         .getAttachment(model.doc._id, attachmentName)
-                        .then(blob => $component.fileReaderService.base64(blob))
+                        .then(blob => this.fileReaderService.base64(blob))
                         .then((base64) => {
-                          const $picker = $this.closest('.question')
+                          const $picker = $element
+                            .closest('.question')
                             .find('.widget.file-picker');
 
                           $picker.find('.file-feedback').empty();
@@ -280,9 +287,12 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
         console.error('Error submitting form data: ', err);
-        this.translateService.get('error.report.save').toPromise().then(msg => {
-          this.globalActions.setEnketoError(msg);
-        });
+        this.translateService
+          .get('error.report.save')
+          .toPromise()
+          .then(msg => {
+            this.globalActions.setEnketoError(msg);
+          });
       });
   }
 

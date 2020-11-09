@@ -53,7 +53,7 @@ export class Form2smsService {
           return this.getReportContentService.getReportContent(doc).then(odkForm2sms);
         }
       })
-      .catch(function(err) {
+      .catch((err) => {
         console.error('Form2Sms failed: ' + err);
         throw err;
       });

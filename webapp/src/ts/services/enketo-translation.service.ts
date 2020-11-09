@@ -135,8 +135,8 @@ export class EnketoTranslationService {
     }
     const repeatPaths = $(formXml)
       .find('repeat[nodeset]')
-      .map(function() {
-        return $(this).attr('nodeset');
+      .map((idx, element) => {
+        return $(element).attr('nodeset');
       })
       .get();
     return this.nodesToJs(root.childNodes, repeatPaths, '/' + root.nodeName);

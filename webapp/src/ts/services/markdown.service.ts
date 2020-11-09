@@ -39,29 +39,28 @@ export class MarkdownService {
   }
 
   private translateElement(e) {
-    const $service = this;
-    return e.each(function() {
+    return e.each((idx, element) => {
       let html;
       const $childStore = $('<div/>');
-      $(this)
+      $(element)
         .children(':not(input, select, textarea)')
-        .each(function(index) {
+        .each((index, element) => {
           const name = '$$$' + index;
-          $service
-            .translateElement($(this).clone())
+          this
+            .translateElement($(element).clone())
             .appendTo($childStore);
-          $(this).replaceWith(name);
+          $(element).replaceWith(name);
         });
 
-      html = $service.basic($(this).html());
+      html = this.basic($(element).html());
 
       $childStore
         .children()
-        .each(function(i) {
-          const regex = new RegExp('\\$\\$\\$' + i);
-          html = html.replace(regex, $(this)[ 0 ].outerHTML);
+        .each((idx, element) => {
+          const regex = new RegExp('\\$\\$\\$' + idx);
+          html = html.replace(regex, $(element)[0].outerHTML);
         });
-      $(this).text('').append(html);
+      $(element).text('').append(html);
     });
   }
 

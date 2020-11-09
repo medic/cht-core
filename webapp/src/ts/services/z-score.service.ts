@@ -80,7 +80,9 @@ export class ZScoreService {
 
   private init() {
     // use allDocs instead of get so a 404 doesn't report an error
-    return this.dbService.get().allDocs({ key: this.CONFIGURATION_DOC_ID, include_docs: true })
+    return this.dbService
+      .get()
+      .allDocs({ key: this.CONFIGURATION_DOC_ID, include_docs: true })
       .then((result) => {
         this.tables = result.rows.length && result.rows[0].doc.charts;
       });

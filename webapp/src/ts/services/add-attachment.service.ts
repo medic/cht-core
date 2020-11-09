@@ -17,6 +17,10 @@ export class AddAttachmentService {
    *   the content is already base64 encoded and doesn't do it again
    */
   add(doc, name, content, contentType, alreadyEncoded?) {
+    if (!doc) {
+      return;
+    }
+
     if (!doc._attachments) {
       doc._attachments = {};
     }

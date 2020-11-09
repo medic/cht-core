@@ -39,14 +39,14 @@
     const MRDT = window.CHTCore.MRDT;
 
     if ( !MRDT.enabled() ) {
-      $translate.get( 'mrdt.disabled' ).toPromise().then(function( label ) {
+      $translate.get( 'mrdt.disabled' ).toPromise().then((label) => {
         $el.append( '<p>' + label + '</p>' );
       });
       return;
     }
 
     $el.on( 'click', '.btn.mrdt-verify', function() {
-      MRDT.verify().then( function(data) {
+      MRDT.verify().then((data = {}) => {
         const image = data.image;
         const timeTaken = data.timeTaken;
         $( self.element )
@@ -66,7 +66,7 @@
       } );
     } );
 
-    $translate.get( 'mrdt.verify' ).toPromise().then( function( label ) {
+    $translate.get( 'mrdt.verify' ).toPromise().then((label) => {
       $el.append(
         '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
                 '<div><img class="mrdt-preview"/></div>'
