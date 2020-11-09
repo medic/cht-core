@@ -92,14 +92,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
     this.subscription.add(routeSubscription);
   }
 
-  ngOnInit() {
-    this.subscribeToStore();
-
-    this.globalActions.setLoadingContent(true);
-    this.resetFormError();
-    this.contentError = false;
+  private setCancelCallback() {
     this.routeSnapshot = this.route.snapshot;
-
     if (this.routeSnapshot.params && (this.routeSnapshot.params.reportsId || this.routeSnapshot.params.formId)) {
       this.globalActions.setCancelCallback(() => {
         if (this.routeSnapshot.params.reportsId) {
@@ -111,7 +105,13 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
     } else {
       this.globalActions.clearCancelCallback();
     }
+  }
 
+  ngOnInit() {
+    this.subscribeToStore();
+
+    this.globalActions.setLoadingContent(true);
+    this.setCancelCallback();
     this.subscribeToRoute();
   }
 
@@ -120,6 +120,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
   }
 
   private loadForm() {
+    this.resetFormError();
+    this.contentError = false;
+    this.globalActions.setLoadingContent(true);
+
     return this
       .getSelected()
       .then((model:any) => {
@@ -189,13 +193,14 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
               .catch((err) => {
                 this.errorTranslationKey = err.translationKey || 'error.loading.form';
                 this.globalActions.setLoadingContent(false);
-                this.contentError = true;
                 console.error('Error loading form.', err);
               });
           });
       })
       .catch((err) => {
         this.globalActions.setLoadingContent(false);
+        this.errorTranslationKey = err.translationKey || 'error.loading.form';
+        this.contentError = true;
         console.error('Error setting selected doc', err);
       });
   }
