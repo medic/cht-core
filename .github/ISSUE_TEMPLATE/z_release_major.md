@@ -61,6 +61,6 @@ Following our support policy, versions {{versions}} are no longer supported. Pro
 See what's scheduled for the next releases: https://github.com/orgs/medic/projects?query=is%3Aopen+sort%3Aname-asc
 ```
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/c/product/releases/26), under the "Product - Releases" category. You can use the previous message and omit `@channel`.
-- [ ] Announce the release of new documenation on the [CHT Forum](https://forum.communityhealthtoolkit.org/c/product/documentation/28), under the "Product - Documentation" category.
+- [ ] Announce the release of new documentation for features and improvements in the release on the [CHT Forum](https://forum.communityhealthtoolkit.org/c/product/documentation/28), under the "Product - Documentation" category.
 - [ ] Schedule a Release communication call to educate stakeholders on product and documentation improvements
 - [ ] Mark this issue "done" and close the project.
