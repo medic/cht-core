@@ -198,12 +198,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private formatContacts(contacts) {
-    return contacts.map(contact => {
+    return contacts.map(updatedContact => {
+      const contact: any = {};
+      Object.assign(contact, updatedContact);
       const typeId = contact.contact_type || contact.type;
       const type = this.contactTypes.find(type => type.id === typeId);
       contact.route = 'contacts';
       contact.icon = type && type.icon;
-      contact.heading = contact.name;
+      contact.heading = contact.name || '';
       contact.valid = true;
       contact.summary = null;
       contact.primary = contact.home;
@@ -422,7 +424,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       .catch(err => {
         this.error = true;
         this.loading = false;
-        console.error('Error loading messages', err);
+        console.error('Error loading contacts', err);
       });
   }
 
