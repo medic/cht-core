@@ -22,13 +22,13 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
     directoryIndex: false,
     handleFetch: true,
     staticFileGlobs: [
-      path.join(staticDirectoryPath, '{audio,css,img,js}', '*'),
+      path.join(staticDirectoryPath, '{audio,img}', '*'),
       path.join(staticDirectoryPath, 'manifest.json'),
       path.join(staticDirectoryPath, '*.js'),
       path.join(staticDirectoryPath, '*.css'),
 
       // Fonts
-      path.join(staticDirectoryPath, 'fonts', 'fontawesome-webfont.woff2'),
+      path.join(staticDirectoryPath, 'fontawesome-webfont.woff2'),
       path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
