@@ -44,7 +44,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 - [ ] Follow the instructions for [releasing other products](https://docs.communityhealthtoolkit.org/core/guides/releasing/) that have been updated in this project (eg: medic-conf, medic-gateway, medic-android).
 - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/overview/supported-software/) and update the EOL date and status of previous releases.
 
-# Communicating
+# Communicating - Product Manager
 
 - [ ] Create a Google Doc in the [blog posts folder](https://drive.google.com/drive/u/0/folders/0B2PTUNZFwxEvMHRWNTBjY2ZHNHc) with the draft of a blog post promoting the release based on the release notes above. Once it's ready ask Max and Kelly to review it.
 - [ ] Ask Nicole to create release artwork
