@@ -32,6 +32,7 @@ describe('Navigation tests : ', () => {
     expect(browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics');
   });
 
+  //not applicable for mobile resolution
   it('should open Configuration wizard', () => {
     commonElements.openMenu();
     commonElements.checkConfigurationWizard();
