@@ -2,10 +2,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { ActivatedRoute, Router } from '@angular/router';
 
 import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
@@ -16,6 +14,8 @@ import { StatusFilterComponent } from '@mm-components/filters/status-filter/stat
 import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { GlobalActions } from '@mm-actions/global';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
+import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 
 describe('Reports Filters Component', () => {
   let component: ReportsFiltersComponent;
@@ -37,6 +37,8 @@ describe('Reports Filters Component', () => {
           FormTypeFilterComponent,
           FreetextFilterComponent,
           StatusFilterComponent,
+          ResetFiltersComponent,
+          MultiDropdownFilterComponent,
         ],
         providers: [
           provideMockStore(),

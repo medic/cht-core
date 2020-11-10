@@ -8,8 +8,7 @@ import { MarkdownService } from '@mm-services/markdown.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { DbService } from '@mm-services/db.service';
-// todo migrate enketo
-// import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoService } from '@mm-services/enketo.service';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +28,7 @@ export class IntegrationApiService {
     private dbService:DbService,
     private languageService:LanguageService,
     private select2SearchService:Select2SearchService,
-    // enketoService:EnketoService,
+    private enketoService:EnketoService,
     private translateService:TranslateService,
     private mrdtService:MRDTService,
     private markdownService:MarkdownService,
@@ -40,7 +39,7 @@ export class IntegrationApiService {
     this.DB = dbService;
     this.Language = languageService;
     this.Select2Search = select2SearchService;
-    //this.Enketo = enketoService;
+    this.Enketo = enketoService;
     this.MRDT = mrdtService;
     this.Markdown = markdownService;
     this.Settings = settingsService;

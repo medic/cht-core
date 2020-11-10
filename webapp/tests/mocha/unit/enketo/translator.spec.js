@@ -5,15 +5,12 @@ const translator = require('../../../../src/js/enketo/translator');
 
 describe('enketo translator', () => {
 
-  beforeEach(done => {
-    document = {};
-    require('../mock-angular');
-    done();
-  });
-
-  afterEach(done => {
-    document = null;
-    done();
+  beforeEach(() => {
+    global.window = {
+      CHTCore: {
+        Translate: { instant: v => v },
+      },
+    };
   });
 
   describe('#t()', () => {

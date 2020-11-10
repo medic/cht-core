@@ -19,6 +19,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
 import { ComponentsModule } from '@mm-components/components.module';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -38,6 +39,9 @@ describe('Reports Component', () => {
       { selector: Selectors.getForms, value: [] },
       { selector: Selectors.getFilters, value: {} },
       { selector: Selectors.getShowContent, value: false },
+      { selector: Selectors.getEnketoStatus, value: {} },
+      { selector: Selectors.getEnketoEditedStatus, value: false },
+      { selector: Selectors.getEnketoSavingStatus, value: false },
     ];
 
     TestBed
@@ -53,6 +57,7 @@ describe('Reports Component', () => {
           ReportsComponent,
           ReportsFiltersComponent,
           ReportsContentComponent,
+          NavigationComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

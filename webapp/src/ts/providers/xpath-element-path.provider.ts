@@ -8,7 +8,7 @@
  * https://github.com/firebug/firebug/blob/master/extension/content/firebug/lib/xpath.js
  */
 
-var Xpath = {};
+export const Xpath:any = {};
 
 // ********************************************************************************************* //
 // XPATH
@@ -57,5 +57,3 @@ Xpath.getElementTreeXPath = function(element)
 
     return paths.length ? "/" + paths.join("/") : null;
 };
-
-module.exports = Xpath.getElementXPath;

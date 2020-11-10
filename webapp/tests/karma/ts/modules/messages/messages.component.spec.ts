@@ -12,6 +12,7 @@ import { MessageContactService } from '@mm-services/message-contact.service';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -46,7 +47,7 @@ describe('Messages Component', () => {
         ],
         declarations: [
           MessagesComponent,
-          RelativeDatePipe
+          RelativeDatePipe,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

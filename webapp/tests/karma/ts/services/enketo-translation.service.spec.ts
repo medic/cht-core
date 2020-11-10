@@ -1,14 +1,15 @@
-describe('EnketoTranslation service', () => {
-  'use strict';
+import { TestBed } from '@angular/core/testing';
+import { assert } from 'chai';
 
-  const assert = chai.assert;
+import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+
+
+describe('EnketoTranslation service', () => {
   let service;
 
   beforeEach(() => {
-    module('inboxApp');
-    inject(_EnketoTranslation_ => {
-      service = _EnketoTranslation_;
-    });
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(EnketoTranslationService);
   });
 
   describe('#contactRecordToJs()', () => {
@@ -605,5 +606,4 @@ describe('EnketoTranslation service', () => {
       assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
     });
   });
-
 });
