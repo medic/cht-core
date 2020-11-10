@@ -286,48 +286,47 @@ export class RulesEngineService implements OnDestroy {
           .on('running', telemetryData.start);
       })
       .then(telemetryData.passThrough)
-      .then(this.translateTaskDocs.bind(this));
+      .then(taskDocs => this.translateTaskDocs(taskDocs));
   }
 
   fetchTaskDocsFor(contactIds) {
     const telemetryData = this.telemetryEntry('rules-engine:tasks:some-contacts');
 
     return this.initialized
-    .then(() => {
-      this.telemetryService.record('rules-engine:tasks:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+      .then(() => {
+        this.telemetryService.record('rules-engine:tasks:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
 
-      return this.rulesEngineCore
-        .fetchTasksFor(contactIds)
-        .on('queued', telemetryData.queued)
-        .on('running', telemetryData.start);
-    })
-    .then(telemetryData.passThrough)
-    .then(this.translateTaskDocs.bind(this));
+        return this.rulesEngineCore
+          .fetchTasksFor(contactIds)
+          .on('queued', telemetryData.queued)
+          .on('running', telemetryData.start);
+      })
+      .then(telemetryData.passThrough)
+      .then(taskDocs => this.translateTaskDocs(taskDocs));
   }
 
   fetchTargets() {
     const telemetryData = this.telemetryEntry('rules-engine:targets');
 
     return this.initialized
-    .then(() => {
-      this.telemetryService.record('rules-engine:targets:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
-      this.cancelDebounce(this.ensureTargetFreshness, this.ensureTargetFreshnessTelemetryData, this.isTargetDebounceActive);
-      this.isTargetDebounceActive = false;
-      const relevantInterval = CalendarInterval.getCurrent(this.uhcMonthStartDate);
-      return this.rulesEngineCore
-        .fetchTargets(relevantInterval)
-        .on('queued', telemetryData.queued)
-        .on('running', telemetryData.start);
-    })
-    .then(telemetryData.passThrough);
+      .then(() => {
+        this.telemetryService.record('rules-engine:targets:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+        this.cancelDebounce(this.ensureTargetFreshness, this.ensureTargetFreshnessTelemetryData, this.isTargetDebounceActive);
+        this.isTargetDebounceActive = false;
+        const relevantInterval = CalendarInterval.getCurrent(this.uhcMonthStartDate);
+        return this.rulesEngineCore
+          .fetchTargets(relevantInterval)
+          .on('queued', telemetryData.queued)
+          .on('running', telemetryData.start);
+      })
+      .then(telemetryData.passThrough);
   }
 
   monitorExternalChanges(replicationResult?) {
-    return this.initialized
-      .then(() => {
-        return replicationResult
-          && replicationResult.docs
-          && this.updateEmissionExternalChanges(replicationResult.docs);
-      });
+    return this.initialized.then(() => {
+      return replicationResult
+        && replicationResult.docs
+        && this.updateEmissionExternalChanges(replicationResult.docs);
+    });
   }
 }

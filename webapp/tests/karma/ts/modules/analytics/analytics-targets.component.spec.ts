@@ -30,8 +30,6 @@ describe('AnalyticsTargetsComponent', () => {
     .then(() => {
       fixture = TestBed.createComponent(AnalyticsTargetsComponent);
       component = fixture.componentInstance;
-      rulesEngineService = TestBed.inject(RulesEngineService);
-      telemetryService = TestBed.inject(TelemetryService);
       fixture.detectChanges();
     });
   }));

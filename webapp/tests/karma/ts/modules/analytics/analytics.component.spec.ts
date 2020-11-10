@@ -33,7 +33,7 @@ describe('AnalyticsComponent', () => {
     };
     activatedRoute = {
       snapshot: {
-        routeConfig: { path: 'targets' },
+        routeConfig: { path: '' },
       },
     };
 
@@ -75,6 +75,7 @@ describe('AnalyticsComponent', () => {
       { route: 'reporting' },
       { route: 'targets' }
     ];
+    activatedRoute.snapshot.routeConfig.path = 'targets';
     analyticsModulesService.get.resolves(analyticsModules);
 
     component.ngOnInit();
@@ -100,7 +101,7 @@ describe('AnalyticsComponent', () => {
     expect(analyticsModulesService.get.callCount).to.equal(1);
     expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(1);
     expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.include.members(analyticsModules);
+    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.have.members(analyticsModules);
     expect(navigateStub.callCount).to.equal(1);
     expect(navigateStub.args[0]).to.deep.equal([['targets']]);
   }));
@@ -121,7 +122,7 @@ describe('AnalyticsComponent', () => {
     expect(analyticsModulesService.get.callCount).to.equal(1);
     expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(1);
     expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.include.members(analyticsModules);
+    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.have.members(analyticsModules);
     expect(navigateStub.callCount).to.equal(0);
   }));
 });
