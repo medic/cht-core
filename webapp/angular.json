@@ -99,8 +99,7 @@
               "src/fonts",
               "src/audio"
             ],
-            "styles": [
-            ],
+            "styles": [],
             "stylePreprocessorOptions": {
               "includePaths": [
                 "src/css"
@@ -113,6 +112,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "webapp"
+    }
+  },
+  "defaultProject": "webapp",
+  "cli": {
+    "analytics": false
+  }
 }
