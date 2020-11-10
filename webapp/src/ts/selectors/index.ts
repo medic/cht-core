@@ -4,6 +4,7 @@ const getGlobalState = (state) => state.global || {};
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
+const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getAnalyticsState = (state) => state.analytics || {};
 
 export const Selectors = {
@@ -27,6 +28,12 @@ export const Selectors = {
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
 
+  //enketo
+  getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
+  getEnketoEditedStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus.edited),
+  getEnketoSavingStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus.saving),
+  getEnketoError: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus.error),
+
   // services
   getLastChangedDoc: createSelector(getServicesState, (servicesState) => servicesState.lastChangedDoc),
 
@@ -49,6 +56,9 @@ export const Selectors = {
   getSelectedReportsSummaries: createSelector(getReportsState, (reportsState) => {
     return reportsState.selected?.map(item => item.formatted || item.summary);
   }),
+  getSelectedReportsDocs: createSelector(getReportsState, (reportsState) => {
+    return reportsState.selected?.map(item => item.doc || item.summary);
+  }),
 
   // messages
   getMessagesError: createSelector(getMessagesState, (messagesState) => messagesState.error),
@@ -62,10 +72,6 @@ export const Selectors = {
 
 // Global
 const getActionBar = state => getGlobalState(state).actionBar;
-const getEnketoStatus = state => getGlobalState(state).enketoStatus;
-const getEnketoEditedStatus = state => getGlobalState(state).enketoStatus.edited;
-const getEnketoSavingStatus = state => getGlobalState(state).enketoStatus.saving;
-const getEnketoError = state => getGlobalState(state).enketoStatus.error;
 
 const getLoadingSubActionBar = state => getGlobalState(state).loadingSubActionBar;
 
@@ -100,10 +106,6 @@ const getSelectedReportsValidChecks = reselect.createSelector(
   selected => selected.map(item => item.summary && item.summary.valid || item.formatted &&
     !(item.formatted.errors && item.formatted.errors.length))
 );
-const getSelectedReportsDocs = reselect.createSelector(
-  getSelectedReports,
-  selected => selected.map(item => item.doc || item.summary)
-);
 const getVerifyingReport = state => getReportsState(state).verifyingReport;
 
 // Tasks
@@ -122,10 +124,6 @@ angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getActionBar,
   getAndroidAppVersion,
-  getEnketoStatus,
-  getEnketoEditedStatus,
-  getEnketoSavingStatus,
-  getEnketoError,
   getLoadingSubActionBar,
   getShowActionBar,
   getUnreadCount,

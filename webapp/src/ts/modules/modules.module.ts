@@ -13,6 +13,7 @@ import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ReportsContentComponent } from './reports/reports-content.component';
+import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
 import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
@@ -28,6 +29,7 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
+    ReportsAddComponent,
     ReportsContentComponent,
     MessagesComponent,
     ReportsFiltersComponent,
@@ -51,7 +53,6 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
-    ReportsContentComponent,
     MessagesComponent,
     PrivacyPolicyComponent,
   ]

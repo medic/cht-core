@@ -1,8 +1,29 @@
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
+import { provideMockStore } from '@ngrx/store/testing';
+import * as _ from 'lodash-es';
+import { TranslateService } from '@ngx-translate/core';
+
+import { DbService } from '@mm-services/db.service';
+import { Form2smsService } from '@mm-services/form2sms.service';
+import { SearchService } from '@mm-services/search.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
+import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
+import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { ZScoreService } from '@mm-services/z-score.service';
+import { EnketoService } from '@mm-services/enketo.service';
+import { ServicesActions } from '@mm-actions/services';
+import { ContactSummaryService } from '@mm-services/contact-summary.service';
+
 describe('Enketo service', () => {
-  const { expect } = chai;
-
-  'use strict';
-
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
     return {
@@ -66,33 +87,49 @@ describe('Enketo service', () => {
     </model>`;
 
   let service;
-  let ServicesActions;
+  let setLastChangedDoc;
 
-  const enketoInit = sinon.stub();
-  const dbGetAttachment = sinon.stub();
-  const dbGet = sinon.stub();
-  const dbBulkDocs = sinon.stub();
-  const ContactSummary = sinon.stub();
-  const Form2Sms = sinon.stub();
-  const UserContact = sinon.stub();
-  const UserSettings = sinon.stub();
-  const createObjectURL = sinon.stub();
-  const FileReader = { utf8: sinon.stub() };
-  const Language = sinon.stub();
-  const TranslateFrom = sinon.stub();
-  const form = {
-    validate: sinon.stub(),
-    getDataStr: sinon.stub(),
-  };
-  const AddAttachment = sinon.stub();
-  const EnketoForm = sinon.stub();
-  const EnketoPrepopulationData = sinon.stub();
-  const Search = sinon.stub();
-  const LineageModelGenerator = { contact: sinon.stub() };
+  let enketoInit;
+  let dbGetAttachment;
+  let dbGet;
+  let dbBulkDocs;
+  let ContactSummary;
+  let Form2Sms;
+  let UserContact;
+  let UserSettings;
+  let createObjectURL;
+  let FileReader;
+  let Language;
+  let TranslateFrom;
+  let form;
+  let AddAttachment;
+  let EnketoForm;
+  let EnketoPrepopulationData;
+  let Search;
+  let LineageModelGenerator;
 
   beforeEach(() => {
-    module('inboxApp');
-
+    enketoInit = sinon.stub();
+    dbGetAttachment = sinon.stub();
+    dbGet = sinon.stub();
+    dbBulkDocs = sinon.stub();
+    ContactSummary = sinon.stub();
+    Form2Sms = sinon.stub();
+    UserContact = sinon.stub();
+    UserSettings = sinon.stub();
+    createObjectURL = sinon.stub();
+    FileReader = { utf8: sinon.stub() };
+    Language = sinon.stub();
+    TranslateFrom = sinon.stub();
+    form = {
+      validate: sinon.stub(),
+      getDataStr: sinon.stub(),
+    };
+    AddAttachment = sinon.stub();
+    EnketoForm = sinon.stub();
+    EnketoPrepopulationData = sinon.stub();
+    Search = sinon.stub();
+    LineageModelGenerator = { contact: sinon.stub() };
     window.EnketoForm = EnketoForm;
     EnketoForm.returns({
       init: enketoInit,
@@ -101,69 +138,70 @@ describe('Enketo service', () => {
       output: { update: () => {} },
     });
 
-    ServicesActions = { setLastChangedDoc: sinon.stub() };
+    setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
-    module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({
-        getAttachment: dbGetAttachment,
-        get: dbGet,
-        bulkDocs: dbBulkDocs
-      }));
-      $provide.value('$window', {
-        angular: { callbacks: [] },
-        URL: { createObjectURL: createObjectURL },
-        history: { replaceState: () => {} }
-      });
-      $provide.value('ContactSummary', ContactSummary);
-      $provide.value('Form2Sms', Form2Sms);
-      $provide.value('Search', Search);
-      $provide.value('Settings', Promise.resolve({}));
-      $provide.value('LineageModelGenerator', LineageModelGenerator);
-      $provide.value('FileReader', FileReader);
-      $provide.value('UserContact', UserContact);
-      $provide.value('UserSettings', UserSettings);
-      $provide.value('Language', Language);
-      $provide.value('TranslateFrom', TranslateFrom);
-      $provide.value('EnketoPrepopulationData', EnketoPrepopulationData);
-      $provide.value('AddAttachment', AddAttachment);
-      $provide.value('XmlForms', {
-        get: sinon.stub().resolves({ _id: 'abc' }),
-        findXFormAttachmentName: sinon.stub().resolves('mydoc')
-      });
-      $provide.value('ZScore', () => Promise.resolve(sinon.stub()));
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('ServicesActions', () => ServicesActions);
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
+        provideMockStore(),
+        {
+          provide: DbService,
+          useValue: {
+            get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
+          }
+        },
+        { provide: ContactSummaryService, useValue: { get: ContactSummary } },
+        { provide: Form2smsService, useValue: { transform: Form2Sms } },
+        { provide: SearchService, useValue: { search: Search } },
+        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
+        { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
+        { provide: FileReaderService, useValue: FileReader },
+        { provide: UserContactService, useValue: { get: UserContact } },
+        { provide: UserSettingsService, useValue: { get: UserSettings } },
+        { provide: LanguageService, useValue: { get: Language } },
+        { provide: TranslateFromService, useValue: { get: TranslateFrom } },
+        { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
+        { provide: AddAttachmentService, useValue: { add: AddAttachment } },
+        {
+          provide: XmlFormsService,
+          useValue: {
+            get: sinon.stub().resolves({ _id: 'abc' }),
+            findXFormAttachmentName: sinon.stub().resolves('mydoc')
+          }
+        },
+        { provide: ZScoreService, useValue: { getScoreUtil: sinon.stub().resolves(sinon.stub())} },
+      ],
     });
-    inject(_Enketo_ => service = _Enketo_ );
+
+    service = TestBed.inject(EnketoService);
+
     Language.resolves('en');
     TranslateFrom.returns('translated');
+    window.CHTCore = {};
   });
 
   afterEach(() => {
-    KarmaUtils.restore(EnketoForm, EnketoPrepopulationData, enketoInit, dbGetAttachment, dbGet, dbBulkDocs,
-      createObjectURL, ContactSummary, FileReader.utf8, Form2Sms, UserContact, form.validate, form.getDataStr,
-      Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
     sinon.restore();
+    delete window.CHTCore;
   });
 
   describe('render', () => {
 
-    it('renders error when user does not have associated contact', done => {
+    it('renders error when user does not have associated contact', () => {
       UserContact.resolves();
-      service
+      return service
         .render(null, 'not-defined')
         .then(() => {
-          done(new Error('Should throw error'));
+          assert.fail('Should throw error');
         })
         .catch(actual => {
           expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access ' +
             'to the associated contact. Talk to your administrator to correct this.');
           expect(actual.translationKey).to.equal('error.loading.form.no_contact');
-          done();
         });
     });
 
-    it('return error when form initialisation fails', done => {
+    it('return error when form initialisation fails', () => {
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
@@ -171,15 +209,14 @@ describe('Enketo service', () => {
       EnketoPrepopulationData.resolves('<xml></xml>');
       const expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
-      service
+      return service
         .render($('<div></div>'), mockEnketoDoc('myform'))
-        .then(function() {
-          done(new Error('Should throw error'));
+        .then(() => {
+          assert.fail('Should throw error');
         })
         .catch(actual => {
           expect(enketoInit.callCount).to.equal(1);
           expect(actual.message).to.equal(JSON.stringify(expected));
-          done();
         });
     });
 
@@ -206,7 +243,7 @@ describe('Enketo service', () => {
       });
     });
 
-    it('replaces img src with obj urls', () => {
+    it('replaces img src with obj urls', fakeAsync(() => {
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
@@ -218,8 +255,9 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
-      return service.render(wrapper, mockEnketoDoc('myform')).then(() => {
+      service.render(wrapper, mockEnketoDoc('myform')).then(() => {
         // need to wait for async get attachment to complete
+        tick();
         const img = wrapper.find('img').first();
         expect(img.css('visibility')).to.satisfy(val => {
           // different browsers return different values but both are equivalent
@@ -229,7 +267,7 @@ describe('Enketo service', () => {
         expect(createObjectURL.callCount).to.equal(1);
         expect(createObjectURL.args[0][0]).to.equal('myobjblob');
       });
-    });
+    }));
 
     it('leaves img wrapped and hides loader if failed to load', () => {
       UserContact.resolves({ contact_id: '123' });
@@ -658,8 +696,8 @@ describe('Enketo service', () => {
           expect(AddAttachment.args[0][1]).to.equal('content');
           expect(AddAttachment.args[0][2]).to.equal(content);
           expect(AddAttachment.args[0][3]).to.equal('application/xml');
-          expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
-          expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+          expect(setLastChangedDoc.callCount).to.equal(1);
+          expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
         });
       });
     });
@@ -732,8 +770,8 @@ describe('Enketo service', () => {
         expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
         expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
-        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(setLastChangedDoc.callCount).to.equal(1);
+        expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -774,8 +812,8 @@ describe('Enketo service', () => {
         expect(AddAttachment.args[0][1]).to.equal('content');
         expect(AddAttachment.args[0][2]).to.equal(content);
         expect(AddAttachment.args[0][3]).to.equal('application/xml');
-        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        expect(setLastChangedDoc.callCount).to.equal(1);
+        expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -785,7 +823,7 @@ describe('Enketo service', () => {
 
       form.validate.resolves(true);
       const content =
-          `<data>
+        `<data>
             <name>Sally</name>
             <lmp>10</lmp>
             <secret_code_name tag="hidden">S4L</secret_code_name>
@@ -847,8 +885,8 @@ describe('Enketo service', () => {
 
         expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
 
-        expect(ServicesActions.setLastChangedDoc.callCount).to.equal(1);
-        expect(ServicesActions.setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
+        expect(setLastChangedDoc.callCount).to.equal(1);
+        expect(setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
       });
     });
 
@@ -858,7 +896,7 @@ describe('Enketo service', () => {
 
       form.validate.resolves(true);
       const content =
-          `<data>
+        `<data>
             <name>Sally</name>
             <lmp>10</lmp>
             <secret_code_name tag="hidden">S4L</secret_code_name>
@@ -937,7 +975,7 @@ describe('Enketo service', () => {
     it('creates extra docs with references', () => {
       form.validate.resolves(true);
       const content =
-          `<data>
+        `<data>
             <name>Sally</name>
             <lmp>10</lmp>
             <secret_code_name tag="hidden">S4L</secret_code_name>
@@ -1019,7 +1057,7 @@ describe('Enketo service', () => {
     it('creates extra docs with repeats', () => {
       form.validate.resolves(true);
       const content =
-          `<data xmlns:jr="http://openrosa.org/javarosa">
+        `<data xmlns:jr="http://openrosa.org/javarosa">
             <name>Sally</name>
             <lmp>10</lmp>
             <secret_code_name tag="hidden">S4L</secret_code_name>
@@ -1072,9 +1110,9 @@ describe('Enketo service', () => {
 
         for (let i=1; i<=3; ++i) {
           const repeatDocN = actual[i];
-          chai.expect(repeatDocN._id).to.match(/(\w+-)\w+/);
-          chai.expect(repeatDocN.my_parent).to.equal(reportId);
-          chai.expect(repeatDocN.some_property).to.equal('some_value_'+i);
+          expect(repeatDocN._id).to.match(/(\w+-)\w+/);
+          expect(repeatDocN.my_parent).to.equal(reportId);
+          expect(repeatDocN.some_property).to.equal('some_value_'+i);
         }
 
         expect(_.uniq(_.map(actual, '_id')).length).to.equal(4);
@@ -1084,8 +1122,11 @@ describe('Enketo service', () => {
     it('saves attachments', () => {
       const jqFind = $.fn.find;
       sinon.stub($.fn, 'find');
+      //@ts-ignore
       $.fn.find.callsFake(jqFind);
+
       $.fn.find
+        //@ts-ignore
         .withArgs('input[type=file][name="/my-form/my_file"]')
         .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
 
@@ -1117,7 +1158,7 @@ describe('Enketo service', () => {
     it('removes binary data from content', () => {
       form.validate.resolves(true);
       const content =
-`<my-form>
+        `<my-form>
   <name>Mary</name>
   <age>10</age>
   <gender>f</gender>
@@ -1125,7 +1166,7 @@ describe('Enketo service', () => {
 </my-form>`;
 
       const expected =
-`<my-form>
+        `<my-form>
   <name>Mary</name>
   <age>10</age>
   <gender>f</gender>
@@ -1151,11 +1192,14 @@ describe('Enketo service', () => {
     it('attachment names are relative to the form name not the root node name', () => {
       const jqFind = $.fn.find;
       sinon.stub($.fn, 'find');
+      //@ts-ignore
       $.fn.find.callsFake(jqFind);
       $.fn.find
+        //@ts-ignore
         .withArgs('input[type=file][name="/my-root-element/my_file"]')
         .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
       $.fn.find
+        //@ts-ignore
         .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
         .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
       form.validate.resolves(true);

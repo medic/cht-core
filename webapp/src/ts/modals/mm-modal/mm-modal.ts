@@ -31,7 +31,7 @@ export class MmModal {
   }
 }
 
-Injectable({
+@Injectable({
   providedIn: 'root'
 })
 export class MmModalAbstract {

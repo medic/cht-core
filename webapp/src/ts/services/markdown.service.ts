@@ -18,9 +18,9 @@ export class MarkdownService {
     html = html.replace(/^#### (.*)\n/gm, '<h4>$1</h4>');
     html = html.replace(/^##### (.*)\n/gm, '<h5>$1</h5>');
     html = html.replace(/__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>');
-    html = html.replace(/\*\*([^\s]([^*]*[^\s])?)\*\*!/gm, '<strong>$1</strong>');
+    html = html.replace(/\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>');
     html = html.replace(/_([^_\s]([^_]*[^_\s])?)_/gm, '<em>$1</em>');
-    html = html.replace(/\*([^*\s]([^*]*[^*\s])?)\*!/gm, '<em>$1</em>');
+    html = html.replace(/\*([^*\s]([^*]*[^*\s])?)\*/gm, '<em>$1</em>');
     html = html.replace(/\[([^\]]*)\]\(([^)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     html = html.replace(/\n/gm, '<br />');
 
@@ -39,29 +39,28 @@ export class MarkdownService {
   }
 
   private translateElement(e) {
-    const $service = this;
-    return e.each(function() {
+    return e.each((idx, element) => {
       let html;
       const $childStore = $('<div/>');
-      $(this)
+      $(element)
         .children(':not(input, select, textarea)')
-        .each(function(index) {
+        .each((index, element) => {
           const name = '$$$' + index;
-          $service
-            .translateElement($(this).clone())
+          this
+            .translateElement($(element).clone())
             .appendTo($childStore);
-          $(this).replaceWith(name);
+          $(element).replaceWith(name);
         });
 
-      html = $service.basic($(this).html());
+      html = this.basic($(element).html());
 
       $childStore
         .children()
-        .each(function(i) {
-          const regex = new RegExp('\\$\\$\\$' + i);
-          html = html.replace(regex, $(this)[ 0 ].outerHTML);
+        .each((idx, element) => {
+          const regex = new RegExp('\\$\\$\\$' + idx);
+          html = html.replace(regex, $(element)[0].outerHTML);
         });
-      $(this).text('').append(html);
+      $(element).text('').append(html);
     });
   }
 

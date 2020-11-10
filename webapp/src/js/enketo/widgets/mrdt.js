@@ -1,10 +1,4 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
-
-define( function( require, exports, module ) {
+{
   'use strict';
   const Widget = require('enketo-core/src/js/Widget');
   const $ = require( 'jquery' );
@@ -41,19 +35,18 @@ define( function( require, exports, module ) {
       .replace(/^<input /, '<textarea ')
       .replace(/<\/input>/, '</textarea>');
     $input.replaceWith(textarea);
-    const angularServices = angular.element( document.body ).injector();
-    const $translate = angularServices.get( '$translate' );
-    const service = angularServices.get( 'MRDT' );
+    const $translate = window.CHTCore.Translate;
+    const MRDT = window.CHTCore.MRDT;
 
-    if ( !service.enabled() ) {
-      $translate( 'mrdt.disabled' ).then(function( label ) {
+    if ( !MRDT.enabled() ) {
+      $translate.get( 'mrdt.disabled' ).toPromise().then((label) => {
         $el.append( '<p>' + label + '</p>' );
       });
       return;
     }
 
     $el.on( 'click', '.btn.mrdt-verify', function() {
-      service.verify().then( function(data) {
+      MRDT.verify().then((data = {}) => {
         const image = data.image;
         const timeTaken = data.timeTaken;
         $( self.element )
@@ -73,7 +66,7 @@ define( function( require, exports, module ) {
       } );
     } );
 
-    $translate( 'mrdt.verify' ).then( function( label ) {
+    $translate.get( 'mrdt.verify' ).toPromise().then((label) => {
       $el.append(
         '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
                 '<div><img class="mrdt-preview"/></div>'
@@ -102,4 +95,4 @@ define( function( require, exports, module ) {
     'name': pluginName,
     'selector': '.or-appearance-mrdt-verify',
   };
-} );
+}

@@ -29,7 +29,7 @@ import { TranslationLoaderProvider } from './providers/translation-loader.provid
 import { DbService } from './services/db.service';
 import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
-import { GlobalEffects } from '@mm-effects/global';
+import { GlobalEffects } from '@mm-effects/global.effects';
 import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
