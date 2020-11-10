@@ -111,7 +111,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       },
       filter: (change) => {
         return (
-          this.contactTypes.map(type => type.id).includes(change.doc.type) ||
+          (change.doc && this.contactTypes.map(type => type.id).includes(change.doc.type)) ||
           (change.deleted && this.listContains(change.id)) ||
           this.isRelevantVisitReport(change.doc) ||
           this.listContains(change.id)
@@ -437,7 +437,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.loading = true;
     if (this.filters.search || this.filters.simprintsIdentities) {
       this.filtered = true;
-      this.contactsActions.resetContactsList();
       return this.query({});
     } else {
       this.filtered = false;
@@ -447,7 +446,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   sort(sortDirection?) {
     this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
-    this.contactsActions.resetContactsList();
     this.query({});
   }
 
