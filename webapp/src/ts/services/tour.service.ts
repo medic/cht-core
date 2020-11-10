@@ -73,10 +73,14 @@ export class TourService {
   private mmShow(list, showContent) {
     const showingContent = $('body').is('.show-content');
     if (showContent !== showingContent) {
+      let firstLink = null;
       if (showContent) {
-        $(list).find('li').filter(':first').find('a').trigger('click');
+        firstLink = $(list).find('li').filter(':first').find('a')[0];
       } else if (isMobile()) {
-        $('.navigation .filter-bar-back a').trigger('click');
+        firstLink = $('.navigation .filter-bar-back a')[0];
+      }
+      if (firstLink) {
+        firstLink.click();
       }
     }
   }
