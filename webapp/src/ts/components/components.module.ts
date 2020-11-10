@@ -24,6 +24,7 @@ import { ReportImageComponent } from '@mm-components/report-image/report-image.c
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { ActionbarComponent } from './actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
     NavigationComponent,
     ActionbarComponent,
     EnketoComponent,
+    AnalyticsTargetsProgressComponent,
   ],
   imports: [
     CommonModule,
@@ -71,6 +73,7 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
     NavigationComponent,
     ActionbarComponent,
     EnketoComponent,
+    AnalyticsTargetsProgressComponent,
   ]
 })
 export class ComponentsModule { }

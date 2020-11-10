@@ -28,7 +28,7 @@ export class TranslateFromPipe implements PipeTransform {
   ) {
   }
 
-  transform(value, scope) {
+  transform(value, scope?) {
     return this.translateFromService.get(value, scope);
   }
 }

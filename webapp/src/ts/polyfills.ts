@@ -84,6 +84,7 @@ declare global {
 (window as any).process = {
   env: { DEBUG: undefined },
   browser: true,
+  nextTick: require('next-tick')
 }
 
 interface JQuery {
