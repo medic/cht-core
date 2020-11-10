@@ -110,8 +110,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
         });
       },
       filter: (change) => {
+        console.log('filtering this::');
+        console.log(change);
+        console.log(this.contactTypes);
         return (
-          this.contactTypes.includes(change.doc) ||
+          this.contactTypes.map(type => type.id).includes(change.doc.type) ||
           (change.deleted && this.listContains(change.id)) ||
           this.isRelevantVisitReport(change.doc) ||
           this.listContains(change.id)
