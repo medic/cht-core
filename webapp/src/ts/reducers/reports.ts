@@ -34,15 +34,6 @@ const removeReport = (state, report) => {
   return { ...state, reports, reportsById };
 };
 
-const markReportRead = (state, id) => {
-  const report = state.reportsById.get(id);
-  if (!report) {
-    return state;
-  }
-
-  return updateReports(state, [{ ...report, read: true }]);
-};
-
 const _reportsReducer = createReducer(
   initialState,
   on(Actions.updateReportsList, (state, { payload: { reports } }) => updateReports(state, reports)),
@@ -67,8 +58,6 @@ const _reportsReducer = createReducer(
   on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
 
   on(GlobalActions.clearSelected, (state) => ({ ...state, selected: [] })),
-
-  on(Actions.markReportRead, (state, { payload: { id } }) => markReportRead(state, id)),
 );
 
 export function reportsReducer(state, action) {

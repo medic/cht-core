@@ -23,7 +23,7 @@ export class MarkReadService {
       .filter(doc => doc._id);
 
     if (!metaDocs.length) {
-      return;
+      return Promise.resolve();
     }
 
     return this.dbService
