@@ -27,10 +27,10 @@ describe('RulesEngineService', () => {
   let userContactService;
   let userSettingsService;
   let changesService;
-  let contactTypesService;
   let translateFromService;
   let rulesEngineCoreStubs;
   let pipesService;
+  let clock;
 
   let fetchTasksFor;
   let fetchTasksForRecursive;
@@ -155,21 +155,11 @@ describe('RulesEngineService', () => {
         { provide: PipesService, useValue: pipesService }
       ]
     });
-
-    authService = TestBed.inject(AuthService);
-    sessionService = TestBed.inject(SessionService);
-    settingsService = TestBed.inject(SettingsService);
-    telemetryService = TestBed.inject(TelemetryService);
-    uhcSettingsService = TestBed.inject(UHCSettingsService);
-    userContactService = TestBed.inject(UserContactService);
-    userSettingsService = TestBed.inject(UserSettingsService);
-    changesService = TestBed.inject(ChangesService);
-    contactTypesService = TestBed.inject(ContactTypesService);
-    translateFromService = TestBed.inject(TranslateFromService);
   });
 
   afterEach(() => {
     sinon.restore();
+    clock && clock.restore();
   });
 
   describe('initialization', () => {
@@ -454,7 +444,7 @@ describe('RulesEngineService', () => {
 
   it('should ensure freshness of tasks and targets', async () => {
     rulesEngineCoreStubs.getDirtyContacts.returns(Array.from({ length: 20 }).map(i => i));
-    const clock = sinon.useFakeTimers(1000);
+    clock = sinon.useFakeTimers(1000);
     service = TestBed.inject(RulesEngineService);
 
     await service.isEnabled();
@@ -471,7 +461,7 @@ describe('RulesEngineService', () => {
 
   it('should ensure freshness of tasks only', async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
-    const clock = sinon.useFakeTimers(1000);
+    clock = sinon.useFakeTimers(1000);
     service = TestBed.inject(RulesEngineService);
 
     await service.fetchTargets();
@@ -491,7 +481,7 @@ describe('RulesEngineService', () => {
   it('should cancel all ensure freshness threads', async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
     fetchTasksResult = sinon.stub().resolves([]);
-    const clock = sinon.useFakeTimers(1000);
+    clock = sinon.useFakeTimers(1000);
     service = TestBed.inject(RulesEngineService);
 
     service.fetchTaskDocsForAllContacts();
@@ -514,7 +504,7 @@ describe('RulesEngineService', () => {
   it('should record correct telemetry data with emitted events', async () => {
     const realSetTimeout = setTimeout;
     const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
-    const clock = sinon.useFakeTimers(1000);
+    clock = sinon.useFakeTimers(1000);
     let fetchTargetResultPromise;
     const fetchTasksResultPromise = [];
     fetchTargetsResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTargetResultPromise = resolve));
@@ -572,14 +562,13 @@ describe('RulesEngineService', () => {
     await nextTick();
     expect(telemetryService.record.callCount).to.equal(12);
     expect(telemetryService.record.args[11]).to.deep.equal(['rules-engine:tasks:some-contacts', 550]);
-    clock.restore();
   });
 
   it('should record correct telemetry data for disabled actions', async () => {
     authService.has.withArgs('can_view_tasks').resolves(false);
     const realSetTimeout = setTimeout;
     const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
-    const clock = sinon.useFakeTimers(1000);
+    clock = sinon.useFakeTimers(1000);
     fetchTargetsResult = sinon.stub().resolves([]);
     fetchTasksResult = sinon.stub().resolves([]);
     service = TestBed.inject(RulesEngineService);
@@ -613,7 +602,5 @@ describe('RulesEngineService', () => {
     expect(telemetryService.record.args[6]).to.deep.equal(['rules-engine:targets', 0]);
     expect(telemetryService.record.args[7]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
     expect(telemetryService.record.args[8]).to.deep.equal(['rules-engine:tasks:some-contacts', 0]);
-
-    clock.restore();
   });
 });

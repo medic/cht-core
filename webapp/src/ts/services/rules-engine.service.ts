@@ -35,17 +35,17 @@ export class RulesEngineCoreFactoryService {
 })
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
-  MAX_LINEAGE_DEPTH = 50;
-  ENSURE_FRESHNESS_SECS = 120;
-  subscriptions: Subscription = new Subscription();
-  initialized;
-  uhcMonthStartDate;
-  ensureTaskFreshness;
-  ensureTargetFreshness;
-  ensureTaskFreshnessTelemetryData;
-  ensureTargetFreshnessTelemetryData;
-  isTaskDebounceActive;
-  isTargetDebounceActive;
+  private readonly MAX_LINEAGE_DEPTH = 50;
+  private readonly ENSURE_FRESHNESS_SECS = 120;
+  private subscriptions: Subscription = new Subscription();
+  private initialized;
+  private uhcMonthStartDate;
+  private ensureTaskFreshness;
+  private ensureTargetFreshness;
+  private ensureTaskFreshnessTelemetryData;
+  private ensureTargetFreshnessTelemetryData;
+  private isTaskDebounceActive;
+  private isTargetDebounceActive;
 
   constructor(
     private translateService: TranslateService,
@@ -70,7 +70,7 @@ export class RulesEngineService implements OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  initialize() {
+  private initialize() {
     return Promise
       .all([
         this.authService.has('can_view_tasks'),
@@ -101,12 +101,18 @@ export class RulesEngineService implements OnDestroy {
                   this.assignMonthStartDate(settingsDoc);
                   this.monitorChanges(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
 
-                  this.ensureTaskFreshness = _debounce(this.fetchTaskDocsForAllContacts, this.ENSURE_FRESHNESS_SECS * 1000);
+                  this.ensureTaskFreshness = _debounce(() => {
+                    this.isTaskDebounceActive = false;
+                    this.fetchTaskDocsForAllContacts();
+                  }, this.ENSURE_FRESHNESS_SECS * 1000);
                   this.isTaskDebounceActive = true;
                   this.ensureTaskFreshness();
                   this.ensureTaskFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true);
 
-                  this.ensureTargetFreshness = _debounce(this.fetchTargets, this.ENSURE_FRESHNESS_SECS * 1000);
+                  this.ensureTargetFreshness = _debounce(() => {
+                    this.isTargetDebounceActive = false;
+                    this.fetchTargets();
+                  }, this.ENSURE_FRESHNESS_SECS * 1000);
                   this.isTargetDebounceActive = true;
                   this.ensureTargetFreshness();
                   this.ensureTargetFreshnessTelemetryData = this.telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true);
@@ -267,7 +273,6 @@ export class RulesEngineService implements OnDestroy {
   }
 
   fetchTaskDocsForAllContacts() {
-    this.isTaskDebounceActive = false;
     const telemetryData = this.telemetryEntry('rules-engine:tasks:all-contacts');
 
     return this.initialized
@@ -301,7 +306,6 @@ export class RulesEngineService implements OnDestroy {
   }
 
   fetchTargets() {
-    this.isTargetDebounceActive = false;
     const telemetryData = this.telemetryEntry('rules-engine:targets');
 
     return this.initialized

@@ -24,7 +24,7 @@ export class AnalyticsTargetsComponent implements OnInit {
     this.getTargets();
   }
 
-  getTargets() {
+  private getTargets() {
     return this.rulesEngineService
       .isEnabled()
       .then(isEnabled => {

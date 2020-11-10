@@ -13,7 +13,7 @@ import { SessionService } from './session.service';
  */
 export class TelemetryService {
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
-  private DEVICE_ID_KEY = 'medic-telemetry-device-id';
+  private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private DB_ID_KEY;
   private LAST_AGGREGATED_DATE_KEY;
 

@@ -19,6 +19,15 @@ describe('TelemetryService', () => {
   let storageSetItemStub;
   let storageRemoveItemStub;
   let consoleErrorSpy;
+  let windowPouchOriginal = window.PouchDB;
+  let windowScreenOriginal = {
+    availWidth: window.screen.availWidth,
+    availHeight: window.screen.availHeight
+  };
+  let windowNavigatorOriginal = {
+    userAgent: window.navigator.userAgent,
+    hardwareConcurrency: window.navigator.hardwareConcurrency
+  };
 
   beforeEach(() => {
     dbInstance = {
@@ -46,8 +55,6 @@ describe('TelemetryService', () => {
     });
 
     service = TestBed.inject(TelemetryService);
-    dbService = TestBed.inject(DbService);
-    sessionService = TestBed.inject(SessionService);
     clock = sinon.useFakeTimers(NOW);
     window.PouchDB = () => pouchDb;
   });
@@ -55,6 +62,27 @@ describe('TelemetryService', () => {
   afterEach(() => {
     clock.restore();
     sinon.restore();
+    window.PouchDB = windowPouchOriginal;
+    Object.defineProperty(
+      window.navigator,
+      'userAgent',
+      { value: windowNavigatorOriginal.userAgent, configurable: true }
+    );
+    Object.defineProperty(
+      window.navigator,
+      'hardwareConcurrency',
+      { value: windowNavigatorOriginal.hardwareConcurrency, configurable: true }
+    );
+    Object.defineProperty(
+      window.screen,
+      'availWidth',
+      { value: windowScreenOriginal.availWidth, configurable: true }
+    );
+    Object.defineProperty(
+      window.screen,
+      'availHeight',
+      { value: windowScreenOriginal.availHeight, configurable: true }
+    );
   });
 
   describe('record()', () => {
@@ -163,10 +191,10 @@ describe('TelemetryService', () => {
         ]
       });
 
-      Object.defineProperty(window.navigator, 'userAgent', { value: 'Agent Smith' });
-      Object.defineProperty(window.navigator, 'hardwareConcurrency', { value: 4 });
-      Object.defineProperty(window.screen, 'availWidth', { value: 768});
-      Object.defineProperty(window.screen, 'availHeight', { value: 1024 });
+      Object.defineProperty(window.navigator, 'userAgent', { value: 'Agent Smith', configurable: true });
+      Object.defineProperty(window.navigator, 'hardwareConcurrency', { value: 4, configurable: true });
+      Object.defineProperty(window.screen, 'availWidth', { value: 768, configurable: true });
+      Object.defineProperty(window.screen, 'availHeight', { value: 1024, configurable: true });
 
       await service.record('test', 1);
 
@@ -246,10 +274,10 @@ describe('TelemetryService', () => {
       });
       pouchDb.close = sinon.stub();
 
-      Object.defineProperty(window.navigator, 'userAgent', { value: 'Agent Smith' });
-      Object.defineProperty(window.navigator, 'hardwareConcurrency', { value: 4 });
-      Object.defineProperty(window.screen, 'availWidth', { value: 768});
-      Object.defineProperty(window.screen, 'availHeight', { value: 1024 });
+      Object.defineProperty(window.navigator, 'userAgent', { value: 'Agent Smith', configurable: true });
+      Object.defineProperty(window.navigator, 'hardwareConcurrency', { value: 4, configurable: true });
+      Object.defineProperty(window.screen, 'availWidth', { value: 768, configurable: true });
+      Object.defineProperty(window.screen, 'availHeight', { value: 1024, configurable: true });
 
       await service.record('test', 1);
 

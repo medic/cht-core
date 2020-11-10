@@ -59,7 +59,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
-  getAnalyticsModules() {
+  private getAnalyticsModules() {
     return this.analyticsModulesService
       .get()
       .then((modules) => {

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -52,7 +52,6 @@ describe('AnalyticsComponent', () => {
     .then(() => {
       fixture = TestBed.createComponent(AnalyticsComponent);
       component = fixture.componentInstance;
-      analyticsModulesService = TestBed.inject(AnalyticsModulesService);
       router = TestBed.inject(Router);
       fixture.detectChanges();
     });
@@ -70,41 +69,43 @@ describe('AnalyticsComponent', () => {
     expect(analyticsModulesService.get.callCount).to.equal(1);
   });
 
-  it('should set selected the specified module', async () => {
+  it('should set selected the specified module', fakeAsync(() => {
     sinon.reset();
     const analyticsModules = [
       { route: 'reporting' },
       { route: 'targets' }
     ];
-    analyticsModulesService.get.resolves([...analyticsModules]);
+    analyticsModulesService.get.resolves(analyticsModules);
 
-    await component.getAnalyticsModules();
+    component.ngOnInit();
+    tick(50);
 
     expect(analyticsModulesService.get.callCount).to.equal(1);
-    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(1);
-    expect(analyticsActions.setSelectedAnalytics.args[0][0]).to.equal(analyticsModules[1]);
+    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(2);
+    expect(analyticsActions.setSelectedAnalytics.getCall(1).args[0]).to.equal(analyticsModules[1]);
     expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
-    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.include.members(analyticsModules);
-  });
+    expect(analyticsActions.setAnalyticsModules.args[0][0]).to.have.members(analyticsModules);
+  }));
 
-  it('should jump to child route if single module is present', async () => {
+  it('should jump to child route if single module is present', fakeAsync(() => {
     sinon.reset();
     activatedRoute.snapshot.routeConfig.path = 'analytics';
     const navigateStub = sinon.stub(router, 'navigate');
     const analyticsModules = [{ route: 'targets' }];
     analyticsModulesService.get.resolves(analyticsModules);
 
-    await component.getAnalyticsModules();
+    component.ngOnInit();
+    tick(50);
 
     expect(analyticsModulesService.get.callCount).to.equal(1);
-    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(0);
+    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(1);
     expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
     expect(analyticsActions.setAnalyticsModules.args[0][0]).to.include.members(analyticsModules);
     expect(navigateStub.callCount).to.equal(1);
-    expect(navigateStub.args[0][0][0]).to.equal('targets');
-  });
+    expect(navigateStub.args[0]).to.deep.equal([['targets']]);
+  }));
 
-  it('should not jump to child route if multiple module are present', async () => {
+  it('should not jump to child route if multiple module are present', fakeAsync(() => {
     sinon.reset();
     activatedRoute.snapshot.routeConfig.path = 'analytics';
     const navigateStub = sinon.stub(router, 'navigate');
@@ -114,12 +115,13 @@ describe('AnalyticsComponent', () => {
     ];
     analyticsModulesService.get.resolves(analyticsModules);
 
-    await component.getAnalyticsModules();
+    component.ngOnInit();
+    tick(50);
 
     expect(analyticsModulesService.get.callCount).to.equal(1);
-    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(0);
+    expect(analyticsActions.setSelectedAnalytics.callCount).to.equal(1);
     expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
     expect(analyticsActions.setAnalyticsModules.args[0][0]).to.include.members(analyticsModules);
     expect(navigateStub.callCount).to.equal(0);
-  });
+  }));
 });

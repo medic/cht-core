@@ -27,9 +27,6 @@ describe('AnalyticsModulesService', () => {
     });
 
     service = TestBed.inject(AnalyticsModulesService);
-    authService = TestBed.inject(AuthService);
-    scheduledFormsService = TestBed.inject(ScheduledFormsService);
-    settingsService = TestBed.inject(SettingsService);
   });
 
   afterEach(() => {

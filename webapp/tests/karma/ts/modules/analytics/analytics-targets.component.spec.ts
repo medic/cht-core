@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from "chai";
 
@@ -44,11 +44,12 @@ describe('AnalyticsTargetsComponent', () => {
     expect(component).to.exist;
   });
 
-  it('should set up component when rules engine is not enabled', async () => {
+  it('should set up component when rules engine is not enabled', fakeAsync(() => {
     sinon.reset();
     rulesEngineService.isEnabled.resolves(false);
 
-    await component.getTargets();
+    component.ngOnInit();
+    tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
@@ -57,14 +58,15 @@ describe('AnalyticsTargetsComponent', () => {
     expect(telemetryService.record.args[0][0]).to.equal('analytics:targets:load');
     expect(component.targets).to.deep.equal([]);
     expect(component.loading).to.equal(false);
-  });
+  }));
 
-  it('should fetch targets when rules engine is enabled', async () => {
+  it('should fetch targets when rules engine is enabled', fakeAsync(() => {
     sinon.reset();
     rulesEngineService.isEnabled.resolves(true);
     rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
 
-    await component.getTargets();
+    component.ngOnInit();
+    tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
@@ -73,9 +75,9 @@ describe('AnalyticsTargetsComponent', () => {
     expect(telemetryService.record.args[0][0]).to.equal('analytics:targets:load');
     expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
     expect(component.loading).to.equal(false);
-  });
+  }));
 
-  it('should filter targets to visible ones', async () => {
+  it('should filter targets to visible ones', fakeAsync(() => {
     sinon.reset();
     rulesEngineService.isEnabled.resolves(true);
     const targets = [
@@ -87,7 +89,8 @@ describe('AnalyticsTargetsComponent', () => {
     ];
     rulesEngineService.fetchTargets.resolves(targets);
 
-    await component.getTargets();
+    component.ngOnInit();
+    tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
@@ -98,18 +101,19 @@ describe('AnalyticsTargetsComponent', () => {
       { id: 'target1', visible: 'something' },
     ]);
     expect(component.loading).to.equal(false);
-  });
+  }));
 
-  it('should catch rules engine errors', async () => {
+  it('should catch rules engine errors', fakeAsync(() => {
     sinon.reset();
     rulesEngineService.isEnabled.rejects({ some: 'err' });
 
-    await component.getTargets();
+    component.ngOnInit();
+    tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
     expect(component.targetsDisabled).to.equal(false);
     expect(component.targets).to.deep.equal([]);
     expect(component.loading).to.equal(false);
-  });
+  }));
 });
