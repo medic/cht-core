@@ -3,7 +3,6 @@ import { expect } from 'chai';
 import * as MessageFormat from 'messageformat';
 
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-message-format-compiler.provider';
-import { exitCodeFromResult } from '@angular/compiler-cli';
 
 let service;
 
@@ -16,7 +15,6 @@ describe('Translate MessageFormat compiler provider', () => {
     it('should initialize local messageFormat', () => {
       service = new TranslateMessageFormatCompilerProvider();
       const compiled = service.compile('the {value}', 'fr');
-      console.log(compiled);
       expect(compiled).to.be.a('function');
       expect(compiled({ value: 'thing' })).to.equal('the thing');
     });
