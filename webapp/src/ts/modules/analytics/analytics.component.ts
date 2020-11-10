@@ -36,10 +36,9 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     this.globalActions.unsetSelected();
     this.getAnalyticsModules();
 
-    // TODO uncomment once this component is working-
-    /*if (this.route.snapshot.queryParams.tour) {
+    if (this.route.snapshot.queryParams?.tour) {
       this.tourService.start(this.route.snapshot.queryParams.tour);
-    }*/
+    }
   }
 
   ngOnDestroy(): void {

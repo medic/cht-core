@@ -114,7 +114,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
 
-    if (this.route.snapshot.queryParams.tour) {
+    if (this.route.snapshot.queryParams?.tour) {
       this.tourService.start(this.route.snapshot.queryParams.tour);
     }
 
