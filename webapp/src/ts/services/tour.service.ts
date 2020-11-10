@@ -476,7 +476,6 @@ export class TourService {
       .then(([canView]) => {
         return canView && {
           order: 4,
-
           id: 'analytics',
           icon: 'fa-bar-chart-o',
           name: 'Analytics'

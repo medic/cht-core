@@ -1,13 +1,12 @@
-import { Injectable } from "@angular/core";
-import {TourService} from "./tour.service";
-import {GlobalActions} from "../actions/global";
-import {Store} from "@ngrx/store";
-import {UpdateUserService} from "./update-user.service";
-import {SessionService} from "./session.service";
-import {TourSelectComponent} from "../modals/tour/tour-select.component";
-import {ModalService} from "../modals/mm-modal/mm-modal";
-import {SettingsService} from "./settings.service";
-import {UserSettingsService} from "./user-settings.service";
+import { Injectable } from '@angular/core';
+
+import { TourService } from './tour.service';
+import { UpdateUserService } from './update-user.service';
+import { SessionService } from './session.service';
+import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { SettingsService } from './settings.service';
+import { UserSettingsService } from './user-settings.service';
 
 class StartupModal {
   required: (settings, user?) => boolean
@@ -19,6 +18,7 @@ class StartupModal {
 })
 export class StartupModalsService {
 
+  tours: object[];
   modalsToShow: StartupModal[];
   startupModals: StartupModal[] = [
     // welcome screen
@@ -48,7 +48,7 @@ export class StartupModalsService {
     },
     // tour
     {
-      required: (settings, user) => !user.known,
+      required: (settings, user) => !user.known && this.tours.length > 0,
       render: () => {
         this.openTourSelect();
         return this.updateUserService.update(
@@ -61,14 +61,17 @@ export class StartupModalsService {
   ];
 
   constructor(
-    private store: Store,
     private modalService: ModalService,
     private tourService: TourService,
     private updateUserService: UpdateUserService,
     private sessionService: SessionService,
     private settingsService: SettingsService,
     private userSettingsService: UserSettingsService,
-  ) { }
+  ) {
+    this.tourService.getTours().then(tours => {
+      this.tours = tours;
+    });
+  }
 
   private openTourSelect() {
     this.modalService.show(TourSelectComponent);
@@ -97,7 +100,7 @@ export class StartupModalsService {
     return this.modalsToShow
       .shift()
       .render()
-      .then(this.showModals);
+      .then(()=>this.showModals());
   }
 }
 
