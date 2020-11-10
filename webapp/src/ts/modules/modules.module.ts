@@ -13,6 +13,7 @@ import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ReportsContentComponent } from './reports/reports-content.component';
+import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
 import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
@@ -21,6 +22,8 @@ import { ContactsContentComponent } from './contacts/contacts-content.component'
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
+import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
+import { AnalyticsModulesComponent } from './analytics/analytics-modules.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +32,7 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
+    ReportsAddComponent,
     ReportsContentComponent,
     MessagesComponent,
     ContactsComponent,
@@ -37,6 +41,8 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
     ContactsFiltersComponent,
     MessagesContentComponent,
     PrivacyPolicyComponent,
+    AnalyticsTargetsComponent,
+    AnalyticsModulesComponent,
   ],
   imports: [
     CommonModule,
@@ -53,7 +59,6 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
     ErrorComponent,
     AnalyticsComponent,
     ReportsComponent,
-    ReportsContentComponent,
     MessagesComponent,
     ContactsComponent,
     ContactsContentComponent,

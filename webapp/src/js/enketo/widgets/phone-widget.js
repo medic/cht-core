@@ -1,10 +1,4 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
-
-define( function( require, exports, module ) {
+{
   'use strict';
   const FormModel = require( 'enketo-core/src/js/Form-model' );
   const Widget = require( 'enketo-core/src/js/Widget' );
@@ -17,10 +11,8 @@ define( function( require, exports, module ) {
   // Set up enketo validation for `phone` input type
   FormModel.prototype.types.tel = {
     validate: function( fieldValue ) {
-      const angularServices = angular.element( document.body ).injector();
-      const Settings = angularServices.get( 'Settings' );
-
-      return Settings()
+      return window.CHTCore.Settings
+        .get()
         .then( function( settings ) {
           if ( !phoneNumber.validate( settings, fieldValue ) ) {
             throw new Error( 'invalid phone number: "' + fieldValue + '"' );
@@ -32,8 +24,8 @@ define( function( require, exports, module ) {
           // assumption that we have an object type `person` with a
           // field `phone`.
 
-          const DB = angularServices.get( 'DB' );
-          return DB().query('medic-client/contacts_by_phone', { key: phoneNumber });
+          const DB = window.CHTCore.DB;
+          return DB.get().query('medic-client/contacts_by_phone', { key: phoneNumber });
         } )
         .then( function( res ) {
           if ( res.rows.length === 0 ) {
@@ -63,8 +55,7 @@ define( function( require, exports, module ) {
     this.namespace = pluginName;
     Widget.call( this, element, options );
     if ( !Settings ) {
-      const angularInjector = angular.element( document.body ).injector();
-      Settings = angularInjector.get( 'Settings' );
+      Settings = window.CHTCore.Settings;
     }
     this._init( Settings );
   }
@@ -92,7 +83,7 @@ define( function( require, exports, module ) {
     // TODO(estellecomment): move this to a catch clause, when settings aren't found.
     formatAndCopy( $proxyInput, $input, {} );
 
-    this.builtPromise = Settings()
+    this.builtPromise = Settings.get()
       .then( function( settings ) {
         formatAndCopy( $proxyInput, $input, settings );
       } );
@@ -133,4 +124,4 @@ define( function( require, exports, module ) {
     'selector': 'input[type="tel"]',
     'widget': PhoneWidget
   };
-} );
+}

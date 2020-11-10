@@ -1,6 +1,6 @@
 <div role="document" id="{{id}}">
   <div class="modal-header">
-    <button type="button" class="cancel close" ng-disabled="status?.processing" (click)="onCancel.emit()">&times;</button>
+    <button type="button" class="cancel close" [disabled]="status?.processing" (click)="onCancel.emit()">&times;</button>
     <h2 translate>{{titleKey}}</h2>
   </div>
   <div class="modal-body"><ng-content></ng-content></div>

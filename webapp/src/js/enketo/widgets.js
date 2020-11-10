@@ -1,10 +1,4 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
-
-define( function( require, exports, module ) {
+{
   const fileManager = require( 'enketo-core/src/js/file-manager' );
   fileManager.isTooLarge = function( file ) {
     return file && file.size > 32 * 1024;
@@ -31,4 +25,4 @@ define( function( require, exports, module ) {
   ];
 
   module.exports = widgets;
-} );
+}

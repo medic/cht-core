@@ -25,6 +25,8 @@ import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { ActionbarComponent } from './actionbar/actionbar.component';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +48,8 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     ReportImageComponent,
     NavigationComponent,
     ActionbarComponent,
+    EnketoComponent,
+    AnalyticsTargetsProgressComponent,
   ],
   imports: [
     CommonModule,
@@ -74,6 +78,8 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
     ReportImageComponent,
     NavigationComponent,
     ActionbarComponent,
+    EnketoComponent,
+    AnalyticsTargetsProgressComponent,
   ]
 })
 export class ComponentsModule { }

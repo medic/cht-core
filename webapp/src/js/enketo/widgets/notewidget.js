@@ -1,8 +1,3 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
 /**
  * @preserve Copyright 2012 Martijn van de Rijdt & Modilabs
  *
@@ -19,7 +14,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
  * limitations under the License.
  */
 
-define( function( require, exports, module ) {
+{
   'use strict';
   const Widget = require( 'enketo-core/src/js/Widget' );
   const $ = require( 'jquery' );
@@ -50,11 +45,11 @@ define( function( require, exports, module ) {
 
   Notewidget.prototype._init = function() {
     const $el = $( this.element );
-    const markdownToHtml = angular.element(document.body).injector().get('Markdown').element;
+    const markdownToHtml = window.CHTCore.Markdown;
 
     applyLiveLinkHtml( $el );
 
-    markdownToHtml($el.find( '.question-label' ));
+    markdownToHtml.element($el.find( '.question-label' ));
 
     applyLiveLinkEventHandlers( $el );
 
@@ -113,4 +108,4 @@ define( function( require, exports, module ) {
     'name': pluginName,
     'selector': '.note'
   };
-} );
+}

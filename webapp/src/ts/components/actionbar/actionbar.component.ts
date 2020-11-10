@@ -6,6 +6,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'mm-actionbar',
@@ -27,12 +28,16 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   loadingSubActionBar;
   selectedContactDoc;
 
+  routeSnapshot;
+
   constructor(
     private store: Store,
     private modalService: ModalService,
+    private route:ActivatedRoute,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
+    this.routeSnapshot = this.route.snapshot;
   }
 
   ngOnInit(): void {
@@ -44,29 +49,34 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingSubActionBar),
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getShowActionBar),
+      this.store.select(Selectors.getSelectedReportsDocs),
     )
-    .subscribe(([
-      actionBar,
-      currentTab,
-      isAdmin,
-      loadingContent,
-      loadingSubActionBar,
-      selectMode,
-      showActionBar
-    ]) => {
-      this.currentTab = currentTab;
-      this.selectMode = selectMode;
-      this.actionBar = actionBar;
-      this.isAdmin = isAdmin;
-      this.showActionBar = showActionBar;
-      this.loadingContent = loadingContent;
-      this.loadingSubActionBar = loadingSubActionBar;
-      /* ToDo: enable these once reports and contact features completed.
-      this.selectedReportsDocs = selectedReportsDocs;
-      this.selectedContactDoc = selectedContactDoc;
-       */
-    });
+      .subscribe(([
+        actionBar,
+        currentTab,
+        isAdmin,
+        loadingContent,
+        loadingSubActionBar,
+        selectMode,
+        showActionBar,
+        selectedReportsDocs,
+      ]) => {
+        this.currentTab = currentTab;
+        this.selectMode = selectMode;
+        this.actionBar = actionBar;
+        this.isAdmin = isAdmin;
+        this.showActionBar = showActionBar;
+        this.loadingContent = loadingContent;
+        this.loadingSubActionBar = loadingSubActionBar;
+        this.selectedReportsDocs = selectedReportsDocs;
+        /* ToDo: enable these once reports and contact features completed.
+         this.selectedContactDoc = selectedContactDoc;
+         */
+      });
     this.subscription.add(subscription);
+
+    this.subscription.add(this.route.url.subscribe(() => this.routeSnapshot = this.route.snapshot));
+    this.subscription.add(this.route.params.subscribe(() => this.routeSnapshot = this.route.snapshot));
   }
 
   ngOnDestroy() {
@@ -113,9 +123,13 @@ export class ActionbarComponent implements OnInit, OnDestroy {
     }
 
     /* ToDo: Display modal once delete feature is ready in Reports
-    this.modalService.show(BulkDeleteConfirmComponent, {
-      initialState: { docs }
-    });
-    */
+     this.modalService.show(BulkDeleteConfirmComponent, {
+     initialState: { docs }
+     });
+     */
+  }
+
+  trackByForms(idx, form) {
+    return form.code;
   }
 }

@@ -8,12 +8,12 @@ export class UHCSettingsService {
 
   getMonthStartDate(settings) {
     return settings &&
-           settings.uhc &&
-           (
-             settings.uhc.month_start_date ||
-             settings.uhc.visit_count &&
-             settings.uhc.visit_count.month_start_date
-           );
+      settings.uhc &&
+      (
+        settings.uhc.month_start_date ||
+        settings.uhc.visit_count &&
+        settings.uhc.visit_count.month_start_date
+      );
   };
 
   getVisitCountSettings(settings) {
@@ -29,7 +29,7 @@ export class UHCSettingsService {
 
   getContactsDefaultSort(settings) {
     return settings &&
-           settings.uhc &&
-           settings.uhc.contacts_default_sort;
+      settings.uhc &&
+      settings.uhc.contacts_default_sort;
   };
 }
