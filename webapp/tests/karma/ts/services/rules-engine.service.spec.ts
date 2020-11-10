@@ -470,6 +470,7 @@ describe('RulesEngineService', () => {
     clock = sinon.useFakeTimers(1000);
     service = TestBed.inject(RulesEngineService);
 
+    await service.isEnabled();
     await service.fetchTargets();
     clock.tick(500 * 1000);
     await service.isEnabled(); // to resolve promises
@@ -477,7 +478,6 @@ describe('RulesEngineService', () => {
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
     expect(telemetryService.record.callCount).to.equal(5);
-    expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
     expect(telemetryService.record.args[1][0]).to.equal('rules-engine:targets:dirty-contacts');
     expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
     expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets');
@@ -490,21 +490,21 @@ describe('RulesEngineService', () => {
     clock = sinon.useFakeTimers(1000);
     service = TestBed.inject(RulesEngineService);
 
-    service.fetchTaskDocsForAllContacts();
+    await service.isEnabled();
     await service.fetchTargets();
+    await service.fetchTaskDocsForAllContacts();
     clock.tick(500 * 1000);
     await service.isEnabled(); // to resolve promises
     
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
     expect(telemetryService.record.callCount).to.equal(7);
-    expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
-    expect(telemetryService.record.args[1][0]).to.equal('rules-engine:tasks:dirty-contacts');
-    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
-    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets:dirty-contacts');
-    expect(telemetryService.record.args[4][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
-    expect(telemetryService.record.args[5][0]).to.equal('rules-engine:tasks:all-contacts');
-    expect(telemetryService.record.args[6][0]).to.equal('rules-engine:targets');
+    expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:targets:dirty-contacts', 0]);
+    expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
+    expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets');
+    expect(telemetryService.record.args[4]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 0]);
+    expect(telemetryService.record.args[5][0]).to.equal('rules-engine:ensureTaskFreshness:cancel');
+    expect(telemetryService.record.args[6][0]).to.equal('rules-engine:tasks:all-contacts');
   });
 
   it('should record correct telemetry data with emitted events', async () => {
@@ -517,10 +517,11 @@ describe('RulesEngineService', () => {
     fetchTasksResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTasksResultPromise.push(resolve)));
     service = TestBed.inject(RulesEngineService);
 
+    await service.isEnabled();
     service.fetchTargets();
     service.fetchTaskDocsForAllContacts();
     service.fetchTaskDocsFor(['a']);
-    await service.isEnabled();
+    await Promise.resolve();
     
     expect(fetchTargets.events).to.have.keys(['queued', 'running']);
     expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
@@ -579,25 +580,23 @@ describe('RulesEngineService', () => {
     fetchTasksResult = sinon.stub().resolves([]);
     service = TestBed.inject(RulesEngineService);
 
+    await service.isEnabled();
     service.fetchTargets();
     service.fetchTaskDocsForAllContacts();
     service.fetchTaskDocsFor(['a']);
-    await service.isEnabled();
+    await Promise.resolve();
 
     expect(fetchTargets.events).to.have.keys(['queued', 'running']);
     expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
 
-    expect(telemetryService.record.callCount).to.equal(9);
+    expect(telemetryService.record.callCount).to.equal(6);
     expect(telemetryService.record.args.map(arg => arg[0])).to.include.members([
       'rules-engine:initialize',
       'rules-engine:targets:dirty-contacts',
       'rules-engine:ensureTargetFreshness:cancel',
       'rules-engine:tasks:dirty-contacts',
       'rules-engine:ensureTaskFreshness:cancel',
-      'rules-engine:tasks:dirty-contacts',
-      'rules-engine:targets',
-      'rules-engine:tasks:all-contacts',
-      'rules-engine:tasks:some-contacts'
+      'rules-engine:tasks:dirty-contacts'
     ]);
 
     await nextTick();
