@@ -21,12 +21,8 @@ export class MRDTService {
   }
 
   verify() {
-    this.current = {
-      promise: new Promise((resolve, reject) => {
-        this.current.resolve = resolve;
-        this.current.reject = reject;
-      }),
-    };
+    this.current = {};
+    this.current.promise = new Promise((resolve) => this.current.resolve = resolve);
     window.medicmobile_android.mrdt_verify();
     return this.current.promise;
   }

@@ -2,7 +2,6 @@
   <div class="row">
     <div class="inner">
 
-      <!-- TODO: migrate and test once report is done
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'reports' && selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()">
@@ -25,31 +24,32 @@
       </div>
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'reports' && !selectMode">
-        <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms.length}">
+        <div class="actions dropup" dropdown [dropup]="true">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" dropdownToggle dropdata-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}">
             <span class="fa fa-plus"></span>
             <p translate>Submit Report</p>
           </a>
-          <ul class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="nonContactForms.length">
-            <li *ngFor="let form of nonContactForms; trackBy: form.code">
-              <a ui-sref="reports.add({ formId: form.code })">
-                <span [innerHTML]="form.icon | resourceIcon"></span>
-                <span class="content">{{ form.title }}</span>
-              </a>
-            </li>
-          </ul>
+          <ng-container *ngIf="nonContactForms?.length">
+            <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
+              <li *ngFor="let form of nonContactForms; trackBy: trackByForms">
+                <a [routerLink]="['/reports', 'add', form.code]">
+                  <span [innerHTML]="form.icon | resourceIcon"></span>
+                  <span class="content">{{ form.title }}</span>
+                </a>
+              </li>
+            </ul>
+          </ng-container>
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mmAuth="can_bulk_delete_reports" (click)="setSelect(true)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
             <span class="fa fa-check-circle"></span>
             <p translate>select.mode.start</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin" (click)="actionBar?.left?.exportFn($event)" (class)="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin" (click)="actionBar?.left?.exportFn($event)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
         </div>
       </div>
-      -->
-      
+
       <!-- TODO: migrate and test once contact is done
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
         <div class="actions dropup" mmAuth="" [[mmAuthAny]]="[ isAdmin, actionBar?.left?.childPlaces && 'can_create_places' ]">
@@ -80,7 +80,7 @@
         </div>
       </div>
       -->
-      
+
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'messages'">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" (click)="actionBar?.left?.openSendMessageModal($event)">
@@ -94,10 +94,10 @@
         </div>
       </div>
 
-      <!-- TODO: migrate and test once report is done
+
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'reports'">
         <div *ngIf="selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && 'reports.detail' | isState">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && routeSnapshot.data?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
               <span class="fa fa-trash-o"></span>
               <p translate>select.mode.delete.all</p>
@@ -106,12 +106,12 @@
         </div>
 
         <div *ngIf="!selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && ('reports.detail' | isState)">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && routeSnapshot.data?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{ actionBar?.right?.sendTo?.phone }}" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar?.right?.sendTo?._id}}" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" [attr.data-send-to]="actionBar?.right?.sendTo?._id" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
@@ -132,7 +132,7 @@
               <span class="fa fa-check"></span>
               <p translate>reports.verify</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_update_reports" ui-sref="reports.edit({ reportId: selectedReportsDocs[0]._id })">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_update_reports" [routerLink]="['/reports', 'edit', selectedReportsDocs[0]?._id]">
               <span class="fa fa-pencil"></span>
               <p translate>Edit</p>
             </a>
@@ -147,7 +147,6 @@
           </div>
         </div>
       </div>
--->
 
       <!-- TODO: migrate and test once contact is done
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'contacts'">

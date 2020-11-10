@@ -1,11 +1,11 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { async, fakeAsync, TestBed } from '@angular/core/testing';
+import { async, TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { Action } from '@ngrx/store';
-import { act, EffectsModule } from '@ngrx/effects';
+import { EffectsModule } from '@ngrx/effects';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -13,8 +13,6 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { ReportsEffects } from '@mm-effects/reports.effects';
-import { extractOriginalSegments } from '@angular/compiler-cli/ngcc/src/sourcemaps/source_file';
-import { mod } from 'ngx-bootstrap/chronos/utils';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
@@ -238,10 +236,10 @@ describe('Reports effects', () => {
 
     it('should work when there are no forms with formInternalId', () => {
       const selected = {
+        formInternalId: 'internalID',
         doc: {
-          formInternalId: 'internalID',
           form: 'someForm',
-        }
+        },
       };
       actions$ = of(ReportActionList.setTitle(selected));
       effects.setTitle.subscribe();
@@ -251,10 +249,10 @@ describe('Reports effects', () => {
 
     it('should work with forms, but not matching report form', () => {
       const selected = {
+        formInternalId: 'internalID',
         doc: {
-          formInternalId: 'internalID',
           form: 'someForm',
-        }
+        },
       };
       store.overrideSelector(Selectors.getForms, [{ code: 'form1' }, { code: 'form2' }]);
       actions$ = of(ReportActionList.setTitle(selected));
@@ -265,10 +263,10 @@ describe('Reports effects', () => {
 
     it('should work with forms and matching report form', () => {
       const selected = {
+        formInternalId: 'form1',
         doc: {
-          formInternalId: 'form1',
           form: 'someForm',
-        }
+        },
       };
       store.overrideSelector(Selectors.getForms, [{ code: 'form1', name: 'form1name' }, { code: 'form2' }]);
       actions$ = of(ReportActionList.setTitle(selected));
@@ -279,10 +277,10 @@ describe('Reports effects', () => {
 
     it('should work with forms and matching report form with form title', () => {
       const selected = {
+        formInternalId: 'form1',
         doc: {
-          formInternalId: 'form1',
           form: 'someForm',
-        }
+        },
       };
       store.overrideSelector(Selectors.getForms, [{ code: 'form1', title: 'form1title' }, { code: 'form2' }]);
       actions$ = of(ReportActionList.setTitle(selected));
@@ -310,7 +308,7 @@ describe('Reports effects', () => {
 
       effects.markRead.subscribe();
       expect(markReadService.markAsRead.callCount).to.equal(1);
-      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report' }]]);
+      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report', read: true }]]);
       expect(updateReportsList.callCount).to.equal(1);
       expect(updateReportsList.args[0]).to.deep.equal([[{ _id: 'report', read: true }]]);
     });
@@ -323,9 +321,20 @@ describe('Reports effects', () => {
 
       effects.markRead.subscribe();
       expect(markReadService.markAsRead.callCount).to.equal(1);
-      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'my_report' }]]);
+      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'my_report', read: true }]]);
       expect(updateReportsList.callCount).to.equal(1);
       expect(updateReportsList.args[0]).to.deep.equal([[{ _id: 'my_report', read: true }]]);
+    });
+
+    it('should mark read even if report is not found in list', () => {
+      const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');
+      store.overrideSelector(Selectors.getListReport, null);
+      actions$ = of(ReportActionList.markReportRead('report'));
+
+      effects.markRead.subscribe();
+      expect(markReadService.markAsRead.callCount).to.equal(1);
+      expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report', form: true }]]);
+      expect(updateReportsList.callCount).to.equal(0);
     });
   });
 });

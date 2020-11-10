@@ -1,21 +1,30 @@
-describe('ZScore service', () => {
-  'use strict';
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
 
+import { ZScoreService } from '@mm-services/z-score.service';
+import { DbService } from '@mm-services/db.service';
+import { ChangesService } from '@mm-services/changes.service';
+
+describe('ZScore service', () => {
   let service;
   let allDocs;
   let Changes;
 
   beforeEach(() => {
-    module('inboxApp');
     allDocs = sinon.stub();
     Changes = sinon.stub();
-    module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({ allDocs: allDocs }));
-      $provide.value('Changes', Changes);
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: () => ({ allDocs }) } },
+        { provide: ChangesService, useValue: { subscribe: Changes } },
+      ],
     });
-    inject(_ZScore_ => {
-      service = _ZScore_;
-    });
+    service = TestBed.inject(ZScoreService);
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   const mockAllDocs = doc => allDocs.resolves({ rows: [ { doc: doc } ] });
@@ -38,17 +47,17 @@ describe('ZScore service', () => {
 
     it('returns undefined when no z-score doc', () => {
       allDocs.resolves({ rows: [ ] });
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 10, 150);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
     it('returns undefined for unconfigured chart', () => {
       mockAllDocs({ charts: [] });
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 10, 150);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
@@ -59,9 +68,9 @@ describe('ZScore service', () => {
           data: {}
         }]
       });
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', null, 10, 150);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
@@ -72,9 +81,9 @@ describe('ZScore service', () => {
           data: {}
         }]
       });
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', null, 150);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
@@ -85,37 +94,37 @@ describe('ZScore service', () => {
           data: {}
         }]
       });
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 10, null);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
     it('returns zscore', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 1, 25);
-        chai.expect(actual).to.equal(1);
-        chai.expect(allDocs.callCount).to.equal(1);
-        chai.expect(allDocs.args[0][0].key).to.equal('zscore-charts');
+        expect(actual).to.equal(1);
+        expect(allDocs.callCount).to.equal(1);
+        expect(allDocs.args[0][0].key).to.equal('zscore-charts');
       });
     });
 
     it('approximates zscore when weight is between data points', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const rough = util('weight-for-age', 'male', 1, 25.753);
         // round to 3dp to ignore tiny errors caused by floats
         const actual = (rough * 1000) / 1000;
-        chai.expect(actual).to.equal(1.753);
+        expect(actual).to.equal(1.753);
       });
     });
 
     it('returns undefined when requested sex not configured', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'female', 1, 25.7);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
@@ -132,33 +141,33 @@ describe('ZScore service', () => {
         }]
       };
       mockAllDocs(configDoc);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 1, 25.7);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
     it('returns undefined when age is above data range', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 5, 25.7);
-        chai.expect(actual).to.equal(undefined);
+        expect(actual).to.equal(undefined);
       });
     });
 
     it('returns -4 when weight is below data range', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 1, 19);
-        chai.expect(actual).to.equal(-4);
+        expect(actual).to.equal(-4);
       });
     });
 
     it('returns 4 when weight is above data range', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 1, 29);
-        chai.expect(actual).to.equal(4);
+        expect(actual).to.equal(4);
       });
     });
 
@@ -182,11 +191,11 @@ describe('ZScore service', () => {
 
     it('returns zscore', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('height-for-age', 'male', 1, 56.1);
-        chai.expect(actual).to.equal(1.5);
-        chai.expect(allDocs.callCount).to.equal(1);
-        chai.expect(allDocs.args[0][0].key).to.equal('zscore-charts');
+        expect(actual).to.equal(1.5);
+        expect(allDocs.callCount).to.equal(1);
+        expect(allDocs.args[0][0].key).to.equal('zscore-charts');
       });
     });
   });
@@ -209,11 +218,11 @@ describe('ZScore service', () => {
 
     it('returns zscore', () => {
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
+      return service.getScoreUtil().then(util => {
         const actual = util('weight-for-height', 'male', 45.1, 26.5);
-        chai.expect(actual).to.equal(2.5);
-        chai.expect(allDocs.callCount).to.equal(1);
-        chai.expect(allDocs.args[0][0].key).to.equal('zscore-charts');
+        expect(actual).to.equal(2.5);
+        expect(allDocs.callCount).to.equal(1);
+        expect(allDocs.args[0][0].key).to.equal('zscore-charts');
       });
     });
   });
@@ -257,10 +266,10 @@ describe('ZScore service', () => {
       const height = 83;
       const weight = 11.704545;
       mockAllDocs(CONFIG_DOC);
-      return service().then(util => {
-        chai.expect(util('height-for-age',    sex, age,    height)).to.equal(-3.424135113048216);
-        chai.expect(util('weight-for-age',    sex, age,    weight)).to.equal(-1.6321967559943587);
-        chai.expect(util('weight-for-height', sex, height, weight)).to.equal(0.6880010384215982);
+      return service.getScoreUtil().then(util => {
+        expect(util('height-for-age',    sex, age,    height)).to.equal(-3.424135113048216);
+        expect(util('weight-for-age',    sex, age,    weight)).to.equal(-1.6321967559943587);
+        expect(util('weight-for-height', sex, height, weight)).to.equal(0.6880010384215982);
       });
     });
   });

@@ -1,8 +1,3 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
 /**
  * @preserve Copyright 2012 Martijn van de Rijdt & Modilabs
  *
@@ -19,7 +14,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
  * limitations under the License.
  */
 
-define( function( require, exports, module ) {
+{
   'use strict';
   const Widget = require( 'enketo-core/src/js/Widget' );
   const $ = require( 'jquery' );
@@ -81,7 +76,7 @@ define( function( require, exports, module ) {
     'name': pluginName,
     'selector': '.or-appearance-countdown-timer input',
   };
-} );
+}
 
 function TimerAnimation(canvas, canvasW, canvasH, duration) {
   const pi = Math.PI;

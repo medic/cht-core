@@ -1,8 +1,3 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-  var define = function( factory ) { // eslint-disable-line
-    factory( require, exports, module );
-  };
-}
 /**
  * @preserve Copyright 2012 Martijn van de Rijdt & Modilabs
  *
@@ -18,8 +13,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-define( function( require, exports, module ) {
+{
   'use strict';
   const Widget = require( 'enketo-core/src/js/Widget' );
   const $ = require( 'jquery' );
@@ -65,10 +59,9 @@ define( function( require, exports, module ) {
     }
 
     const el = this.element;
-    const angularServices = angular.element( document.body ).injector();
-    const Language = angularServices.get( 'Language' );
 
-    Language()
+    window.CHTCore.Language
+      .get()
       .then( function( language ) {
         if ( language.indexOf( 'ne' ) === 0 ) {
           return;
@@ -119,4 +112,4 @@ define( function( require, exports, module ) {
     'name': pluginName,
     'selector': 'input[type=date]'
   };
-} );
+}

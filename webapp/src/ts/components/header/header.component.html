@@ -128,7 +128,7 @@
         <div class="mm-icon" [class.mm-icon-inverse]="currentTab !== tab.name">
           <span *ngIf="!tab.resourceIcon" class="fa {{tab.icon}}"><span class="fa {{tab.defaultIcon}}"></span></span>
           <span *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon:tab.defaultIcon"></span>
-          <span class="mm-badge-overlay mm-badge-overlay-top" ng-hide="unreadCount[tab.typeName] <= 0">
+          <span class="mm-badge-overlay mm-badge-overlay-top" *ngIf="unreadCount[tab.typeName] > 0">
             <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] < 100">{{unreadCount[tab.typeName]}}</span>
             <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] >= 100">100+</span>
           </span>

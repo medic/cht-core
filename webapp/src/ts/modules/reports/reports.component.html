@@ -35,7 +35,7 @@
         <span *ngIf="errorSyntax">
           <span translate>invalid.query</span>
         </span>
-        <span ng-hide="errorSyntax" translate>Error fetching reports</span>
+        <span *ngIf="!errorSyntax" translate>Error fetching reports</span>
       </p>
       <p class="loading-status" *ngIf="!error && !loading && !hasReports" translate>reports.none</p>
       <p class="loading-status" *ngIf="!loading && hasReports && !moreItems" translate>No more reports</p>
