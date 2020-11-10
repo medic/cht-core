@@ -1,4 +1,4 @@
-<span *ngIf="lastVisitedDateExtras" class="dropdown mm-dropdown sort-dropdown no-reset" dropdown>
+<span  class="dropdown mm-dropdown sort-dropdown no-reset" dropdown>
   <span class="sort-results" data-toggle="dropdown">
     <a
       id="sort-results"
@@ -20,10 +20,10 @@
     <ul>
       <li role="presentation" class="dropdown-header" translate>contacts.results.sort.title</li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" [class.selected]="{selected: sortDirection === 'alpha'}" (click)="applySort('alpha')" translate>contacts.results.sort.alpha</a>
+        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'alpha'" (click)="applySort('alpha')" translate>contacts.results.sort.alpha</a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" [class.selected]="{selected: sortDirection === 'last_visited_date'}" (click)="applySort('last_visited_date')" translate>contacts.results.sort.date.last.visited</a>
+        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'last_visited_date'" (click)="applySort('last_visited_date')" translate>contacts.results.sort.date.last.visited</a>
       </li>
     </ul>
   </span>
