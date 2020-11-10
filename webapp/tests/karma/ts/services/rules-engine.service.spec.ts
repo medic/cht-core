@@ -27,6 +27,7 @@ describe('RulesEngineService', () => {
   let userContactService;
   let userSettingsService;
   let changesService;
+  let translateService;
   let translateFromService;
   let rulesEngineCoreStubs;
   let pipesService;
@@ -89,6 +90,7 @@ describe('RulesEngineService', () => {
     sessionService = { isOnlineOnly: sinon.stub().returns(false), userCtx: () => ({ name: 'fred' }) };
     settingsService = { get: sinon.stub().resolves(settingsDoc) };
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };
+    translateService = { instant: sinon.stub().returnsArg(0) };
     userContactService = { get: sinon.stub().resolves(userContactDoc) };
     userSettingsService = { get: sinon.stub().resolves(userSettingsDoc) };
     uhcSettingsService = { getMonthStartDate: sinon.stub().returns(1) };
@@ -402,6 +404,8 @@ describe('RulesEngineService', () => {
     expect(actual.length).to.eq(1);
     expect(actual[0]).to.nested.include({
       _id: 'taskdoc',
+      'emission.title': 'translate.this',
+      'emission.priorityLabel': 'and.this',
       'emission.other': true,
     });
     expect(telemetryService.record.callCount).to.equal(4);
@@ -424,6 +428,8 @@ describe('RulesEngineService', () => {
     expect(actual.length).to.eq(1);
     expect(actual[0]).to.nested.include({
       _id: 'taskdoc',
+      'emission.title': 'translate.this',
+      'emission.priorityLabel': 'and.this',
       'emission.other': true,
     });
     expect(telemetryService.record.callCount).to.equal(3);
