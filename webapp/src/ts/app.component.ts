@@ -127,10 +127,14 @@ export class AppComponent {
         snapshot = snapshot.parent;
       } while (!tab && snapshot && snapshot.parent);
       return tab;
-    }
+    };
+
     this.router.events.subscribe((event:RouterEvent) => {
       if (event instanceof ActivationEnd) {
-        return this.globalActions.setCurrentTab(getTab(event.snapshot));
+        const tab = getTab(event.snapshot);
+        if (tab !== this.currentTab) {
+          return this.globalActions.setCurrentTab(tab);
+        }
       }
     });
   }
