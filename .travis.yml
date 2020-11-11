@@ -69,7 +69,7 @@ script:
 
 stages:
   - compile
-  - test
+  #- test
   - publish
 
 jobs:
