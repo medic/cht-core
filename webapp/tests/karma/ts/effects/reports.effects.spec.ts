@@ -313,6 +313,16 @@ describe('Reports effects', () => {
       expect(updateReportsList.args[0]).to.deep.equal([[{ _id: 'report', read: true }]]);
     });
 
+    it('should skip marking as read if already read', () => {
+      const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');
+      store.overrideSelector(Selectors.getListReport, { _id: 'report', read: true });
+      actions$ = of(ReportActionList.markReportRead('report'));
+
+      effects.markRead.subscribe();
+      expect(markReadService.markAsRead.callCount).to.equal(0);
+      expect(updateReportsList.callCount).to.equal(0);
+    });
+
     it('should catch markread service errors', () => {
       markReadService.markAsRead.rejects({ some: 'error' });
       const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');

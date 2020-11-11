@@ -1,6 +1,6 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import * as moment from 'moment';
 
 import { SearchService } from '@mm-services/search.service';
@@ -8,7 +8,6 @@ import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SessionService } from '@mm-services/session.service';
 import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
-import { act } from '@ngrx/effects';
 
 describe('Search service', () => {
   let service:SearchService;

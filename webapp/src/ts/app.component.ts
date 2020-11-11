@@ -120,9 +120,21 @@ export class AppComponent {
   }
 
   private setupRouter() {
+    const getTab = (snapshot) => {
+      let tab;
+      do {
+        tab = snapshot.data.tab;
+        snapshot = snapshot.parent;
+      } while (!tab && snapshot?.parent);
+      return tab;
+    };
+
     this.router.events.subscribe((event:RouterEvent) => {
       if (event instanceof ActivationEnd) {
-        return this.globalActions.setCurrentTab(event.snapshot.data.tab);
+        const tab = getTab(event.snapshot);
+        if (tab !== this.currentTab) {
+          this.globalActions.setCurrentTab(tab);
+        }
       }
     });
   }
@@ -231,11 +243,8 @@ export class AppComponent {
     this.loadTranslations();
     this.setupDb();
 
-    if (
-      (<any>window).medicmobile_android &&
-      typeof (<any>window).medicmobile_android.getAppVersion === 'function'
-    ) {
-      this.globalActions.setAndroidAppVersion((<any>window).medicmobile_android.getAppVersion())
+    if (typeof window.medicmobile_android?.getAppVersion === 'function') {
+      this.globalActions.setAndroidAppVersion(window.medicmobile_android.getAppVersion())
     }
 
     if (this.androidAppVersion) {
