@@ -125,7 +125,7 @@ export class AppComponent {
       do {
         tab = snapshot.data.tab;
         snapshot = snapshot.parent;
-      } while (!tab && snapshot && snapshot.parent);
+      } while (!tab && snapshot?.parent);
       return tab;
     };
 
@@ -133,7 +133,7 @@ export class AppComponent {
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
-          return this.globalActions.setCurrentTab(tab);
+          this.globalActions.setCurrentTab(tab);
         }
       }
     });
@@ -243,7 +243,7 @@ export class AppComponent {
     this.loadTranslations();
     this.setupDb();
 
-    if (window.medicmobile_android && typeof window.medicmobile_android.getAppVersion === 'function') {
+    if (typeof window.medicmobile_android?.getAppVersion === 'function') {
       this.globalActions.setAndroidAppVersion(window.medicmobile_android.getAppVersion())
     }
 
