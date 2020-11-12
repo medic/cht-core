@@ -6,18 +6,21 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { Action } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
+import { Router } from '@angular/router';
 
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { Selectors } from '@mm-selectors/index';
 import { Actions as GlobalActionsList } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
+import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 
 describe('GlobalEffects', () => {
   let effects:GlobalEffects;
   let actions$;
   let modalService;
   let store;
+  let router;
 
   beforeEach(async(() => {
     actions$ = new Observable<Action>();
@@ -31,7 +34,14 @@ describe('GlobalEffects', () => {
       show: sinon.stub(),
     };
 
+    router = {
+      navigate: sinon.stub(),
+    };
+
     TestBed.configureTestingModule({
+      declarations: [
+        NavigationConfirmComponent,
+      ],
       imports: [
         EffectsModule.forRoot([GlobalEffects]),
       ],
@@ -39,6 +49,7 @@ describe('GlobalEffects', () => {
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ModalService, useValue: modalService },
+        { provide: Router, useValue: router },
       ],
     });
 
@@ -82,20 +93,55 @@ describe('GlobalEffects', () => {
       actions$ = of(GlobalActionsList.navigationCancel('next'));
       effects.navigationCancel.subscribe();
       expect(callback.callCount).to.equal(0);
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(modalService.show.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
     }));
 
     it('when not saving and not edited and no cancelCallback', async(() => {
       actions$ = of(GlobalActionsList.navigationCancel('next'));
       effects.navigationCancel.subscribe();
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(modalService.show.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
     }));
 
-    it('when not saving edited and no cancel callback', async (() => {
+    it('when not saving edited and no cancel callback and no route', async (() => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      actions$ = of(GlobalActionsList.navigationCancel(''));
+      effects.navigationCancel.subscribe();
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0][0]).to.equal(NavigationConfirmComponent);
+      const callback = modalService.show.args[0][1].initialState.callback;
+      expect(router.navigate.callCount).to.equal(0);
+      callback();
+      expect(router.navigate.callCount).to.equal(0);
+    }));
+
+    it('when not saving edited and no cancel callback and route', async (() => {
       store.overrideSelector(Selectors.getEnketoEditedStatus, true);
       actions$ = of(GlobalActionsList.navigationCancel('next'));
       effects.navigationCancel.subscribe();
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0][0]).to.equal(NavigationConfirmComponent);
+      const callback = modalService.show.args[0][1].initialState.callback;
+      expect(router.navigate.callCount).to.equal(0);
+      callback();
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['next']]);
+    }));
+
+    it('when not saving edited and cancel callback and no route', async (() => {
+      const cancelCallback = sinon.stub();
+      store.overrideSelector(Selectors.getCancelCallback, cancelCallback);
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      actions$ = of(GlobalActionsList.navigationCancel(''));
+      effects.navigationCancel.subscribe();
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0][0]).to.equal(NavigationConfirmComponent);
+      const callback = modalService.show.args[0][1].initialState.callback;
+      expect(router.navigate.callCount).to.equal(0);
+      callback();
+      expect(router.navigate.callCount).to.equal(0);
+      expect(cancelCallback.callCount).to.equal(1);
     }));
 
     it('when not saving, not edited and cancelCallback ', async(() => {
@@ -105,7 +151,8 @@ describe('GlobalEffects', () => {
       effects.navigationCancel.subscribe();
       expect(callback.callCount).to.equal(1);
       expect(callback.args[0]).to.deep.equal([]);
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(modalService.show.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
     }));
   });
 });
