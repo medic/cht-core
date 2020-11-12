@@ -22,7 +22,7 @@ import { AppModule } from './app.module';
 import { environment } from './environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
-import * as bootstrapper from './bootstrapper';
+import * as bootstrapper from '../js/bootstrapper';
 
 require('select2');
 require('../js/enketo/main');
