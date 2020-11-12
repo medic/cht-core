@@ -48,7 +48,7 @@ describe('AnalyticsComponent', () => {
           provideMockStore({ selectors: mockSelectors }),
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: ActivatedRoute, useValue: activatedRoute },
-          { provide: TourService, useValue: { start: sinon.stub() } },
+          { provide: TourService, useValue: { startOrEnd: sinon.stub() } },
         ]
       })
       .compileComponents()

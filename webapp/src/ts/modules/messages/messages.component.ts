@@ -64,9 +64,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
       });
     this.subscriptions.add(selectorsSubscription);
 
-    if (this.route.snapshot.queryParams?.tour) {
-      this.tourService.start(this.route.snapshot.queryParams.tour);
-    }
+    this.tourService.startOrEnd(this.route.snapshot);
 
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();

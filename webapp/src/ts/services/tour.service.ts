@@ -2,10 +2,10 @@ import { isMobile } from '@mm-providers/responsive.provider';
 import { AuthService } from './auth.service';
 import { FeedbackService } from './feedback.service';
 import { AnalyticsModulesService } from './analytics-modules.service';
-import {SessionService } from './session.service';
+import { SessionService } from './session.service';
 
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { compact } from 'lodash-es';
 
@@ -555,6 +555,23 @@ export class TourService {
     }
   }
 
+  /**
+   * Starts the tour passed in the URL query param "tour"
+   * if present. If not, checks whether there is a tour
+   * running and ends it.
+   */
+  startOrEnd(activatedRoute: ActivatedRouteSnapshot) {
+    if (activatedRoute.queryParams?.tour) {
+      this.start(activatedRoute.queryParams.tour);
+    } else {
+      this.endCurrent();
+    }
+  }
+
+  /**
+   * Starts the tour passed by name. It closes any tour running
+   * if there was one running.
+   */
   start(name) {
     this.endCurrent();
     if (!name) {

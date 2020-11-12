@@ -33,7 +33,7 @@ describe('Messages Component', () => {
       subscribe: sinon.stub().resolves(of({}))
     };
     const tourServiceMock = {
-      start: (name) => {}
+      startOrEnd: (activatedRoute) => {}
     };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },

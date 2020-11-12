@@ -44,7 +44,7 @@ describe('Reports Component', () => {
       { selector: Selectors.getEnketoSavingStatus, value: false },
     ];
     const tourServiceMock = {
-      start: (name) => {}
+      startOrEnd: (activatedRoute) => {}
     };
 
     searchService = { search: sinon.stub().resolves([]) };
