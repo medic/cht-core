@@ -80,7 +80,16 @@
         // allow ts-comments in unit tests
         "@typescript-eslint/ban-ts-comment": "off"
       }
+    },
+    {
+      "files": ["*.component.html"],
+      "parser": "@angular-eslint/template-parser",
+      "plugins": ["@angular-eslint/eslint-plugin-template"],
+      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "rules": {
+        "indent": "off", // this rule throws an error in eslint itself
+        "max-len": "off"
+      }
     }
-    // TODO add linting for angular templates
   ]
 }
