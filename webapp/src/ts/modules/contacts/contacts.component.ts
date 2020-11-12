@@ -376,10 +376,10 @@ export class ContactsComponent implements OnInit, OnDestroy{
         if(this.usersHomePlace) {
           const homeIndex = _.findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
-          })
+          });
           this.additionalListItem = 
-            this.filters.search &&
-            this.filters.simprintsIdentities &&
+            !this.filters.search &&
+            !this.filters.simprintsIdentities &&
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
