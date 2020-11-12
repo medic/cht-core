@@ -81,6 +81,6 @@
         "@typescript-eslint/ban-ts-comment": "off"
       }
     }
-
+    // TODO add linting for angular templates
   ]
 }
