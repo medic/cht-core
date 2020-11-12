@@ -85,8 +85,9 @@ declare global {
   env: { DEBUG: undefined },
   browser: true,
   nextTick: require('next-tick')
-}
+};
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface JQuery {
   daterangepicker(options?: any, callback?: Function) : any;
   select2(event?:any, options?:any):any;

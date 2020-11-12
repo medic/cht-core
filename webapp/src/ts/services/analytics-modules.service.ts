@@ -25,7 +25,7 @@ export class AnalyticsModulesService {
           settings.tasks.targets.enabled;
       }
     };
-  };
+  }
 
   private getTargetAggregatesModule (settings, canAggregateTargets) {
     return {
@@ -38,7 +38,7 @@ export class AnalyticsModulesService {
           canAggregateTargets;
       }
     };
-  };
+  }
 
   private getReportingRatesModule(settings, scheduledForms) {
     return {
@@ -48,8 +48,7 @@ export class AnalyticsModulesService {
         return scheduledForms.length;
       }
     };
-  };
-
+  }
 
   private getModules(settings, scheduledForms, canAggregateTargets) {
     return [
@@ -57,7 +56,7 @@ export class AnalyticsModulesService {
       this.getTargetsModule(settings),
       this.getTargetAggregatesModule(settings, canAggregateTargets),
     ].filter(module => module.available());
-  };
+  }
 
   get() {
     return Promise

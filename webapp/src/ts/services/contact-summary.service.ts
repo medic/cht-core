@@ -77,5 +77,5 @@ export class ContactSummaryService {
         }
       })
       .then(summary => this.applyFilters(summary));
-  };
+  }
 }

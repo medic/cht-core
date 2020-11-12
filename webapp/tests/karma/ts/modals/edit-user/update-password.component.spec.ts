@@ -10,6 +10,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
+import { Observable } from 'rxjs';
 
 describe('UpdatePasswordComponent', () => {
 
@@ -24,20 +25,24 @@ describe('UpdatePasswordComponent', () => {
     updateUserService = {
       update: sinon.stub().resolves({}),
     };
-    userSettingsService.get = sinon.stub().resolves(
-      {
-        _id: 'user123',
-        name: 'admin',
-        fullname: 'Admin',
-        email: 'admin@demo.medic.com',
-        phone: '+99 999 9999',
-        language: 'es'
-      }
-    );
-    languagesService.get = sinon.stub().resolves(
-      [{code: 'en', name: 'English'}]
-    );
-    translateService = { get: sinon.stub() };
+    userSettingsService = {
+      get: sinon.stub().resolves(
+        {
+          _id: 'user123',
+          name: 'admin',
+          fullname: 'Admin',
+          email: 'admin@demo.medic.com',
+          phone: '+99 999 9999',
+          language: 'es'
+        }
+      )
+    };
+    languagesService = {
+      get: sinon.stub().resolves(
+        [{code: 'en', name: 'English'}]
+      )
+    };
+    translateService = { get: sinon.stub().returns(new Observable()) };
     return TestBed
       .configureTestingModule({
         imports: [
@@ -48,11 +53,11 @@ describe('UpdatePasswordComponent', () => {
           MmModal,
         ],
         providers: [
-          {provide: UpdateUserService, useValue: updateUserService},
-          {provide: UserSettingsService, useValue: userSettingsService},
-          {provide: LanguagesService, useValue: languagesService},
-          {provide: BsModalRef, useValue: new BsModalRef()},
-          {provide: TranslateService, useValue: translateService}
+          { provide: UpdateUserService, useValue: updateUserService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: LanguagesService, useValue: languagesService },
+          { provide: BsModalRef, useValue: new BsModalRef() },
+          { provide: TranslateService, useValue: translateService }
         ]
       })
       .compileComponents()

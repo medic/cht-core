@@ -5,7 +5,7 @@ import { Actions as GlobalActions } from '@mm-actions/global';
 
 export interface MessagesState {
   error: boolean;
-  conversations: object[],
+  conversations: object[];
   selected: object;
 }
 
@@ -79,8 +79,12 @@ const reducer = createReducer(
   on(Actions.setSelectedConversation, (state, { payload: { selected } }) => setSelectedConversation(state, selected)),
   on(Actions.setConversations, (state, { payload: { conversations } }) => setConversations(state, conversations)),
   on(Actions.setMessagesError, (state, { payload: { error } }) => setMessagesError(state, error)),
-  on(Actions.removeMessageFromSelectedConversation, (state, { payload: { id } }) => removeMessageFromSelectedConversation(state, id)),
-  on(Actions.updateSelectedConversation, (state, { payload: { selected } }) => updateSelectedConversation(state, selected)),
+  on(Actions.removeMessageFromSelectedConversation, (state, { payload: { id } }) => {
+    return removeMessageFromSelectedConversation(state, id);
+  }),
+  on(Actions.updateSelectedConversation, (state, { payload: { selected } }) => {
+    return updateSelectedConversation(state, selected);
+  }),
   on(GlobalActions.clearSelected, (state) => setSelectedConversation(state, null)),
   on(Actions.markSelectedConversationRead, (state) => markSelectedConversationRead(state)),
 );

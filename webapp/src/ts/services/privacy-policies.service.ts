@@ -127,7 +127,10 @@ export class PrivacyPoliciesService {
         this.getPrivacyPolicies(true),
       ])
       .then(([languageCode, privacyPolicies]) => {
-        const attachmentName = privacyPolicies && privacyPolicies.privacy_policies && privacyPolicies.privacy_policies[languageCode];
+        const attachmentName =
+          privacyPolicies &&
+          privacyPolicies.privacy_policies &&
+          privacyPolicies.privacy_policies[languageCode];
         if (!attachmentName || (!privacyPolicies._attachments || !privacyPolicies._attachments[attachmentName])) {
           return false;
         }

@@ -127,7 +127,7 @@ export class TelemetryService {
             forms: forms
           }
         };
-    });
+      });
   }
 
   private generateDeviceStats() {

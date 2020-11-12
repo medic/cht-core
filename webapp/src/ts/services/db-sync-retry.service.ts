@@ -23,11 +23,11 @@ export class DbSyncRetryService {
     }
 
     return `${revisions.start - 1}-${revisions.ids[1]}`;
-  };
+  }
 
   private getMedicDoc (id) {
     return this.dbService.get().get(id, { revs: true });
-  };
+  }
 
   private saveMedicDoc(doc) {
     delete doc._revisions;
@@ -38,7 +38,7 @@ export class DbSyncRetryService {
           throw err;
         }
       });
-  };
+  }
 
   private getLocalDoc(id) {
     return this.dbService.get({ meta: true })
@@ -56,11 +56,11 @@ export class DbSyncRetryService {
 
         return doc;
       });
-  };
+  }
 
   private saveLocalDoc (local) {
     return this.dbService.get({ meta: true }).put(local);
-  };
+  }
 
   // Retry replication for every "real" rev X times
   // we enable retrying by "touching" the doc, pushing it to the end of the changes feed
@@ -95,5 +95,5 @@ export class DbSyncRetryService {
       .catch(err => {
         console.error(`Error when retrying replication for forbidden doc`, err);
       });
-  };
+  }
 }

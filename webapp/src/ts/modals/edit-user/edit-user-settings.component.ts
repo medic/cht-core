@@ -13,12 +13,12 @@ import {SetLanguageService} from '@mm-services/language.service';
 export class EditUserSettingsComponent extends EditUserAbstract {
 
   @Input() editUserModel: {
-    id?,
-    fullname?,
-    username?,
-    email?,
-    phone?,
-    language?: { code? }
+    id?;
+    fullname?;
+    username?;
+    email?;
+    phone?;
+    language?: { code? };
   } = {
     language: {}
   };
@@ -47,25 +47,27 @@ export class EditUserSettingsComponent extends EditUserAbstract {
 
     return this.changedUpdates(this.editUserModel)
       .then((updates: any) => {
-        Promise.resolve().then(() => {
-          if (this.haveUpdates(updates)) {
-            return this.updateUserService.update(
-              this.editUserModel.username,
-              updates
-            );
-          }
-        })
-        .then(() => {
-          if (updates.language) {
-            this.setLanguageService.set(updates.language);
-          }
-          this.setFinished();
-          this.cancel();
-        })
-        .catch((err) => {
-          this.setError(err, 'Error updating user');
-        });
-    });
+        Promise
+          .resolve()
+          .then(() => {
+            if (this.haveUpdates(updates)) {
+              return this.updateUserService.update(
+                this.editUserModel.username,
+                updates
+              );
+            }
+          })
+          .then(() => {
+            if (updates.language) {
+              this.setLanguageService.set(updates.language);
+            }
+            this.setFinished();
+            this.cancel();
+          })
+          .catch((err) => {
+            this.setError(err, 'Error updating user');
+          });
+      });
   }
 
   listTrackBy(index, locale) {

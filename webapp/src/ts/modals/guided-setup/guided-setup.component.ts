@@ -13,7 +13,7 @@ import { COUNTRY_LIST } from '../../providers/countries.provider';
   templateUrl: './guided-setup.component.html'
 })
 export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit, AfterViewChecked {
-  model:{ countryCode?, gatewayNumber? } = {};
+  model:{ countryCode?; gatewayNumber? } = {};
   error:{ message? } = {};
   enabledLocales;
   countryList;
@@ -43,7 +43,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     if (gatewayNumber && defaultCountryCode) {
       $(this).closest('.panel').addClass('panel-complete');
     }
-  };
+  }
 
   private selectOption(e) {
     e.preventDefault();
@@ -61,7 +61,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
       .addClass('panel-complete')
       .find('.panel-heading .value')
       .text(label.join(', '));
-  };
+  }
 
   ngAfterViewInit() {
     this.bsModalRef.setClass('modal-lg');
@@ -80,7 +80,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
           $('#primary-contact-content a[data-value=' + this.settings.care_coordinator + ']').trigger('click');
           $('#registration-form-content a[data-value=' + this.settings.anc_registration_lmp + ']').trigger('click');
         }
-      })
+      });
     });
   }
 

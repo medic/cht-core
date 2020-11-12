@@ -1,4 +1,4 @@
-import * as odkForm2sms from 'odk-xform-compact-record-representation-for-sms'
+import * as odkForm2sms from 'odk-xform-compact-record-representation-for-sms';
 import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';

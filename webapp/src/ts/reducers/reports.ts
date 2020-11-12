@@ -1,5 +1,5 @@
 import { Actions } from '@mm-actions/reports';
-import { Actions as GlobalActions } from '@mm-actions/global'
+import { Actions as GlobalActions } from '@mm-actions/global';
 import { createReducer, on } from '@ngrx/store';
 import { UniqueSortedList } from './utils';
 
@@ -52,7 +52,7 @@ const _reportsReducer = createReducer(
     return {
       ...state,
       selected: state.selected.filter(selectedReport => selectedReport._id !== reportId),
-    }
+    };
   }),
 
   on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),

@@ -4,29 +4,13 @@
     "jquery": true,
     "node": true
   },
-  "plugins": ["compat", "angular"],
+  "plugins": ["compat"],
   "globals": {
     "angular": true,
     "Tour": true
   },
   "rules": {
-    "compat/compat": "error",
-    "angular/window-service": "error",
-    "angular/timeout-service": "error",
-    "angular/module-getter": "error",
-    "angular/module-setter": "error",
-    "angular/no-private-call": "error",
-    "angular/di-unused": "error",
-    "angular/on-watch": "error",
-    "angular/no-cookiestore": "error",
-    "angular/no-directive-replace": "error",
-    "angular/no-http-callback": "error",
-    "angular/di-order": "error",
-    "angular/di": "error",
-    "angular/module-dependency-order": "error",
-    "angular/one-dependency-per-line": "error",
-    "angular/interval-service": "error",
-    "angular/on-destroy": "error"
+    "compat/compat": "error"
   },
   "overrides": [
     {
@@ -49,8 +33,7 @@
       "files": [
         "src/js/app.js",
         "src/js/modules/feedback.js",
-        "src/js/bootstrapper/*.js",
-        "src/ts/bootstrapper/*.js"
+        "src/js/bootstrapper/*.js"
       ],
       "rules": {
         "no-console": "off"
@@ -61,16 +44,13 @@
       "parser": "@typescript-eslint/parser",
       "plugins": ["@typescript-eslint"],
       "rules": {
+        "no-console": "off",
         // Prevent TypeScript-specific constructs from being erroneously flagged as unused
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": "error",
         // Require a specific member delimiter style for interfaces and type literals
         // Default Semicolon style
-        "@typescript-eslint/member-delimiter-style": "error",
-        // Require a consistent member declaration order
-        "@typescript-eslint/member-ordering": "error",
-        // Require consistent spacing around type annotations
-        "@typescript-eslint/type-annotation-spacing": "error"
+        "@typescript-eslint/member-delimiter-style": "error"
       }
     }
   ]

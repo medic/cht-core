@@ -1,10 +1,10 @@
-import {MmModalAbstract} from "@mm-modals/mm-modal/mm-modal";
-import {Directive, Injectable} from "@angular/core";
-import {UserSettingsService} from "@mm-services/user-settings.service";
-import {BsModalRef} from "ngx-bootstrap/modal";
+import { Directive, Injectable } from '@angular/core';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 
+import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
-Injectable({
+@Injectable({
   providedIn: 'root'
 })
 @Directive()

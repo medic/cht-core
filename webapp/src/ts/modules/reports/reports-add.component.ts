@@ -159,7 +159,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
                 }
 
                 return Promise
-                    .all($('#report-form input[type=file]')
+                  .all($('#report-form input[type=file]')
                     .map((idx, element) => {
                       const $element = $(element);
                       const attachmentName = 'user-file' + $element.attr('name');
@@ -246,7 +246,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
 
   private markFormEdited() {
     this.globalActions.setEnketoEditedStatus(true);
-  };
+  }
 
   private resetFormError() {
     if (this.enketoError) {

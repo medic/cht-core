@@ -49,7 +49,7 @@ export class TranslateFromService {
 
     // we've tried everything, just return the input
     return labels;
-  };
+  }
 
   get(labels, scope?) {
     if (!labels) {

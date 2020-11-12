@@ -39,21 +39,21 @@ export class UpdateServiceWorkerService {
           const installingWorker = registration.installing;
           installingWorker.onstatechange = () => {
             switch (installingWorker.state) {
-              case 'activated':
-                !environment.production && this.globalActions.setSnackbarContent('New service worker activated');
-                registration.onupdatefound = undefined;
-                onSuccess();
-                break;
-              case 'redundant':
-                console.warn(
-                  'Service worker failed to install or marked as redundant. ' +
-                  `Retrying install in ${this.retryFailedUpdateAfterSec}secs.`
-                );
-                this.existingUpdateLoop = setTimeout(() => this.update(onSuccess), this.retryFailedUpdateAfterSec * 1000);
-                registration.onupdatefound = undefined;
-                break;
-              default:
-                console.debug(`Service worker state changed to ${installingWorker.state}!`);
+            case 'activated':
+              !environment.production && this.globalActions.setSnackbarContent('New service worker activated');
+              registration.onupdatefound = undefined;
+              onSuccess();
+              break;
+            case 'redundant':
+              console.warn(
+                'Service worker failed to install or marked as redundant. ' +
+                `Retrying install in ${this.retryFailedUpdateAfterSec}secs.`
+              );
+              this.existingUpdateLoop = setTimeout(() => this.update(onSuccess), this.retryFailedUpdateAfterSec * 1000);
+              registration.onupdatefound = undefined;
+              break;
+            default:
+              console.debug(`Service worker state changed to ${installingWorker.state}!`);
             }
           };
         };

@@ -69,5 +69,5 @@ export class FormatProvider {
       parts.push('<div class="position">' + position + '</div>');
     }
     return '<span class="sender">' + parts.join('') + '</span>';
-  };
+  }
 }

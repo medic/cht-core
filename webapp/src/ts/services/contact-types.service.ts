@@ -11,7 +11,7 @@ export class ContactTypesService {
   }
 
   HARDCODED_TYPES() {
-    return contactTypesUtils.HARDCODED_TYPES
+    return contactTypesUtils.HARDCODED_TYPES;
   }
 
   /**
@@ -59,7 +59,7 @@ export class ContactTypesService {
   getChildren(parent?) {
     return this.settingsService
       .get()
-      .then(config => contactTypesUtils.getChildren(config, parent))
+      .then(config => contactTypesUtils.getChildren(config, parent));
   }
 
   /**
@@ -68,7 +68,7 @@ export class ContactTypesService {
   getPlaceTypes() {
     return this.settingsService
       .get()
-      .then(config => contactTypesUtils.getPlaceTypes(config))
+      .then(config => contactTypesUtils.getPlaceTypes(config));
   }
 
   /**
@@ -77,7 +77,7 @@ export class ContactTypesService {
   getPersonTypes() {
     return this.settingsService
       .get()
-      .then(config => contactTypesUtils.getPersonTypes(config))
+      .then(config => contactTypesUtils.getPersonTypes(config));
   }
 
   /**

@@ -61,7 +61,7 @@ export class GeolocationService {
     if (this.deferred) {
       this.finalise();
     }
-  };
+  }
 
   private failure(err) {
     console.debug('Geolocation error', err);
@@ -69,7 +69,7 @@ export class GeolocationService {
     if (this.deferred) {
       this.finalise();
     }
-  };
+  }
 
   private startWatching() {
     console.debug('Initiating new geolocation watcher');
@@ -79,7 +79,8 @@ export class GeolocationService {
         message: 'Geolocation API unavailable.',
       };
     } else {
-      this.watcher = window.navigator.geolocation.watchPosition(this.success.bind(this), this.failure.bind(this), this.GEO_OPTIONS);
+      this.watcher =
+        window.navigator.geolocation.watchPosition(this.success.bind(this), this.failure.bind(this), this.GEO_OPTIONS);
     }
   }
 

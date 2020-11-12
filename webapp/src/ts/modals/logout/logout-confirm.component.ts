@@ -16,7 +16,7 @@ export class LogoutConfirmComponent {
   submit() {
     this.sessionService.logout().then(() => {
       this.bsModalRef.hide();
-    })
+    });
   }
 
   cancel() {

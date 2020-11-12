@@ -77,7 +77,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
           }
         } else {
           // everything here is todo
-          const selectedReports = this.selectedReports;
+          //const selectedReports = this.selectedReports;
           this.reportsActions.selectReport(change.id, { silent: true });
 
           // todo when adding report verification, check if this code is still needed
@@ -118,11 +118,11 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     return item.doc?._id + item.doc?._rev;
   }
 
-  toggleExpand(report) {
+  toggleExpand() {
     // todo once we have actionbars and selectmode
   }
 
-  deselect(item, event) {
+  deselect() {
     // todo once we have actionbars and selectmode
   }
 

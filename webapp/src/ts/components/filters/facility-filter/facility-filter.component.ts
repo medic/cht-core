@@ -1,12 +1,14 @@
 import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input, OnInit } from '@angular/core';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { combineLatest, Subscription, from } from 'rxjs';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
 
 import { Selectors } from '../../../selectors';
 import { GlobalActions } from '@mm-actions/global';
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
@@ -65,7 +67,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
       .catch(err => console.error('Error loading facilities', err));
 
     // TODO check if this is still necessary
-   /* $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
+    /* $('#facilityDropdown span.dropdown-menu > ul').scroll((event) => {
       // visible height + pixel scrolled >= total height - 100
       if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
         $timeout(() => ctrl.totalFacilitiesDisplayed += 1);
@@ -81,7 +83,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
       facility.children = _sortBy(facility.children, iteratee => iteratee.doc?.name);
       facility.children.forEach(child => sortChildren(child));
-    }
+    };
 
     hierarchy.forEach(facility => sortChildren(facility));
 

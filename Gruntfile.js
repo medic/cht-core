@@ -362,7 +362,7 @@ module.exports = function(grunt) {
             'scripts/**/*.js',
           ];
           const ignore = [
-            'webapp/src/js/modules/xpath-element-path.js',
+            'webapp/src/ts/providers/xpath-element-path.provider.ts',
             'api/src/extracted-resources/**/*',
             'api/build/**/*',
             '**/node_modules/**',

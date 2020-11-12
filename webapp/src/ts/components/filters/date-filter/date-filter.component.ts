@@ -64,7 +64,7 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter {
           picker.hide();
         }
       });
-    })
+    });
 
     datepicker.on('mm.dateSelected.daterangepicker', (e, picker) => {
       if (isMobile()) {
@@ -93,6 +93,6 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter {
     this.date = {
       from: undefined,
       to: undefined,
-    }
+    };
   }
 }

@@ -24,8 +24,6 @@ import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 
-
-/* globals EnketoForm */
 @Injectable({
   providedIn: 'root'
 })
@@ -440,7 +438,7 @@ export class EnketoService {
         }
       }
       e._couchId = id;
-    }
+    };
 
     const getId = (xpath) => {
       return recordDoc
@@ -448,7 +446,7 @@ export class EnketoService {
         .iterateNext()
         //@ts-ignore
         ._couchId;
-    }
+    };
 
     // Chrome 30 doesn't support $xml.outerHTML: #3880
     const getOuterHTML = (xml) => {
@@ -456,7 +454,7 @@ export class EnketoService {
         return xml.outerHTML;
       }
       return $('<temproot>').append($(xml).clone()).html();
-    }
+    };
 
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
@@ -662,5 +660,5 @@ export class EnketoService {
 
     delete window.CHTCore.debugFormModel;
     this.objUrls.length = 0;
-  };
+  }
 }

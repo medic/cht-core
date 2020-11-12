@@ -28,5 +28,5 @@ export class TranslationLoaderService {
     }
     const match = docId.toString().match(this.re);
     return match && match[1];
-  };
+  }
 }

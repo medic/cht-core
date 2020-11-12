@@ -139,7 +139,7 @@ require('../js/enketo/main');
               get: service => moduleRef.instance.integration.get(service),
             })
           })
-        }
+        };
       })
       .catch(err => console.error(err));
   });

@@ -6,7 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
-import { DBSyncService } from '@mm-services/db-sync.service'
+import { DBSyncService } from '@mm-services/db-sync.service';
 import { Selectors } from './selectors';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslationLoaderService } from '@mm-services/translation-loader.service';
@@ -244,7 +244,7 @@ export class AppComponent {
     this.setupDb();
 
     if (typeof window.medicmobile_android?.getAppVersion === 'function') {
-      this.globalActions.setAndroidAppVersion(window.medicmobile_android.getAppVersion())
+      this.globalActions.setAndroidAppVersion(window.medicmobile_android.getAppVersion());
     }
 
     if (this.androidAppVersion) {
@@ -382,7 +382,7 @@ export class AppComponent {
         });
       })
       .catch(err => console.error('Failed to retrieve forms', err));
-  };
+  }
 
   private setAppTitle() {
     this.resourceIconsService.getAppTitle().then(title => {
@@ -398,7 +398,7 @@ export class AppComponent {
      controllerAs: 'SessionExpiredModalCtrl',
      singleton: true,
      });*/
-  };
+  }
 
   private showUpdateReady() {
     const TWO_HOURS = 2 * 60 * 60 * 1000;
@@ -406,10 +406,10 @@ export class AppComponent {
       console.debug('Delaying update');
       setTimeout(() => {
         this.showUpdateReady();
-      }, 5000);
+      }, TWO_HOURS);
     });
     //closeDropdowns();
-  };
+  }
 
   private checkPrivacyPolicy() {
     return this.privacyPoliciesService

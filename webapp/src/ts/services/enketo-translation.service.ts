@@ -8,13 +8,13 @@ export class EnketoTranslationService {
     return Array
       .from(nodes)
       .filter((node:any) => node.nodeType === Node.ELEMENT_NODE);
-  };
+  }
 
   private findChildNode(root, childNodeName) {
     return this
       .withElements(root.childNodes)
       .find((node:any) => node.nodeName === childNodeName);
-  };
+  }
 
   private getHiddenFieldListRecursive(nodes, prefix, current) {
     nodes.forEach(node => {
@@ -27,7 +27,7 @@ export class EnketoTranslationService {
         this.getHiddenFieldListRecursive(children, path + '.', current);
       }
     });
-  };
+  }
 
   private nodesToJs(data, repeatPaths?, path?) {
     repeatPaths = repeatPaths || [];
@@ -63,7 +63,7 @@ export class EnketoTranslationService {
       }
     });
     return result;
-  };
+  }
 
   private repeatsToJs(data) {
     const repeatNode:any = this.findChildNode(data, 'repeat');
@@ -82,7 +82,7 @@ export class EnketoTranslationService {
     });
 
     return repeats;
-  };
+  }
 
   private findCurrentElement(elem, name, childMatcher) {
     if (childMatcher) {
@@ -96,7 +96,7 @@ export class EnketoTranslationService {
     } else {
       return elem.children(name);
     }
-  };
+  }
 
   bindJsonToXml(elem, data, childMatcher?) {
     Object.keys(data).forEach((key) => {

@@ -23,24 +23,30 @@ describe('EditUserSettingsComponent', () => {
   let setLanguageService;
 
   beforeEach(async(() => {
-    updateUserService.update = sinon.stub().resolves();
-    userSettingsService.get = sinon.stub().resolves(
-      {
-        _id: 'user123',
-        name: 'admin',
-        fullname: 'Admin',
-        email: 'admin@demo.medic.com',
-        phone: '+99 999 9999',
-        language: 'es'
-      }
-    );
-    languagesService.get = sinon.stub().resolves(
-      [
-        {code: 'en', name: 'English'},
-        {code: 'es', name: 'Español (Spanish)'},
-        {code: 'fr', name: 'Français (French)'},
-      ]
-    );
+    updateUserService = {
+      update: sinon.stub().resolves(),
+    };
+    userSettingsService = {
+      get: sinon.stub().resolves(
+        {
+          _id: 'user123',
+          name: 'admin',
+          fullname: 'Admin',
+          email: 'admin@demo.medic.com',
+          phone: '+99 999 9999',
+          language: 'es'
+        }
+      )
+    };
+    languagesService = {
+      get: sinon.stub().resolves(
+        [
+          {code: 'en', name: 'English'},
+          {code: 'es', name: 'Español (Spanish)'},
+          {code: 'fr', name: 'Français (French)'},
+        ]
+      )
+    };
     setLanguageService = { set: sinon.stub() };
     return TestBed
       .configureTestingModule({
@@ -54,11 +60,11 @@ describe('EditUserSettingsComponent', () => {
           FormsModule,
         ],
         providers: [
-          {provide: UpdateUserService, useValue: updateUserService},
-          {provide: UserSettingsService, useValue: userSettingsService},
-          {provide: LanguagesService, useValue: languagesService},
-          {provide: SetLanguageService, useValue: setLanguageService},
-          {provide: BsModalRef, useValue: new BsModalRef()},
+          { provide: UpdateUserService, useValue: updateUserService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: LanguagesService, useValue: languagesService },
+          { provide: SetLanguageService, useValue: setLanguageService },
+          { provide: BsModalRef, useValue: new BsModalRef() },
         ]
       })
       .compileComponents()
@@ -70,8 +76,6 @@ describe('EditUserSettingsComponent', () => {
         return fixture.whenStable();
       });
   }));
-
-
 
   afterEach(() => {
     sinon.restore();

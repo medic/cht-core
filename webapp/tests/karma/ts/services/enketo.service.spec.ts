@@ -255,7 +255,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
-      return service.render(wrapper, mockEnketoDoc('myform')).then(() => {
+      service.render(wrapper, mockEnketoDoc('myform')).then(() => {
         // need to wait for async get attachment to complete
         tick();
         const img = wrapper.find('img').first();
@@ -266,7 +266,7 @@ describe('Enketo service', () => {
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(1);
         expect(createObjectURL.args[0][0]).to.equal('myobjblob');
-      });
+      }).catch(err => assert.fail(err));
     }));
 
     it('leaves img wrapped and hides loader if failed to load', () => {

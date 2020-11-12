@@ -24,7 +24,7 @@ describe('Messages Component', () => {
 
   beforeEach(async(() => {
     modalService = { show: sinon.stub() };
-    const messageContactService = {
+    messageContactService = {
       getList: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
     };

@@ -18,7 +18,7 @@ import {
 } from './date.pipe';
 import {
   ClinicPipe, LineagePipe, SummaryPipe, TitlePipe
-} from './message.pipe'
+} from './message.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';

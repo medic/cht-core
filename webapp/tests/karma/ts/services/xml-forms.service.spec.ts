@@ -326,6 +326,7 @@ describe('XmlForms service', () => {
       ];
       contextUtils = {
         isBlue: contact => {
+          console.log(contact);
           return contact.color === 'blue';
         }
       };

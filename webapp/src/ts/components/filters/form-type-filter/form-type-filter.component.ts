@@ -1,11 +1,13 @@
 import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input, OnInit } from '@angular/core';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { sortBy as _sortBy } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '../../../selectors';
 import { GlobalActions } from '../../../actions/global';
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
