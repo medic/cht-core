@@ -33,7 +33,7 @@ We recommend using Docker to install and use CouchDB. This ensures you are getti
 After [installing docker](https://docs.docker.com/get-docker/), you can create a docker container like so:
 
 ```sh
-docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -e COUCHDB_USER=myAdminUser -e COUCHDB_PASSWORD=myAdminPass --rm -v <data path>:/opt/couchdb/data <config path>:/opt/couchdb/etc/local.d apache/couchdb:2
+docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -e COUCHDB_USER=myAdminUser -e COUCHDB_PASSWORD=myAdminPass --rm -v <data path>:/opt/couchdb/data -v <config path>:/opt/couchdb/etc/local.d apache/couchdb:2
 ```
 
 Notes before copy pasting:
