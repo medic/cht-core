@@ -50,7 +50,17 @@
         "@typescript-eslint/no-unused-vars": "error",
         // Require a specific member delimiter style for interfaces and type literals
         // Default Semicolon style
-        "@typescript-eslint/member-delimiter-style": "error"
+        "@typescript-eslint/member-delimiter-style": "error",
+        "@typescript-eslint/ban-ts-comment": "error"
+      }
+    },
+    {
+      "files": ["*.spec.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        // allow ts-comments in unit tests
+        "@typescript-eslint/ban-ts-comment": "off"
       }
     }
   ]

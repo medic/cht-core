@@ -444,7 +444,6 @@ export class EnketoService {
       return recordDoc
         .evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null)
         .iterateNext()
-        //@ts-ignore
         ._couchId;
     };
 

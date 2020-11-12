@@ -39,7 +39,6 @@ export class TelemetryService {
       dbName = 'medic-user-' + this.sessionService.userCtx().name + '-telemetry-' + uuidv4();
       window.localStorage.setItem(this.DB_ID_KEY, dbName);
     }
-    // @ts-ignore
     return window.PouchDB(dbName); // avoid angular-pouch as digest isn't necessary here
   }
 
