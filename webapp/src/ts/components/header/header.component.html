@@ -62,7 +62,7 @@
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" (click)="openTourSelect()">
+            <a role="menuitem" tabindex="-1" rel="external" (click)="openTourSelect()" *ngIf="tours.length">
               <i class="fa fa-fw fa-graduation-cap"></i>
               <span translate>Guided Tour</span>
             </a>

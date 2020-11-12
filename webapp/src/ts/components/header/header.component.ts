@@ -13,7 +13,8 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
-import {TourSelectComponent} from '@mm-modals/tour/tour-select.component';
+import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
+import { TourService } from '@mm-services/tour.service';
 
 
 @Component({
@@ -42,6 +43,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
+    private tourService: TourService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -68,6 +70,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.permittedTabs = tabs.filter((tab,index) => results[index]);
         this.globalActions.setMinimalTabs(this.permittedTabs.length > 3);
       });
+    });
+
+    this.tourService.getTours().then(tours => {
+      this.tours = tours;
     });
   }
 
