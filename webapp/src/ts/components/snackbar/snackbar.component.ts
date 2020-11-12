@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -8,6 +8,7 @@ import { GlobalActions } from '@mm-actions/global';
 
 @Component({
   selector: 'snackbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './snackbar.component.html'
 })
 export class SnackbarComponent implements OnInit {
@@ -22,19 +23,31 @@ export class SnackbarComponent implements OnInit {
   content;
   active = false;
 
-  constructor(private store: Store) {
+  constructor(
+    private store:Store,
+    private changeDetectorRef:ChangeDetectorRef,
+    private ngZone:NgZone,
+  ) {
     this.globalActions = new GlobalActions(store);
   }
 
+  private setTimeout(callback, duration) {
+    return this.ngZone.runOutsideAngular(() => {
+      return setTimeout(callback, duration);
+    });
+  }
+
   ngOnInit() {
+    this.changeDetectorRef.detach();
     const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe(content => {
       if (!content) {
         return;
       }
 
-      if (this.timer) {
-        this.hide();
-        setTimeout(() => this.show(content), this.ANIMATION_DURATION);
+      if (this.active) {
+        this.hide(false);
+        this.setTimeout(() => this.show(content), this.ANIMATION_DURATION);
+
         return;
       }
 
@@ -44,18 +57,21 @@ export class SnackbarComponent implements OnInit {
     this.hide();
   }
 
-  // todo refresh timeout when new show action happens
-
   private show(content) {
     console.log(content);
     this.content = content;
     this.active = true;
+    this.changeDetectorRef.detectChanges();
 
-    this.timer = setTimeout(() => this.hide(), this.SHOW_DURATION);
+    this.timer = this.setTimeout(() => this.hide(), this.SHOW_DURATION);
   }
 
-  private hide() {
-    this.globalActions.setSnackbarContent();
-    this.active = false;
+  private hide(clearContent = true) {
+    clearTimeout(this.timer);
+    if (clearContent) {
+      this.globalActions.setSnackbarContent();
+      this.active = false;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 }
