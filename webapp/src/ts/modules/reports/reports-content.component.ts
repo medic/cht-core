@@ -118,11 +118,15 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     return item.doc?._id + item.doc?._rev;
   }
 
-  toggleExpand() {
+  // todo remove the eslint disable after migrating selectmode
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  toggleExpand(report) {
     // todo once we have actionbars and selectmode
   }
 
-  deselect() {
+  // todo remove the eslint disable after migrating selectmode
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  deselect(item, event) {
     // todo once we have actionbars and selectmode
   }
 
