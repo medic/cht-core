@@ -2,8 +2,8 @@ name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
 on:
   push:
-    tags: 
-      - "*-beta.*"
+    branches: 
+      - "6610-merge-resutls-on-execution"
       
 jobs:
   build:
