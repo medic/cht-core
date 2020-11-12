@@ -29,7 +29,10 @@ java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.reposit
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults &&
 echo "jmeter do it!"
 ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
+node merge_properties.js
+./jmeter/bin/jmeter -g ./merged-results.csv  -o ./combined-dash
 mv ./jmeter.log ./report/jmeter.log
+mv ./combined-dash ./report/combined-dash
 echo "Installing AWS CLI"
 sudo apt-get install unzip -y 
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
