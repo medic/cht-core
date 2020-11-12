@@ -571,7 +571,6 @@ export class TourService {
         // navigate to the correct page
         if (route) {
           this.router.navigate([route], { queryParams: { tour: name } });
-          //$state.go(route, { tour: name });
         } else {
           const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;
           this.feedbackService.submit(message).catch(err => {
