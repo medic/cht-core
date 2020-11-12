@@ -19,6 +19,7 @@ export class TourSelectComponent extends MmModalAbstract {
   }
 
   ngOnInit() {
+    this.tourService.endCurrent();
     this.tourService.getTours().then(tours => {
       this.tours = tours.sort((a: any, b: any) => a.order - b.order);
     });

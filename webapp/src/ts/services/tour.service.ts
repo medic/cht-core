@@ -548,8 +548,8 @@ export class TourService {
     };
   }
 
-  private endCurrent() {
-    if (this.current && this.current.tour) {
+  endCurrent() {
+    if (this.current?.tour) {
       this.current.tour.end();
       // remove any popovers that have become disassociated
       $('.popover.tour-' + this.current.name).remove();
