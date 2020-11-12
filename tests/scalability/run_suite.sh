@@ -29,6 +29,7 @@ java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.reposit
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults &&
 echo "jmeter do it!"
 ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report
+cp ./report/cli_run.jtl ./previous_results/$TAG_NAME.jtl
 node merge_properties.js
 ./jmeter/bin/jmeter -g ./merged-results.csv  -o ./combined-dash
 mv ./jmeter.log ./report/jmeter.log
