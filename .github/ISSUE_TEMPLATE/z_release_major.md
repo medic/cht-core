@@ -11,7 +11,9 @@ assignees: ''
 
 - [ ] Create an [organisation wide project](https://github.com/orgs/medic/projects?query=is%3Aopen+sort%3Aname-asc) and add this issue to it. We use [semver](http://semver.org) so if there are breaking changes increment the major, otherwise if there are new features increment the minor, otherwise increment the service pack. Breaking changes in our case relate to updated software requirements (egs: CouchDB, node, minimum browser versions), broken backwards compatibility in an api, or a major visual update that requires user retraining.
 - [ ] Add all the issues to be worked on to the project. Ideally each minor release will have one or two features, a handful of improvements, and plenty of bug fixes.
+- [ ] Identify any features and improvements in the release that need end-user documentation (beyond eng team documentation improvements) and create corresponding issues in the cht-docs repo
 - [ ] Assign an engineer as Release Manager for this release.
+- [ ] Assign product team members to complete end-user documentation improvements for this release.
 
 # Development - Release Manager
 
@@ -47,7 +49,7 @@ Once all issues have passed acceptance testing and have been merged into `master
 
 # Communicating - Product Manager
 
-- [ ] Create a Google Doc in the [blog posts folder](https://drive.google.com/drive/u/0/folders/0B2PTUNZFwxEvMHRWNTBjY2ZHNHc) with the draft of a blog post promoting the release based on the release notes above. Once it's ready ask Max and Kelly to review it.
+- [ ] Create a Google Doc in the [blog posts folder](https://drive.google.com/drive/u/0/folders/0B2PTUNZFwxEvMHRWNTBjY2ZHNHc) with the draft of a blog post promoting the release based on the release notes above. Once it's ready ask Kelly to review it.
 - [ ] Ask Nicole to create release artwork
 - [ ] Announce the release in #products using this template:
 ```
