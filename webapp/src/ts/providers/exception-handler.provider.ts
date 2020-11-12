@@ -1,8 +1,8 @@
 /**
  * Override Angular exception handler
  */
-import {ErrorHandler, Injectable} from '@angular/core';
-import {FeedbackService} from '../services/feedback.service';
+import { ErrorHandler, Injectable } from '@angular/core';
+import { FeedbackService } from '../services/feedback.service';
 
 @Injectable()
 export class ExceptionHandlerProvider implements ErrorHandler {
