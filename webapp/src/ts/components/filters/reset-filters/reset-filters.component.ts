@@ -6,9 +6,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class ResetFiltersComponent {
   @Input() disabled;
-  @Output() reset: EventEmitter<any> = new EventEmitter();
+  @Output() resetFilters: EventEmitter<any> = new EventEmitter();
 
-  resetFilters() {
-    this.reset.emit();
+  reset() {
+    this.resetFilters.emit();
   }
 }

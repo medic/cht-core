@@ -1,5 +1,5 @@
 const passwordTester = require('simple-password-tester');
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -15,7 +15,7 @@ const PASSWORD_MINIMUM_SCORE = 50;
   selector: 'update-password',
   templateUrl: './update-password.component.html'
 })
-export class UpdatePasswordComponent extends EditUserAbstract {
+export class UpdatePasswordComponent extends EditUserAbstract implements OnInit {
 
   editUserModel: {
     username?;
@@ -36,6 +36,10 @@ export class UpdatePasswordComponent extends EditUserAbstract {
     private updateUserService: UpdateUserService,
   ) {
     super(bsModalRef, userSettingsService);
+  }
+
+  async ngOnInit(): Promise<void> {
+    await super.onInit();
   }
 
   updatePassword() {

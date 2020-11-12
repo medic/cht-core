@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output, Input } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, Input, AfterViewInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import 'bootstrap-daterangepicker';
 import * as moment from 'moment';
@@ -15,7 +15,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html'
 })
-export class DateFilterComponent implements OnDestroy, AbstractFilter {
+export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterViewInit {
   private globalActions;
 
   date = {

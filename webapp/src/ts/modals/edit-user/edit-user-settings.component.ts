@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import {EditUserAbstract} from './edit-user.component';
+import { Component, Input, OnInit } from '@angular/core';
+import { EditUserAbstract } from './edit-user.component';
 import {BsModalRef} from 'ngx-bootstrap/modal';
 import {UserSettingsService} from '@mm-services/user-settings.service';
 import {UpdateUserService} from '@mm-services/update-user.service';
@@ -10,7 +10,7 @@ import {SetLanguageService} from '@mm-services/language.service';
   selector: 'update-password',
   templateUrl: './edit-user-settings.component.html'
 })
-export class EditUserSettingsComponent extends EditUserAbstract {
+export class EditUserSettingsComponent extends EditUserAbstract implements OnInit {
 
   @Input() editUserModel: {
     id?;
@@ -37,7 +37,7 @@ export class EditUserSettingsComponent extends EditUserAbstract {
   }
 
   async ngOnInit(): Promise<void> {
-    await super.ngOnInit();
+    await super.onInit();
     this.enabledLocales = await this.languagesService.get();
   }
 

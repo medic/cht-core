@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input, AfterViewInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -11,7 +11,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-status-filter',
   templateUrl: './status-filter.component.html'
 })
-export class StatusFilterComponent implements AbstractFilter {
+export class StatusFilterComponent implements AbstractFilter, AfterViewInit {
   private globalActions;
 
   statuses = {

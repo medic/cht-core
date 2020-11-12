@@ -1,4 +1,14 @@
-import { Component, EventEmitter, OnDestroy, ChangeDetectorRef, Output, ViewChild, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  ChangeDetectorRef,
+  Output,
+  ViewChild,
+  Input,
+  OnInit,
+  AfterViewInit
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { sortBy as _sortBy } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
@@ -14,7 +24,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-form-type-filter',
   templateUrl: './form-type-filter.component.html'
 })
-export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter {
+export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter, AfterViewInit {
   private globalActions;
 
   subscription: Subscription = new Subscription();

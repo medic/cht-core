@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -20,7 +20,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 @Component({
   templateUrl: './reports-add.component.html',
 })
-export class ReportsAddComponent implements OnInit, OnDestroy{
+export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();
   constructor(
     private store:Store,

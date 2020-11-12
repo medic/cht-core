@@ -42,9 +42,27 @@
     {
       "files": ["*.ts", "*.tsx"],
       "parser": "@typescript-eslint/parser",
-      "plugins": ["@typescript-eslint"],
+      "plugins": ["@typescript-eslint", "@angular-eslint/eslint-plugin"],
+      "parserOptions": {
+        "createDefaultProgram": true
+      },
       "rules": {
+        "@angular-eslint/component-class-suffix": "error",
+        "@angular-eslint/contextual-lifecycle": "error",
+        "@angular-eslint/directive-class-suffix": "error",
+        "@angular-eslint/no-conflicting-lifecycle": "error",
+        "@angular-eslint/no-host-metadata-property": "error",
+        "@angular-eslint/no-input-rename": "error",
+        "@angular-eslint/no-inputs-metadata-property": "error",
+        "@angular-eslint/no-output-native": "error",
+        "@angular-eslint/no-output-rename": "error",
+        "@angular-eslint/no-outputs-metadata-property": "error",
+        "@angular-eslint/use-lifecycle-interface": "warn",
+        "@angular-eslint/use-pipe-transform-interface": "error",
+
+        // todo remove this after implementing some sort of logging service
         "no-console": "off",
+        "no-restricted-syntax": "off",
         // Prevent TypeScript-specific constructs from being erroneously flagged as unused
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": "error",
@@ -63,5 +81,6 @@
         "@typescript-eslint/ban-ts-comment": "off"
       }
     }
+
   ]
 }
