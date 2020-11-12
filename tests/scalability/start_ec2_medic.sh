@@ -5,7 +5,7 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 jq '.UserData = "'$(base64 medic-os.sh -w 0)'"' launch-specification.json >> launch-specification-medic-os.json
 
 echo Starting Instance Requests
-SpotInstanceRequestId=$(aws ec2 request-spot-instances --spot-price '0.333' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification-medic-os.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)      
+SpotInstanceRequestId=$(aws ec2 request-spot-instances --spot-price '0.90' --instance-count 1 --type 'one-time' --launch-specification file://launch-specification-medic-os.json --block-duration-minutes 60 | jq .SpotInstanceRequests[0].SpotInstanceRequestId -r)      
 echo Getting Instance ID
 instanceID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids $SpotInstanceRequestId | jq .SpotInstanceRequests[0].InstanceId -r )
 while [ "$instanceID" = null ]
