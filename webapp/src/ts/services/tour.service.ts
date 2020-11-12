@@ -87,9 +87,7 @@ export class TourService {
 
   private mmOpenDropdown(elem) {
     if (!isMobile()) {
-      setTimeout(function() {
-        (<any>document.querySelector(elem + ' multi-dropdown-filter a.mm-button')).click();
-      }, 1);
+      (<any>document.querySelector(elem + ' multi-dropdown-filter a.mm-button')).click();
     }
   }
 
