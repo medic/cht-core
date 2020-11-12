@@ -1,7 +1,8 @@
 import { MmModalAbstract } from '../mm-modal/mm-modal';
-import { BsModalRef } from 'ngx-bootstrap/modal';
-import { Component } from '@angular/core';
 import { TourService } from '@mm-services/tour.service';
+
+import { Component } from '@angular/core';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'tour-select',

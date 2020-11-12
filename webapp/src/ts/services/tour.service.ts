@@ -1,13 +1,13 @@
-import {Injectable} from "@angular/core";
-import {TranslateService} from "@ngx-translate/core";
-import {AuthService} from "./auth.service";
-import {FeedbackService} from "./feedback.service";
-import {AnalyticsModulesService} from "./analytics-modules.service";
-import {SessionService} from "./session.service";
-
-const _ = require('lodash/core');
 import { isMobile } from '@mm-providers/responsive.provider';
-import {Router} from "@angular/router";
+import { AuthService } from './auth.service';
+import { FeedbackService } from './feedback.service';
+import { AnalyticsModulesService } from './analytics-modules.service';
+import {SessionService } from './session.service';
+
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { compact } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root'
@@ -93,7 +93,7 @@ export class TourService {
     }
   }
 
-  private tours = [
+  private tours: any[] = [
     {
       name: 'messages',
       route: '/messages',
@@ -495,11 +495,11 @@ export class TourService {
       this.getContactsTour(),
       this.getAnalyticsTour()
     ])
-    .then(results => _.compact(results));
+    .then(results => compact(results));
   }
 
   private getTour(name) {
-    return _.find(this.tours, { name: name }) || this.tours[0];
+    return this.tours.find(t => t.name === name) || this.tours[0];
   }
 
   private getSettings(name) {
@@ -512,7 +512,7 @@ export class TourService {
       settings.template = this.createTemplate();
 
       const mobile = isMobile();
-      _.forEach(settings.steps, step => {
+      settings.steps.forEach(step => {
         step.title = this.translateService.instant(step.title);
         step.content = this.translateService.instant(step.content);
         if (mobile) {

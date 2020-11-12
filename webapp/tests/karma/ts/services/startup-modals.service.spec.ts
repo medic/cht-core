@@ -1,15 +1,14 @@
+import { SessionService } from '@mm-services/session.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { StartupModalsService } from '@mm-services/startup-modals.service';
+import { UpdateUserService } from '@mm-services/update-user.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { TourService } from '@mm-services/tour.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-
-import {SessionService} from '@mm-services/session.service';
-import {SettingsService} from '@mm-services/settings.service';
-import {StartupModalsService} from '@mm-services/startup-modals.service';
-import {UpdateUserService} from '@mm-services/update-user.service';
-import {UserSettingsService} from '@mm-services/user-settings.service';
-import {ModalService} from '@mm-modals/mm-modal/mm-modal';
-import {TourService} from "@mm-services/tour.service";
-
 
 describe('StartupModalsService', () => {
 
