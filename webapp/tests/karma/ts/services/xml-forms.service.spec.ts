@@ -38,14 +38,27 @@ describe('XmlForms service', () => {
     return { doc: { _attachments: {} } };
   };
 
-  pipesService = {
-    transform: sinon.stub().returnsArg(1),
-    getPipeNameVsIsPureMap: sinon.stub().returns(new Map()),
-    meta: sinon.stub(),
-    getInstance: sinon.stub(),
+  const getService = () => {
+    return TestBed.inject(XmlFormsService);
   };
 
-  const getService = () => {
+  beforeEach(() => {
+    dbQuery = sinon.stub();
+    dbGet = sinon.stub();
+    Changes = sinon.stub();
+    hasAuth = sinon.stub();
+    UserContact = sinon.stub();
+    getContactType = sinon.stub();
+    contextUtils = {};
+    error = sinon.stub(console, 'error');
+
+    pipesService = {
+      transform: sinon.stub().returnsArg(1),
+      getPipeNameVsIsPureMap: sinon.stub().returns(new Map()),
+      meta: sinon.stub(),
+      getInstance: sinon.stub(),
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
@@ -58,24 +71,11 @@ describe('XmlForms service', () => {
         { provide: PipesService, useValue: pipesService },
       ],
     });
-    return TestBed.inject(XmlFormsService);
-  }
-
-  beforeEach(() => {
-    dbQuery = sinon.stub();
-    dbGet = sinon.stub();
-    Changes = sinon.stub();
-    hasAuth = sinon.stub();
-    UserContact = sinon.stub();
-    getContactType = sinon.stub();
-    contextUtils = {};
-    error = sinon.stub(console, 'error');
   });
 
   afterEach(() => {
     sinon.restore();
   });
-
 
   describe('list', () => {
 
@@ -722,7 +722,7 @@ describe('XmlForms service', () => {
           expect(Changes.callCount).to.equal(1);
           expect(dbQuery.callCount).to.equal(2);
         } else {
-          assert.fail('Update fired too many times!')
+          assert.fail('Update fired too many times!');
         }
         count++;
       });
@@ -868,10 +868,12 @@ describe('XmlForms service', () => {
         _attachments: { 'something.xml': { stub: true } }
       };
       dbGet.rejects({ status: 404 });
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: expected },
           { doc: { internalId: 'death', _attachments: { 'something.xml': { stub: true } } } }
-        ] });
+        ]
+      });
       const service = getService();
       return service.get(internalId).then(actual => {
         expect(actual).to.deep.equal(expected);
@@ -890,10 +892,12 @@ describe('XmlForms service', () => {
         _attachments: { 'something.xml': { stub: true } }
       };
       dbGet.rejects({ status: 404 });
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: expected },
           { doc: { internalId, _attachments: { 'something.xml': { stub: true } } } }
-        ] });
+        ]
+      });
       const service = getService();
       return service
         .get(internalId)
@@ -908,9 +912,11 @@ describe('XmlForms service', () => {
     it('query fails if no forms found', () => {
       const internalId = 'birth';
       dbGet.rejects({ status: 404 });
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: { internalId: 'death', _attachments: { 'something.xml': { stub: true } } } }
-        ] });
+        ]
+      });
       const service = getService();
       return service
         .get(internalId)

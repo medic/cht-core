@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -17,7 +17,6 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 describe('Messages Component', () => {
   let component: MessagesComponent;
   let fixture: ComponentFixture<MessagesComponent>;
-  let store: MockStore;
   let messageContactService;
   let changesService;
   let exportService;
@@ -25,11 +24,11 @@ describe('Messages Component', () => {
 
   beforeEach(async(() => {
     modalService = { show: sinon.stub() };
-    const messageContactServiceMock = {
+    const messageContactService = {
       getList: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
     };
-    const changesServiceMock = {
+    changesService = {
       subscribe: sinon.stub().resolves(of({}))
     };
     const mockedSelectors = [
@@ -39,7 +38,7 @@ describe('Messages Component', () => {
       { selector: 'getMessagesError', value: false },
     ];
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -48,11 +47,12 @@ describe('Messages Component', () => {
         declarations: [
           MessagesComponent,
           RelativeDatePipe,
+          NavigationComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: changesServiceMock },
-          { provide: MessageContactService, useValue: messageContactServiceMock },
+          { provide: ChangesService, useValue: changesService },
+          { provide: MessageContactService, useValue: messageContactService },
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: exportService, useValue: {} },
           { provide: ModalService, useValue: modalService }
@@ -62,10 +62,6 @@ describe('Messages Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(MessagesComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
-        messageContactService = TestBed.inject(MessageContactService);
-        changesService = TestBed.inject(ChangesService);
-        modalService = TestBed.inject(ModalService);
         fixture.detectChanges();
       });
   }));

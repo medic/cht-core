@@ -353,8 +353,11 @@ module.exports = function(grunt) {
             'sentinel/**/*.js',
             'shared-libs/**/*.js',
             'tests/**/*.js',
-            'webapp/src/**/*.js',
+            'webapp/src/js/bootstrapper/*.js',
+            'webapp/src/js/enketo/*.js',
+            'webapp/src/**/*.ts',
             'webapp/tests/**/*.js',
+            'webapp/tests/**/*.ts',
             'config/**/*.js',
             'scripts/**/*.js',
           ];

@@ -1,8 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -16,7 +15,6 @@ import { Selectors } from '@mm-selectors/index';
 describe('About Component', () => {
   let component:AboutComponent;
   let fixture:ComponentFixture<AboutComponent>;
-  let store: MockStore;
   let dbService;
   let resourceIconsService;
   let sessionService;
@@ -29,15 +27,17 @@ describe('About Component', () => {
       { selector: Selectors.getAndroidAppVersion, value: '' },
     ];
 
-    const versionServiceMock = {
+    versionService = {
       getLocal: sinon.stub().resolves('123'),
       getRemoteRev: sinon.stub().resolves('456'),
     };
 
     dbInfo = sinon.stub().resolves('db-info');
-    const dbMock = { get: sinon.stub().returns({ info: dbInfo }) };
+    dbService = { get: sinon.stub().returns({ info: dbInfo }) };
+    resourceIconsService = { getDocResources: sinon.stub().resolves() };
+    sessionService = { userCtx: sinon.stub().returns('userctx') };
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -48,21 +48,16 @@ describe('About Component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: ResourceIconsService, useValue: { getDocResources: sinon.stub().resolves() } },
-          { provide: SessionService, useValue: { userCtx: sinon.stub().returns('userctx') } },
-          { provide: VersionService, useValue: versionServiceMock },
-          { provide: DbService, useValue: dbMock },
+          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: VersionService, useValue: versionService },
+          { provide: DbService, useValue: dbService },
         ]
       })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(AboutComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
-        resourceIconsService = TestBed.inject(ResourceIconsService);
-        sessionService = TestBed.inject(SessionService);
-        versionService = TestBed.inject(VersionService);
-        dbService = TestBed.inject(DbService);
         fixture.detectChanges();
       });
   }));

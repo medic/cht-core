@@ -52,7 +52,8 @@ describe('GetSummaries service', () => {
     beforeEach(() => isOnlineOnly.returns(true));
 
     it('queries the view and returns', () => {
-      query.resolves({ rows: [
+      query.resolves({
+        rows: [
           {
             id: 'a',
             value: { reported_date: 1 }
@@ -87,8 +88,10 @@ describe('GetSummaries service', () => {
     beforeEach(() => isOnlineOnly.returns(false));
 
     it('queries allDocs and summarises reports', () => {
-      allDocs.resolves({ rows: [
-          { doc: {
+      allDocs.resolves({
+        rows: [
+          {
+            doc: {
               _id: 'a',
               _rev: '1',
               type: 'data_record',
@@ -111,7 +114,8 @@ describe('GetSummaries service', () => {
                 patient_id: 'f'
               }
             } },
-          { doc: {
+          {
+            doc: {
               _id: 'b',
               _rev: '2',
               type: 'data_record',
@@ -168,8 +172,10 @@ describe('GetSummaries service', () => {
 
     it('queries allDocs and summarises contacts', () => {
       includes.returns(true);
-      allDocs.resolves({ rows: [
-          { doc: {
+      allDocs.resolves({
+        rows: [
+          {
+            doc: {
               _id: 'a',
               _rev: '1',
               type: 'person',
@@ -187,7 +193,8 @@ describe('GetSummaries service', () => {
               },
               date_of_death: 999
             } },
-          { doc: {
+          {
+            doc: {
               _id: 'b',
               _rev: '2',
               type: 'contact',
@@ -240,8 +247,10 @@ describe('GetSummaries service', () => {
 
     it('queries allDocs and ignores other types', () => {
       includes.returns(false);
-      allDocs.resolves({ rows: [
-          { doc: {
+      allDocs.resolves({
+        rows: [
+          {
+            doc: {
               type: 'form'
             } }
         ] });

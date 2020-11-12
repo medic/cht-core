@@ -13,7 +13,7 @@ describe('CountMessageService', () => {
   const generateString = (len) => {
     return Array(len + 1).join('m');
   };
-  
+
   beforeEach(() => {
     settingsService = {
       get: sinon.stub().resolves({})
@@ -31,7 +31,6 @@ describe('CountMessageService', () => {
       ]
     });
     service = TestBed.inject(CountMessageService);
-    settingsService = TestBed.inject(SettingsService);
   });
 
   it('should be created', () => {

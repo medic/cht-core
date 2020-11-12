@@ -32,7 +32,7 @@ describe('Settings service', () => {
       isString: 'hello'
     };
     get.resolves({ settings: expected });
-    service
+    return service
       .get()
       .then((actual:any) => {
         expect(actual.isTrue).to.equal(expected.isTrue);

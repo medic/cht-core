@@ -33,7 +33,8 @@ describe('JsonForms service', () => {
   });
 
   it('returns forms with names and translation keys', () => {
-    settings.resolves({ forms: {
+    settings.resolves({
+      forms: {
         A: { meta: { code: 'A', label: 'First',  icon: 'a' } },
         B: { meta: { code: 'B', label: 'Second', icon: 'b' } },
         C: { meta: { code: 'C', label: 'Third',  icon: 'c' } },
@@ -52,7 +53,8 @@ describe('JsonForms service', () => {
   });
 
   it('handles forms with no label', () => {
-    settings.resolves({ forms: {
+    settings.resolves({
+      forms: {
         A: { meta: { code: 'A' } },
         B: { meta: { code: 'B', icon: 'b' } },
         C: { meta: { code: 'C', label: 'Third' } },

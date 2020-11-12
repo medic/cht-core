@@ -14,35 +14,34 @@ describe('DeleteDocConfirmComponent', () => {
   let component: DeleteDocConfirmComponent;
   let fixture: ComponentFixture<DeleteDocConfirmComponent>;
   let bdModalRef;
-  let dbService
+  let dbService;
 
   beforeEach(async(() => {
     bdModalRef = { hide: sinon.stub() };
     dbService = { get: () => ({ put: sinon.stub().resolves(true) }) };
 
-    TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule
-      ],
-      declarations: [
-        DeleteDocConfirmComponent,
-        MmModal
-      ],
-      providers: [
-        provideMockStore(),
-        { provide: BsModalRef, useValue: bdModalRef },
-        { provide: DbService, useValue: dbService }
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(DeleteDocConfirmComponent);
-      component = fixture.componentInstance;
-      bdModalRef = TestBed.inject(BsModalRef);
-      dbService = TestBed.inject(DbService);
-      fixture.detectChanges();
-    });
+    return TestBed
+      .configureTestingModule({
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule
+        ],
+        declarations: [
+          DeleteDocConfirmComponent,
+          MmModal
+        ],
+        providers: [
+          provideMockStore(),
+          { provide: BsModalRef, useValue: bdModalRef },
+          { provide: DbService, useValue: dbService }
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(DeleteDocConfirmComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
   afterEach(() => {

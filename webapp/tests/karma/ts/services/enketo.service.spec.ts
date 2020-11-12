@@ -255,7 +255,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
-      service.render(wrapper, mockEnketoDoc('myform')).then(() => {
+      return service.render(wrapper, mockEnketoDoc('myform')).then(() => {
         // need to wait for async get attachment to complete
         tick();
         const img = wrapper.find('img').first();

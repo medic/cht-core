@@ -9,11 +9,9 @@ import { EffectsModule } from '@ngrx/effects';
 
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { Selectors } from '@mm-selectors/index';
-import { Actions as GlobalActionsList, GlobalActions } from '@mm-actions/global';
+import { Actions as GlobalActionsList } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
-import { Actions as ReportActionList } from '@mm-actions/reports';
-import { setOffsetToParsedOffset } from 'ngx-bootstrap/chronos/units/offset';
 
 describe('GlobalEffects', () => {
   let effects:GlobalEffects;
@@ -23,7 +21,7 @@ describe('GlobalEffects', () => {
 
   beforeEach(async(() => {
     actions$ = new Observable<Action>();
-    let mockedSelectors = [
+    const mockedSelectors = [
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getCancelCallback, value: undefined },

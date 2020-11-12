@@ -17,12 +17,10 @@ describe('EditUserSettingsComponent', () => {
 
   let component: EditUserSettingsComponent;
   let fixture: ComponentFixture<EditUserSettingsComponent>;
-  let userSettingsService: any = {};
-  let updateUserService: any = {};
-  let languagesService: any = {};
-  let setLanguageService: any = {
-    set(code, setLanguageCookie) { }
-  };
+  let userSettingsService;
+  let updateUserService;
+  let languagesService;
+  let setLanguageService;
 
   beforeEach(async(() => {
     updateUserService.update = sinon.stub().resolves();
@@ -43,33 +41,37 @@ describe('EditUserSettingsComponent', () => {
         {code: 'fr', name: 'Français (French)'},
       ]
     );
-    TestBed.configureTestingModule({
-      declarations: [
-        EditUserSettingsComponent,
-        MmModal
-      ],
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        FormsModule,
-      ],
-      providers: [
-        {provide: UpdateUserService, useValue: updateUserService},
-        {provide: UserSettingsService, useValue: userSettingsService},
-        {provide: LanguagesService, useValue: languagesService},
-        {provide: SetLanguageService, useValue: setLanguageService},
-        {provide: BsModalRef, useValue: new BsModalRef()},
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(EditUserSettingsComponent);
-      component = fixture.componentInstance;
+    setLanguageService = { set: sinon.stub() };
+    return TestBed
+      .configureTestingModule({
+        declarations: [
+          EditUserSettingsComponent,
+          MmModal
+        ],
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          FormsModule,
+        ],
+        providers: [
+          {provide: UpdateUserService, useValue: updateUserService},
+          {provide: UserSettingsService, useValue: userSettingsService},
+          {provide: LanguagesService, useValue: languagesService},
+          {provide: SetLanguageService, useValue: setLanguageService},
+          {provide: BsModalRef, useValue: new BsModalRef()},
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(EditUserSettingsComponent);
+        component = fixture.componentInstance;
 
-      fixture.detectChanges();
-      return fixture.whenStable();
-    });
+        fixture.detectChanges();
+        return fixture.whenStable();
+      });
   }));
+
+
 
   afterEach(() => {
     sinon.restore();
@@ -101,7 +103,7 @@ describe('EditUserSettingsComponent', () => {
       processing: false,
       error: true,    // There was an error before
       severity: true,
-    }
+    };
 
     await component.editUserSettings();
     expect(component.status).to.deep.equal({

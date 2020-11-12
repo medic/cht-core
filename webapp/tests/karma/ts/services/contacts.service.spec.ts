@@ -10,34 +10,31 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 
 describe('Contacts Service', () => {
   let service:ContactsService;
-  let dbService:DbService;
-  let cacheService:CacheService;
-  let contactTypesService:ContactTypesService;
+  let dbService;
+  let cacheService;
+  let contactTypesService;
   let query;
 
   beforeEach(() => {
     query = sinon.stub();
-    const dbMock = { get: () => ({ query }) };
-    const cacheMock = { register: (opts) => opts.get };
+    dbService = { get: () => ({ query }) };
+    cacheService = { register: (opts) => opts.get };
     const placeTypes = [
       { id: 'district_hospital' },
       { id: 'health_center' },
       { id: 'clinic' }
     ];
-    const contactTypesMock = { getPlaceTypes: sinon.stub().resolves(placeTypes) };
+    contactTypesService = { getPlaceTypes: sinon.stub().resolves(placeTypes) };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: dbMock },
-        { provide: CacheService, useValue: cacheMock },
-        { provide: ContactTypesService, useValue: contactTypesMock },
+        { provide: DbService, useValue: dbService },
+        { provide: CacheService, useValue: cacheService },
+        { provide: ContactTypesService, useValue: contactTypesService },
       ]
     });
 
     service = TestBed.inject(ContactsService);
-    dbService = TestBed.inject(DbService);
-    cacheService = TestBed.inject(CacheService);
-    contactTypesService = TestBed.inject(ContactTypesService);
   });
 
   afterEach(() => {

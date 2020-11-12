@@ -66,8 +66,8 @@ describe('PhonePipe', () => {
     pipe = new PhonePipe(settings, sanitizer);
     await Promise.resolve(); // resolve settings request
 
-    let raw = 'random'; // invalid phone, shouldn't get formatted 
-    let formatted = 'random';
+    const raw = 'random'; // invalid phone, shouldn't get formatted
+    const formatted = 'random';
     assertResult(pipe.transform(raw), formatted, raw);
   });
 });

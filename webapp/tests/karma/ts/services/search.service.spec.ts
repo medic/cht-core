@@ -1,6 +1,6 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
 import * as moment from 'moment';
 
 import { SearchService } from '@mm-services/search.service';
@@ -49,13 +49,15 @@ describe('Search service', () => {
         .then((actual) => {
           expect(actual).to.deep.equal(expected);
           tick();
-        });
+        })
+        .catch(err => assert.fail(err));
 
       service
         .search('reports', {})
         .then((actual) => {
           expect(actual).to.be.empty;
-        });
+        })
+        .catch(err => assert.fail(err));
     }));
 
     it('does not debounce if the same query is executed twice with the force option', fakeAsync(() => {
@@ -67,13 +69,15 @@ describe('Search service', () => {
         .then((actual) => {
           firstReturned = true;
           expect(actual).to.deep.equal(expected);
-        });
+        })
+        .catch(err => assert.fail(err));
       service
         .search('reports', {}, { force: true })
         .then((actual) => {
           expect(firstReturned).to.equal(true);
           expect(actual).to.deep.equal([ { id: 'a' } ]);
-        });
+        })
+        .catch(err => assert.fail(err));
     }));
 
     it('does not debounce different queries - medic/medic/issues/4331)', fakeAsync(() => {
@@ -88,7 +92,8 @@ describe('Search service', () => {
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
-        });
+        })
+        .catch(err => assert.fail(err));
 
       filters.foo = 'test';
       service
@@ -96,7 +101,8 @@ describe('Search service', () => {
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'b' } ]);
           expect(firstReturned).to.equal(true);
-        });
+        })
+        .catch(err => assert.fail(err));
     }));
 
     it('does not debounce different queries', fakeAsync(() => {
@@ -109,14 +115,16 @@ describe('Search service', () => {
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'a' } ]);
           firstReturned = true;
-        });
+        })
+        .catch(err => assert.fail(err));
 
       service
         .search('reports', { freetext: 'second' })
         .then((actual) => {
           expect(actual).to.deep.equal([ { id: 'b' } ]);
           expect(firstReturned).to.equal(true);
-        });
+        })
+        .catch(err => assert.fail(err));
     }));
 
     it('does not debounce subsequent queries', () => {
@@ -693,12 +701,14 @@ describe('Search service', () => {
       db.query.withArgs('medic-client/visits_by_date').resolves({ rows: []});
       db.query
         .withArgs('medic-client/contacts_by_last_visited')
-        .resolves({ rows: [
+        .resolves({
+          rows: [
             { key: '1', value: { max: 1 } },
             { key: '2', value: { max: 2 } },
             { key: '3', value: { max: 3 } },
             { key: '4', value: { max: 4 } },
-          ]});
+          ]
+        });
 
       const extensions = { displayLastVisitedDate: true };
 

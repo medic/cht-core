@@ -57,11 +57,12 @@ describe('UpdateSettings service', () => {
     const res = httpMock.expectOne('/api/v1/settings?replace=true');
     res.flush({message: 'my error message'}, {status: 500, statusText: 'Server error'});
 
-    return update.then(() => {
-      assert.fail('exception expected');
-    })
-    .catch(err => {
-      expect(err).to.include({ statusText: 'Server error' });
-    });
+    return update
+      .then(() => {
+        assert.fail('exception expected');
+      })
+      .catch(err => {
+        expect(err).to.include({ statusText: 'Server error' });
+      });
   });
 });

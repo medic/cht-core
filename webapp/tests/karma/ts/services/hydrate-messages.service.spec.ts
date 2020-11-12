@@ -7,7 +7,7 @@ import { HydrateMessagesService } from '@mm-services/hydrate-messages.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 describe('Hydrate Messages Service', () => {
-  let service: HydrateMessagesService
+  let service:HydrateMessagesService;
   let lineageModelGeneratorService;
   const contact = { _id: 'contact', name: 'aa' };
   const lineage = [
@@ -16,16 +16,15 @@ describe('Hydrate Messages Service', () => {
   ];
 
   beforeEach(() => {
-    const lineageGeneratorServiceMock = { reportSubjects: sinon.stub() };
+    lineageModelGeneratorService = { reportSubjects: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: LineageModelGeneratorService, useValue: lineageGeneratorServiceMock }
+        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService }
       ]
     });
 
     service = TestBed.inject(HydrateMessagesService);
-    lineageModelGeneratorService = TestBed.inject(LineageModelGeneratorService);
   });
 
   afterEach(() => {

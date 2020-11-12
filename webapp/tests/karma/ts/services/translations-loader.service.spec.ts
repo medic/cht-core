@@ -14,7 +14,7 @@ describe('TranslationsLoader service', () => {
 
     TestBed.configureTestingModule({ providers: [{ provide: SettingsService, useValue: settings }] });
     service = TestBed.inject(TranslationLoaderService);
-  })
+  });
 
   describe('getLocale', () => {
     it('returns settings default', () => {

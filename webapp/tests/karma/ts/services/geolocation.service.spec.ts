@@ -3,17 +3,14 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { GeolocationService } from '@mm-services/geolocation.service';
-//todo import telemetry
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Geolocation service', () => {
   let Telemetry;
   let medicmobileAndroid;
   let service;
-  let navigator;
 
   beforeEach(() => {
-    navigator = window.navigator;
-
     window.medicmobile_android = medicmobileAndroid;
     sinon.stub(window.navigator.geolocation, 'watchPosition');
     sinon.stub(window.navigator.geolocation, 'clearWatch');
@@ -23,7 +20,9 @@ describe('Geolocation service', () => {
     };
 
     TestBed.configureTestingModule({
-      // todo add telemetry
+      providers: [
+        { provide: TelemetryService, useValue: Telemetry },
+      ]
     });
     service = TestBed.inject(GeolocationService);
   });

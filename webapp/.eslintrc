@@ -36,7 +36,7 @@
         "src/js/bootstrapper/**",
         "src/js/bootstrap-multidropdown.js",
         "tests/**/*",
-        "src/ts/bootstrapper/**"
+        "src/js/bootstrapper/**"
       ],
       "rules": {
         "angular/window-service": "off",
@@ -54,6 +54,23 @@
       ],
       "rules": {
         "no-console": "off"
+      }
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        // Prevent TypeScript-specific constructs from being erroneously flagged as unused
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+        // Require a specific member delimiter style for interfaces and type literals
+        // Default Semicolon style
+        "@typescript-eslint/member-delimiter-style": "error",
+        // Require a consistent member declaration order
+        "@typescript-eslint/member-ordering": "error",
+        // Require consistent spacing around type annotations
+        "@typescript-eslint/type-annotation-spacing": "error"
       }
     }
   ]

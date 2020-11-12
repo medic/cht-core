@@ -18,7 +18,7 @@ import {
   StatePipe,
   TaskDueDatePipe,
   WeeksPregnantPipe
-} from '@mm-pipes/date.pipe'
+} from '@mm-pipes/date.pipe';
 import {
   ClinicPipe, LineagePipe, SummaryPipe, TitlePipe
 } from '@mm-pipes/message.pipe';
@@ -27,7 +27,6 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
-import { exitCodeFromResult } from '@angular/compiler-cli';
 
 describe('PipesService', () => {
   let pipes;
@@ -37,7 +36,7 @@ describe('PipesService', () => {
     const pipe = { transform: sinon.stub() };
     pipes.set(name, pipe);
     return pipe;
-  }
+  };
 
   beforeEach(() => {
     pipes = new Map();
