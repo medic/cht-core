@@ -8,7 +8,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SettingsService } from './settings.service';
 import { UserSettingsService } from './user-settings.service';
 
-class StartupModal {
+interface StartupModal {
   required: (settings, user?) => boolean
   render: () => Promise<any>
 }
@@ -18,6 +18,7 @@ class StartupModal {
 })
 export class StartupModalsService {
 
+  initialized;
   tours: object[];
   modalsToShow: StartupModal[];
   startupModals: StartupModal[] = [
@@ -51,10 +52,8 @@ export class StartupModalsService {
       required: (settings, user) => !user.known && this.tours.length > 0,
       render: () => {
         this.openTourSelect();
-        return this.updateUserService.update(
-            this.sessionService.userCtx().name,
-            { known: true }
-          )
+        return this.updateUserService
+          .update(this.sessionService.userCtx().name, { known: true })
           .catch(err => console.error('Error updating user', err));
       },
     },
@@ -68,7 +67,7 @@ export class StartupModalsService {
     private settingsService: SettingsService,
     private userSettingsService: UserSettingsService,
   ) {
-    this.tourService.getTours().then(tours => {
+    this.initialized = this.tourService.getTours().then(tours => {
       this.tours = tours;
     });
   }
@@ -81,7 +80,8 @@ export class StartupModalsService {
     return Promise
       .all([
         this.settingsService.get(),
-        this.userSettingsService.get()
+        this.userSettingsService.get(),
+        this.initialized,
       ])
       .then(([ settings, userSettings ]) => {
         this.modalsToShow = this.startupModals.filter(modal => modal.required(settings, userSettings));
