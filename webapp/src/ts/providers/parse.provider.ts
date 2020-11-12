@@ -42,16 +42,65 @@ const detectChanges = (ov, nv) => {
   const len = nv.length;
   let hasChange = len > 10;
   switch (len) {
-  case 10: hasChange = !primitiveEquals(ov[9], nv[9]); break;
-  case 9: hasChange = !primitiveEquals(ov[8], nv[8]); break;
-  case 8: hasChange = !primitiveEquals(ov[7], nv[7]); break;
-  case 7: hasChange = !primitiveEquals(ov[6], nv[6]); break;
-  case 6: hasChange = !primitiveEquals(ov[5], nv[5]); break;
-  case 5: hasChange = !primitiveEquals(ov[4], nv[4]); break;
-  case 4: hasChange = !primitiveEquals(ov[3], nv[3]); break;
-  case 3: hasChange = !primitiveEquals(ov[2], nv[2]); break;
-  case 2: hasChange = !primitiveEquals(ov[1], nv[1]); break;
-  case 1: hasChange = !primitiveEquals(ov[0], nv[0]); break;
+  case 10:
+    hasChange = !primitiveEquals(ov[9], nv[9]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 9:
+    hasChange = !primitiveEquals(ov[8], nv[8]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 8:
+    hasChange = !primitiveEquals(ov[7], nv[7]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 7:
+    hasChange = !primitiveEquals(ov[6], nv[6]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 6:
+    hasChange = !primitiveEquals(ov[5], nv[5]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 5:
+    hasChange = !primitiveEquals(ov[4], nv[4]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 4:
+    hasChange = !primitiveEquals(ov[3], nv[3]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 3:
+    hasChange = !primitiveEquals(ov[2], nv[2]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 2:
+    hasChange = !primitiveEquals(ov[1], nv[1]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 1:
+    hasChange = !primitiveEquals(ov[0], nv[0]);
+    if (hasChange) {
+      break;
+    }
   }
   return hasChange;
 };

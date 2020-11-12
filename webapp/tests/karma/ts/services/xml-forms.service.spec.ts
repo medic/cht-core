@@ -1,6 +1,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect, assert } from 'chai';
+import { assert, expect } from 'chai';
 import * as _ from 'lodash-es';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -324,11 +324,8 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      contextUtils = {
-        isBlue: contact => {
-          console.log(contact);
-          return contact.color === 'blue';
-        }
+      contextUtils.isBlue = contact => {
+        return contact.color === 'blue';
       };
       dbQuery.resolves({ rows: given });
       UserContact.resolves({ name: 'Frank' });
@@ -364,10 +361,8 @@ describe('XmlForms service', () => {
           },
         }
       ];
-      contextUtils = {
-        isBlue: contact => {
-          return contact.color === 'blue';
-        }
+      contextUtils.isBlue = contact => {
+        return contact.color === 'blue';
       };
       dbQuery.resolves({ rows: given });
       UserContact.resolves({ name: 'Frank' });
