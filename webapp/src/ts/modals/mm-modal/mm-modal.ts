@@ -6,6 +6,8 @@
  */
 import { Component, Injectable, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { Selectors } from '@mm-selectors/index';
+import { Store } from '@ngrx/store';
 import { v4 as uuid } from 'uuid';
 import { take } from 'rxjs/operators';
 
@@ -15,6 +17,8 @@ import { take } from 'rxjs/operators';
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class MmModal {
+
+  @Input() minimalTabs = false;
   @Input() status;
   @Input() id;
   @Input() titleKey;
@@ -26,7 +30,15 @@ export class MmModal {
   @Input() disableSubmit;
   @Input() danger;
 
-  constructor() {
+  constructor(private store: Store) {
+  }
+
+  ngOnInit() {
+    this.store
+      .select(Selectors.getMinimalTabs)
+      .subscribe(minimalTabs => {
+        this.minimalTabs = minimalTabs
+      });
   }
 
   @HostListener('window:keydown.enter') onEnterHandler() {

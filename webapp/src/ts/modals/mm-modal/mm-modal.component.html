@@ -1,4 +1,4 @@
-<div role="document" id="{{id}}">
+<div role="document" id="{{id}}" [class.hide-mobile-tab-labels]="minimalTabs">
   <div class="modal-header">
     <button type="button" class="cancel close" [disabled]="status?.processing" (click)="onCancel.emit()">&times;</button>
     <h2 translate>{{titleKey}}</h2>
