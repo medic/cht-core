@@ -28,7 +28,9 @@ export class GlobalEffects {
     ():any => this.actions$.pipe(
       ofType(GlobalActionsList.deleteDocConfirm),
       tap(({ payload: { doc } }) => {
-        this.modalService.show(DeleteDocConfirmComponent, { initialState: { model: { doc } } });
+        this.modalService
+          .show(DeleteDocConfirmComponent, { initialState: { model: { doc } } })
+          .catch(() => {});
       })
     ),
     { dispatch: false }
@@ -56,22 +58,20 @@ export class GlobalEffects {
           return;
         }
 
-        const navigationConfirmedCallback = () => {
-          this.globalActions.setEnketoEditedStatus(false);
-          if (nextUrl) {
-            this.router.navigate([nextUrl]);
-            return;
-          }
+        this.modalService
+          .show(NavigationConfirmComponent)
+          .then(() => {
+            this.globalActions.setEnketoEditedStatus(false);
+            if (nextUrl) {
+              this.router.navigate([nextUrl]);
+              return;
+            }
 
-          if (cancelCallback) {
-            cancelCallback();
-          }
-        };
-
-        this.modalService.show(
-          NavigationConfirmComponent,
-          { initialState: { callback: navigationConfirmedCallback } },
-        );
+            if (cancelCallback) {
+              cancelCallback();
+            }
+          })
+          .catch(() => {});
       }),
     );
   }, { dispatch: false });

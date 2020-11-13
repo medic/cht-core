@@ -16,6 +16,8 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
   templateUrl: './send-message.component.html',
 })
 export class SendMessageComponent extends MmModalAbstract implements AfterViewInit {
+  id = 'send-message';
+
   errors = {
     message: false,
     phone: false
@@ -31,11 +33,11 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
     private formatProvider: FormatProvider,
     private settingsService: SettingsService,
     private contactTypesService: ContactTypesService,
-    private bsModalRef: BsModalRef,
+    public bsModalRef: BsModalRef,
     private sendMessageService: SendMessageService,
     private select2SearchService: Select2SearchService
   ) {
-    super();
+    super(bsModalRef);
   }
 
   ngAfterViewInit(): void {
@@ -179,10 +181,6 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
 
         return this.select2SearchService.init($phone, searchIds, select2Options);
       });
-  }
-
-  close() {
-    this.bsModalRef.hide();
   }
 
   submit() {

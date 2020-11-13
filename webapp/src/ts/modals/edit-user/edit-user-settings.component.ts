@@ -23,6 +23,7 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
     language: {}
   };
 
+  id = 'edit-user-settings';
   errors: any = {};
   enabledLocales: any = [];
 
@@ -62,7 +63,7 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
               this.setLanguageService.set(updates.language);
             }
             this.setFinished();
-            this.cancel();
+            this.close();
           })
           .catch((err) => {
             this.setError(err, 'Error updating user');

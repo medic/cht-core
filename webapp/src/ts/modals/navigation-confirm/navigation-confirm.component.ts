@@ -8,20 +8,15 @@ import { MmModalAbstract } from '../mm-modal/mm-modal';
   templateUrl: './navigation-confirm.component.html'
 })
 export class NavigationConfirmComponent extends MmModalAbstract {
+  id = 'navigation-confirm';
+
   constructor(
-    public bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
   ) {
-    super();
-  }
-
-  callback; // Automatically assigned by BsModalRef
-
-  cancel() {
-    this.bsModalRef.hide();
+    super(bsModalRef);
   }
 
   submit() {
-    this.callback();
-    this.bsModalRef.hide();
+    this.modalAccept();
   }
 }

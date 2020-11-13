@@ -20,13 +20,15 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
   settingsLoaded = false;
   settings = <any>{};
 
+  id = 'guided-setup';
+
   constructor(
-    public bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private updateSettingsService: UpdateSettingsService,
     private languagesService: LanguagesService,
     private settingsService: SettingsService,
   ) {
-    super();
+    super(bsModalRef);
   }
 
   private updateNumbers() {
@@ -149,17 +151,15 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     if (val) {
       settings.anc_registration_lmp = val === 'true';
     }
-    return this.updateSettingsService.update(settings)
+
+    return this.updateSettingsService
+      .update(settings)
       .then(() => {
         this.setFinished();
-        this.bsModalRef.hide();
+        this.close();
       })
       .catch((err) => {
         this.setError(err, 'Error saving settings');
       });
-  }
-
-  cancel() {
-    this.bsModalRef.hide();
   }
 }

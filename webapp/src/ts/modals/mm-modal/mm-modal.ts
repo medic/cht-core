@@ -35,7 +35,21 @@ export class MmModal {
 @Injectable({
   providedIn: 'root'
 })
-export class MmModalAbstract {
+export abstract class MmModalAbstract {
+  readonly modalClosePromise;
+  constructor(
+    public bsModalRef:BsModalRef,
+  ) {
+    const modalClosePromise:any = {};
+    modalClosePromise.promise = new Promise((resolve, reject) => {
+      modalClosePromise.resolve = resolve;
+      modalClosePromise.reject = reject;
+    });
+    this.modalClosePromise = modalClosePromise;
+  }
+
+  abstract id;
+
   status = {
     processing:false,
     error: false,
@@ -60,6 +74,24 @@ export class MmModalAbstract {
     this.status.error = message;
     this.status.severity = severity;
   }
+
+  close() {
+    this.modalAccept();
+  }
+
+  cancel() {
+    this.modalReject();
+  }
+
+  modalAccept() {
+    this.modalClosePromise?.resolve && this.modalClosePromise.resolve();
+    this.bsModalRef.hide();
+  }
+
+  modalReject() {
+    this.modalClosePromise?.reject && this.modalClosePromise.reject();
+    this.bsModalRef.hide();
+  }
 }
 
 
@@ -76,21 +108,25 @@ export class ModalService {
   private modalRefs = {};
 
   constructor(private modalService:BsModalService) {
-
   }
 
-  show(template, config?, onHide?) {
+  private getModalClosePromise(modalRef) {
+    return modalRef?.content?.modalClosePromise?.promise;
+  }
+
+  show(template, config?) {
     const modalId = template.id;
     if (this.modalRefs[modalId]) {
-      return;
-    }
-    config = Object.assign(this.config, config);
-    const ref:BsModalRef = this.modalService.show(template, config);
-    this.modalRefs[modalId] = ref;
-    if (onHide) {
-      ref.onHide.subscribe(() => onHide());
+      // no duplicate modals
+      return this.getModalClosePromise(this.modalRefs[modalId]) || Promise.resolve();
     }
 
+    config = Object.assign({}, this.config, config);
+    const ref:BsModalRef = this.modalService.show(template, config);
+
+    this.modalRefs[modalId] = ref;
     ref.onHidden.subscribe(() => delete this.modalRefs[modalId]);
+
+    return this.getModalClosePromise(ref);
   }
 }

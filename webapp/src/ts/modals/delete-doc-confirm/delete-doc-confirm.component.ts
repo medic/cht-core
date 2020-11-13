@@ -22,14 +22,16 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
   lineageLib;
   model = { doc: null }; // Automatically assigned by BsModalRef
 
+  id = 'delete-doc-confirm';
+
   constructor(
     private store: Store,
     private translateService: TranslateService,
-    private bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private dbService: DbService,
     private router: Router
   ) {
-    super();
+    super(bsModalRef);
     this.globalActions = new GlobalActions(this.store);
     this.lineageLib = LineageFactory(Promise, this.dbService.get());
   }
@@ -48,10 +50,6 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-  }
-
-  close() {
-    this.bsModalRef.hide();
   }
 
   private getRouteName(url = '') {
