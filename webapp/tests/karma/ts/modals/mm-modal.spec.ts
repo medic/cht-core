@@ -194,9 +194,22 @@ describe('ModalService', () => {
     ]);
   });
 
-  it('should open a "singleton" modal', () => {
+  it('passed args to bsModalService', () => {
+    const template = { a: 'template' };
+    const config = { config: 1 };
+    service.show(template, config);
+
+    expect(bsModalService.show.called).to.equal(true);
+    const actual = bsModalService.show.args;
+    chai.expect(actual[0]).to.equal(template);
+    chai.expect(actual[1]).to.deep.equal({ keyboard: true, show: true, animated: true });
+  });
+
+  it('second identical modal does not open', () => {
     const template = { an: 'object', id: 'object' };
     bsModuleRef.content.modalClosePromise.promise = 'the new promise';
+
+    // first call
     const result = service.show(template, { animated: false, additional: true });
     expect(result).to.equal('the new promise');
     expect(bsModalService.show.callCount).to.equal(1);
@@ -204,31 +217,70 @@ describe('ModalService', () => {
       template,
       { keyboard: true, show: true, animated: false, additional: true },
     ]);
+
+    // second call
     const secondResult = service.show(template, { animated: false, additional: true });
     expect(secondResult).to.equal(result);
     expect(bsModalService.show.callCount).to.equal(1);
   });
 
-  it('should delete reference when hidden', () => {
+  it('different modal does open', () => {
+    const template1 = { template: 1 };
+    const template2 = { template: 2 };
+
+    const bsModuleRef1 = {
+      content: { modalClosePromise: { promise: 'promise 1' } },
+      onHidden: new Subject(),
+    };
+    const bsModuleRef2 = {
+      content: { modalClosePromise: { promise: 'promise 2' } },
+      onHidden: new Subject(),
+    };
+    bsModalService.show.onCall(0).returns(bsModuleRef1);
+    bsModalService.show.onCall(1).returns(bsModuleRef2);
+
+    // first call
+    const result1 = service.show(template1, { config: 1 });
+    expect(result1).to.equal('promise 1');
+    expect(bsModalService.show.callCount).to.equal(1);
+    expect(bsModalService.show.args[0]).to.deep.equal([
+      template1,
+      { keyboard: true, show: true, animated: true, config: 1 }
+    ]);
+
+    // second call
+    const result2 = service.show(template2, { config: 2 });
+    expect(result2).to.equal('promise 2');
+    expect(bsModalService.show.callCount).to.equal(2);
+    expect(bsModalService.show.args[1]).to.deep.equal([
+      template2,
+      { keyboard: true, show: true, animated: true, config: 2 }
+    ]);
+  });
+
+  it('second identical modal opens if first modal is closed first', () => {
     const template1 = { an: 'object', id: 'object' };
     service.show(template1);
-    const onHittenTemplate1 = bsModuleRef.onHidden;
+    const onHidden1 = bsModuleRef.onHidden;
 
     bsModuleRef.onHidden = new Subject();
     const template2 = { second: 'object' };
+    // first call template 2
     service.show(template2);
-    const onHittenTemplate2 = bsModuleRef.onHidden;
+    const onHidden2 = bsModuleRef.onHidden;
 
     expect(bsModalService.show.callCount).to.equal(2);
+    // first call template 2
     service.show(template1);
     expect(bsModalService.show.callCount).to.equal(2); // reference for template1 modal is saved
 
-    onHittenTemplate1.next(); // hide the modal
+    onHidden1.next(); // hide template1 modal
+    // second call template 1
     service.show(template1);
     expect(bsModalService.show.callCount).to.equal(3); // reference was removed when modal has hidden
     expect(bsModalService.show.args[2]).to.deep.equal([template1, { keyboard: true, show: true, animated: true } ]);
 
-    onHittenTemplate2.next(); // hide modal without id works too
+    onHidden2.next(); // hide template2 modal
   });
 
   it('should nullcheck the modalref properties', async () => {
