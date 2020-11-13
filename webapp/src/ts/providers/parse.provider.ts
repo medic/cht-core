@@ -392,8 +392,8 @@ class ASTCompiler {
   }
 
   cleanup() {
-    this.ast = this.cAst = this.stmts = this.cStmts = this.declarations = this.pipes = this.pipeNameVsIsPureMap =
-      undefined;
+    this.ast = this.cAst = this.stmts = this.cStmts = undefined;
+    this.declarations = this.pipes = this.pipeNameVsIsPureMap = undefined;
   }
 
   compile() {
