@@ -8,7 +8,7 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   templateUrl: './reloading.component.html'
 })
 export class ReloadingComponent  extends MmModalAbstract {
-  constructor(public bsModalRef: BsModalRef) {
+  constructor(bsModalRef: BsModalRef) {
     super(bsModalRef);
   }
 

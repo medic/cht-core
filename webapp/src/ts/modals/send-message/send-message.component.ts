@@ -33,7 +33,7 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
     private formatProvider: FormatProvider,
     private settingsService: SettingsService,
     private contactTypesService: ContactTypesService,
-    public bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private sendMessageService: SendMessageService,
     private select2SearchService: Select2SearchService
   ) {
