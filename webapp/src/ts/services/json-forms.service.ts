@@ -22,6 +22,6 @@ export class JsonFormsService {
           icon: form.meta.icon
         };
       });
-    })
+    });
   }
 }

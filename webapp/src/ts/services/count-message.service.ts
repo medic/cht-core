@@ -21,10 +21,10 @@ export class CountMessageService {
 
   private calculate(message) {
     const max = this.getMax(message);
-     return {
-       messages: Math.ceil(message.length / max),
-       characters: max - ((message.length - 1) % max) - 1
-     };
+    return {
+      messages: Math.ceil(message.length / max),
+      characters: max - ((message.length - 1) % max) - 1
+    };
   }
 
   label(value, many) {

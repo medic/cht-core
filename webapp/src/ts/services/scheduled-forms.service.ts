@@ -18,6 +18,6 @@ export class ScheduledFormsService {
         }
       });
       return results;
-    })
+    });
   }
 }

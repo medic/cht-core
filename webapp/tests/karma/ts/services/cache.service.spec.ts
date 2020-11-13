@@ -24,7 +24,8 @@ describe('Cache Service', () => {
   });
 
   it('returns errors from get', (done) => {
-    service.register({ get: (callback) => {
+    service.register({
+      get: (callback) => {
         callback('boom');
       }})((err) => {
       expect(err).to.equal('boom');
@@ -33,7 +34,8 @@ describe('Cache Service', () => {
   });
 
   it('returns errors from get', (done) => {
-    service.register({ get: (callback) => {
+    service.register({
+      get: (callback) => {
         callback('boom');
       }})((err) => {
       expect(err).to.equal('boom');
@@ -43,7 +45,8 @@ describe('Cache Service', () => {
 
   it('returns results from get', (done) => {
     const docs = [ { _id: 1 } ];
-    service.register({ get: (callback) => {
+    service.register({
+      get: (callback) => {
         callback(null, docs);
       }})((err, results) => {
       expect(err).to.equal(null);
@@ -56,7 +59,8 @@ describe('Cache Service', () => {
     const docs = [ { _id: 1 } ];
     let callback;
     let count = 0;
-    const cache = service.register({ get: (_callback) => {
+    const cache = service.register({
+      get: (_callback) => {
         callback = _callback;
       }});
     const ass = (err, results) => {
@@ -76,7 +80,8 @@ describe('Cache Service', () => {
     const docs = [ { _id: 1 } ];
     let callback;
     let count = 0;
-    const cache = service.register({ get: (_callback) => {
+    const cache = service.register({
+      get: (_callback) => {
         callback = _callback;
       }});
     const ass = (err, results) => {

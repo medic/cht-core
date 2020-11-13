@@ -63,7 +63,7 @@ describe('Session service', () => {
   });
 
   it('logs out if no user context', async () => {
-    cookieGet.returns("{}");
+    cookieGet.returns(JSON.stringify({}));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend.delete.withArgs('/_session').returns(of());
@@ -108,7 +108,7 @@ describe('Session service', () => {
   describe('isAdmin function', () => {
 
     it('returns false if not logged in', () => {
-      cookieGet.returns("{}");
+      cookieGet.returns(JSON.stringify({}));
       const actual = service.isAdmin();
       expect(actual).to.equal(false);
     });
@@ -135,7 +135,7 @@ describe('Session service', () => {
 
   describe('isDbAdmin', () => {
     it('should return false if not logged in', () => {
-      cookieGet.returns("{}");
+      cookieGet.returns(JSON.stringify({}));
       expect(service.isDbAdmin()).to.equal(false);
     });
 

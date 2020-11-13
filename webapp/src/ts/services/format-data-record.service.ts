@@ -435,7 +435,7 @@ export class FormatDataRecordService {
         // backwards compatibility with existing forms
         return value[locale];
       }
-    }
+    };
 
     if (!_.isObject(value)) {
       return value;
@@ -539,7 +539,7 @@ export class FormatDataRecordService {
     const labels = this.getLabels(settings, keys, doc.form, language);
     doc.fields = this.fieldsToHtml(settings, doc, keys, labels, language);
     this.includeNonFormFieldsJson(settings, doc, keys, language);
-  };
+  }
 
   private formatScheduledTasks(doc, settings, language, context) {
     doc.scheduled_tasks_by_group = [];

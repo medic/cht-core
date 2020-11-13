@@ -38,11 +38,11 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
     const subscription = combineLatest(
       this.store.select(Selectors.getSelectMode),
     )
-    .subscribe(([
-      selectMode,
-    ]) => {
-      this.selectMode = selectMode;
-    });
+      .subscribe(([
+        selectMode,
+      ]) => {
+        this.selectMode = selectMode;
+      });
     this.subscriptions.add(subscription);
   }
 

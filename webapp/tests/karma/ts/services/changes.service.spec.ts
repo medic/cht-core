@@ -31,27 +31,31 @@ describe('Changes service', () => {
       meta:  { callCount: 0, callOptions: null, callbacks: {} }
     };
 
-    const dbMock = (dbOptions) => ({
-      changes: (changesOptions) => {
-        const db = changesCalls[dbOptions.meta ? 'meta' : 'medic'];
-        db.callOptions = changesOptions;
-        db.callCount++;
-        return onProvider(db);
-      },
-      info: sinon.stub().resolves({ update_seq: 'test' }),
-    });
+    dbService = {
+      get: (dbOptions) => ({
+        changes: (changesOptions) => {
+          const db = changesCalls[dbOptions.meta ? 'meta' : 'medic'];
+          db.callOptions = changesOptions;
+          db.callCount++;
+          return onProvider(db);
+        },
+        info: sinon.stub().resolves({ update_seq: 'test' }),
+      }),
+    };
+    sessionService = {
+      isOnlineOnly: sinon.stub(),
+      userCtx: sinon.stub().returns({ name: 'user' }),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         provideMockStore({ selectors: [{ selector: Selectors.getLastChangedDoc, value: false }] }),
-        { provide: SessionService, useValue: { isOnlineOnly: sinon.stub(), userCtx: sinon.stub().returns({ name: 'user' }) } },
-        { provide: DbService, useValue: { get: dbMock } },
+        { provide: SessionService, useValue: sessionService },
+        { provide: DbService, useValue: dbService },
       ]
     });
 
     service = TestBed.inject(ChangesService);
-    dbService = TestBed.inject(DbService);
-    sessionService = TestBed.inject(SessionService);
     store = TestBed.inject(MockStore);
   }));
 
@@ -293,32 +297,32 @@ describe('Changes service', () => {
       callback: change => {
         calls++;
         switch (change.id) {
-          case '1':
-            expect(change.doc).to.equal(undefined);
-            expect(setLastChangedDoc.callCount).to.equal(0);
-            break;
-          case '2':
-            expect(change.doc._id).to.equal('2');
-            expect(change.doc.data).to.equal(1);
-            expect(setLastChangedDoc.callCount).to.equal(1);
-            expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
-            break;
-          case '3':
-            expect(change.doc).to.equal(undefined);
-            expect(setLastChangedDoc.callCount).to.equal(0);
-            break;
-          case '4':
-            expect(change.doc).to.equal(undefined);
-            expect(setLastChangedDoc.callCount).to.equal(0);
-            break;
-          case '5':
-            expect(change.doc._id).to.equal('5');
-            expect(change.doc.data).to.equal(2);
-            expect(setLastChangedDoc.callCount).to.equal(1);
-            expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
-            break;
-          default:
-            done('Received invalid change');
+        case '1':
+          expect(change.doc).to.equal(undefined);
+          expect(setLastChangedDoc.callCount).to.equal(0);
+          break;
+        case '2':
+          expect(change.doc._id).to.equal('2');
+          expect(change.doc.data).to.equal(1);
+          expect(setLastChangedDoc.callCount).to.equal(1);
+          expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
+          break;
+        case '3':
+          expect(change.doc).to.equal(undefined);
+          expect(setLastChangedDoc.callCount).to.equal(0);
+          break;
+        case '4':
+          expect(change.doc).to.equal(undefined);
+          expect(setLastChangedDoc.callCount).to.equal(0);
+          break;
+        case '5':
+          expect(change.doc._id).to.equal('5');
+          expect(change.doc.data).to.equal(2);
+          expect(setLastChangedDoc.callCount).to.equal(1);
+          expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
+          break;
+        default:
+          done('Received invalid change');
         }
 
         if (calls === 5) {
@@ -359,32 +363,32 @@ describe('Changes service', () => {
       callback: change => {
         calls++;
         switch (change.id) {
-          case '1':
-            expect(change.doc).to.deep.equal({ _id: '1', data: 0 });
-            expect(setLastChangedDoc.callCount).to.equal(0);
-            break;
-          case '2':
-            expect(change.doc._id).to.equal('2');
-            expect(change.doc.data).to.equal(0);
-            expect(setLastChangedDoc.callCount).to.equal(1);
-            expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
-            break;
-          case '3':
-            expect(change.doc).to.deep.equal({ _id: '3', data: 0 });
-            expect(setLastChangedDoc.callCount).to.equal(0);
-            break;
-          case '4':
-            expect(change.doc).to.deep.equal({ _id: '4', data: 0 });
-            expect(setLastChangedDoc.callCount).to.equal(0);
-            break;
-          case '5':
-            expect(change.doc._id).to.equal('5');
-            expect(change.doc.data).to.equal(0);
-            expect(setLastChangedDoc.callCount).to.equal(1);
-            expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
-            break;
-          default:
-            done('Received invalid change');
+        case '1':
+          expect(change.doc).to.deep.equal({ _id: '1', data: 0 });
+          expect(setLastChangedDoc.callCount).to.equal(0);
+          break;
+        case '2':
+          expect(change.doc._id).to.equal('2');
+          expect(change.doc.data).to.equal(0);
+          expect(setLastChangedDoc.callCount).to.equal(1);
+          expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
+          break;
+        case '3':
+          expect(change.doc).to.deep.equal({ _id: '3', data: 0 });
+          expect(setLastChangedDoc.callCount).to.equal(0);
+          break;
+        case '4':
+          expect(change.doc).to.deep.equal({ _id: '4', data: 0 });
+          expect(setLastChangedDoc.callCount).to.equal(0);
+          break;
+        case '5':
+          expect(change.doc._id).to.equal('5');
+          expect(change.doc.data).to.equal(0);
+          expect(setLastChangedDoc.callCount).to.equal(1);
+          expect(setLastChangedDoc.args[0]).to.deep.equal([false]);
+          break;
+        default:
+          done('Received invalid change');
         }
 
         if (calls === 5) {

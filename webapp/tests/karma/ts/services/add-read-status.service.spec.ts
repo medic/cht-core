@@ -7,23 +7,22 @@ import { DbService } from '@mm-services/db.service';
 
 describe('Add Read Status Service', () => {
   let service: AddReadStatusService;
-  let dbService: DbService;
+  let dbService;
   let allDocs;
 
   beforeEach(() => {
     allDocs = sinon.stub();
-    const dbMock = {
+    dbService = {
       get: () => ({ allDocs, query: sinon.stub() })
     };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: dbMock }
+        { provide: DbService, useValue: dbService }
       ]
     });
 
     service = TestBed.inject(AddReadStatusService);
-    dbService = TestBed.inject(DbService);
   });
 
   afterEach(() => {

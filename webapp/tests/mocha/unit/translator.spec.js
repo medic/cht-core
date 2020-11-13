@@ -1,4 +1,4 @@
-const translator = require('../../../src/ts/bootstrapper/translator');
+const translator = require('../../../src/js/bootstrapper/translator');
 const { expect } = require('chai');
 
 const translationData = {

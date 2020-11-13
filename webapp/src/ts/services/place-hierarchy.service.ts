@@ -22,7 +22,7 @@ export class PlaceHierarchyService {
       place = place.parent;
     }
     return path;
-  };
+  }
 
   private addLineageToHierarchy(placeToSort, lineage, children) {
     lineage.forEach(function(idInLineage) {
@@ -40,7 +40,7 @@ export class PlaceHierarchyService {
 
       children = node.children;
     });
-  };
+  }
 
   // For restricted users. Hoist the highest place they have access to, to the
   // top of the tree.
@@ -53,7 +53,7 @@ export class PlaceHierarchyService {
     } else {
       return children;
     }
-  };
+  }
 
   private buildHierarchy(places) {
     const hierarchy = [];
@@ -61,7 +61,7 @@ export class PlaceHierarchyService {
       this.addLineageToHierarchy(placeToSort, this.getIdLineage(placeToSort), hierarchy);
     });
     return this.firstNonStubNode(hierarchy);
-  };
+  }
 
   private getContacts() {
     return this.settingsService

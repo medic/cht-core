@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import sinon from 'sinon';
-import { expect } from "chai";
+import { expect } from 'chai';
 import { FormsModule } from '@angular/forms';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
@@ -31,36 +31,31 @@ describe('SendMessageComponent', () => {
     settingsService = { get: sinon.stub().resolves() };
     contactTypesService = { getAll: sinon.stub().resolves() };
 
-    TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-      ],
-      declarations: [
-        SendMessageComponent,
-        MmModal
-      ],
-      providers: [
-        { provide: BsModalRef, useValue: bdModalRef },
-        { provide: SendMessageService, useValue: sendMessageService },
-        { provide: Select2SearchService, useValue: select2SearchService },
-        { provide: FormatProvider, useValue: formatProvider },
-        { provide: SettingsService, useValue: settingsService },
-        { provide: ContactTypesService, useValue: contactTypesService },
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(SendMessageComponent);
-      component = fixture.componentInstance;
-      bdModalRef = TestBed.inject(BsModalRef);
-      formatProvider = TestBed.inject(FormatProvider);
-      settingsService = TestBed.inject(SettingsService);
-      contactTypesService = TestBed.inject(ContactTypesService);
-      select2SearchService = TestBed.inject(Select2SearchService);
-      sendMessageService = TestBed.inject(SendMessageService);
-      fixture.detectChanges();
-    });
+    return TestBed
+      .configureTestingModule({
+        imports: [
+          FormsModule,
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        ],
+        declarations: [
+          SendMessageComponent,
+          MmModal
+        ],
+        providers: [
+          { provide: BsModalRef, useValue: bdModalRef },
+          { provide: SendMessageService, useValue: sendMessageService },
+          { provide: Select2SearchService, useValue: select2SearchService },
+          { provide: FormatProvider, useValue: formatProvider },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(SendMessageComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
   afterEach(() => {

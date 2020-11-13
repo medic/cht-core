@@ -356,13 +356,19 @@ module.exports = function(grunt) {
             'sentinel/**/*.js',
             'shared-libs/**/*.js',
             'tests/**/*.js',
-            'webapp/src/**/*.js',
+            // todo Change this list to lint all *.js files after all files were migrated and the /js folder
+            // only contains "used" files.
+            'webapp/src/js/bootstrapper/*.js',
+            'webapp/src/js/enketo/*.js',
+            'webapp/src/**/*.ts',
             'webapp/tests/**/*.js',
+            'webapp/tests/**/*.ts',
             'config/**/*.js',
             'scripts/**/*.js',
+            'webapp/src/ts/**/*.component.html',
           ];
           const ignore = [
-            'webapp/src/js/modules/xpath-element-path.js',
+            'webapp/src/ts/providers/xpath-element-path.provider.ts',
             'api/src/extracted-resources/**/*',
             'api/build/**/*',
             '**/node_modules/**',

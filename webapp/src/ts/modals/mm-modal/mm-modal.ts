@@ -11,6 +11,7 @@ import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
   selector: 'mm-modal',
   templateUrl: './mm-modal.component.html'
 })
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class MmModal {
   @Input() status;
   @Input() id;

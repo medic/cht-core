@@ -17,20 +17,20 @@ describe('ReportViewModelGeneratorService Service', () => {
   let lineageModelGeneratorService;
 
   beforeEach(() => {
+    formatDataRecordService = { format: sinon.stub() };
+    getSubjectSummariesService = { get: sinon.stub() };
+    getSummariesService = { get: sinon.stub() };
+    lineageModelGeneratorService = { report: sinon.stub() };
     TestBed.configureTestingModule({
       providers: [
-        { provide: FormatDataRecordService, useValue: { format: sinon.stub() } },
-        { provide: GetSubjectSummariesService, useValue: { get: sinon.stub() } },
-        { provide: GetSummariesService, useValue: { get: sinon.stub() } },
-        { provide: LineageModelGeneratorService, useValue: { report: sinon.stub() } },
+        { provide: FormatDataRecordService, useValue: formatDataRecordService },
+        { provide: GetSubjectSummariesService, useValue: getSubjectSummariesService },
+        { provide: GetSummariesService, useValue: getSummariesService },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
       ]
     });
 
     service = TestBed.inject(ReportViewModelGeneratorService);
-    formatDataRecordService = TestBed.inject(FormatDataRecordService);
-    getSubjectSummariesService = TestBed.inject(GetSubjectSummariesService);
-    getSummariesService = TestBed.inject(GetSummariesService);
-    lineageModelGeneratorService = TestBed.inject(LineageModelGeneratorService);
   });
 
   afterEach(() => {

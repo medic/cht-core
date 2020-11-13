@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CookieService } from 'ngx-cookie-service';
-import { LanguageService, SetLanguageCookieService } from '@mm-services/language.service';
+import { LanguageService } from '@mm-services/language.service';
 
 describe('Language service', () => {
   let service:LanguageService;

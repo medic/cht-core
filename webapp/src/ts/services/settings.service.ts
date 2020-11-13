@@ -36,7 +36,7 @@ export class SettingsService {
         }
 
         resolve(settings);
-      })
+      });
     });
   }
 }

@@ -3,7 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
-import { expect } from "chai";
+import { expect } from 'chai';
 
 import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
@@ -37,24 +37,25 @@ describe('AnalyticsComponent', () => {
       },
     };
 
-    TestBed.configureTestingModule({
-      declarations: [ AnalyticsComponent ],
-      imports: [
-        RouterTestingModule,
-      ],
-      providers: [
-        provideMockStore({ selectors: mockSelectors }),
-        { provide: AnalyticsModulesService, useValue: analyticsModulesService },
-        { provide: ActivatedRoute, useValue: activatedRoute },
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(AnalyticsComponent);
-      component = fixture.componentInstance;
-      router = TestBed.inject(Router);
-      fixture.detectChanges();
-    });
+    return TestBed
+      .configureTestingModule({
+        declarations: [ AnalyticsComponent ],
+        imports: [
+          RouterTestingModule,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockSelectors }),
+          { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+          { provide: ActivatedRoute, useValue: activatedRoute },
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(AnalyticsComponent);
+        component = fixture.componentInstance;
+        router = TestBed.inject(Router);
+        fixture.detectChanges();
+      });
   }));
 
   afterEach(() => {

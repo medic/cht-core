@@ -23,6 +23,6 @@ export class RouteGuardProvider implements CanActivate {
         }
         return canActivate;
       })
-    )
+    );
   }
 }

@@ -3,8 +3,8 @@ AuthService.has resolves true if the current user's role has all the permissions
 If a permission has a '!' prefix, resolves true only if the user doesn't have the permission.
 DB admins automatically have all permissions.
 
-AuthService.any function receives a list of groups of permissions and returns a promise that will be resolved if the current
-user's role has all the permissions of any of the provided groups.
+AuthService.any function receives a list of groups of permissions and returns a promise that will be resolved if the
+current user's role has all the permissions of any of the provided groups.
 */
 import { Injectable } from '@angular/core';
 
@@ -50,7 +50,7 @@ export class AuthService {
           return Promise.resolve(true);
         });
       })
-      .catch(() => false)
+      .catch(() => false);
   }
 
   any(permissionsList?) {
@@ -88,8 +88,8 @@ export class AuthService {
           return Promise.resolve(true);
         });
       })
-      .catch(() => false)
-  };
+      .catch(() => false);
+  }
 
   online(online?) {
     const userCtx = this.session.userCtx();
@@ -103,7 +103,7 @@ export class AuthService {
     }
 
     return true;
-  };
+  }
 
   private logAuthFailure(reason, permissions?, roles?) {
     console.debug(`Auth failed: ${reason}. User roles: ${roles}. Wanted permissions: ${permissions}`);
@@ -121,7 +121,7 @@ export class AuthService {
     }
 
     return Promise.resolve(roles);
-  };
+  }
 
   private permissionError(required, disallowed, roles, settings) {
     if (!this.check(required, roles, settings, true)) {
@@ -133,7 +133,7 @@ export class AuthService {
     }
 
     return false;
-  };
+  }
 
   private check(permissions, userRoles, settings, expected) {
     return permissions.every(permission => {
@@ -144,7 +144,7 @@ export class AuthService {
       const found = userRoles.some(role => roles.includes(role));
       return expected === found;
     });
-  };
+  }
 
   private isRequired (permission) {
     return permission.indexOf('!') !== 0;
@@ -155,5 +155,5 @@ export class AuthService {
   private getDisallowed (permissions) {
     const disallowed = permissions.filter(permission => !this.isRequired(permission));
     return disallowed.map(permission => permission.substring(1));
-  };
+  }
 }

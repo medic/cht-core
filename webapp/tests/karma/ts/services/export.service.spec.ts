@@ -19,7 +19,6 @@ describe('Export Service', () => {
     });
 
     service = TestBed.inject(ExportService);
-    ajaxDownloadProvider = TestBed.inject(AjaxDownloadProvider);
   });
 
   afterEach(() => {

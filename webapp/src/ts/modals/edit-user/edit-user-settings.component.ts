@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import {EditUserAbstract} from './edit-user.component';
+import { Component, Input, OnInit } from '@angular/core';
+import { EditUserAbstract } from './edit-user.component';
 import {BsModalRef} from 'ngx-bootstrap/modal';
 import {UserSettingsService} from '@mm-services/user-settings.service';
 import {UpdateUserService} from '@mm-services/update-user.service';
@@ -10,15 +10,15 @@ import {SetLanguageService} from '@mm-services/language.service';
   selector: 'update-password',
   templateUrl: './edit-user-settings.component.html'
 })
-export class EditUserSettingsComponent extends EditUserAbstract {
+export class EditUserSettingsComponent extends EditUserAbstract implements OnInit {
 
   @Input() editUserModel: {
-    id?,
-    fullname?,
-    username?,
-    email?,
-    phone?,
-    language?: { code? }
+    id?;
+    fullname?;
+    username?;
+    email?;
+    phone?;
+    language?: { code? };
   } = {
     language: {}
   };
@@ -37,7 +37,7 @@ export class EditUserSettingsComponent extends EditUserAbstract {
   }
 
   async ngOnInit(): Promise<void> {
-    await super.ngOnInit();
+    await super.onInit();
     this.enabledLocales = await this.languagesService.get();
   }
 
@@ -47,25 +47,27 @@ export class EditUserSettingsComponent extends EditUserAbstract {
 
     return this.changedUpdates(this.editUserModel)
       .then((updates: any) => {
-        Promise.resolve().then(() => {
-          if (this.haveUpdates(updates)) {
-            return this.updateUserService.update(
-              this.editUserModel.username,
-              updates
-            );
-          }
-        })
-        .then(() => {
-          if (updates.language) {
-            this.setLanguageService.set(updates.language);
-          }
-          this.setFinished();
-          this.cancel();
-        })
-        .catch((err) => {
-          this.setError(err, 'Error updating user');
-        });
-    });
+        Promise
+          .resolve()
+          .then(() => {
+            if (this.haveUpdates(updates)) {
+              return this.updateUserService.update(
+                this.editUserModel.username,
+                updates
+              );
+            }
+          })
+          .then(() => {
+            if (updates.language) {
+              this.setLanguageService.set(updates.language);
+            }
+            this.setFinished();
+            this.cancel();
+          })
+          .catch((err) => {
+            this.setError(err, 'Error updating user');
+          });
+      });
   }
 
   listTrackBy(index, locale) {

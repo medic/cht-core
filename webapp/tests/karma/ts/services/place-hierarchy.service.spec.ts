@@ -19,19 +19,19 @@ describe('PlaceHierarchy Service', () => {
       { id: 'health_center', parents: [ 'district_hospital' ] },
       { id: 'clinic', parents: [ 'health_center' ] }
     ];
+    contactTypesService = { getPlaceTypes: sinon.stub().resolves(placeTypes) };
+    settingsService =  { get: sinon.stub().resolves({}) };
+    contactService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: ContactsService, useValue: { get: sinon.stub() }} ,
-        { provide: ContactTypesService, useValue: { getPlaceTypes: sinon.stub().resolves(placeTypes) } },
-        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
+        { provide: ContactsService, useValue: contactService } ,
+        { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: SettingsService, useValue: settingsService },
       ]
     });
 
     service = TestBed.inject(PlaceHierarchyService);
-    contactService = TestBed.inject(ContactsService);
-    contactTypesService = TestBed.inject(ContactTypesService);
-    settingsService = TestBed.inject(SettingsService);
   });
 
   afterEach(() => {

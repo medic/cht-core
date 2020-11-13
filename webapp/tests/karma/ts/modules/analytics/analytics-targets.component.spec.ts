@@ -1,6 +1,6 @@
 import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect } from "chai";
+import { expect } from 'chai';
 
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -19,19 +19,20 @@ describe('AnalyticsTargetsComponent', () => {
     };
     telemetryService = { record: sinon.stub() };
 
-    TestBed.configureTestingModule({
-      declarations: [ AnalyticsTargetsComponent ],
-      providers: [
-        { provide: RulesEngineService, useValue: rulesEngineService },
-        { provide: TelemetryService, useValue: telemetryService }
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(AnalyticsTargetsComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-    });
+    return TestBed
+      .configureTestingModule({
+        declarations: [ AnalyticsTargetsComponent ],
+        providers: [
+          { provide: RulesEngineService, useValue: rulesEngineService },
+          { provide: TelemetryService, useValue: telemetryService }
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(AnalyticsTargetsComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
   afterEach(() => {

@@ -30,9 +30,9 @@ export const Selectors = {
 
   //enketo
   getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
-  getEnketoEditedStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus.edited),
-  getEnketoSavingStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus.saving),
-  getEnketoError: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus.error),
+  getEnketoEditedStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.edited),
+  getEnketoSavingStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.saving),
+  getEnketoError: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.error),
 
   // services
   getLastChangedDoc: createSelector(getServicesState, (servicesState) => servicesState.lastChangedDoc),

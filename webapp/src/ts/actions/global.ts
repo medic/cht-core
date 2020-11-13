@@ -28,7 +28,7 @@ export const Actions = {
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
-}
+};
 
 export class GlobalActions {
   constructor(private store: Store) {}
@@ -72,7 +72,7 @@ export class GlobalActions {
         }
 
         return this.store.dispatch(Actions.setShowContent(showContent));
-      })
+      });
   }
 
   setShowActionBar(showActionBar) {

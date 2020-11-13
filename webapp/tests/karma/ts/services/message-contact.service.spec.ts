@@ -16,26 +16,21 @@ describe('Message Contacts Service', () => {
   let addReadStatusService;
 
   beforeEach(() => {
-    const dbMock = { get: () => ({ query: sinon.stub() }) };
-    const getDataRecordsMock = { get: sinon.stub() };
-    const hydrateMessagesMock = { hydrate: sinon.stub() };
-    const AddReadStatusMock = { updateMessages: sinon.stub() };
-    AddReadStatusMock.updateMessages.returnsArg(0);
+    dbService = { get: () => ({ query: sinon.stub() }) };
+    getDataRecordsService = { get: sinon.stub() };
+    hydrateMessagesService = { hydrate: sinon.stub() };
+    addReadStatusService = { updateMessages: sinon.stub().returnsArg(0) };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: HydrateMessagesService, useValue: hydrateMessagesMock },
-        { provide: GetDataRecordsService, useValue: getDataRecordsMock },
-        { provide: DbService, useValue: dbMock },
-        { provide: AddReadStatusService, useValue: AddReadStatusMock }
+        { provide: HydrateMessagesService, useValue: hydrateMessagesService },
+        { provide: GetDataRecordsService, useValue: getDataRecordsService },
+        { provide: DbService, useValue: dbService },
+        { provide: AddReadStatusService, useValue: addReadStatusService }
       ]
     });
 
     service = TestBed.inject(MessageContactService);
-    hydrateMessagesService = TestBed.inject(HydrateMessagesService);
-    getDataRecordsService = TestBed.inject(GetDataRecordsService);
-    dbService = TestBed.inject(DbService);
-    addReadStatusService = TestBed.inject(AddReadStatusService);
   });
 
   afterEach(() => {
@@ -78,7 +73,9 @@ describe('Message Contacts Service', () => {
         .then(list => {
           expect(addReadStatusService.updateMessages.callCount).to.equal(1);
           expect(getDataRecordsService.get.callCount).to.equal(1);
-          expect(getDataRecordsService.get.args[0]).to.deep.equal([['id1', 'id2', 'id3', 'id4'], { include_docs: true }]);
+          expect(getDataRecordsService.get.args[0]).to.deep.equal([
+            ['id1', 'id2', 'id3', 'id4'], { include_docs: true }
+          ]);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
           expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[
             { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'id1' } },

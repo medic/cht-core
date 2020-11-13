@@ -39,6 +39,8 @@ export class GlobalEffects {
         this.store.pipe(select(Selectors.getEnketoEditedStatus)),
         this.store.pipe(select(Selectors.getCancelCallback)),
       ),
+      // todo remove this rule once the NavigationConfirmComponent has been migrated
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       exhaustMap(([{ payload: { nextUrl } }, enketoSaving, enketoEdited, cancelCallback]) => {
         if (enketoSaving) {
           // wait for save to finish

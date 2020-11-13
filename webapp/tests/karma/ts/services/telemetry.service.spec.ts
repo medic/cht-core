@@ -17,14 +17,13 @@ describe('TelemetryService', () => {
   let pouchDb;
   let storageGetItemStub;
   let storageSetItemStub;
-  let storageRemoveItemStub;
   let consoleErrorSpy;
-  let windowPouchOriginal = window.PouchDB;
-  let windowScreenOriginal = {
+  const windowPouchOriginal = window.PouchDB;
+  const windowScreenOriginal = {
     availWidth: window.screen.availWidth,
     availHeight: window.screen.availHeight
   };
-  let windowNavigatorOriginal = {
+  const windowNavigatorOriginal = {
     userAgent: window.navigator.userAgent,
     hardwareConcurrency: window.navigator.hardwareConcurrency
   };
@@ -45,7 +44,6 @@ describe('TelemetryService', () => {
     sessionService = { userCtx: sinon.stub().returns({ name: 'greg' }) };
     storageGetItemStub = sinon.stub(window.localStorage, 'getItem');
     storageSetItemStub = sinon.stub(window.localStorage, 'setItem');
-    storageRemoveItemStub = sinon.stub(window.localStorage, 'removeItem');
 
     TestBed.configureTestingModule({
       providers: [
@@ -95,7 +93,7 @@ describe('TelemetryService', () => {
       storageGetItemStub
         .withArgs('medic-greg-telemetry-date')
         .returns(Date.now().toString());
-      
+
       await service.record('test', 100);
 
       expect(consoleErrorSpy.callCount).to.equal(0);
