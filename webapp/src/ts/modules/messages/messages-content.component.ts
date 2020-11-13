@@ -351,7 +351,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     this.modalService
       .show(SendMessageComponent, { initialState: modalContext })
       .catch(() => {})
-      .finally(() =>  $('#message-footer textarea').focus());
+      .finally(() => $('#message-footer textarea').focus());
     this.send.message = '';
   }
 

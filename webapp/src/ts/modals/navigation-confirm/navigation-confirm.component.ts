@@ -17,6 +17,6 @@ export class NavigationConfirmComponent extends MmModalAbstract {
   }
 
   submit() {
-    this.modalAccept();
+    this.close();
   }
 }
