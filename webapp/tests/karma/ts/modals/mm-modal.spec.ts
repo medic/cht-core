@@ -200,9 +200,9 @@ describe('ModalService', () => {
     service.show(template, config);
 
     expect(bsModalService.show.called).to.equal(true);
-    const actual = bsModalService.show.args;
-    chai.expect(actual[0]).to.equal(template);
-    chai.expect(actual[1]).to.deep.equal({ keyboard: true, show: true, animated: true });
+    const actual = bsModalService.show.args[0];
+    expect(actual[0]).to.equal(template);
+    expect(actual[1]).to.deep.equal({ keyboard: true, show: true, animated: true, config: 1 });
   });
 
   it('second identical modal does not open', () => {
