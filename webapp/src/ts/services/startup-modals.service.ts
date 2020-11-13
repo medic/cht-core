@@ -42,9 +42,8 @@ export class StartupModalsService {
     {
       required: settings => !settings.setup_complete,
       render: () => {
-        this.openGuidedSetup();
-        return this.updateSettingsService
-          .update({ setup_complete: true })
+        return this.openGuidedSetup()
+          .then(() => this.updateSettingsService.update({ setup_complete: true }))
           .catch(err => console.error('Error marking setup_complete', err));
       },
     },
@@ -52,9 +51,10 @@ export class StartupModalsService {
     {
       required: (settings, user) => !user.known && this.tours.length > 0,
       render: () => {
-        this.openTourSelect();
-        return this.updateUserService
-          .update(this.sessionService.userCtx().name, { known: true })
+        return this.openTourSelect()
+          .then(() => this.updateUserService
+            .update(this.sessionService.userCtx().name, { known: true })
+          )
           .catch(err => console.error('Error updating user', err));
       },
     },
@@ -75,11 +75,15 @@ export class StartupModalsService {
   }
 
   private openTourSelect() {
-    this.modalService.show(TourSelectComponent);
+    return new Promise(resolve => {
+      this.modalService.show(TourSelectComponent, {}, resolve);
+    });
   }
 
   private openGuidedSetup() {
-    this.modalService.show(GuidedSetupComponent);
+    return new Promise(resolve => {
+      this.modalService.show(GuidedSetupComponent, {}, resolve);
+    });
   }
 
   showStartupModals() {
