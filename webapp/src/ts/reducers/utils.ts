@@ -38,6 +38,6 @@ export class UniqueSortedList {
     return {
       list: this.list,
       listById: this.listById,
-    }
+    };
   }
 }

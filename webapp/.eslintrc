@@ -4,29 +4,13 @@
     "jquery": true,
     "node": true
   },
-  "plugins": ["compat", "angular"],
+  "plugins": ["compat"],
   "globals": {
     "angular": true,
     "Tour": true
   },
   "rules": {
-    "compat/compat": "error",
-    "angular/window-service": "error",
-    "angular/timeout-service": "error",
-    "angular/module-getter": "error",
-    "angular/module-setter": "error",
-    "angular/no-private-call": "error",
-    "angular/di-unused": "error",
-    "angular/on-watch": "error",
-    "angular/no-cookiestore": "error",
-    "angular/no-directive-replace": "error",
-    "angular/no-http-callback": "error",
-    "angular/di-order": "error",
-    "angular/di": "error",
-    "angular/module-dependency-order": "error",
-    "angular/one-dependency-per-line": "error",
-    "angular/interval-service": "error",
-    "angular/on-destroy": "error"
+    "compat/compat": "error"
   },
   "overrides": [
     {
@@ -36,7 +20,7 @@
         "src/js/bootstrapper/**",
         "src/js/bootstrap-multidropdown.js",
         "tests/**/*",
-        "src/ts/bootstrapper/**"
+        "src/js/bootstrapper/**"
       ],
       "rules": {
         "angular/window-service": "off",
@@ -49,11 +33,62 @@
       "files": [
         "src/js/app.js",
         "src/js/modules/feedback.js",
-        "src/js/bootstrapper/*.js",
-        "src/ts/bootstrapper/*.js"
+        "src/js/bootstrapper/*.js"
       ],
       "rules": {
         "no-console": "off"
+      }
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint", "@angular-eslint/eslint-plugin"],
+      "parserOptions": {
+        "createDefaultProgram": true
+      },
+      "rules": {
+        "@angular-eslint/component-class-suffix": "error",
+        "@angular-eslint/contextual-lifecycle": "error",
+        "@angular-eslint/directive-class-suffix": "error",
+        "@angular-eslint/no-conflicting-lifecycle": "error",
+        "@angular-eslint/no-host-metadata-property": "error",
+        "@angular-eslint/no-input-rename": "error",
+        "@angular-eslint/no-inputs-metadata-property": "error",
+        "@angular-eslint/no-output-native": "error",
+        "@angular-eslint/no-output-rename": "error",
+        "@angular-eslint/no-outputs-metadata-property": "error",
+        "@angular-eslint/use-lifecycle-interface": "warn",
+        "@angular-eslint/use-pipe-transform-interface": "error",
+
+        // todo remove this after implementing some sort of logging service
+        "no-console": "off",
+        "no-restricted-syntax": "off",
+        // Prevent TypeScript-specific constructs from being erroneously flagged as unused
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+        // Require a specific member delimiter style for interfaces and type literals
+        // Default Semicolon style
+        "@typescript-eslint/member-delimiter-style": "error",
+        "@typescript-eslint/ban-ts-comment": "error"
+      }
+    },
+    {
+      "files": ["*.spec.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        // allow ts-comments in unit tests
+        "@typescript-eslint/ban-ts-comment": "off"
+      }
+    },
+    {
+      "files": ["*.component.html"],
+      "parser": "@angular-eslint/template-parser",
+      "plugins": ["@angular-eslint/eslint-plugin-template"],
+      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "rules": {
+        "indent": "off", // this rule throws an error in eslint itself
+        "max-len": "off"
       }
     }
   ]

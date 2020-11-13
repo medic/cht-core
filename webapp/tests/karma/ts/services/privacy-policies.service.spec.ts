@@ -37,10 +37,6 @@ describe('PrivacyPoliciesService', () => {
     });
 
     service = TestBed.inject(PrivacyPoliciesService);
-    dbService = TestBed.inject(DbService);
-    languageService = TestBed.inject(LanguageService);
-    userSettingsService = TestBed.inject(UserSettingsService);
-    sanitizer = TestBed.inject(DomSanitizer);
   });
 
   afterEach(() => {

@@ -39,12 +39,12 @@ export class AnalyticsModulesComponent implements OnInit, OnDestroy {
     const selectorsSubscription = combineLatest(
       this.store.select(Selectors.getAnalyticsModules),
     )
-    .subscribe(([
-      analyticsModules = [],
-    ]) => {
-      this.analyticsModules = analyticsModules;
-      this.loading = false;
-    });
+      .subscribe(([
+        analyticsModules = [],
+      ]) => {
+        this.analyticsModules = analyticsModules;
+        this.loading = false;
+      });
     this.subscriptions.add(selectorsSubscription);
   }
 }

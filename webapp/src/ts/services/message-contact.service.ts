@@ -71,9 +71,9 @@ export class MessageContactService {
   }
 
   isRelevantChange(change, conversation?) {
-    return (change.doc && change.doc.kujua_message)
-      || (change.doc && change.doc.sms_message)
-      || change.deleted
-      || (conversation && conversation.messages && conversation.messages.find(message => message.doc._id === change.id));
+    return (change.doc && change.doc.kujua_message) ||
+      (change.doc && change.doc.sms_message) ||
+      change.deleted ||
+      (conversation && conversation.messages && conversation.messages.find(message => message.doc._id === change.id));
   }
 }

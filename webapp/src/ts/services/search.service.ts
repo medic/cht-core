@@ -130,12 +130,12 @@ export class SearchService {
     if (!options.force && this.debounce(type, filters, options)) {
       return Promise.resolve([]);
     }
-    const before = performance.now();
+    //const before = performance.now();
     return this
       .searchFactory(type, filters, options, extensions)
       .then((searchResults) => {
-        const timing = performance.now() - before;
-        const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
+        //const timing = performance.now() - before;
+        //const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
         //const telemetryKey = ['search', type, ...filterKeys].join(':');
         // Will end up with entries like:
         //   search:reports:search                      <-- text search of reports
@@ -181,7 +181,7 @@ export class SearchService {
             });
 
             return dataRecords;
-        });
+          });
       })
       .then((results) => {
         this._currentQuery = {};

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { find as _find } from 'lodash-es'
+import { find as _find } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root'

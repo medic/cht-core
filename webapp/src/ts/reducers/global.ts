@@ -112,7 +112,7 @@ const _globalReducer = createReducer(
 
 export const globalReducer = (state, action) => {
   return _globalReducer(state, action);
-}
+};
 /*
 module.exports = function(state, action) {
   if (typeof state === 'undefined') {

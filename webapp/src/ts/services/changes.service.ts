@@ -20,8 +20,8 @@ import { Injectable, NgZone } from '@angular/core';
 import { DbService } from './db.service';
 import { SessionService } from './session.service';
 import { Store } from '@ngrx/store';
-import { Selectors } from "../selectors";
-import { ServicesActions } from "../actions/services";
+import { Selectors } from '@mm-selectors/index';
+import { ServicesActions } from '@mm-actions/services';
 import { Subject } from 'rxjs';
 
 const RETRY_MILLIS = 5000;
@@ -94,13 +94,13 @@ export class ChangesService {
       })
       .on('change', change => {
         NgZone.isInAngularZone() ?
-        this.onChangeHandler(db, meta, change) :
-        this.ngZone.run(() => this.onChangeHandler(db, meta, change));
+          this.onChangeHandler(db, meta, change) :
+          this.ngZone.run(() => this.onChangeHandler(db, meta, change));
       })
       .on('error', (err) => {
         NgZone.isInAngularZone() ?
-        this.onErrorHandler(err, meta) :
-        this.ngZone.run(() => this.onErrorHandler(err, meta));
+          this.onErrorHandler(err, meta) :
+          this.ngZone.run(() => this.onErrorHandler(err, meta));
       });
 
     this.watches.push(watch);
@@ -126,7 +126,7 @@ export class ChangesService {
         console.error('Attempting changes initialisation in ' + (RETRY_MILLIS / 1000) + ' seconds');
         setTimeout(this.init, RETRY_MILLIS);
       });
-  };
+  }
 
   subscribe(options) {
     const db = options.metaDb ? this.dbs.meta : this.dbs.medic;

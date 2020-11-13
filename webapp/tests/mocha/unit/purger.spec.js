@@ -1,4 +1,4 @@
-const purger = require('../../../src/ts/bootstrapper/purger');
+const purger = require('../../../src/js/bootstrapper/purger');
 const sinon = require('sinon');
 const chai = require('chai');
 const moment = require('moment');

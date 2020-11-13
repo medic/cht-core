@@ -1,15 +1,17 @@
-import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input, AfterViewInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-status-filter',
   templateUrl: './status-filter.component.html'
 })
-export class StatusFilterComponent implements AbstractFilter {
+export class StatusFilterComponent implements AbstractFilter, AfterViewInit {
   private globalActions;
 
   statuses = {
@@ -75,11 +77,10 @@ export class StatusFilterComponent implements AbstractFilter {
   }
 
   clear() {
-    this.dropdownFilter?.clear(false)
+    this.dropdownFilter?.clear(false);
   }
 
   allStatuses() {
     return [...this.statuses.valid, ...this.statuses.verified];
   }
 }
-

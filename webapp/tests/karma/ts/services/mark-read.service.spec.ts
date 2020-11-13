@@ -22,7 +22,6 @@ describe('MarkReadService', () => {
       ]
     });
     service = TestBed.inject(MarkReadService);
-    dbService = TestBed.inject(DbService);
   });
 
   afterEach(() => {

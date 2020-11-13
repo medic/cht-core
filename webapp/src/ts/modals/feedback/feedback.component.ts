@@ -1,11 +1,11 @@
-import {Component} from '@angular/core';
-import {BsModalRef} from 'ngx-bootstrap/modal';
-import {Store} from '@ngrx/store';
-
-import { FeedbackService } from '../../services/feedback.service';
+import { Component } from '@angular/core';
+import { BsModalRef } from 'ngx-bootstrap/modal';
+import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
+
+import { FeedbackService } from '@mm-services/feedback.service';
 import { MmModalAbstract } from '../mm-modal/mm-modal';
-import {GlobalActions} from '../../actions/global';
+import { GlobalActions } from '@mm-actions/global';
 
 @Component({
   selector: 'feedback-modal',
@@ -37,13 +37,15 @@ export class FeedbackComponent extends MmModalAbstract {
         .toPromise()
         .then(value => this.error.message = value);
     }
-  };
+  }
 
   submit() {
     this.setProcessing();
 
     const message = this.model.message && this.model.message.trim();
-    return this.validateMessage(message).then(() => {
+    return this
+      .validateMessage(message)
+      .then(() => {
         if (this.error.message) {
           this.setFinished();
           return;
@@ -60,7 +62,7 @@ export class FeedbackComponent extends MmModalAbstract {
           })
           .catch(err => {
             this.setError(err, 'Error saving feedback');
-          })
+          });
       });
   }
 

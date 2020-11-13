@@ -25,7 +25,7 @@ describe('Date Filter Component', () => {
 
     dateRangePicker = (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),

@@ -31,9 +31,9 @@ export class ExceptionHandlerProvider implements ErrorHandler {
 
     return !this.NO_FEEDBACK_MESSAGES.find((item:any) =>
       item instanceof RegExp ?
-      item.test(message) :
-      message.toLowerCase().includes(item));
-  };
+        item.test(message) :
+        message.toLowerCase().includes(item));
+  }
 
   handleError(exception: any) {
     console.error(exception);

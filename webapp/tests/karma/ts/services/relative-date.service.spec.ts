@@ -19,6 +19,8 @@ describe('RelativeDate Service', () => {
     formatDateRelativeTime = sinon.stub().returns('somerelativetime');
     formatDateAge = sinon.stub().returns('someage');
     formatDateTime = sinon.stub().returns('someabsolutetime');
+    const relative = (timestamp, options) => options.withoutTime ?
+      formatDateRelativeDay(timestamp, options) : formatDateRelativeTime(timestamp, options);
 
     clock = sinon.useFakeTimers(5000);
 
@@ -27,9 +29,7 @@ describe('RelativeDate Service', () => {
         {
           provide: FormatDateService,
           useValue: {
-            relative: (timestamp, options) => options.withoutTime ?
-                                              formatDateRelativeDay(timestamp, options) :
-                                              formatDateRelativeTime(timestamp, options),
+            relative,
             age: formatDateAge,
             time: formatDateTime,
           },

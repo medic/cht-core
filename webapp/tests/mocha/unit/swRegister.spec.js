@@ -1,4 +1,4 @@
-const swRegister = require('../../../src/ts/bootstrapper/swRegister');
+const swRegister = require('../../../src/js/bootstrapper/swRegister');
 const sinon = require('sinon');
 const { expect } = require('chai');
 

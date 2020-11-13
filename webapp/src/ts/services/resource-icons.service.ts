@@ -68,7 +68,7 @@ export class ResourceIconsService {
     } catch(e) {
       return '&nbsp';
     }
-  };
+  }
 
   private getHtml (name, docId, faPlaceholder) {
     const image = this.getHtmlContent(name, docId, faPlaceholder);
@@ -78,7 +78,7 @@ export class ResourceIconsService {
     const titleAttribute = `${docId === this.DOC_IDS[1] ? 'data-title' : 'title'}="${name}"`;
     const faPlaceholderAttribute = faPlaceholder ? `data-fa-placeholder="${faPlaceholder}"` : '';
     return `<span class="${className}" ${titleAttribute} ${faPlaceholderAttribute}>${image}</span>`;
-  };
+  }
 
   private updateDom ($elem, doc) {
     $elem = $elem || this.$(document.body);
@@ -89,7 +89,7 @@ export class ResourceIconsService {
       const faPlaceholder = $this.data('faPlaceholder');
       $this.html(this.getHtmlContent(name, doc, faPlaceholder));
     });
-  };
+  }
 
   private updateResources(docId) {
     return this.db.get()
@@ -104,7 +104,7 @@ export class ResourceIconsService {
           console.error('Error updating icons', err);
         }
       });
-  };
+  }
 
   getImg(name?, docId?, faPlaceholder?) {
     if (!name || !docId) {
@@ -124,6 +124,6 @@ export class ResourceIconsService {
   replacePlaceholders($elem) {
     return this.initResources.then(() => {
       this.updateDom($elem, this.DOC_IDS[0]);
-    })
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { GlobalActions } from '@mm-actions/global';
 import { Store } from '@ngrx/store';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
@@ -12,7 +12,7 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
   selector: 'reports-filters',
   templateUrl: './reports-filters.component.html'
 })
-export class ReportsFiltersComponent {
+export class ReportsFiltersComponent implements AfterViewInit {
   private globalActions;
 
   @Input() disabled;

@@ -30,7 +30,7 @@ export class GetSummariesService {
     return error.code === 'sys.missing_fields' &&
       error.fields &&
       error.fields.some(field => this.SUBJECT_FIELDS.includes(field));
-  };
+  }
 
   private getSubject(doc) {
     const subject:any = {};
