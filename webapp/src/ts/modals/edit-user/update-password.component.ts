@@ -29,7 +29,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
     password?;
   } = {};
 
-  id = 'update-password';
+  static id = 'update-password';
 
   constructor(
     bsModalRef: BsModalRef,

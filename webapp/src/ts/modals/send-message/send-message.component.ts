@@ -16,7 +16,7 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
   templateUrl: './send-message.component.html',
 })
 export class SendMessageComponent extends MmModalAbstract implements AfterViewInit {
-  id = 'send-message';
+  static id = 'send-message';
 
   errors = {
     message: false,

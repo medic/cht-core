@@ -23,7 +23,7 @@ export class EditUserSettingsComponent extends EditUserAbstract implements OnIni
     language: {}
   };
 
-  id = 'edit-user-settings';
+  static id = 'edit-user-settings';
   errors: any = {};
   enabledLocales: any = [];
 

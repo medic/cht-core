@@ -1,0 +1,240 @@
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { assert, expect } from 'chai';
+import sinon from 'sinon';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { Subject } from 'rxjs';
+
+import { MmModalAbstract, ModalService } from '@mm-modals/mm-modal/mm-modal';
+
+describe('MmModalAbstract', () => {
+  class mmModalChild extends MmModalAbstract {
+    id = 'child';
+  }
+  let child;
+  let bsModuleRef;
+
+  beforeEach(() => {
+    bsModuleRef = { hide: sinon.stub() };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: BsModalRef, useValue: bsModuleRef },
+      ],
+    });
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should be correctly initialized', () => {
+    child = new mmModalChild(bsModuleRef);
+    expect(child.status).to.deep.equal({
+      processing:false,
+      error: false,
+      severity: false,
+    });
+    expect(child.modalClosePromise).to.be.an('object');
+    expect(child.modalClosePromise).to.have.keys('promise', 'resolve', 'reject');
+  });
+
+  it('should setProcessing', () => {
+    child = new mmModalChild(bsModuleRef);
+    child.setProcessing();
+    expect(child.status).to.deep.equal({
+      processing: true,
+      error: false,
+      severity: false,
+    });
+  });
+
+  it('should setFinished', () => {
+    child = new mmModalChild(bsModuleRef);
+    child.setFinished();
+    expect(child.status).to.deep.equal({
+      processing: false,
+      error: false,
+      severity: false,
+    });
+  });
+
+  describe('setError', () => {
+    it('should set error without message or severity', () => {
+      child = new mmModalChild(bsModuleRef);
+      child.setError('error');
+      expect(child.status).to.deep.equal({
+        processing: false,
+        error: undefined,
+        severity: undefined,
+      });
+    });
+
+    it('should set error without severity', () => {
+      child = new mmModalChild(bsModuleRef);
+      child.setError('error', 'this is what happened');
+      expect(child.status).to.deep.equal({
+        processing: false,
+        error: 'this is what happened',
+        severity: undefined,
+      });
+    });
+
+    it('should set error', () => {
+      child = new mmModalChild(bsModuleRef);
+      child.setError('error', 'this is what happened', 'very severe');
+      expect(child.status).to.deep.equal({
+        processing: false,
+        error: 'this is what happened',
+        severity: 'very severe',
+      });
+    });
+  });
+
+  describe('close / modalAccept', () => {
+    it('should resolve the promise and hide the modal', fakeAsync(() => {
+      child = new mmModalChild(bsModuleRef);
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      child.close();
+      expect(bsModuleRef.hide.callCount).to.equal(1);
+      return child.modalClosePromise.promise; // promise is resolved
+    }));
+
+    it('should resolve the promise and hide the modal with modalAccept', fakeAsync(() => {
+      child = new mmModalChild(bsModuleRef);
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      child.modalAccept();
+      expect(bsModuleRef.hide.callCount).to.equal(1);
+      return child.modalClosePromise.promise; // promise is resolved
+    }));
+  });
+
+  describe('cancel / modalReject', () => {
+    it('should resolve the promise and hide the modal', fakeAsync(async () => {
+      child = new mmModalChild(bsModuleRef);
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      child.cancel();
+      expect(bsModuleRef.hide.callCount).to.equal(1);
+      return child.modalClosePromise.promise
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          // we just promise.reject();
+          expect(err).to.equal(undefined);
+        });
+    }));
+
+    it('should resolve the promise and hide the modal with modalReject', fakeAsync(async () => {
+      child = new mmModalChild(bsModuleRef);
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      tick();
+      expect(bsModuleRef.hide.callCount).to.equal(0);
+      child.modalReject();
+      expect(bsModuleRef.hide.callCount).to.equal(1);
+      return child.modalClosePromise.promise
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          // we just promise.reject();
+          expect(err).to.equal(undefined);
+        });
+    }));
+  });
+});
+
+describe('ModalService', () => {
+  let bsModalService;
+  let bsModuleRef;
+  let service:ModalService;
+
+  beforeEach(() => {
+    bsModuleRef = {
+      content: { modalClosePromise: { promise: 'the promise' } },
+      onHidden: new Subject(),
+    };
+    bsModalService = { show: sinon.stub().returns(bsModuleRef) };
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: BsModalService, useValue: bsModalService },
+      ],
+    });
+    service = TestBed.inject(ModalService);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should open modal with no id', () => {
+    const template = { an: 'object' };
+    const result = service.show(template);
+    expect(result).to.equal('the promise');
+    expect(bsModalService.show.callCount).to.equal(1);
+    expect(bsModalService.show.args[0]).to.deep.equal([
+      template,
+      { keyboard: true, show: true, animated: true }
+    ]);
+
+    service.show(template); // because no id, modal will be generated twice
+    expect(bsModalService.show.callCount).to.equal(2);
+    expect(bsModalService.show.args[1]).to.deep.equal([
+      template,
+      { keyboard: true, show: true, animated: true }
+    ]);
+  });
+
+  it('should open a "singleton" modal', () => {
+    const template = { an: 'object', id: 'object' };
+    bsModuleRef.content.modalClosePromise.promise = 'the new promise';
+    const result = service.show(template, { animated: false, additional: true });
+    expect(result).to.equal('the new promise');
+    expect(bsModalService.show.callCount).to.equal(1);
+    expect(bsModalService.show.args[0]).to.deep.equal([
+      template,
+      { keyboard: true, show: true, animated: false, additional: true },
+    ]);
+    const secondResult = service.show(template, { animated: false, additional: true });
+    expect(secondResult).to.equal(result);
+    expect(bsModalService.show.callCount).to.equal(1);
+  });
+
+  it('should delete reference when hidden', () => {
+    const template1 = { an: 'object', id: 'object' };
+    service.show(template1);
+    const onHittenTemplate1 = bsModuleRef.onHidden;
+
+    bsModuleRef.onHidden = new Subject();
+    const template2 = { second: 'object' };
+    service.show(template2);
+    const onHittenTemplate2 = bsModuleRef.onHidden;
+
+    expect(bsModalService.show.callCount).to.equal(2);
+    service.show(template1);
+    expect(bsModalService.show.callCount).to.equal(2); // reference for template1 modal is saved
+
+    onHittenTemplate1.next(); // hide the modal
+    service.show(template1);
+    expect(bsModalService.show.callCount).to.equal(3); // reference was removed when modal has hidden
+    expect(bsModalService.show.args[2]).to.deep.equal([template1, { keyboard: true, show: true, animated: true } ]);
+
+    onHittenTemplate2.next(); // hide modal without id works too
+  });
+
+  it('should nullcheck the modalref properties', async () => {
+    delete bsModuleRef.content;
+    const template1 = { an: 'object', id: 'object' };
+    const result = await service.show(template1);
+    expect(result).to.equal(undefined);
+  });
+});

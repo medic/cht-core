@@ -1,11 +1,13 @@
 /**
- * Directive for boilerplate for modal dialog boxes.
+ * Component for boilerplate for modal dialog boxes.
  *
  * Usage:
  * <mm-modal [attributes]>[modal body]</mm-modal>
  */
 import { Component, Injectable, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { v4 as uuid } from 'uuid';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'mm-modal',
@@ -35,9 +37,9 @@ export class MmModal {
 @Injectable({
   providedIn: 'root'
 })
-export abstract class MmModalAbstract {
+export class MmModalAbstract {
   readonly modalClosePromise;
-  abstract id;
+  static id;
 
   constructor(
     public bsModalRef:BsModalRef,
@@ -116,22 +118,24 @@ export class ModalService {
   }
 
   private getModalClosePromise(modalRef) {
-    return modalRef?.content?.modalClosePromise?.promise;
+    return modalRef?.content?.modalClosePromise?.promise || Promise.resolve();
   }
 
   show(template, config?) {
-    const modalId = template.id;
+    const modalId = template.id || uuid();
     if (this.modalRefs[modalId]) {
       // no duplicate modals
-      return this.getModalClosePromise(this.modalRefs[modalId]) || Promise.resolve();
+      return this.getModalClosePromise(this.modalRefs[modalId]);
     }
 
     config = Object.assign({}, this.config, config);
-    const ref:BsModalRef = this.modalService.show(template, config);
+    const bsModalRef:BsModalRef = this.modalService.show(template, config);
 
-    this.modalRefs[modalId] = ref;
-    ref.onHidden.subscribe(() => delete this.modalRefs[modalId]);
+    this.modalRefs[modalId] = bsModalRef;
+    bsModalRef.onHidden
+      .pipe(take(1)) // so we don't need to unsubscribe
+      .subscribe(() => delete this.modalRefs[modalId]);
 
-    return this.getModalClosePromise(ref);
+    return this.getModalClosePromise(bsModalRef);
   }
 }

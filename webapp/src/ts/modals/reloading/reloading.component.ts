@@ -8,8 +8,6 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   templateUrl: './reloading.component.html'
 })
 export class ReloadingComponent  extends MmModalAbstract {
-  id = 'reloading';
-
   constructor(public bsModalRef: BsModalRef) {
     super(bsModalRef);
   }
