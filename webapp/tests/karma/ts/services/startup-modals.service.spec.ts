@@ -1,6 +1,7 @@
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
+import { UpdateSettingsService } from '@mm-services/update-settings.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { TourService } from '@mm-services/tour.service';
@@ -29,7 +30,8 @@ describe('StartupModalsService', () => {
         useValue: { userCtx: () => ({ name: 'no_error' }), isOnlineOnly: () => true }
       },
       { provide: SettingsService, useValue: { get: () => ({ setup_complete: true }) } },
-      { provide: UserSettingsService, useValue: { get: ()=> ({ name: 'person' }) } },
+      { provide: UserSettingsService, useValue: { get: () => ({ name: 'person' }) } },
+      { provide: UpdateSettingsService, useValue: { update: sinon.stub().resolves() } },
       { provide: UpdateUserService, useValue: { update: sinon.stub().resolves() } },
       { provide: ModalService, useValue: { show: sinon.stub() } },
       { provide: TourService, useValue: { getTours: sinon.stub().resolves(toursResult) } },

@@ -3,10 +3,12 @@ import { Injectable } from '@angular/core';
 import { TourService } from './tour.service';
 import { UpdateUserService } from './update-user.service';
 import { SessionService } from './session.service';
+import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SettingsService } from './settings.service';
 import { UserSettingsService } from './user-settings.service';
+import { UpdateSettingsService } from '@mm-services/update-settings.service';
 
 interface StartupModal {
   required: (settings, user?) => boolean
@@ -40,11 +42,10 @@ export class StartupModalsService {
     {
       required: settings => !settings.setup_complete,
       render: () => {
-        //TODO
-        // return ctrl.openGuidedSetup()
-        //   .then(() => UpdateSettings({ setup_complete: true }))
-        //   .catch(err => $log.error('Error marking setup_complete', err));
-        return Promise.resolve();
+        this.openGuidedSetup();
+        return this.updateSettingsService
+          .update({ setup_complete: true })
+          .catch(err => console.error('Error marking setup_complete', err));
       },
     },
     // tour
@@ -65,6 +66,7 @@ export class StartupModalsService {
     private updateUserService: UpdateUserService,
     private sessionService: SessionService,
     private settingsService: SettingsService,
+    private updateSettingsService: UpdateSettingsService,
     private userSettingsService: UserSettingsService,
   ) {
     this.initialized = this.tourService.getTours().then(tours => {
@@ -74,6 +76,10 @@ export class StartupModalsService {
 
   private openTourSelect() {
     this.modalService.show(TourSelectComponent);
+  }
+
+  private openGuidedSetup() {
+    this.modalService.show(GuidedSetupComponent);
   }
 
   showStartupModals() {
@@ -100,7 +106,7 @@ export class StartupModalsService {
     return this.modalsToShow
       .shift()
       .render()
-      .then(()=>this.showModals());
+      .then(() => this.showModals());
   }
 }
 
