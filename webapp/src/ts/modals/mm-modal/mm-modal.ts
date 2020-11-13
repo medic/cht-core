@@ -37,18 +37,23 @@ export class MmModal {
 })
 export abstract class MmModalAbstract {
   readonly modalClosePromise;
+  abstract id;
+
   constructor(
     public bsModalRef:BsModalRef,
   ) {
-    const modalClosePromise:any = {};
-    modalClosePromise.promise = new Promise((resolve, reject) => {
-      modalClosePromise.resolve = resolve;
-      modalClosePromise.reject = reject;
+    // attach a promise to the BsModalRef (we can access this promise from BsModalRef.content.modalClosePromise)
+    // this promise is resolved when the user "submits" or accepts the modal
+    // this promise is rejected when the user "cancels" or dismisses the modal (any action that hides the modal that is
+    // not clicking the submit button)
+    // this resembles how the $uibModal used to work: https://angular-ui.github.io/bootstrap/#!#modal in angularJS
+    // where we returned the `result` property in the Modal service.
+    this.modalClosePromise = {};
+    this.modalClosePromise.promise = new Promise((resolve, reject) => {
+      this.modalClosePromise.resolve = resolve;
+      this.modalClosePromise.reject = reject;
     });
-    this.modalClosePromise = modalClosePromise;
   }
-
-  abstract id;
 
   status = {
     processing:false,
