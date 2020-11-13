@@ -1,14 +1,14 @@
 import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { TourService } from '@mm-services/tour.service';
 
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'tour-select',
   templateUrl: './tour-select.component.html'
 })
-export class TourSelectComponent extends MmModalAbstract {
+export class TourSelectComponent extends MmModalAbstract implements OnInit {
 
   tours: object[];
 

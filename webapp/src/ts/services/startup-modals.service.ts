@@ -11,8 +11,8 @@ import { UserSettingsService } from './user-settings.service';
 import { UpdateSettingsService } from '@mm-services/update-settings.service';
 
 interface StartupModal {
-  required: (settings, user?) => boolean
-  render: () => Promise<any>
+  required: (settings, user?) => boolean;
+  render: () => Promise<any>;
 }
 
 @Injectable({

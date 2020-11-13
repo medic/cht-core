@@ -4,7 +4,7 @@
  * Usage:
  * <mm-modal [attributes]>[modal body]</mm-modal>
  */
-import { Component, Injectable, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Injectable, Input, Output, EventEmitter, HostListener, OnInit } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { Selectors } from '@mm-selectors/index';
 import { Store } from '@ngrx/store';
@@ -16,7 +16,7 @@ import { take } from 'rxjs/operators';
   templateUrl: './mm-modal.component.html'
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
-export class MmModal {
+export class MmModal implements OnInit {
 
   @Input() minimalTabs = false;
   @Input() status;
@@ -37,7 +37,7 @@ export class MmModal {
     this.store
       .select(Selectors.getMinimalTabs)
       .subscribe(minimalTabs => {
-        this.minimalTabs = minimalTabs
+        this.minimalTabs = minimalTabs;
       });
   }
 

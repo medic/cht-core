@@ -15,9 +15,7 @@ describe('StartupModalsService', () => {
 
   let service: StartupModalsService;
   let updateUserService;
-  let sessionService;
   let modalService;
-  let tourService;
 
   afterEach(() => {
     sinon.restore();
@@ -35,15 +33,13 @@ describe('StartupModalsService', () => {
       { provide: UpdateUserService, useValue: { update: sinon.stub().resolves() } },
       { provide: ModalService, useValue: { show: sinon.stub() } },
       { provide: TourService, useValue: { getTours: sinon.stub().resolves(toursResult) } },
-    ]
+    ];
   }
 
   function injectService() {
     service = TestBed.inject(StartupModalsService);
-    sessionService = TestBed.inject(SessionService);
     updateUserService = TestBed.inject(UpdateUserService);
     modalService = TestBed.inject(ModalService);
-    tourService = TestBed.inject(TourService);
   }
 
   describe('showStartupModals', () => {

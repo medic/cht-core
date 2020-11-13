@@ -15,8 +15,8 @@ import { compact } from 'lodash-es';
 export class TourService {
 
   current: {
-    tour: any,
-    name: any
+    tour: any;
+    name: any;
   };
 
   constructor(
@@ -36,7 +36,7 @@ export class TourService {
         container.scrollTop(container.scrollTop() + elem.offset().top - 300);
       }
     }
-  };
+  }
 
   private mmShowMessageList() {
     this.mmShow('#message-list', false);
@@ -483,7 +483,7 @@ export class TourService {
           name: 'Analytics'
         };
       });
-  };
+  }
 
   getTours() {
     return Promise.all([
@@ -493,7 +493,7 @@ export class TourService {
       this.getContactsTour(),
       this.getAnalyticsTour()
     ])
-    .then(results => compact(results));
+      .then(results => compact(results));
   }
 
   private getTour(name) {
