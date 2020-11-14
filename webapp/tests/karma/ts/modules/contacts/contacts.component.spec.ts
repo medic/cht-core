@@ -107,6 +107,7 @@ describe('Contacts component', () => {
         authService = TestBed.inject(AuthService);
         contactTypesService = TestBed.inject(ContactTypesService);
         scrollLoaderProvider = TestBed.inject(ScrollLoaderProvider);
+        component.router.navigate = sinon.stub().returns(true);
       });
   }));
 
@@ -281,12 +282,40 @@ describe('Contacts component', () => {
       expect(searchService.search.args[2][2].skip).to.equal(undefined)
     }));
 
-    // it('resets limit/skip modifier when filtering #4085', fakeAsync(() => {
-    //   const searchResult = { _id: 'search-result' };
-    //   searchResults = Array(10).fill(searchResult);
-    //   searchService.search.resolves(searchResults);
-    //   store.overrideSelector(Selectors.getContactsList, searchResults);
-    // }));
+    it('resets limit/skip modifier when filtering #4085', fakeAsync(() => {
+      const searchResult = { _id: 'search-result' };
+      searchResults = Array(10).fill(searchResult);
+      searchService.search.resolves(searchResults);
+      store.overrideSelector(Selectors.getContactsList, searchResults);
+      component.contactsActions.updateContactsList = sinon.stub();
+      component.ngOnInit();
+      flush();
+
+      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+
+      expect(argument.length).to.equal(11);
+      searchResults = Array(50).fill(searchResult);
+      searchService.search.resolves(searchResults);
+      store.overrideSelector(Selectors.getContactsList, searchResults);
+      store.refreshState();
+      component.filters = { search: true };
+      component.search();
+      flush();
+
+      expect(searchService.search.args[1][2]).to.deep.equal({ limit: 50 });
+
+      const argument2 = component.contactsActions.updateContactsList.args[1][0].updatedContacts.length;
+      expect(argument2).to.equal(50);
+      store.overrideSelector(Selectors.getContactsList, searchResults);
+      scrollLoaderCallback();
+      store.overrideSelector(Selectors.getContactsList, searchResults);
+
+      expect(searchService.search.args[3][2]).to.deep.equal({
+        limit: 50,
+        paginating: true,
+        skip: 50,
+      });
+    }));
 
     it('when paginating, does not modify the skip when it finds homeplace #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
@@ -308,7 +337,7 @@ describe('Contacts component', () => {
       });
     }));
 
-    it.only('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', fakeAsync(() => {
+    it('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', fakeAsync(() => {
       const mockResults = (count, startAt = 0) => {
         const result = [];
         for (let i = startAt; i < startAt + count; i++) {
@@ -324,19 +353,35 @@ describe('Contacts component', () => {
       flush();
       const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
       expect(argument.length).to.equal(51);
+
+      store.refreshState();
+      searchResults = searchResults.concat(mockResults(49, 50));
+      searchService.search.resolves(searchResults);
+      store.overrideSelector(Selectors.getContactsList, searchResults);
+      
       scrollLoaderCallback();
+      flush();
+      const argument2 = component.contactsActions.updateContactsList.args[1][0].updatedContacts;
+      expect(argument2.length).to.equal(100);
       expect(searchService.search.args[2][2]).to.deep.equal({
         limit: 50,
         paginating: true,
         skip: 50,
       });
+
+      store.refreshState();
+      searchResults = searchResults.concat(mockResults(50, 100));
+      searchService.search.resolves(searchResults);
+      store.overrideSelector(Selectors.getContactsList, searchResults);
+      scrollLoaderCallback();
       flush();
-      scrollLoaderCallback();
-      scrollLoaderCallback();
-      // TODO: not complete
-      // console.log('test');
-      // console.log(searchService.search.args.length);
-      // console.log(component.contactsActions.updateContactsList.args[1][0].updatedContacts.length);
+      expect(searchService.search.args[3][2]).to.deep.equal({
+        limit: 50,
+        paginating: true,
+        skip: 100,
+      });
+      const argument3 = component.contactsActions.updateContactsList.args[2][0].updatedContacts;
+      expect(argument3.length).to.equal(150);
     }));
   });
 
