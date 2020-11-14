@@ -1,9 +1,9 @@
 <mm-modal
   status="status"
-  title-key="'welcome'"
-  submit-key="'Start'"
-  on-cancel="welcomeModalCtrl.start()"
-  on-submit="welcomeModalCtrl.start()"
+  [titleKey]="'welcome'"
+  [submitKey]="'Start'"
+  (onCancel)="start()"
+  (onSubmit)="start()"
 >
   <div class="row">
     <div class="col-sm-6">

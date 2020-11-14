@@ -15,6 +15,7 @@ import { UpdatePasswordComponent } from './edit-user/update-password.component';
 import { EditUserSettingsComponent } from './edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 import { TourSelectComponent } from './tour/tour-select.component';
+import { WelcomeComponent } from './welcome/welcome.component';
 
 
 @NgModule({
@@ -30,6 +31,7 @@ import { TourSelectComponent } from './tour/tour-select.component';
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TourSelectComponent,
+    WelcomeComponent,
   ],
   imports: [
     CommonModule,
@@ -45,6 +47,7 @@ import { TourSelectComponent } from './tour/tour-select.component';
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TourSelectComponent,
+    WelcomeComponent,
   ]
 })
 export class ModalsModule { }
