@@ -214,7 +214,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         this.query({ skip: true });
       }
     });
-  };
+  }
 
   search(force = false) {
     // clears report selection for any text search or filter selection

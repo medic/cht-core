@@ -21,16 +21,16 @@ describe('Form2Sms service', () => {
 
   const testFormExists = () => {
     testFormExistsWithAttachedCode(undefined);
-  }
+  };
 
   const testFormExistsWithAttachedCode = (code?) => {
     dbGet.withArgs(TEST_FORM_ID).resolves({ xml2sms:code });
-  }
+  };
 
   const aFormSubmission = (xml?) => {
     GetReportContent.resolves(xml);
     return { _id:'abc-123', form:TEST_FORM_NAME };
-  }
+  };
 
   beforeEach(() => {
     dbGet = sinon.stub();
@@ -39,7 +39,7 @@ describe('Form2Sms service', () => {
       getPipeNameVsIsPureMap: sinon.stub().returns(new Map),
       meta: sinon.stub(),
       getInstance: sinon.stub(),
-    }
+    };
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },

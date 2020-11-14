@@ -6,8 +6,8 @@ const pouchDbOptions = {
   remote_headers: { 'Accept': 'application/json' }
 };
 const rewire = require('rewire');
-const bootstrapper = rewire('../../../src/ts/bootstrapper');
-const purger = require('../../../src/ts/bootstrapper/purger');
+const bootstrapper = rewire('../../../src/js/bootstrapper');
+const purger = require('../../../src/js/bootstrapper/purger');
 
 let originalDocument;
 let originalWindow;

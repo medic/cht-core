@@ -24,8 +24,9 @@ export class SessionService {
     console.warn('User must reauthenticate');
     this.cookieService.delete(COOKIE_NAME, '/');
     this.userCtxCookieValue = undefined;
-    this.document.location.href = `/${this.location.dbName}/login?redirect=${encodeURIComponent(this.document.location.href)}`;
-  };
+    this.document.location.href =
+      `/${this.location.dbName}/login?redirect=${encodeURIComponent(this.document.location.href)}`;
+  }
 
   logout() {
     return this.http
@@ -57,7 +58,7 @@ export class SessionService {
       .get('/' + this.location.dbName + '/login/identity')
       .toPromise()
       .catch(this.logout);
-  };
+  }
 
   init () {
     const userCtx = this.userCtx();
@@ -65,7 +66,7 @@ export class SessionService {
       return this.logout();
     }
     return this.http
-      .get<{ userCtx: { name:string, roles:string[] } }>('/_session', { responseType: 'json' })
+      .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json' })
       .toPromise()
       .then(value => {
         const name = value && value.userCtx && value.userCtx.name;
@@ -89,7 +90,7 @@ export class SessionService {
 
   private hasRole (userCtx, role) {
     return !!(userCtx && userCtx.roles && userCtx.roles.includes(role));
-  };
+  }
 
   isAdmin(userCtx?) {
     userCtx = userCtx || this.userCtx();

@@ -29,7 +29,7 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
 
   compileTranslations(translations, lang) {
     Object.keys(translations).map(key => {
-      translations[key] = this.compile(translations[key], lang)
+      translations[key] = this.compile(translations[key], lang);
     });
     return translations;
   }

@@ -12,12 +12,12 @@ export class HydrateContactNamesService {
   private findContactName(contactSummaries, id) {
     const cs = _.find(contactSummaries, { _id: id });
     return (cs && cs.name) || null;
-  };
+  }
 
   private findMutedState(contactSummaries, id) {
     const cs = _.find(contactSummaries, { _id: id });
     return (cs && cs.muted) || false;
-  };
+  }
 
   private replaceContactIdsWithNames(summaries, contactSummaries) {
     summaries.forEach((summary) => {
@@ -31,7 +31,7 @@ export class HydrateContactNamesService {
       }
     });
     return summaries;
-  };
+  }
 
   private getMutedState(summaries, contactSummaries) {
     summaries.forEach((summary) => {
@@ -45,12 +45,12 @@ export class HydrateContactNamesService {
     });
 
     return summaries;
-  };
+  }
 
   private relevantIdsFromSummary(summary) {
     // Pull lineages as well so we can pull their names out of the summaries
     return [summary.contact].concat(summary.lineage);
-  };
+  }
 
   /**
    * Replace contact ids with their names for ids
@@ -65,5 +65,5 @@ export class HydrateContactNamesService {
       summaries = this.getMutedState(summaries, response);
       return this.replaceContactIdsWithNames(summaries, response);
     });
-  };
+  }
 }

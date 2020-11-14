@@ -14,7 +14,7 @@ export class UHCSettingsService {
         settings.uhc.visit_count &&
         settings.uhc.visit_count.month_start_date
       );
-  };
+  }
 
   getVisitCountSettings(settings) {
     if (!settings || !settings.uhc || !settings.uhc.visit_count) {
@@ -25,11 +25,11 @@ export class UHCSettingsService {
       monthStartDate: this.getMonthStartDate(settings),
       visitCountGoal: settings.uhc.visit_count.visit_count_goal,
     };
-  };
+  }
 
   getContactsDefaultSort(settings) {
     return settings &&
       settings.uhc &&
       settings.uhc.contacts_default_sort;
-  };
+  }
 }

@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -16,10 +16,9 @@ import { GlobalActions } from '@mm-actions/global';
 describe('Status Filter Component', () => {
   let component:StatusFilterComponent;
   let fixture:ComponentFixture<StatusFilterComponent>;
-  let store:MockStore;
 
   beforeEach(async(() => {
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           BsDropdownModule.forRoot(),
@@ -39,7 +38,6 @@ describe('Status Filter Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(StatusFilterComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));

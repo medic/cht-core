@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { SessionService } from '@mm-services/session.service';
-import * as purger from '../bootstrapper/purger';
+import * as purger from '../../js/bootstrapper/purger';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
@@ -170,7 +170,7 @@ export class DBSyncService {
 
     this.sendUpdate({ state: 'inProgress' });
     return this.inProgressSync;
-  };
+  }
 
   private syncMeta() {
     const remote = this.dbService.get({ meta: true, remote: true });
@@ -181,11 +181,11 @@ export class DBSyncService {
       .then(info => currentSeq = info.update_seq)
       .then(() => local.sync(remote))
       .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
-  };
+  }
 
   private sendUpdate(update) {
     this.observable.next(update);
-  };
+  }
 
   private resetSyncInterval() {
     if (this.intervalPromises.sync) {
@@ -197,7 +197,7 @@ export class DBSyncService {
       this.syncIsRecent = false;
       this.sync();
     }, SYNC_INTERVAL);
-  };
+  }
 
   subscribe(listener) {
     return this.observable.subscribe(listener);

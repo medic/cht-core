@@ -53,5 +53,5 @@ export class TranslationLoaderProvider implements TranslateLoader {
     this.loadingPromises[locale] = promise;
 
     return from(promise);
-  };
+  }
 }

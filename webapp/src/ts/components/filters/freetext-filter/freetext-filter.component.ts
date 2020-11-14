@@ -1,7 +1,6 @@
 import { Component, EventEmitter, OnDestroy, Input, Output, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '../../../selectors';
 import { GlobalActions } from '@mm-actions/global';
@@ -16,8 +15,6 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   subscription: Subscription = new Subscription();
   inputText;
-
-  private inputTextChanged: Subject<any> = new Subject<any>();
 
   currentTab;
 

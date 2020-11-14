@@ -80,15 +80,17 @@ declare global {
     angular: any;
     EnketoForm:any;
   }
+  interface JQuery {
+    daterangepicker(options?: any, callback?: Function) : any;
+    select2(event?:any, options?:any):any;
+  }
+  interface Node {
+    _couchId: any;
+  }
 }
+
 (window as any).process = {
   env: { DEBUG: undefined },
   browser: true,
   nextTick: require('next-tick')
-}
-
-interface JQuery {
-  daterangepicker(options?: any, callback?: Function) : any;
-  select2(event?:any, options?:any):any;
-}
-
+};

@@ -12,7 +12,9 @@ import { SnackbarComponent } from './snackbar/snackbar.component';
 import { ContentRowListItemComponent } from './content-row-list-item/content-row-list-item.component';
 import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from './status-icons/status-icons.template';
 
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
@@ -26,7 +28,9 @@ import { ReportImageComponent } from '@mm-components/report-image/report-image.c
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { ActionbarComponent } from './actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
-import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
+import {
+  AnalyticsTargetsProgressComponent
+} from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 
 @NgModule({
   declarations: [

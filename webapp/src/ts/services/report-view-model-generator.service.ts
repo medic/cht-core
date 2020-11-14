@@ -42,7 +42,7 @@ export class ReportViewModelGeneratorService {
           .then((formatted) => {
             model.formatted = formatted;
             return model;
-        });
+          });
       })
       .then((model) => {
         return this.getSummariesService
@@ -58,6 +58,6 @@ export class ReportViewModelGeneratorService {
             return model;
           });
       });
-  };
+  }
 }
 

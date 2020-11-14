@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { filter as _filter, flattenDeep as _flattenDeep, groupBy as _groupBy, uniqBy as _uniqBy } from 'lodash-es'
+import { filter as _filter, flattenDeep as _flattenDeep, groupBy as _groupBy, uniqBy as _uniqBy } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import * as taskUtils from '@medic/task-utils';
 import * as phoneNumber from '@medic/phone-number';
@@ -81,11 +81,13 @@ export class SendMessageService {
         endkey: [ recipient.doc._id, {} ]
       })
       .then(contacts => {
-        const primaryContacts = _filter(contacts.rows, ({ doc }) => doc && doc.contact && doc.contact._id && !doc.contact.phone)
-          .map(row => ({ doc: { _id: row.doc.contact._id } }));
+        const primaryContacts =
+          _filter(contacts.rows, ({ doc }) => doc && doc.contact && doc.contact._id && !doc.contact.phone)
+            .map(row => ({ doc: { _id: row.doc.contact._id } }));
 
         if (primaryContacts) {
-          return this.hydrate(primaryContacts)
+          return this
+            .hydrate(primaryContacts)
             .then(primaries => _flattenDeep([ this.mapDescendants(contacts), primaries ]));
         } else {
           return this.mapDescendants(contacts);

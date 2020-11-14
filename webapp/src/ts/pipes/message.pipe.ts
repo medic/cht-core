@@ -11,7 +11,7 @@ const getFormName = (record, forms) => {
     return form.title;
   }
   return record.form;
-}
+};
 
 @Pipe({
   name: 'summary'
@@ -85,7 +85,7 @@ export class ClinicPipe implements PipeTransform {
   transform(entity) {
     console.warn('`clinic` filter is deprecated. Use `lineage` filter instead.');
     return this.formatProvider.lineage(entity);
-  };
+  }
 }
 
 @Pipe({
@@ -103,5 +103,5 @@ export class LineagePipe implements PipeTransform {
 
   transform(entity) {
     return this.sanitizer.bypassSecurityTrustHtml(this.formatProvider.lineage(entity));
-  };
+  }
 }

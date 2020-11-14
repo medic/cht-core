@@ -298,7 +298,8 @@ describe('date pipes rendering', () => {
     it('should render date', async () => {
       const date = moment('2017-10-10T10:10:10.100').valueOf();
       await override(`<div [innerHTML]="date | relativeDate"></div>`, { date });
-      expect(fixture.nativeElement.querySelector('.relative-date').getAttribute('class')).to.equal('relative-date past');
+      expect(fixture.nativeElement.querySelector('.relative-date').getAttribute('class'))
+        .to.equal('relative-date past');
       expect(fixture.nativeElement.querySelector('.relative-date').getAttribute('title')).to.equal('day 0');
       expect(fixture.nativeElement.querySelector('.relative-date-content').innerText).to.equal('somerelativetime');
     });
@@ -313,7 +314,8 @@ describe('date pipes rendering', () => {
     it('should render a date in the future', async () => {
       const date = moment().add(2, 'days').valueOf();
       await override(`<div [innerHTML]="date | relativeDate"></div>`, { date });
-      expect(fixture.nativeElement.querySelector('.relative-date').getAttribute('class')).to.equal('relative-date future');
+      expect(fixture.nativeElement.querySelector('.relative-date').getAttribute('class'))
+        .to.equal('relative-date future');
       expect(fixture.nativeElement.querySelector('.relative-date-content').innerText).to.equal('somerelativetime');
     });
   });

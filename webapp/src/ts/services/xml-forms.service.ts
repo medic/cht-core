@@ -59,7 +59,7 @@ export class XmlFormsService {
   private getById(internalId) {
     const formId = `form:${internalId}`;
     return this.dbService.get().get(formId);
-  };
+  }
 
   private getByView(internalId) {
     return this
@@ -84,7 +84,7 @@ export class XmlFormsService {
     };
 
     return this.parseProvider.parse(expression)(this.xmlFormsContextUtilsService, context);
-  };
+  }
 
   private filterAll(forms, options) {
     return this.userContactService.get().then(user => {
@@ -103,7 +103,7 @@ export class XmlFormsService {
           return forms;
         });
     });
-  };
+  }
 
   private filterContactTypes (context, doc) {
     if (!doc) {
@@ -127,7 +127,7 @@ export class XmlFormsService {
       }
       return true;
     });
-  };
+  }
 
   private filter(form, options, user) {
     if (!options.includeCollect && form.context && form.context.collect) {

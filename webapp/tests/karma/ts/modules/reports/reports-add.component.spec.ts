@@ -1,5 +1,5 @@
 import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,14 +20,10 @@ import { ReportsActions } from '@mm-actions/reports';
 import { EnketoService } from '@mm-services/enketo.service';
 import { ComponentsModule } from '@mm-components/components.module';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
-import { mark } from '@angular/compiler-cli/src/ngtsc/perf/src/clock';
-import { subscribeOn } from 'rxjs/operators';
-
 
 describe('Reports Add Component', () => {
   let component:ReportsAddComponent;
   let fixture: ComponentFixture<ReportsAddComponent>;
-  let store: MockStore;
   let dbService;
   let fileReaderService;
   let getReportContentService;
@@ -66,7 +62,7 @@ describe('Reports Add Component', () => {
       { selector: Selectors.getEnketoError, value: false },
     ];
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -94,7 +90,6 @@ describe('Reports Add Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(ReportsAddComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
@@ -195,7 +190,7 @@ describe('Reports Add Component', () => {
         const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
         getReportContentService.getReportContent.resolves();
         const xmlForm = { _id: 'my_form', some: 'content' };
-        const renderedForm = { rendered: 'form', model: {}, instance: {} }
+        const renderedForm = { rendered: 'form', model: {}, instance: {} };
         xmlFormsService.get.resolves(xmlForm);
         enketoService.render.resolves(renderedForm);
         const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');

@@ -38,17 +38,17 @@ export class GetDataRecordsService {
       .then((response) => {
         return _map(response.rows, 'doc');
       });
-  };
+  }
 
   private getSummaries(ids, options) {
     return this.getSummariesService
       .get(ids)
       .then(summaries => {
         const promiseToSummary = options.hydrateContactNames ?
-                                 this.hydrateContactNames.get(summaries) : Promise.resolve(summaries);
+          this.hydrateContactNames.get(summaries) : Promise.resolve(summaries);
         return promiseToSummary.then((summaries) => this.getSubjectSummariesService.get(summaries));
       });
-  };
+  }
 
   get(ids?, options?) {
     const opts = Object.assign({ hydrateContactNames: false, include_docs: false }, options);

@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
@@ -15,16 +15,17 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { GlobalActions } from '@mm-actions/global';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import { MultiDropdownFilterComponent } from
+  '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 
 describe('Reports Filters Component', () => {
   let component: ReportsFiltersComponent;
   let fixture: ComponentFixture<ReportsFiltersComponent>;
-  let store: MockStore;
   let searchFiltersService;
 
   beforeEach(async(() => {
-    TestBed
+    searchFiltersService = { init: sinon.stub() };
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -42,7 +43,7 @@ describe('Reports Filters Component', () => {
         ],
         providers: [
           provideMockStore(),
-          { provide: SearchFiltersService, useValue: { init: sinon.stub() }},
+          { provide: SearchFiltersService, useValue: searchFiltersService },
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves([]) } },
         ]
       })
@@ -50,8 +51,6 @@ describe('Reports Filters Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(ReportsFiltersComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
-        searchFiltersService = TestBed.inject(SearchFiltersService);
         fixture.detectChanges();
       });
   }));

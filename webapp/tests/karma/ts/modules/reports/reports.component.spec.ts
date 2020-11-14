@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -24,7 +24,6 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 describe('Reports Component', () => {
   let component: ReportsComponent;
   let fixture: ComponentFixture<ReportsComponent>;
-  let store: MockStore;
   let changesService;
   let addReadStatusService;
   let searchService;
@@ -44,7 +43,11 @@ describe('Reports Component', () => {
       { selector: Selectors.getEnketoSavingStatus, value: false },
     ];
 
-    TestBed
+    searchService = { search: sinon.stub().resolves([]) };
+    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
+
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -61,21 +64,19 @@ describe('Reports Component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: { subscribe: sinon.stub().resolves(of({})) } },
-          { provide: AddReadStatusService, useValue: { updateReports: sinon.stub().resolvesArg(0) }},
-          { provide: SearchService, useValue: { search: sinon.stub().resolves([]) } },
-          { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
-          { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } }, // Needed because of facility filter
+          { provide: ChangesService, useValue: changesService },
+          { provide: AddReadStatusService, useValue: addReadStatusService },
+          { provide: SearchService, useValue: searchService },
+          // Needed because of ngx-translate provider's constructor.
+          { provide: SettingsService, useValue: {} },
+          // Needed because of facility filter
+          { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
         ]
       })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
-        addReadStatusService = TestBed.inject(AddReadStatusService);
-        searchService = TestBed.inject(SearchService);
-        changesService = TestBed.inject(ChangesService);
         fixture.detectChanges();
       });
   }));
@@ -115,7 +116,8 @@ describe('Reports Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
- /* describe('verifying reports', () => {
+  /*
+  describe('verifying reports', () => {
     todo enable these tests once we have verification
     const scenarios = [
       /!* User scenarios with permission to edit *!/

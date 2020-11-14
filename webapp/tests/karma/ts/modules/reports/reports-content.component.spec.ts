@@ -32,8 +32,12 @@ describe('Reports Content Component', () => {
       { selector: Selectors.getLoadingContent, value: false },
       { selector: Selectors.getSelectMode, value: false },
     ];
+    searchFiltersService = { freetextSearch: sinon.stub() };
+    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
+    router = { navigate: sinon.stub() };
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -44,11 +48,11 @@ describe('Reports Content Component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: { subscribe: sinon.stub().resolves(of({})) } },
-          { provide: SearchFiltersService, useValue: { freetextSearch: sinon.stub() }},
+          { provide: ChangesService, useValue: changesService },
+          { provide: SearchFiltersService, useValue: searchFiltersService },
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
-          { provide: ActivatedRoute, useValue: { params: { subscribe: sinon.stub() }, snapshot: { params: {} } } },
-          { provide: Router, useValue: { navigate: sinon.stub() } },
+          { provide: ActivatedRoute, useValue: activatedRoute },
+          { provide: Router, useValue: router },
         ]
       })
       .compileComponents()
@@ -56,10 +60,6 @@ describe('Reports Content Component', () => {
         fixture = TestBed.createComponent(ReportsContentComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
-        searchFiltersService = TestBed.inject(SearchFiltersService);
-        changesService = TestBed.inject(ChangesService);
-        activatedRoute = TestBed.inject(ActivatedRoute);
-        router = TestBed.inject(Router);
         fixture.detectChanges();
       });
   }));

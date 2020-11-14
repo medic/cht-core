@@ -31,5 +31,5 @@ export class AddAttachmentService {
       data: content,
       content_type: contentType
     };
-  };
+  }
 }

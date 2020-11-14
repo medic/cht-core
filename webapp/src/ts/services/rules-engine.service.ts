@@ -24,7 +24,7 @@ interface DebounceActive {
     active?: boolean;
     debounceRef?: any;
     telemetryDataEntry?: any;
-  }
+  };
 }
 
 @Injectable({
@@ -92,7 +92,13 @@ export class RulesEngineService implements OnDestroy {
             this.userSettingsService.get()
           ])
           .then(([settingsDoc, userContactDoc, userSettingsDoc]) => {
-            const rulesSettings = this.getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+            const rulesSettings = this.getRulesSettings(
+              settingsDoc,
+              userContactDoc,
+              userSettingsDoc,
+              canViewTasks,
+              canViewTargets
+            );
             const initializeTelemetryData = this.telemetryEntry('rules-engine:initialize', true);
 
             return this.rulesEngineCore
@@ -132,7 +138,7 @@ export class RulesEngineService implements OnDestroy {
                 initializeTelemetryData.record();
               });
           });
-      })
+      });
   }
 
   private telemetryEntry(entry, startNow = false) {
@@ -153,7 +159,7 @@ export class RulesEngineService implements OnDestroy {
     const passThrough = (result) => {
       record();
       return result;
-    }
+    };
 
     if (startNow) {
       start();
@@ -179,12 +185,13 @@ export class RulesEngineService implements OnDestroy {
     }
 
     debounceInfo.debounceRef.cancel();
-    debounceInfo.active = false
+    debounceInfo.active = false;
   }
 
   private getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets) {
     const settingsTasks = settingsDoc && settingsDoc.tasks || {};
-    const filterTargetByContext = (target) => target.context ? !!this.parseProvider.parse(target.context)({ user: userContactDoc }) : true;
+    const filterTargetByContext = (target) => target.context ?
+      !!this.parseProvider.parse(target.context)({ user: userContactDoc }) : true;
     const targets = settingsTasks.targets && settingsTasks.targets.items || [];
 
     return {
@@ -217,7 +224,11 @@ export class RulesEngineService implements OnDestroy {
     this.subscriptions.add(dirtyContactsSubscription);
 
     const userLineage = [];
-    for (let current = userContactDoc; !!current && userLineage.length < this.MAX_LINEAGE_DEPTH; current = current.parent) {
+    for (
+      let current = userContactDoc;
+      !!current && userLineage.length < this.MAX_LINEAGE_DEPTH;
+      current = current.parent)
+    {
       userLineage.push(current._id);
     }
 
@@ -242,7 +253,13 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private rulesConfigChange(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets) {
-    const rulesSettings = this.getRulesSettings(settingsDoc, userContactDoc, userSettingsDoc, canViewTasks, canViewTargets);
+    const rulesSettings = this.getRulesSettings(
+      settingsDoc,
+      userContactDoc,
+      userSettingsDoc,
+      canViewTasks,
+      canViewTargets
+    );
     this.rulesEngineCore.rulesConfigChange(rulesSettings);
     this.assignMonthStartDate(settingsDoc);
   }
@@ -294,7 +311,10 @@ export class RulesEngineService implements OnDestroy {
 
     return this.initialized
       .then(() => {
-        this.telemetryService.record('rules-engine:tasks:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+        this.telemetryService.record(
+          'rules-engine:tasks:dirty-contacts',
+          this.rulesEngineCore.getDirtyContacts().length
+        );
         this.cancelDebounce('tasks');
         return this.rulesEngineCore
           .fetchTasksFor()
@@ -310,7 +330,10 @@ export class RulesEngineService implements OnDestroy {
 
     return this.initialized
       .then(() => {
-        this.telemetryService.record('rules-engine:tasks:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+        this.telemetryService.record(
+          'rules-engine:tasks:dirty-contacts',
+          this.rulesEngineCore.getDirtyContacts().length
+        );
 
         return this.rulesEngineCore
           .fetchTasksFor(contactIds)
@@ -326,7 +349,10 @@ export class RulesEngineService implements OnDestroy {
 
     return this.initialized
       .then(() => {
-        this.telemetryService.record('rules-engine:targets:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+        this.telemetryService.record(
+          'rules-engine:targets:dirty-contacts',
+          this.rulesEngineCore.getDirtyContacts().length
+        );
         this.cancelDebounce('targets');
         const relevantInterval = CalendarInterval.getCurrent(this.uhcMonthStartDate);
         return this.rulesEngineCore

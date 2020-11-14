@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -20,7 +20,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 @Component({
   templateUrl: './reports-add.component.html',
 })
-export class ReportsAddComponent implements OnInit, OnDestroy{
+export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();
   constructor(
     private store:Store,
@@ -159,7 +159,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
                 }
 
                 return Promise
-                    .all($('#report-form input[type=file]')
+                  .all($('#report-form input[type=file]')
                     .map((idx, element) => {
                       const $element = $(element);
                       const attachmentName = 'user-file' + $element.attr('name');
@@ -246,7 +246,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
 
   private markFormEdited() {
     this.globalActions.setEnketoEditedStatus(true);
-  };
+  }
 
   private resetFormError() {
     if (this.enketoError) {

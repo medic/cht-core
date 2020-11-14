@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone, OnInit }
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
-import { Selectors } from '@mm-selectors/index'
+import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 
 
