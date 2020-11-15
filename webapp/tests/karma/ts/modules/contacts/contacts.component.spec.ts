@@ -26,14 +26,12 @@ describe('Contacts component', () => {
   let fixture: ComponentFixture<ContactsComponent>;
   let changesService;
   let searchService;
-  let simprintsService;
   let settingsService;
   let userSettingsService;
   let getDataRecordsService;
   let sessionService;
   let authService;
   let contactTypesService;
-  let scrollLoaderProvider;
   let scrollLoaderCallback;
   let contactListContains;
 
@@ -48,7 +46,7 @@ describe('Contacts component', () => {
     const changesServiceMock = {
       subscribe: sinon.stub().resolves(of({}))
     };
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -99,14 +97,12 @@ describe('Contacts component', () => {
         fixture.detectChanges();
         changesService = TestBed.inject(ChangesService);
         searchService = TestBed.inject(SearchService);
-        simprintsService = TestBed.inject(SimprintsService);
         settingsService = TestBed.inject(SettingsService);
         userSettingsService = TestBed.inject(UserSettingsService);
         getDataRecordsService = TestBed.inject(GetDataRecordsService);
         sessionService = TestBed.inject(SessionService);
         authService = TestBed.inject(AuthService);
         contactTypesService = TestBed.inject(ContactTypesService);
-        scrollLoaderProvider = TestBed.inject(ScrollLoaderProvider);
         component.router.navigate = sinon.stub().returns(true);
       });
   }));
@@ -278,8 +274,8 @@ describe('Contacts component', () => {
       changesCallback({});
 
       expect(argument.length).to.equal(61);
-      expect(searchService.search.args[2][2].limit).to.equal(60)
-      expect(searchService.search.args[2][2].skip).to.equal(undefined)
+      expect(searchService.search.args[2][2].limit).to.equal(60);
+      expect(searchService.search.args[2][2].skip).to.equal(undefined);
     }));
 
     it('resets limit/skip modifier when filtering #4085', fakeAsync(() => {
@@ -773,53 +769,55 @@ describe('Contacts component', () => {
             });
           }));
 
-          it('does require refreshing when sorting is `last_visited_date` and visit report is received', fakeAsync(() => {
-            searchResults = [];
-            Array.apply(null, Array(5)).forEach((k, i) =>
-                  searchResults.push({ _id: i })
-                );
-            searchService.search.resolves(searchResults);
-            store.overrideSelector(Selectors.getContactsList, searchResults);
-            component.ngOnInit();
-            flush();
-            component.sortDirection = 'last_visited_date';
-            const changesCallback = changesService.subscribe.args[1][0].callback;
+          it(
+            'does require refreshing when sorting is `last_visited_date` and visit report is received',
+            fakeAsync(() => {
+              searchResults = [];
+              Array.apply(null, Array(5)).forEach((k, i) =>
+                searchResults.push({ _id: i })
+              );
+              searchService.search.resolves(searchResults);
+              store.overrideSelector(Selectors.getContactsList, searchResults);
+              component.ngOnInit();
+              flush();
+              component.sortDirection = 'last_visited_date';
+              const changesCallback = changesService.subscribe.args[1][0].callback;
 
-            return Promise.all([
-              changesCallback({ doc: relevantVisitReport }),
-              changesCallback({ doc: irrelevantReport }),
-              changesCallback({ doc: irrelevantVisitReport }),
-              changesCallback({ doc: deletedVisitReport, deleted: true }),
-              changesCallback({ doc: someContact }),
-            ]).then(() => {
-              expect(searchService.search.callCount).to.equal(7);
-              expect(searchService.search.args[2]).to.deep.equal([
-                'contacts',
-                { types: { selected: ['childType'] } },
-                { limit: 49, withIds: true, silent: true },
-                {
-                  displayLastVisitedDate: true,
-                  visitCountSettings: {},
-                  sortByLastVisitedDate: true,
-                },
-                ['abcde', 0, 1, 2, 3, 4],
-              ]);
-
-              for (let i = 3; i < 7; i++) {
-                expect(searchService.search.args[i]).to.deep.equal([
+              return Promise.all([
+                changesCallback({ doc: relevantVisitReport }),
+                changesCallback({ doc: irrelevantReport }),
+                changesCallback({ doc: irrelevantVisitReport }),
+                changesCallback({ doc: deletedVisitReport, deleted: true }),
+                changesCallback({ doc: someContact }),
+              ]).then(() => {
+                expect(searchService.search.callCount).to.equal(7);
+                expect(searchService.search.args[2]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 49, withIds: false, silent: true },
+                  { limit: 49, withIds: true, silent: true },
                   {
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
                   },
-                  undefined,
+                  ['abcde', 0, 1, 2, 3, 4],
                 ]);
-              }
-            });
-          }));
+
+                for (let i = 3; i < 7; i++) {
+                  expect(searchService.search.args[i]).to.deep.equal([
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 49, withIds: false, silent: true },
+                    {
+                      displayLastVisitedDate: true,
+                      visitCountSettings: {},
+                      sortByLastVisitedDate: true,
+                    },
+                    undefined,
+                  ]);
+                }
+              });
+            }));
         });
 
         describe('last_visited_date default sorting', () => {
@@ -827,8 +825,8 @@ describe('Contacts component', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             searchResults = [];
             Array.apply(null, Array(5)).forEach((k, i) =>
-                  searchResults.push({ _id: i })
-                );
+              searchResults.push({ _id: i })
+            );
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(true);
@@ -860,55 +858,57 @@ describe('Contacts component', () => {
             });
           }));
 
-          it('does require refreshing when sorting is `last_visited_date` and visit report is received', fakeAsync(() => {
-            settingsService.get.resolves({
-              uhc: { contacts_default_sort: 'last_visited_date' },
-            });
-            searchResults = [];
-            Array.apply(null, Array(5)).forEach((k, i) =>
-                  searchResults.push({ _id: i })
-                );
-            searchService.search.resolves(searchResults);
-            store.overrideSelector(Selectors.getContactsList, searchResults);
-            authService.has.resolves(true);
-            component.ngOnInit();
-            flush();
-            const changesCallback = changesService.subscribe.args[1][0].callback;
-            return Promise.all([
-              changesCallback({ doc: relevantVisitReport }),
-              changesCallback({ doc: irrelevantReport }),
-              changesCallback({ doc: irrelevantVisitReport }),
-              changesCallback({ doc: deletedVisitReport, deleted: true }),
-              changesCallback({ doc: someContact }),
-            ]).then(() => {
-              expect(searchService.search.callCount).to.equal(7);
-              expect(searchService.search.args[2]).to.deep.equal([
-                'contacts',
-                { types: { selected: ['childType'] } },
-                { limit: 49, withIds: true, silent: true },
-                {
-                  displayLastVisitedDate: true,
-                  visitCountSettings: {},
-                  sortByLastVisitedDate: true,
-                },
-                ['abcde', 0, 1, 2, 3, 4],
-              ]);
-
-              for (let i = 3; i < 6; i++) {
-                expect(searchService.search.args[i]).to.deep.equal([
+          it(
+            'does require refreshing when sorting is `last_visited_date` and visit report is received',
+            fakeAsync(() => {
+              settingsService.get.resolves({
+                uhc: { contacts_default_sort: 'last_visited_date' },
+              });
+              searchResults = [];
+              Array.apply(null, Array(5)).forEach((k, i) =>
+                searchResults.push({ _id: i })
+              );
+              searchService.search.resolves(searchResults);
+              store.overrideSelector(Selectors.getContactsList, searchResults);
+              authService.has.resolves(true);
+              component.ngOnInit();
+              flush();
+              const changesCallback = changesService.subscribe.args[1][0].callback;
+              return Promise.all([
+                changesCallback({ doc: relevantVisitReport }),
+                changesCallback({ doc: irrelevantReport }),
+                changesCallback({ doc: irrelevantVisitReport }),
+                changesCallback({ doc: deletedVisitReport, deleted: true }),
+                changesCallback({ doc: someContact }),
+              ]).then(() => {
+                expect(searchService.search.callCount).to.equal(7);
+                expect(searchService.search.args[2]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 49, withIds: false, silent: true },
+                  { limit: 49, withIds: true, silent: true },
                   {
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
                   },
-                  undefined,
+                  ['abcde', 0, 1, 2, 3, 4],
                 ]);
-              }
-            });
-          }));
+
+                for (let i = 3; i < 6; i++) {
+                  expect(searchService.search.args[i]).to.deep.equal([
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 49, withIds: false, silent: true },
+                    {
+                      displayLastVisitedDate: true,
+                      visitCountSettings: {},
+                      sortByLastVisitedDate: true,
+                    },
+                    undefined,
+                  ]);
+                }
+              });
+            }));
         });
       });
 
@@ -917,8 +917,8 @@ describe('Contacts component', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             const searchResults = [];
             Array.apply(null, Array(5)).forEach((k, i) =>
-                  searchResults.push({ _id: i })
-                );
+              searchResults.push({ _id: i })
+            );
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(false);
@@ -950,40 +950,42 @@ describe('Contacts component', () => {
         });
 
         describe('last_visited_date default sorting', () => {
-          it('does require refreshing when sorting is `last_visited_date` and visit report is received', fakeAsync(() => {
-            const searchResults = [];
-            Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
-            searchService.search.resolves(searchResults);
-            store.overrideSelector(Selectors.getContactsList, searchResults);
-            authService.has.resolves(false);
-            contactListContains.withArgs(4).returns(true);
-            settingsService.get.resolves({
-              uhc: { contacts_default_sort: 'last_visited_date' },
-            });
-            component.ngOnInit();
-            flush();
-            const changesCallback = changesService.subscribe.args[1][0].callback;
+          it(
+            'does require refreshing when sorting is `last_visited_date` and visit report is received',
+            fakeAsync(() => {
+              const searchResults = [];
+              Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
+              searchService.search.resolves(searchResults);
+              store.overrideSelector(Selectors.getContactsList, searchResults);
+              authService.has.resolves(false);
+              contactListContains.withArgs(4).returns(true);
+              settingsService.get.resolves({
+                uhc: { contacts_default_sort: 'last_visited_date' },
+              });
+              component.ngOnInit();
+              flush();
+              const changesCallback = changesService.subscribe.args[1][0].callback;
 
-            return Promise.all([
-              changesCallback({ doc: relevantVisitReport }),
-              changesCallback({ doc: irrelevantReport }),
-              changesCallback({ doc: irrelevantVisitReport }),
-              changesCallback({ doc: deletedVisitReport, deleted: true }),
-              changesCallback({ doc: someContact }),
-            ]).then(() => {
-              expect(searchService.search.callCount).to.equal(7);
+              return Promise.all([
+                changesCallback({ doc: relevantVisitReport }),
+                changesCallback({ doc: irrelevantReport }),
+                changesCallback({ doc: irrelevantVisitReport }),
+                changesCallback({ doc: deletedVisitReport, deleted: true }),
+                changesCallback({ doc: someContact }),
+              ]).then(() => {
+                expect(searchService.search.callCount).to.equal(7);
 
-              for (let i = 2; i < 7; i++) {
-                expect(searchService.search.args[i]).to.deep.equal([
-                  'contacts',
-                  { types: { selected: ['childType'] } },
-                  { limit: 49, withIds: false, silent: true },
-                  {},
-                  undefined,
-                ]);
-              }
-            });
-          }));
+                for (let i = 2; i < 7; i++) {
+                  expect(searchService.search.args[i]).to.deep.equal([
+                    'contacts',
+                    { types: { selected: ['childType'] } },
+                    { limit: 49, withIds: false, silent: true },
+                    {},
+                    undefined,
+                  ]);
+                }
+              });
+            }));
         });
       });
 

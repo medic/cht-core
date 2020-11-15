@@ -8,17 +8,13 @@ import sinon from 'sinon';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
-import { SearchFiltersService } from '@mm-services/search-filters.service';
-import { SearchService } from '@mm-services/search.service';
 
 describe('Reports Filters Component', () => {
   let component: ContactsFiltersComponent;
   let fixture: ComponentFixture<ContactsFiltersComponent>;
-  let store: MockStore;
-  let searchFiltersService;
 
   beforeEach(async(() => {
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -37,7 +33,6 @@ describe('Reports Filters Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(ContactsFiltersComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));

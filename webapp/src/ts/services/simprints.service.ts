@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class SimprintsService {
   private currentRequest:any = {};
@@ -10,6 +10,7 @@ export class SimprintsService {
   private resolvePromise;
 
   private request(endpoint) {
+    // eslint-disable-next-line no-bitwise
     const requestId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & this.SP_ID_MASK;
     this.currentRequest = {
       id: requestId,
@@ -20,15 +21,15 @@ export class SimprintsService {
     // `call` needed to specify context: #3511
     endpoint.call(window.medicmobile_android, this.currentRequest.id);
     return this.currentRequest.deferred;
-  };
+  }
 
   private isCurrentRequest(requestId) {
     return this.currentRequest.id === requestId;
-  };
+  }
 
   private parseTierNumber(tier) {
     return Number.parseInt(tier.split('_')[1]);
-  };
+  }
 
   enabled() {
     try {

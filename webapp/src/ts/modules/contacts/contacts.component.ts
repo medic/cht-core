@@ -127,31 +127,31 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.settingsService.get(),
       this.contactTypesService.getAll()
     ])
-    .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
-      this.usersHomePlace = homePlaceSummary;
-      this.lastVisitedDateExtras = viewLastVisitedDate;
-      this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
-      if(this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
-        this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
-      }
-      this.contactTypes = contactTypes;
-      return this.getChildren()
-    })
-    .then((children) => {
-      this.childPlaces = children;
-      this.defaultFilters = {
-        types: {
-          selected: this.childPlaces.map(type => type.id)
+      .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
+        this.usersHomePlace = homePlaceSummary;
+        this.lastVisitedDateExtras = viewLastVisitedDate;
+        this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
+        if(this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+          this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
         }
-      };
-      this.search();
-    })
-    .catch((err) => {
-      this.error = true;
-      this.loading = false;
-      this.appending = false;
-      console.error('Error searching for contacts', err);
-    });
+        this.contactTypes = contactTypes;
+        return this.getChildren();
+      })
+      .then((children) => {
+        this.childPlaces = children;
+        this.defaultFilters = {
+          types: {
+            selected: this.childPlaces.map(type => type.id)
+          }
+        };
+        this.search();
+      })
+      .catch((err) => {
+        this.error = true;
+        this.loading = false;
+        this.appending = false;
+        console.error('Error searching for contacts', err);
+      });
       
   }
 
@@ -172,7 +172,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       (this.listContains(doc.fields.visited_contact_uuid) ||
         isRelevantDelete)
     );
-  };
+  }
 
   private getUserHomePlaceSummary() {
     return this.userSettingsService.get()
@@ -187,7 +187,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         }
         return summary;
       });
-  };
+  }
 
   private canViewLastVisitedDate() {
     if (this.sessionService.isDbAdmin()) {
@@ -211,6 +211,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       contact.primary = contact.home;
       contact.simprintsTier = contact.simprints && contact.simprints.tierNumber;
       contact.dod = contact.date_of_death;
+      // eslint-disable-next-line no-self-assign
       contact.muted = contact.muted;
       if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
         if (contact.lastVisitedDate === 0) {
@@ -246,7 +247,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         }
       }
 
-      return contact
+      return contact;
     });
   }
 
@@ -262,7 +263,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       return Promise.resolve([]);
     }
     return p.then(children => children.filter(child => !child.person));
-  };
+  }
 
   private initScroll() {
     this.scrollLoaderProvider.init(() => {
@@ -272,7 +273,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         });
       }
     });
-  };
+  }
 
   private isSortedByLastVisited() {
     return this.sortDirection === 'last_visited_date';
@@ -290,7 +291,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
     // backwards compatibility with hardcoded hierarchy
     return '' + this.contactTypesService.HARDCODED_TYPES().indexOf(contact.type);
-  };
+  }
 
   private query(opts) {
     const options = Object.assign({ limit: PAGE_SIZE }, opts);
@@ -333,11 +334,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     let docIds;
-      if (options.withIds) {
-        docIds = this.contactsList.map((item) => {
-          return item._id;
-        });
-      }
+    if (options.withIds) {
+      docIds = this.contactsList.map((item) => {
+        return item._id;
+      });
+    }
 
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
@@ -455,7 +456,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.filters.simprintsIdentities = identities;
       this.search();
     });
-  };
+  }
 
   listTrackBy(index, contact) {
     return contact._id + contact._rev;

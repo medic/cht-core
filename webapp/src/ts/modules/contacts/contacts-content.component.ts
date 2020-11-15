@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
 
