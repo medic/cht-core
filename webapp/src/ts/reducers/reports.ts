@@ -68,7 +68,7 @@ const _reportsReducer = createReducer(
 
   on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
 
-  on(GlobalActions.clearSelected, (state) => ({ ...state, selected: [] })),
+  on(GlobalActions.clearSelected, (state) => ({ ...state, selected: [], verifyingReport: false })),
 
   on(
     Actions.addSelectedReport,
@@ -86,6 +86,18 @@ const _reportsReducer = createReducer(
       return { ...state, reports, reportsById };
     }
   ),
+
+  on(Actions.updateSelectedReportItem, (state, { payload }) => {
+    return {
+      ...state,
+      selected: state.selected.map(item => {
+        if (item._id === payload.id) {
+          return { ...item, ...payload.selected };
+        }
+        return item;
+      }),
+    };
+  }),
 );
 
 export function reportsReducer(state, action) {
@@ -104,8 +116,6 @@ module.exports = function(state, action) {
 
 
   switch (action.type) {
-  case actionTypes.CLEAR_SELECTED:
-    return Object.assign({}, state, { selected: [], verifyingReport: false });
   case actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY: {
     const selected = state.selected.map((item, index) => {
       if (index === 0) {
@@ -131,14 +141,7 @@ module.exports = function(state, action) {
   case actionTypes.SET_VERIFYING_REPORT:
     return Object.assign({}, state, { verifyingReport: action.payload.verifyingReport });
   case actionTypes.UPDATE_SELECTED_REPORT_ITEM: {
-    const selected = state.selected.map(item => {
-      if (item._id === action.payload.id) {
-        return Object.assign({}, item, action.payload.selected);
-      }
-      return item;
-    });
-    return Object.assign({}, state, { selected });
-  }
+
   default:
     return state;
   }

@@ -267,13 +267,18 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleSelected($event, report) {
-    console.log($event);
+  toggleSelected(report) {
     if (this.selectMode) {
-      $event.preventDefault();
-      $event.stopPropagation();
-      console.log(report);
+      const isSelected = this.selectedReports.find(selectedReport => selectedReport._id === report._id);
+      if (!isSelected) {
+        this.reportsActions.addSelectedReport(report);
+      } else {
+        this.reportsActions.removeSelectedReport(report);
+      }
+      return;
     }
+
+    this.router.navigate(['/reports', report._id]);
 
     /*$('.inbox').on('click', '#reports-list .content-row', function(e) {
       if (ctrl.selectMode) {

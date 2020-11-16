@@ -10,6 +10,7 @@ export const Actions = {
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
   setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
+  updateSelectedReportItem: createMultiValueAction('UPDATE_SELECTED_REPORT_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
@@ -83,9 +84,16 @@ export class ReportsActions {
 
   setSelectMode(value) {
     return this.store.dispatch(Actions.setSelectMode(value));
-    /*globalActions.setSelectMode(value);
-    globalActions.unsetSelected();
-    $state.go('reports.detail', { id: null });*/
+  }
+
+  updateSelectedReportItem(id, selected) {
+    return this.store.dispatch(Actions.updateSelectedReportItem({ id, selected }));
+  }
+
+  deselectAll() {
+    this.store.dispatch(Actions.setSelectedReports([]));
+    this.setRightActionBar();
+    //setCheckboxElements(false);
   }
 }
 /*
@@ -125,27 +133,6 @@ angular.module('inboxServices').factory('ReportsActions',
         ));
       }
 
-      function setSelectedReports(selected) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_REPORTS, 'selected', selected));
-      }
-
-
-
-      function updateSelectedReportItem(id, selected) {
-        dispatch({
-          type: actionTypes.UPDATE_SELECTED_REPORT_ITEM,
-          payload: { id, selected }
-        });
-      }
-
-      function deselectAll() {
-        dispatch(() => {
-          setSelectedReports([]);
-          setRightActionBar();
-          setCheckboxElements(false);
-        });
-      }
-
       function toggleVerifyingReport() {
         dispatch((dispatch, getState) => {
           const verifyingReport = Selectors.getVerifyingReport(getState());
@@ -178,12 +165,6 @@ angular.module('inboxServices').factory('ReportsActions',
             })
             .catch(err => $log.error('Error selecting all', err));
         });
-      }
-
-      function setSelect(value) {
-        globalActions.setSelectMode(value);
-        globalActions.unsetSelected();
-        $state.go('reports.detail', { id: null });
       }
 
       function verifyReport(reportIsVerified) {

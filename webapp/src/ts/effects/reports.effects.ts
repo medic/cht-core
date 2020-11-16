@@ -64,8 +64,8 @@ export class ReportsEffects {
         if (selectMode) {
           const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
-            // todo update selected report in selectMode
-            // this.reportActions.updateSelectedReport(model);
+            model.loading = false;
+            this.reportActions.updateSelectedReportItem(model._id, model);
           } else {
             model.expanded = false;
             this.reportActions.addSelectedReport(model);
