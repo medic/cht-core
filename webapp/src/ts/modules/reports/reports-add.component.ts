@@ -45,8 +45,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoError;
   enketoStatus;
   enketoSaving;
+  enketoEdited;
   form;
   errorTranslationKey;
+  cancelCallback;
 
   private geoHandle:any;
   private globalActions;
@@ -63,18 +65,22 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
+      this.store.select(Selectors.getCancelCallback),
     ).subscribe(([
       loadingContent,
       selectedReports,
       enketoStatus,
       enketoSaving,
       enketoError,
+      cancelCallback,
     ]) => {
       this.selectedReports = selectedReports;
       this.loadingContent = loadingContent;
       this.enketoStatus = enketoStatus;
+      this.enketoEdited = enketoStatus.edited;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
+      this.cancelCallback = cancelCallback;
     });
     this.subscription.add(reduxSubscription);
   }

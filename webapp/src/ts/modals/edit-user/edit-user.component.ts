@@ -3,15 +3,14 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
-export class EditUserAbstract extends MmModalAbstract {
-
+export abstract class EditUserAbstract extends MmModalAbstract {
   editUserModel;
 
   constructor(
-    private bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private userSettingsService: UserSettingsService,
   ) {
-    super();
+    super(bsModalRef);
   }
 
   async onInit(): Promise<void> {
@@ -20,10 +19,6 @@ export class EditUserAbstract extends MmModalAbstract {
     } catch(err) {
       console.error('Error determining user model', err);
     }
-  }
-
-  cancel() {
-    this.bsModalRef.hide();
   }
 
   determineEditUserModel(): Promise<any> {

@@ -4,7 +4,7 @@
   [titleKey]="'Send Message'"
   [submitKey]="'Send'"
   [submittingKey]="'Sending'"
-  (onCancel)="close()"
+  (onCancel)="cancel()"
   (onSubmit)="submit()">
   <form action="" method="POST" class="message-form">
     <div class="form-group" [ngClass]="{ 'has-error': errors.phone }">
@@ -19,7 +19,7 @@
         [(ngModel)]="fields.message">
       </textarea>
       <span class="help-block" *ngIf="errors.message">{{ errors.message }}</span>
-     <!-- Count is done by CountMessageService -->
+      <!-- Count is done by CountMessageService -->
       <span class="count"></span>
     </div>
   </form>

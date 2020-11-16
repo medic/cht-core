@@ -402,12 +402,14 @@ export class AppComponent implements OnInit {
 
   private showUpdateReady() {
     const TWO_HOURS = 2 * 60 * 60 * 1000;
-    this.modalService.show(ReloadingComponent, {}, () => {
-      console.debug('Delaying update');
-      setTimeout(() => {
-        this.showUpdateReady();
-      }, TWO_HOURS);
-    });
+    this.modalService
+      .show(ReloadingComponent)
+      .catch(() => {
+        console.debug('Delaying update');
+        setTimeout(() => {
+          this.showUpdateReady();
+        }, TWO_HOURS);
+      });
     //closeDropdowns();
   }
 
