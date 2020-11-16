@@ -79,6 +79,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit() {
+    this.globalActions.clearFilters(); // clear any global filters first
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getContactsList),
       this.store.select(Selectors.getIsAdmin),
@@ -158,6 +159,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   ngOnDestroy() {
     this.contactsActions.resetContactsList();
     this.subscription.unsubscribe();
+    this.globalActions.clearFilters();
   }
 
   private isRelevantVisitReport (doc) {
