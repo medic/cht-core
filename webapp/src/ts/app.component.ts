@@ -27,7 +27,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
-import {StartupModalsService} from '@mm-services/startup-modals.service';
+import { StartupModalsService } from '@mm-services/startup-modals.service';
 
 const SYNC_STATUS = {
   inProgress: {

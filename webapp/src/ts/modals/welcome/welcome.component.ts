@@ -7,13 +7,9 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
   selector: 'welcome',
   templateUrl: './welcome.component.html'
 })
-export class WelcomeComponent  extends MmModalAbstract {
+export class WelcomeComponent extends MmModalAbstract {
 
-  constructor(private bsModalRef: BsModalRef) {
-    super();
-  }
-
-  start() {
-    this.bsModalRef.hide();
+  constructor(bsModalRef: BsModalRef) {
+    super(bsModalRef);
   }
 }

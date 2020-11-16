@@ -13,10 +13,10 @@ export class TourSelectComponent extends MmModalAbstract implements OnInit {
   tours: object[];
 
   constructor(
-    private bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private tourService: TourService,
   ) {
-    super();
+    super(bsModalRef);
   }
 
   ngOnInit() {
@@ -26,13 +26,9 @@ export class TourSelectComponent extends MmModalAbstract implements OnInit {
     });
   }
 
-  cancel() {
-    this.bsModalRef.hide();
-  }
-
   start(name) {
     this.tourService.start(name);
-    this.cancel();
+    this.close();
   }
 
   listTrackBy(index, tour) {

@@ -30,7 +30,7 @@ export class StartupModalsService {
       required: settings => !settings.setup_complete,
       render: () => {
         return this.openWelcome()
-          .catch(err => console.error('Error opening welcome modal', err));
+          .catch(() => {});
       },
     },
     // guided setup
@@ -38,8 +38,9 @@ export class StartupModalsService {
       required: settings => !settings.setup_complete,
       render: () => {
         return this.openGuidedSetup()
+          .catch(() => {})
           .then(() => this.updateSettingsService.update({ setup_complete: true }))
-          .catch(err => console.error('Error marking setup_complete', err));
+          .catch(err => console.error('Error updating settings', err));
       },
     },
     // tour
@@ -47,6 +48,7 @@ export class StartupModalsService {
       required: (settings, user) => !user.known && this.tours.length > 0,
       render: () => {
         return this.openTourSelect()
+          .catch(() => {})
           .then(() => this.updateUserService
             .update(this.sessionService.userCtx().name, { known: true })
           )
@@ -70,21 +72,15 @@ export class StartupModalsService {
   }
 
   private openTourSelect() {
-    return this.openModal(TourSelectComponent);
+    return this.modalService.show(TourSelectComponent);
   }
 
   private openGuidedSetup() {
-    return this.openModal(GuidedSetupComponent);
+    return this.modalService.show(GuidedSetupComponent);
   }
 
   private openWelcome() {
-    return this.openModal(WelcomeComponent, { class: 'welcome' });
-  }
-
-  private openModal(modal, config = {class : ''}) {
-    return new Promise(resolve => {
-      this.modalService.show(modal, {...config}, resolve);
-    });
+    return this.modalService.show(WelcomeComponent, { class: 'welcome' });
   }
 
   showStartupModals() {
