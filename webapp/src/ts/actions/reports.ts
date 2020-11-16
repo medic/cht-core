@@ -100,6 +100,13 @@ export class ReportsActions {
     globalActions.setLoadingContent(true);
     this.store.dispatch(Actions.selectAll());
   }
+
+  setSelectMode(value) {
+    return this.store.dispatch(Actions.setSelectMode(value));
+    /*globalActions.setSelectMode(value);
+    globalActions.unsetSelected();
+    $state.go('reports.detail', { id: null });*/
+  }
 }
 /*
 
