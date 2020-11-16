@@ -227,6 +227,23 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
       }
 
+      function openTourSelect() {
+        return Modal({
+          templateUrl: 'templates/modals/tour_select.html',
+          controller: 'TourSelectCtrl',
+          controllerAs: 'tourSelectCtrl',
+        }).catch(() => {}); // modal dismissed is ok
+      }
+
+      function openGuidedSetup() {
+        return Modal({
+          templateUrl: 'templates/modals/guided_setup.html',
+          controller: 'GuidedSetupModalCtrl',
+          controllerAs: 'guidedSetupModalCtrl',
+          size: 'lg',
+        }).catch(() => {}); // modal dismissed is ok
+      }
+
       function deleteDoc(doc) {
         return dispatch((dispatch, getState) => {
           return Modal({
@@ -252,8 +269,8 @@ angular.module('inboxServices').factory('GlobalActions',
         deleteDoc,
         openGuidedSetup,
         openTourSelect,
-        navigationCancel,
         setLoadingSubActionBar,
+        setShowActionBar,
         setUnreadCount,
         updateUnreadCount,
       };
