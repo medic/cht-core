@@ -3,6 +3,7 @@ import { select, Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
 import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -23,6 +24,7 @@ export class ReportsEffects {
     private reportViewModelGeneratorService:ReportViewModelGeneratorService,
     private markReadService:MarkReadService,
     private dbService:DbService,
+    private router:Router,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -162,6 +164,17 @@ export class ReportsEffects {
             this.globalActions.setRightActionBar(model);
           });
       })
+    );
+  }, { dispatch: false });
+
+  setSelectMode = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.setSelectMode),
+      tap(({ payload: { selectMode } }) => {
+        this.globalActions.setSelectMode(selectMode);
+        this.globalActions.unsetSelected();
+        this.router.navigate(['/reports']);
+      }),
     );
   }, { dispatch: false });
 }

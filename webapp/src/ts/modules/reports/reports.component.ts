@@ -74,6 +74,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getFilters),
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getEnketoEditedStatus),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       reportsList,
       selectedReports,
@@ -82,6 +83,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       filters,
       showContent,
       enketoEdited,
+      selectMode,
     ]) => {
       this.reportsList = reportsList;
       this.selectedReports = selectedReports;
@@ -90,6 +92,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.filters = filters;
       this.showContent = showContent;
       this.enketoEdited = enketoEdited;
+      this.selectMode = selectMode;
     });
     this.subscription.add(reduxSubscription);
 
@@ -239,7 +242,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, report) {
-    return report._id + report._rev + report.read;
+    return report._id + report._rev + report.read + report.selected;
   }
 
   private setActionBarData() {
@@ -262,6 +265,36 @@ export class ReportsComponent implements OnInit, OnDestroy {
         this.exportService.export('reports', exportFilters, { humanReadable: true });
       },
     });
+  }
+
+  toggleSelected($event, report) {
+    console.log($event);
+    if (this.selectMode) {
+      $event.preventDefault();
+      $event.stopPropagation();
+      console.log(report);
+    }
+
+    /*$('.inbox').on('click', '#reports-list .content-row', function(e) {
+      if (ctrl.selectMode) {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = $(e.target).closest('li[data-record-id]');
+        const reportId = target.attr('data-record-id');
+        const checkbox = target.find('input[type="checkbox"]');
+        const alreadySelected = _.find(ctrl.selectedReports, { _id: reportId });
+        // timeout so if the user clicked the checkbox it has time to
+        // register before we set it to the correct value.
+        $timeout(function() {
+          checkbox.prop('checked', !alreadySelected);
+          if (!alreadySelected) {
+            ctrl.selectReport(reportId);
+          } else {
+            ctrl.removeSelectedReport(reportId);
+          }
+        });
+      }
+    });*/
   }
 }
 /*
@@ -452,26 +485,7 @@ angular
 
     ctrl.search();
 
-    $('.inbox').on('click', '#reports-list .content-row', function(e) {
-      if (ctrl.selectMode) {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = $(e.target).closest('li[data-record-id]');
-        const reportId = target.attr('data-record-id');
-        const checkbox = target.find('input[type="checkbox"]');
-        const alreadySelected = _.find(ctrl.selectedReports, { _id: reportId });
-        // timeout so if the user clicked the checkbox it has time to
-        // register before we set it to the correct value.
-        $timeout(function() {
-          checkbox.prop('checked', !alreadySelected);
-          if (!alreadySelected) {
-            ctrl.selectReport(reportId);
-          } else {
-            ctrl.removeSelectedReport(reportId);
-          }
-        });
-      }
-    });
+
 
     const syncCheckboxes = function() {
       $('#reports-list li').each(function() {

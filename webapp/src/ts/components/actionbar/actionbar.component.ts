@@ -84,7 +84,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   }
 
   setSelect(selectMode) {
-    this.reportsActions.setSelect(selectMode);
+    this.reportsActions.setSelectMode(selectMode);
   }
 
   selectAll() {

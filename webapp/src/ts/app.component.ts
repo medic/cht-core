@@ -64,11 +64,11 @@ export class AppComponent implements OnInit {
   translationsLoaded;
 
   currentTab = '';
-  showContent = false;
+  showContent;
   privacyPolicyAccepted = true;
   showPrivacyPolicy = false;
-  selectMode = false;
-  minimalTabs = false;
+  selectMode;
+  minimalTabs;
   adminUrl;
   canLogOut = false;
   replicationStatus;
@@ -228,6 +228,7 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       replicationStatus,
       androidAppVersion,
@@ -236,6 +237,7 @@ export class AppComponent implements OnInit {
       showContent,
       privacyPolicyAccepted,
       showPrivacyPolicy,
+      selectMode,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
@@ -244,6 +246,7 @@ export class AppComponent implements OnInit {
       this.showContent = showContent;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.selectMode = selectMode;
       this.changeDetectorRef.detectChanges();
     });
 

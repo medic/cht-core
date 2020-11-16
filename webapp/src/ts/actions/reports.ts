@@ -18,6 +18,7 @@ export const Actions = {
 
   setRightActionBar: createAction('SET_RIGHT_ACTION_BAR_REPORTS'),
   setTitle: createSingleValueAction('SET_REPORTS_TITLE', 'selected'),
+  setSelectMode: createSingleValueAction('SET_REPORTS_SELECT_MODE', 'selectMode'),
 };
 
 export class ReportsActions {
@@ -78,6 +79,13 @@ export class ReportsActions {
     this.store.dispatch(Actions.setSelectedReports([]));
     // setVerifyingReport(false);
     // setCheckboxElements(false);
+  }
+
+  setSelectMode(value) {
+    return this.store.dispatch(Actions.setSelectMode(value));
+    /*globalActions.setSelectMode(value);
+    globalActions.unsetSelected();
+    $state.go('reports.detail', { id: null });*/
   }
 }
 /*

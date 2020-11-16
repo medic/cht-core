@@ -1,6 +1,7 @@
+import { createReducer, on } from '@ngrx/store';
+
 import { Actions } from '@mm-actions/reports';
 import { Actions as GlobalActions } from '@mm-actions/global';
-import { createReducer, on } from '@ngrx/store';
 import { UniqueSortedList } from './utils';
 
 const initialState = {
@@ -11,12 +12,22 @@ const initialState = {
   filters: {},
 };
 
+const isSelected = (state, report) => {
+  return !!state.selected.find(selectedReport => selectedReport._id === report._id);
+};
+
+const setSelected = (state, report) => ({
+  ...report,
+  selected: isSelected(state, report),
+});
+
 const updateReports = (state, newReports) => {
   const reports = [...state.reports];
   const reportsById = new Map(state.reportsById);
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
   newReports.forEach(report => {
+    report = setSelected(state, report);
     list.remove(report);
     list.add(report);
   });
@@ -58,6 +69,23 @@ const _reportsReducer = createReducer(
   on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
 
   on(GlobalActions.clearSelected, (state) => ({ ...state, selected: [] })),
+
+  on(
+    Actions.addSelectedReport,
+    Actions.removeSelectedReport,
+    Actions.setSelectedReports,
+    GlobalActions.clearSelected,
+    (state) => {
+      const reportsById = new Map(state.reportsById);
+      const reports = state.reports.map(report => {
+        report = setSelected(state, report);
+        reportsById.set(report._id, report);
+        return report;
+      });
+
+      return { ...state, reports, reportsById };
+    }
+  ),
 );
 
 export function reportsReducer(state, action) {
