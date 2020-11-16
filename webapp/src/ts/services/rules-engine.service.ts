@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
-import * as CalendarInterval from '@medic/calendar-interval';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
@@ -18,6 +17,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
+import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 
 interface DebounceActive {
   [key: string]: {
@@ -63,7 +63,8 @@ export class RulesEngineService implements OnDestroy {
     private changesService: ChangesService,
     private contactTypesService: ContactTypesService,
     private translateFromService: TranslateFromService,
-    private rulesEngineCoreFactoryService: RulesEngineCoreFactoryService
+    private rulesEngineCoreFactoryService: RulesEngineCoreFactoryService,
+    private calendarIntervalService: CalendarIntervalService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
@@ -328,7 +329,7 @@ export class RulesEngineService implements OnDestroy {
       .then(() => {
         this.telemetryService.record('rules-engine:targets:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
         this.cancelDebounce('targets');
-        const relevantInterval = CalendarInterval.getCurrent(this.uhcMonthStartDate);
+        const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
         return this.rulesEngineCore
           .fetchTargets(relevantInterval)
           .on('queued', telemetryData.queued)

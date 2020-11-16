@@ -1,0 +1,27 @@
+<div class="page" *ngIf="!enabled || loading">
+  <div class="item-content empty-selection disabled" *ngIf="!loading">
+    <div translate>analytics.target.aggregates.disabled</div>
+  </div>
+  <div class="item-content empty-selection" *ngIf="loading">
+    <div>
+      <div class="loader"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page target-aggregates" *ngIf="enabled && !loading">
+  <div id="target-aggregates-list" class="col-sm-4 inbox-items left-pane">
+    <ul>
+      <mm-content-row
+        *ngFor="let aggregate of aggregates"
+        [id]="aggregate.id"
+        [selected]="selected && selected.id === aggregate.id"
+        [icon]="aggregate.icon"
+        [heading]="aggregate.heading"
+        [aggregate]="aggregate.aggregateValue">
+      </mm-content-row>
+    </ul>
+    <p *ngIf="error && !aggregates" class="alert alert-danger" role="alert" translate>analytics.target.aggregates.error</p>
+    <p class="loading-status" *ngIf="!error && !aggregates.length" translate>analytics.target.aggregates.no.targets</p>
+  </div>
+</div>

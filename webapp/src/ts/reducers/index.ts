@@ -3,6 +3,7 @@ import { servicesReducer } from './services';
 import { analyticsReducer } from './analytics';
 import { reportsReducer } from './reports';
 import { messagesReducer } from './messages';
+import { targetAggregatesReducer } from './target-aggregates';
 
 export const reducers = {
   global: globalReducer,
@@ -10,6 +11,7 @@ export const reducers = {
   analytics: analyticsReducer,
   reports: reportsReducer,
   messages: messagesReducer,
+  targetAggregates: targetAggregatesReducer,
 };
 
 /*

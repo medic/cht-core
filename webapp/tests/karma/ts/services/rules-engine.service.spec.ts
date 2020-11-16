@@ -27,7 +27,6 @@ describe('RulesEngineService', () => {
   let userContactService;
   let userSettingsService;
   let changesService;
-  let translateService;
   let translateFromService;
   let rulesEngineCoreStubs;
   let pipesService;
@@ -90,7 +89,6 @@ describe('RulesEngineService', () => {
     sessionService = { isOnlineOnly: sinon.stub().returns(false), userCtx: () => ({ name: 'fred' }) };
     settingsService = { get: sinon.stub().resolves(settingsDoc) };
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };
-    translateService = { instant: sinon.stub().returnsArg(0) };
     userContactService = { get: sinon.stub().resolves(userContactDoc) };
     userSettingsService = { get: sinon.stub().resolves(userSettingsDoc) };
     uhcSettingsService = { getMonthStartDate: sinon.stub().returns(1) };

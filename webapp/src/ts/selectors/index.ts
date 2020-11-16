@@ -6,6 +6,7 @@ const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getAnalyticsState = (state) => state.analytics || {};
+const getTargetAggregatesState = (state) => state.targetAggregates || {};
 
 export const Selectors = {
   // global
@@ -67,6 +68,20 @@ export const Selectors = {
 
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
+
+  // target Aggregates
+  getTargetAggregates: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.targetAggregates
+  ),
+  getSelectedTargetAggregate: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.selected
+  ),
+  getTargetAggregatesError: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.error
+  ),
 };
 /*
 
@@ -112,13 +127,6 @@ const getVerifyingReport = state => getReportsState(state).verifyingReport;
 const getTasksState = state => state.tasks;
 const getSelectedTask = state => getTasksState(state).selected;
 const getLoadTasks = state => getTasksState(state).loaded;
-
-// Target Aggregates
-const getTargetAggregatesState = state => state.targetAggregates;
-const getTargetAggregates = state => getTargetAggregatesState(state).targetAggregates;
-const getSelectedTargetAggregate = state => getTargetAggregatesState(state).selected;
-const getTargetAggregatesError = state => getTargetAggregatesState(state).error;
-
 
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,

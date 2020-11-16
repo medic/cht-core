@@ -25,6 +25,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { ActionbarComponent } from './actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
+import { AnalyticsFilterComponent } from './filters/analytics-filter/analytics-filter.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targ
     ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
+    AnalyticsFilterComponent,
   ],
   imports: [
     CommonModule,
@@ -74,6 +76,7 @@ import { AnalyticsTargetsProgressComponent } from '@mm-components/analytics-targ
     ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
+    AnalyticsFilterComponent,
   ]
 })
 export class ComponentsModule { }
