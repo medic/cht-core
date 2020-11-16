@@ -105,7 +105,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
-    this.modalService.show(SendMessageComponent);
+    this.modalService
+      .show(SendMessageComponent)
+      .catch(() => {});
   }
 
   private setConversations(conversations = [], {merge = false} = {}) {

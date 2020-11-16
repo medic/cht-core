@@ -16,13 +16,15 @@ export class FeedbackComponent extends MmModalAbstract {
   error:{ message? } = {};
   model:{ message? } = {};
 
+  static id = 'feedback';
+
   constructor(
-    public bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private feedbackService: FeedbackService,
     private translateService: TranslateService,
     private store: Store,
   ) {
-    super();
+    super(bsModalRef);
     this.globalActions = new GlobalActions(store);
   }
 
@@ -55,7 +57,7 @@ export class FeedbackComponent extends MmModalAbstract {
           .submit(message, true)
           .then(() => {
             this.setFinished();
-            this.bsModalRef.hide();
+            this.close();
             this.translateService
               .get('feedback.submitted')
               .subscribe(value => this.globalActions.setSnackbarContent(value));
@@ -64,9 +66,5 @@ export class FeedbackComponent extends MmModalAbstract {
             this.setError(err, 'Error saving feedback');
           });
       });
-  }
-
-  cancel() {
-    this.bsModalRef.hide();
   }
 }

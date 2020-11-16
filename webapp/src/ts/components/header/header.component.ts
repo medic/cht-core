@@ -75,7 +75,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openGuidedSetup() {
-    this.modalService.show(GuidedSetupComponent);
+    this.modalService
+      .show(GuidedSetupComponent)
+      .catch(() => {});
   }
 
   openTourSelect() {
@@ -83,11 +85,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openFeedback() {
-    this.modalService.show(FeedbackComponent);
+    this.modalService
+      .show(FeedbackComponent)
+      .catch(() => {});
   }
 
   logout() {
-    this.modalService.show(LogoutConfirmComponent);
+    this.modalService
+      .show(LogoutConfirmComponent)
+      .catch(() => {});
   }
 
   replicate() {
