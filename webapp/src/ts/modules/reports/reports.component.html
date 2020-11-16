@@ -17,6 +17,8 @@
         <mm-content-row
           *ngFor="let report of reportsList; trackBy: listTrackBy"
           (click)="toggleSelected($event, report)"
+          (onClick)="toggleSelected($event, report)"
+
           [id]="report._id"
           route="reports"
           [icon]="report.icon"

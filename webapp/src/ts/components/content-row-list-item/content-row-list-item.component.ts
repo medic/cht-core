@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: '<mm-content-row>',
@@ -57,6 +57,8 @@ export class ContentRowListItemComponent {
   @Input() primary;
   @Input() visits;
   @Input() statusIcon;
+
+  @Output() onClick:EventEmitter<any> = new EventEmitter();
 
   constructor() {}
 }

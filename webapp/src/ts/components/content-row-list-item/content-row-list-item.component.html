@@ -9,7 +9,7 @@
     [class.overdue]="overdue"
     class="content-row"
 >
-  <a [routerLink]="id">
+  <a [routerLink]="id" (click)="onClick?.emit($event)">
     <div><input type="checkbox"></div>
     <div *ngIf="icon" class="icon" [innerHTML]="icon | resourceIcon"></div>
     <div class="content">
