@@ -103,9 +103,16 @@ export class ReportsActions {
 
   setSelectMode(value) {
     return this.store.dispatch(Actions.setSelectMode(value));
-    /*globalActions.setSelectMode(value);
-    globalActions.unsetSelected();
-    $state.go('reports.detail', { id: null });*/
+  }
+
+  updateSelectedReportItem(id, selected) {
+    return this.store.dispatch(Actions.updateSelectedReportItem({ id, selected }));
+  }
+
+  deselectAll() {
+    this.store.dispatch(Actions.setSelectedReports([]));
+    this.setRightActionBar();
+    //setCheckboxElements(false);
   }
 }
 /*
