@@ -16,7 +16,7 @@ export const Actions = {
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
   resetReportsList: createAction('RESET_REPORTS_LIST'),
 
-  setRightActionBar: createAction('SET_RIGHT_ACTION_BAR'),
+  setRightActionBar: createAction('SET_RIGHT_ACTION_BAR_REPORTS'),
   setTitle: createSingleValueAction('SET_REPORTS_TITLE', 'selected'),
 };
 
@@ -35,9 +35,7 @@ export class ReportsActions {
     this.store.dispatch(Actions.removeSelectedReport(id));
     const globalActions = new GlobalActions(this.store);
     globalActions.settingSelected();
-    /*
-     setRightActionBar();
-    */
+    this.setRightActionBar();
   }
 
   setSelectedReports(selected) {
@@ -65,33 +63,7 @@ export class ReportsActions {
   }
 
   setRightActionBar() {
-    // todo
     return this.store.dispatch(Actions.setRightActionBar());
-    /*dispatch(function(dispatch, getState) {
-      const selectMode = Selectors.getSelectMode(getState());
-      const selectedReportsDocs = Selectors.getSelectedReportsDocs(getState());
-      const model = {};
-      const doc =
-        !selectMode &&
-        selectedReportsDocs &&
-        selectedReportsDocs.length === 1 &&
-        selectedReportsDocs[0];
-      if (!doc) {
-        return globalActions.setRightActionBar(model);
-      }
-      model.verified = doc.verified;
-      model.type = doc.content_type;
-      const verifyingReport = Selectors.getVerifyingReport(getState());
-      model.verifyingReport = verifyingReport;
-      if (!doc.contact || !doc.contact._id) {
-        return globalActions.setRightActionBar(model);
-      }
-
-      getContact(doc.contact._id).then(contact => {
-        model.sendTo = contact;
-        globalActions.setRightActionBar(model);
-      });
-    });*/
   }
 
   setTitle(selected) {
@@ -157,13 +129,6 @@ angular.module('inboxServices').factory('ReportsActions',
           payload: { id, selected }
         });
       }
-
-      function getContact(id) {
-        return DB().get(id)
-          // log the error but continue anyway
-          .catch(err => $log.error('Error fetching contact for action bar', err));
-      }
-
 
       function deselectAll() {
         dispatch(() => {

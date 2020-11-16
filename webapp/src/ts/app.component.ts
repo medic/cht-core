@@ -29,6 +29,7 @@ import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { TourService } from '@mm-services/tour.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -76,29 +77,30 @@ export class AppComponent implements OnInit {
 
   constructor (
     private dbSyncService:DBSyncService,
-    private store: Store,
-    private translateService: TranslateService,
-    private translationLoaderService: TranslationLoaderService,
-    private languageService: LanguageService,
-    private setLanguageService: SetLanguageService,
-    private sessionService: SessionService,
-    private authService: AuthService,
-    private resourceIconsService: ResourceIconsService,
-    private changesService: ChangesService,
-    private updateServiceWorker: UpdateServiceWorkerService,
-    private locationService: LocationService,
-    private modalService: ModalService,
+    private store:Store,
+    private translateService:TranslateService,
+    private translationLoaderService:TranslationLoaderService,
+    private languageService:LanguageService,
+    private setLanguageService:SetLanguageService,
+    private sessionService:SessionService,
+    private authService:AuthService,
+    private resourceIconsService:ResourceIconsService,
+    private changesService:ChangesService,
+    private updateServiceWorker:UpdateServiceWorkerService,
+    private locationService:LocationService,
+    private modalService:ModalService,
     private router:Router,
     private feedbackService:FeedbackService,
     private formatDateService:FormatDateService,
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private countMessageService: CountMessageService,
-    private privacyPoliciesService: PrivacyPoliciesService,
-    private startupModalsService: StartupModalsService,
-    private tourService: TourService,
+    private changeDetectorRef:ChangeDetectorRef,
+    private countMessageService:CountMessageService,
+    private privacyPoliciesService:PrivacyPoliciesService,
+    private routeSnapshotService:RouteSnapshotService,
+    private startupModalsService:StartupModalsService,
+    private tourService:TourService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -139,6 +141,8 @@ export class AppComponent implements OnInit {
           this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
+        const data = this.routeSnapshotService.get()?.data;
+        this.globalActions.setSnapshotData(data);
       }
     });
   }
@@ -327,7 +331,8 @@ export class AppComponent implements OnInit {
     });
 
     this.countMessageService.init();
-    this.checkPrivacyPolicy()
+    this
+      .checkPrivacyPolicy()
       .then(({ privacyPolicy, accepted }: any = {}) => {
         if (!privacyPolicy || accepted) {
           // If there is no privacy policy or the user already
@@ -385,13 +390,13 @@ export class AppComponent implements OnInit {
           if (err) {
             return console.error('Error fetching form definitions', err);
           }
-          this.nonContactForms = xForms.map((xForm) => {
-            return {
+          this.nonContactForms = xForms
+            .map((xForm) => ({
               code: xForm.internalId,
               icon: xForm.icon,
               title: translateTitle(xForm.translation_key, xForm.title),
-            };
-          });
+            }))
+            .sort((a, b) => a.title - b.title);
         });
       })
       .catch(err => console.error('Failed to retrieve forms', err));
@@ -400,7 +405,7 @@ export class AppComponent implements OnInit {
   private setAppTitle() {
     this.resourceIconsService.getAppTitle().then(title => {
       document.title = title;
-      (<any>window).$('.header-logo').attr('title', `${title}`);
+      $('.header-logo').attr('title', `${title}`);
     });
   }
 

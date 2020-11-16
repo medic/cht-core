@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap } from 'rxjs/operators';
+import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap } from 'rxjs/operators';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
+import { DbService } from '@mm-services/db.service';
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class ReportsEffects {
     private store:Store,
     private reportViewModelGeneratorService:ReportViewModelGeneratorService,
     private markReadService:MarkReadService,
+    private dbService:DbService,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -122,6 +124,44 @@ export class ReportsEffects {
         }
         return of(this.reportActions.updateReportsList([readReport]));
       }),
+    );
+  }, { dispatch: false });
+
+  setRightActionBar = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.setRightActionBar),
+      withLatestFrom(
+        this.store.select(Selectors.getSelectMode),
+        this.store.select(Selectors.getSelectedReportsDocs),
+        this.store.select(Selectors.getVerifyingReport),
+      ),
+      tap(([, selectMode, selectedReportsDocs, verifyingReport ]) => {
+        const model:any = {};
+        const doc =
+          !selectMode &&
+          selectedReportsDocs &&
+          selectedReportsDocs.length === 1 &&
+          selectedReportsDocs[0];
+        if (!doc) {
+          return this.globalActions.setRightActionBar(model);
+        }
+
+        model.verified = doc.verified;
+        model.type = doc.content_type;
+        model.verifyingReport = verifyingReport;
+
+        if (!doc.contact || !doc.contact._id) {
+          return this.globalActions.setRightActionBar(model);
+        }
+
+        return this.dbService
+          .get()
+          .get(doc.contact._id)
+          .then(contact => {
+            model.sendTo = contact;
+            this.globalActions.setRightActionBar(model);
+          });
+      })
     );
   }, { dispatch: false });
 }
