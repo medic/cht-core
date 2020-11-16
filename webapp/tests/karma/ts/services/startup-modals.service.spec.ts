@@ -15,10 +15,20 @@ describe('StartupModalsService', () => {
 
   let service: StartupModalsService;
   let updateUserService;
-  let modalService;
+  let modalService = {
+    show: function (template, config?, onHide?) {
+      onHide();
+    }
+  };
+  const modalSandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+    modalSandbox.spy(modalService, 'show');
+  });
 
   afterEach(() => {
     sinon.restore();
+    modalSandbox.restore();
   });
 
   function getProviders(toursResult) {
@@ -31,7 +41,7 @@ describe('StartupModalsService', () => {
       { provide: UserSettingsService, useValue: { get: () => ({ name: 'person' }) } },
       { provide: UpdateSettingsService, useValue: { update: sinon.stub().resolves() } },
       { provide: UpdateUserService, useValue: { update: sinon.stub().resolves() } },
-      { provide: ModalService, useValue: { show: sinon.stub() } },
+      { provide: ModalService, useValue: modalService },
       { provide: TourService, useValue: { getTours: sinon.stub().resolves(toursResult) } },
     ];
   }
@@ -50,6 +60,7 @@ describe('StartupModalsService', () => {
       });
       injectService();
       await service.showStartupModals();
+      // @ts-ignore
       expect(modalService.show.callCount).to.equal(0);
       expect(updateUserService.update.callCount).to.equal(0);
     });
@@ -60,6 +71,7 @@ describe('StartupModalsService', () => {
       });
       injectService();
       await service.showStartupModals();
+      // @ts-ignore
       expect(modalService.show.callCount).to.equal(1);
       expect(updateUserService.update.callCount).to.equal(1);
       expect(updateUserService.update.args[0]).to.deep.equal(['no_error', { known: true }]);
