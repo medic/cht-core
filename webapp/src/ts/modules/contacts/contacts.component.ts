@@ -145,6 +145,9 @@ export class ContactsComponent implements OnInit, OnDestroy{
             selected: this.childPlaces.map(type => type.id)
           }
         };
+        // TODO: Not migrated these yet
+        // updateAllowedChildPlaces();
+        // setActionBarData();
         this.search();
       })
       .catch((err) => {
@@ -463,4 +466,23 @@ export class ContactsComponent implements OnInit, OnDestroy{
   listTrackBy(index, contact) {
     return contact._id + contact._rev;
   }
+
+  // const setActionBarData = () => {
+  //   ctrl.setLeftActionBar({
+  //     hasResults: ctrl.hasContacts,
+  //     userFacilityId: usersHomePlace && usersHomePlace._id,
+  //     childPlaces: allowedChildPlaces,
+  //     exportFn: function() {
+  //       Export('contacts', ctrl.filters, { humanReadable: true });
+  //     },
+  //   });
+  // };
+
+  // const updateAllowedChildPlaces = () => {
+  //   XmlForms.listen('ContactsListCtrl',{ contactForms: true }, (err, forms) => {
+  //     const allowCreateLink = contactType => forms && forms.find(form => form._id === contactType.create_form);
+  //     allowedChildPlaces = childPlaces.filter(allowCreateLink);
+  //     setActionBarData();
+  //   });
+  // };
 }

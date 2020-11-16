@@ -8,7 +8,8 @@ const initialState = {
   selected: [],
   filters: {},
   loadingSelectedChildren: false,
-  loadingSelectedcontacts: false,
+  loadingSelectedContacts: false,
+  // loadingSelectedReports: false,
   loadingSummary: false,
 };
 

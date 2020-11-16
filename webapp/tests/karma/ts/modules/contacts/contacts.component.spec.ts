@@ -135,6 +135,74 @@ describe('Contacts component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
+  // describe('sets left actionBar', () => {
+  //   it('when user has facility_id', () => {
+  //     const ctrl = createController();
+  //     return ctrl
+  //       .getSetupPromiseForTesting()
+  //       .then(() => {
+  //         assert(ctrl.setLeftActionBar.called, 'left actionBar should be set');
+  //         const actionBarArgs = ctrl.setLeftActionBar.getCall(0).args[0];
+  //         assert.equal(actionBarArgs.userFacilityId, district._id);
+  //       });
+  //   });
+
+  //   it(`when user doesn't have facility_id`, () => {
+  //     userSettings = KarmaUtils.promiseService(null, {});
+  //     getDataRecords = KarmaUtils.promiseService();
+  //     const ctrl = createController();
+  //     return ctrl
+  //       .getSetupPromiseForTesting()
+  //       .then(() => {
+  //         assert(ctrl.setLeftActionBar.called);
+  //       });
+  //   });
+
+  //   it('should filter contact types to allowed ones', () => {
+  //     contactTypes.getChildren.resolves([
+  //       {
+  //         id: 'type1',
+  //         create_form: 'form:contact:create:type1',
+  //       },
+  //       {
+  //         id: 'type2',
+  //         create_form: 'form:contact:create:type2',
+  //       },
+  //       {
+  //         id: 'type3',
+  //         create_form: 'form:contact:create:type3',
+  //       },
+  //     ]);
+  //     const forms = [
+  //       { _id: 'form:contact:create:type3' },
+  //       { _id: 'form:contact:create:type2' },
+  //     ];
+  //     xmlForms.listen.callsArgWith(2, null, forms);
+
+  //     const ctrl = createController();
+  //     return ctrl
+  //       .getSetupPromiseForTesting()
+  //       .then(() => {
+  //         assert.equal(xmlForms.listen.callCount, 1);
+  //         assert.deepEqual(xmlForms.listen.args[0][1], { contactForms: true });
+  //         assert.deepEqual(ctrl.setLeftActionBar.args[0][0].childPlaces, [
+  //           {
+  //             id: 'type2',
+  //             create_form: 'form:contact:create:type2',
+  //           },
+  //           {
+  //             id: 'type3',
+  //             create_form: 'form:contact:create:type3',
+  //           },
+  //         ]);
+
+  //         //search still searches with all types
+  //         assert.deepEqual(searchService.args[0][1], { types: { selected: ['type1', 'type2', 'type3'] } });
+  //       });
+  //   });
+
+  // });
+
   describe('Search', () => {
     it('Puts the home place at the top of the list', fakeAsync(() => {
       searchResults = [
