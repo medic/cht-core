@@ -29,7 +29,7 @@ export class StartupModalsService {
     {
       required: settings => !settings.setup_complete,
       render: () => {
-        return this.openWelcome()
+        return this.modalService.show(WelcomeComponent, { class: 'welcome' })
           .catch(() => {});
       },
     },
@@ -37,7 +37,7 @@ export class StartupModalsService {
     {
       required: settings => !settings.setup_complete,
       render: () => {
-        return this.openGuidedSetup()
+        return this.modalService.show(GuidedSetupComponent)
           .catch(() => {})
           .then(() => this.updateSettingsService.update({ setup_complete: true }))
           .catch(err => console.error('Error updating settings', err));
@@ -47,7 +47,7 @@ export class StartupModalsService {
     {
       required: (settings, user) => !user.known && this.tours.length > 0,
       render: () => {
-        return this.openTourSelect()
+        return this.modalService.show(TourSelectComponent)
           .catch(() => {})
           .then(() => this.updateUserService
             .update(this.sessionService.userCtx().name, { known: true })
@@ -69,18 +69,6 @@ export class StartupModalsService {
     this.initialized = this.tourService.getTours().then(tours => {
       this.tours = tours;
     });
-  }
-
-  private openTourSelect() {
-    return this.modalService.show(TourSelectComponent);
-  }
-
-  private openGuidedSetup() {
-    return this.modalService.show(GuidedSetupComponent);
-  }
-
-  private openWelcome() {
-    return this.modalService.show(WelcomeComponent, { class: 'welcome' });
   }
 
   showStartupModals() {
