@@ -270,7 +270,6 @@ angular.module('inboxServices').factory('GlobalActions',
         openGuidedSetup,
         openTourSelect,
         setLoadingSubActionBar,
-        setShowActionBar,
         setUnreadCount,
         updateUnreadCount,
       };
