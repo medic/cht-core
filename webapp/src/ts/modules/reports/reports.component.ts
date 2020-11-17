@@ -16,8 +16,6 @@ import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
-import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 const PAGE_SIZE = 50;
 

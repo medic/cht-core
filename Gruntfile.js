@@ -614,8 +614,9 @@ module.exports = function(grunt) {
       },
       'watch-webapp': {
         cmd: () => {
+          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
           return `
-            cd webapp && ../node_modules/.bin/ng build --configuration=development --watch=true & 
+            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
             cd ../
           `;
         },
