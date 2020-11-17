@@ -92,8 +92,8 @@ export class GlobalActions {
     // I can't see a reason for this, maybe it's because of the actionbar?
     // Test if the actionbar appears before the content is loaded, we might need to refactor this action into two
     // actions that are called from the component and use lifecycle hooks
-    this.store.dispatch(Actions.setShowContent(true));
-    this.store.dispatch(Actions.setShowActionBar(true));
+    this.setShowContent(true);
+    this.setShowActionBar(true);
   }
 
   clearFilters() {

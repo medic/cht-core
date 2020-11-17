@@ -270,9 +270,16 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   toggleSelected(report) {
+    if (!report?._id) {
+      return;
+    }
+
     if (this.selectMode) {
-      const isSelected = this.selectedReports.find(selectedReport => selectedReport._id === report._id);
+      const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
       if (!isSelected) {
+        // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
+        // the selectReport action will actually get all details
+        this.reportsActions.addSelectedReport(report);
         this.reportsActions.selectReport(report);
       } else {
         this.reportsActions.removeSelectedReport(report);
