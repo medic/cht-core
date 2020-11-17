@@ -587,20 +587,18 @@ export class TourService {
     }
     const tour = this.getTour(name);
     const route = tour && tour.route;
-    setTimeout(() => {
-      if (this.router.isActive(route, false)) {
-        this.createTour(name);
+    if (this.router.isActive(route, false)) {
+      this.createTour(name);
+    } else {
+      // navigate to the correct page
+      if (route) {
+        this.router.navigate([route], { queryParams: { tour: name } });
       } else {
-        // navigate to the correct page
-        if (route) {
-          this.router.navigate([route], { queryParams: { tour: name } });
-        } else {
-          const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;
-          this.feedbackService.submit(message).catch(err => {
-            console.error('Error saving feedback', err);
-          });
-        }
+        const message = `Attempt to navigate to an undefined state [Tour.start("${name}")]`;
+        this.feedbackService.submit(message).catch(err => {
+          console.error('Error saving feedback', err);
+        });
       }
-    });
+    }
   }
 }
