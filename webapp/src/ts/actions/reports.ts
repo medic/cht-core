@@ -112,7 +112,12 @@ export class ReportsActions {
   deselectAll() {
     this.store.dispatch(Actions.setSelectedReports([]));
     this.setRightActionBar();
-    //setCheckboxElements(false);
+  }
+
+  selectAll() {
+    const globalActions = new GlobalActions(this.store);
+    globalActions.setLoadingContent(true);
+    this.store.dispatch(Actions.selectAll());
   }
 }
 /*
