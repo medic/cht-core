@@ -33,7 +33,7 @@
           <span [innerHTML]="aggregate.summary | safeHtml"></span>
         </div>
       </div>
-      <div class="summary">
+      <div *ngIf="summary" class="summary">
         <p [innerHTML]="summary | safeHtml"></p>
         <div *ngIf="!valid || verified !== undefined" class="status">
           <span [class.verified]="valid && verified" [class.error]="!(valid && verified)" class="verification-badge">

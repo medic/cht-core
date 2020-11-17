@@ -102,12 +102,12 @@ export class TargetAggregatesService {
     if (target.translation_key) {
       return this.translateService.instant(target.translation_key);
     }
-    console.log('hola', target);
+
     return this.translateFromService.get(target.title);
   }
 
   private getAggregate(targetConfig) {
-    const aggregate = targetConfig;
+    const aggregate = { ...targetConfig };
 
     aggregate.values = [];
     aggregate.hasGoal = targetConfig.goal > 0;
