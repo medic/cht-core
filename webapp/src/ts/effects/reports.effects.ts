@@ -11,6 +11,7 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { DbService } from '@mm-services/db.service';
+import { SearchService } from '@mm-services/search.service';
 
 
 @Injectable()
@@ -25,6 +26,7 @@ export class ReportsEffects {
     private markReadService:MarkReadService,
     private dbService:DbService,
     private router:Router,
+    private searchService:SearchService,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -174,6 +176,34 @@ export class ReportsEffects {
         this.globalActions.setSelectMode(selectMode);
         this.globalActions.unsetSelected();
         this.router.navigate(['/reports']);
+      }),
+    );
+  }, { dispatch: false });
+
+  selectAll = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.selectAll),
+      withLatestFrom(this.store.select(Selectors.getFilters)),
+      tap(([,filters]) => {
+        return this.searchService
+          .search('reports', filters, { limit: 500, hydrateContactNames: true })
+          .then((summaries) => {
+            const selected = summaries.map(summary => {
+              return {
+                _id: summary._id,
+                summary: summary,
+                expanded: false,
+                lineage: summary.lineage,
+                contact: summary.contact,
+              };
+            });
+            this.reportActions.setSelectedReports(selected);
+            this.globalActions.settingSelected(true);
+            this.reportActions.setRightActionBar();
+          })
+          .catch(err => {
+            console.error('Error selecting all', err);
+          });
       }),
     );
   }, { dispatch: false });

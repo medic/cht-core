@@ -113,6 +113,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
     this.subscription.add(dbSubscription);
     this.reportsActions.setSelectedReports([]);
+    this.reportsActions.setSelectMode(false);
     this.appending = false;
     this.error = false;
     this.verifyingReport = false;
@@ -271,7 +272,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     if (this.selectMode) {
       const isSelected = this.selectedReports.find(selectedReport => selectedReport._id === report._id);
       if (!isSelected) {
-        this.reportsActions.addSelectedReport(report);
+        this.reportsActions.selectReport(report);
       } else {
         this.reportsActions.removeSelectedReport(report);
       }
@@ -279,27 +280,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate(['/reports', report._id]);
-
-    /*$('.inbox').on('click', '#reports-list .content-row', function(e) {
-      if (ctrl.selectMode) {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = $(e.target).closest('li[data-record-id]');
-        const reportId = target.attr('data-record-id');
-        const checkbox = target.find('input[type="checkbox"]');
-        const alreadySelected = _.find(ctrl.selectedReports, { _id: reportId });
-        // timeout so if the user clicked the checkbox it has time to
-        // register before we set it to the correct value.
-        $timeout(function() {
-          checkbox.prop('checked', !alreadySelected);
-          if (!alreadySelected) {
-            ctrl.selectReport(reportId);
-          } else {
-            ctrl.removeSelectedReport(reportId);
-          }
-        });
-      }
-    });*/
   }
 }
 /*
@@ -353,9 +333,6 @@ angular
     // where the summary is the data required for the collapsed view,
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
-
-
-
 
 
     const updateLiveList = function(updated) {

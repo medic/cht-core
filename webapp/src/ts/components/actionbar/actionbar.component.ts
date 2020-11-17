@@ -6,7 +6,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
-import { ActivatedRoute } from '@angular/router';
+import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 
 @Component({
   selector: 'mm-actionbar',
@@ -29,16 +29,12 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   loadingSubActionBar;
   selectedContactDoc;
 
-  routeSnapshot;
-
   constructor(
     private store: Store,
     private modalService: ModalService,
-    private route:ActivatedRoute,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
-    this.routeSnapshot = this.route.snapshot;
   }
 
   ngOnInit(): void {
@@ -122,11 +118,9 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       return;
     }
 
-    /* ToDo: Display modal once delete feature is ready in Reports
-     this.modalService.show(BulkDeleteConfirmComponent, {
-     initialState: { docs }
-     });
-     */
+    this.modalService
+      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs } } })
+      .catch(() => {});
   }
 
   trackByForms(idx, form) {

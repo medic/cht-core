@@ -20,6 +20,7 @@ export const Actions = {
   setRightActionBar: createAction('SET_RIGHT_ACTION_BAR_REPORTS'),
   setTitle: createSingleValueAction('SET_REPORTS_TITLE', 'selected'),
   setSelectMode: createSingleValueAction('SET_REPORTS_SELECT_MODE', 'selectMode'),
+  selectAll: createAction('SELECT_ALL_REPORTS'),
 };
 
 export class ReportsActions {
@@ -93,7 +94,12 @@ export class ReportsActions {
   deselectAll() {
     this.store.dispatch(Actions.setSelectedReports([]));
     this.setRightActionBar();
-    //setCheckboxElements(false);
+  }
+
+  selectAll() {
+    const globalActions = new GlobalActions(this.store);
+    globalActions.setLoadingContent(true);
+    this.store.dispatch(Actions.selectAll());
   }
 }
 /*
