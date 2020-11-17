@@ -1,6 +1,13 @@
-describe('DeleteDocs service', function() {
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect, assert } from 'chai';
 
-  'use strict';
+import { DbService } from '@mm-services/db.service';
+import { SessionService } from '@mm-services/session.service';
+import { ChangesService } from '@mm-services/changes.service';
+import { DeleteDocsService } from '@mm-services/delete-docs.service';
+
+describe('DeleteDocs service', () => {
 
   let service;
   let get;
@@ -8,47 +15,44 @@ describe('DeleteDocs service', function() {
   let isOnlineOnly;
   let server;
 
-  beforeEach(function() {
+  beforeEach(() => {
     get = sinon.stub();
     bulkDocs = sinon.stub();
     isOnlineOnly = sinon.stub().returns(false);
-    module('inboxApp');
     const Changes = () => undefined;
     Changes.killWatchers = () => undefined;
 
-    module(function ($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('Session', { isOnlineOnly: isOnlineOnly });
-      $provide.value('Changes', Changes);
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: () => ({ bulkDocs, get }) } },
+        { provide: SessionService, useValue: { isOnlineOnly } },
+        { provide: ChangesService, useValue: Changes },
+      ]
     });
-    inject(function(_DeleteDocs_) {
-      service = _DeleteDocs_;
-    });
+    service = TestBed.inject(DeleteDocsService);
+
     server = sinon.fakeServer.create();
     server.respondImmediately = true;
   });
 
-  afterEach(function() {
-    KarmaUtils.restore(get, bulkDocs);
+  afterEach(() => {
+    sinon.restore();
     server.restore();
   });
 
-  it('returns bulkDocs errors', function(done) {
-    bulkDocs.returns(Promise.reject('errcode2'));
-    service({ _id: 'xyz' })
-      .then(function() {
-        done('expected error to be thrown');
-      })
-      .catch(function(err) {
-        chai.expect(get.callCount).to.equal(0);
-        chai.expect(bulkDocs.callCount).to.equal(1);
-        chai.expect(err).to.equal('errcode2');
-        done();
+  it('returns bulkDocs errors', () => {
+    bulkDocs.rejects('errcode2');
+    return service
+      .delete({ _id: 'xyz' })
+      .then(() => assert.fail('expected error to be thrown'))
+      .catch((err) => {
+        expect(get.callCount).to.equal(0);
+        expect(bulkDocs.callCount).to.equal(1);
+        expect(err.name).to.equal('errcode2');
       });
   });
 
-  it('throws if silent errors in bulkDocs', function(done) {
+  it('throws if silent errors in bulkDocs', () => {
     const clinic = {
       _id: 'b',
       type: 'clinic',
@@ -66,24 +70,26 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve(
+    get.resolves(clinic);
+    bulkDocs.resolves(
       // person is not deleted, but clinic is edited just fine. Oops.
       [
         { id: person._id, error:'conflict' },
         { id: clinic._id }
       ]
-    ));
-    service(person)
-      .then(function() {
-        done('expected error to be thrown');
+    );
+    return service
+      .delete(person)
+      .then(() => {
+        assert.fail('expected error to be thrown');
       })
-      .catch(function() {
-        done();
+      .catch((err) => {
+        console.log(err);
+        expect(err).to.be.ok;
       });
   });
 
-  it('does not allow deleting child and parent that will conflict', function(done) {
+  it('does not allow deleting child and parent that will conflict', () => {
     const clinic = {
       _id: 'b',
       type: 'clinic',
@@ -100,18 +106,19 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    get.returns(Promise.resolve(clinic));
-    service([ person, clinic ])
-      .then(function() {
-        done(new Error('expected error to be thrown'));
+    get.resolves(clinic);
+    return service
+      .delete([ person, clinic ])
+      .then(() => {
+        assert.fail('expected error to be thrown');
       })
-      .catch(function() {
-        done();
+      .catch((err) => {
+        expect(err).to.be.ok;
       });
   });
 
   it('marks the record deleted', function() {
-    bulkDocs.returns(Promise.resolve([]));
+    bulkDocs.resolves([]);
     const record = {
       _id: 'xyz',
       _rev: '123',
@@ -123,15 +130,15 @@ describe('DeleteDocs service', function() {
       type: 'data_record',
       _deleted: true
     };
-    return service(record).then(function() {
-      chai.expect(get.callCount).to.equal(0);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0][0]).to.deep.equal(expected);
+    return service.delete(record).then(function() {
+      expect(get.callCount).to.equal(0);
+      expect(bulkDocs.callCount).to.equal(1);
+      expect(bulkDocs.args[0][0][0]).to.deep.equal(expected);
     });
   });
 
-  it('marks multiple records deleted', function() {
-    bulkDocs.returns(Promise.resolve([]));
+  it('marks multiple records deleted', () => {
+    bulkDocs.resolves([]);
     const record1 = {
       _id: 'xyz',
       _rev: '123',
@@ -154,51 +161,51 @@ describe('DeleteDocs service', function() {
       type: 'data_record',
       _deleted: true
     };
-    return service([ record1, record2 ]).then(function() {
-      chai.expect(get.callCount).to.equal(0);
-      chai.expect(bulkDocs.callCount).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(2);
-      chai.expect(bulkDocs.args[0][0][0]).to.deep.equal(expected1);
-      chai.expect(bulkDocs.args[0][0][1]).to.deep.equal(expected2);
+    return service.delete([ record1, record2 ]).then(() => {
+      expect(get.callCount).to.equal(0);
+      expect(bulkDocs.callCount).to.equal(1);
+      expect(bulkDocs.args[0][0].length).to.equal(2);
+      expect(bulkDocs.args[0][0][0]).to.deep.equal(expected1);
+      expect(bulkDocs.args[0][0][1]).to.deep.equal(expected2);
     });
   });
 
-  it('sends a direct request to the server when user is an admin', function() {
+  it('sends a direct request to the server when user is an admin', () => {
     const record1 = { _id: 'xyz', _rev: '1' };
     const record2 = { _id: 'abc', _rev: '1' };
     const expected1 = { _id: 'xyz' };
     const expected2 = { _id: 'abc' };
     server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
     isOnlineOnly.returns(true);
-    return service([ record1, record2 ]).then(function() {
-      chai.expect(server.requests).to.have.lengthOf(1);
-      chai.expect(server.requests[0].url).to.equal('/api/v1/bulk-delete');
-      chai.expect(server.requests[0].requestBody).to.equal(JSON.stringify({
+    return service.delete([ record1, record2 ]).then(() => {
+      expect(server.requests).to.have.lengthOf(1);
+      expect(server.requests[0].url).to.equal('/api/v1/bulk-delete');
+      expect(server.requests[0].requestBody).to.equal(JSON.stringify({
         docs: [expected1, expected2]
       }));
-      chai.expect(bulkDocs.callCount).to.equal(0);
+      expect(bulkDocs.callCount).to.equal(0);
     });
   });
 
-  it('fires the progress event handler on progress events', function(done) {
+  it('fires the progress event handler on progress events', () => {
     const record1 = { _id: 'xyz' };
     const record2 = { _id: 'abc' };
     const onProgress = sinon.spy();
     const response = '[[{"ok": true}, {"ok": true}],';
     server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
     isOnlineOnly.returns(true);
-    service([ record1, record2 ], { progress: onProgress })
+    return service
+      .delete([ record1, record2 ], { progress: onProgress })
       .then(() => {
-        done(Error('Should have thrown')); // The onload handler should throw an error due to partial json
+        assert.fail('Should have thrown'); // The onload handler should throw an error due to partial json
       })
-      .catch(function() {
-        chai.expect(onProgress.callCount).to.equal(1);
-        chai.expect(onProgress.getCall(0).args[0]).to.equal(2);
-        done();
+      .catch(() => {
+        expect(onProgress.callCount).to.equal(1);
+        expect(onProgress.getCall(0).args[0]).to.equal(2);
       });
   });
 
-  it('does not modify the given array - #2417', function() {
+  it('does not modify the given array - #2417', () => {
     const clinic = {
       _id: 'b',
       type: 'clinic',
@@ -216,15 +223,15 @@ describe('DeleteDocs service', function() {
       }
     };
     const docs = [ person ];
-    get.returns(Promise.resolve(clinic));
-    bulkDocs.returns(Promise.resolve([]));
-    return service(docs).then(function() {
-      chai.expect(docs.length).to.equal(1);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(2);
+    get.resolves(clinic);
+    bulkDocs.resolves([]);
+    return service.delete(docs).then(() => {
+      expect(docs.length).to.equal(1);
+      expect(bulkDocs.args[0][0].length).to.equal(2);
     });
   });
 
-  it('minifies lineage for circular referenced report #4076', function() {
+  it('minifies lineage for circular referenced report #4076', () => {
     const clinic = {
       _id: 'b',
       type: 'clinic',
@@ -247,7 +254,7 @@ describe('DeleteDocs service', function() {
     };
 
     const docs = [ report ];
-    bulkDocs.returns(Promise.resolve([]));
+    bulkDocs.resolves([]);
     let isCircularBefore = false;
     let isCircularAfter = false;
     try {
@@ -258,9 +265,9 @@ describe('DeleteDocs service', function() {
       }
     }
 
-    return service(docs).then(function() {
-      chai.expect(docs.length).to.equal(1);
-      chai.expect(isCircularBefore).to.equal(true);
+    return service.delete(docs).then(() => {
+      expect(docs.length).to.equal(1);
+      expect(isCircularBefore).to.equal(true);
       try {
         JSON.stringify(bulkDocs.args[0][0][0]);
       } catch (e) {
@@ -268,8 +275,8 @@ describe('DeleteDocs service', function() {
           isCircularAfter = true;
         }
       }
-      chai.expect(isCircularAfter).to.equal(false);
-      chai.expect(bulkDocs.args[0][0].length).to.equal(1);
+      expect(isCircularAfter).to.equal(false);
+      expect(bulkDocs.args[0][0].length).to.equal(1);
     });
   });
 });

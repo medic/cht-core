@@ -134,6 +134,16 @@ export class ReportsEffects {
     );
   }, { dispatch: false });
 
+  private getContact(id) {
+    return this.dbService
+      .get()
+      .get(id)
+      .catch(err => {
+        // log the error but continue anyway
+        console.error('Error fetching contact for action bar', err);
+      });
+  }
+
   setRightActionBar = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.setRightActionBar),
@@ -162,13 +172,12 @@ export class ReportsEffects {
             .catch(() => {});
         };
 
-        if (!doc.contact || !doc.contact._id) {
+        if (!doc.contact?._id) {
           return this.globalActions.setRightActionBar(model);
         }
 
-        return this.dbService
-          .get()
-          .get(doc.contact._id)
+        return this
+          .getContact(doc.contact._id)
           .then(contact => {
             model.sendTo = contact;
             this.globalActions.setRightActionBar(model);
@@ -198,11 +207,11 @@ export class ReportsEffects {
           .then((summaries) => {
             const selected = summaries.map(summary => {
               return {
-                _id: summary._id,
+                _id: summary?._id,
                 summary: summary,
                 expanded: false,
-                lineage: summary.lineage,
-                contact: summary.contact,
+                lineage: summary?.lineage,
+                contact: summary?.contact,
               };
             });
             this.reportActions.setSelectedReports(selected);

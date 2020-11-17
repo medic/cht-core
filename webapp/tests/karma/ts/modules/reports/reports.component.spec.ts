@@ -110,9 +110,13 @@ describe('Reports Component', () => {
   it('listTrackBy() should return unique identifier', () => {
     const report = { _id: 'report', _rev: 'the rev', read: true, some: 'data', fields: {} };
     const otherReport = { _id: 'report2', _rev: 'the other rev', read: false, some: 'otherdata', fields: {} };
+    const unselected = { _id: 'theid', _rev: 'rev', read: true, selected: false };
+    const selected = { _id: 'selected', _rev: 'rv', read: false, selected: true };
 
-    expect(component.listTrackBy(0, report)).to.equal('reportthe revtrue');
-    expect(component.listTrackBy(1, otherReport)).to.equal('report2the other revfalse');
+    expect(component.listTrackBy(0, report)).to.equal('reportthe revtrueundefined');
+    expect(component.listTrackBy(1, otherReport)).to.equal('report2the other revfalseundefined');
+    expect(component.listTrackBy(2, unselected)).to.equal('theidrevtruefalse');
+    expect(component.listTrackBy(3, selected)).to.equal('selectedrvfalsetrue');
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {

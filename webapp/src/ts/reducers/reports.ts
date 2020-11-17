@@ -13,7 +13,7 @@ const initialState = {
 };
 
 const isSelected = (state, report) => {
-  return !!state.selected.find(selectedReport => selectedReport._id === report._id);
+  return !!state.selected?.find(selectedReport => selectedReport._id === report._id);
 };
 
 const setSelected = (state, report) => ({

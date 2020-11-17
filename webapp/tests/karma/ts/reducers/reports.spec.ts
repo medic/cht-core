@@ -31,20 +31,20 @@ describe('Reports Reducer', () => {
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
-          { _id: 'r6', reported_date: 1000, form: 'form', other: 'data' },
-          { _id: 'r5', reported_date: 500, form: 'form2', other: 'data' },
-          { _id: 'r1', reported_date: 200, form: 'form1', other: 'data' },
-          { _id: 'r2', reported_date: 100, form: 'form2', other: 'data' },
-          { _id: 'r3', reported_date: 80, form: 'form', other: 'data' },
-          { _id: 'r4', reported_date: 10, form: 'form3', other: 'data' },
+          { _id: 'r6', reported_date: 1000, form: 'form', other: 'data', selected: false },
+          { _id: 'r5', reported_date: 500, form: 'form2', other: 'data', selected: false },
+          { _id: 'r1', reported_date: 200, form: 'form1', other: 'data', selected: false },
+          { _id: 'r2', reported_date: 100, form: 'form2', other: 'data', selected: false },
+          { _id: 'r3', reported_date: 80, form: 'form', other: 'data', selected: false },
+          { _id: 'r4', reported_date: 10, form: 'form3', other: 'data', selected: false },
         ],
         reportsById: new Map([
-          ['r1', { _id: 'r1', reported_date: 200, form: 'form1', other: 'data' }],
-          ['r2', { _id: 'r2', reported_date: 100, form: 'form2', other: 'data' }],
-          ['r3', { _id: 'r3', reported_date: 80, form: 'form', other: 'data' }],
-          ['r4', { _id: 'r4', reported_date: 10, form: 'form3', other: 'data' }],
-          ['r5', { _id: 'r5', reported_date: 500, form: 'form2', other: 'data' }],
-          ['r6', { _id: 'r6', reported_date: 1000, form: 'form', other: 'data' }],
+          ['r1', { _id: 'r1', reported_date: 200, form: 'form1', other: 'data', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 100, form: 'form2', other: 'data', selected: false }],
+          ['r3', { _id: 'r3', reported_date: 80, form: 'form', other: 'data', selected: false }],
+          ['r4', { _id: 'r4', reported_date: 10, form: 'form3', other: 'data', selected: false }],
+          ['r5', { _id: 'r5', reported_date: 500, form: 'form2', other: 'data', selected: false }],
+          ['r6', { _id: 'r6', reported_date: 1000, form: 'form', other: 'data', selected: false }],
         ]),
         selected: [],
         verifyingReport: false,
@@ -55,14 +55,14 @@ describe('Reports Reducer', () => {
     it('should add new reports', () => {
       state = {
         reports: [
-          { _id: 'r1', reported_date: 1000, form: 'form' },
-          { _id: 'r2', reported_date: 500, form: 'form2' },
-          { _id: 'r3', reported_date: 200, form: 'form1' },
+          { _id: 'r1', reported_date: 1000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: false },
+          { _id: 'r3', reported_date: 200, form: 'form1', selected: false },
         ],
         reportsById: new Map([
-          ['r1', { _id: 'r1', reported_date: 1000, form: 'form' }],
-          ['r2', { _id: 'r2', reported_date: 500, form: 'form2' }],
-          ['r3', { _id: 'r3', reported_date: 200, form: 'form1' }],
+          ['r1', { _id: 'r1', reported_date: 1000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: false }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: false }],
         ]),
       };
 
@@ -76,20 +76,20 @@ describe('Reports Reducer', () => {
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
-          { _id: 'r4', reported_date: 2000 },
-          { _id: 'r1', reported_date: 1000, form: 'form' },
-          { _id: 'r2', reported_date: 500, form: 'form2' },
-          { _id: 'r6', reported_date: 300 },
-          { _id: 'r3', reported_date: 200, form: 'form1' },
-          { _id: 'r5', reported_date: 100 },
+          { _id: 'r4', reported_date: 2000, selected: false },
+          { _id: 'r1', reported_date: 1000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: false },
+          { _id: 'r6', reported_date: 300, selected: false },
+          { _id: 'r3', reported_date: 200, form: 'form1', selected: false },
+          { _id: 'r5', reported_date: 100, selected: false },
         ],
         reportsById: new Map([
-          ['r1', { _id: 'r1', reported_date: 1000, form: 'form' }],
-          ['r2', { _id: 'r2', reported_date: 500, form: 'form2' }],
-          ['r3', { _id: 'r3', reported_date: 200, form: 'form1' }],
-          ['r4', { _id: 'r4', reported_date: 2000 }],
-          ['r5', { _id: 'r5', reported_date: 100 }],
-          ['r6', { _id: 'r6', reported_date: 300 }],
+          ['r1', { _id: 'r1', reported_date: 1000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: false }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: false }],
+          ['r4', { _id: 'r4', reported_date: 2000, selected: false }],
+          ['r5', { _id: 'r5', reported_date: 100, selected: false }],
+          ['r6', { _id: 'r6', reported_date: 300, selected: false }],
         ]),
       });
     });
@@ -97,14 +97,14 @@ describe('Reports Reducer', () => {
     it('should update existent reports', () => {
       state = {
         reports: [
-          { _id: 'r1', reported_date: 1000, form: 'form' },
-          { _id: 'r2', reported_date: 500, form: 'form2' },
-          { _id: 'r3', reported_date: 200, form: 'form1' },
+          { _id: 'r1', reported_date: 1000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: false },
+          { _id: 'r3', reported_date: 200, form: 'form1', selected: false },
         ],
         reportsById: new Map([
-          ['r1', { _id: 'r1', reported_date: 1000, form: 'form' }],
-          ['r2', { _id: 'r2', reported_date: 500, form: 'form2' }],
-          ['r3', { _id: 'r3', reported_date: 200, form: 'form1' }],
+          ['r1', { _id: 'r1', reported_date: 1000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: false }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: false }],
         ]),
       };
 
@@ -118,16 +118,16 @@ describe('Reports Reducer', () => {
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
-          { _id: 'r1', reported_date: 2000, form: 'form' },
-          { _id: 'r2', reported_date: 500, form: 'form2' },
-          { _id: 'r5', reported_date: 300 },
-          { _id: 'r3', reported_date: 200, form: 'otherform' },
+          { _id: 'r1', reported_date: 2000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: false },
+          { _id: 'r5', reported_date: 300, selected: false },
+          { _id: 'r3', reported_date: 200, form: 'otherform', selected: false },
         ],
         reportsById: new Map([
-          ['r1', { _id: 'r1', reported_date: 2000, form: 'form' }],
-          ['r2', { _id: 'r2', reported_date: 500, form: 'form2' }],
-          ['r3', { _id: 'r3', reported_date: 200, form: 'otherform' }],
-          ['r5', { _id: 'r5', reported_date: 300 }],
+          ['r1', { _id: 'r1', reported_date: 2000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: false }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'otherform', selected: false }],
+          ['r5', { _id: 'r5', reported_date: 300, selected: false }],
         ]),
       });
     });
