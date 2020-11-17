@@ -80,7 +80,6 @@ export class ReportsActions {
   clearSelection() {
     this.store.dispatch(Actions.setSelectedReports([]));
     // setVerifyingReport(false);
-    // setCheckboxElements(false);
   }
 
   setSelectMode(value) {
@@ -144,32 +143,6 @@ angular.module('inboxServices').factory('ReportsActions',
           const verifyingReport = Selectors.getVerifyingReport(getState());
           setVerifyingReport(!verifyingReport);
           setRightActionBar();
-        });
-      }
-
-
-
-      function selectAll() {
-        dispatch((dispatch, getState) => {
-          globalActions.setLoadingShowContent(true);
-          const filters = Selectors.getFilters(getState());
-          Search('reports', filters, { limit: 500, hydrateContactNames: true })
-            .then(summaries => {
-              const selected = summaries.map(summary => {
-                return {
-                  _id: summary._id,
-                  summary: summary,
-                  expanded: false,
-                  lineage: summary.lineage,
-                  contact: summary.contact,
-                };
-              });
-              setSelectedReports(selected);
-              globalActions.settingSelected(true);
-              setRightActionBar();
-              setCheckboxElements(true);
-            })
-            .catch(err => $log.error('Error selecting all', err));
         });
       }
 
@@ -278,23 +251,11 @@ angular.module('inboxServices').factory('ReportsActions',
       };
 
       return {
-        addSelectedReport,
-        clearSelection,
-        deselectAll,
-        removeSelectedReport,
         launchEditFacilityDialog,
-        selectAll,
-        selectReport,
         setFirstSelectedReportDocProperty,
         setFirstSelectedReportFormattedProperty,
-        setRightActionBar,
-        setSelect,
-        setSelected,
-        setSelectedReports,
-        setTitle,
         setVerifyingReport,
         toggleVerifyingReport,
-        updateSelectedReportItem,
         verifyReport,
       };
     };
