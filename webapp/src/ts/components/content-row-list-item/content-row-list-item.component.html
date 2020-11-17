@@ -8,7 +8,7 @@
     [class.overdue]="overdue"
     class="content-row"
 >
-  <a [routerLink]="onClick ? null : id" (click)="onClick?.emit()">
+  <a [routerLink]="route ? ['/', route, id] : null" (click)="onClick?.emit()">
     <div><input type="checkbox" [checked]="selected"></div>
     <div *ngIf="icon" class="icon" [innerHTML]="icon | resourceIcon"></div>
     <div class="content">

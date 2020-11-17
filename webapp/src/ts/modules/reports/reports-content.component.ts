@@ -118,27 +118,17 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     return item.doc?._id + item.doc?._rev;
   }
 
-  // todo remove the eslint disable after migrating selectmode
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   toggleExpand(report) {
-    if (!this.selectMode) {
+    if (!this.selectMode || !report?._id) {
       return;
     }
 
     const id = report._id;
-    if (report.report || report.expanded) {
+    if (report.doc || report.expanded) {
       this.reportsActions.updateSelectedReportItem(id, { expanded: !report.expanded });
     } else {
       this.reportsActions.updateSelectedReportItem(id, { loading: true, expanded: true });
       this.reportsActions.selectReport(id, { silent: true });
-      /*ctrl.selectReport(id, { silent: true })
-        .then(function() {
-          ctrl.updateSelectedReportItem(id, { loading: false, expanded: true });
-        })
-        .catch(function(err) {
-          ctrl.updateSelectedReportItem(id, { loading: false });
-          $log.error('Error fetching doc for expansion', err);
-        });*/
     }
   }
 

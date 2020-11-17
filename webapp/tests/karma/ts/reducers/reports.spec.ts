@@ -94,6 +94,56 @@ describe('Reports Reducer', () => {
       });
     });
 
+    it('should set selected property on new reports', () => {
+      state = {
+        reports: [
+          { _id: 'r1', reported_date: 1000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: true },
+          { _id: 'r3', reported_date: 200, form: 'form1', selected: false },
+        ],
+        reportsById: new Map([
+          ['r1', { _id: 'r1', reported_date: 1000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: true }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: false }],
+        ]),
+        selected: [
+          { _id: 'r5', reported_date: 100 },
+          { _id: 'r2', reported_date: 500, form: 'form2' },
+        ],
+      };
+
+      const newReports = [
+        { _id: 'r4', reported_date: 2000 },
+        { _id: 'r5', reported_date: 100 },
+        { _id: 'r6', reported_date: 300 },
+      ];
+
+      const newState = reportsReducer(state, Actions.updateReportsList(newReports));
+      expect(newState).to.deep.equal({
+        reports: [
+          // sorted by reported_date
+          { _id: 'r4', reported_date: 2000, selected: false },
+          { _id: 'r1', reported_date: 1000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: true },
+          { _id: 'r6', reported_date: 300, selected: false },
+          { _id: 'r3', reported_date: 200, form: 'form1', selected: false },
+          { _id: 'r5', reported_date: 100, selected: true },
+        ],
+        reportsById: new Map([
+          ['r1', { _id: 'r1', reported_date: 1000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: true }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: false }],
+          ['r4', { _id: 'r4', reported_date: 2000, selected: false }],
+          ['r5', { _id: 'r5', reported_date: 100, selected: true }],
+          ['r6', { _id: 'r6', reported_date: 300, selected: false }],
+        ]),
+        selected: [
+          { _id: 'r5', reported_date: 100 },
+          { _id: 'r2', reported_date: 500, form: 'form2' },
+        ],
+      });
+    });
+
     it('should update existent reports', () => {
       state = {
         reports: [
@@ -129,6 +179,54 @@ describe('Reports Reducer', () => {
           ['r3', { _id: 'r3', reported_date: 200, form: 'otherform', selected: false }],
           ['r5', { _id: 'r5', reported_date: 300, selected: false }],
         ]),
+      });
+    });
+
+    it('should set selected property on existent reports', () => {
+      state = {
+        reports: [
+          { _id: 'r1', reported_date: 1000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: true },
+          { _id: 'r3', reported_date: 200, form: 'form1', selected: true },
+        ],
+        reportsById: new Map([
+          ['r1', { _id: 'r1', reported_date: 1000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: true }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: true }],
+        ]),
+        selected: [
+          { _id: 'r2', reported_date: 500, form: 'form2' },
+          { _id: 'r3', reported_date: 200, form: 'form1' },
+          { _id: 'r5', reported_date: 300 },
+        ],
+      };
+
+      const updatedReports = [
+        { _id: 'r1', reported_date: 2000, form: 'form' },
+        { _id: 'r3', reported_date: 200, form: 'otherform' },
+        { _id: 'r5', reported_date: 300 },
+      ];
+
+      const newState = reportsReducer(state, Actions.updateReportsList(updatedReports));
+      expect(newState).to.deep.equal({
+        reports: [
+          // sorted by reported_date
+          { _id: 'r1', reported_date: 2000, form: 'form', selected: false },
+          { _id: 'r2', reported_date: 500, form: 'form2', selected: true },
+          { _id: 'r5', reported_date: 300, selected: true },
+          { _id: 'r3', reported_date: 200, form: 'otherform', selected: true },
+        ],
+        reportsById: new Map([
+          ['r1', { _id: 'r1', reported_date: 2000, form: 'form', selected: false }],
+          ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: true }],
+          ['r3', { _id: 'r3', reported_date: 200, form: 'otherform', selected: true }],
+          ['r5', { _id: 'r5', reported_date: 300, selected: true }],
+        ]),
+        selected: [
+          { _id: 'r2', reported_date: 500, form: 'form2' },
+          { _id: 'r3', reported_date: 200, form: 'form1' },
+          { _id: 'r5', reported_date: 300 },
+        ],
       });
     });
   });
@@ -242,19 +340,45 @@ describe('Reports Reducer', () => {
     });
 
     it('should add selected report to existent list', () => {
-      state.selected = [{ _id: 'one', report: true }, { _id: 'two', report: true, form: 'a' }];
-      const selected = { _id: 'selected_report', some: 'data' };
+      state = {
+        reports: [
+          { _id: 'one', report: true, selected: true },
+          { _id: 'two', report: true, form: 'a', selected: true },
+          { _id: 'three', report: true, form: 'a', selected: false },
+          { _id: 'four', report: true, form: 'a', selected: false },
+        ],
+        reportsById: new Map([
+          ['one', { _id: 'one', report: true, selected: true }],
+          ['two', { _id: 'two', report: true, form: 'a', selected: true }],
+          ['three', { _id: 'three', report: true, form: 'a', selected: false }],
+          ['four', { _id: 'four', report: true, form: 'a', selected: false }],
+        ]),
+        selected: [
+          { _id: 'one', report: true },
+          { _id: 'two', report: true, form: 'a' }
+        ],
+      };
+
+      const selected =  { _id: 'four', report: true, form: 'a' };
       const newState = reportsReducer(state, Actions.addSelectedReport(selected));
       expect(newState).to.deep.equal({
-        reports: [],
-        reportsById: new Map(),
+        reports: [
+          { _id: 'one', report: true, selected: true },
+          { _id: 'two', report: true, form: 'a', selected: true },
+          { _id: 'three', report: true, form: 'a', selected: false },
+          { _id: 'four', report: true, form: 'a', selected: true },
+        ],
+        reportsById: new Map([
+          ['one', { _id: 'one', report: true, selected: true }],
+          ['two', { _id: 'two', report: true, form: 'a', selected: true }],
+          ['three', { _id: 'three', report: true, form: 'a', selected: false }],
+          ['four', { _id: 'four', report: true, form: 'a', selected: true }],
+        ]),
         selected: [
           { _id: 'one', report: true },
           { _id: 'two', report: true, form: 'a' },
-          { _id: 'selected_report', some: 'data' },
+          { _id: 'four', report: true, form: 'a' },
         ],
-        verifyingReport: false,
-        filters: {},
       });
     });
   });

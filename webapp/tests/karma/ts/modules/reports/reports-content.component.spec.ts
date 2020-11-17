@@ -167,4 +167,60 @@ describe('Reports Content Component', () => {
     expect(component.trackByFn(0, report)).to.equal('ab');
   });
 
+  describe('toggleExpand', () => {
+    let updateSelectedReportItem;
+    let selectReport;
+
+    beforeEach(() => {
+      updateSelectedReportItem = sinon.stub(ReportsActions.prototype, 'updateSelectedReportItem');
+      selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+    });
+
+    it('should do nothing when not in select mode', () => {
+      component.selectMode = false;
+      component.toggleExpand({ _id: 'thing' });
+      expect(updateSelectedReportItem.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+    });
+
+    it('should do nothing when in select mode but no report', () => {
+      component.selectMode = true;
+      component.toggleExpand(undefined);
+      expect(updateSelectedReportItem.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+    });
+
+    it('should toggle expanded and load', () => {
+      component.selectMode = true;
+      const report = { _id: 'report_id' };
+      component.toggleExpand(report);
+      expect(updateSelectedReportItem.callCount).to.equal(1);
+      expect(updateSelectedReportItem.args[0]).to.deep.equal(['report_id', { loading: true, expanded: true }]);
+      expect(selectReport.callCount).to.equal(1);
+      expect(selectReport.args[0]).to.deep.equal(['report_id', { silent: true }]);
+    });
+
+    it('should only toggle expanded when report already loaded', () => {
+      component.selectMode = true;
+      const report = { _id: 'report_id', doc: { _id: 'report_id', value: '1' } };
+      component.toggleExpand(report);
+      expect(updateSelectedReportItem.callCount).to.equal(1);
+      expect(updateSelectedReportItem.args[0]).to.deep.equal(['report_id', { expanded: true }]);
+      expect(selectReport.callCount).to.equal(0);
+    });
+
+    it('should only toggle expanded when report already expanded', () => {
+      component.selectMode = true;
+      const report = { _id: 'report_id', expanded: true };
+      component.toggleExpand(report);
+      expect(updateSelectedReportItem.callCount).to.equal(1);
+      expect(updateSelectedReportItem.args[0]).to.deep.equal(['report_id', { expanded: false }]);
+      expect(selectReport.callCount).to.equal(0);
+    });
+  });
+
+  describe('deselect', () => {
+
+  });
+
 });

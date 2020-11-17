@@ -108,7 +108,7 @@ const _globalReducer = createReducer(
       ...state,
       actionBar: {
         ...state.actionBar,
-        right: { ...state.actionBar.right, verified },
+        right: { ...state.actionBar?.right, verified },
       },
     };
   }),
