@@ -100,25 +100,6 @@ export class ReportsActions {
     globalActions.setLoadingContent(true);
     this.store.dispatch(Actions.selectAll());
   }
-
-  setSelectMode(value) {
-    return this.store.dispatch(Actions.setSelectMode(value));
-  }
-
-  updateSelectedReportItem(id, selected) {
-    return this.store.dispatch(Actions.updateSelectedReportItem({ id, selected }));
-  }
-
-  deselectAll() {
-    this.store.dispatch(Actions.setSelectedReports([]));
-    this.setRightActionBar();
-  }
-
-  selectAll() {
-    const globalActions = new GlobalActions(this.store);
-    globalActions.setLoadingContent(true);
-    this.store.dispatch(Actions.selectAll());
-  }
 }
 /*
 

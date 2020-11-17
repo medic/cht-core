@@ -254,7 +254,6 @@ angular.module('inboxServices').factory('GlobalActions',
         openTourSelect,
         navigationCancel,
         setLoadingSubActionBar,
-        setShowActionBar,
         setUnreadCount,
         updateUnreadCount,
       };
