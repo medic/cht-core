@@ -690,10 +690,9 @@ module.exports = function(grunt) {
         ],
       },
       'webapp-js': {
-        //files: ['webapp/src/ts/**/*', 'webapp/src/js/**/*', 'webapp/src/css/**/*', 'shared-libs/*/src/**/*', 'webapp/*.json'],
+        // instead of watching the source files, watch the build folder and upload on rebuild
         files: ['build/ddocs/medic/_attachments/**/*'],
         tasks: [
-          //'exec:build-webapp',
           'generate-service-worker',
           'couch-compile:primary',
           'deploy',
