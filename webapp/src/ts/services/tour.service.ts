@@ -286,12 +286,15 @@ export class TourService {
           onShow: () => this.mmShowReportList()
         },
         {
-          element: '#reports-list li:first-child .status',
+          element: '#reports-list li:first-child .status :first',
           placement: 'right',
-          mobilePlacement: 'bottom',
+          mobilePlacement: 'left',
           title: 'tour.reports.status.title',
           content: 'tour.reports.status.description',
-          onShow: () => this.mmShowReportList()
+          onShow: () => {
+            this.mmShowReportList();
+            this.mmScroll('#reports-list', 'li:first-child .status');
+          }
         },
         {
           element: '#reports-content',
