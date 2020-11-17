@@ -41,7 +41,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
     this.totalDocsSelected = docs.length;
     this.totalDocsDeleted = 0;
     this.setProcessing();
-    this.deleteDocsService
+    return this.deleteDocsService
       .delete(docs, { progress: this.updateTotalDocsDeleted.bind(this) })
       .then(() => {
         this.deleteComplete = true;
