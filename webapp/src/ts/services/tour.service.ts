@@ -7,7 +7,7 @@ import { SessionService } from './session.service';
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { compact } from 'lodash-es';
+import { compact  as _compact } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root'
@@ -73,7 +73,10 @@ export class TourService {
   private mmShow(list, showContent) {
     const showingContent = $('body').is('.show-content');
     if (showContent !== showingContent) {
-      let firstLink = null;
+      // firstLink is the first link available in a list view (in the first record),
+      // eg. the first report clickable in the Reports tab, but the link
+      // may be null if there are no reports
+      let firstLink;
       if (showContent) {
         firstLink = $(list).find('li').filter(':first').find('a')[0];
       } else if (isMobile()) {
@@ -474,10 +477,11 @@ export class TourService {
   }
 
   private getAnalyticsTour() {
-    return Promise.all([
-      this.authService.has('can_view_analytics'),
-      this.analyticsModulesService.get()
-    ])
+    return Promise
+      .all([
+        this.authService.has('can_view_analytics'),
+        this.analyticsModulesService.get()
+      ])
       .then(([canView]) => {
         return canView && {
           order: 4,
@@ -489,14 +493,15 @@ export class TourService {
   }
 
   getTours() {
-    return Promise.all([
-      this.getMessagesTour(),
-      this.getTasksTour(),
-      this.getReportsTour(),
-      this.getContactsTour(),
-      this.getAnalyticsTour()
-    ])
-      .then(results => compact(results));
+    return Promise
+      .all([
+        this.getMessagesTour(),
+        this.getTasksTour(),
+        this.getReportsTour(),
+        this.getContactsTour(),
+        this.getAnalyticsTour()
+      ])
+      .then(results => _compact(results));
   }
 
   private getTour(name) {

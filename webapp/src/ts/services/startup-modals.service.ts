@@ -49,9 +49,7 @@ export class StartupModalsService {
       render: () => {
         return this.modalService.show(TourSelectComponent)
           .catch(() => {})
-          .then(() => this.updateUserService
-            .update(this.sessionService.userCtx().name, { known: true })
-          )
+          .then(() => this.updateUserService.update(this.sessionService.userCtx().name, { known: true }))
           .catch(err => console.error('Error updating user', err));
       },
     },
