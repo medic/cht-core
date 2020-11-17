@@ -12,6 +12,8 @@ import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 
 @Injectable()
@@ -27,6 +29,7 @@ export class ReportsEffects {
     private dbService:DbService,
     private router:Router,
     private searchService:SearchService,
+    private modalService:ModalService,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -153,6 +156,11 @@ export class ReportsEffects {
         model.verified = doc.verified;
         model.type = doc.content_type;
         model.verifyingReport = verifyingReport;
+        model.openSendMessageModal = (sendTo) => {
+          this.modalService
+            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
+            .catch(() => {});
+        };
 
         if (!doc.contact || !doc.contact._id) {
           return this.globalActions.setRightActionBar(model);

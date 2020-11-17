@@ -16,6 +16,8 @@ import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 const PAGE_SIZE = 50;
 
@@ -59,6 +61,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private exportService:ExportService,
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
+    private modalService:ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);

@@ -111,7 +111,7 @@
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" [attr.data-send-to]="actionBar?.right?.sendTo?._id" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
