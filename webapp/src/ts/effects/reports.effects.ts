@@ -14,6 +14,7 @@ import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 
 
 @Injectable()
@@ -221,6 +222,19 @@ export class ReportsEffects {
           .catch(err => {
             console.error('Error selecting all', err);
           });
+      }),
+    );
+  }, { dispatch: false });
+
+  launchEditFacilityDialog = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.launchEditFacilityDialog),
+      withLatestFrom(this.store.select(Selectors.getSelectedReports)),
+      tap(([, selectedReports]) => {
+        const firstSelectedReportDoc = selectedReports && selectedReports[0]?.doc;
+        this.modalService
+          .show(EditReportComponent, { initialState: { model: { report: firstSelectedReportDoc } } })
+          .catch(() => {});
       }),
     );
   }, { dispatch: false });

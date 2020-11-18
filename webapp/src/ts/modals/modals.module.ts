@@ -17,6 +17,7 @@ import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/naviga
 import { TourSelectComponent } from './tour/tour-select.component';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
+import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 
 
 @NgModule({
@@ -34,6 +35,7 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
     TourSelectComponent,
     WelcomeComponent,
     BulkDeleteConfirmComponent,
+    EditReportComponent,
   ],
   imports: [
     CommonModule,
@@ -51,6 +53,7 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
     TourSelectComponent,
     WelcomeComponent,
     BulkDeleteConfirmComponent,
+    EditReportComponent,
   ]
 })
 export class ModalsModule { }

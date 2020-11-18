@@ -12,6 +12,7 @@ export const Actions = {
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
   updateSelectedReportItem: createMultiValueAction('UPDATE_SELECTED_REPORT_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
+  launchEditFacilityDialog: createAction('LAUNCH_EDIT_FACILITY_DIALOG'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
@@ -99,6 +100,10 @@ export class ReportsActions {
     const globalActions = new GlobalActions(this.store);
     globalActions.setLoadingContent(true);
     this.store.dispatch(Actions.selectAll());
+  }
+
+  launchEditFacilityDialog() {
+    this.store.dispatch(Actions.launchEditFacilityDialog());
   }
 }
 /*

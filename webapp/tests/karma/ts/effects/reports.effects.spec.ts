@@ -18,6 +18,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
+import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
@@ -49,6 +50,7 @@ describe('Reports effects', () => {
     TestBed.configureTestingModule({
       declarations: [
         SendMessageComponent,
+        EditReportComponent,
       ],
       imports: [
         EffectsModule.forRoot([ReportsEffects]),
@@ -698,6 +700,78 @@ describe('Reports effects', () => {
       expect(settingSelected.callCount).to.deep.equal(0);
       expect(setRightActionBar.callCount).to.equal(0);
     }));
+  });
+
+  describe('launchEditFacilityDialog', () => {
+    it('should not be triggered by random actions', () => {
+      actions$ = of([
+        ReportActionList.selectReport(''),
+        ReportActionList.removeSelectedReport({}),
+        ReportActionList.setSelected({}),
+      ]);
+
+      effects.setSelectMode.subscribe();
+      expect(modalService.show.callCount).to.equal(0);
+    });
+
+    it('should pass 1st selected report doc to EditReport modal', () => {
+      const selectedReports = [
+        { _id: 'report1', doc: { _id: 'report1', contact: { _id: 'contact' } } },
+        { _id: 'report2', doc: { _id: 'report2', contact: { _id: 'contact2' } } },
+      ];
+      modalService.show.resolves();
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: { _id: 'report1', contact: { _id: 'contact' } } } } },
+      ]);
+    });
+
+    it('should catch modal rejections', async(() => {
+      const selectedReports = [
+        { _id: 'r', doc: { _id: 'r', contact: { _id: 'ct' } } },
+      ];
+      modalService.show.rejects();
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: { _id: 'r', contact: { _id: 'ct' } } } } },
+      ]);
+    }));
+
+    it('should handle undefined selected reports', () => {
+      store.overrideSelector(Selectors.getSelectedReports, undefined);
+      modalService.show.resolves();
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: undefined } } },
+      ]);
+    });
+
+    it('should handle empty selected reports', () => {
+      store.overrideSelector(Selectors.getSelectedReports, []);
+      modalService.show.resolves();
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: undefined } } },
+      ]);
+    });
   });
 });
 

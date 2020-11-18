@@ -1,11 +1,11 @@
 <mm-modal
-  status="status"
-  id="'edit-report'"
-  title-key="'Update Facility'"
-  submit-key="'Submit'"
-  submitting-key="'Submitting'"
-  on-cancel="editReportCtrl.cancel()"
-  on-submit="editReportCtrl.saveReport()"
+  [status]="status"
+  id="edit-report"
+  [titleKey]="'Update Facility'"
+  [submitKey]="'Submit'"
+  [submittingKey]="'Submitting'"
+  (onCancel)="cancel()"
+  (onSubmit)="submit()"
 >
   <form>
     <fieldset>
