@@ -101,10 +101,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setCancelCallback() {
     this.routeSnapshot = this.route.snapshot;
-    if (this.routeSnapshot.params && (this.routeSnapshot.params.reportsId || this.routeSnapshot.params.formId)) {
+    if (this.routeSnapshot.params && (this.routeSnapshot.params.reportId || this.routeSnapshot.params.formId)) {
       this.globalActions.setCancelCallback(() => {
-        if (this.routeSnapshot.params.reportsId) {
-          this.router.navigate(['/reports', this.routeSnapshot.params.reportsId]);
+        if (this.routeSnapshot.params.reportId) {
+          this.router.navigate(['/reports', this.routeSnapshot.params.reportId]);
         } else {
           this.router.navigate(['/reports']);
         }
