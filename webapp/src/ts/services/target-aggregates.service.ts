@@ -110,10 +110,10 @@ export class TargetAggregatesService {
     const aggregate = { ...targetConfig };
 
     aggregate.values = [];
-    aggregate.hasGoal = targetConfig.goal > 0;
-    aggregate.isPercent = targetConfig.type === 'percent';
-    aggregate.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
-    aggregate.heading = this.getTranslatedTitle(targetConfig);
+    aggregate.hasGoal = aggregate.goal > 0;
+    aggregate.isPercent = aggregate.type === 'percent';
+    aggregate.progressBar = aggregate.hasGoal || aggregate.isPercent;
+    aggregate.heading = this.getTranslatedTitle(aggregate);
     aggregate.aggregateValue = { pass: 0, total: 0 };
 
     return aggregate;

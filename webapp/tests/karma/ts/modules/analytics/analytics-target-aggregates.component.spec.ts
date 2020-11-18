@@ -6,23 +6,22 @@ import sinon from 'sinon';
 
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { TargetAggregates } from '@mm-actions/target-aggregates';
+import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
   let fixture: ComponentFixture<AnalyticsTargetAggregatesComponent>;
-  let store: MockStore;
   let targetAggregatesService;
-  let targetAggregatesAction;
+  let targetAggregatesActions;
 
   beforeEach(async(() => {
     targetAggregatesService = {
       isEnabled: sinon.stub().resolves(false),
       getAggregates: sinon.stub()
     };
-    targetAggregatesAction = {
-      setTargetAggregates: sinon.stub(TargetAggregates.prototype, 'setTargetAggregates'),
-      setTargetAggregatesError: sinon.stub(TargetAggregates.prototype, 'setTargetAggregatesError')
+    targetAggregatesActions = {
+      setTargetAggregates: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregates'),
+      setTargetAggregatesError: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregatesError')
     };
     const mockedSelectors = [
       { selector: 'getSelectedTargetAggregate', value: null },
@@ -44,7 +43,6 @@ describe('Analytics Target Aggregates Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetAggregatesComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
@@ -84,11 +82,11 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(targetAggregatesService.getAggregates.callCount).to.equal(0);
     expect(component.loading).to.equal(false);
-    expect(targetAggregatesAction.setTargetAggregatesError.callCount).to.equal(2);  // onNgInit() & getTargetAggregates() calls
-    expect(targetAggregatesAction.setTargetAggregatesError.getCall(0).args[0]).to.deep.equal(null);
-    expect(targetAggregatesAction.setTargetAggregatesError.getCall(1).args[0]).to.deep.equal({ some: 'err' });
-    expect(targetAggregatesAction.setTargetAggregates.callCount).to.equal(1); // onNgInit call
-    expect(targetAggregatesAction.setTargetAggregates.args[0]).to.deep.equal([null]);
+    expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(2);  // onNgInit() & getTargetAggregates() calls
+    expect(targetAggregatesActions.setTargetAggregatesError.getCall(0).args[0]).to.deep.equal(null);
+    expect(targetAggregatesActions.setTargetAggregatesError.getCall(1).args[0]).to.deep.equal({ some: 'err' });
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1); // onNgInit call
+    expect(targetAggregatesActions.setTargetAggregates.args[0]).to.deep.equal([null]);
     expect(component.enabled).to.equal(false);
   }));
 
@@ -103,11 +101,11 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.getAggregates.callCount).to.equal(0);
     expect(component.loading).to.equal(false);
     expect(component.enabled).to.equal(false);
-    expect(targetAggregatesAction.setTargetAggregatesError.callCount).to.equal(1); // onNgInit() call
-    expect(targetAggregatesAction.setTargetAggregatesError.args[0]).to.deep.equal([null]);
-    expect(targetAggregatesAction.setTargetAggregates.callCount).to.equal(2); // onNgInit() & getTargetAggregates() calls
-    expect(targetAggregatesAction.setTargetAggregates.getCall(0).args[0]).to.deep.equal(null);
-    expect(targetAggregatesAction.setTargetAggregates.getCall(1).args[0]).to.deep.equal(undefined);
+    expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(1); // onNgInit() call
+    expect(targetAggregatesActions.setTargetAggregatesError.args[0]).to.deep.equal([null]);
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(2); // onNgInit() & getTargetAggregates() calls
+    expect(targetAggregatesActions.setTargetAggregates.getCall(0).args[0]).to.deep.equal(null);
+    expect(targetAggregatesActions.setTargetAggregates.getCall(1).args[0]).to.deep.equal(undefined);
   }));
 
   it('should set aggregates', fakeAsync(() => {
@@ -122,10 +120,10 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
     expect(component.loading).to.equal(false);
     expect(component.enabled).to.equal(true);
-    expect(targetAggregatesAction.setTargetAggregatesError.callCount).to.equal(1); // onNgInit() call
-    expect(targetAggregatesAction.setTargetAggregatesError.args[0]).to.deep.equal([null]);
-    expect(targetAggregatesAction.setTargetAggregates.callCount).to.equal(2); // onNgInit() & getTargetAggregates() calls
-    expect(targetAggregatesAction.setTargetAggregates.getCall(0).args[0]).to.deep.equal(null);
-    expect(targetAggregatesAction.setTargetAggregates.getCall(1).args[0]).to.deep.equal(['some aggregates']);
+    expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(1); // onNgInit() call
+    expect(targetAggregatesActions.setTargetAggregatesError.args[0]).to.deep.equal([null]);
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(2); // onNgInit() & getTargetAggregates() calls
+    expect(targetAggregatesActions.setTargetAggregates.getCall(0).args[0]).to.deep.equal(null);
+    expect(targetAggregatesActions.setTargetAggregates.getCall(1).args[0]).to.deep.equal(['some aggregates']);
   }));
 });

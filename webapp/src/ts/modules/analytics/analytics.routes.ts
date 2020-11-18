@@ -5,6 +5,7 @@ import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
 import { AnalyticsModulesComponent } from '@mm-modules/analytics/analytics-modules.component';
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesDetailComponent } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
 
 export const routes:Routes = [
   {
@@ -15,26 +16,24 @@ export const routes:Routes = [
     children: [
       {
         path: '',
-        pathMatch: 'full',
         component: AnalyticsModulesComponent,
       },
       {
         path: 'targets',
-        pathMatch: 'full',
         component: AnalyticsTargetsComponent,
+        data: { name: 'targets' }
       },
       {
         path: 'target-aggregates',
-        pathMatch: 'full',
         component: AnalyticsTargetAggregatesComponent,
         children: [
-          /*{
-            path: '', // Todo: finish when implementing content
-          },*/
           {
-            path: 'detail',
-            pathMatch: 'full',
-            redirectTo: 'target-aggregates' // Todo: finish when implementing content
+            path: '',
+            component: AnalyticsTargetAggregatesDetailComponent
+          },
+          {
+            path: ':id',
+            component: AnalyticsTargetAggregatesDetailComponent
           }
         ]
       }

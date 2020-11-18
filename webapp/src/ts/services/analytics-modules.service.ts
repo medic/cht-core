@@ -30,7 +30,7 @@ export class AnalyticsModulesService {
   private getTargetAggregatesModule (settings, canAggregateTargets) {
     return {
       label: 'analytics.target.aggregates',
-      route: 'analytics/target-aggregates/detail',
+      route: 'analytics/target-aggregates',
       available: () => {
         return settings.tasks &&
           settings.tasks.targets &&
@@ -68,7 +68,7 @@ export class AnalyticsModulesService {
       ])
       .then(([settings, scheduledForms, canAggregateTargets]) => {
         const modules = this.getModules(settings, scheduledForms, canAggregateTargets);
-        console.debug('AnalyticsMobules. Enabled modules: ', modules.map(module => module.label));
+        console.debug('AnalyticsModules. Enabled modules: ', modules.map(module => module.label));
         return modules;
       });
   }

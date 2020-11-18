@@ -24,4 +24,6 @@
     <p *ngIf="error && !aggregates" class="alert alert-danger" role="alert" translate>analytics.target.aggregates.error</p>
     <p class="loading-status" *ngIf="!error && !aggregates.length" translate>analytics.target.aggregates.no.targets</p>
   </div>
+
+  <router-outlet></router-outlet>
 </div>

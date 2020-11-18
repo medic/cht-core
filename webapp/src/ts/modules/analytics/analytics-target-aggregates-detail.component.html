@@ -1,0 +1,76 @@
+<div class="content-pane right-pane">
+
+  <div class="col-sm-8 item-content empty-selection" *ngIf="!selected && !error">
+    <div translate>analytics.target.aggregates.no.target.selected</div>
+  </div>
+
+  <div class="col-sm-8 item-content empty-selection selection-error" *ngIf="error || selected?.error">
+    <div>{{ (error.translationKey || selected.error?.translationKey || 'analytics.target.aggregates.select.error') | translate}}</div>
+  </div>
+
+  <div class="col-sm-8 item-content" *ngIf="selected && !selected.error && !error">
+    <div class="material">
+      <div class="body meta">
+        <div class="target-detail card" [ngClass]="{ 'has-goal': selected.goal >= 0, 'goal-met': (selected.value?.pass >= selected.goal) || (selected.value?.percent >= selected.goal) }">
+          <div class="row heading">
+            <div class="icon" [innerHTML]="selected.icon | resourceIcon"></div>
+            <div class="heading-content">
+              <h2 *ngIf="selected.translation_key">{{ selected.translation_key | translate }}</h2>
+              <h2 *ngIf="!selected.translation_key">{{ selected.title | translateFrom }}</h2>
+            </div>
+          </div>
+
+          <div class="cell">
+            <label *ngIf="selected.hasGoal" translate>analytics.target.aggregates.supervisees.meeting.goal</label>
+            <label *ngIf="!selected.hasGoal" translate>analytics.target.aggregates.total</label>
+            <p>{{ selected.aggregateValue?.summary }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="aggregate-detail card">
+        <div class="action-header cell row">
+          <div class="col-xs-6 col-md-4">
+            <h3 translate>analytics.target.aggregates.reported</h3>
+          </div>
+          <div class="col-xs-6 col-md-8 text-right">
+            <h3 *ngIf="selected.subtitle_translation_key">
+              {{ selected.subtitle_translation_key | translate }}
+            </h3>
+          </div>
+        </div>
+
+        <ul>
+          <li *ngFor="let item of selected.values"
+              [attr.data-record-id]="item.contact?._id"
+              class="content-row target"
+              [ngClass]="{ 'has-goal': selected.hasGoal, 'goal-met': item.value?.goalMet || !selected.hasGoal}">
+            <a [routerLink]="['contacts', item.contact?._id]">
+              <div class="col-xs-6 col-md-4">
+                <div class="content">
+                  <div class="heading">
+                    <h4>{{ item.contact?.name }}</h4>
+                  </div>
+                  <div *ngIf="selected.progressBar" class="detail">
+                    <mm-analytics-targets-details [target]="selected" [value]="item.value"></mm-analytics-targets-details>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-6 col-md-8 text-right">
+                <div *ngIf="!selected.progressBar" class="detail" >
+                  <mm-analytics-targets-details [target]="selected" [value]="item.value"></mm-analytics-targets-details>
+                </div>
+                <div *ngIf="selected.progressBar">
+                  <mm-analytics-targets-progress [target]="selected" [value]="item.value" [aggregate]="true"></mm-analytics-targets-progress>
+                </div>
+              </div>
+
+            </a>
+          </li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+</div>

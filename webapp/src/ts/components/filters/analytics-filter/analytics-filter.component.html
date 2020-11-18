@@ -9,7 +9,7 @@
         <span class="fa fa-chevron-down"></span>
       </span>
       <ng-container *ngFor="let module of analyticsModules">
-        <span *ngIf="isActive(module)" class="mm-button-text"> {{ module.label | translate }} </span>
+        <span *ngIf="module.route === activeModule?.route" class="mm-button-text"> {{ module.label | translate }} </span>
       </ng-container>
     </span>
 

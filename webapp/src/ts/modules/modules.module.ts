@@ -22,6 +22,7 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
 import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
 import { AnalyticsModulesComponent } from './analytics/analytics-modules.component';
 import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target
     AnalyticsTargetsComponent,
     AnalyticsModulesComponent,
     AnalyticsTargetAggregatesComponent,
+    AnalyticsTargetAggregatesDetailComponent,
   ],
   imports: [
     CommonModule,

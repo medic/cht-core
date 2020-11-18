@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-import { Actions, TargetAggregates } from '@mm-actions/target-aggregates';
+import { Actions, TargetAggregatesActions } from '@mm-actions/target-aggregates';
 
 describe('Target Aggregates Action', () => {
   let store: any;
@@ -17,9 +17,9 @@ describe('Target Aggregates Action', () => {
   it('should dispatch setSelectedTargetAggregate action', () => {
     const data = [ {id: '124'} ];
     const expectedAction = Actions.setSelectedTargetAggregate(data);
-    const targetAggregatesAction = new TargetAggregates(store);
+    const targetAggregatesActions = new TargetAggregatesActions(store);
 
-    targetAggregatesAction.setSelectedTargetAggregate(data);
+    targetAggregatesActions.setSelectedTargetAggregate(data);
 
     expect(store.dispatch.withArgs(expectedAction).callCount).to.equal(1);
   });
@@ -27,9 +27,9 @@ describe('Target Aggregates Action', () => {
   it('should dispatch setTargetAggregates action', () => {
     const data = [ {id: '124'}, {id: '356'} ];
     const expectedAction = Actions.setTargetAggregates(data);
-    const targetAggregatesAction = new TargetAggregates(store);
+    const targetAggregatesActions = new TargetAggregatesActions(store);
 
-    targetAggregatesAction.setTargetAggregates(data);
+    targetAggregatesActions.setTargetAggregates(data);
 
     expect(store.dispatch.withArgs(expectedAction).callCount).to.equal(1);
   });
@@ -37,9 +37,9 @@ describe('Target Aggregates Action', () => {
   it('should dispatch setTargetAggregatesError action', () => {
     const data = true;
     const expectedAction = Actions.setTargetAggregatesError(data);
-    const targetAggregatesAction = new TargetAggregates(store);
+    const targetAggregatesActions = new TargetAggregatesActions(store);
 
-    targetAggregatesAction.setTargetAggregatesError(data);
+    targetAggregatesActions.setTargetAggregatesError(data);
 
     expect(store.dispatch.withArgs(expectedAction).callCount).to.equal(1);
   });

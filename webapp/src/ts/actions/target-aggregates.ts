@@ -7,7 +7,7 @@ export const Actions = {
   setTargetAggregatesError: createSingleValueAction('SET_TARGET_AGGREGATES_ERROR', 'error'),
 }
 
-export class TargetAggregates {
+export class TargetAggregatesActions {
   constructor(private store: Store) {}
 
   setSelectedTargetAggregate(selected) {

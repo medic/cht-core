@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
-import { TargetAggregates } from '@mm-actions/target-aggregates';
+import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { Selectors } from '@mm-selectors/index';
 
@@ -11,7 +11,7 @@ import { Selectors } from '@mm-selectors/index';
   templateUrl: './analytics-target-aggregates.component.html',
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
-  private targetAggregatesAction: TargetAggregates;
+  private targetAggregatesActions: TargetAggregatesActions;
   subscriptions: Subscription = new Subscription();
   loading = true;
   enabled = false;
@@ -23,13 +23,13 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     private store: Store,
     private targetAggregatesService: TargetAggregatesService
   ) {
-    this.targetAggregatesAction = new TargetAggregates(store);
+    this.targetAggregatesActions = new TargetAggregatesActions(store);
   }
 
   ngOnInit(): void {
     this.subscribeToStore();
-    this.targetAggregatesAction.setTargetAggregatesError(null);
-    this.targetAggregatesAction.setTargetAggregates(null);
+    this.targetAggregatesActions.setTargetAggregatesError(null);
+    this.targetAggregatesActions.setTargetAggregates(null);
     this.getTargetAggregates();
   }
 
@@ -50,7 +50,6 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     ]) => {
       this.aggregates = aggregates;
       this.selected = selected;
-      console.log('hola', error);
       this.error = error;
     });
     this.subscriptions.add(selectorsSubscription);
@@ -69,11 +68,11 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
         return this.targetAggregatesService.getAggregates();
       })
       .then(aggregates => {
-        this.targetAggregatesAction.setTargetAggregates(aggregates);
+        this.targetAggregatesActions.setTargetAggregates(aggregates);
       })
       .catch(err => {
         console.error('Error getting aggregate targets', err);
-        this.targetAggregatesAction.setTargetAggregatesError(err);
+        this.targetAggregatesActions.setTargetAggregatesError(err);
       })
       .then(() => this.loading = false);
   }
