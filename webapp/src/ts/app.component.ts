@@ -69,7 +69,6 @@ export class AppComponent implements OnInit {
   minimalTabs = false;
   adminUrl;
   canLogOut = false;
-  tours = [];
   replicationStatus;
   androidAppVersion;
   nonContactForms;
