@@ -511,6 +511,9 @@ describe('Contacts component', () => {
       flush();
       expect(searchService.search.callCount).to.equal(1);
       changesCallback({ deleted: true, doc: {}, id: 'deleted doc' });
+      store.overrideSelector(Selectors.getContactsList, searchResults.slice(0, -1));
+      store.refreshState();
+
       expect(component.contactsActions.removeContactFromList.callCount).to.equal(1);
       expect(searchService.search.callCount).to.equal(2);
       expect(component.contactsActions.removeContactFromList.args[0][0]).to.deep.equal(
