@@ -31,6 +31,7 @@ export const Actions = {
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
+  setLoadingSubActionbar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
 };
 
 export class GlobalActions {
@@ -196,6 +197,10 @@ export class GlobalActions {
   navigationCancel(nextUrl?) {
     return this.store.dispatch(Actions.navigationCancel(nextUrl));
   }
+
+  setLoadingSubActionBar(loading) {
+    return this.store.dispatch(Actions.setLoadingSubActionbar(loading));
+  }
 }
 
 /*
@@ -213,11 +218,7 @@ angular.module('inboxServices').factory('GlobalActions',
     'ngInject';
 
     return function(dispatch) {
-      function setLoadingSubActionBar(loading) {
-        dispatch(ActionUtils.createSingleValueAction(
-          actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
-        ));
-      }
+
 
       function setUnreadCount(unreadCount) {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_UNREAD_COUNT, 'unreadCount', unreadCount));
@@ -269,7 +270,6 @@ angular.module('inboxServices').factory('GlobalActions',
         deleteDoc,
         openGuidedSetup,
         openTourSelect,
-        setLoadingSubActionBar,
         setUnreadCount,
         updateUnreadCount,
       };

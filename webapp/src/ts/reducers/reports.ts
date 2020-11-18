@@ -98,52 +98,35 @@ const _reportsReducer = createReducer(
       }),
     };
   }),
+
+  on(Actions.setVerifyingReport, (state, { payload: { verifyingReport } }) => ({ ...state, verifyingReport })),
+
+  on(Actions.setFirstSelectedReportDocProperty, (state, { payload: { doc } }) => {
+    return {
+      ...state,
+      selected: state.selected.map((item, idx) => {
+        if (idx === 0) {
+          return { ...item, doc: { ...item?.doc, ...doc } };
+        }
+
+        return item;
+      })
+    };
+  }),
+
+  on(Actions.setFirstSelectedReportFormattedProperty, (state, { payload: { formatted }}) => {
+    return {
+      ...state,
+      selected: state.selected.map((item, idx) => {
+        if (idx === 0) {
+          return { ...item, formatted: { ...item.formatted, ...formatted } };
+        }
+        return item;
+      }),
+    };
+  }),
 );
 
 export function reportsReducer(state, action) {
   return _reportsReducer(state, action);
 }
-
-/*
-const _ = require('lodash/core');
-const actionTypes = require('../actions/actionTypes');
-
-
-module.exports = function(state, action) {
-  if (typeof state === 'undefined') {
-    state = initialState;
-  }
-
-
-  switch (action.type) {
-  case actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY: {
-    const selected = state.selected.map((item, index) => {
-      if (index === 0) {
-        return Object.assign({}, item, {
-          doc: Object.assign({}, item.doc, action.payload.doc)
-        });
-      }
-      return item;
-    });
-    return Object.assign({}, state, { selected });
-  }
-  case actionTypes.SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY: {
-    const selected = state.selected.map((item, index) => {
-      if (index === 0) {
-        return Object.assign({}, item, {
-          formatted: Object.assign({}, item.formatted, action.payload.formatted)
-        });
-      }
-      return item;
-    });
-    return Object.assign({}, state, { selected });
-  }
-  case actionTypes.SET_VERIFYING_REPORT:
-    return Object.assign({}, state, { verifyingReport: action.payload.verifyingReport });
-  case actionTypes.UPDATE_SELECTED_REPORT_ITEM: {
-
-  default:
-    return state;
-  }
-};
-*/

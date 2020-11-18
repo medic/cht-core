@@ -4,6 +4,8 @@ import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
 import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import * as lineageFactory from '@medic/lineage';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -15,12 +17,18 @@ import { SearchService } from '@mm-services/search.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
+import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
+import { ServicesActions } from '@mm-actions/services';
+import { AuthService } from '@mm-services/auth.service';
 
 
 @Injectable()
 export class ReportsEffects {
   private reportActions;
   private globalActions;
+  private servicesActions;
+
+  private selectedReports;
 
   constructor(
     private actions$:Actions,
@@ -31,9 +39,16 @@ export class ReportsEffects {
     private router:Router,
     private searchService:SearchService,
     private modalService:ModalService,
+    private translateService:TranslateService,
+    private authService:AuthService,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
+    this.servicesActions = new ServicesActions(store);
+
+    this.store
+      .select(Selectors.getSelectedReports)
+      .subscribe(selectedReports => this.selectedReports = selectedReports);
   }
 
   selectReport = createEffect(() => {
@@ -61,14 +76,13 @@ export class ReportsEffects {
       ofType(ReportActionList.setSelected),
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectMode)),
-        this.store.pipe(select(Selectors.getSelectedReports))
       ),
-      exhaustMap(([{ payload: { selected } }, selectMode, selectedReports]) => {
+      exhaustMap(([{ payload: { selected } }, selectMode]) => {
         const model = { ...selected };
         let refreshing = true;
 
         if (selectMode) {
-          const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
+          const existing = this.selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
             model.loading = false;
             this.reportActions.updateSelectedReportItem(model._id, model);
@@ -79,8 +93,8 @@ export class ReportsEffects {
         } else {
           refreshing =
             selected.doc &&
-            selectedReports?.length &&
-            selectedReports[0]._id === selected?.doc?._id;
+            this.selectedReports?.length &&
+            this.selectedReports[0]._id === selected?.doc?._id;
           if (!refreshing) {
             this.reportActions.setVerifyingReport(false);
           }
@@ -229,12 +243,103 @@ export class ReportsEffects {
   launchEditFacilityDialog = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.launchEditFacilityDialog),
-      withLatestFrom(this.store.select(Selectors.getSelectedReports)),
-      tap(([, selectedReports]) => {
-        const firstSelectedReportDoc = selectedReports && selectedReports[0]?.doc;
+      tap(() => {
+        const firstSelectedReportDoc = this.selectedReports && this.selectedReports[0]?.doc;
         this.modalService
           .show(EditReportComponent, { initialState: { model: { report: firstSelectedReportDoc } } })
           .catch(() => {});
+      }),
+    );
+  }, { dispatch: false });
+
+  verifyReport = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.verifyReport),
+      tap(({ payload: { verified } }) => {
+        const getFirstSelectedReport = () => this.selectedReports && this.selectedReports[0];
+
+        if (!getFirstSelectedReport()) {
+          return;
+        }
+
+        this.globalActions.setLoadingSubActionBar(true);
+
+        const promptUserToConfirmVerification = () => {
+          const verificationTranslationKey = verified ? 'reports.verify.valid' : 'reports.verify.invalid';
+          const proposedVerificationState = this.translateService.instant(verificationTranslationKey);
+          return this.modalService
+            .show(VerifyReportComponent, { initialState: { model: { proposedVerificationState } } })
+            .then(() => true)
+            .catch(() => false);
+        };
+
+        const shouldReportBeVerified = canUserEdit => {
+          // verify if user verifications are allowed
+          if (canUserEdit) {
+            return true;
+          }
+
+          // don't verify if user can't edit and this is an edit
+          const docHasExistingResult = getFirstSelectedReport()?.doc?.verified !== undefined;
+          if (docHasExistingResult) {
+            return false;
+          }
+
+          // verify if this is not an edit and the user accepts  prompt
+          return promptUserToConfirmVerification();
+        };
+
+        const writeVerificationToDoc = () => {
+          const report = getFirstSelectedReport();
+          if (!report?.doc?._id) {
+            return;
+          }
+
+          if (report.doc.contact) {
+            const minifiedContact = lineageFactory().minifyLineage(report.doc.contact);
+            this.reportActions.setFirstSelectedReportDocProperty({ contact: minifiedContact });
+          }
+
+          const clearVerification = report.doc.verified === verified;
+          if (clearVerification) {
+            this.reportActions.setFirstSelectedReportDocProperty({
+              verified: undefined,
+              verified_date: undefined,
+            });
+          } else {
+            this.reportActions.setFirstSelectedReportDocProperty({
+              verified: verified,
+              verified_date: Date.now(),
+            });
+          }
+          this.servicesActions.setLastChangedDoc(report.doc);
+
+          return this.dbService
+            .get()
+            .get(report.doc._id)
+            .then(existingRecord => {
+              this.reportActions.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
+              return this.dbService.get().post(getFirstSelectedReport().doc);
+            })
+            .catch(err => console.error('Error verifying message', err))
+            .finally(() => {
+              const oldVerified = getFirstSelectedReport()?.formatted?.verified;
+              const newVerified = oldVerified === verified ? undefined : verified;
+              this.reportActions.setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified });
+              this.globalActions.setRightActionBarVerified(newVerified);
+            });
+        };
+
+        return this.authService
+          .has('can_edit_verification')
+          .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
+          .then(shouldVerify => {
+            if (shouldVerify) {
+              return writeVerificationToDoc();
+            }
+          })
+          .catch(err => console.error('Error verifying message', err))
+          .finally(() => this.globalActions.setLoadingSubActionBar(false));
       }),
     );
   }, { dispatch: false });
