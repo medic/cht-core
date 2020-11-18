@@ -554,7 +554,7 @@ export class TourService {
     };
   }
 
-  endCurrent() {
+  public endCurrent() {
     if (this.current?.tour) {
       this.current.tour.end();
       // remove any popovers that have become disassociated
@@ -565,14 +565,11 @@ export class TourService {
 
   /**
    * Starts the tour passed in the URL query param "tour"
-   * if present. If not, checks whether there is a tour
-   * running and ends it.
+   * if present, eg. "...?tour=reports".
    */
-  startOrEnd(activatedRoute: ActivatedRouteSnapshot) {
+  startIfNeeded(activatedRoute: ActivatedRouteSnapshot) {
     if (activatedRoute.queryParams?.tour) {
       this.start(activatedRoute.queryParams.tour);
-    } else {
-      this.endCurrent();
     }
   }
 

@@ -28,6 +28,7 @@ import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
+import { TourService } from '@mm-services/tour.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -97,6 +98,7 @@ export class AppComponent implements OnInit {
     private countMessageService: CountMessageService,
     private privacyPoliciesService: PrivacyPoliciesService,
     private startupModalsService: StartupModalsService,
+    private tourService: TourService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -134,6 +136,7 @@ export class AppComponent implements OnInit {
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
+          this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
       }
