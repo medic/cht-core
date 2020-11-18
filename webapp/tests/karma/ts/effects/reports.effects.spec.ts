@@ -7,6 +7,7 @@ import sinon from 'sinon';
 import { Action } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -19,6 +20,8 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
+import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
+import { AuthService } from '@mm-services/auth.service';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
@@ -30,6 +33,8 @@ describe('Reports effects', () => {
   let router;
   let searchService;
   let store;
+  let authService;
+  let translateService;
 
   beforeEach(async(() => {
     actions$ = new Observable<Action>();
@@ -43,14 +48,17 @@ describe('Reports effects', () => {
     reportViewModelGeneratorService = { get: sinon.stub().resolves() };
     markReadService = { markAsRead: sinon.stub().resolves() };
     modalService = { show: sinon.stub() };
-    dbService = { get: sinon.stub() };
+    dbService = { get: sinon.stub(), put: sinon.stub() };
     router = { navigate: sinon.stub() };
     searchService = { search: sinon.stub() };
+    authService = { has: sinon.stub() };
+    translateService = { instant: sinon.stub };
 
     TestBed.configureTestingModule({
       declarations: [
         SendMessageComponent,
         EditReportComponent,
+        VerifyReportComponent,
       ],
       imports: [
         EffectsModule.forRoot([ReportsEffects]),
@@ -64,6 +72,8 @@ describe('Reports effects', () => {
         { provide: DbService, useValue: { get: sinon.stub().returns(dbService)} },
         { provide: Router, useValue: router },
         { provide: SearchService, useValue: searchService },
+        { provide: AuthService, useValue: authService },
+        { provide: TranslateService, useValue: translateService },
       ],
     });
 
@@ -202,7 +212,7 @@ describe('Reports effects', () => {
 
     it('should call correct actions when not in select mode and refreshing', () => {
       store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
-
+      store.refreshState();
       const model = {
         _id: 'report',
         doc: {
@@ -721,6 +731,7 @@ describe('Reports effects', () => {
       ];
       modalService.show.resolves();
       store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
 
@@ -737,6 +748,7 @@ describe('Reports effects', () => {
       ];
       modalService.show.rejects();
       store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
 
@@ -762,6 +774,7 @@ describe('Reports effects', () => {
 
     it('should handle empty selected reports', () => {
       store.overrideSelector(Selectors.getSelectedReports, []);
+      store.refreshState();
       modalService.show.resolves();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
@@ -773,5 +786,86 @@ describe('Reports effects', () => {
       ]);
     });
   });
-});
 
+  describe('verifyReport', () => {
+    it('should not be triggered by random actions', () => {
+      actions$ = of([
+        ReportActionList.selectReport(''),
+        ReportActionList.removeSelectedReport({}),
+        ReportActionList.setSelected({}),
+      ]);
+
+      effects.verifyReport.subscribe();
+      expect(authService.has.callCount).to.equal(0);
+    });
+
+    const scenarios = [
+      /* User scenarios with permission to edit */
+      { canEdit: true, initial: undefined, setTo: true, expectVerified: true, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: undefined, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: true, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: false, setTo: false, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: true, setTo: true, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
+
+      /* User scenarios without permission to edit */
+      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true,
+        expectPost: true, expectedDate: 0 },
+      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false,
+        expectPost: false, expectedDate: undefined },
+      { canEdit: false, initial: true, setTo: false, expectVerified: true, expectPost: false, expectedDate: 0 },
+      { canEdit: false, initial: false, setTo: false, expectVerified: false, expectPost: false, expectedDate: 0 },
+    ];
+
+    scenarios.forEach(scenario => {
+      const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
+      const name = `user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`;
+      const selectedReports = [{
+        _id: 'abc',
+        doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
+      }];
+
+      it(name, fakeAsync(() => {
+        sinon
+          .stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty')
+          .callsFake(props => {
+            const updatedSelectedReport = {
+              ...selectedReports[0],
+              doc: { ...selectedReports[0].doc, ...props },
+            };
+            store.overrideSelector(Selectors.getSelectedReports, [updatedSelectedReport]);
+            store.refreshState();
+          });
+
+        canEdit ? authService.has.resolves(true) : authService.has.resolves(false);
+        confirm ? modalService.show.resolves() : modalService.show.rejects();
+        dbService.put.resolves();
+        store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+        store.refreshState();
+
+        actions$ = of(ReportActionList.verifyReport(setTo));
+        flush();
+        if (confirm === undefined) {
+          expect(modalService.show.callCount).to.equal(0);
+        } else {
+          expect(modalService.show.callCount).to.equal(1);
+        }
+
+        if (expectPost) {
+          expect(dbService.put.callCount).to.equal(1);
+          expect(dbService.put.args[0]).to.deep.equal([{
+            _id: 'def',
+            name: 'hello',
+            form: 'P',
+            rev: '1',
+            verified_date: expectedDate,
+            verified: expectVerified,
+          }]);
+        } else {
+          expect(dbService.put.called).to.be.false;
+        }
+      }));
+    });
+  });
+});

@@ -119,6 +119,7 @@ export class ReportsActions {
       .select(Selectors.getVerifyingReport)
       .pipe(take(1))
       .subscribe(verifyingReport => {
+        console.error(verifyingReport, 'verifyingReport');
         this.store.dispatch(Actions.setVerifyingReport(!verifyingReport));
         this.setRightActionBar();
       });

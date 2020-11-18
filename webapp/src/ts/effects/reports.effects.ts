@@ -274,6 +274,8 @@ export class ReportsEffects {
         };
 
         const shouldReportBeVerified = canUserEdit => {
+          console.log('canUserEdit', canUserEdit);
+
           // verify if user verifications are allowed
           if (canUserEdit) {
             return true;
@@ -319,7 +321,7 @@ export class ReportsEffects {
             .get(report.doc._id)
             .then(existingRecord => {
               this.reportActions.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
-              return this.dbService.get().post(getFirstSelectedReport().doc);
+              return this.dbService.get().put(getFirstSelectedReport().doc);
             })
             .catch(err => console.error('Error verifying message', err))
             .finally(() => {
