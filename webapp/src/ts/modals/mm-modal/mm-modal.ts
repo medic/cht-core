@@ -4,33 +4,17 @@
  * Usage:
  * <mm-modal [attributes]>[modal body]</mm-modal>
  */
-
-import {
-  Component,
-  Injectable,
-  Input,
-  Output,
-  EventEmitter,
-  HostListener,
-  OnInit,
-  OnDestroy
-} from '@angular/core';
+import { Component, Injectable, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
-import { Store } from '@ngrx/store';
 import { v4 as uuid } from 'uuid';
 import { take } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
-
-import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'mm-modal',
   templateUrl: './mm-modal.component.html'
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
-export class MmModal implements OnInit, OnDestroy {
-
-  @Input() minimalTabs = false;
+export class MmModal {
   @Input() status;
   @Input() id;
   @Input() titleKey;
@@ -42,26 +26,11 @@ export class MmModal implements OnInit, OnDestroy {
   @Input() disableSubmit;
   @Input() danger;
 
-  subscription: Subscription = new Subscription();
-
-  constructor(private store: Store) {
-  }
-
-  ngOnInit() {
-    const subscription = this.store
-      .select(Selectors.getMinimalTabs)
-      .subscribe(minimalTabs => {
-        this.minimalTabs = minimalTabs;
-      });
-    this.subscription.add(subscription);
+  constructor() {
   }
 
   @HostListener('window:keydown.enter') onEnterHandler() {
     this.onSubmit.emit();
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 }
 
