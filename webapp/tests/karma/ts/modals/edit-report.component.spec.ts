@@ -3,6 +3,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { Subject } from 'rxjs';
 
 import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
@@ -22,7 +23,10 @@ describe('EditReportComponent', () => {
   let updateFacilityService;
 
   beforeEach(async(() => {
-    bdModalRef = { hide: sinon.stub() };
+    bdModalRef = {
+      hide: sinon.stub(),
+      onHidden: new Subject(),
+    };
 
     contactTypesService = { getPersonTypes: sinon.stub() };
     select2SearchService = { init: sinon.stub() };
@@ -61,9 +65,17 @@ describe('EditReportComponent', () => {
 
   it('should create', () => {
     expect(component).to.exist;
-    expect(setError.callCount).to.equal(0);
-    expect(setProcessing.callCount).to.equal(0);
-    expect(setFinished.callCount).to.equal(0);
+  });
+
+  it('should close select2 when modal is hidden', () => {
+    const select2Handler = sinon.stub($.fn, 'select2');
+    // @ts-ignore
+    sinon.spy($, 'find');
+    bdModalRef.onHidden.next();
+    expect(select2Handler.callCount).to.equal(1);
+    expect(select2Handler.args[0]).to.deep.equal(['close']);
+    // @ts-ignore
+    expect($.find.args[0][0]).to.equal('#edit-report [name=facility]');
   });
 
   describe('ngAfterViewInit', () => {
@@ -74,6 +86,8 @@ describe('EditReportComponent', () => {
         { id: 'patient', name: 'patient' },
       ]);
       select2SearchService.init.resolves();
+      // @ts-ignore
+      sinon.spy($, 'find');
 
       await component.ngAfterViewInit();
 
@@ -88,6 +102,8 @@ describe('EditReportComponent', () => {
           initialValue: undefined,
         }
       ]);
+      // @ts-ignore
+      expect($.find.args[0][0]).to.equal('#edit-report [name=facility]');
     });
 
     it('should pass report from as fallback', async () => {

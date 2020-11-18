@@ -5,6 +5,7 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { UpdateFacilityService } from '@mm-services/update-facility.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'edit-report',
@@ -20,9 +21,17 @@ export class EditReportComponent extends MmModalAbstract implements AfterViewIni
     private updateFacilityService:UpdateFacilityService,
   ) {
     super(bsModalRef);
+    bsModalRef.onHidden
+      .pipe(take(1)) // so we don't need to unsubscribe
+      // close the select2 popup
+      .subscribe(() => this.getSelectElement().select2('close'));
   }
 
   model:any = { report: {} };
+
+  private getSelectElement() {
+    return $('#edit-report [name=facility]');
+  }
 
   ngAfterViewInit() {
     return this.contactTypesService
@@ -33,15 +42,14 @@ export class EditReportComponent extends MmModalAbstract implements AfterViewIni
           allowNew: false,
           initialValue: this.model?.report?.contact?._id || this.model?.report?.from,
         };
-        return this.select2SearchService.init($('#edit-report [name=facility]'), types, options);
+        return this.select2SearchService.init(this.getSelectElement(), types, options);
       })
       .catch(err => console.error('Error initialising select2', err));
   }
 
-
   submit() {
     const docId = this.model?.report?._id;
-    const facilityId = $('#edit-report [name=facility]').val();
+    const facilityId = this.getSelectElement().val();
     if (!docId) {
       this.setError(new Error('Validation error'), 'Error updating facility');
       return;
