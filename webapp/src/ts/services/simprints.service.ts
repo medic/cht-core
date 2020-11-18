@@ -43,17 +43,21 @@ export class SimprintsService {
       return false;
     }
   }
+  
   register() {
     return this.request(window.medicmobile_android.simprints_reg);
   }
+
   registerResponse(requestId, response) {
     if (this.isCurrentRequest(requestId)) {
       this.resolvePromise(response.id);
     }
   }
+
   identify() {
     return this.request(window.medicmobile_android.simprints_ident);
   }
+
   identifyResponse(requestId, identities) {
     if (this.isCurrentRequest(requestId)) {
       identities.forEach((identity) => {

@@ -65,11 +65,11 @@ describe('Contacts component', () => {
           }},
           { provide: SettingsService, useValue: { get: sinon.stub().resolves([]) } },
           { provide: UserSettingsService, useValue: {
-            get: sinon.stub().resolves({ facility_id: 'abcde' })
+            get: sinon.stub().resolves({ facility_id: 'district-id' })
           }},
           { provide: GetDataRecordsService, useValue: {
             get: sinon.stub().resolves({
-              _id: 'abcde',
+              _id: 'district-id',
               name: 'My District',
               type: 'district_hospital'
             })
@@ -83,7 +83,8 @@ describe('Contacts component', () => {
                 icon: 'icon'
               }
             ]),
-            getAll: sinon.stub().resolves([])
+            getAll: sinon.stub().resolves([]),
+            includes: sinon.stub()
           }},
           { provide: ScrollLoaderProvider, useValue: { init: (callback) => {
             scrollLoaderCallback = callback;
@@ -103,7 +104,6 @@ describe('Contacts component', () => {
         sessionService = TestBed.inject(SessionService);
         authService = TestBed.inject(AuthService);
         contactTypesService = TestBed.inject(ContactTypesService);
-        component.router.navigate = sinon.stub().returns(true);
       });
   }));
 
@@ -135,6 +135,7 @@ describe('Contacts component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
+  // TODO: Migrate these tests
   // describe('sets left actionBar', () => {
   //   it('when user has facility_id', () => {
   //     const ctrl = createController();
@@ -214,11 +215,11 @@ describe('Contacts component', () => {
       searchService.search.resolves(searchResults);
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
 
-      expect(argument.length).to.equal(2);
-      expect(argument[0]._id).to.equal('abcde');
-      expect(argument[1]._id).to.equal('search-result');
+      expect(contacts.length).to.equal(2);
+      expect(contacts[0]._id).to.equal('district-id');
+      expect(contacts[1]._id).to.equal('search-result');
     }));
 
     it('Only displays the home place once', fakeAsync(() => {
@@ -227,7 +228,7 @@ describe('Contacts component', () => {
           _id: 'search-result',
         },
         {
-          _id: 'abcde',
+          _id: 'district-id',
         },
       ];
 
@@ -236,11 +237,11 @@ describe('Contacts component', () => {
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
 
-      expect(argument.length).to.equal(2);
-      expect(argument[0]._id).to.equal('abcde');
-      expect(argument[1]._id).to.equal('search-result');
+      expect(contacts.length).to.equal(2);
+      expect(contacts[0]._id).to.equal('district-id');
+      expect(contacts[1]._id).to.equal('search-result');
     }));
 
     it('Only searches for top-level places as an admin', fakeAsync(() => {
@@ -252,19 +253,21 @@ describe('Contacts component', () => {
           _id: 'search-result',
         },
       ];
+      contactTypesService.getChildren.resetHistory();
+      searchService.search.resetHistory();
       searchService.search.resolves(searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
       component.ngOnInit();
       flush();
 
-      expect(contactTypesService.getChildren.args[1].length).to.equal(0);
-      expect(searchService.search.args[1][1]).to.deep.equal(
+      expect(contactTypesService.getChildren.args[0].length).to.equal(0);
+      expect(searchService.search.args[0][1]).to.deep.equal(
         {
           types: { selected: ['childType'] },
         }
       );
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
-      expect(argument.length).to.equal(1);
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
+      expect(contacts.length).to.equal(1);
     }));
 
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
@@ -275,13 +278,14 @@ describe('Contacts component', () => {
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
-      scrollLoaderCallback();
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
+      expect(contacts.length).to.equal(50);
 
-      expect(argument.length).to.equal(50);
-      expect(searchService.search.args[2][2]).to.deep.equal({
+      scrollLoaderCallback();
+      expect(searchService.search.args[1][2]).to.deep.equal({
         paginating: true,
         limit: 50,
         skip: 50,
@@ -294,13 +298,14 @@ describe('Contacts component', () => {
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
       scrollLoaderCallback();
 
-      expect(argument.length).to.equal(51);
-      expect(searchService.search.args[2][2]).to.deep.equal({
+      expect(contacts.length).to.equal(51);
+      expect(searchService.search.args[1][2]).to.deep.equal({
         paginating: true,
         limit: 50,
         skip: 50,
@@ -315,14 +320,15 @@ describe('Contacts component', () => {
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
       const changesCallback = changesService.subscribe.args[0][0].callback;
       changesCallback({});
 
-      expect(argument.length).to.equal(60);
-      expect(searchService.search.args[2][2]).to.deep.equal({
+      expect(contacts.length).to.equal(60);
+      expect(searchService.search.args[1][2]).to.deep.equal({
         limit: 60,
         silent: true,
         withIds: false,
@@ -335,15 +341,16 @@ describe('Contacts component', () => {
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
       const changesCallback = changesService.subscribe.args[0][0].callback;
       changesCallback({});
 
-      expect(argument.length).to.equal(61);
-      expect(searchService.search.args[2][2].limit).to.equal(60);
-      expect(searchService.search.args[2][2].skip).to.equal(undefined);
+      expect(contacts.length).to.equal(61);
+      expect(searchService.search.args[1][2].limit).to.equal(60);
+      expect(searchService.search.args[1][2].skip).to.equal(undefined);
     }));
 
     it('resets limit/skip modifier when filtering #4085', fakeAsync(() => {
@@ -352,29 +359,31 @@ describe('Contacts component', () => {
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
 
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
 
-      expect(argument.length).to.equal(11);
+      expect(contacts.length).to.equal(11);
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       store.refreshState();
       component.filters = { search: true };
+      component.router.navigate = sinon.stub().returns(true);
       component.search();
       flush();
 
       expect(searchService.search.args[1][2]).to.deep.equal({ limit: 50 });
 
-      const argument2 = component.contactsActions.updateContactsList.args[1][0].updatedContacts.length;
-      expect(argument2).to.equal(50);
+      const updatedContacts = component.contactsActions.updateContactsList.args[1][0].length;
+      expect(updatedContacts).to.equal(50);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       scrollLoaderCallback();
       store.overrideSelector(Selectors.getContactsList, searchResults);
 
-      expect(searchService.search.args[3][2]).to.deep.equal({
+      expect(searchService.search.args[2][2]).to.deep.equal({
         limit: 50,
         paginating: true,
         skip: 50,
@@ -384,17 +393,18 @@ describe('Contacts component', () => {
     it('when paginating, does not modify the skip when it finds homeplace #4085', fakeAsync(() => {
       const searchResult = { _id: 'search-result' };
       searchResults = Array(49).fill(searchResult);
-      searchResults.push({ _id: 'abcde' });
+      searchResults.push({ _id: 'district-id' });
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
       scrollLoaderCallback();
 
-      expect(argument.length).to.equal(50);
-      expect(searchService.search.args[2][2]).to.deep.equal({
+      expect(contacts.length).to.equal(50);
+      expect(searchService.search.args[1][2]).to.deep.equal({
         limit: 50,
         paginating: true,
         skip: 50,
@@ -413,39 +423,40 @@ describe('Contacts component', () => {
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
-      const argument = component.contactsActions.updateContactsList.args[0][0].updatedContacts;
-      expect(argument.length).to.equal(51);
+      const contacts = component.contactsActions.updateContactsList.args[0][0];
+      expect(contacts.length).to.equal(51);
 
       store.refreshState();
-      searchResults = searchResults.concat(mockResults(49, 50));
-      searchService.search.resolves(searchResults);
-      store.overrideSelector(Selectors.getContactsList, searchResults);
+      searchResults = mockResults(49, 50);
+      searchService.search.resolves(searchResults.concat(contacts));
+      store.overrideSelector(Selectors.getContactsList, searchResults.concat(contacts));
       
       scrollLoaderCallback();
       flush();
-      const argument2 = component.contactsActions.updateContactsList.args[1][0].updatedContacts;
-      expect(argument2.length).to.equal(100);
-      expect(searchService.search.args[2][2]).to.deep.equal({
+      const updatedContacts = component.contactsActions.updateContactsList.args[1][0];
+      expect(updatedContacts.length).to.equal(100);
+      expect(searchService.search.args[1][2]).to.deep.equal({
         limit: 50,
         paginating: true,
         skip: 50,
       });
 
       store.refreshState();
-      searchResults = searchResults.concat(mockResults(50, 100));
-      searchService.search.resolves(searchResults);
-      store.overrideSelector(Selectors.getContactsList, searchResults);
+      searchResults = mockResults(50, 100);
+      searchService.search.resolves(searchResults.concat(updatedContacts));
+      store.overrideSelector(Selectors.getContactsList, searchResults.concat(updatedContacts));
       scrollLoaderCallback();
       flush();
-      expect(searchService.search.args[3][2]).to.deep.equal({
+      expect(searchService.search.args[2][2]).to.deep.equal({
         limit: 50,
         paginating: true,
         skip: 100,
       });
-      const argument3 = component.contactsActions.updateContactsList.args[2][0].updatedContacts;
-      expect(argument3.length).to.equal(150);
+      const updateContactsList = component.contactsActions.updateContactsList.args[2][0];
+      expect(updateContactsList.length).to.equal(150);
     }));
   });
 
@@ -474,15 +485,16 @@ describe('Contacts component', () => {
           _id: 'search-result',
         },
         {
-          _id: 'abcde',
+          _id: 'district-id',
         },
       ];
       searchService.search.onCall(0).resolves(searchResults);
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
       changesCallback({ doc: { _id: '123' } });
-      expect(searchService.search.callCount).to.equal(3);
-      expect(searchService.search.args[2][2].limit).to.equal(50);
+      expect(searchService.search.callCount).to.equal(2);
+      expect(searchService.search.args[1][2].limit).to.equal(50);
     }));
 
     it('when handling deletes, does not shorten the list #4080', fakeAsync(() => {
@@ -493,16 +505,23 @@ describe('Contacts component', () => {
       searchResults = Array(60).fill(searchResult);
       searchService.search.resolves(searchResults);
       store.overrideSelector(Selectors.getContactsList, searchResults);
+      component.contactsActions.removeContactFromList = sinon.stub();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
-      changesCallback({ deleted: true, doc: {} });
-      expect(searchService.search.args[2][2].limit).to.equal(60);
+      expect(searchService.search.callCount).to.equal(1);
+      changesCallback({ deleted: true, doc: {}, id: 'deleted doc' });
+      expect(component.contactsActions.removeContactFromList.callCount).to.equal(1);
+      expect(searchService.search.callCount).to.equal(2);
+      expect(component.contactsActions.removeContactFromList.args[0][0]).to.deep.equal(
+        { _id: 'deleted doc' }
+      );
+      expect(searchService.search.args[1][2].limit).to.equal(60);
     }));
 
     it('filtering returns true for contained deletions', () => {
       contactListContains.returns(true);
       const changesFilter = changesService.subscribe.args[0][0].filter;
-      component.contactsActions.removeContactFromList = sinon.stub();
       expect(!!changesFilter({ deleted: true, id: 'some_id' })).to.equal(true);
     });
   });
@@ -530,6 +549,8 @@ describe('Contacts component', () => {
 
     it('enables LastVisitedDate features when allowed', fakeAsync(() => {
       authService.has.resolves(true);
+      searchService.search.resetHistory();
+      userSettingsService.get.resetHistory();
       component.ngOnInit();
       flush();
       expect(authService.has.callCount).equal(2);
@@ -538,9 +559,9 @@ describe('Contacts component', () => {
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
       expect(component.defaultSortDirection).to.equal('alpha');
-      expect(userSettingsService.get.callCount).to.equal(2);
-      expect(searchService.search.callCount).to.equal(2);
-      expect(searchService.search.args[1]).to.deep.equal(
+      expect(userSettingsService.get.callCount).to.equal(1);
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal(
         [
           'contacts',
           { types: { selected: ['childType'] } },
@@ -565,19 +586,21 @@ describe('Contacts component', () => {
           },
         },
       });
+      authService.has.resetHistory();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
 
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.callCount).equal(1);
+      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({
         monthStartDate: false,
         visitCountGoal: 1,
       });
       expect(component.sortDirection).to.equal('alpha');
-      expect(searchService.search.callCount).to.equal(2);
-      expect(searchService.search.args[1]).to.deep.equal(
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal(
         [
           'contacts',
           { types: { selected: ['childType'] } },
@@ -602,19 +625,21 @@ describe('Contacts component', () => {
           },
         },
       });
+      authService.has.resetHistory();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
 
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.callCount).equal(1);
+      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({
         monthStartDate: false,
         visitCountGoal: 1,
       });
       expect(component.sortDirection).to.equal('something');
-      expect(searchService.search.callCount).to.equal(2);
-      expect(searchService.search.args[1]).to.deep.equal(
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal(
         [
           'contacts',
           { types: { selected: ['childType'] } },
@@ -642,11 +667,13 @@ describe('Contacts component', () => {
           },
         },
       });
+      authService.has.resetHistory();
+      searchService.search.resetHistory();
       component.ngOnInit();
       flush();
 
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.callCount).equal(1);
+      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({
         monthStartDate: 25,
@@ -654,8 +681,8 @@ describe('Contacts component', () => {
       });
       expect(component.sortDirection).to.equal('last_visited_date');
       expect(component.defaultSortDirection).to.equal('last_visited_date');
-      expect(searchService.search.callCount).to.equal(2);
-      expect(searchService.search.args[1]).to.deep.equal(
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal(
         [
           'contacts',
           { types: { selected: ['childType'] } },
@@ -810,6 +837,7 @@ describe('Contacts component', () => {
             searchResults = Array(60).fill(searchResult);
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
+            searchService.search.resetHistory();
             component.ngOnInit();
             flush();
             const changesCallback = changesService.subscribe.args[1][0].callback;
@@ -821,9 +849,9 @@ describe('Contacts component', () => {
               changesCallback({ doc: deletedVisitReport, deleted: true }),
               changesCallback({ doc: someContact }),
             ]).then(() => {
-              expect(searchService.search.callCount).to.equal(7);
+              expect(searchService.search.callCount).to.equal(6);
 
-              for (let i = 2; i < 7; i++) {
+              for (let i = 1; i < 6; i++) {
                 expect(searchService.search.args[i]).to.deep.equal(
                   [
                     'contacts',
@@ -846,6 +874,7 @@ describe('Contacts component', () => {
               );
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
+              searchService.search.resetHistory();
               component.ngOnInit();
               flush();
               component.sortDirection = 'last_visited_date';
@@ -858,8 +887,8 @@ describe('Contacts component', () => {
                 changesCallback({ doc: deletedVisitReport, deleted: true }),
                 changesCallback({ doc: someContact }),
               ]).then(() => {
-                expect(searchService.search.callCount).to.equal(7);
-                expect(searchService.search.args[2]).to.deep.equal([
+                expect(searchService.search.callCount).to.equal(6);
+                expect(searchService.search.args[1]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
                   { limit: 49, withIds: true, silent: true },
@@ -868,10 +897,10 @@ describe('Contacts component', () => {
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
                   },
-                  ['abcde', 0, 1, 2, 3, 4],
+                  ['district-id', 0, 1, 2, 3, 4],
                 ]);
 
-                for (let i = 3; i < 7; i++) {
+                for (let i = 2; i < 6; i++) {
                   expect(searchService.search.args[i]).to.deep.equal([
                     'contacts',
                     { types: { selected: ['childType'] } },
@@ -898,6 +927,7 @@ describe('Contacts component', () => {
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(true);
+            searchService.search.resetHistory();
             component.ngOnInit();
             flush();
             component.sortDirection = 'alpha';
@@ -909,9 +939,9 @@ describe('Contacts component', () => {
               changesCallback({ doc: deletedVisitReport, deleted: true }),
               changesCallback({ doc: someContact }),
             ]).then(() => {
-              expect(searchService.search.callCount).to.equal(7);
+              expect(searchService.search.callCount).to.equal(6);
 
-              for (let i = 2; i < 7; i++) {
+              for (let i = 2; i < 6; i++) {
                 expect(searchService.search.args[i]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
@@ -939,6 +969,7 @@ describe('Contacts component', () => {
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               authService.has.resolves(true);
+              searchService.search.resetHistory();
               component.ngOnInit();
               flush();
               const changesCallback = changesService.subscribe.args[1][0].callback;
@@ -949,8 +980,8 @@ describe('Contacts component', () => {
                 changesCallback({ doc: deletedVisitReport, deleted: true }),
                 changesCallback({ doc: someContact }),
               ]).then(() => {
-                expect(searchService.search.callCount).to.equal(7);
-                expect(searchService.search.args[2]).to.deep.equal([
+                expect(searchService.search.callCount).to.equal(6);
+                expect(searchService.search.args[1]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
                   { limit: 49, withIds: true, silent: true },
@@ -959,10 +990,10 @@ describe('Contacts component', () => {
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
                   },
-                  ['abcde', 0, 1, 2, 3, 4],
+                  ['district-id', 0, 1, 2, 3, 4],
                 ]);
 
-                for (let i = 3; i < 6; i++) {
+                for (let i = 2; i < 6; i++) {
                   expect(searchService.search.args[i]).to.deep.equal([
                     'contacts',
                     { types: { selected: ['childType'] } },
@@ -991,6 +1022,7 @@ describe('Contacts component', () => {
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(false);
             contactListContains.withArgs(4).returns(true);
+            searchService.search.resetHistory();
             component.ngOnInit();
             flush();
             const changesCallback = changesService.subscribe.args[1][0].callback;
@@ -1002,9 +1034,9 @@ describe('Contacts component', () => {
               changesCallback({ doc: deletedVisitReport, deleted: true }),
               changesCallback({ doc: someContact }),
             ]).then(() => {
-              expect(searchService.search.callCount).to.equal(7);
+              expect(searchService.search.callCount).to.equal(6);
 
-              for (let i = 2; i < 7; i++) {
+              for (let i = 1; i < 6; i++) {
                 expect(searchService.search.args[i]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
@@ -1030,6 +1062,7 @@ describe('Contacts component', () => {
               settingsService.get.resolves({
                 uhc: { contacts_default_sort: 'last_visited_date' },
               });
+              searchService.search.resetHistory();
               component.ngOnInit();
               flush();
               const changesCallback = changesService.subscribe.args[1][0].callback;
@@ -1041,9 +1074,9 @@ describe('Contacts component', () => {
                 changesCallback({ doc: deletedVisitReport, deleted: true }),
                 changesCallback({ doc: someContact }),
               ]).then(() => {
-                expect(searchService.search.callCount).to.equal(7);
+                expect(searchService.search.callCount).to.equal(6);
 
-                for (let i = 2; i < 7; i++) {
+                for (let i = 1; i < 6; i++) {
                   expect(searchService.search.args[i]).to.deep.equal([
                     'contacts',
                     { types: { selected: ['childType'] } },
@@ -1063,12 +1096,14 @@ describe('Contacts component', () => {
             uhc: { contacts_default_sort: 'last_visited_date' },
           });
           sessionService.isDbAdmin.returns(true);
+          authService.has.resetHistory();
+          searchService.search.resetHistory();
           component.ngOnInit();
           flush();
 
-          expect(authService.has.callCount).to.equal(1);
-          expect(searchService.search.callCount).to.equal(2);
-          expect(searchService.search.args[1]).to.deep.equal([
+          expect(authService.has.callCount).to.equal(0);
+          expect(searchService.search.callCount).to.equal(1);
+          expect(searchService.search.args[0]).to.deep.equal([
             'contacts',
             { types: { selected: ['childType'] } },
             { limit: 50 },

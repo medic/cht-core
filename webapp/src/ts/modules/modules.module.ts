@@ -61,7 +61,6 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
     ReportsComponent,
     MessagesComponent,
     ContactsComponent,
-    ContactsContentComponent,
     PrivacyPolicyComponent,
   ]
 })

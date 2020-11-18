@@ -38,7 +38,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
   loading = false;
   error;
   appending;
-  filtered = false;
   hasContacts = true;
   filters:any = {};
   defaultFilters:any = {};
@@ -70,7 +69,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private UHCSettings: UHCSettingsService,
     private simprintsService: SimprintsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
-    private dateService: RelativeDateService,
+    private relativeDateService: RelativeDateService,
     private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -96,6 +95,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
       callback: (change) => {
+        const limit = this.contactsList.length;
         if (change.deleted) {
           this.contactsActions.removeContactFromList({ _id: change.id });
           this.hasContacts = this.contactsList.length;
@@ -105,14 +105,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
           !!this.isRelevantVisitReport(change.doc) &&
           !change.deleted;
         return this.query({
-          limit: this.contactsList.length,
+          limit,
           withIds,
           silent: true,
         });
       },
       filter: (change) => {
         return (
-          (change.doc && this.contactTypes.map(type => type.id).includes(change.doc.type)) ||
+          this.contactTypesService.includes(change.doc) ||
           (change.deleted && this.listContains(change.id)) ||
           this.isRelevantVisitReport(change.doc) ||
           this.listContains(change.id)
@@ -122,12 +122,13 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.subscription.add(changesSubscription);
     this.simprintsEnabled = this.simprintsService.enabled();
 
-    Promise.all([
-      this.getUserHomePlaceSummary(),
-      this.canViewLastVisitedDate(),
-      this.settingsService.get(),
-      this.contactTypesService.getAll()
-    ])
+    Promise
+      .all([
+        this.getUserHomePlaceSummary(),
+        this.canViewLastVisitedDate(),
+        this.settingsService.get(),
+        this.contactTypesService.getAll()
+      ])
       .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
         this.usersHomePlace = homePlaceSummary;
         this.lastVisitedDateExtras = viewLastVisitedDate;
@@ -183,7 +184,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     return this.userSettingsService.get()
       .then((userSettings:any) => {
         if (userSettings.facility_id) {
-          return this.getDataRecordsService.get(userSettings.facility_id, {include_docs: false});
+          return this.getDataRecordsService.get(userSettings.facility_id);
         }
       })
       .then((summary) => {
@@ -204,8 +205,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   private formatContacts(contacts) {
     return contacts.map(updatedContact => {
-      const contact: any = {};
-      Object.assign(contact, updatedContact);
+      const contact = { ...updatedContact };
       const typeId = contact.contact_type || contact.type;
       const type = this.contactTypes.find(type => type.id === typeId);
       contact.route = 'contacts';
@@ -216,8 +216,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
       contact.primary = contact.home;
       contact.simprintsTier = contact.simprints && contact.simprints.tierNumber;
       contact.dod = contact.date_of_death;
-      // eslint-disable-next-line no-self-assign
-      contact.muted = contact.muted;
       if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
         if (contact.lastVisitedDate === 0) {
           contact.overdue = true;
@@ -228,7 +226,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
           contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
           contact.summary = this.translateService.instant(
             'contact.last.visited.date',
-            { date: this.dateService.getRelativeDate(contact.lastVisitedDate, {}) }
+            { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
           );
         }
 
@@ -284,21 +282,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     return this.sortDirection === 'last_visited_date';
   }
 
-  private getContactTypeOrder(contact) {
-    if (contact.type === 'contact') {
-      const idx = this.contactTypesService.HARDCODED_TYPES().indexOf(contact.contact_type);
-      if (idx !== -1) {
-        // matches a hardcoded type - order by the index
-        return '' + idx;
-      }
-      // order by the name of the type
-      return contact.contact_type;
-    }
-    // backwards compatibility with hardcoded hierarchy
-    return '' + this.contactTypesService.HARDCODED_TYPES().indexOf(contact.type);
-  }
-
-  private query(opts) {
+  private query(opts?) {
     const options = Object.assign({ limit: PAGE_SIZE }, opts);
     if (options.limit < PAGE_SIZE) {
       options.limit = PAGE_SIZE;
@@ -348,36 +332,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
       .then((updatedContacts) => {
-        const orderBy = (c1, c2) => {
-          if (!c1 || !c2) {
-            return;
-          }
-      
-          // sort dead people to the bottom
-          if (!!c1.date_of_death !== !!c2.date_of_death) {
-            return c1.date_of_death ? 1 : -1;
-          }
-      
-          // sort muted people to the bottom
-          if (!!c1.muted !== !!c2.muted) {
-            return c1.muted ? 1 : -1;
-          }
-      
-          if (c1.sortByLastVisitedDate) {
-            return c1.lastVisitedDate - c2.lastVisitedDate;
-          }
-          if (c1.simprints && c2.simprints) {
-            return c2.simprints.confidence - c1.simprints.confidence;
-          }
-          const c1Type = this.getContactTypeOrder(c1) || '';
-          const c2Type = this.getContactTypeOrder(c2) || '';
-          if (c1Type !== c2Type) {
-            return c1Type < c2Type ? -1 : 1;
-          }
-      
-          return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
-        };
-
         // If you have a home place make sure its at the top
         if(this.usersHomePlace) {
           const homeIndex = _.findIndex(updatedContacts, (contact:any) => {
@@ -418,14 +372,16 @@ export class ContactsComponent implements OnInit, OnDestroy{
         }
 
         updatedContacts = this.formatContacts(updatedContacts);
-        this.contactsActions.updateContactsList({ updatedContacts, orderBy });
+        this.contactsActions.updateContactsList(updatedContacts);
 
         this.moreItems = updatedContacts.length >= options.limit;
-        this.hasContacts = !!updatedContacts.length;
+        this.hasContacts = !!this.contactsList.length;
         this.loading = false;
         this.appending = false;
         this.error = false;
         this.initScroll();
+        // TODO: enable method below
+        // setActionBarData();
       })
       .catch(err => {
         this.error = true;
@@ -442,17 +398,15 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
     this.loading = true;
     if (this.filters.search || this.filters.simprintsIdentities) {
-      this.filtered = true;
-      return this.query({});
+      return this.query();
     } else {
-      this.filtered = false;
-      return this.query({});
+      return this.query();
     }
   }
 
   sort(sortDirection?) {
     this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
-    this.query({});
+    this.query();
   }
 
   simprintsIdentify() {
