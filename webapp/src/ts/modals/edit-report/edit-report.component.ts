@@ -33,6 +33,10 @@ export class EditReportComponent extends MmModalAbstract implements AfterViewIni
     return $('#edit-report [name=facility]');
   }
 
+  private getSelectElement() {
+    return $('#edit-report [name=facility]');
+  }
+
   ngAfterViewInit() {
     return this.contactTypesService
       .getPersonTypes()
