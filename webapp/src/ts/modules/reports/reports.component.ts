@@ -114,7 +114,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
     this.subscription.add(dbSubscription);
     this.reportsActions.setSelectedReports([]);
-    this.reportsActions.setSelectMode(false);
     this.appending = false;
     this.error = false;
     this.verifyingReport = false;
@@ -132,6 +131,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     // when navigating back from another tab, if there are reports in the state, angular will try to render them
     this.reportsActions.resetReportsList();
     this.reportsActions.setSelectedReports([]);
+    this.globalActions.setSelectMode(false);
   }
 
   private getReportHeading(form, report) {
