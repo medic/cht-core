@@ -94,6 +94,11 @@
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "tests/karma/karma-unit.conf.js",
             "progress": true,
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/js/bootstrapper/**",
+              "src/js/enketo/**"
+            ],
             "assets": [
               "src/img",
               "src/fonts",
