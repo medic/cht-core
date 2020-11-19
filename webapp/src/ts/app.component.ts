@@ -327,10 +327,17 @@ export class AppComponent implements OnInit {
     });
 
     this.countMessageService.init();
-    this.checkPrivacyPolicy();
+    this.checkPrivacyPolicy()
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the startup modals,
+          // otherwise the modals will start from the privacy
+          // policy component after the user accepts the terms
+          this.startupModalsService.showStartupModals();
+        }
+      });
     this.initForms();
-
-    this.startupModalsService.showStartupModals();
   }
 
   private initForms() {
@@ -425,6 +432,7 @@ export class AppComponent implements OnInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
+        return { privacyPolicy, accepted };
       })
       .catch(err => console.error('Failed to load privacy policy', err));
   }
