@@ -52,7 +52,6 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.aggregates = aggregates;
       this.shouldLoadDetail = this.paramTargetId !== params.id;
       this.paramTargetId = params.id;
-      console.warn('hola', params.id, this.shouldLoadDetail, this.aggregates);
       this.getAggregatesDetail(this.paramTargetId);
       this.changeDetectorRef.detectChanges();
     });
