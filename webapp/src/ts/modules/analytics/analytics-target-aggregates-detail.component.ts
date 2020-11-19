@@ -41,20 +41,20 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.store.select(Selectors.getSelectedTargetAggregate),
       this.store.select(Selectors.getTargetAggregatesError),
     )
-    .subscribe(([
-      params,
-      aggregates,
-      selected,
-      error
-    ]) => {
-      this.selected = selected;
-      this.error = error;
-      this.aggregates = aggregates;
-      this.shouldLoadDetail = this.paramTargetId !== params.id;
-      this.paramTargetId = params.id;
-      this.getAggregatesDetail(this.paramTargetId);
-      this.changeDetectorRef.detectChanges();
-    });
+      .subscribe(([
+        params,
+        aggregates,
+        selected,
+        error
+      ]) => {
+        this.selected = selected;
+        this.error = error;
+        this.aggregates = aggregates;
+        this.shouldLoadDetail = this.paramTargetId !== params.id;
+        this.paramTargetId = params.id;
+        this.getAggregatesDetail(this.paramTargetId);
+        this.changeDetectorRef.detectChanges();
+      });
     this.subscriptions.add(subscription);
   }
 

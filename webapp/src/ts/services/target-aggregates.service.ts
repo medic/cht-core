@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
-import { isString as _isString } from 'lodash-es'
+import { isString as _isString } from 'lodash-es';
 
 import { UHCSettingsService } from './uhc-settings.service';
 import { DbService } from './db.service';
@@ -253,7 +253,7 @@ export class TargetAggregatesService {
       .then(homePlaceSummary => {
         if (!homePlaceSummary) {
           const message = 'Your user does not have an associated contact, or does not have access to the ' +
-            'associated contact.'
+            'associated contact.';
           const err:any = new Error(message);
           err.translationKey = 'analytics.target.aggregates.error.no.contact';
           throw err;

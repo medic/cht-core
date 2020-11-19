@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -43,15 +43,15 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSelectedTargetAggregate),
       this.store.select(Selectors.getTargetAggregatesError),
     )
-    .subscribe(([
-      aggregates,
-      selected,
-      error
-    ]) => {
-      this.aggregates = aggregates;
-      this.selected = selected;
-      this.error = error;
-    });
+      .subscribe(([
+        aggregates,
+        selected,
+        error
+      ]) => {
+        this.aggregates = aggregates;
+        this.selected = selected;
+        this.error = error;
+      });
     this.subscriptions.add(selectorsSubscription);
   }
 

@@ -4,7 +4,7 @@ import { Actions } from '@mm-actions/target-aggregates';
 
 export interface TargetAggregatesState {
   selected: object;
-  targetAggregates: object[],
+  targetAggregates: object[];
   error: boolean;
 }
 

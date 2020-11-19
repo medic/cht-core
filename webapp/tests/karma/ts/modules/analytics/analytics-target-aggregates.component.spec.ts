@@ -1,5 +1,5 @@
 import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -29,7 +29,7 @@ describe('Analytics Target Aggregates Component', () => {
       { selector: 'getTargetAggregatesError', value: null },
     ];
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -82,9 +82,11 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(targetAggregatesService.getAggregates.callCount).to.equal(0);
     expect(component.loading).to.equal(false);
-    expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(2);  // onNgInit() & getTargetAggregates() calls
+    expect(targetAggregatesActions.setTargetAggregatesError.callCount)
+      .to.equal(2); // onNgInit() & getTargetAggregates() calls
     expect(targetAggregatesActions.setTargetAggregatesError.getCall(0).args[0]).to.deep.equal(null);
-    expect(targetAggregatesActions.setTargetAggregatesError.getCall(1).args[0]).to.deep.equal({ some: 'err' });
+    expect(targetAggregatesActions.setTargetAggregatesError.getCall(1).args[0])
+      .to.deep.equal({ some: 'err' });
     expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1); // onNgInit call
     expect(targetAggregatesActions.setTargetAggregates.args[0]).to.deep.equal([null]);
     expect(component.enabled).to.equal(false);
@@ -103,7 +105,8 @@ describe('Analytics Target Aggregates Component', () => {
     expect(component.enabled).to.equal(false);
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(1); // onNgInit() call
     expect(targetAggregatesActions.setTargetAggregatesError.args[0]).to.deep.equal([null]);
-    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(2); // onNgInit() & getTargetAggregates() calls
+    expect(targetAggregatesActions.setTargetAggregates.callCount)
+      .to.equal(2); // onNgInit() & getTargetAggregates() calls
     expect(targetAggregatesActions.setTargetAggregates.getCall(0).args[0]).to.deep.equal(null);
     expect(targetAggregatesActions.setTargetAggregates.getCall(1).args[0]).to.deep.equal(undefined);
   }));
@@ -122,7 +125,8 @@ describe('Analytics Target Aggregates Component', () => {
     expect(component.enabled).to.equal(true);
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(1); // onNgInit() call
     expect(targetAggregatesActions.setTargetAggregatesError.args[0]).to.deep.equal([null]);
-    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(2); // onNgInit() & getTargetAggregates() calls
+    expect(targetAggregatesActions.setTargetAggregates.callCount)
+      .to.equal(2); // onNgInit() & getTargetAggregates() calls
     expect(targetAggregatesActions.setTargetAggregates.getCall(0).args[0]).to.deep.equal(null);
     expect(targetAggregatesActions.setTargetAggregates.getCall(1).args[0]).to.deep.equal(['some aggregates']);
   }));

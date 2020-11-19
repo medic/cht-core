@@ -5,7 +5,9 @@ import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
 import { AnalyticsModulesComponent } from '@mm-modules/analytics/analytics-modules.component';
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
-import { AnalyticsTargetAggregatesDetailComponent } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
+import {
+  AnalyticsTargetAggregatesDetailComponent
+} from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
 
 export const routes:Routes = [
   {

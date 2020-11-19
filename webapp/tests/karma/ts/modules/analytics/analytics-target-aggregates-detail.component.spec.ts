@@ -5,9 +5,11 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService
 import { provideMockStore } from '@ngrx/store/testing';
 import { Subject } from 'rxjs';
 import sinon from 'sinon';
-import { expect } from "chai";
+import { expect } from 'chai';
 
-import { AnalyticsTargetAggregatesDetailComponent } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
+import {
+  AnalyticsTargetAggregatesDetailComponent
+} from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { GlobalActions } from '@mm-actions/global';
@@ -42,25 +44,26 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       { selector: Selectors.getTargetAggregatesError, value: null }
     ];
 
-    TestBed.configureTestingModule({
-      declarations: [ AnalyticsTargetAggregatesDetailComponent ],
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule
-      ],
-      providers: [
-        provideMockStore({ selectors: mockSelectors }),
-        { provide: TargetAggregatesService, useValue: targetAggregatesService },
-        { provide: ActivatedRoute, useValue: route },
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(AnalyticsTargetAggregatesDetailComponent);
-      component = fixture.componentInstance;
-      translateService = TestBed.inject(TranslateService);
-      fixture.detectChanges();
-    });
+    return TestBed
+      .configureTestingModule({
+        declarations: [ AnalyticsTargetAggregatesDetailComponent ],
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule
+        ],
+        providers: [
+          provideMockStore({ selectors: mockSelectors }),
+          { provide: TargetAggregatesService, useValue: targetAggregatesService },
+          { provide: ActivatedRoute, useValue: route },
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(AnalyticsTargetAggregatesDetailComponent);
+        component = fixture.componentInstance;
+        translateService = TestBed.inject(TranslateService);
+        fixture.detectChanges();
+      });
   }));
 
   afterEach(() => {

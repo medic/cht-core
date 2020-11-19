@@ -115,7 +115,13 @@ describe('TargetAggregatesService', () => {
     });
 
     it('should throw error if getting userSettings fails', () => {
-      settingsService.get.resolves({ tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }});
+      settingsService.get.resolves({ tasks: { targets: {
+        items: [{
+          id: 'target',
+          aggregate: true,
+          type: 'count'
+        }]
+      } } });
       userSettingsService.get.rejects({ err: 'some' });
       dbService.allDocs.resolves({ rows: [] });
 
@@ -126,7 +132,13 @@ describe('TargetAggregatesService', () => {
     });
 
     it('should throw if no facility_id', () => {
-      settingsService.get.resolves({ tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }});
+      settingsService.get.resolves({ tasks: { targets: {
+        items: [{
+          id: 'target',
+          aggregate: true,
+          type: 'count'
+        }]
+      } } });
       userSettingsService.get.resolves({});
       dbService.allDocs.resolves({ rows: [] });
 
@@ -137,7 +149,13 @@ describe('TargetAggregatesService', () => {
     });
 
     it('should throw when no home place', () => {
-      settingsService.get.resolves({ tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }});
+      settingsService.get.resolves({ tasks: { targets: {
+        items: [{
+          id: 'target',
+          aggregate: true,
+          type: 'count'
+        }]
+      } } });
       userSettingsService.get.resolves({ facility_id: 'home' });
       getDataRecordsService.get.withArgs('home').resolves();
       dbService.allDocs.resolves({ rows: [] });
@@ -159,7 +177,13 @@ describe('TargetAggregatesService', () => {
     });
 
     it('should search for contacts by type', async () => {
-      settingsService.get.resolves({ tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }});
+      settingsService.get.resolves({ tasks: { targets: {
+        items: [{
+          id: 'target',
+          aggregate: true,
+          type: 'count'
+        }]
+      } } });
       userSettingsService.get.resolves({ facility_id: 'home' });
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs('home').resolves({ _id: 'home' });
@@ -190,7 +214,13 @@ describe('TargetAggregatesService', () => {
     });
 
     it('should repeat search until all contacts are retrieved', async () => {
-      settingsService.get.resolves({ tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } }});
+      settingsService.get.resolves({ tasks: { targets: {
+        items: [{
+          id: 'target',
+          aggregate: true,
+          type: 'count'
+        }]
+      } } });
       userSettingsService.get.resolves({ facility_id: 'home' });
       getDataRecordsService.get.resolves([]);
       getDataRecordsService.get.withArgs('home').resolves({ _id: 'home' });
@@ -549,12 +579,12 @@ describe('TargetAggregatesService', () => {
 
     it('should calculate every type of target aggregate correctly', async () => {
       const config = { tasks: { targets: { items: [
-              { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
-              { id: 'target2', aggregate: true, type: 'count', goal: 20, translation_key: 'target2' },
-              { id: 'target3', aggregate: true, type: 'percent', goal: -1, title: 'target3' },
-              { id: 'target4', aggregate: true, type: 'percent', goal: 80, translation_key: 'target4' },
-              { id: 'target5', aggregate: true, type: 'count', goal: 2, translation_key: 'target5' },
-            ] } }};
+        { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
+        { id: 'target2', aggregate: true, type: 'count', goal: 20, translation_key: 'target2' },
+        { id: 'target3', aggregate: true, type: 'percent', goal: -1, title: 'target3' },
+        { id: 'target4', aggregate: true, type: 'percent', goal: 80, translation_key: 'target4' },
+        { id: 'target5', aggregate: true, type: 'count', goal: 2, translation_key: 'target5' },
+      ] } }};
 
       const targetDocs = [
         {
@@ -767,9 +797,9 @@ describe('TargetAggregatesService', () => {
 
     it('should create placeholders for missing targets and missing target values', () => {
       const config = { tasks: { targets: { items: [
-              { id: 'target1', aggregate: true, type: 'count' },
-              { id: 'target2', aggregate: true, type: 'percent' },
-            ] } }};
+        { id: 'target1', aggregate: true, type: 'count' },
+        { id: 'target2', aggregate: true, type: 'percent' },
+      ] } }};
 
       const targetDocs = [
         {
@@ -843,9 +873,9 @@ describe('TargetAggregatesService', () => {
 
     it('should only process one target doc per contact', () => {
       const config = { tasks: { targets: { items: [
-              { id: 'target1', aggregate: true, type: 'count' },
-              { id: 'target2', aggregate: true, type: 'percent' },
-            ] } }};
+        { id: 'target1', aggregate: true, type: 'count' },
+        { id: 'target2', aggregate: true, type: 'percent' },
+      ] } }};
 
       const targetDocs = [
         {
@@ -921,9 +951,9 @@ describe('TargetAggregatesService', () => {
 
     it('should discard additional target values from target docs', () => {
       const config = { tasks: { targets: { items: [
-              { id: 'target1', aggregate: true, type: 'count' },
-              { id: 'target2', aggregate: true, type: 'percent' },
-            ] } }};
+        { id: 'target1', aggregate: true, type: 'count' },
+        { id: 'target2', aggregate: true, type: 'percent' },
+      ] } }};
 
       const targetDocs = [
         {
