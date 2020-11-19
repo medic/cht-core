@@ -626,7 +626,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            '../node_modules/.bin/ng test webapp --watch=false --code-coverage',
+            '../node_modules/.bin/ng test webapp --watch=false',
             'cd ../',
           ].join(' && ');
         },
@@ -636,7 +636,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            '../node_modules/.bin/ng test webapp --watch=true --code-coverage',
+            '../node_modules/.bin/ng test webapp --watch=true',
             'cd ../',
           ].join(' && ');
         },

@@ -21,7 +21,7 @@ module.exports = function (config) {
       output: 'full',
       showDiff: true,
     },
-    logLevel: config.LOG_DEBUG,
+    logLevel: config.LOG_INFO,
     port: 9876,
     colors: true,
     autoWatch: true,
