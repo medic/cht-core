@@ -256,6 +256,12 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.verifyReport),
       tap(({ payload: { verified } }) => {
+        // this was migrated from https://github.com/medic/cht-core/blob/3.10.x/webapp/src/js/actions/reports.js#L230
+        // I've left the code largely unchanged in this migration, but we can improve this to:
+        // - not have so many unnecessary interactions with the store
+        // - update the properties of the fresh doc we get from the DB instead of using the stored doc and overwrite
+        // and only keep the rev from the fresh doc
+        // - don't update the state if saving fails!
         const getFirstSelectedReport = () => this.selectedReports && this.selectedReports[0];
 
         if (!getFirstSelectedReport()) {
@@ -274,8 +280,6 @@ export class ReportsEffects {
         };
 
         const shouldReportBeVerified = canUserEdit => {
-          console.log('canUserEdit', canUserEdit);
-
           // verify if user verifications are allowed
           if (canUserEdit) {
             return true;

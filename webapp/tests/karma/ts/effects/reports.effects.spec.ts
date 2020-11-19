@@ -8,6 +8,7 @@ import { Action } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { take } from 'rxjs/operators';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -22,6 +23,7 @@ import { SearchService } from '@mm-services/search.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { AuthService } from '@mm-services/auth.service';
+import { ServicesActions } from '@mm-actions/services';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
@@ -52,7 +54,7 @@ describe('Reports effects', () => {
     router = { navigate: sinon.stub() };
     searchService = { search: sinon.stub() };
     authService = { has: sinon.stub() };
-    translateService = { instant: sinon.stub };
+    translateService = { instant: sinon.stub().returnsArg(0) };
 
     TestBed.configureTestingModule({
       declarations: [
@@ -788,6 +790,26 @@ describe('Reports effects', () => {
   });
 
   describe('verifyReport', () => {
+    beforeEach(() => {
+      sinon
+        .stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty')
+        .callsFake(props => {
+          store
+            .select(Selectors.getSelectedReports)
+            .pipe(take(1))
+            .subscribe(selectedReports => {
+              selectedReports[0] = {
+                ...selectedReports[0],
+                doc: { ...selectedReports[0].doc, ...props },
+              };
+              store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+              store.refreshState();
+            });
+        });
+      sinon.stub(ReportsActions.prototype, 'setFirstSelectedReportFormattedProperty');
+      sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
+    });
+
     it('should not be triggered by random actions', () => {
       actions$ = of([
         ReportActionList.selectReport(''),
@@ -799,6 +821,100 @@ describe('Reports effects', () => {
       expect(authService.has.callCount).to.equal(0);
     });
 
+    it('should minify report contact before saving and use latest rev', fakeAsync(() => {
+      const selectedReports = [{
+        _id: 'report',
+        doc: {
+          _id: 'report',
+          _rev: 2,
+          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
+        },
+      }];
+      authService.has.resolves(true);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+
+      sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
+      dbService.put.resolves();
+      dbService.get.resolves({ _id: 'report', _rev: 3 });
+
+      actions$ = of(ReportActionList.verifyReport(false));
+      effects.verifyReport.subscribe();
+
+      tick();
+
+      expect(dbService.put.callCount).to.equal(1);
+      expect(dbService.put.args[0]).to.deep.equal([{
+        _id: 'report',
+        _rev: 3,
+        contact: { _id: 'contact', parent: { _id: 'parent' } },
+        verified: false,
+        verified_date: 1000,
+      }]);
+    }));
+
+    it('should launch modal with correct params on invalid', fakeAsync(() => {
+      const selectedReports = [{
+        _id: 'report',
+        doc: { _id: 'report' },
+      }];
+      authService.has.resolves(false);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+      modalService.show.rejects(); // user clicks no
+
+      actions$ = of(ReportActionList.verifyReport(false));
+      effects.verifyReport.subscribe();
+
+      tick();
+
+      expect(dbService.get.callCount).to.equal(0);
+      expect(dbService.put.callCount).to.equal(0);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        VerifyReportComponent,
+        { initialState: { model: { proposedVerificationState: 'reports.verify.invalid' } } }
+      ]);
+    }));
+
+    it('should launch modal with correct params on valid', fakeAsync(() => {
+      const selectedReports = [{ _id: 'report', doc: { _id: 'report' } }];
+      authService.has.resolves(false);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+      modalService.show.rejects(); // user clicks no
+
+      actions$ = of(ReportActionList.verifyReport(true));
+      effects.verifyReport.subscribe();
+
+      tick();
+
+      expect(dbService.get.callCount).to.equal(0);
+      expect(dbService.put.callCount).to.equal(0);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        VerifyReportComponent,
+        { initialState: { model: { proposedVerificationState: 'reports.verify.valid' } } }
+      ]);
+    }));
+
+    it('should catch db put errors', fakeAsync(() => {
+      const selectedReports = [{ _id: 'report', doc: { _id: 'report' } }];
+      authService.has.resolves(true);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+
+      actions$ = of(ReportActionList.verifyReport(true));
+      effects.verifyReport.subscribe();
+      dbService.get.resolves({});
+      dbService.put.rejects({ some: 'error' });
+
+      tick();
+
+      expect(dbService.get.callCount).to.equal(1);
+      expect(dbService.put.callCount).to.equal(1);
+    }));
+
     const scenarios = [
       /* User scenarios with permission to edit */
       { canEdit: true, initial: undefined, setTo: true, expectVerified: true, expectPost: true, expectedDate: 0 },
@@ -808,6 +924,8 @@ describe('Reports effects', () => {
         expectPost: true, expectedDate: undefined },
       { canEdit: true, initial: true, setTo: true, expectVerified: undefined,
         expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: true, setTo: undefined, expectVerified: undefined, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: false, setTo: undefined, expectVerified: undefined, expectPost: true, expectedDate: 0 },
 
       /* User scenarios without permission to edit */
       { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true,
@@ -820,37 +938,28 @@ describe('Reports effects', () => {
 
     scenarios.forEach(scenario => {
       const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
-      const name = `user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`;
-      const selectedReports = [{
-        _id: 'abc',
-        doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
-      }];
+      const test = `user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`;
 
-      it(name, fakeAsync(() => {
-        sinon
-          .stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty')
-          .callsFake(props => {
-            const updatedSelectedReport = {
-              ...selectedReports[0],
-              doc: { ...selectedReports[0].doc, ...props },
-            };
-            store.overrideSelector(Selectors.getSelectedReports, [updatedSelectedReport]);
-            store.refreshState();
-          });
+      it(test, fakeAsync(() => {
+        const selectedReports = [{
+          _id: 'def',
+          doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
+        }];
+
+        sinon.stub(Date, 'now').returns(0); // using faketimers breaks fakeAsync's tick :(
 
         canEdit ? authService.has.resolves(true) : authService.has.resolves(false);
         confirm ? modalService.show.resolves() : modalService.show.rejects();
         dbService.put.resolves();
+        dbService.get.resolves({ _rev: '1' });
         store.overrideSelector(Selectors.getSelectedReports, selectedReports);
         store.refreshState();
 
         actions$ = of(ReportActionList.verifyReport(setTo));
-        flush();
-        if (confirm === undefined) {
-          expect(modalService.show.callCount).to.equal(0);
-        } else {
-          expect(modalService.show.callCount).to.equal(1);
-        }
+        effects.verifyReport.subscribe();
+        tick(0, { processNewMacroTasksSynchronously: true });
+
+        expect(modalService.show.callCount).to.equal(confirm === undefined ? 0 : 1);
 
         if (expectPost) {
           expect(dbService.put.callCount).to.equal(1);
@@ -858,12 +967,25 @@ describe('Reports effects', () => {
             _id: 'def',
             name: 'hello',
             form: 'P',
-            rev: '1',
+            _rev: '1',
             verified_date: expectedDate,
             verified: expectVerified,
           }]);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(2);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal([{
+            verified: expectVerified,
+            verified_date: expectedDate,
+          }]);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[1])
+            .to.deep.equal([{ _rev: '1'}]);
+          expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(1);
+          expect((<any>ServicesActions.prototype.setLastChangedDoc).args[0]).to.deep.equal([
+            { _id: 'def', name: 'hello', form: 'P', verified: initial },
+          ]);
         } else {
           expect(dbService.put.called).to.be.false;
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(0);
+          expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(0);
         }
       }));
     });
