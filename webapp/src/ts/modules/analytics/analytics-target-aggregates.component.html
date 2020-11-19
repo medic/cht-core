@@ -12,17 +12,16 @@
 <div class="page target-aggregates" *ngIf="enabled && !loading">
   <div id="target-aggregates-list" class="col-sm-4 inbox-items left-pane">
     <ul>
-      <mm-content-row
-        *ngFor="let aggregate of aggregates"
+      <mm-content-row *ngFor="let aggregate of aggregates"
         [id]="aggregate.id"
-        [selected]="selected && selected.id === aggregate.id"
+        [selected]="aggregate.selected"
         [icon]="aggregate.icon"
         [heading]="aggregate.heading"
         [aggregate]="aggregate.aggregateValue">
       </mm-content-row>
     </ul>
     <p *ngIf="error && !aggregates" class="alert alert-danger" role="alert" translate>analytics.target.aggregates.error</p>
-    <p class="loading-status" *ngIf="!error && !aggregates.length" translate>analytics.target.aggregates.no.targets</p>
+    <p class="loading-status" *ngIf="!error && !aggregates?.length" translate>analytics.target.aggregates.no.targets</p>
   </div>
 
   <router-outlet></router-outlet>

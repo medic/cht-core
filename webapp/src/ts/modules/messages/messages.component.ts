@@ -12,6 +12,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ExportService } from '@mm-services/export.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { isMobile } from '@mm-providers/responsive.provider';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -70,6 +71,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private displayFirstConversation(conversations = []) {
+    if (isMobile()) {
+      return;
+    }
+
     const parts = this.router.url.split('/');
     const lastPart = parts[parts.length - 1];
     const [type, id] = lastPart ? lastPart.split(':') : [];

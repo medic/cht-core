@@ -17,7 +17,15 @@ const initialState: TargetAggregatesState = {
 const _targetAggregatesReducer = createReducer(
   initialState,
   on(Actions.setSelectedTargetAggregate, (state, { payload: { selected } }) => {
-    return { ...state, selected };
+    const newState = { ...state, selected };
+
+    if (state.targetAggregates) {
+      newState.targetAggregates = state.targetAggregates.map((target:any) => {
+        return { ...target, selected: selected?.id === target.id };
+      });
+    }
+
+    return newState;
   }),
   on(Actions.setTargetAggregates, (state, { payload: { targetAggregates } }) => {
     return { ...state, targetAggregates };

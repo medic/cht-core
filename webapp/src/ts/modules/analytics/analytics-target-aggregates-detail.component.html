@@ -5,7 +5,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection selection-error" *ngIf="error || selected?.error">
-    <div>{{ (error.translationKey || selected.error?.translationKey || 'analytics.target.aggregates.select.error') | translate}}</div>
+    <div>{{ (error?.translationKey || selected?.error?.translationKey || 'analytics.target.aggregates.select.error') | translate}}</div>
   </div>
 
   <div class="col-sm-8 item-content" *ngIf="selected && !selected.error && !error">

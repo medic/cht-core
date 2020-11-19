@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -20,46 +20,56 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   aggregates = null;
   selected = null;
   error = null;
+  paramTargetId = null; // Defaulting value so initially it'll be different from route's params and show content section
+  shouldLoadDetail;
 
   constructor(
     private store: Store,
     private route: ActivatedRoute,
     private targetAggregatesService: TargetAggregatesService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
     this.globalActions = new GlobalActions(store);
   }
 
   ngOnInit(): void {
-    this.subscribeToStore();
-    const routeSubscription = this.route.params.subscribe(params => this.getAggregatesDetail(params.id));
-    this.subscriptions.add(routeSubscription);
+    const subscription = combineLatest(
+      this.route.params,
+      this.store.select(Selectors.getTargetAggregates),
+      this.store.select(Selectors.getSelectedTargetAggregate),
+      this.store.select(Selectors.getTargetAggregatesError),
+    )
+    .subscribe(([
+      params,
+      aggregates,
+      selected,
+      error
+    ]) => {
+      this.selected = selected;
+      this.error = error;
+      this.aggregates = aggregates;
+      this.shouldLoadDetail = this.paramTargetId !== params.id;
+      this.paramTargetId = params.id;
+      console.warn('hola', params.id, this.shouldLoadDetail, this.aggregates);
+      this.getAggregatesDetail(this.paramTargetId);
+      this.changeDetectorRef.detectChanges();
+    });
+    this.subscriptions.add(subscription);
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
-  private subscribeToStore() {
-    const selectorsSubscription = combineLatest(
-      this.store.select(Selectors.getTargetAggregates),
-      this.store.select(Selectors.getSelectedTargetAggregate),
-      this.store.select(Selectors.getTargetAggregatesError),
-    )
-    .subscribe(([
-      aggregates,
-      selected,
-      error
-    ]) => {
-      this.aggregates = aggregates;
-      this.selected = selected;
-      this.error = error;
-    });
-    this.subscriptions.add(selectorsSubscription);
-  }
-
   private getAggregatesDetail(aggregateId) {
+    if (!this.aggregates || !this.shouldLoadDetail) {
+      return;
+    }
+
+    this.shouldLoadDetail = false;
+
     if (!aggregateId) {
       this.globalActions.setShowContent(false);
       this.targetAggregatesActions.setSelectedTargetAggregate(null);
@@ -76,6 +86,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       err.translationKey = 'analytics.target.aggregates.error.not.found';
       this.targetAggregatesActions.setSelectedTargetAggregate({ error: err });
       this.globalActions.setTitle();
+      return;
     }
 
     const title = this.translateService.instant('analytics.target.aggregates');
