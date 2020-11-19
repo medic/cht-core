@@ -90,7 +90,7 @@ const _reportsReducer = createReducer(
   on(Actions.updateSelectedReportItem, (state, { payload }) => {
     return {
       ...state,
-      selected: state.selected.map(item => {
+      selected: state.selected?.map(item => {
         if (item._id === payload.id) {
           return { ...item, ...payload.selected };
         }
@@ -100,11 +100,12 @@ const _reportsReducer = createReducer(
   }),
 
   on(Actions.setVerifyingReport, (state, { payload: { verifyingReport } }) => ({ ...state, verifyingReport })),
+  on(Actions.toggleVerifyingReport, (state) => ({ ...state, verifyingReport: !state.verifyingReport })),
 
   on(Actions.setFirstSelectedReportDocProperty, (state, { payload: { doc } }) => {
     return {
       ...state,
-      selected: state.selected.map((item, idx) => {
+      selected: state.selected?.map((item, idx) => {
         if (idx === 0) {
           return { ...item, doc: { ...item?.doc, ...doc } };
         }
@@ -117,7 +118,7 @@ const _reportsReducer = createReducer(
   on(Actions.setFirstSelectedReportFormattedProperty, (state, { payload: { formatted }}) => {
     return {
       ...state,
-      selected: state.selected.map((item, idx) => {
+      selected: state.selected?.map((item, idx) => {
         if (idx === 0) {
           return { ...item, formatted: { ...item.formatted, ...formatted } };
         }

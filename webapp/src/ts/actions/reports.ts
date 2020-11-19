@@ -1,9 +1,7 @@
 import { Store, createAction } from '@ngrx/store';
-import { take } from 'rxjs/operators';
 
 import { createMultiValueAction, createSingleValueAction } from './actionUtils';
 import { GlobalActions } from '@mm-actions/global';
-import { Selectors } from '@mm-selectors/index';
 
 export const Actions = {
   selectReport: createMultiValueAction('SELECT_REPORT'),
@@ -12,6 +10,7 @@ export const Actions = {
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
   setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
+  toggleVerifyingReport: createAction('TOGGLE_VERIFYING_REPORT'),
   verifyReport: createSingleValueAction('VERIFY_REPORT', 'verified'),
   updateSelectedReportItem: createMultiValueAction('UPDATE_SELECTED_REPORT_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
@@ -115,14 +114,8 @@ export class ReportsActions {
   }
 
   toggleVerifyingReport() {
-    return this.store
-      .select(Selectors.getVerifyingReport)
-      .pipe(take(1))
-      .subscribe(verifyingReport => {
-        console.error(verifyingReport, 'verifyingReport');
-        this.store.dispatch(Actions.setVerifyingReport(!verifyingReport));
-        this.setRightActionBar();
-      });
+    this.store.dispatch(Actions.toggleVerifyingReport());
+    this.setRightActionBar();
   }
 
   verifyReport(verified) {

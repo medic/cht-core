@@ -527,4 +527,181 @@ describe('Reports Reducer', () => {
       });
     });
   });
+
+  describe('updateSelectedReportItem', () => {
+    it('should work when no selected', () => {
+      state.selected = undefined;
+      const newState = reportsReducer(state, Actions.updateSelectedReportItem({ id: 'aaaa' }));
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: undefined,
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+
+    it('should work when item not found', () => {
+      state.selected = [
+        { _id: 'sel1', doc: { _id: 'sel1', field: 1 } },
+        { _id: 'sel2', doc: { _id: 'sel2', field: 2 } },
+        { _id: 'sel3', doc: { _id: 'sel3', field: 3 } },
+      ];
+      const newState = reportsReducer(state, Actions.updateSelectedReportItem({ id: 'aaaa' }));
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        verifyingReport: false,
+        filters: {},
+        selected: [
+          { _id: 'sel1', doc: { _id: 'sel1', field: 1 } },
+          { _id: 'sel2', doc: { _id: 'sel2', field: 2 } },
+          { _id: 'sel3', doc: { _id: 'sel3', field: 3 } },
+        ],
+      });
+    });
+
+    it('should update selected report when found', () => {
+      const payload = {
+        id: 'report_3',
+        selected: {
+          loading: true,
+          expanded: true,
+        },
+      };
+      state.selected = [
+        { _id: 'report_1', doc: { _id: 'report_1', field: 1 } },
+        { _id: 'report_3', loading: false, doc: { _id: 'report_3', field: 1 } },
+        { _id: 'report_5', doc: { _id: 'report_4', field: 1 } },
+      ];
+      const newState = reportsReducer(state, Actions.updateSelectedReportItem(payload));
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        verifyingReport: false,
+        filters: {},
+        selected: [
+          { _id: 'report_1', doc: { _id: 'report_1', field: 1 } },
+          { _id: 'report_3', loading: true, expanded: true, doc: { _id: 'report_3', field: 1 } },
+          { _id: 'report_5', doc: { _id: 'report_4', field: 1 } },
+        ],
+      });
+    });
+  });
+
+  describe('setVerifyingReport', () => {
+    it('should update verifying report', () => {
+      state = reportsReducer(state, Actions.setVerifyingReport(true));
+      expect(state).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [],
+        verifyingReport: true,
+        filters: {},
+      });
+      state  = reportsReducer(state, Actions.setVerifyingReport(false));
+      expect(state).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+  });
+
+  describe('toggleVerifyingReport', () => {
+    it('should toggle verifying report', () => {
+      state = reportsReducer(state, Actions.toggleVerifyingReport());
+      expect(state).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [],
+        verifyingReport: true,
+        filters: {},
+      });
+      state = reportsReducer(state, Actions.toggleVerifyingReport());
+      expect(state).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [],
+        verifyingReport: false,
+        filters: {},
+      });
+      state = reportsReducer(state, Actions.toggleVerifyingReport());
+      expect(state).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [],
+        verifyingReport: true,
+        filters: {},
+      });
+    });
+  });
+
+  describe('setFirstSelectedReportDocProperty', () => {
+    it('should work with empty state', () => {
+      state = reportsReducer(state, Actions.setFirstSelectedReportDocProperty({ prop: true }));
+      expect(state).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+
+    it('should update the 1st selected doc', () => {
+      state.selected = [
+        { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1 } },
+        { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2 } },
+        { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3 } },
+      ];
+      const newState = reportsReducer(state, Actions.setFirstSelectedReportDocProperty({ field: 3, other: 1 }));
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [
+          { _id: 'doc', doc: { _id: 'doc', field: 3, _rev: 1, other: 1 }, formatted: { a: 1 } },
+          { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2 } },
+          { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3 } },
+        ],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+  });
+
+  describe('setFirstSelectedReportFormattedProperty', () => {
+    it('should work with empty state', () => {
+      state = reportsReducer(state, Actions.setFirstSelectedReportFormattedProperty({ prop: true }));
+      expect(state).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+
+    it('should update the 1st selected doc', () => {
+      state.selected = [
+        { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } },
+        { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2, b: 3 } },
+        { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3, b: 4 } },
+      ];
+      const newState = reportsReducer(state, Actions.setFirstSelectedReportFormattedProperty({ b: 22, c: 44 }));
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selected: [
+          { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1, b: 22, c: 44 } },
+          { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2, b: 3 } },
+          { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3, b: 4 } },
+        ],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+  });
 });
