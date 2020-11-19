@@ -15,7 +15,7 @@ import {
   StatePipe,
   TaskDueDatePipe,
   WeeksPregnantPipe
-} from '@mm-pipes/date.pipe'
+} from '@mm-pipes/date.pipe';
 import {
   ClinicPipe, LineagePipe, SummaryPipe, TitlePipe
 } from '@mm-pipes/message.pipe';

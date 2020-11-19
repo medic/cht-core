@@ -1,11 +1,11 @@
-import {EditUserAbstract} from "@mm-modals/edit-user/edit-user.component";
-
 const passwordTester = require('simple-password-tester');
-import {Component} from "@angular/core";
-import {UserSettingsService} from "@mm-services/user-settings.service";
-import {TranslateService} from "@ngx-translate/core";
-import {UpdateUserService} from "@mm-services/update-user.service";
-import {BsModalRef} from "ngx-bootstrap/modal";
+import { Component, OnInit } from '@angular/core';
+import { BsModalRef } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
+
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { UpdateUserService } from '@mm-services/update-user.service';
+import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -15,19 +15,21 @@ const PASSWORD_MINIMUM_SCORE = 50;
   selector: 'update-password',
   templateUrl: './update-password.component.html'
 })
-export class UpdatePasswordComponent extends EditUserAbstract {
+export class UpdatePasswordComponent extends EditUserAbstract implements OnInit {
 
   editUserModel: {
-    username?,
-    currentPassword?,
-    password?,
-    passwordConfirm?
+    username?;
+    currentPassword?;
+    password?;
+    passwordConfirm?;
   } = {};
 
   errors: {
-    currentPassword?,
-    password?
+    currentPassword?;
+    password?;
   } = {};
+
+  static id = 'update-password';
 
   constructor(
     bsModalRef: BsModalRef,
@@ -36,6 +38,10 @@ export class UpdatePasswordComponent extends EditUserAbstract {
     private updateUserService: UpdateUserService,
   ) {
     super(bsModalRef, userSettingsService);
+  }
+
+  async ngOnInit(): Promise<void> {
+    await super.onInit();
   }
 
   updatePassword() {

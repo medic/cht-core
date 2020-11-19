@@ -7,7 +7,7 @@ import { SessionService } from './session.service';
   providedIn: 'root'
 })
 export class UserSettingsService {
-  private cache;
+  private readonly cache;
   constructor(
     private cacheService:CacheService,
     private dbService:DbService,
@@ -39,7 +39,7 @@ export class UserSettingsService {
     if (userCtx) {
       return 'org.couchdb.user:' + userCtx.name;
     }
-  };
+  }
 
   get(): Promise<Object> {
     const docId = this.userDocId();
@@ -55,6 +55,6 @@ export class UserSettingsService {
         resolve(userSettings);
       });
     });
-  };
+  }
 
 }

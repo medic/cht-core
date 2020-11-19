@@ -11,18 +11,19 @@ describe('ResourceIcons service', () => {
   let Changes;
 
   const getService = () => {
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: DbService, useValue: { get: () => ({ get }) } },
-        { provide: ChangesService, useValue: { subscribe: Changes } },
-      ],
-    });
     return TestBed.inject(ResourceIconsService);
   };
 
   beforeEach(() => {
     get = sinon.stub().resolves();
     Changes = sinon.stub();
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: { get: () => ({ get }) } },
+        { provide: ChangesService, useValue: { subscribe: Changes } },
+      ],
+    });
   });
 
   afterEach(() => {

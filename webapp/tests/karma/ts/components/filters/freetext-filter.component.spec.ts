@@ -20,7 +20,7 @@ describe('Freetext Filter Component', () => {
       { selector: Selectors.getFilters, value: { search: '' } },
     ];
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           FormsModule,

@@ -13,8 +13,8 @@ import { NgZone } from '@angular/core';
 describe('AndroidApi service', () => {
 
   let service;
-  let identifyResponse;
-  let registerResponse;
+  //let identifyResponse;
+  //let registerResponse;
   let sessionService;
   let router;
   let feedbackService;
@@ -69,7 +69,7 @@ describe('AndroidApi service', () => {
     sinon.restore();
   });
   // todo migrate when simprints service has been migrated
-/*
+  /*
   describe('simprintsResponse', () => {
 
     it('errors when given string id', () => {
@@ -121,7 +121,7 @@ describe('AndroidApi service', () => {
       chai.expect(registerResponse.args[0][1]).to.deep.equal(expectedResponse);
     });
   });
-*/
+  */
 
   describe('logout', () => {
     it('should call sessionService logout', () => {

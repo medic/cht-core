@@ -6,7 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { DbService } from '@mm-services/db.service';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { Selectors } from '@mm-selectors/index';
-import { SessionService } from "@mm-services/session.service";
+import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 
 @Component({
@@ -96,7 +96,7 @@ export class AboutComponent implements OnInit, OnDestroy {
 
   reload() {
     window.location.reload(false);
-  };
+  }
 
   // todo testing!
   secretDoor() {

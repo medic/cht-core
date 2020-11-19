@@ -5,7 +5,7 @@ import { DatePipe } from '@angular/common';
 import { of } from 'rxjs';
 
 import { ParseProvider } from '@mm-providers/parse.provider';
-import { AgePipe, } from '@mm-pipes/date.pipe'
+import { AgePipe, } from '@mm-pipes/date.pipe';
 import { TitlePipe } from '@mm-pipes/message.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { FormatDateService } from '@mm-services/format-date.service';
@@ -241,7 +241,7 @@ describe('Parse provider', () => {
       // no report and no forms
       expect(parse('report | title:forms', {} )).to.equal('');
 
-      let context:any = { report: report1, forms }; // report without form
+      const context:any = { report: report1, forms }; // report without form
       expect(parse('report | title:forms', context)).to.equal('sms_message.message');
 
       context.report = report2; // kujua message

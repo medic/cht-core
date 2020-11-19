@@ -8,7 +8,9 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -20,7 +22,7 @@ describe('Facility Filter Component', () => {
   let placeHierarchyService;
 
   beforeEach(async(() => {
-    const placeHierarchyServiceMock = {
+    placeHierarchyService = {
       get: sinon.stub(),
     };
 
@@ -28,7 +30,7 @@ describe('Facility Filter Component', () => {
       { selector: Selectors.getIsAdmin, value: true },
     ];
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           BrowserAnimationsModule,
@@ -42,7 +44,7 @@ describe('Facility Filter Component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: PlaceHierarchyService, useValue: placeHierarchyServiceMock },
+          { provide: PlaceHierarchyService, useValue: placeHierarchyService },
         ]
       })
       .compileComponents()
@@ -50,7 +52,6 @@ describe('Facility Filter Component', () => {
         fixture = TestBed.createComponent(FacilityFilterComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
-        placeHierarchyService = TestBed.inject(PlaceHierarchyService);
         fixture.detectChanges();
       });
   }));
@@ -71,7 +72,7 @@ describe('Facility Filter Component', () => {
     });
 
     it('should catch errors when loading facilities', async () => {
-      placeHierarchyService.get.rejects({ some: 'err' })
+      placeHierarchyService.get.rejects({ some: 'err' });
       await component.loadFacilities();
       expect(component.facilities).to.deep.equal([]);
     });

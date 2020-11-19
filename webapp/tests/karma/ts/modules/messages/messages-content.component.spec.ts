@@ -1,9 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
-import { expect, assert } from "chai";
+import { expect, assert } from 'chai';
 
 import { MessagesContentComponent } from '@mm-modules/messages/messages-content.component';
 import { MessageContactService } from '@mm-services/message-contact.service';
@@ -18,7 +18,6 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
   let fixture: ComponentFixture<MessagesContentComponent>;
-  let store: MockStore;
   let messageContactService;
   let changesService;
   let sessionService;
@@ -30,11 +29,11 @@ describe('MessagesContentComponent', () => {
   let changesCallback;
 
   beforeEach(async(() => {
-    const messageContactServiceMock = {
+    messageContactService = {
       getConversation: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
     };
-    const changesServiceMock = {
+    changesService = {
       subscribe: sinon.stub().callsFake((opts) => {
         changesCallback = opts.callback;
         changesFilter = opts.filter;
@@ -51,39 +50,33 @@ describe('MessagesContentComponent', () => {
       { selector: 'getLoadingContent', value: false },
     ];
 
-    TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule
-      ],
-      declarations: [
-        MessagesContentComponent
-      ],
-      providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: ChangesService, useValue: changesServiceMock },
-        { provide: MessageContactService, useValue: messageContactServiceMock },
-        { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
-        { provide: SessionService, useValue: sessionService },
-        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
-        { provide: MarkReadService, useValue: markReadService },
-        { provide: SendMessageService, useValue: sendMessageService },
-        { provide: ModalService, useValue: modalService },
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(MessagesContentComponent);
-      component = fixture.componentInstance;
-      store = TestBed.inject(MockStore);
-      messageContactService = TestBed.inject(MessageContactService);
-      changesService = TestBed.inject(ChangesService);
-      sessionService = TestBed.inject(SessionService);
-      markReadService = TestBed.inject(MarkReadService);
-      sendMessageService = TestBed.inject(SendMessageService);
-      modalService = TestBed.inject(ModalService);
-      fixture.detectChanges();
-    });
+    return TestBed
+      .configureTestingModule({
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule
+        ],
+        declarations: [
+          MessagesContentComponent
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: ChangesService, useValue: changesService },
+          { provide: MessageContactService, useValue: messageContactService },
+          { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
+          { provide: SessionService, useValue: sessionService },
+          { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+          { provide: MarkReadService, useValue: markReadService },
+          { provide: SendMessageService, useValue: sendMessageService },
+          { provide: ModalService, useValue: modalService },
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(MessagesContentComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
   afterEach(() => {
@@ -119,7 +112,7 @@ describe('MessagesContentComponent', () => {
       component.urlParameters.type = type;
       lineageModelGeneratorService.contact.rejects({ code: 404 });
       messageContactService.getConversation.resolves([res]);
-      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation')
+      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
 
       await component.selectContact(id, type);
 
@@ -139,7 +132,7 @@ describe('MessagesContentComponent', () => {
       component.urlParameters.type = type;
       lineageModelGeneratorService.contact.rejects({ code: 404 });
       messageContactService.getConversation.resolves([]);
-      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation')
+      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
 
       return component
         .selectContact(id, type)
@@ -198,8 +191,8 @@ describe('MessagesContentComponent', () => {
       component.ngOnInit();
 
       expect(messageContactService.getConversation.callCount).to.equal(0);
-      changesCallback(change)
-      expect(messageContactService.getConversation.callCount).to.equal(0)
+      changesCallback(change);
+      expect(messageContactService.getConversation.callCount).to.equal(0);
     });
 
     it('should update the conversation when conversation is selected', async () => {
@@ -209,7 +202,7 @@ describe('MessagesContentComponent', () => {
       lineageModelGeneratorService.contact.resolves(contact);
       const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
       messageContactService.getConversation.resolves([...messages, { doc: { _id: 'message3' } }]);
-      component.selectedConversation = { contact, messages, id: contact._id }
+      component.selectedConversation = { contact, messages, id: contact._id };
       component.urlParameters.id = 'c1';
       component.urlParameters.type = 'contact';
 
@@ -228,7 +221,8 @@ describe('MessagesContentComponent', () => {
       const contact = { name: 'contact', _id: 'c1' };
       const messages = [{ doc: { _id: 'message1' } }, { doc: { _id: 'message2' } } ];
       const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
-      const removeMessageFromSelectedConversationSpy = sinon.spy(component.messagesActions, 'removeMessageFromSelectedConversation');
+      const removeMessageFromSelectedConversationSpy =
+        sinon.spy(component.messagesActions, 'removeMessageFromSelectedConversation');
       messageContactService.getConversation.resolves(messages);
       lineageModelGeneratorService.contact.resolves(contact);
       component.selectedConversation = { contact, messages, id: contact._id };

@@ -13,20 +13,22 @@ import { COUNTRY_LIST } from '../../providers/countries.provider';
   templateUrl: './guided-setup.component.html'
 })
 export class GuidedSetupComponent extends MmModalAbstract implements AfterViewInit, AfterViewChecked {
-  model:{ countryCode?, gatewayNumber? } = {};
+  model:{ countryCode?; gatewayNumber? } = {};
   error:{ message? } = {};
   enabledLocales;
   countryList;
   settingsLoaded = false;
   settings = <any>{};
 
+  static id = 'guided-setup';
+
   constructor(
-    public bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private updateSettingsService: UpdateSettingsService,
     private languagesService: LanguagesService,
     private settingsService: SettingsService,
   ) {
-    super();
+    super(bsModalRef);
   }
 
   private updateNumbers() {
@@ -43,7 +45,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     if (gatewayNumber && defaultCountryCode) {
       $(this).closest('.panel').addClass('panel-complete');
     }
-  };
+  }
 
   private selectOption(e) {
     e.preventDefault();
@@ -61,7 +63,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
       .addClass('panel-complete')
       .find('.panel-heading .value')
       .text(label.join(', '));
-  };
+  }
 
   ngAfterViewInit() {
     this.bsModalRef.setClass('modal-lg');
@@ -80,7 +82,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
           $('#primary-contact-content a[data-value=' + this.settings.care_coordinator + ']').trigger('click');
           $('#registration-form-content a[data-value=' + this.settings.anc_registration_lmp + ']').trigger('click');
         }
-      })
+      });
     });
   }
 
@@ -149,17 +151,15 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
     if (val) {
       settings.anc_registration_lmp = val === 'true';
     }
-    return this.updateSettingsService.update(settings)
+
+    return this.updateSettingsService
+      .update(settings)
       .then(() => {
         this.setFinished();
-        this.bsModalRef.hide();
+        this.close();
       })
       .catch((err) => {
         this.setError(err, 'Error saving settings');
       });
-  }
-
-  cancel() {
-    this.bsModalRef.hide();
   }
 }

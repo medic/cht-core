@@ -82,7 +82,7 @@ describe('RulesEngineService', () => {
     user: userSettingsDoc,
     monthStartDate: 1,
   };
-  
+
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
     changesService = { subscribe: sinon.stub() };
@@ -454,7 +454,7 @@ describe('RulesEngineService', () => {
     await service.isEnabled();
     clock.tick(500 * 1000);
     await service.isEnabled(); // to resolve promises
-    
+
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
     expect(telemetryService.record.callCount).to.equal(3);
@@ -493,7 +493,7 @@ describe('RulesEngineService', () => {
     await service.fetchTaskDocsForAllContacts();
     clock.tick(500 * 1000);
     await service.isEnabled(); // to resolve promises
-    
+
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
     expect(telemetryService.record.callCount).to.equal(7);
@@ -520,7 +520,7 @@ describe('RulesEngineService', () => {
     service.fetchTaskDocsForAllContacts();
     service.fetchTaskDocsFor(['a']);
     await Promise.resolve();
-    
+
     expect(fetchTargets.events).to.have.keys(['queued', 'running']);
     expect(fetchTasksFor.events).to.have.keys(['queued', 'running']);
     expect(telemetryService.record.callCount).to.equal(6);

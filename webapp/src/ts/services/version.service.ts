@@ -21,7 +21,7 @@ export class VersionService {
       return version;
     }
     return `${version} (~${deployInfo.base_version})`;
-  };
+  }
 
   getLocal () {
     return this.dbService.get()

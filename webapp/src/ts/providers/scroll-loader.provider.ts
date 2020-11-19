@@ -7,4 +7,4 @@ export const init = (callback) => {
   window.jQuery('.inbox-items')
     .off('scroll', _check)
     .on('scroll', _check);
-}
+};

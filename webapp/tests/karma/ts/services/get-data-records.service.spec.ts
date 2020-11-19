@@ -138,7 +138,8 @@ describe('GetDataRecords service', () => {
     });
 
     it('single result', () => {
-      allDocs.resolves({ rows: [
+      allDocs.resolves({
+        rows: [
           { doc: { _id: '5', name: 'five' } }
         ] });
       return service.get('5', { include_docs: true }).then(actual => {
@@ -150,7 +151,8 @@ describe('GetDataRecords service', () => {
     });
 
     it('multiple results', () => {
-      allDocs.resolves({ rows: [
+      allDocs.resolves({
+        rows: [
           { doc: { _id: '5', name: 'five' } },
           { doc: { _id: '6', name: 'six' } },
           { doc: { _id: '7', name: 'seven' } }

@@ -1,8 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
 import {Injectable} from '@angular/core';
-import { DbService } from './db.service';
-import { SessionService } from './session.service';
-import { VersionService } from './version.service';
+import { v4 as uuidv4 } from 'uuid';
+
+import { DbService } from '@mm-services/db.service';
+import { SessionService } from '@mm-services/session.service';
+import { VersionService } from '@mm-services/version.service';
+import { environment } from '@mm-environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -46,7 +48,7 @@ export class FeedbackService {
     const getCircularReplacer = () => {
       const seen = new WeakSet();
       return (key, value) => {
-        if (typeof value === "object" && value !== null) {
+        if (typeof value === 'object' && value !== null) {
           if (seen.has(value)) {
             return;
           }
@@ -70,6 +72,14 @@ export class FeedbackService {
         original.apply(this.options.console, args);
       };
     });
+
+    const debugOriginal = this.options.console.debug;
+    this.options.console.debug = (...args) => {
+      // only log debug messages in development settings
+      if (!environment.production) {
+        debugOriginal.apply(this.options.console, args);
+      }
+    };
   }
 
   private create(info, isManual?) {

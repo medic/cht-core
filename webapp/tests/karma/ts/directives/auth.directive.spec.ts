@@ -142,7 +142,10 @@ describe('Auth directive', () => {
     it('should be hidden when online fails and auth any succeeds', async(async () => {
       authServiceMock.any.resolves(true);
       authServiceMock.online.returns(false);
-      const element = await overrideTemplate('<a mmAuth [mmAuthAny]="[\'permission_to_have\', \'another_permission\']" [mmAuthOnline]="true"></a>');
+      const template = `
+        <a mmAuth [mmAuthAny]="['permission_to_have', 'another_permission']" [mmAuthOnline]="true"></a>
+      `;
+      const element = await overrideTemplate(template);
 
       expect(element.classes.hidden).to.equal(true);
     }));
@@ -209,7 +212,8 @@ describe('Auth directive', () => {
 
     it('should work with stacked permissions',  async(async () => {
       authServiceMock.any.withArgs([['a', 'b'], ['c', 'd'], ['e', 'f'], ['g']]).resolves(true);
-      const element = await overrideTemplate('<a mmAuth [mmAuthAny]="[[\'a\', \'b\'], [[\'c\', \'d\']], [[[\'e\', \'f\']]], \'g\']"></a>');
+      const template = '<a mmAuth [mmAuthAny]="[[\'a\', \'b\'], [[\'c\', \'d\']], [[[\'e\', \'f\']]], \'g\']"></a>';
+      const element = await overrideTemplate(template);
 
       expect(element.classes.hidden).to.equal(undefined);
       expect(authServiceMock.any.callCount).to.equal(1);
@@ -218,7 +222,8 @@ describe('Auth directive', () => {
 
     it('should work with expressions ', async(async () => {
       authServiceMock.any.withArgs([['a', 'b'], ['f']]).resolves(false);
-      const element = await overrideTemplate('<a mmAuth [mmAuthAny]="[true && [\'a\', \'b\'], false && [\'c\', \'d\'], \'f\']"></a>');
+      const template = '<a mmAuth [mmAuthAny]="[true && [\'a\', \'b\'], false && [\'c\', \'d\'], \'f\']"></a>';
+      const element = await overrideTemplate(template);
 
       expect(element.classes.hidden).to.equal(true);
       expect(authServiceMock.any.callCount).to.equal(1);

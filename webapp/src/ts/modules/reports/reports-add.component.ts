@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -20,7 +20,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 @Component({
   templateUrl: './reports-add.component.html',
 })
-export class ReportsAddComponent implements OnInit, OnDestroy{
+export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();
   constructor(
     private store:Store,
@@ -45,8 +45,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
   enketoError;
   enketoStatus;
   enketoSaving;
+  enketoEdited;
   form;
   errorTranslationKey;
+  cancelCallback;
 
   private geoHandle:any;
   private globalActions;
@@ -63,18 +65,22 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
+      this.store.select(Selectors.getCancelCallback),
     ).subscribe(([
       loadingContent,
       selectedReports,
       enketoStatus,
       enketoSaving,
       enketoError,
+      cancelCallback,
     ]) => {
       this.selectedReports = selectedReports;
       this.loadingContent = loadingContent;
       this.enketoStatus = enketoStatus;
+      this.enketoEdited = enketoStatus.edited;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
+      this.cancelCallback = cancelCallback;
     });
     this.subscription.add(reduxSubscription);
   }
@@ -159,7 +165,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
                 }
 
                 return Promise
-                    .all($('#report-form input[type=file]')
+                  .all($('#report-form input[type=file]')
                     .map((idx, element) => {
                       const $element = $(element);
                       const attachmentName = 'user-file' + $element.attr('name');
@@ -246,7 +252,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy{
 
   private markFormEdited() {
     this.globalActions.setEnketoEditedStatus(true);
-  };
+  }
 
   private resetFormError() {
     if (this.enketoError) {

@@ -2,24 +2,25 @@ import {Component} from '@angular/core';
 import {BsModalRef} from 'ngx-bootstrap/modal';
 
 import {SessionService} from '../../services/session.service';
+import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 
 @Component({
   selector: 'logout-confirm-modal',
   templateUrl: './logout-confirm.component.html'
 })
-export class LogoutConfirmComponent {
+export class LogoutConfirmComponent extends MmModalAbstract {
+  static id = 'logout-confirm';
+
   constructor(
-    public bsModalRef: BsModalRef,
+    bsModalRef: BsModalRef,
     private sessionService: SessionService,
-  ) {}
+  ) {
+    super(bsModalRef);
+  }
 
   submit() {
     this.sessionService.logout().then(() => {
-      this.bsModalRef.hide();
-    })
-  }
-
-  cancel() {
-    this.bsModalRef.hide();
+      this.close();
+    });
   }
 }

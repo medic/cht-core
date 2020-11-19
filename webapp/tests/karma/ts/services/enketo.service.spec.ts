@@ -266,7 +266,7 @@ describe('Enketo service', () => {
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(1);
         expect(createObjectURL.args[0][0]).to.equal('myobjblob');
-      });
+      }).catch(err => assert.fail(err));
     }));
 
     it('leaves img wrapped and hides loader if failed to load', () => {

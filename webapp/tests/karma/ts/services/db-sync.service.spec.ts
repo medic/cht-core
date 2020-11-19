@@ -23,7 +23,6 @@ describe('DBSync service', () => {
   let recursiveOnFrom;
   let replicationResult;
   let getItem;
-  let setItem;
   let dbSyncRetry;
   let rulesEngine;
 
@@ -94,7 +93,7 @@ describe('DBSync service', () => {
     db.withArgs({ remote: true, meta: true }).returns(remoteMetaDb);
 
     getItem = sinon.stub(window.localStorage, 'getItem');
-    setItem = sinon.stub(window.localStorage, 'setItem');
+    sinon.stub(window.localStorage, 'setItem');
 
     TestBed.configureTestingModule({
       providers: [

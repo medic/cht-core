@@ -8,7 +8,13 @@ import { StoreModule } from '@ngrx/store';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { storeLogger } from 'ngrx-store-logger';
 import { CookieService } from 'ngx-cookie-service';
-import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams, TranslateCompiler } from '@ngx-translate/core';
+import {
+  TranslateModule,
+  TranslateLoader,
+  MissingTranslationHandler,
+  MissingTranslationHandlerParams,
+  TranslateCompiler
+} from '@ngx-translate/core';
 import { ModalModule, BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
@@ -33,7 +39,7 @@ import { GlobalEffects } from '@mm-effects/global.effects';
 import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
-import { reducers } from "./reducers";
+import { reducers } from './reducers';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-message-format-compiler.provider';
 
 const logger = reducer => {

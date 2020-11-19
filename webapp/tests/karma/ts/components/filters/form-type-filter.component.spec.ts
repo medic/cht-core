@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -9,21 +9,22 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
-import { MultiDropdownFilterComponent } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+import {
+  MultiDropdownFilterComponent
+} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 
 describe('Form Type Filter Component', () => {
   let component:FormTypeFilterComponent;
   let fixture:ComponentFixture<FormTypeFilterComponent>;
-  let store:MockStore;
 
   beforeEach(async(() => {
     const mockedSelectors = [
       { selector: Selectors.getForms, value: [] },
     ];
 
-    TestBed
+    return TestBed
       .configureTestingModule({
         imports: [
           BrowserAnimationsModule,
@@ -44,7 +45,6 @@ describe('Form Type Filter Component', () => {
       .then(() => {
         fixture = TestBed.createComponent(FormTypeFilterComponent);
         component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));

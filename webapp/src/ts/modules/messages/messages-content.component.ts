@@ -110,7 +110,8 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     const lastMessage = $('.message-content-wrapper .last-message');
     // Scrolling only when last message is rendered.
     if (this.hasToScroll && !this.loadingContent && lastMessage.length) {
-      // ToDo: Determine when the view has finished rendering and scroll to unread messages. To avoid timeouts (performance costly)
+      // ToDo: Determine when the view has finished rendering and scroll to unread messages.
+      //  To avoid timeouts (performance costly)
       setTimeout(() => this.scrollToUnread());
     }
   }
@@ -139,7 +140,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     }
 
     const markers = content.find('.marker');
-    let scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
+    const scrollTo = markers.length ? markers[0].offsetTop - 50 : content[0].scrollHeight;
     content.scrollTop(scrollTo);
     this.hasToScroll = false;
 
@@ -341,18 +342,16 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   addRecipients() {
-    this.modalService.show(
-      SendMessageComponent,
-      {
-        initialState: {
-          fields: {
-            to: this.selectedConversation.id,
-            message: this.send.message
-          }
-        }
-      },
-      () => $('#message-footer textarea').focus()
-    );
+    const modalContext = {
+      fields: {
+        to: this.selectedConversation.id,
+        message: this.send.message
+      }
+    };
+    this.modalService
+      .show(SendMessageComponent, { initialState: modalContext })
+      .catch(() => {})
+      .finally(() => $('#message-footer textarea').focus());
     this.send.message = '';
   }
 

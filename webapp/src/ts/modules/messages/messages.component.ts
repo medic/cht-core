@@ -47,19 +47,19 @@ export class MessagesComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getMessagesError),
     )
-    .subscribe(([
-      conversations = [],
-      selectedConversation,
-      loadingContent,
-      error,
-    ]) => {
-      // Create new reference of conversation's items
-      // because the ones from store can't be modified as they are read only.
-      this.conversations = conversations.map(c => ({ ...c }));
-      this.selectedConversation = selectedConversation;
-      this.loadingContent = loadingContent;
-      this.error = error;
-    });
+      .subscribe(([
+        conversations = [],
+        selectedConversation,
+        loadingContent,
+        error,
+      ]) => {
+        // Create new reference of conversation's items
+        // because the ones from store can't be modified as they are read only.
+        this.conversations = conversations.map(c => ({ ...c }));
+        this.selectedConversation = selectedConversation;
+        this.loadingContent = loadingContent;
+        this.error = error;
+      });
     this.subscriptions.add(selectorsSubscription);
 
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
@@ -110,7 +110,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
-    this.modalService.show(SendMessageComponent);
+    this.modalService
+      .show(SendMessageComponent)
+      .catch(() => {});
   }
 
   private setConversations(conversations = [], {merge = false} = {}) {

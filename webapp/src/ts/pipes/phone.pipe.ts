@@ -27,7 +27,7 @@ export class PhonePipe implements PipeTransform {
       return phoneNumber.format(this.settings, phone) || phone;
     }
     return phone; // unformatted placeholder
-  };
+  }
 
   transform(phone) {
     if (!phone) {

@@ -1,8 +1,8 @@
 /**
  * Override Angular exception handler
  */
-import {ErrorHandler, Injectable} from '@angular/core';
-import {FeedbackService} from '../services/feedback.service';
+import { ErrorHandler, Injectable } from '@angular/core';
+import { FeedbackService } from '../services/feedback.service';
 
 @Injectable()
 export class ExceptionHandlerProvider implements ErrorHandler {
@@ -31,9 +31,9 @@ export class ExceptionHandlerProvider implements ErrorHandler {
 
     return !this.NO_FEEDBACK_MESSAGES.find((item:any) =>
       item instanceof RegExp ?
-      item.test(message) :
-      message.toLowerCase().includes(item));
-  };
+        item.test(message) :
+        message.toLowerCase().includes(item));
+  }
 
   handleError(exception: any) {
     console.error(exception);

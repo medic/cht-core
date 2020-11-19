@@ -23,7 +23,7 @@ describe('Reports effects', () => {
 
   beforeEach(async(() => {
     actions$ = new Observable<Action>();
-    let mockedSelectors = [
+    const mockedSelectors = [
       { selector: Selectors.getSelectMode, value: false },
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getListReport, value: {} },

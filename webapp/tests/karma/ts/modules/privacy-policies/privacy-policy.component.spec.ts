@@ -20,21 +20,20 @@ describe('PrivacyPoliciesComponent', () => {
       decodeUnicode: sinon.stub(),
     };
 
-    TestBed
-    .configureTestingModule({
-      declarations: [ PrivacyPolicyComponent ],
-      providers: [
-        provideMockStore(),
-        { provide: PrivacyPoliciesService, useValue: privacyPoliciesService }
-      ]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(PrivacyPolicyComponent);
-      component = fixture.componentInstance;
-      privacyPoliciesService = TestBed.inject(PrivacyPoliciesService);
-      fixture.detectChanges();
-    });
+    return TestBed
+      .configureTestingModule({
+        declarations: [ PrivacyPolicyComponent ],
+        providers: [
+          provideMockStore(),
+          { provide: PrivacyPoliciesService, useValue: privacyPoliciesService }
+        ]
+      })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(PrivacyPolicyComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
   afterEach(() => {

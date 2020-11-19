@@ -6,9 +6,9 @@ const USER_DB_SUFFIX = 'user';
 const META_DB_SUFFIX = 'meta';
 const USERS_DB_SUFFIX = 'users';
 
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 
-import { SessionService } from './session.service'
+import { SessionService } from './session.service';
 import { LocationService } from './location.service';
 import { POUCHDB_OPTIONS } from '../constants';
 
@@ -41,7 +41,7 @@ export class DbService {
     }
     // escape username in case they user invalid characters
     return username.replace(DISALLOWED_CHARS, match => `(${match.charCodeAt(0)})`);
-  };
+  }
 
   private getDbName(remote, meta, usersMeta) {
     const parts = [];
@@ -60,7 +60,7 @@ export class DbService {
       parts.push(META_DB_SUFFIX);
     }
     return parts.join('-');
-  };
+  }
 
   private getParams (remote, meta, usersMeta) {
     const clone = Object.assign({}, remote ? POUCHDB_OPTIONS.remote : POUCHDB_OPTIONS.local);
@@ -73,7 +73,7 @@ export class DbService {
       clone.skip_setup = false;
     }
     return clone;
-  };
+  }
 
   get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
     const name = this.getDbName(remote, meta, usersMeta);

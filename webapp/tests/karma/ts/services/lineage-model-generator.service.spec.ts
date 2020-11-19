@@ -44,7 +44,8 @@ describe('LineageModelGenerator service', () => {
 
     it('handles no lineage', () => {
       const contact = { _id: 'a', _rev: '1' };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: contact }
         ] });
       return service.contact('a').then(model => {
@@ -57,7 +58,8 @@ describe('LineageModelGenerator service', () => {
       const contact = { _id: 'a', _rev: '1' };
       const parent = { _id: 'b', _rev: '1' };
       const grandparent = { _id: 'c', _rev: '1' };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: contact },
           { doc: parent },
           { doc: grandparent }
@@ -82,12 +84,14 @@ describe('LineageModelGenerator service', () => {
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'e' } };
       const parentsContact = { _id: 'e', name: 'eliza' };
       const grandparent = { _id: 'c', _rev: '1' };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: contact },
           { doc: parent },
           { doc: grandparent }
         ] });
-      dbAllDocs.resolves({ rows: [
+      dbAllDocs.resolves({
+        rows: [
           { doc: contactsContact },
           { doc: parentsContact }
         ] });
@@ -104,12 +108,14 @@ describe('LineageModelGenerator service', () => {
       const grandparent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const parentContact = { _id: 'd', name: 'donny' };
       const grandparentContact = { _id: 'e', name: 'erica' };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: contact },
           { doc: parent },
           { doc: grandparent }
         ] });
-      dbAllDocs.resolves({ rows: [
+      dbAllDocs.resolves({
+        rows: [
           { doc: parentContact },
           { doc: grandparentContact }
         ] });
@@ -157,7 +163,8 @@ describe('LineageModelGenerator service', () => {
           }
         ]
       };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: contact },
           { doc: parent },
           { doc: grandparent }
@@ -190,7 +197,8 @@ describe('LineageModelGenerator service', () => {
     it('should merge lineage with undefined members v2', () => {
       const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: contact, key: ['a', 0] },
           { doc: parent,  key: ['a', 1] },
           { key: ['a', 2] },
@@ -239,7 +247,8 @@ describe('LineageModelGenerator service', () => {
           }
         ]
       };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: contact },
           { doc: parent },
           { doc: grandparent }
@@ -267,7 +276,8 @@ describe('LineageModelGenerator service', () => {
 
     it('handles no lineage', () => {
       const report = { _id: 'a', _rev: '1' };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: report }
         ] });
       return service.report('a').then(model => {
@@ -281,7 +291,8 @@ describe('LineageModelGenerator service', () => {
       const contact = { _id: 'b', _rev: '1' };
       const parent = { _id: 'c', _rev: '1' };
       const grandparent = { _id: 'd', _rev: '1' };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: report },
           { doc: contact },
           { doc: parent },
@@ -301,13 +312,15 @@ describe('LineageModelGenerator service', () => {
       const grandparent = { _id: 'd', _rev: '1', contact: { _id: 'f' } };
       const parentContact = { _id: 'e', name: 'erica' };
       const grandparentContact = { _id: 'f', name: 'frank' };
-      dbQuery.resolves({ rows: [
+      dbQuery.resolves({
+        rows: [
           { doc: report },
           { doc: contact },
           { doc: parent },
           { doc: grandparent }
         ] });
-      dbAllDocs.resolves({ rows: [
+      dbAllDocs.resolves({
+        rows: [
           { doc: parentContact },
           { doc: grandparentContact }
         ] });

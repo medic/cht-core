@@ -29,48 +29,95 @@ const fnCache = new Map();
 const purePipes = new Map();
 
 const primitiveEquals = (a, b) => {
-  if (typeof a === "object" || typeof b === "object") {
+  if (typeof a === 'object' || typeof b === 'object') {
     return false;
   }
   if (a !== a && b !== b) { // NaN case
     return true;
   }
   return a === b;
-}
-
+};
 
 const detectChanges = (ov, nv) => {
   const len = nv.length;
   let hasChange = len > 10;
   switch (len) {
-    case 10: hasChange = !primitiveEquals(ov[9], nv[9]); if (hasChange) break;
-    case  9: hasChange = !primitiveEquals(ov[8], nv[8]); if (hasChange) break;
-    case  8: hasChange = !primitiveEquals(ov[7], nv[7]); if (hasChange) break;
-    case  7: hasChange = !primitiveEquals(ov[6], nv[6]); if (hasChange) break;
-    case  6: hasChange = !primitiveEquals(ov[5], nv[5]); if (hasChange) break;
-    case  5: hasChange = !primitiveEquals(ov[4], nv[4]); if (hasChange) break;
-    case  4: hasChange = !primitiveEquals(ov[3], nv[3]); if (hasChange) break;
-    case  3: hasChange = !primitiveEquals(ov[2], nv[2]); if (hasChange) break;
-    case  2: hasChange = !primitiveEquals(ov[1], nv[1]); if (hasChange) break;
-    case  1: hasChange = !primitiveEquals(ov[0], nv[0]); if (hasChange) break;
+  case 10:
+    hasChange = !primitiveEquals(ov[9], nv[9]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 9:
+    hasChange = !primitiveEquals(ov[8], nv[8]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 8:
+    hasChange = !primitiveEquals(ov[7], nv[7]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 7:
+    hasChange = !primitiveEquals(ov[6], nv[6]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 6:
+    hasChange = !primitiveEquals(ov[5], nv[5]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 5:
+    hasChange = !primitiveEquals(ov[4], nv[4]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 4:
+    hasChange = !primitiveEquals(ov[3], nv[3]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 3:
+    hasChange = !primitiveEquals(ov[2], nv[2]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 2:
+    hasChange = !primitiveEquals(ov[1], nv[1]);
+    if (hasChange) {
+      break;
+    }
+  // eslint-disable-next-line no-fallthrough
+  case 1:
+    hasChange = !primitiveEquals(ov[0], nv[0]);
+    if (hasChange) {
+      break;
+    }
   }
   return hasChange;
-}
+};
 
 const getPurePipeVal = (pipe, cache, identifier, ...args) => {
   let lastResult = cache.get(identifier);
-  let result;
   if (lastResult) {
     const isModified = detectChanges(lastResult.args, args);
     if (!isModified) {
       return lastResult.result;
     }
   }
-  result = pipe.transform(...args);
-  lastResult = {args, result};
+  const result = pipe.transform(...args);
+  lastResult = { args, result };
   cache.set(identifier, lastResult);
   return result;
-}
+};
 
 class ASTCompiler {
   ast; // ast to be compiled
@@ -135,7 +182,7 @@ class ASTCompiler {
     const stmts = this.cStmts;
     const r = this.build(ast.receiver);
     const v = this.createVar();
-    stmts.push(`${v}=${r}&&${r}.${ast.name}`)
+    stmts.push(`${v}=${r}&&${r}.${ast.name}`);
     return v;
   }
 
@@ -211,10 +258,12 @@ class ASTCompiler {
   processBinary() {
     const ast = this.cAst;
     const op = ast.operation;
-    if (op === '+' || op === '-')
+    if (op === '+' || op === '-') {
       return this.handleBinaryPlus_Minus();
-    if (op === '&&' || op === '||')
+    }
+    if (op === '&&' || op === '||') {
       return this.handleBinaryAND_OR();
+    }
 
     return this.handleBinaryDefault();
   }
@@ -248,7 +297,7 @@ class ASTCompiler {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const _args = [];
-    for (let arg of ast.args) {
+    for (const arg of ast.args) {
       _args.push(this.build(arg));
     }
     const fn = this.build(ast.receiver);
@@ -276,7 +325,9 @@ class ASTCompiler {
 
     _s1.push(
       _s2.length ? _s2.join(';') + ';': '',
-      this.pipeNameVsIsPureMap.get(ast.name) ? `${t}=getPPVal(${p},_ppc,"${p}",${_args})` : `${t}=${p}.transform(${_args})`
+      this.pipeNameVsIsPureMap.get(ast.name) ?
+        `${t}=getPPVal(${p},_ppc,"${p}",${_args})` :
+        `${t}=${p}.transform(${_args})`
     );
 
     stmts.push(_s1.join(''));
@@ -325,15 +376,15 @@ class ASTCompiler {
   }
 
   fnArgs() {
-    let args = ["_plus", "_minus", "_isDef", "getPPVal", "_ppc"];
+    const args = ['_plus', '_minus', '_isDef', 'getPPVal', '_ppc'];
 
     for (const [, pipeVar] of this.pipes) {
       args.push(pipeVar);
     }
 
-    args.push("ctx", "locals");
+    args.push('ctx', 'locals');
 
-    return args.join(",");
+    return args.join(',');
   }
 
   addReturnStmt(result) {
@@ -341,7 +392,8 @@ class ASTCompiler {
   }
 
   cleanup() {
-    this.ast = this.cAst = this.stmts = this.cStmts = this.declarations = this.pipes = this.pipeNameVsIsPureMap = undefined;
+    this.ast = this.cAst = this.stmts = this.cStmts = undefined;
+    this.declarations = this.pipes = this.pipeNameVsIsPureMap = undefined;
   }
 
   compile() {
@@ -359,8 +411,8 @@ class ASTCompiler {
 const nullPipe = () => {
   return {
     transform: noop
-  }
-}
+  };
+};
 
 @Injectable()
 export class ParseProvider {
@@ -399,7 +451,7 @@ export class ParseProvider {
       if (fn.usedPipes.length) {
         const pipeArgs = [];
         let hasPurePipe = false;
-        for (let [pipeName] of fn.usedPipes) {
+        for (const [pipeName] of fn.usedPipes) {
           const pipeInfo = this.pipesService.meta(pipeName);
           let pipeInstance;
           if (!pipeInfo) {

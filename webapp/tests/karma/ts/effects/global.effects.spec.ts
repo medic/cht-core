@@ -6,34 +6,42 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { Action } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
+import { Router } from '@angular/router';
 
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { Selectors } from '@mm-selectors/index';
-import { Actions as GlobalActionsList, GlobalActions } from '@mm-actions/global';
+import { Actions as GlobalActionsList } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
-import { Actions as ReportActionList } from '@mm-actions/reports';
-import { setOffsetToParsedOffset } from 'ngx-bootstrap/chronos/units/offset';
+import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 
 describe('GlobalEffects', () => {
   let effects:GlobalEffects;
   let actions$;
   let modalService;
   let store;
+  let router;
 
   beforeEach(async(() => {
     actions$ = new Observable<Action>();
-    let mockedSelectors = [
+    const mockedSelectors = [
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getCancelCallback, value: undefined },
     ];
 
     modalService = {
-      show: sinon.stub(),
+      show: sinon.stub().resolves(),
+    };
+
+    router = {
+      navigate: sinon.stub(),
     };
 
     TestBed.configureTestingModule({
+      declarations: [
+        NavigationConfirmComponent,
+      ],
       imports: [
         EffectsModule.forRoot([GlobalEffects]),
       ],
@@ -41,6 +49,7 @@ describe('GlobalEffects', () => {
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ModalService, useValue: modalService },
+        { provide: Router, useValue: router },
       ],
     });
 
@@ -84,30 +93,65 @@ describe('GlobalEffects', () => {
       actions$ = of(GlobalActionsList.navigationCancel('next'));
       effects.navigationCancel.subscribe();
       expect(callback.callCount).to.equal(0);
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(modalService.show.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
     }));
 
-    it('when not saving and not edited and no cancelCallback', async(() => {
+    it('when not saving and not edited and no cancelCallback', async(async () => {
       actions$ = of(GlobalActionsList.navigationCancel('next'));
       effects.navigationCancel.subscribe();
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(modalService.show.callCount).to.equal(0);
+      await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
+      expect(router.navigate.callCount).to.equal(0);
     }));
 
-    it('when not saving edited and no cancel callback', async (() => {
+    it('when not saving edited and no cancel callback and no route', async (async () => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      actions$ = of(GlobalActionsList.navigationCancel(''));
+      effects.navigationCancel.subscribe();
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent]);
+      expect(router.navigate.callCount).to.equal(0);
+      await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
+      expect(router.navigate.callCount).to.equal(0);
+    }));
+
+    it('when not saving edited and no cancel callback and route', async (async () => {
       store.overrideSelector(Selectors.getEnketoEditedStatus, true);
       actions$ = of(GlobalActionsList.navigationCancel('next'));
       effects.navigationCancel.subscribe();
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent]);
+      expect(router.navigate.callCount).to.equal(0);
+      await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['next']]);
     }));
 
-    it('when not saving, not edited and cancelCallback ', async(() => {
-      const callback = sinon.stub();
-      store.overrideSelector(Selectors.getCancelCallback, callback);
+    it('when not saving edited and cancel callback but user cancels modal', async (async () => {
+      const cancelCallback = sinon.stub();
+      modalService.show.rejects({ means: 'that user cancelled' });
+      store.overrideSelector(Selectors.getCancelCallback, cancelCallback);
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      actions$ = of(GlobalActionsList.navigationCancel(''));
+      effects.navigationCancel.subscribe();
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent]);
+      expect(router.navigate.callCount).to.equal(0);
+      await Promise.resolve(); // wait for modalService to reject: means user clicks to cancel navigation
+      expect(router.navigate.callCount).to.equal(0);
+      expect(cancelCallback.callCount).to.equal(0);
+    }));
+
+    it('when not saving, not edited and cancelCallback ', async(async () => {
+      const cancelCallback = sinon.stub();
+      store.overrideSelector(Selectors.getCancelCallback, cancelCallback);
       actions$ = of(GlobalActionsList.navigationCancel('next'));
       effects.navigationCancel.subscribe();
-      expect(callback.callCount).to.equal(1);
-      expect(callback.args[0]).to.deep.equal([]);
-      // todo add assertion that modal service was not called once the modal is migrated
+      expect(cancelCallback.callCount).to.equal(1);
+      expect(cancelCallback.args[0]).to.deep.equal([]);
+      expect(modalService.show.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
     }));
   });
 });

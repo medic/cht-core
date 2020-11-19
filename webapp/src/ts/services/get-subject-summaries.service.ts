@@ -20,7 +20,7 @@ export class GetSubjectSummariesService {
       return id && row.key[1] === id.toString() || false;
     });
     return (parent && parent.id) || null;
-  };
+  }
 
   private replaceReferencesWithIds(summaries, response) {
     summaries.forEach((summary) => {
@@ -39,12 +39,12 @@ export class GetSubjectSummariesService {
     });
 
     return summaries;
-  };
+  }
 
   private findSubjectName(response, id) {
     const parent = _.find(response, { _id: id });
     return (parent && parent.name) || null;
-  };
+  }
 
   private replaceIdsWithNames(summaries, response) {
     summaries.forEach((summary) => {
@@ -60,7 +60,7 @@ export class GetSubjectSummariesService {
       }
     });
     return summaries;
-  };
+  }
 
   private processContactIds(summaries) {
     const ids = _.uniq(_.compact(summaries.map((summary) => {
@@ -78,7 +78,7 @@ export class GetSubjectSummariesService {
       .then((response) => {
         return this.replaceIdsWithNames(summaries, response);
       });
-  };
+  }
 
   private validateSubjects(summaries) {
     summaries.forEach((summary) => {
@@ -96,7 +96,7 @@ export class GetSubjectSummariesService {
     });
 
     return summaries;
-  };
+  }
 
   private processReferences(summaries) {
     const references = _.uniq(_.compact(summaries.map((summary) => {
@@ -118,7 +118,7 @@ export class GetSubjectSummariesService {
       .then((response) => {
         return this.replaceReferencesWithIds(summaries, response);
       });
-  };
+  }
 
   private hydrateSubjectLineages(summaries, response) {
     return _.forEach(summaries, (summary) => {
@@ -126,7 +126,7 @@ export class GetSubjectSummariesService {
         Object.assign(summary.subject, _.find(response, {_id: summary.subject._id}));
       }
     });
-  };
+  }
 
   private compactSubjectLineage(summaries) {
     return _.forEach(summaries, (summary) => {
@@ -136,7 +136,7 @@ export class GetSubjectSummariesService {
         }));
       }
     });
-  };
+  }
 
   private processSubjectLineage(summaries) {
     const subjectIds = _.uniq(_.compact(summaries.map((summary) => {
@@ -152,7 +152,7 @@ export class GetSubjectSummariesService {
       .then((response) => {
         return this.hydrateSubjectLineages(summaries, response);
       });
-  };
+  }
 
   get(summaries, hydratedLineage = false) {
     let containsReports = false;
