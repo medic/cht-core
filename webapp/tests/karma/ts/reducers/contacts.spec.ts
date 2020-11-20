@@ -81,7 +81,7 @@ describe('Contacts Reducer', () => {
       });
     });
 
-    it('should update existing reports', () => {
+    it('should update existing contacts', () => {
       state = {
         contacts: [
           { _id: '2', name: 'Facility 3', type: 'district_hospital' },
@@ -223,11 +223,6 @@ describe('Contacts Reducer', () => {
 
       const newState = contactsReducer(state, Actions.updateContactsList(newContacts));
 
-      console.log(newState);
-      newState.contactsById.forEach(element => {
-        console.log(element);
-      });
-
       expect(newState).to.deep.equal({
         contacts: [
           { _id: '1', name: 'Person 1', type: 'person' },
@@ -261,11 +256,6 @@ describe('Contacts Reducer', () => {
 
       const newState = contactsReducer(state, Actions.updateContactsList(newContacts));
 
-      console.log(newState);
-      newState.contactsById.forEach(element => {
-        console.log(element);
-      });
-
       expect(newState).to.deep.equal({
         contacts: [
           { _id: '1', name: 'Person 1', type: 'person' },
@@ -278,6 +268,42 @@ describe('Contacts Reducer', () => {
           ['2', { _id: '2', name: 'Person 2', type: 'person', muted: true  }],
           ['3', { _id: '3', name: 'Person 3', type: 'person' }],
           ['4', { _id: '4', name: 'Person 4', type: 'person' }],
+        ])
+      });
+    });
+
+    it('should push dead people to below muted people at the bottom of the list', () => {
+      state = {
+        contacts: [
+          { _id: '1', name: 'Person 1', type: 'person' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Person 1', type: 'person' }]
+        ])
+      };
+      const newContacts = [
+        { _id: '2', name: 'Person 2', type: 'person', muted: true },
+        { _id: '3', name: 'Person 3', type: 'person' },
+        { _id: '4', name: 'Person 4', type: 'person', date_of_death: '2020-11-18' },
+        { _id: '5', name: 'Person 5', type: 'person' }
+      ];
+
+      const newState = contactsReducer(state, Actions.updateContactsList(newContacts));
+
+      expect(newState).to.deep.equal({
+        contacts: [
+          { _id: '1', name: 'Person 1', type: 'person' },
+          { _id: '3', name: 'Person 3', type: 'person' },
+          { _id: '5', name: 'Person 5', type: 'person' },
+          { _id: '2', name: 'Person 2', type: 'person', muted: true },
+          { _id: '4', name: 'Person 4', type: 'person', date_of_death: '2020-11-18' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Person 1', type: 'person' }],
+          ['2', { _id: '2', name: 'Person 2', type: 'person', muted: true  }],
+          ['3', { _id: '3', name: 'Person 3', type: 'person' }],
+          ['4', { _id: '4', name: 'Person 4', type: 'person', date_of_death: '2020-11-18' }],
+          ['5', { _id: '5', name: 'Person 5', type: 'person' }],
         ])
       });
     });

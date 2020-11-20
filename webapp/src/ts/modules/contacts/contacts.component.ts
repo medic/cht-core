@@ -149,7 +149,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         // TODO: Not migrated these yet
         // updateAllowedChildPlaces();
         // setActionBarData();
-        this.search();
+        return this.search();
       })
       .catch((err) => {
         this.error = true;
