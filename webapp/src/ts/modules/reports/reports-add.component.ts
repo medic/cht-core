@@ -201,6 +201,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
               .catch((err) => {
                 this.errorTranslationKey = err.translationKey || 'error.loading.form';
                 this.globalActions.setLoadingContent(false);
+                this.contentError = true;
                 console.error('Error loading form.', err);
               });
           });
