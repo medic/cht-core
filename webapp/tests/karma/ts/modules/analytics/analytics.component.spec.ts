@@ -9,6 +9,7 @@ import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { GlobalActions } from '@mm-actions/global';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { TourService } from '@mm-services/tour.service';
 
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
@@ -47,6 +48,7 @@ describe('AnalyticsComponent', () => {
           provideMockStore({ selectors: mockSelectors }),
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: ActivatedRoute, useValue: activatedRoute },
+          { provide: TourService, useValue: { startIfNeeded: sinon.stub() } },
         ]
       })
       .compileComponents()

@@ -261,23 +261,6 @@ angular.module('inboxServices').factory('GlobalActions',
         });
       }
 
-      function openTourSelect() {
-        return Modal({
-          templateUrl: 'templates/modals/tour_select.html',
-          controller: 'TourSelectCtrl',
-          controllerAs: 'tourSelectCtrl',
-        }).catch(() => {}); // modal dismissed is ok
-      }
-
-      function openGuidedSetup() {
-        return Modal({
-          templateUrl: 'templates/modals/guided_setup.html',
-          controller: 'GuidedSetupModalCtrl',
-          controllerAs: 'guidedSetupModalCtrl',
-          size: 'lg',
-        }).catch(() => {}); // modal dismissed is ok
-      }
-
       function deleteDoc(doc) {
         return dispatch((dispatch, getState) => {
           return Modal({
@@ -303,8 +286,6 @@ angular.module('inboxServices').factory('GlobalActions',
         clearRightActionBar,
         deleteDoc,
         navigationCancel,
-        openGuidedSetup,
-        openTourSelect,
         setLoadingSubActionBar,
         setRightActionBar,
         setRightActionBarVerified,
