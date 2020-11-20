@@ -40,7 +40,7 @@ export class HeaderTabsService {
 
     {
       name:'contacts',
-      route:'contacts.detail',
+      route:'contacts',
       defaultIcon:'fa-user',
       translation:'Contacts',
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],

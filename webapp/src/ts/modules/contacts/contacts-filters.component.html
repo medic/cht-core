@@ -1,0 +1,13 @@
+<div class="basic-filters left-pane">
+  <mm-freetext-filter class="filter" (search)="applyFilters()" [disabled]="disabled"></mm-freetext-filter>
+  <mm-simprints-filter
+    [simprintsEnabled]="simprintsEnabled"
+    (identify)="simprintsIdentify()"
+  ></mm-simprints-filter>
+  <reset-filters (resetFilters)="resetFilters()" [disabled]="disabled"></reset-filters>
+  <mm-sort-filter
+    [lastVisitedDateExtras]="lastVisitedDateExtras"
+    (sort)="applySort($event)"
+    [sortDirection]="sortDirection"
+  ></mm-sort-filter>
+</div>

@@ -6,7 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { isMobile } from '@mm-providers/responsive.provider';
-import { init as scrollLoaderInit } from '@mm-providers/scroll-loader.provider';
+import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ServicesActions } from '@mm-actions/services';
@@ -57,6 +57,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private tourService: TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
+    private scrollLoaderProvider: ScrollLoaderProvider,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -213,7 +214,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   private initScroll() {
-    scrollLoaderInit(() => {
+    this.scrollLoaderProvider.init(() => {
       if (!this.loading && this.moreItems) {
         this.query({ skip: true });
       }

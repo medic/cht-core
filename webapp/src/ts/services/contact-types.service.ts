@@ -10,7 +10,7 @@ export class ContactTypesService {
   constructor(private settingsService:SettingsService) {
   }
 
-  HARDCODED_TYPES() {
+  static HARDCODED_TYPES() {
     return contactTypesUtils.HARDCODED_TYPES;
   }
 
