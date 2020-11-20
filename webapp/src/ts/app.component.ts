@@ -30,6 +30,7 @@ import { LanguageService, SetLanguageService } from '@mm-services/language.servi
 import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { TourService } from '@mm-services/tour.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { CheckDateService } from '@mm-services/check-date.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -101,6 +102,7 @@ export class AppComponent implements OnInit {
     private routeSnapshotService:RouteSnapshotService,
     private startupModalsService:StartupModalsService,
     private tourService:TourService,
+    private checkDateService:CheckDateService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -344,7 +346,8 @@ export class AppComponent implements OnInit {
           // policy component after the user accepts the terms
           this.startupModalsService.showStartupModals();
         }
-      });
+      })
+      .then(() => this.checkDateService.check());
     this.initForms();
   }
 
