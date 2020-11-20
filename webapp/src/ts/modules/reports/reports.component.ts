@@ -59,7 +59,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private exportService:ExportService,
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
-    private modalService:ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
