@@ -16,7 +16,7 @@ export class UHCSettingsService {
       );
   }
 
-  getVisitCountSettings(settings) {
+  getVisitCountSettings(settings?) {
     if (!settings || !settings.uhc || !settings.uhc.visit_count) {
       return {};
     }

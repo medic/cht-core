@@ -1,0 +1,16 @@
+<div class="content-pane right-pane">
+
+    <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent">
+      <div>
+        <div class="loader"></div>
+      </div>
+    </div>
+  
+    <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedContact && !loadingContent">
+      <div translate>No contact selected</div>
+    </div>
+  
+    <div class="col-sm-8 item-content empty-selection" *ngIf="selectedContact && selectedContact.error && !loadingContent">
+      <div translate>contact.select.error</div>
+    </div>
+  </div>
