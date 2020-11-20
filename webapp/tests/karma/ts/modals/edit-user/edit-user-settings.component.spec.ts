@@ -11,7 +11,6 @@ import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settin
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import {SetLanguageService} from '@mm-services/language.service';
-import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 
 describe('EditUserSettingsComponent', () => {
 
@@ -52,7 +51,6 @@ describe('EditUserSettingsComponent', () => {
       .configureTestingModule({
         declarations: [
           EditUserSettingsComponent,
-          MmModal
         ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),

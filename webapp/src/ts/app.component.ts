@@ -27,6 +27,8 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
+import { StartupModalsService } from '@mm-services/startup-modals.service';
+import { TourService } from '@mm-services/tour.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -68,7 +70,6 @@ export class AppComponent implements OnInit {
   minimalTabs = false;
   adminUrl;
   canLogOut = false;
-  tours = [];
   replicationStatus;
   androidAppVersion;
   nonContactForms;
@@ -95,7 +96,9 @@ export class AppComponent implements OnInit {
     private translateFromService:TranslateFromService,
     private changeDetectorRef: ChangeDetectorRef,
     private countMessageService: CountMessageService,
-    private privacyPoliciesService: PrivacyPoliciesService
+    private privacyPoliciesService: PrivacyPoliciesService,
+    private startupModalsService: StartupModalsService,
+    private tourService: TourService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -133,6 +136,7 @@ export class AppComponent implements OnInit {
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
+          this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
       }
@@ -323,7 +327,16 @@ export class AppComponent implements OnInit {
     });
 
     this.countMessageService.init();
-    this.checkPrivacyPolicy();
+    this.checkPrivacyPolicy()
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the startup modals,
+          // otherwise the modals will start from the privacy
+          // policy component after the user accepts the terms
+          this.startupModalsService.showStartupModals();
+        }
+      });
     this.initForms();
   }
 
@@ -419,6 +432,7 @@ export class AppComponent implements OnInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
+        return { privacyPolicy, accepted };
       })
       .catch(err => console.error('Failed to load privacy policy', err));
   }

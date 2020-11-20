@@ -29,7 +29,6 @@
   require('./show-muted-modal');
   require('./simprints-filter');
   require('./sort-filter');
-  require('./startup-modals');
   require('./status-filter');
   require('./tasks-list');
 
