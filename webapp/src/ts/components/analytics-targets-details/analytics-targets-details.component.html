@@ -1,8 +1,13 @@
-<span *ngIf="!value?.placeholder">
-  <span *ngIf="!target?.isPercent">{{ value?.pass }}</span>
-  <span *ngIf="target?.isPercent">
-    {{ value?.percent }}%
-    <span translate [translateParams]="value">{{ target?.percentage_count_translation_key || 'targets.count.default' }}</span>
-  </span>
+<span *ngIf="!value?.placeholder; else valuePlaceholder">
+  <span *ngIf="!target?.isPercent; else targetIsPercent">{{ value?.pass }}</span>
+  <ng-template #targetIsPercent>
+    <span>
+      {{ value?.percent }}%
+      <span translate [translateParams]="value">{{ target?.percentage_count_translation_key || 'targets.count.default' }}</span>
+    </span>
+  </ng-template>
 </span>
-<span *ngIf="value?.placeholder" translate>analytics.target.aggregates.no.data</span>
+
+<ng-template #valuePlaceholder>
+  <span translate>analytics.target.aggregates.no.data</span>
+</ng-template>
