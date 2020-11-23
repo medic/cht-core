@@ -1,11 +1,12 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { async, TestBed } from '@angular/core/testing';
+import { async, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { Action } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
+import { Router } from '@angular/router';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -13,12 +14,20 @@ import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { ReportsEffects } from '@mm-effects/reports.effects';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { DbService } from '@mm-services/db.service';
+import { SearchService } from '@mm-services/search.service';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
   let actions$;
   let reportViewModelGeneratorService;
   let markReadService;
+  let modalService;
+  let dbService;
+  let router;
+  let searchService;
   let store;
 
   beforeEach(async(() => {
@@ -30,22 +39,34 @@ describe('Reports effects', () => {
       { selector: Selectors.getForms, value: [] },
     ];
 
+    reportViewModelGeneratorService = { get: sinon.stub().resolves() };
+    markReadService = { markAsRead: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
+    dbService = { get: sinon.stub() };
+    router = { navigate: sinon.stub() };
+    searchService = { search: sinon.stub() };
+
     TestBed.configureTestingModule({
+      declarations: [
+        SendMessageComponent,
+      ],
       imports: [
         EffectsModule.forRoot([ReportsEffects]),
       ],
       providers: [
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
-        { provide: ReportViewModelGeneratorService, useValue: { get: sinon.stub().resolves() } },
-        { provide: MarkReadService, useValue: { markAsRead: sinon.stub().resolves() } },
+        { provide: ReportViewModelGeneratorService, useValue: reportViewModelGeneratorService },
+        { provide: MarkReadService, useValue: markReadService },
+        { provide: ModalService, useValue: modalService },
+        { provide: DbService, useValue: { get: sinon.stub().returns(dbService)} },
+        { provide: Router, useValue: router },
+        { provide: SearchService, useValue: searchService },
       ],
     });
 
     effects = TestBed.inject(ReportsEffects);
     store = TestBed.inject(MockStore);
-    reportViewModelGeneratorService = TestBed.inject(ReportViewModelGeneratorService);
-    markReadService = TestBed.inject(MarkReadService);
   }));
 
   afterEach(() => {
@@ -346,6 +367,337 @@ describe('Reports effects', () => {
       expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report', form: true }]]);
       expect(updateReportsList.callCount).to.equal(0);
     });
+  });
+
+  describe('setRightActionBar', () => {
+    let setRightActionBar;
+
+    beforeEach(() => {
+      setRightActionBar = sinon.stub(GlobalActions.prototype, 'setRightActionBar');
+    });
+
+    it('should not be triggered by random actions', () => {
+      actions$ = of([
+        ReportActionList.selectReport(''),
+        ReportActionList.removeSelectedReport({}),
+        ReportActionList.setSelected({}),
+      ]);
+
+      effects.setRightActionBar.subscribe();
+      expect(setRightActionBar.callCount).to.equal(0);
+    });
+
+    it('should set empty model when in select mode and no selected docs', async(() => {
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, []);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+      actions$ = of(ReportActionList.setRightActionBar);
+
+      effects.setRightActionBar.subscribe();
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0]).to.deep.equal([{}]);
+    }));
+
+    it('should set empty model when in select mode and selected docs', async (() => {
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, [{ _id: 'doc' }]);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+      actions$ = of(ReportActionList.setRightActionBar);
+
+      effects.setRightActionBar.subscribe();
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0]).to.deep.equal([{}]);
+    }));
+
+    it('should set empty model when not in select mode and no selected docs', async (() => {
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, []);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+      actions$ = of(ReportActionList.setRightActionBar);
+
+      effects.setRightActionBar.subscribe();
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0]).to.deep.equal([{}]);
+    }));
+
+    it('should set correct model when not in select mode and selected doc without contact', async (() => {
+      const report = {
+        _id: 'report',
+        verified: false,
+        content_type: 'xml',
+      };
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+      actions$ = of(ReportActionList.setRightActionBar);
+
+      effects.setRightActionBar.subscribe();
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0][0]).to.deep.include({
+        verified: false,
+        type: 'xml',
+      });
+    }));
+
+    it('should set correct model when not in select mode and selected doc with false contact', async (() => {
+      const report = {
+        _id: 'report',
+        verified: 'true',
+        content_type: 'xml',
+        contact: false,
+      };
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+      actions$ = of(ReportActionList.setRightActionBar);
+
+      effects.setRightActionBar.subscribe();
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0][0]).to.deep.include({
+        verified: 'true',
+        type: 'xml',
+      });
+    }));
+
+    it('should set correct model when not in select mode and selected doc with contact', fakeAsync(async () => {
+      const report = {
+        _id: 'report',
+        verified: true,
+        content_type: 'not_xml',
+        contact: { _id: 'the_contact' },
+      };
+      dbService.get.resolves({ _id: 'the_contact', phone: '12345' });
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getVerifyingReport, true);
+
+      actions$ = of(ReportActionList.setRightActionBar);
+      effects.setRightActionBar.subscribe();
+      tick(); // wait for db request to fulfill
+      expect(dbService.get.callCount).to.equal(1);
+      expect(dbService.get.args[0]).to.deep.equal(['the_contact']);
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0][0]).to.deep.include({
+        verified: true,
+        type: 'not_xml',
+        sendTo: { _id: 'the_contact', phone: '12345' },
+        verifyingReport: true,
+      });
+    }));
+
+    it('should catch db get errors', fakeAsync(async() => {
+      const report = {
+        _id: 'report',
+        verified: 'something',
+        content_type: 'sms', // not an actual content_type
+        contact: { _id: 'non-existing' },
+      };
+      dbService.get.rejects({ error: 'boom' });
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+
+      actions$ = of(ReportActionList.setRightActionBar);
+      effects.setRightActionBar.subscribe();
+      flush(); // wait for db request to fulfill
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0][0]).to.deep.include({
+        verified: 'something',
+        type: 'sms',
+        sendTo: undefined,
+        verifyingReport: false,
+      });
+    }));
+
+    it('openSendMessageModal function should open correct modal', () => {
+      const report = {};
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+      modalService.show.resolves();
+
+      actions$ = of(ReportActionList.setRightActionBar);
+      effects.setRightActionBar.subscribe();
+
+      expect(setRightActionBar.callCount).to.equal(1);
+      const openSendMessageModal = setRightActionBar.args[0][0].openSendMessageModal;
+      expect(modalService.show.callCount).to.equal(0);
+      openSendMessageModal('number');
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        SendMessageComponent,
+        { initialState: { fields: { to: 'number' } } },
+      ]);
+    });
+
+    it('should catch modal show promise rejections', () => {
+      const report = {};
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getVerifyingReport, false);
+      modalService.show.rejects();
+
+      actions$ = of(ReportActionList.setRightActionBar);
+      effects.setRightActionBar.subscribe();
+
+      expect(setRightActionBar.callCount).to.equal(1);
+      const openSendMessageModal = setRightActionBar.args[0][0].openSendMessageModal;
+      expect(modalService.show.callCount).to.equal(0);
+      openSendMessageModal('send to');
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        SendMessageComponent,
+        { initialState: { fields: { to: 'send to' } } },
+      ]);
+    });
+  });
+
+  describe('setSelectMode', () => {
+    let setSelectMode;
+    let unsetSelected;
+
+    beforeEach(() => {
+      setSelectMode = sinon.stub(GlobalActions.prototype, 'setSelectMode');
+      unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+    });
+
+    it('should not be triggered by random actions', () => {
+      actions$ = of([
+        ReportActionList.selectReport(''),
+        ReportActionList.removeSelectedReport({}),
+        ReportActionList.setSelected({}),
+      ]);
+
+      effects.setSelectMode.subscribe();
+      expect(setSelectMode.callCount).to.equal(0);
+      expect(unsetSelected.callCount).to.equal(0);
+    });
+
+    it('should set select mode and redirect', () => {
+      actions$ = of(ReportActionList.setSelectMode(true));
+      effects.setSelectMode.subscribe();
+
+      expect(setSelectMode.callCount).to.equal(1);
+      expect(setSelectMode.args[0]).to.deep.equal([true]);
+      expect(unsetSelected.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
+    });
+
+    it('should unset select mode and redirect', () => {
+      actions$ = of(ReportActionList.setSelectMode(false));
+      effects.setSelectMode.subscribe();
+
+      expect(setSelectMode.callCount).to.equal(1);
+      expect(setSelectMode.args[0]).to.deep.equal([false]);
+      expect(unsetSelected.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
+    });
+  });
+
+  describe('selectAll', () => {
+    let setSelectedReports;
+    let settingSelected;
+    let setRightActionBar;
+
+    beforeEach(() => {
+      setSelectedReports = sinon.stub(ReportsActions.prototype, 'setSelectedReports');
+      settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
+      setRightActionBar = sinon.stub(ReportsActions.prototype, 'setRightActionBar');
+    });
+
+    it('should not be triggered by random actions', () => {
+      actions$ = of([
+        ReportActionList.selectReport(''),
+        ReportActionList.removeSelectedReport({}),
+        ReportActionList.setSelected({}),
+      ]);
+
+      effects.selectAll.subscribe();
+      expect(searchService.search.callCount).to.equal(0);
+    });
+
+    it('should search reports with selected filters and set selected', async(async() => {
+      searchService.search.resolves([
+        { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
+        { _id: 'two', form: 'form' },
+        { _id: 'three', lineage: 'lineage' },
+        { _id: 'four', expanded: true, lineage: [{ _id: 'parent' }] },
+        { _id: 'five' },
+      ]);
+      store.overrideSelector(Selectors.getFilters, { form: 'some_form', facility: 'one' });
+
+      actions$ = of(ReportActionList.selectAll);
+      effects.selectAll.subscribe();
+      await Promise.resolve(); // wait for search service to resolve
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal([
+        'reports',
+        { form: 'some_form', facility: 'one' },
+        { limit: 500, hydrateContactNames: true },
+      ]);
+      expect(setSelectedReports.callCount).to.equal(1);
+      expect(setSelectedReports.args[0]).to.deep.equal([[
+        {
+          _id: 'one',
+          summary:  { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
+          expanded: false,
+          lineage: [],
+          contact: { _id: 'contact', name: 'person' }
+        },
+        {
+          _id: 'two',
+          summary: { _id: 'two', form: 'form' },
+          expanded: false,
+          lineage: undefined,
+          contact: undefined,
+        },
+        {
+          _id: 'three',
+          summary: { _id: 'three', lineage: 'lineage' },
+          expanded: false,
+          lineage: 'lineage',
+          contact: undefined,
+        },
+        {
+          _id: 'four',
+          summary: { _id: 'four', expanded: true, lineage: [{ _id: 'parent' }] },
+          expanded: false,
+          lineage: [{ _id: 'parent' }],
+          contact: undefined,
+        },
+        {
+          _id: 'five',
+          summary: { _id: 'five' },
+          expanded: false,
+          lineage: undefined,
+          contact: undefined,
+        },
+      ]]);
+      expect(settingSelected.callCount).to.equal(1);
+      expect(settingSelected.args[0]).to.deep.equal([true]);
+      expect(setRightActionBar.callCount).to.equal(1);
+      expect(setRightActionBar.args[0]).to.deep.equal([]);
+    }));
+
+    it('should catch search errors', async(async() => {
+      searchService.search.rejects({ error: 'boom' });
+      store.overrideSelector(Selectors.getFilters, { filter: true });
+
+      actions$ = of(ReportActionList.selectAll);
+      effects.selectAll.subscribe();
+      await Promise.resolve(); // wait for search service to resolve
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal([
+        'reports',
+        { filter: true },
+        { limit: 500, hydrateContactNames: true },
+      ]);
+      expect(setSelectedReports.callCount).to.equal(0);
+      expect(settingSelected.callCount).to.deep.equal(0);
+      expect(setRightActionBar.callCount).to.equal(0);
+    }));
   });
 });
 

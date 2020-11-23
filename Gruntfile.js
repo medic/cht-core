@@ -615,6 +615,16 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
+      'watch-webapp': {
+        cmd: () => {
+          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
+          return `
+            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
+            cd ../
+          `;
+        },
+        stdio: 'inherit', // enable colors!
+      },
       'unit-webapp': {
         cmd: () => {
           return [
@@ -683,10 +693,9 @@ module.exports = function(grunt) {
         ],
       },
       'webapp-js': {
-        files: ['webapp/src/ts/**/*', 'webapp/src/js/**/*', 'webapp/src/css/**/*', 'shared-libs/*/src/**/*', 'webapp/*.json'],
+        // instead of watching the source files, watch the build folder and upload on rebuild
+        files: ['build/ddocs/medic/_attachments/**/*'],
         tasks: [
-          //'browserify:webapp',
-          'exec:build-webapp',
           'generate-service-worker',
           'couch-compile:primary',
           'deploy',
@@ -1092,6 +1101,7 @@ module.exports = function(grunt) {
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'deploy',
+    'exec:watch-webapp',
     'watch',
   ]);
 

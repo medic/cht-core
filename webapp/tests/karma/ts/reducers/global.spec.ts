@@ -154,4 +154,24 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ cancelCallback: otherCallback });
     expect(state.cancelCallback()).to.equal('otherthing');
   });
+
+  it('should set right action bar', () => {
+    const right = { field: 'a', settings: 'b' };
+    state = globalReducer(state, Actions.setRightActionBar(right));
+    expect(state).to.deep.equal({ actionBar: { right } });
+
+    const otherRight = { field: 'c', other: 'e' };
+    state = globalReducer(state, Actions.setRightActionBar(otherRight));
+    expect(state).to.deep.equal({ actionBar: { right: { field: 'c', other: 'e' }}});
+  });
+
+  it('should set action bar right verified', () => {
+    state = globalReducer(state, Actions.setRightActionBarVerified(true));
+    expect(state).to.deep.equal({ actionBar: { right: { verified: true } } });
+    state = globalReducer(state, Actions.setRightActionBar({ some: 'fields' }));
+    state = globalReducer(state, Actions.setRightActionBarVerified(true));
+    expect(state).to.deep.equal({ actionBar: { right: { some: 'fields', verified: true } } });
+    state = globalReducer(state, Actions.setRightActionBarVerified(false));
+    expect(state).to.deep.equal({ actionBar: { right: { some: 'fields', verified: false } } });
+  });
 });

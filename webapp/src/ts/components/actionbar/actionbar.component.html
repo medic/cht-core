@@ -97,7 +97,7 @@
 
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'reports'">
         <div *ngIf="selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && routeSnapshot.data?.name === 'reports.detail'">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
               <span class="fa fa-trash-o"></span>
               <p translate>select.mode.delete.all</p>
@@ -106,12 +106,12 @@
         </div>
 
         <div *ngIf="!selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && routeSnapshot.data?.name === 'reports.detail'">
-            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{ actionBar?.right?.sendTo?.phone }}" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" [attr.data-send-to]="actionBar?.right?.sendTo?._id" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>

@@ -1,5 +1,5 @@
 import { find as _find, assignIn as _assignIn } from 'lodash-es';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
@@ -57,6 +57,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private tourService: TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
+    private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -73,6 +74,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getFilters),
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getEnketoEditedStatus),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       reportsList,
       selectedReports,
@@ -81,6 +83,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       filters,
       showContent,
       enketoEdited,
+      selectMode,
     ]) => {
       this.reportsList = reportsList;
       this.selectedReports = selectedReports;
@@ -89,6 +92,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.filters = filters;
       this.showContent = showContent;
       this.enketoEdited = enketoEdited;
+      this.selectMode = selectMode;
     });
     this.subscription.add(reduxSubscription);
 
@@ -126,6 +130,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     // when navigating back from another tab, if there are reports in the state, angular will try to render them
     this.reportsActions.resetReportsList();
     this.reportsActions.setSelectedReports([]);
+    this.globalActions.setSelectMode(false);
   }
 
   private getReportHeading(form, report) {
@@ -238,7 +243,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, report) {
-    return report._id + report._rev + report.read;
+    return report._id + report._rev + report.read + report.selected;
   }
 
   private setActionBarData() {
@@ -253,15 +258,35 @@ export class ReportsComponent implements OnInit, OnDestroy {
         });
         const $link = $(e.target).closest('a');
         $link.addClass('mm-icon-disabled');
-        // todo in the PR that will migrate full functionality of the actionbar
-        // ideally, this should be a new redux action + reducer instead of jquery and timeout
-        /*$timeout(function() {
-         $link.removeClass('mm-icon-disabled');
-         }, 2000);*/
-
+        this.ngZone.runOutsideAngular(() => {
+          setTimeout(() => {
+            $link.removeClass('mm-icon-disabled');
+          }, 2000);
+        });
         this.exportService.export('reports', exportFilters, { humanReadable: true });
       },
     });
+  }
+
+  toggleSelected(report) {
+    if (!report?._id) {
+      return;
+    }
+
+    if (this.selectMode) {
+      const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
+      if (!isSelected) {
+        // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
+        // the selectReport action will actually get all details
+        this.reportsActions.addSelectedReport(report);
+        this.reportsActions.selectReport(report);
+      } else {
+        this.reportsActions.removeSelectedReport(report);
+      }
+      return;
+    }
+
+    this.router.navigate(['/reports', report._id]);
   }
 }
 /*
@@ -315,9 +340,6 @@ angular
     // where the summary is the data required for the collapsed view,
     // report is the db doc, and expanded is whether to how the details
     // or just the summary in the content pane.
-
-
-
 
 
     const updateLiveList = function(updated) {
@@ -452,26 +474,7 @@ angular
 
     ctrl.search();
 
-    $('.inbox').on('click', '#reports-list .content-row', function(e) {
-      if (ctrl.selectMode) {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = $(e.target).closest('li[data-record-id]');
-        const reportId = target.attr('data-record-id');
-        const checkbox = target.find('input[type="checkbox"]');
-        const alreadySelected = _.find(ctrl.selectedReports, { _id: reportId });
-        // timeout so if the user clicked the checkbox it has time to
-        // register before we set it to the correct value.
-        $timeout(function() {
-          checkbox.prop('checked', !alreadySelected);
-          if (!alreadySelected) {
-            ctrl.selectReport(reportId);
-          } else {
-            ctrl.removeSelectedReport(reportId);
-          }
-        });
-      }
-    });
+
 
     const syncCheckboxes = function() {
       $('#reports-list li').each(function() {
