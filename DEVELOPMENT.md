@@ -216,7 +216,7 @@ They live in [tests](tests). Run them with grunt: `grunt e2e-web` for web tests,
 
 ## Integration tests
 
-[Travis](https://travis-ci.org/medic) runs `grunt ci` every time some new code is pushed to github.
+[Travis](https://travis-ci.org/github/medic/cht-core) runs `grunt ci` every time some new code is pushed to github.
 
 ## Build documentation
 
