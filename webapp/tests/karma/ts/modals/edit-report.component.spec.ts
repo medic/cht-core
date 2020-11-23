@@ -26,6 +26,7 @@ describe('EditReportComponent', () => {
     bdModalRef = {
       hide: sinon.stub(),
       onHidden: new Subject(),
+      onHide: new Subject(),
     };
 
     contactTypesService = { getPersonTypes: sinon.stub() };
