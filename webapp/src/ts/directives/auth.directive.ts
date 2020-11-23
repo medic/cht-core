@@ -1,11 +1,11 @@
 import * as _ from 'lodash-es';
-import { Directive, ElementRef, Input, HostBinding, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, HostBinding, OnChanges } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 @Directive({
   selector: '[mmAuth]'
 })
-export class AuthDirective implements OnInit {
+export class AuthDirective implements OnChanges {
   @Input() mmAuth: string;
   @Input() mmAuthAny: any;
   @Input() mmAuthOnline: boolean;
@@ -17,7 +17,7 @@ export class AuthDirective implements OnInit {
     private authService: AuthService,
   ) { }
 
-  ngOnInit() {
+  private compile() {
     const dynamicChecks = allowed => {
       if (allowed && this.mmAuthAny) {
         const mmAuthAny = Array.isArray(this.mmAuthAny) ? this.mmAuthAny : [this.mmAuthAny];
@@ -38,7 +38,6 @@ export class AuthDirective implements OnInit {
         return updateVisibility([ this.authService.any(permissionsGroups) ]);
       }
     };
-
 
     const updateVisibility = promises => {
       return Promise
@@ -79,6 +78,10 @@ export class AuthDirective implements OnInit {
     } else {
       result.then(dynamicChecks);
     }
+  }
+
+  ngOnChanges() {
+    this.compile();
   }
 
   @HostBinding('class.hidden')
