@@ -34,7 +34,7 @@ describe('EditGroup service', () => {
       .edit('123', group)
       .then(() => assert.fail())
       .catch((err) => {
-        expect(err).to.equal('db messed up');
+        expect(err.name).to.equal('db messed up');
       });
   });
 
@@ -75,7 +75,7 @@ describe('EditGroup service', () => {
       .edit('123', group)
       .then(() => assert.fail())
       .catch((err) => {
-        expect(err).to.equal('audit borked');
+        expect(err.name).to.equal('audit borked');
       });
   });
 

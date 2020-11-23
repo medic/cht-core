@@ -65,7 +65,7 @@ describe('MessageState service', () => {
       .set('123', 2, 'scheduled', 'muted')
       .then(() => assert.fail())
       .catch((err) => {
-        expect(err).to.equal('db messed up');
+        expect(err.name).to.equal('db messed up');
       });
   });
 
@@ -99,7 +99,7 @@ describe('MessageState service', () => {
       .set('123', 2, 'muted', 'scheduled')
       .then(() => assert.fail())
       .catch((err) => {
-        expect(err).to.equal('save borked');
+        expect(err.name).to.equal('save borked');
       });
   });
 

@@ -143,11 +143,11 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     return this.messageStateService.any(group, 'muted');
   }
 
-  private setMessageState(report, group, from, to, locals) {
+  private setMessageState(report, group, from, to, locals:any={}) {
     locals.loading = true;
-    const id = report._id;
-    const groupNumber = group.rows[0].group;
-    this.messageStateService
+    const id = report?._id;
+    const groupNumber = group?.rows?.[0]?.group;
+    return this.messageStateService
       .set(id, groupNumber, from, to)
       .catch((err) => {
         locals.loading = false;
@@ -164,7 +164,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   edit(report, group) {
-    this.modalService
+    return this.modalService
       .show(
         EditMessageGroupComponent,
         { initialState: { model: { report, group: _.cloneDeep(group) } } },

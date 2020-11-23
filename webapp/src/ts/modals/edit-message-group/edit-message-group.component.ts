@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { v4 as uuid } from 'uuid';
@@ -11,7 +11,7 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   selector: 'edit-message-group',
   templateUrl: './edit-message-group.component.html',
 })
-export class EditMessageGroupComponent extends MmModalAbstract implements AfterViewInit, OnInit {
+export class EditMessageGroupComponent extends MmModalAbstract implements AfterViewInit, OnInit, AfterViewChecked {
   constructor(
     bsModalRef:BsModalRef,
     private editGroupService:EditGroupService,
@@ -20,17 +20,16 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
     super(bsModalRef);
   }
 
-  ngOnInit() {
-    this.getSettings();
-    this.model?.group?.rows?.forEach(row => row.id = uuid());
-    //console.log(this.model);
-  }
-
   model:any = { group: { rows: [] } };
 
   private shouldInitDatepickers = false;
   private settingsPromise;
   private datepickers = {};
+
+  ngOnInit() {
+    this.getSettings();
+    this.model?.group?.rows?.forEach(row => row.id = uuid());
+  }
 
   private getSettings() {
     this.settingsPromise = this.settingsService.get();
@@ -49,18 +48,15 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
     return time;
   }
 
-  trackBy(index, group) {
-    return group.id;
-  }
-
-  private getDaterangePicker(element) {
-    return $(element).data('daterangepicker');
+  trackBy(index, task) {
+    return task.id;
   }
 
   private initDatePickers() {
     this.settingsPromise.then((settings:any) => {
       $('#edit-message-group input.datepicker').each((index, element) => {
-        if (this.getDaterangePicker(element)) {
+        const taskId = $(element).data('task-id');
+        if (this.datepickers[taskId]) {
           // already has datepicker!
           return;
         }
@@ -84,9 +80,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
             task.due = date.toISOString();
           }
         );
-        const taskId = $(element).data('task-id');
-        //console.log(taskId);
-        this.datepickers[taskId] = this.getDaterangePicker(element);
+        this.datepickers[taskId] = $(element).data('daterangepicker');
       });
     });
   }
@@ -98,13 +92,10 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
       return;
     }
 
-    //console.log(this.datepickers);
-    // remove all dateRangePickers
-    console.log(this.model.group.rows.map(task => task.id));
     Object.keys(this.datepickers).forEach((key) => {
       const datepicker = this.datepickers[key];
-      console.log('removing datepicker', key);
       datepicker && datepicker.remove();
+      delete this.datepickers[key];
     });
   }
 
@@ -140,7 +131,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
 
   submit() {
     this.setProcessing();
-    this.editGroupService
+    return this.editGroupService
       .edit(this.model?.report?._id, this.model?.group)
       .then(() => {
         this.setFinished();
