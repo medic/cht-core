@@ -199,19 +199,21 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
                  */
               })
               .catch((err) => {
-                this.errorTranslationKey = err.translationKey || 'error.loading.form';
-                this.globalActions.setLoadingContent(false);
-                this.contentError = true;
+                this.setError(err);
                 console.error('Error loading form.', err);
               });
           });
       })
       .catch((err) => {
-        this.globalActions.setLoadingContent(false);
-        this.errorTranslationKey = err.translationKey || 'error.loading.form';
-        this.contentError = true;
+        this.setError(err);
         console.error('Error setting selected doc', err);
       });
+  }
+
+  private setError(err) {
+    this.errorTranslationKey = err.translationKey || 'error.loading.form';
+    this.globalActions.setLoadingContent(false);
+    this.contentError = true;
   }
 
   ngOnDestroy() {
