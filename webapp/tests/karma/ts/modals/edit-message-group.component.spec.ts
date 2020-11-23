@@ -22,6 +22,7 @@ describe('EditMessageGroupComponent', () => {
   beforeEach(async(() => {
     bdModalRef = {
       hide: sinon.stub(),
+      onHide: new Subject(),
       onHidden: new Subject(),
     };
 
