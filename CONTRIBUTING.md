@@ -35,7 +35,7 @@ Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wan
 
 ### Improving our documentation
 
-**Note:** [medic-docs](https://github.com/medic/cht-docs) does not involve release management and acceptance testing. Help us maintain the quality of our documentation by submitting a pull request (PR) with any suggested changes.
+**Note:** [cht-docs](https://github.com/medic/cht-docs) does not involve release management and acceptance testing. Help us maintain the quality of our documentation by submitting a pull request (PR) with any suggested changes.
 
 Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/) then open a pull request with your suggested changes or additions.
 Want to talk about Documentation generally? Join our [Community Forum](https://forum.communityhealthtoolkit.org)!
