@@ -38,7 +38,7 @@ docker run -d -p 5984:5984 -p 5986:5986 --name medic-couchdb -e COUCHDB_USER=myA
 
 Notes before copy pasting:
  - `--name` creates a container called `medic-couchdb`. You can name it whatever you want, but this is how you refer to it later
- - `-e` sets an environment variable inside the container. Two are set here, for a user and password for the initial admin user. 
+ - `-e` sets an environment variable inside the container. Two are set here, for a user and password for the initial admin user.
  - `-v` maps where couchdb stores data to your local file system to ensure persistence without depending on the container, using the path *before* the `:` (the path after the colon is the internal path inside the docker image). This should be somewhere in your home directory you have write access to, and want this data to be stored. The second mounted volume is for the couch configuration, which will retain settings so if your container is removed, the settings will persisted. This is especially important after running the command to secure the instance (done in steps below).
  - `apache/couchdb:2` will install the latest package for CouchDB 2.x
 
@@ -216,7 +216,7 @@ They live in [tests](tests). Run them with grunt: `grunt e2e-web` for web tests,
 
 ## Integration tests
 
-[Travis](https://travis-ci.org/medic/medic) runs `grunt ci` every time some new code is pushed to github.
+[Travis](https://travis-ci.org/medic) runs `grunt ci` every time some new code is pushed to github.
 
 ## Build documentation
 
@@ -224,4 +224,4 @@ To build reference documentation into a local folder `jsdoc-docs`: `grunt build-
 
 # Automated Deployment on Travis
 
-Code is automatically published via [Travis CI](https://travis-ci.org/medic/medic) to the [staging server](https://staging.dev.medicmobile.org).
+Code is automatically published via [Travis CI](https://travis-ci.org/medic) to the [staging server](https://staging.dev.medicmobile.org).
