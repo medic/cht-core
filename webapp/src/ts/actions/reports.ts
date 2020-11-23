@@ -10,14 +10,17 @@ export const Actions = {
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
   setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
+  updateSelectedReportItem: createMultiValueAction('UPDATE_SELECTED_REPORT_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
   resetReportsList: createAction('RESET_REPORTS_LIST'),
 
-  setRightActionBar: createAction('SET_RIGHT_ACTION_BAR'),
+  setRightActionBar: createAction('SET_RIGHT_ACTION_BAR_REPORTS'),
   setTitle: createSingleValueAction('SET_REPORTS_TITLE', 'selected'),
+  setSelectMode: createSingleValueAction('SET_REPORTS_SELECT_MODE', 'selectMode'),
+  selectAll: createAction('SELECT_ALL_REPORTS'),
 };
 
 export class ReportsActions {
@@ -35,9 +38,7 @@ export class ReportsActions {
     this.store.dispatch(Actions.removeSelectedReport(id));
     const globalActions = new GlobalActions(this.store);
     globalActions.settingSelected();
-    /*
-     setRightActionBar();
-    */
+    this.setRightActionBar();
   }
 
   setSelectedReports(selected) {
@@ -65,33 +66,7 @@ export class ReportsActions {
   }
 
   setRightActionBar() {
-    // todo
     return this.store.dispatch(Actions.setRightActionBar());
-    /*dispatch(function(dispatch, getState) {
-      const selectMode = Selectors.getSelectMode(getState());
-      const selectedReportsDocs = Selectors.getSelectedReportsDocs(getState());
-      const model = {};
-      const doc =
-        !selectMode &&
-        selectedReportsDocs &&
-        selectedReportsDocs.length === 1 &&
-        selectedReportsDocs[0];
-      if (!doc) {
-        return globalActions.setRightActionBar(model);
-      }
-      model.verified = doc.verified;
-      model.type = doc.content_type;
-      const verifyingReport = Selectors.getVerifyingReport(getState());
-      model.verifyingReport = verifyingReport;
-      if (!doc.contact || !doc.contact._id) {
-        return globalActions.setRightActionBar(model);
-      }
-
-      getContact(doc.contact._id).then(contact => {
-        model.sendTo = contact;
-        globalActions.setRightActionBar(model);
-      });
-    });*/
   }
 
   setTitle(selected) {
@@ -105,7 +80,25 @@ export class ReportsActions {
   clearSelection() {
     this.store.dispatch(Actions.setSelectedReports([]));
     // setVerifyingReport(false);
-    // setCheckboxElements(false);
+  }
+
+  setSelectMode(value) {
+    return this.store.dispatch(Actions.setSelectMode(value));
+  }
+
+  updateSelectedReportItem(id, selected) {
+    return this.store.dispatch(Actions.updateSelectedReportItem({ id, selected }));
+  }
+
+  deselectAll() {
+    this.store.dispatch(Actions.setSelectedReports([]));
+    this.setRightActionBar();
+  }
+
+  selectAll() {
+    const globalActions = new GlobalActions(this.store);
+    globalActions.setLoadingContent(true);
+    this.store.dispatch(Actions.selectAll());
   }
 }
 /*
@@ -145,72 +138,12 @@ angular.module('inboxServices').factory('ReportsActions',
         ));
       }
 
-      function setSelectedReports(selected) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_SELECTED_REPORTS, 'selected', selected));
-      }
-
-
-
-      function updateSelectedReportItem(id, selected) {
-        dispatch({
-          type: actionTypes.UPDATE_SELECTED_REPORT_ITEM,
-          payload: { id, selected }
-        });
-      }
-
-      function getContact(id) {
-        return DB().get(id)
-          // log the error but continue anyway
-          .catch(err => $log.error('Error fetching contact for action bar', err));
-      }
-
-
-      function deselectAll() {
-        dispatch(() => {
-          setSelectedReports([]);
-          setRightActionBar();
-          setCheckboxElements(false);
-        });
-      }
-
       function toggleVerifyingReport() {
         dispatch((dispatch, getState) => {
           const verifyingReport = Selectors.getVerifyingReport(getState());
           setVerifyingReport(!verifyingReport);
           setRightActionBar();
         });
-      }
-
-
-
-      function selectAll() {
-        dispatch((dispatch, getState) => {
-          globalActions.setLoadingShowContent(true);
-          const filters = Selectors.getFilters(getState());
-          Search('reports', filters, { limit: 500, hydrateContactNames: true })
-            .then(summaries => {
-              const selected = summaries.map(summary => {
-                return {
-                  _id: summary._id,
-                  summary: summary,
-                  expanded: false,
-                  lineage: summary.lineage,
-                  contact: summary.contact,
-                };
-              });
-              setSelectedReports(selected);
-              globalActions.settingSelected(true);
-              setRightActionBar();
-              setCheckboxElements(true);
-            })
-            .catch(err => $log.error('Error selecting all', err));
-        });
-      }
-
-      function setSelect(value) {
-        globalActions.setSelectMode(value);
-        globalActions.unsetSelected();
-        $state.go('reports.detail', { id: null });
       }
 
       function verifyReport(reportIsVerified) {
@@ -318,23 +251,11 @@ angular.module('inboxServices').factory('ReportsActions',
       };
 
       return {
-        addSelectedReport,
-        clearSelection,
-        deselectAll,
-        removeSelectedReport,
         launchEditFacilityDialog,
-        selectAll,
-        selectReport,
         setFirstSelectedReportDocProperty,
         setFirstSelectedReportFormattedProperty,
-        setRightActionBar,
-        setSelect,
-        setSelected,
-        setSelectedReports,
-        setTitle,
         setVerifyingReport,
         toggleVerifyingReport,
-        updateSelectedReportItem,
         verifyReport,
       };
     };

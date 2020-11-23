@@ -6,19 +6,20 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
-import { ActivatedRoute } from '@angular/router';
+import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 
 @Component({
   selector: 'mm-actionbar',
   templateUrl: './actionbar.component.html'
 })
 export class ActionbarComponent implements OnInit, OnDestroy {
-  @Input() nonContactForms = []; // ToDo Reports: should be ordered by 'title'
+  @Input() nonContactForms = [];
   private subscription: Subscription = new Subscription();
   private globalActions;
   private reportsActions;
 
   currentTab;
+  snapshotData;
   selectMode;
   selectedReportsDocs = [];
   actionBar;
@@ -28,55 +29,50 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   loadingSubActionBar;
   selectedContactDoc;
 
-  routeSnapshot;
-
   constructor(
     private store: Store,
     private modalService: ModalService,
-    private route:ActivatedRoute,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
-    this.routeSnapshot = this.route.snapshot;
   }
 
   ngOnInit(): void {
     const subscription = combineLatest(
       this.store.select(Selectors.getActionBar),
       this.store.select(Selectors.getCurrentTab),
+      this.store.select(Selectors.getSnapshotData),
       this.store.select(Selectors.getIsAdmin),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSubActionBar),
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getShowActionBar),
       this.store.select(Selectors.getSelectedReportsDocs),
-    )
-      .subscribe(([
-        actionBar,
-        currentTab,
-        isAdmin,
-        loadingContent,
-        loadingSubActionBar,
-        selectMode,
-        showActionBar,
-        selectedReportsDocs,
-      ]) => {
-        this.currentTab = currentTab;
-        this.selectMode = selectMode;
-        this.actionBar = actionBar;
-        this.isAdmin = isAdmin;
-        this.showActionBar = showActionBar;
-        this.loadingContent = loadingContent;
-        this.loadingSubActionBar = loadingSubActionBar;
-        this.selectedReportsDocs = selectedReportsDocs;
-        /* ToDo: enable these once reports and contact features completed.
-         this.selectedContactDoc = selectedContactDoc;
-         */
-      });
+    ).subscribe(([
+      actionBar,
+      currentTab,
+      snapshotData,
+      isAdmin,
+      loadingContent,
+      loadingSubActionBar,
+      selectMode,
+      showActionBar,
+      selectedReportsDocs,
+    ]) => {
+      this.currentTab = currentTab;
+      this.snapshotData = snapshotData;
+      this.selectMode = selectMode;
+      this.actionBar = actionBar;
+      this.isAdmin = isAdmin;
+      this.showActionBar = showActionBar;
+      this.loadingContent = loadingContent;
+      this.loadingSubActionBar = loadingSubActionBar;
+      this.selectedReportsDocs = selectedReportsDocs;
+      /* ToDo: enable this once contact features completed.
+       this.selectedContactDoc = selectedContactDoc;
+       */
+    });
     this.subscription.add(subscription);
-
-    this.subscription.add(this.route.url.subscribe(() => this.routeSnapshot = this.route.snapshot));
-    this.subscription.add(this.route.params.subscribe(() => this.routeSnapshot = this.route.snapshot));
   }
 
   ngOnDestroy() {
@@ -84,7 +80,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   }
 
   setSelect(selectMode) {
-    this.reportsActions.setSelect(selectMode);
+    this.reportsActions.setSelectMode(selectMode);
   }
 
   selectAll() {
@@ -122,11 +118,9 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       return;
     }
 
-    /* ToDo: Display modal once delete feature is ready in Reports
-     this.modalService.show(BulkDeleteConfirmComponent, {
-     initialState: { docs }
-     });
-     */
+    this.modalService
+      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs } } })
+      .catch(() => {});
   }
 
   trackByForms(idx, form) {

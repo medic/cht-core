@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { Router } from '@angular/router';
 
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ChangesService } from '@mm-services/changes.service';
@@ -110,15 +111,90 @@ describe('Reports Component', () => {
   it('listTrackBy() should return unique identifier', () => {
     const report = { _id: 'report', _rev: 'the rev', read: true, some: 'data', fields: {} };
     const otherReport = { _id: 'report2', _rev: 'the other rev', read: false, some: 'otherdata', fields: {} };
+    const unselected = { _id: 'theid', _rev: 'rev', read: true, selected: false };
+    const selected = { _id: 'selected', _rev: 'rv', read: false, selected: true };
 
-    expect(component.listTrackBy(0, report)).to.equal('reportthe revtrue');
-    expect(component.listTrackBy(1, otherReport)).to.equal('report2the other revfalse');
+    expect(component.listTrackBy(0, report)).to.equal('reportthe revtrueundefined');
+    expect(component.listTrackBy(1, otherReport)).to.equal('report2the other revfalseundefined');
+    expect(component.listTrackBy(2, unselected)).to.equal('theidrevtruefalse');
+    expect(component.listTrackBy(3, selected)).to.equal('selectedrvfalsetrue');
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
     component.ngOnDestroy();
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+  });
+
+  describe('toggleSelected', () => {
+    let navigate;
+    let addSelectedReport;
+    let selectReport;
+    let removeSelectedReport;
+
+    beforeEach(() => {
+      navigate = sinon.stub(Router.prototype, 'navigate');
+      addSelectedReport = sinon.stub(ReportsActions.prototype, 'addSelectedReport');
+      selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      removeSelectedReport = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
+    });
+
+    it('should not crash when called without report (for some reason)', () => {
+      component.toggleSelected(undefined);
+      expect(navigate.callCount).to.equal(0);
+      expect(addSelectedReport.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+      expect(removeSelectedReport.callCount).to.equal(0);
+    });
+
+    it('should navigate when not in select mode', () => {
+      component.selectMode = false;
+      component.toggleSelected({ _id: 'report_id' });
+
+      expect(navigate.callCount).to.equal(1);
+      expect(navigate.args[0]).to.deep.equal([['/reports', 'report_id']]);
+      expect(addSelectedReport.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+      expect(removeSelectedReport.callCount).to.equal(0);
+    });
+
+    it('should add selected report when in select mode and not already selected', () => {
+      component.selectMode = true;
+      component.selectedReports = null;
+
+      component.toggleSelected({ _id: 'rid' });
+      expect(addSelectedReport.callCount).to.equal(1);
+      expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(selectReport.callCount).to.equal(1);
+      expect(selectReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(removeSelectedReport.callCount).to.equal(0);
+      expect(navigate.callCount).to.equal(0);
+    });
+
+    it('should add selected report when in select mode and not already selected with some selected reports', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      component.toggleSelected({ _id: 'rid' });
+      expect(addSelectedReport.callCount).to.equal(1);
+      expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(selectReport.callCount).to.equal(1);
+      expect(selectReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(removeSelectedReport.callCount).to.equal(0);
+      expect(navigate.callCount).to.equal(0);
+    });
+
+    it('should remove selected report if in select mode and already selected', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'rid' }];
+
+      component.toggleSelected({ _id: 'rid' });
+      expect(addSelectedReport.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+      expect(removeSelectedReport.callCount).to.equal(1);
+      expect(removeSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(navigate.callCount).to.equal(0);
+    });
   });
 
   /*
