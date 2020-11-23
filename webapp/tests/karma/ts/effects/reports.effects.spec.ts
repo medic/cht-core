@@ -489,7 +489,7 @@ describe('Reports effects', () => {
       const report = {
         _id: 'report',
         verified: 'something',
-        content_type: 'sms', // not an actual contact_type
+        content_type: 'sms', // not an actual content_type
         contact: { _id: 'non-existing' },
       };
       dbService.get.rejects({ error: 'boom' });
