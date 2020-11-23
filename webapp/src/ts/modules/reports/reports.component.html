@@ -16,9 +16,8 @@
       <ul [hidden]="loading && !appending">
         <mm-content-row
           *ngFor="let report of reportsList; trackBy: listTrackBy"
-          (click)="toggleSelected($event, report)"
           [id]="report._id"
-          (onClick)="toggleSelected(report)"
+          (click)="toggleSelected(report)"
           [icon]="report.icon"
           [heading]="report.heading"
           [date]="report.reported_date"
