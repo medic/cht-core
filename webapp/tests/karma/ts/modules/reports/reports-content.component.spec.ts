@@ -14,6 +14,7 @@ import { Selectors } from '@mm-selectors/index';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
+import { MessageStateService } from '@mm-services/message-state.service';
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
@@ -22,6 +23,7 @@ describe('Reports Content Component', () => {
   let changesService;
   let searchFiltersService;
   let activatedRoute;
+  let messageStateService;
   let router;
 
   beforeEach(async(() => {
@@ -36,6 +38,7 @@ describe('Reports Content Component', () => {
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
     router = { navigate: sinon.stub() };
+    messageStateService = { any: sinon.stub(), set: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -53,6 +56,7 @@ describe('Reports Content Component', () => {
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: Router, useValue: router },
+          { provide: MessageStateService, useValue: messageStateService },
         ]
       })
       .compileComponents()
@@ -68,7 +72,7 @@ describe('Reports Content Component', () => {
     sinon.restore();
   });
 
-  it('should create ReportsComponent', () => {
+  it('should create ReportsContentComponent', () => {
     expect(component).to.exist;
   });
 

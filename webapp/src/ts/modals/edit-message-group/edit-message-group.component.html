@@ -1,0 +1,40 @@
+<mm-modal
+  [status]="status"
+  id="edit-message-group"
+  [titleKey]="'Edit'"
+  [submitKey]="'save'"
+  [submittingKey]="'saving'"
+  (onCancel)="cancel()"
+  (onSubmit)="submit()"
+>
+  <form action="" method="POST">
+
+    <fieldset *ngFor="let task of model.group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'" [attr.data-index]="index">
+      <ng-container *ngIf="!task.deleted">
+        <div class="form-group">
+          <label>
+            <span translate>tasks.0.messages.0.message</span>
+            <a class="btn btn-link fa fa-trash-o" (click)="deleteTask(task)" *ngIf="task.state === 'scheduled' || task.state === 'muted'"></a>
+          </label>
+          <input type="text" class="form-control" *ngFor="let message of task.messages" [(ngModel)]="message.message" [ngModelOptions]="{standalone: true}" [disabled]="task.hasOwnProperty('translation_key')"/>
+        </div>
+
+        <div class="form-group">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+            <input type="text" class="form-control datepicker" [value]="task.due" />
+          </div>
+        </div>
+      </ng-container>
+
+
+    </fieldset>
+
+
+    <a class="btn" (click)="addTask()">
+      <i class="fa fa-plus"></i>
+      <span translate>Add Message</span>
+    </a>
+
+  </form>
+</mm-modal>

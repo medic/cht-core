@@ -9,6 +9,9 @@ import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
+import { MessageStateService } from '@mm-services/message-state.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -31,6 +34,8 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     private route:ActivatedRoute,
     private router:Router,
     private searchFiltersService:SearchFiltersService,
+    private messageStateService:MessageStateService,
+    private modalService:ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -130,130 +135,40 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.searchFiltersService.freetextSearch(query);
   }
 
-}
+  canMute(group) {
+    return this.messageStateService.any(group, 'scheduled');
+  }
 
-/*const _ = require('lodash/core');
+  canSchedule(group) {
+    return this.messageStateService.any(group, 'muted');
+  }
 
-(function () {
-
-  'use strict';
-
-  angular.module('inboxControllers').controller('ReportsContentCtrl',
-    function (
-      $log,
-      $ngRedux,
-      $scope,
-      $state,
-      $stateParams,
-      $timeout,
-      Changes,
-      GlobalActions,
-      MessageState,
-      Modal,
-      ReportsActions,
-      SearchFilters,
-      Selectors
-    ) {
-
-      'ngInject';
-
-      const ctrl = this;
-      const mapStateToTarget = function(state) {
-        return {
-          forms: Selectors.getForms(state),
-          loadingContent: Selectors.getLoadingContent(state),
-          selectMode: Selectors.getSelectMode(state),
-          selectedReports: Selectors.getSelectedReports(state),
-          summaries: Selectors.getSelectedReportsSummaries(state),
-          validChecks: Selectors.getSelectedReportsValidChecks(state)
-        };
-      };
-      const mapDispatchToTarget = function(dispatch) {
-        const globalActions = GlobalActions(dispatch);
-        const reportsActions = ReportsActions(dispatch);
-        return {
-          unsetSelected: globalActions.unsetSelected,
-          clearCancelCallback: globalActions.clearCancelCallback,
-          removeSelectedReport: reportsActions.removeSelectedReport,
-          selectReport: reportsActions.selectReport,
-          setFirstSelectedReportFormattedProperty: reportsActions.setFirstSelectedReportFormattedProperty,
-          setSelectedReports: reportsActions.setSelectedReports,
-          setRightActionBarVerified: globalActions.setRightActionBarVerified,
-          updateSelectedReportItem: reportsActions.updateSelectedReportItem
-        };
-      };
-      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-
-
-
-
-      ctrl.canMute = function(group) {
-        return MessageState.any(group, 'scheduled');
-      };
-
-      ctrl.canSchedule = function(group) {
-        return MessageState.any(group, 'muted');
-      };
-
-      const setMessageState = function(report, group, from, to) {
-        group.loading = true;
-        const id = report._id;
-        const groupNumber = group.rows[0].group;
-        MessageState.set(id, groupNumber, from, to).catch(function(err) {
-          group.loading = false;
-          $log.error('Error setting message state', err);
-        });
-      };
-
-      ctrl.mute = function(report, group) {
-        setMessageState(report, group, 'scheduled', 'muted');
-      };
-
-      ctrl.schedule = function(report, group) {
-        setMessageState(report, group, 'muted', 'scheduled');
-      };
-
-      ctrl.toggleExpand = function(selection) {
-        if (!ctrl.selectMode) {
-          return;
-        }
-
-        const id = selection._id;
-        if (selection.report || selection.expanded) {
-          ctrl.updateSelectedReportItem(id, { expanded: !selection.expanded });
-        } else {
-          ctrl.updateSelectedReportItem(id, { loading: true });
-          ctrl.selectReport(id, { silent: true })
-            .then(function() {
-              ctrl.updateSelectedReportItem(id, { loading: false, expanded: true });
-            })
-            .catch(function(err) {
-              ctrl.updateSelectedReportItem(id, { loading: false });
-              $log.error('Error fetching doc for expansion', err);
-            });
-        }
-      };
-
-      ctrl.edit = (report, group) => {
-        Modal({
-          templateUrl: 'templates/modals/edit_message_group.html',
-          controller: 'EditMessageGroupCtrl',
-          controllerAs: 'editMessageGroupCtrl',
-          model: {
-            report: report,
-            group: angular.copy(group),
-          },
-        }).catch(() => {}); // dismissed
-      };
-
-
-
-      $scope.$on('$destroy', function() {
-        unsubscribe();
-        changeListener.unsubscribe();
+  private setMessageState(report, group, from, to, locals) {
+    locals.loading = true;
+    const id = report._id;
+    const groupNumber = group.rows[0].group;
+    this.messageStateService
+      .set(id, groupNumber, from, to)
+      .catch((err) => {
+        locals.loading = false;
+        console.error('Error setting message state', err);
       });
-    }
-  );
+  }
 
-}());*/
+  mute(report, group, locals) {
+    this.setMessageState(report, group, 'scheduled', 'muted', locals);
+  }
+
+  schedule(report, group, locals) {
+    this.setMessageState(report, group, 'muted', 'scheduled', locals);
+  }
+
+  edit(report, group) {
+    this.modalService
+      .show(
+        EditMessageGroupComponent,
+        { initialState: { model: { report, group: _.cloneDeep(group) } } },
+      )
+      .catch(() => {});
+  }
+}
