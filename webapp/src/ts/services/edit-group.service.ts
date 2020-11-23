@@ -50,7 +50,7 @@ export class EditGroupService {
         changed = true;
         tasks[i].due = updatedTask.due;
         if (!updatedTask.translation_key) {
-          _forEach(updatedTask.messages, function(updatedMessage, j) {
+          _forEach(updatedTask.messages, (updatedMessage, j) => {
             tasks[i].messages[j].message = updatedMessage.message;
           });
         }

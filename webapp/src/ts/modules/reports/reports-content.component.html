@@ -118,7 +118,7 @@
                   <span class="inline loader" *ngIf="locals.loading"></span>
                 </p>
                 <ul class="task-list">
-                  <li *ngFor="let task of group.rows">
+                  <li *ngFor="let task of group.rows_sorted">
                     <ul>
                       <li *ngFor="let message of task?.messages">
                         <p>{{message.message}}</p>

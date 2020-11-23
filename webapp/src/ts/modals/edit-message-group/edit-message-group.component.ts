@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { BsModalRef } from 'ngx-bootstrap/modal';
+import { v4 as uuid } from 'uuid';
 
 import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -10,7 +11,7 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   selector: 'edit-message-group',
   templateUrl: './edit-message-group.component.html',
 })
-export class EditMessageGroupComponent extends MmModalAbstract implements OnInit {
+export class EditMessageGroupComponent extends MmModalAbstract implements AfterViewInit, OnInit {
   constructor(
     bsModalRef:BsModalRef,
     private editGroupService:EditGroupService,
@@ -19,7 +20,21 @@ export class EditMessageGroupComponent extends MmModalAbstract implements OnInit
     super(bsModalRef);
   }
 
-  model:any = { group: {} };
+  ngOnInit() {
+    this.getSettings();
+    this.model?.group?.rows?.forEach(row => row.id = uuid());
+    //console.log(this.model);
+  }
+
+  model:any = { group: { rows: [] } };
+
+  private shouldInitDatepickers = false;
+  private settingsPromise;
+  private datepickers = {};
+
+  private getSettings() {
+    this.settingsPromise = this.settingsService.get();
+  }
 
   private getNextHalfHour() {
     const time = moment()
@@ -34,40 +49,74 @@ export class EditMessageGroupComponent extends MmModalAbstract implements OnInit
     return time;
   }
 
-  private initDatePickers() {
-    this.settingsService
-      .get()
-      .then((settings:any) => {
-        $('#edit-message-group input.datepicker').each((index, element) => {
-          $(element).daterangepicker(
-            {
-              startDate: new Date(this.model.group.rows[index].due),
-              singleDatePicker: true,
-              timePicker: true,
-              applyClass: 'btn-primary',
-              cancelClass: 'btn-link',
-              parentEl: '#edit-message-group',
-              minDate: this.getNextHalfHour(),
-              locale: {
-                format: settings.reported_date_format,
-              },
-            },
-            (date) => {
-              const i = $(element).closest('fieldset').data('index');
-              this.model.group.rows[i].due = date.toISOString();
-            }
-          );
-        });
-      });
+  trackBy(index, group) {
+    return group.id;
   }
 
-  ngOnInit() {
+  private getDaterangePicker(element) {
+    return $(element).data('daterangepicker');
+  }
+
+  private initDatePickers() {
+    this.settingsPromise.then((settings:any) => {
+      $('#edit-message-group input.datepicker').each((index, element) => {
+        if (this.getDaterangePicker(element)) {
+          // already has datepicker!
+          return;
+        }
+
+        $(element).daterangepicker(
+          {
+            startDate: new Date(this.model.group.rows[index].due),
+            singleDatePicker: true,
+            timePicker: true,
+            applyClass: 'btn-primary',
+            cancelClass: 'btn-link',
+            parentEl: '#edit-message-group',
+            minDate: this.getNextHalfHour(),
+            locale: {
+              format: settings.reported_date_format,
+            },
+          },
+          (date) => {
+            const taskId = $(element).data('task-id');
+            const task = this.model.group.rows.find(task => task.id === taskId);
+            task.due = date.toISOString();
+          }
+        );
+        const taskId = $(element).data('task-id');
+        //console.log(taskId);
+        this.datepickers[taskId] = this.getDaterangePicker(element);
+      });
+    });
+  }
+
+  private removeDatePickers(taskId?) {
+    if (taskId) {
+      this.datepickers[taskId]?.remove();
+      delete this.datepickers[taskId];
+      return;
+    }
+
+    //console.log(this.datepickers);
+    // remove all dateRangePickers
+    console.log(this.model.group.rows.map(task => task.id));
+    Object.keys(this.datepickers).forEach((key) => {
+      const datepicker = this.datepickers[key];
+      console.log('removing datepicker', key);
+      datepicker && datepicker.remove();
+    });
+  }
+
+  ngAfterViewInit() {
     this.initDatePickers();
   }
 
   deleteTask(task) {
+    // remove datepicker BEFORE removing the html element
+    this.removeDatePickers(task.id);
     task.deleted = true;
-    this.initDatePickers();
+    this.shouldInitDatepickers = true;
   }
 
   addTask() {
@@ -77,8 +126,16 @@ export class EditMessageGroupComponent extends MmModalAbstract implements OnInit
       group: this.model.group.number,
       state: 'scheduled',
       messages: [{ message: '' }],
+      id: uuid(),
     });
-    this.initDatePickers();
+    this.shouldInitDatepickers = true;
+  }
+
+  ngAfterViewChecked() {
+    if (this.shouldInitDatepickers) {
+      this.initDatePickers();
+      this.shouldInitDatepickers = false;
+    }
   }
 
   submit() {
@@ -92,5 +149,9 @@ export class EditMessageGroupComponent extends MmModalAbstract implements OnInit
       .catch((err) => {
         this.setError(err, 'Error updating group');
       });
+  }
+
+  beforeHide() {
+    this.removeDatePickers();
   }
 }
