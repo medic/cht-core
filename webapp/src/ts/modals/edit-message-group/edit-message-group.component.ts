@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { v4 as uuid } from 'uuid';
@@ -11,7 +11,9 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   selector: 'edit-message-group',
   templateUrl: './edit-message-group.component.html',
 })
-export class EditMessageGroupComponent extends MmModalAbstract implements AfterViewInit, OnInit, AfterViewChecked {
+export class EditMessageGroupComponent extends MmModalAbstract
+  implements AfterViewInit, OnInit, AfterViewChecked, OnDestroy {
+
   constructor(
     bsModalRef:BsModalRef,
     private editGroupService:EditGroupService,
@@ -22,9 +24,9 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
 
   model:any = { group: { rows: [] } };
 
-  private shouldInitDatepickers = false;
+  private shouldInitDatePickers = false;
   private settingsPromise;
-  private datepickers = {};
+  private datePickers = {};
 
   ngOnInit() {
     this.getSettings();
@@ -57,7 +59,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
     this.settingsPromise.then((settings:any) => {
       $('#edit-message-group input.datepicker').each((index, element) => {
         const taskId = $(element).data('task-id');
-        if (this.datepickers[taskId]) {
+        if (this.datePickers[taskId]) {
           // already has datepicker!
           return;
         }
@@ -81,22 +83,22 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
             task.due = date.toISOString();
           }
         );
-        this.datepickers[taskId] = $(element).data('daterangepicker');
+        this.datePickers[taskId] = $(element).data('daterangepicker');
       });
     });
   }
 
   private removeDatePickers(taskId?) {
     if (taskId) {
-      this.datepickers[taskId]?.remove();
-      delete this.datepickers[taskId];
+      this.datePickers[taskId]?.remove();
+      delete this.datePickers[taskId];
       return;
     }
 
-    Object.keys(this.datepickers).forEach((key) => {
-      const datepicker = this.datepickers[key];
+    Object.keys(this.datePickers).forEach((key) => {
+      const datepicker = this.datePickers[key];
       datepicker && datepicker.remove();
-      delete this.datepickers[key];
+      delete this.datePickers[key];
     });
   }
 
@@ -111,7 +113,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
     // remove datepicker BEFORE removing the html element
     this.removeDatePickers(task.id);
     task.deleted = true;
-    this.shouldInitDatepickers = true;
+    this.shouldInitDatePickers = true;
   }
 
   addTask() {
@@ -123,13 +125,13 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
       messages: [{ message: '' }],
       task_id: uuid(),
     });
-    this.shouldInitDatepickers = true;
+    this.shouldInitDatePickers = true;
   }
 
   ngAfterViewChecked() {
-    if (this.shouldInitDatepickers) {
+    if (this.shouldInitDatePickers) {
       this.initDatePickers();
-      this.shouldInitDatepickers = false;
+      this.shouldInitDatePickers = false;
     }
   }
 
@@ -146,7 +148,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
       });
   }
 
-  beforeHide() {
+  ngOnDestroy() {
     this.removeDatePickers();
   }
 }

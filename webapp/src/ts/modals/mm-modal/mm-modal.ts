@@ -98,14 +98,12 @@ export class MmModalAbstract {
 
   modalAccept() {
     this.modalClosePromise?.resolve && this.modalClosePromise.resolve();
-    this.bsModalRef.content?.beforeHide && this.bsModalRef.content?.beforeHide();
     this.bsModalRef.hide();
     this.resolved = true;
   }
 
   modalReject() {
     this.modalClosePromise?.reject && this.modalClosePromise.reject();
-    this.bsModalRef.content?.beforeHide && this.bsModalRef.content?.beforeHide();
     this.bsModalRef.hide();
     this.resolved = true;
   }
