@@ -12,7 +12,7 @@ The Core Framework of the Community Health Toolkit is powered by people like you
 
 
 ## Communication
-We recommend you raise an issue on Github or start a conversation on our [Community Forum](https://forum.communityhealthtoolkit.org) about the change you want to make before you start on code. Our Community Forum is especially helpful is you are a new contributor or find yourself unsure how to move forward with an issue.
+We recommend you raise an issue on Github or start a conversation on our [Community Forum](https://forum.communityhealthtoolkit.org) about the change you want to make before you start on code. Our Community Forum is especially helpful if you are a new contributor or find yourself unsure how to move forward with an issue.
 
 ## Ways to contribute
 
@@ -34,6 +34,9 @@ Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wan
 5. Your PR will be reviewed by one of the repository's maintainers. Most PRs have at least one change requested before they're merged so don't be offended if your change doesn't get accepted on the first try!
 
 ### Improving our documentation
+
+**Note:** [cht-docs](https://github.com/medic/cht-docs) does not involve release management and acceptance testing. Help us maintain the quality of our documentation by submitting a pull request (PR) with any suggested changes.
+
 Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/) then open a pull request with your suggested changes or additions.
 Want to talk about Documentation generally? Join our [Community Forum](https://forum.communityhealthtoolkit.org)!
 
@@ -85,13 +88,6 @@ If you believe you've found a security vulnerability in one of our products or p
 - Description of the location and potential impact of the vulnerability;
 - A detailed description of the steps required to reproduce the vulnerability (proof of concept source code, screenshots, and compressed screen captures are all helpful to us); and
 - Your name/handle and a link for recognition in our Hall of Fame.
-
-### Improving our documentation
-
-**Note:** medic-docs does not involve release management and acceptance testing. Help us maintain the quality of our documentation by submitting a pull request (PR) with any suggested changes.
-
-Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/) then open a pull request with your suggested changes or additions.
-Want to talk about Documentation generally? Join our [Community Forum](https://communityhealthtoolkit.org/forum)!
 
 ### Code of Conduct
 
