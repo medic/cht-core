@@ -632,16 +632,6 @@ module.exports = function(grunt) {
         },
         stdio: 'inherit', // enable colors!
       },
-      'watch-webapp': {
-        cmd: () => {
-          const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
-          return `
-            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true & 
-            cd ../
-          `;
-        },
-        stdio: 'inherit', // enable colors!
-      },
       'unit-webapp-continuous': {
         cmd: () => {
           return [

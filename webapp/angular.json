@@ -96,7 +96,9 @@
             "codeCoverage": true,
             "codeCoverageExclude": [
               "src/js/bootstrapper/**",
-              "src/js/enketo/**"
+              "src/js/enketo/**",
+              "src/ts/environment/**",
+              "src/ts/polyfills.ts"
             ],
             "assets": [
               "src/img",
