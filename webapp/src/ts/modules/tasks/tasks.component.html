@@ -1,0 +1,40 @@
+<div class="filters">
+  <div class="inner">
+    <mm-navigation></mm-navigation>
+  </div>
+</div>
+
+<div class="inner">
+  <div class="inbox page">
+
+    <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
+      <ul *ngIf="!error && hasTasks">
+        <mm-content-row
+          *ngFor="let task of tasksList; trackBy: listTrackBy"
+          [id]="task._id"
+          route="tasks"
+          [date]="task.reported_date"
+          [overdue]="task.overdue"
+          [icon]="task.icon"
+          [heading]="task.contact?.name"
+          [summary]="task.title"
+          [warning]="task.priorityLabel"
+          dateFormat="taskDueDate"
+          [selected]="task.selected"
+        >
+        </mm-content-row>
+      </ul>
+
+      <p *ngIf="error" class="alert alert-danger" role="alert">
+        <span translate>Error fetching tasks</span>
+        <a class="btn btn-link" (click)="refreshTaskList()" translate>Reload</a>
+      </p>
+      <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled" translate>No tasks found</p>
+      <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled" translate>task.list.complete</p>
+      <p class="loading-status" *ngIf="tasksDisabled" translate>tasks.disabled</p>
+      <div class="loader" *ngIf="loading && !tasksDisabled && !error"></div>
+    </div>
+
+    <router-outlet></router-outlet>
+  </div>
+</div>

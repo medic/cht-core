@@ -1,10 +1,11 @@
-import { globalReducer } from './global';
-import { servicesReducer } from './services';
-import { analyticsReducer } from './analytics';
-import { reportsReducer } from './reports';
-import { messagesReducer } from './messages';
-import { targetAggregatesReducer } from './target-aggregates';
-import { contactsReducer } from './contacts';
+import { globalReducer } from '@mm-reducers/global';
+import { servicesReducer } from '@mm-reducers/services';
+import { analyticsReducer } from '@mm-reducers/analytics';
+import { reportsReducer } from '@mm-reducers/reports';
+import { messagesReducer } from '@mm-reducers/messages';
+import { contactsReducer } from '@mm-reducers/contacts';
+import { targetAggregatesReducer } from '@mm-reducers/target-aggregates';
+import { tasksReducer } from '@mm-reducers/tasks';
 
 export const reducers = {
   global: globalReducer,
@@ -14,6 +15,7 @@ export const reducers = {
   messages: messagesReducer,
   targetAggregates: targetAggregatesReducer,
   contacts: contactsReducer,
+  tasks: tasksReducer,
 };
 
 /*
