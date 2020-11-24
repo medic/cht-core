@@ -7,6 +7,8 @@ import sinon from 'sinon';
 import { Action } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { take } from 'rxjs/operators';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
@@ -18,6 +20,10 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
+import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
+import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
+import { AuthService } from '@mm-services/auth.service';
+import { ServicesActions } from '@mm-actions/services';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
@@ -29,6 +35,8 @@ describe('Reports effects', () => {
   let router;
   let searchService;
   let store;
+  let authService;
+  let translateService;
 
   beforeEach(async(() => {
     actions$ = new Observable<Action>();
@@ -42,13 +50,17 @@ describe('Reports effects', () => {
     reportViewModelGeneratorService = { get: sinon.stub().resolves() };
     markReadService = { markAsRead: sinon.stub().resolves() };
     modalService = { show: sinon.stub() };
-    dbService = { get: sinon.stub() };
+    dbService = { get: sinon.stub(), put: sinon.stub() };
     router = { navigate: sinon.stub() };
     searchService = { search: sinon.stub() };
+    authService = { has: sinon.stub() };
+    translateService = { instant: sinon.stub().returnsArg(0) };
 
     TestBed.configureTestingModule({
       declarations: [
         SendMessageComponent,
+        EditReportComponent,
+        VerifyReportComponent,
       ],
       imports: [
         EffectsModule.forRoot([ReportsEffects]),
@@ -62,6 +74,8 @@ describe('Reports effects', () => {
         { provide: DbService, useValue: { get: sinon.stub().returns(dbService)} },
         { provide: Router, useValue: router },
         { provide: SearchService, useValue: searchService },
+        { provide: AuthService, useValue: authService },
+        { provide: TranslateService, useValue: translateService },
       ],
     });
 
@@ -200,7 +214,7 @@ describe('Reports effects', () => {
 
     it('should call correct actions when not in select mode and refreshing', () => {
       store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
-
+      store.refreshState();
       const model = {
         _id: 'report',
         doc: {
@@ -699,5 +713,281 @@ describe('Reports effects', () => {
       expect(setRightActionBar.callCount).to.equal(0);
     }));
   });
-});
 
+  describe('launchEditFacilityDialog', () => {
+    it('should not be triggered by random actions', () => {
+      actions$ = of([
+        ReportActionList.selectReport(''),
+        ReportActionList.removeSelectedReport({}),
+        ReportActionList.setSelected({}),
+      ]);
+
+      effects.setSelectMode.subscribe();
+      expect(modalService.show.callCount).to.equal(0);
+    });
+
+    it('should pass 1st selected report doc to EditReport modal', () => {
+      const selectedReports = [
+        { _id: 'report1', doc: { _id: 'report1', contact: { _id: 'contact' } } },
+        { _id: 'report2', doc: { _id: 'report2', contact: { _id: 'contact2' } } },
+      ];
+      modalService.show.resolves();
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: { _id: 'report1', contact: { _id: 'contact' } } } } },
+      ]);
+    });
+
+    it('should catch modal rejections', async(() => {
+      const selectedReports = [
+        { _id: 'r', doc: { _id: 'r', contact: { _id: 'ct' } } },
+      ];
+      modalService.show.rejects();
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: { _id: 'r', contact: { _id: 'ct' } } } } },
+      ]);
+    }));
+
+    it('should handle undefined selected reports', () => {
+      store.overrideSelector(Selectors.getSelectedReports, undefined);
+      modalService.show.resolves();
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: undefined } } },
+      ]);
+    });
+
+    it('should handle empty selected reports', () => {
+      store.overrideSelector(Selectors.getSelectedReports, []);
+      store.refreshState();
+      modalService.show.resolves();
+      actions$ = of(ReportActionList.launchEditFacilityDialog);
+      effects.launchEditFacilityDialog.subscribe();
+
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditReportComponent,
+        { initialState: { model: { report: undefined } } },
+      ]);
+    });
+  });
+
+  describe('verifyReport', () => {
+    beforeEach(() => {
+      sinon
+        .stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty')
+        .callsFake(props => {
+          store
+            .select(Selectors.getSelectedReports)
+            .pipe(take(1))
+            .subscribe(selectedReports => {
+              selectedReports[0] = {
+                ...selectedReports[0],
+                doc: { ...selectedReports[0].doc, ...props },
+              };
+              store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+              store.refreshState();
+            });
+        });
+      sinon.stub(ReportsActions.prototype, 'setFirstSelectedReportFormattedProperty');
+      sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
+    });
+
+    it('should not be triggered by random actions', () => {
+      actions$ = of([
+        ReportActionList.selectReport(''),
+        ReportActionList.removeSelectedReport({}),
+        ReportActionList.setSelected({}),
+      ]);
+
+      effects.verifyReport.subscribe();
+      expect(authService.has.callCount).to.equal(0);
+    });
+
+    it('should minify report contact before saving and use latest rev', fakeAsync(() => {
+      const selectedReports = [{
+        _id: 'report',
+        doc: {
+          _id: 'report',
+          _rev: 2,
+          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
+        },
+      }];
+      authService.has.resolves(true);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+
+      sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
+      dbService.put.resolves();
+      dbService.get.resolves({ _id: 'report', _rev: 3 });
+
+      actions$ = of(ReportActionList.verifyReport(false));
+      effects.verifyReport.subscribe();
+
+      tick();
+
+      expect(dbService.put.callCount).to.equal(1);
+      expect(dbService.put.args[0]).to.deep.equal([{
+        _id: 'report',
+        _rev: 3,
+        contact: { _id: 'contact', parent: { _id: 'parent' } },
+        verified: false,
+        verified_date: 1000,
+      }]);
+    }));
+
+    it('should launch modal with correct params on invalid', fakeAsync(() => {
+      const selectedReports = [{
+        _id: 'report',
+        doc: { _id: 'report' },
+      }];
+      authService.has.resolves(false);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+      modalService.show.rejects(); // user clicks no
+
+      actions$ = of(ReportActionList.verifyReport(false));
+      effects.verifyReport.subscribe();
+
+      tick();
+
+      expect(dbService.get.callCount).to.equal(0);
+      expect(dbService.put.callCount).to.equal(0);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        VerifyReportComponent,
+        { initialState: { model: { proposedVerificationState: 'reports.verify.invalid' } } }
+      ]);
+    }));
+
+    it('should launch modal with correct params on valid', fakeAsync(() => {
+      const selectedReports = [{ _id: 'report', doc: { _id: 'report' } }];
+      authService.has.resolves(false);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+      modalService.show.rejects(); // user clicks no
+
+      actions$ = of(ReportActionList.verifyReport(true));
+      effects.verifyReport.subscribe();
+
+      tick();
+
+      expect(dbService.get.callCount).to.equal(0);
+      expect(dbService.put.callCount).to.equal(0);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        VerifyReportComponent,
+        { initialState: { model: { proposedVerificationState: 'reports.verify.valid' } } }
+      ]);
+    }));
+
+    it('should catch db put errors', fakeAsync(() => {
+      const selectedReports = [{ _id: 'report', doc: { _id: 'report' } }];
+      authService.has.resolves(true);
+      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.refreshState();
+
+      actions$ = of(ReportActionList.verifyReport(true));
+      effects.verifyReport.subscribe();
+      dbService.get.resolves({});
+      dbService.put.rejects({ some: 'error' });
+
+      tick();
+
+      expect(dbService.get.callCount).to.equal(1);
+      expect(dbService.put.callCount).to.equal(1);
+    }));
+
+    const scenarios = [
+      /* User scenarios with permission to edit */
+      { canEdit: true, initial: undefined, setTo: true, expectVerified: true, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: undefined, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: true, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: false, setTo: false, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: true, setTo: true, expectVerified: undefined,
+        expectPost: true, expectedDate: undefined },
+      { canEdit: true, initial: true, setTo: undefined, expectVerified: undefined, expectPost: true, expectedDate: 0 },
+      { canEdit: true, initial: false, setTo: undefined, expectVerified: undefined, expectPost: true, expectedDate: 0 },
+
+      /* User scenarios without permission to edit */
+      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true,
+        expectPost: true, expectedDate: 0 },
+      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false,
+        expectPost: false, expectedDate: undefined },
+      { canEdit: false, initial: true, setTo: false, expectVerified: true, expectPost: false, expectedDate: 0 },
+      { canEdit: false, initial: false, setTo: false, expectVerified: false, expectPost: false, expectedDate: 0 },
+    ];
+
+    scenarios.forEach(scenario => {
+      const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
+      const test = `user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`;
+
+      it(test, fakeAsync(() => {
+        const selectedReports = [{
+          _id: 'def',
+          doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
+        }];
+
+        sinon.stub(Date, 'now').returns(0); // using faketimers breaks fakeAsync's tick :(
+
+        canEdit ? authService.has.resolves(true) : authService.has.resolves(false);
+        confirm ? modalService.show.resolves() : modalService.show.rejects();
+        dbService.put.resolves();
+        dbService.get.resolves({ _rev: '1' });
+        store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+        store.refreshState();
+
+        actions$ = of(ReportActionList.verifyReport(setTo));
+        effects.verifyReport.subscribe();
+        tick(0, { processNewMacroTasksSynchronously: true });
+
+        expect(modalService.show.callCount).to.equal(confirm === undefined ? 0 : 1);
+
+        if (expectPost) {
+          expect(dbService.put.callCount).to.equal(1);
+          expect(dbService.put.args[0]).to.deep.equal([{
+            _id: 'def',
+            name: 'hello',
+            form: 'P',
+            _rev: '1',
+            verified_date: expectedDate,
+            verified: expectVerified,
+          }]);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(2);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal([{
+            verified: expectVerified,
+            verified_date: expectedDate,
+          }]);
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[1])
+            .to.deep.equal([{ _rev: '1'}]);
+          expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(1);
+          expect((<any>ServicesActions.prototype.setLastChangedDoc).args[0]).to.deep.equal([
+            { _id: 'def', name: 'hello', form: 'P', verified: initial },
+          ]);
+        } else {
+          expect(dbService.put.called).to.be.false;
+          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(0);
+          expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(0);
+        }
+      }));
+    });
+  });
+});

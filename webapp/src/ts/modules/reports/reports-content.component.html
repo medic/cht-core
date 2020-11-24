@@ -25,7 +25,7 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status" *ngIf="validChecks[$index] && summaries[$index].verified === undefined">
+          <div class="status" *ngIf="!validChecks[$index] || summaries[$index].verified !== undefined">
             <span *ngIf="validChecks[$index] && summaries[$index].verified" class="verification-badge verified">
               <report-verify-valid-icon></report-verify-valid-icon>
             </span>

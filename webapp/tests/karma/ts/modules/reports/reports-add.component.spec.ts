@@ -124,7 +124,7 @@ describe('Reports Add Component', () => {
     });
 
     it('should set cancel callback when route loads an existent report', () => {
-      route.snapshot.params = { reportsId: 'report_id' };
+      route.snapshot.params = { reportId: 'report_id' };
       const setCancelCallback = sinon.stub(GlobalActions.prototype, 'setCancelCallback');
       const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
       component.ngOnInit();

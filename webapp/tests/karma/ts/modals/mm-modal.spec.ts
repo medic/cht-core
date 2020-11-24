@@ -1,8 +1,8 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { Subject } from 'rxjs';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 
 import { MmModalAbstract, ModalService } from '@mm-modals/mm-modal/mm-modal';
 
@@ -14,7 +14,10 @@ describe('MmModalAbstract', () => {
   let bsModuleRef;
 
   beforeEach(() => {
-    bsModuleRef = { hide: sinon.stub() };
+    bsModuleRef = {
+      hide: sinon.stub(),
+      onHide: new Subject(),
+    };
     TestBed.configureTestingModule({
       providers: [
         { provide: BsModalRef, useValue: bsModuleRef },
@@ -149,6 +152,17 @@ describe('MmModalAbstract', () => {
           expect(err).to.equal(undefined);
         });
     }));
+  });
+
+  it('should reject on self-triggered hide', () => {
+    child = new mmModalChild(bsModuleRef);
+    bsModuleRef.onHide.next();
+    return child.modalClosePromise.promise
+      .then(() => assert.fail('should have thrown'))
+      .catch(err => {
+        // we just promise.reject();
+        expect(err).to.equal(undefined);
+      });
   });
 });
 
