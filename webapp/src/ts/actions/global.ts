@@ -28,8 +28,8 @@ export const Actions = {
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
-  setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'), // Has Effect
-  updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'), // Has Effect
+  setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
+  updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
 };
 
 export class GlobalActions {

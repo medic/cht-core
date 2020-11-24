@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { DbService } from './db.service';
 import { ChangesService } from './changes.service';
 import { SessionService } from './session.service';
-import { ReadDocsProvider } from '../providers/read-docs.provider';
+import { ReadDocsProvider } from '@mm-providers/read-docs.provider';
 
 @Injectable({
   providedIn: 'root'
