@@ -20,7 +20,7 @@ export class MmModal {
   @Input() titleKey;
   @Input() submitKey;
   @Input() submittingKey;
-  @Input() cancelKey = 'Cancel';
+  @Input() cancelKey;
   @Output() onCancel: EventEmitter<any> = new EventEmitter();
   @Output() onSubmit: EventEmitter<any> = new EventEmitter();
   @Input() disableSubmit;

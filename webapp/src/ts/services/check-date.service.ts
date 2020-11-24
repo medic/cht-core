@@ -5,8 +5,8 @@ import { TelemetryService } from './telemetry.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 
-const A_DATE_IN_THE_PAST = 1454424982000;
-const MARGIN_OF_ERROR = 10 * 60 * 1000; // ten minutes
+const A_DATE_IN_THE_PAST = 1606230000000;   // 2020-11-24T15:00:00.000Z
+const MARGIN_OF_ERROR = 10 * 60 * 1000;     // ten minutes
 
 interface CheckDateData {
   reportedLocalDate: Date;
@@ -26,11 +26,15 @@ export class CheckDateService {
   }
 
   showModal(dates: CheckDateData) {
-    this.modalService.show(CheckDateComponent, {initialState: dates});
+    this.modalService
+      .show(CheckDateComponent, {initialState: dates})
+      .catch(() => {});
   }
 
   check() {
-    return this.http.head('/api/info?seed=' + Math.random(), { observe: 'response' })
+    return this
+      .http
+      .head('/api/info?seed=' + Math.random(), { observe: 'response' })
       .toPromise()
       .then((response: any) => {
         const timestamp = Date.parse(response.headers.get('Date'));
