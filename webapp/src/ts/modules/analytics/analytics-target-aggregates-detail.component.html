@@ -44,7 +44,7 @@
               [attr.data-record-id]="item.contact?._id"
               class="content-row target"
               [ngClass]="{ 'has-goal': selected.hasGoal, 'goal-met': item.value?.goalMet || !selected.hasGoal}">
-            <a [routerLink]="'contacts/' + item.contact?._id">
+            <a [routerLink]="'/contacts/' + item.contact?._id">
               <div class="col-xs-6 col-md-4">
                 <div class="content">
                   <div class="heading">
