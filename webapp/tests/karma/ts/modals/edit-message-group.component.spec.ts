@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -61,6 +61,12 @@ describe('EditMessageGroupComponent', () => {
     expect(component).to.exist;
   });
 
+  it('should ngOnInit should load settings', fakeAsync(() => {
+    component.ngOnInit();
+    tick();
+    expect(settingsService.get.callCount).to.equal(1);
+  }));
+
   describe('submit', () => {
     it('should not crash when no model', async () => {
       component.model = false;
@@ -70,7 +76,7 @@ describe('EditMessageGroupComponent', () => {
     it('should call editGroupService', async () => {
       component.model = {
         report: { _id: 'the_report' },
-        group: { rows: [{ message: 'message' }] },
+        group: { rows: [{ message: 'message', task_id: 22 }] },
       };
       await component.submit();
       expect(editGroupService.edit.callCount).to.equal(1);
@@ -99,9 +105,9 @@ describe('EditMessageGroupComponent', () => {
         group: {
           number: 3,
           rows: [
-            { due: 'yesterday', group: 3, state: 'state', id: 1 },
-            { due: 'day before', group: 3, state: 'state', id: 2 },
-            { due: 'day before', group: 3, state: 'state', id: 3 },
+            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
+            { due: 'day before', group: 3, state: 'state', task_id: 2 },
+            { due: 'day before', group: 3, state: 'state', task_id: 3 },
           ]
         }
       };
@@ -111,18 +117,91 @@ describe('EditMessageGroupComponent', () => {
       expect(component.model.group.number).to.equal(3);
       expect(component.model.group.rows.length).to.equal(4);
       expect(component.model.group.rows).to.deep.equal([
-        { due: 'yesterday', group: 3, state: 'state', id: 1 },
-        { due: 'day before', group: 3, state: 'state', id: 2 },
-        { due: 'day before', group: 3, state: 'state', id: 3 },
+        { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
+        { due: 'day before', group: 3, state: 'state', task_id: 2 },
+        { due: 'day before', group: 3, state: 'state', task_id: 3 },
         {
           due: new Date(NOW).toISOString(),
           added: true,
           group: 3,
           state: 'scheduled',
           messages: [{ message: '' }],
-          id: 'the id',
+          task_id: 'the id',
         },
       ]);
+    });
+
+    it('should not load settings on every add', fakeAsync(() => {
+      component.model = {
+        group: {
+          number: 11,
+          rows: [],
+        }
+      };
+      component.addTask();
+      component.addTask();
+      component.addTask();
+      component.addTask();
+
+      tick();
+      expect(settingsService.get.callCount).to.equal(0);
+      expect(component.model.group.rows.length).to.equal(4);
+    }));
+  });
+
+  describe('deleteTask', () => {
+    it('should not crash on no input', () => {
+      component.model = {
+        report: { _id: 'report' },
+        group: {
+          number: 3,
+          rows: [
+            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
+            { due: 'day before', group: 3, state: 'state', task_id: 2 },
+            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+          ]
+        }
+      };
+
+      component.deleteTask(false);
+      expect(component.model).to.deep.equal({
+        report: { _id: 'report' },
+        group: {
+          number: 3,
+          rows: [
+            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
+            { due: 'day before', group: 3, state: 'state', task_id: 2 },
+            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+          ]
+        }
+      });
+    });
+
+    it('should delete task', () => {
+      component.model = {
+        report: { _id: 'report' },
+        group: {
+          number: 3,
+          rows: [
+            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
+            { due: 'day before', group: 3, state: 'state', task_id: 2 },
+            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+          ]
+        }
+      };
+
+      component.deleteTask(component.model.group.rows[1]);
+      expect(component.model).to.deep.equal( {
+        report: { _id: 'report' },
+        group: {
+          number: 3,
+          rows: [
+            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
+            { due: 'day before', group: 3, state: 'state', task_id: 2, deleted: true },
+            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+          ]
+        }
+      });
     });
   });
 

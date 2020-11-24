@@ -9,7 +9,7 @@
 >
   <form action="" method="POST">
 
-    <fieldset *ngFor="let task of model.group.rows; index as index; trackBy: trackBy" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
+    <fieldset *ngFor="let task of model.group.rows; trackBy: trackBy" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
       <ng-container *ngIf="!task.deleted">
         <div class="form-group">
           <label>
@@ -22,7 +22,7 @@
         <div class="form-group">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-            <input type="text" class="form-control datepicker" [value]="task.due" [attr.data-task-id]="task.id" />
+            <input type="text" class="form-control datepicker" [value]="task.due" [attr.data-task-id]="task.task_id" />
           </div>
         </div>
       </ng-container>

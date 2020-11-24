@@ -28,7 +28,8 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
 
   ngOnInit() {
     this.getSettings();
-    this.model?.group?.rows?.forEach(row => row.id = uuid());
+    // task_id variable is only used within this component, to uniquely identify each task in the group
+    this.model?.group?.rows?.forEach(row => row.task_id = uuid());
   }
 
   private getSettings() {
@@ -49,7 +50,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
   }
 
   trackBy(index, task) {
-    return task.id;
+    return task.task_id;
   }
 
   private initDatePickers() {
@@ -76,7 +77,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
           },
           (date) => {
             const taskId = $(element).data('task-id');
-            const task = this.model.group.rows.find(task => task.id === taskId);
+            const task = this.model.group.rows.find(task => task.task_id === taskId);
             task.due = date.toISOString();
           }
         );
@@ -104,6 +105,9 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
   }
 
   deleteTask(task) {
+    if (!task) {
+      return;
+    }
     // remove datepicker BEFORE removing the html element
     this.removeDatePickers(task.id);
     task.deleted = true;
@@ -117,7 +121,7 @@ export class EditMessageGroupComponent extends MmModalAbstract implements AfterV
       group: this.model.group.number,
       state: 'scheduled',
       messages: [{ message: '' }],
-      id: uuid(),
+      task_id: uuid(),
     });
     this.shouldInitDatepickers = true;
   }
