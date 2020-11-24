@@ -17,6 +17,9 @@ import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
 import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
+import { ContactsComponent } from './contacts/contacts.component';
+import { ContactsContentComponent } from './contacts/contacts-content.component';
+import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
@@ -34,7 +37,10 @@ import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-
     ReportsAddComponent,
     ReportsContentComponent,
     MessagesComponent,
+    ContactsComponent,
     ReportsFiltersComponent,
+    ContactsContentComponent,
+    ContactsFiltersComponent,
     MessagesContentComponent,
     PrivacyPolicyComponent,
     AnalyticsTargetsComponent,
@@ -58,6 +64,7 @@ import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-
     AnalyticsComponent,
     ReportsComponent,
     MessagesComponent,
+    ContactsComponent,
     PrivacyPolicyComponent,
   ]
 })

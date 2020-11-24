@@ -7,7 +7,7 @@
   <div class="modal-footer">
     <p class="note" *ngIf="status?.error" translate>{{status?.error}}</p>
     <a class="btn cancel" [ngClass]="{ 'disabled': status?.processing }" (click)="onCancel.emit()" translate>{{cancelKey || 'Cancel'}}</a>
-    <a class="btn submit" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="!status?.processing" translate>{{submitKey}}</a>
+    <a class="btn submit" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="submitKey && !status?.processing" translate>{{submitKey}}</a>
     <a class="btn submit disabled" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger }" *ngIf="status?.processing" translate>{{submittingKey || submitKey}}</a>
   </div>
 </div>

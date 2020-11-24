@@ -6,12 +6,13 @@ import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { isMobile } from '@mm-providers/responsive.provider';
-import { init as scrollLoaderInit } from '@mm-providers/scroll-loader.provider';
+import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ServicesActions } from '@mm-actions/services';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchService } from '@mm-services/search.service';
+import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
@@ -53,8 +54,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
+    private tourService: TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
+    private scrollLoaderProvider: ScrollLoaderProvider,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -111,6 +114,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.verifyingReport = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
+
+    this.tourService.startIfNeeded(this.route.snapshot);
+
     this.search();
     this.setActionBarData();
   }
@@ -208,7 +214,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   private initScroll() {
-    scrollLoaderInit(() => {
+    this.scrollLoaderProvider.init(() => {
       if (!this.loading && this.moreItems) {
         this.query({ skip: true });
       }

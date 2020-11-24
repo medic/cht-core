@@ -1,13 +1,15 @@
-describe('Simprints service', () => {
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { expect } from 'chai';
+import { SimprintsService } from '@mm-services/simprints.service';
 
-  'use strict';
-
-  let service;
+describe('SimprintsService', () => {
+  let service: SimprintsService;
   let medicmobile_android;
   let simprints_reg;
   let simprints_ident;
 
-  const assertCalledOnCorrectObject = function() {
+  const assertCalledOnCorrectObject = function () {
     // If the medicmobile_android functions are not called with `this` parameter
     // correctly set, we receive the cryptic error:
     //   Java bridge method cannot be invoked on a non-injected object
@@ -19,36 +21,26 @@ describe('Simprints service', () => {
   };
 
   beforeEach(() => {
-    module('inboxApp');
-
     simprints_reg = sinon.stub().callsFake(assertCalledOnCorrectObject);
     simprints_ident = sinon.stub().callsFake(assertCalledOnCorrectObject);
 
     medicmobile_android = {
-      simprints_reg: simprints_reg,
-      simprints_ident: simprints_ident
+      simprints_reg,
+      simprints_ident
     };
 
-    module($provide => {
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('$window', {
-        medicmobile_android: medicmobile_android,
-      });
-    });
-    inject(_Simprints_ => {
-      service = _Simprints_;
-    });
+    window.medicmobile_android = medicmobile_android;
+    service = TestBed.inject(SimprintsService);
   });
 
   describe('register', () => {
-
     it('calls android endpoint and waits for response', () => {
       const expected = 54685165;
       const response = service.register();
       response.then(actual => {
-        chai.expect(simprints_reg.callCount).to.equal(1);
-        chai.expect(simprints_ident.callCount).to.equal(0);
-        chai.expect(actual).to.equal(expected);
+        expect(simprints_reg.callCount).to.equal(1);
+        expect(simprints_ident.callCount).to.equal(0);
+        expect(actual).to.equal(expected);
       }).catch((err) => {
         throw err;
       });
@@ -56,7 +48,6 @@ describe('Simprints service', () => {
       service.registerResponse(requestId, { id: expected });
       return response;
     });
-
   });
 
   describe('identify', () => {
@@ -74,9 +65,9 @@ describe('Simprints service', () => {
       ];
       const response = service.identify();
       response.then(actual => {
-        chai.expect(simprints_reg.callCount).to.equal(0);
-        chai.expect(simprints_ident.callCount).to.equal(1);
-        chai.expect(actual).to.deep.equal(expected);
+        expect(simprints_reg.callCount).to.equal(0);
+        expect(simprints_ident.callCount).to.equal(1);
+        expect(actual).to.deep.equal(expected);
       }).catch(err => {
         throw err;
       });
@@ -100,9 +91,9 @@ describe('Simprints service', () => {
       ];
       const response = service.identify();
       response.then(actual => {
-        chai.expect(simprints_reg.callCount).to.equal(0);
-        chai.expect(simprints_ident.callCount).to.equal(1);
-        chai.expect(actual).to.deep.equal(expected);
+        expect(simprints_reg.callCount).to.equal(0);
+        expect(simprints_ident.callCount).to.equal(1);
+        expect(actual).to.deep.equal(expected);
       }).catch(err => {
         throw err;
       });
@@ -112,5 +103,4 @@ describe('Simprints service', () => {
     });
 
   });
-
 });

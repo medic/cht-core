@@ -4,6 +4,7 @@ const getGlobalState = (state) => state.global || {};
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
+const getContactsState = (state) => state.contacts || {};
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getAnalyticsState = (state) => state.analytics || {};
 const getTargetAggregatesState = (state) => state.targetAggregates || {};
@@ -66,6 +67,11 @@ export const Selectors = {
   getSelectedConversation: createSelector(getMessagesState, (messagesState) => messagesState.selected),
   getConversations: createSelector(getMessagesState, (messagesState) => messagesState.conversations),
 
+  // contacts
+  getContactsList: createSelector(getContactsState, (contactsState) => contactsState.contacts),
+  contactListContains: createSelector(getContactsState, (contactsState) => {
+    return (id) => contactsState.contactsById.has(id);
+  }),
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 
