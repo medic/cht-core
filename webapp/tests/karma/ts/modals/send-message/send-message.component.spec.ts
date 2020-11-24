@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { FormsModule } from '@angular/forms';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { Subject } from 'rxjs';
 
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { SendMessageService } from '@mm-services/send-message.service';
@@ -23,7 +24,7 @@ describe('SendMessageComponent', () => {
   let select2SearchService;
 
   beforeEach(async(() => {
-    bdModalRef = { hide: sinon.stub() };
+    bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
     sendMessageService = { send: sinon.stub() };
     select2SearchService = { init: sinon.stub().resolves() };
     formatProvider = {};

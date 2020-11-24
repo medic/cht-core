@@ -23,6 +23,7 @@ describe('SendMessageComponent', () => {
     bdModalRef = {
       hide: sinon.stub(),
       onHidden: new Subject(),
+      onHide: new Subject(),
     };
     deleteDocsService = { delete: sinon.stub().resolves() };
 

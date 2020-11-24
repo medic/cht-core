@@ -120,11 +120,11 @@
             </div>
             <div class="dropdown-menu sub-actions" mmAuth [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
               <a class="mm-icon mm-icon-caption verify-error" [ngClass]="{ active: actionBar?.right?.verified === false }" (click)="verifyReport(false)">
-                <span class="verify-icon" ng-include="'templates/partials/svg-icons/report-verify-invalid-icon.html'"></span>
+                <report-verify-invalid-icon class="verify-icon"></report-verify-invalid-icon>
                 <span translate>reports.verify.invalid</span>
               </a>
               <a class="mm-icon mm-icon-caption verify-valid" [ngClass]="{ active: actionBar?.right?.verified }" (click)="verifyReport(true)">
-                <span class="verify-icon" ng-include="'templates/partials/svg-icons/report-verify-valid-icon.html'"></span>
+                <report-verify-valid-icon class="verify-icon"></report-verify-valid-icon>
                 <span translate>reports.verify.valid</span>
               </a>
             </div>

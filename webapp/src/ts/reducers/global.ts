@@ -127,6 +127,9 @@ const _globalReducer = createReducer(
   on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
     return { ...state, cancelCallback };
   }),
+  on(Actions.setLoadingSubActionbar, (state, { payload: { loading } }) => {
+    return { ...state, loadingSubActionBar: loading };
+  }),
 );
 
 export const globalReducer = (state, action) => {
@@ -139,8 +142,6 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
-  case actionTypes.SET_LOADING_SUB_ACTION_BAR:
-    return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
   case actionTypes.SET_UNREAD_COUNT:
     return Object.assign({}, state, { unreadCount: action.payload.unreadCount });
   case actionTypes.SET_VERSION:

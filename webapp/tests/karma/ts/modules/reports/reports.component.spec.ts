@@ -197,61 +197,6 @@ describe('Reports Component', () => {
     });
   });
 
-  /*
-  describe('verifying reports', () => {
-    todo enable these tests once we have verification
-    const scenarios = [
-      /!* User scenarios with permission to edit *!/
-      { canEdit: true, initial: undefined, setTo: true, expectVerified: true, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: undefined, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: true, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: false, setTo: false, expectVerified: undefined,
-        expectPost: true, expectedDate: undefined },
-      { canEdit: true, initial: true, setTo: true, expectVerified: undefined,
-        expectPost: true, expectedDate: undefined },
-
-      /!* User scenarios without permission to edit *!/
-      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true,
-        expectPost: true, expectedDate: 0 },
-      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false,
-        expectPost: false, expectedDate: undefined },
-      { canEdit: false, initial: true, setTo: false, expectVerified: true, expectPost: false, expectedDate: 0 },
-      { canEdit: false, initial: false, setTo: false, expectVerified: false, expectPost: false, expectedDate: 0 },
-    ];
-
-    scenarios.forEach(scenario => {
-      const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
-      it(`user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`, () => {
-        hasAuth = canEdit ? hasAuth.resolves(true) : hasAuth.resolves(false);
-        confirm ? modal.resolves() : modal.rejects();
-        post.returns(Promise.resolve());
-
-        createController();
-        reportsActions.setSelectedReports([{
-          _id: 'abc',
-          doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
-        }]);
-        scope.$broadcast('VerifyReport', setTo);
-        return Q.resolve(() => {
-          expect(modal.callCount).to.eq(confirm !== undefined ? 1 : 0);
-          if (expectPost) {
-            expect(post.callCount).to.equal(1);
-            expect(post.args[0]).to.deep.equal([{
-              _id: 'def',
-              name: 'hello',
-              form: 'P',
-              rev: '1',
-              verified_date: expectedDate,
-              verified: expectVerified,
-            }]);
-          } else {
-            expect(post.called).to.be.false;
-          }
-        });
-      });
-    });
-  });*/
-
   describe('Changes listener', () => {
     it('filters reports', () => {
       expect(changesService.subscribe.callCount).to.equal(1);
