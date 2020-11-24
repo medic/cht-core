@@ -30,7 +30,9 @@ import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
-import { AnalyticsTargetsDetailsComponent } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
+import {
+  AnalyticsTargetsDetailsComponent
+} from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 
 @NgModule({
   declarations: [
