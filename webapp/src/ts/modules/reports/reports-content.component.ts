@@ -143,24 +143,24 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     return this.messageStateService.any(group, 'muted');
   }
 
-  private setMessageState(report, group, from, to, locals:any={}) {
-    locals.loading = true;
+  private setMessageState(report, group, from, to, localContext:any={}) {
+    localContext.loading = true;
     const id = report?._id;
     const groupNumber = group?.rows?.[0]?.group;
     return this.messageStateService
       .set(id, groupNumber, from, to)
       .catch((err) => {
-        locals.loading = false;
+        localContext.loading = false;
         console.error('Error setting message state', err);
       });
   }
 
-  mute(report, group, locals) {
-    this.setMessageState(report, group, 'scheduled', 'muted', locals);
+  mute(report, group, localContext) {
+    this.setMessageState(report, group, 'scheduled', 'muted', localContext);
   }
 
-  schedule(report, group, locals) {
-    this.setMessageState(report, group, 'muted', 'scheduled', locals);
+  schedule(report, group, localContext) {
+    this.setMessageState(report, group, 'muted', 'scheduled', localContext);
   }
 
   edit(report, group) {
