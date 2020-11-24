@@ -53,14 +53,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getUnreadCount),
     ).subscribe(([
       replicationStatus,
       currentTab,
-      showPrivacyPolicy
+      showPrivacyPolicy,
+      unreadCount
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
+      this.unreadCount = unreadCount;
     });
     this.subscription.add(subscription);
 
@@ -134,8 +137,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
         return {
           currentTab: Selectors.getCurrentTab(state),
           replicationStatus: Selectors.getReplicationStatus(state),
-          showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state),
-          unreadCount: Selectors.getUnreadCount(state),
+          showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state)
         };
       };
       const mapDispatchToTarget = function(dispatch) {

@@ -51,9 +51,10 @@ export class ReportsEffects {
       ofType(ReportActionList.setSelected),
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectMode)),
-        this.store.pipe(select(Selectors.getSelectedReports))
+        this.store.pipe(select(Selectors.getSelectedReports)),
+        this.store.pipe(select(Selectors.getUnreadCount))
       ),
-      exhaustMap(([{ payload: { selected } }, selectMode, selectedReports]) => {
+      exhaustMap(([{ payload: { selected } }, selectMode, selectedReports, unreadCount]) => {
         const model = { ...selected };
         let refreshing = true;
 
@@ -73,6 +74,10 @@ export class ReportsEffects {
             selectedReports[0]._id === selected?.doc?._id;
           if (!refreshing) {
             this.reportActions.setVerifyingReport(false);
+          }
+
+          if (unreadCount) {
+            this.globalActions.updateUnreadCount({ report: unreadCount.report - 1 });
           }
 
           model.expanded = true;

@@ -28,6 +28,8 @@ export const Actions = {
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
+  setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'), // Has Effect
+  updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'), // Has Effect
 };
 
 export class GlobalActions {
@@ -177,6 +179,14 @@ export class GlobalActions {
   navigationCancel(nextUrl?) {
     return this.store.dispatch(Actions.navigationCancel(nextUrl));
   }
+
+  setUnreadCount(unreadCount) {
+    return this.store.dispatch(Actions.setUnreadCount(unreadCount));
+  }
+
+  updateUnreadCount(unreadCount) {
+    return this.store.dispatch(Actions.updateUnreadCount(unreadCount));
+  }
 }
 
 /*
@@ -215,14 +225,6 @@ angular.module('inboxServices').factory('GlobalActions',
         dispatch(ActionUtils.createSingleValueAction(
           actionTypes.SET_LOADING_SUB_ACTION_BAR, 'loadingSubActionBar', loading
         ));
-      }
-
-      function setUnreadCount(unreadCount) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_UNREAD_COUNT, 'unreadCount', unreadCount));
-      }
-
-      function updateUnreadCount(unreadCount) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
       }
 
       // User wants to cancel current flow, or pressed back button, etc.
