@@ -24,13 +24,13 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { ActionbarComponent } from './actionbar/actionbar.component';
+import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
-import { AnalyticsFilterComponent } from './filters/analytics-filter/analytics-filter.component';
-import { AnalyticsTargetsDetailsComponent } from './analytics-targets-details/analytics-targets-details.component';
+import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
+import { AnalyticsTargetsDetailsComponent } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 
 @NgModule({
   declarations: [

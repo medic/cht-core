@@ -740,7 +740,7 @@ describe('TargetAggregatesService', () => {
       });
     });
 
-    it('should exclude targets from other contacts', () => {
+    it('should exclude targets from other contacts', async () => {
       const config = { tasks: { targets: { items: [ { id: 'target1', aggregate: true, type: 'count' } ] } }};
 
       const targetDocs = [
@@ -776,26 +776,26 @@ describe('TargetAggregatesService', () => {
 
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      return service.getAggregates().then(result => {
-        expect(result.length).to.equal(1);
-        expect(result[0]).to.deep.equal({
-          id: 'target1',
-          aggregate: true,
-          type: 'count',
-          aggregateValue: { pass: 19, total: 19, hasGoal: false, summary: 19 },
-          heading: undefined,
-          hasGoal: false,
-          isPercent: false,
-          progressBar: false,
-          values: [
-            { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
-            { contact: contacts[1], value: { pass: 9, total: 9, percent: 0 } },
-          ]
-        });
+      const result = await service.getAggregates();
+
+      expect(result.length).to.equal(1);
+      expect(result[0]).to.deep.equal({
+        id: 'target1',
+        aggregate: true,
+        type: 'count',
+        aggregateValue: { pass: 19, total: 19, hasGoal: false, summary: 19 },
+        heading: undefined,
+        hasGoal: false,
+        isPercent: false,
+        progressBar: false,
+        values: [
+          { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
+          { contact: contacts[1], value: { pass: 9, total: 9, percent: 0 } },
+        ]
       });
     });
 
-    it('should create placeholders for missing targets and missing target values', () => {
+    it('should create placeholders for missing targets and missing target values', async () => {
       const config = { tasks: { targets: { items: [
         { id: 'target1', aggregate: true, type: 'count' },
         { id: 'target2', aggregate: true, type: 'percent' },
@@ -835,43 +835,43 @@ describe('TargetAggregatesService', () => {
 
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      return service.getAggregates().then(result => {
-        expect(result.length).to.equal(2);
-        expect(result[0]).to.deep.equal({
-          id: 'target1',
-          aggregate: true,
-          type: 'count',
-          aggregateValue: { pass: 27, total: 27, hasGoal: false, summary: 27 },
-          heading: undefined,
-          hasGoal: false,
-          isPercent: false,
-          progressBar: false,
-          values: [
-            { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
-            { contact: contacts[1], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
-            { contact: contacts[2], value: { pass: 17, total: 17, percent: 0 } },
-          ]
-        });
+      const result = await service.getAggregates();
 
-        expect(result[1]).to.deep.equal({
-          id: 'target2',
-          aggregate: true,
-          type: 'percent',
-          aggregateValue: { pass: 10, total: 15, percent: 67, hasGoal: false, summary: '67%' },
-          heading: undefined,
-          hasGoal: false,
-          isPercent: true,
-          progressBar: true,
-          values: [
-            { contact: contacts[0], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
-            { contact: contacts[1], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
-            { contact: contacts[2], value: { pass: 10, total: 15, percent: 67 } },
-          ]
-        });
+      expect(result.length).to.equal(2);
+      expect(result[0]).to.deep.equal({
+        id: 'target1',
+        aggregate: true,
+        type: 'count',
+        aggregateValue: { pass: 27, total: 27, hasGoal: false, summary: 27 },
+        heading: undefined,
+        hasGoal: false,
+        isPercent: false,
+        progressBar: false,
+        values: [
+          { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
+          { contact: contacts[1], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
+          { contact: contacts[2], value: { pass: 17, total: 17, percent: 0 } },
+        ]
+      });
+
+      expect(result[1]).to.deep.equal({
+        id: 'target2',
+        aggregate: true,
+        type: 'percent',
+        aggregateValue: { pass: 10, total: 15, percent: 67, hasGoal: false, summary: '67%' },
+        heading: undefined,
+        hasGoal: false,
+        isPercent: true,
+        progressBar: true,
+        values: [
+          { contact: contacts[0], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
+          { contact: contacts[1], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
+          { contact: contacts[2], value: { pass: 10, total: 15, percent: 67 } },
+        ]
       });
     });
 
-    it('should only process one target doc per contact', () => {
+    it('should only process one target doc per contact', async () => {
       const config = { tasks: { targets: { items: [
         { id: 'target1', aggregate: true, type: 'count' },
         { id: 'target2', aggregate: true, type: 'percent' },
@@ -917,39 +917,39 @@ describe('TargetAggregatesService', () => {
 
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      return service.getAggregates().then(result => {
-        expect(result.length).to.equal(2);
-        expect(result[0]).to.deep.equal({
-          id: 'target1',
-          aggregate: true,
-          type: 'count',
-          aggregateValue: { pass: 10, total: 10, hasGoal: false, summary: 10 },
-          heading: undefined,
-          hasGoal: false,
-          isPercent: false,
-          progressBar: false,
-          values: [
-            { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
-          ]
-        });
+      const result = await service.getAggregates();
 
-        expect(result[1]).to.deep.equal({
-          id: 'target2',
-          aggregate: true,
-          type: 'percent',
-          aggregateValue: { pass: 0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
-          heading: undefined,
-          hasGoal: false,
-          isPercent: true,
-          progressBar: true,
-          values: [
-            { contact: contacts[0], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
-          ]
-        });
+      expect(result.length).to.equal(2);
+      expect(result[0]).to.deep.equal({
+        id: 'target1',
+        aggregate: true,
+        type: 'count',
+        aggregateValue: { pass: 10, total: 10, hasGoal: false, summary: 10 },
+        heading: undefined,
+        hasGoal: false,
+        isPercent: false,
+        progressBar: false,
+        values: [
+          { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
+        ]
+      });
+
+      expect(result[1]).to.deep.equal({
+        id: 'target2',
+        aggregate: true,
+        type: 'percent',
+        aggregateValue: { pass: 0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
+        heading: undefined,
+        hasGoal: false,
+        isPercent: true,
+        progressBar: true,
+        values: [
+          { contact: contacts[0], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
+        ]
       });
     });
 
-    it('should discard additional target values from target docs', () => {
+    it('should discard additional target values from target docs', async () => {
       const config = { tasks: { targets: { items: [
         { id: 'target1', aggregate: true, type: 'count' },
         { id: 'target2', aggregate: true, type: 'percent' },
@@ -993,37 +993,37 @@ describe('TargetAggregatesService', () => {
 
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
 
-      return service.getAggregates().then(result => {
-        expect(result.length).to.equal(2);
-        expect(result[0]).to.deep.equal({
-          id: 'target1',
-          aggregate: true,
-          type: 'count',
-          aggregateValue: { pass: 25, total: 25, hasGoal: false, summary: 25 },
-          heading: undefined,
-          hasGoal: false,
-          isPercent: false,
-          progressBar: false,
-          values: [
-            { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
-            { contact: contacts[1], value: { pass: 15, total: 15, percent: 0 } },
-          ]
-        });
+      const result = await service.getAggregates();
 
-        expect(result[1]).to.deep.equal({
-          id: 'target2',
-          aggregate: true,
-          type: 'percent',
-          aggregateValue: { pass: 17, total: 17, percent: 100, hasGoal: false, summary: '100%' },
-          heading: undefined,
-          hasGoal: false,
-          isPercent: true,
-          progressBar: true,
-          values: [
-            { contact: contacts[0], value: { pass: 10, total: 10, percent: 100 } },
-            { contact: contacts[1], value: { pass: 7, total: 7, percent: 100 } },
-          ]
-        });
+      expect(result.length).to.equal(2);
+      expect(result[0]).to.deep.equal({
+        id: 'target1',
+        aggregate: true,
+        type: 'count',
+        aggregateValue: { pass: 25, total: 25, hasGoal: false, summary: 25 },
+        heading: undefined,
+        hasGoal: false,
+        isPercent: false,
+        progressBar: false,
+        values: [
+          { contact: contacts[0], value: { pass: 10, total: 10, percent: 0 } },
+          { contact: contacts[1], value: { pass: 15, total: 15, percent: 0 } },
+        ]
+      });
+
+      expect(result[1]).to.deep.equal({
+        id: 'target2',
+        aggregate: true,
+        type: 'percent',
+        aggregateValue: { pass: 17, total: 17, percent: 100, hasGoal: false, summary: '100%' },
+        heading: undefined,
+        hasGoal: false,
+        isPercent: true,
+        progressBar: true,
+        values: [
+          { contact: contacts[0], value: { pass: 10, total: 10, percent: 100 } },
+          { contact: contacts[1], value: { pass: 7, total: 7, percent: 100 } },
+        ]
       });
     });
   });

@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 import { isString as _isString } from 'lodash-es';
+import { TranslateService } from '@ngx-translate/core';
 
 import { UHCSettingsService } from './uhc-settings.service';
 import { DbService } from './db.service';
-import { TranslateService } from '@ngx-translate/core';
 import { TranslateFromService } from './translate-from.service';
 import { SearchService } from './search.service';
 import { GetDataRecordsService } from './get-data-records.service';
@@ -12,7 +12,7 @@ import { UserSettingsService } from './user-settings.service';
 import { ContactTypesService } from './contact-types.service';
 import { AuthService } from './auth.service';
 import { SettingsService } from './settings.service';
-import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
+import { CalendarIntervalService } from './calendar-interval.service';
 
 @Injectable({
   providedIn: 'root'
