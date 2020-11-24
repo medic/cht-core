@@ -14,6 +14,8 @@ import { take } from 'rxjs/operators';
 export class EditReportComponent extends MmModalAbstract implements AfterViewInit {
   static id = 'editReport';
 
+  model:any = { report: {} };
+
   constructor(
     bsModalRef: BsModalRef,
     private contactTypesService:ContactTypesService,
@@ -26,8 +28,6 @@ export class EditReportComponent extends MmModalAbstract implements AfterViewIni
       // close the select2 popup
       .subscribe(() => this.getSelectElement().select2('close'));
   }
-
-  model:any = { report: {} };
 
   private getSelectElement() {
     return $('#edit-report [name=facility]');

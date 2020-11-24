@@ -325,7 +325,9 @@ export class ReportsEffects {
             .get(report.doc._id)
             .then(existingRecord => {
               this.reportActions.setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
-              return this.dbService.get().put(getFirstSelectedReport().doc);
+              return this.dbService
+                .get()
+                .put(getFirstSelectedReport().doc);
             })
             .catch(err => console.error('Error verifying message', err))
             .finally(() => {
