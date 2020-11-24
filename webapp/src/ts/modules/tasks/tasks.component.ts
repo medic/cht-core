@@ -42,18 +42,21 @@ export class TasksComponent implements OnInit, OnDestroy {
   loading;
   tasksDisabled;
 
-  private initialLoad = false;
+  private tasksLoaded;
   private debouncedReload;
 
   private subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getTasksList),
+      this.store.select(Selectors.getTasksLoaded),
       this.store.select(Selectors.getSelectedTask),
     ).subscribe(([
       tasksList,
+      tasksLoaded,
       selectedTask,
     ]) => {
       this.tasksList = tasksList;
+      this.tasksLoaded = tasksLoaded;
       this.selectedTask = selectedTask;
     });
     this.subscription.add(reduxSubscription);
@@ -93,6 +96,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.tasksActions.setTasksList([]);
+    this.tasksActions.setTasksLoaded(false);
   }
 
   refreshTaskList() {
@@ -125,11 +129,13 @@ export class TasksComponent implements OnInit, OnDestroy {
         this.hasTasks = taskDocs.length > 0;
         this.loading = false;
         this.tasksActions.setTasksList(this.hydrateEmissions(taskDocs));
+        if (!this.tasksLoaded) {
+          this.tasksActions.setTasksLoaded(true);
+        }
 
         telemetryData.end = Date.now();
-        const entry = this.initialLoad ? `tasks:load`: `tasks:refresh`;
-        this.telemetryService.record(entry, telemetryData.end - telemetryData.start);
-        this.initialLoad = false;
+        const telemetryEntryName = !this.tasksLoaded ? `tasks:load`: `tasks:refresh`;
+        this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
       })
       .catch(err => {
         console.error('Error getting tasks for all contacts', err);

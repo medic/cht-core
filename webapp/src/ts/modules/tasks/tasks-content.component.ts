@@ -1,0 +1,333 @@
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { combineLatest, Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+
+import { EnketoService } from '@mm-services/enketo.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { GlobalActions } from '@mm-actions/global';
+import { TasksActions } from '@mm-actions/tasks';
+import { Selectors } from '@mm-selectors/index';
+import { GeolocationService } from '@mm-services/geolocation.service';
+import { DbService } from '@mm-services/db.service';
+
+@Component({
+  templateUrl: './tasks-content.component.html'
+})
+export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
+  private subscription = new Subscription();
+  private globalActions;
+  private tasksActions;
+
+  constructor(
+    private translateService:TranslateService,
+    private route:ActivatedRoute,
+    private store:Store,
+    private enketoService:EnketoService,
+    private telemetryService:TelemetryService,
+    private translateFromService:TranslateFromService,
+    private xmlFormsService:XmlFormsService,
+    private geolocationService:GeolocationService,
+    private dbService:DbService,
+    private router:Router,
+    private changeDetectorRef:ChangeDetectorRef,
+  ) {
+    this.globalActions = new GlobalActions(store);
+    this.tasksActions = new TasksActions(store);
+  }
+
+  enketoStatus;
+  enketoEdited;
+  loadingContent;
+  selectedTask;
+  form;
+  loadingForm;
+  contentError;
+  formId;
+  cancelCallback;
+  errorTranslationKey;
+  private tasksList;
+  private geoHandle;
+  private telemetryData:any;
+  private enketoError;
+  private enketoSaving;
+  private routeParams;
+  private tasksLoaded;
+  private viewInited;
+
+  ngOnInit() {
+    this.telemetryData = { preRender: Date.now() };
+    this.subscribeToRouteParams();
+    this.subscribeToStore();
+
+    this.form = null;
+    this.formId = null;
+    this.resetFormError();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+    this.geoHandle && this.geoHandle.cancel();
+  }
+
+  private subscribeToStore() {
+    const subscription = combineLatest(
+      this.store.select(Selectors.getEnketoStatus),
+      this.store.select(Selectors.getEnketoError),
+      this.store.select(Selectors.getEnketoEditedStatus),
+      this.store.select(Selectors.getEnketoSavingStatus),
+      this.store.select(Selectors.getLoadingContent),
+      this.store.select(Selectors.getSelectedTask),
+      this.store.select(Selectors.getCancelCallback),
+      this.store.select(Selectors.getTasksList),
+    ).subscribe(([
+      enketoStatus,
+      enketoError,
+      enketoEdited,
+      enketoSaving,
+      loadingContent,
+      selectedTask,
+      cancelCallback,
+      taskList,
+    ]) => {
+      this.enketoStatus = enketoStatus;
+      this.enketoError = enketoError;
+      this.enketoEdited = enketoEdited;
+      this.enketoSaving = enketoSaving;
+      this.loadingContent = loadingContent;
+      this.selectedTask = selectedTask;
+      this.cancelCallback = cancelCallback;
+      this.tasksList = taskList;
+    });
+    this.subscription.add(subscription);
+    const tasksListSubscription = this.store.select(Selectors.getTasksLoaded).subscribe(loaded => {
+      this.tasksLoaded = loaded;
+      console.error('tasks loaded', this.tasksLoaded);
+      this.setSelected();
+    });
+    this.subscription.add(tasksListSubscription);
+  }
+
+  private subscribeToRouteParams() {
+    const routeSubscription =  this.route.params.subscribe((params) => {
+      if (this.routeParams?.id !== params?.id) {
+        console.error('new', params, 'old', this.routeParams);
+        this.routeParams = params;
+        this.setSelected();
+      }
+    });
+    this.subscription.add(routeSubscription);
+  }
+
+  ngAfterViewInit() {
+    this.viewInited = true;
+    this.setSelected();
+  }
+
+  private setSelected() {
+    console.error('set selected', this.tasksLoaded, this.routeParams, this.viewInited);
+    if (!this.tasksLoaded || !this.routeParams || !this.viewInited) {
+      return;
+    }
+
+    const id = this.routeParams.id;
+
+    if (!id) {
+      this.tasksActions.setSelectedTask(null);
+      this.globalActions.unsetSelected();
+      return;
+    }
+
+    const task = this.tasksList.find(task => task._id === id);
+    if (!task) {
+      return;
+    }
+
+    this.geoHandle = this.geolocationService.init();
+    const refreshing = this.selectedTask?._id === id;
+    this.globalActions.settingSelected(refreshing);
+
+    return this
+      .hydrateTaskEmission(task)
+      .then(hydratedTask => {
+        this.tasksActions.setSelectedTask(hydratedTask);
+        this.globalActions.setTitle(hydratedTask.title);
+        this.globalActions.setShowContent(true);
+
+        if (this.hasOneActionAndNoFields(hydratedTask)) {
+          this.performAction(hydratedTask.actions[0], true);
+        }
+      });
+  }
+
+  private hydrateTaskEmission(task) {
+    if (!Array.isArray(task.actions) || task.actions.length === 0 || !task.forId) {
+      return Promise.resolve(task);
+    }
+
+    const setActionsContacts = (task, contact) => {
+      return {
+        ...task,
+        actions: task.actions.map(action => {
+          return {
+            ...action,
+            content: {
+              ...action.content,
+              contact: action?.content?.contact || contact
+            },
+          };
+        }),
+      };
+    };
+
+    return this.dbService
+      .get()
+      .get(task.forId)
+      .catch(err => {
+        if (err.status !== 404) {
+          throw err;
+        }
+
+        console.info('Failed to hydrate contact information in task action', err);
+        return { _id: task.forId };
+      })
+      .then(contactDoc => {
+        return setActionsContacts(task, contactDoc);
+      });
+  }
+
+  private hasOneActionAndNoFields(task) {
+    return Boolean(
+      task &&
+      task.actions &&
+      task.actions.length === 1 &&
+      (
+        !task.fields ||
+        task.fields.length === 0 ||
+        !task.fields[0].value ||
+        task.fields[0].value.length === 0
+      )
+    );
+  }
+
+  private markFormEdited() {
+    this.globalActions.setEnketoEditedStatus(true);
+  }
+
+  private resetFormError() {
+    if (this.enketoError) {
+      this.globalActions.setEnketoError(null);
+    }
+  }
+
+  performAction(action, skipDetails?) {
+    this.globalActions.setCancelCallback(() => {
+      this.tasksActions.setSelectedTask(null);
+      if (skipDetails) {
+        this.router.navigate(['/tasks']);
+      } else {
+        this.enketoService.unload(this.form);
+        this.form = null;
+        this.loadingForm = false;
+        this.contentError = false;
+        this.globalActions.clearCancelCallback();
+      }
+    });
+
+    this.contentError = false;
+
+    if (action.type === 'report') {
+      this.loadingForm = true;
+      this.formId = action.form;
+      return this.xmlFormsService
+        .get(action.form)
+        .then((formDoc) => {
+          this.globalActions.setEnketoEditedStatus(false);
+          const markFormEdited = this.markFormEdited.bind(this);
+          const resetFormError = this.resetFormError.bind(this);
+
+          return this.enketoService
+            .render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
+            .then((formInstance) => {
+              this.form = formInstance;
+              this.loadingForm = false;
+              if (formDoc.translation_key) {
+                this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
+              } else {
+                this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
+              }
+            });
+        })
+        .then(() => {
+          this.telemetryData.postRender = Date.now();
+          this.telemetryData.action = action.content.doc ? 'edit' : 'add';
+          this.telemetryData.form = this.formId;
+
+          this.telemetryService.record(
+            `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+            this.telemetryData.postRender - this.telemetryData.preRender);
+        })
+        .catch((err) => {
+          this.errorTranslationKey = err.translationKey || 'error.loading.form';
+          this.contentError = true;
+          this.loadingForm = false;
+          console.error('Error loading form.', err);
+        });
+    }
+
+    if (action.type === 'contact') {
+      // todo once contacts are migrated and we know how the new route looks like
+      // $state.go('contacts.addChild', action.content);
+    }
+  }
+
+  save() {
+    if (this.enketoSaving) {
+      console.debug('Attempted to call tasks-content:$scope.save more than once');
+      return;
+    }
+
+    this.telemetryData.preSave = Date.now();
+
+    this.telemetryService.record(
+      `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
+      this.telemetryData.preSave - this.telemetryData.postRender);
+
+    this.globalActions.setEnketoSavingStatus(true);
+    this.resetFormError();
+
+    return this.enketoService
+      .save(this.formId, this.form, this.geoHandle)
+      .then((docs) => {
+        console.debug('saved report and associated docs', docs);
+        this.globalActions.snackbarContent(this.translateService.instant('report.created'));
+
+        this.globalActions.setEnketoSavingStatus(false);
+        this.globalActions.setEnketoEditedStatus(false);
+        this.enketoService.unload(this.form);
+        this.globalActions.unsetSelected();
+        this.globalActions.clearCancelCallback();
+
+        this.router.navigate(['/tasks']);
+      })
+      .then(() => {
+        this.telemetryData.postSave = Date.now();
+
+        this.telemetryService.record(
+          `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:save`,
+          this.telemetryData.postSave - this.telemetryData.preSave);
+      })
+      .catch((err) => {
+        this.globalActions.setEnketoSavingStatus(false);
+        console.error('Error submitting form data: ', err);
+        this.globalActions.setEnketoError(this.translateService.instant('error.report.save'));
+      });
+  }
+
+  navigationCancel() {
+    this.globalActions.navigationCancel();
+  }
+}

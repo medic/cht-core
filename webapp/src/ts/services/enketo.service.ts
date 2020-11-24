@@ -296,6 +296,8 @@ export class EnketoService {
     formContainer.html(doc.html);
 
     return this.getEnketoOptions(doc, instanceData).then((options) => {
+      console.log(wrapper);
+      console.log(wrapper.find('form').first());
       this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
       const loadErrors = this.currentForm.init();
       if (loadErrors && loadErrors.length) {
@@ -619,7 +621,7 @@ export class EnketoService {
       });
   }
 
-  save(formInternalId, form, geoHandle, docId) {
+  save(formInternalId, form, geoHandle, docId?) {
     return Promise
       .resolve(form.validate())
       .then((valid) => {

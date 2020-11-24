@@ -105,6 +105,7 @@ export const Selectors = {
 
   // tasks
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
+  getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
 };
 /*

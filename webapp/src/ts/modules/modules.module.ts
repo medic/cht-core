@@ -27,6 +27,7 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
 import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target-aggregates.component';
 import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
+import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { TasksComponent } from '@mm-modules/tasks/tasks.component';
     AnalyticsTargetAggregatesComponent,
     AnalyticsTargetAggregatesDetailComponent,
     TasksComponent,
+    TasksContentComponent,
   ],
   imports: [
     CommonModule,

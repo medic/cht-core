@@ -34,7 +34,7 @@
       </div>
       <div *ngIf="summary" class="summary">
         <p [innerHTML]="summary | safeHtml"></p>
-        <div *ngIf="!valid || verified !== undefined" class="status">
+        <div *ngIf="showStatus && (!valid || verified !== undefined)" class="status">
           <span [class.verified]="valid && verified" [class.error]="!(valid && verified)" class="verification-badge">
             <report-verify-valid-icon *ngIf="valid && verified"></report-verify-valid-icon>
             <report-verify-invalid-icon *ngIf="!(valid && verified)"></report-verify-invalid-icon>

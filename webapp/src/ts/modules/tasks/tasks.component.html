@@ -13,13 +13,14 @@
           *ngFor="let task of tasksList; trackBy: listTrackBy"
           [id]="task._id"
           route="tasks"
-          [date]="task.reported_date"
+          [date]="task.date"
           [overdue]="task.overdue"
           [icon]="task.icon"
           [heading]="task.contact?.name"
           [summary]="task.title"
           [warning]="task.priorityLabel"
           dateFormat="taskDueDate"
+          [showStatus]="false"
           [selected]="task.selected"
         >
         </mm-content-row>

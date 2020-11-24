@@ -5,12 +5,13 @@ import { Actions as GlobalActions } from '../actions/global';
 
 const initialState = {
   tasksList: [],
-  selected: null
+  selected: null,
+  loaded: false,
 };
 
 const orderBy = (t1, t2) => {
-  const lhs = t1 && t1.dueDate;
-  const rhs = t2 && t2.dueDate;
+  const lhs = t1?.dueDate;
+  const rhs = t2?.dueDate;
   if (!lhs && !rhs) {
     return 0;
   }
@@ -31,15 +32,17 @@ const _tasksReducer = createReducer(
   on(Actions.setTasksList, (state, { payload: { tasks } }) => {
     return {
       ...state,
-      tasksList: tasks.sort(orderBy),
+      tasksList: [...tasks].sort(orderBy),
     };
   }),
+
+  on(Actions.setTasksLoaded, (state, { payload: { loaded }}) => ({ ...state, loaded })),
 
   on(Actions.setSelectedTask, (state, { payload: { selected } }) => {
     return {
       ...state,
       selected,
-      tasksList: state.tasksList.map(task => ({ ...task, selected: task.id === selected.id })),
+      tasksList: state.tasksList.map(task => ({ ...task, selected: task._id === selected._id })),
     };
   }),
 );
