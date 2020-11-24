@@ -2,13 +2,18 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap } from 'rxjs/operators';
+import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
 import { MarkReadService } from '@mm-services/mark-read.service';
+import { DbService } from '@mm-services/db.service';
+import { SearchService } from '@mm-services/search.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 
 @Injectable()
@@ -21,6 +26,10 @@ export class ReportsEffects {
     private store:Store,
     private reportViewModelGeneratorService:ReportViewModelGeneratorService,
     private markReadService:MarkReadService,
+    private dbService:DbService,
+    private router:Router,
+    private searchService:SearchService,
+    private modalService:ModalService,
   ) {
     this.reportActions = new ReportsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -60,8 +69,8 @@ export class ReportsEffects {
         if (selectMode) {
           const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
-            // todo update selected report in selectMode
-            // this.reportActions.updateSelectedReport(model);
+            model.loading = false;
+            this.reportActions.updateSelectedReportItem(model._id, model);
           } else {
             model.expanded = false;
             this.reportActions.addSelectedReport(model);
@@ -121,6 +130,97 @@ export class ReportsEffects {
           return of();
         }
         return of(this.reportActions.updateReportsList([readReport]));
+      }),
+    );
+  }, { dispatch: false });
+
+  private getContact(id) {
+    return this.dbService
+      .get()
+      .get(id)
+      .catch(err => {
+        // log the error but continue anyway
+        console.error('Error fetching contact for action bar', err);
+      });
+  }
+
+  setRightActionBar = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.setRightActionBar),
+      withLatestFrom(
+        this.store.select(Selectors.getSelectMode),
+        this.store.select(Selectors.getSelectedReportsDocs),
+        this.store.select(Selectors.getVerifyingReport),
+      ),
+      tap(([, selectMode, selectedReportsDocs, verifyingReport ]) => {
+        const model:any = {};
+        const doc =
+          !selectMode &&
+          selectedReportsDocs &&
+          selectedReportsDocs.length === 1 &&
+          selectedReportsDocs[0];
+        if (!doc) {
+          return this.globalActions.setRightActionBar(model);
+        }
+
+        model.verified = doc.verified;
+        model.type = doc.content_type;
+        model.verifyingReport = verifyingReport;
+        model.openSendMessageModal = (sendTo) => {
+          this.modalService
+            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
+            .catch(() => {});
+        };
+
+        if (!doc.contact?._id) {
+          return this.globalActions.setRightActionBar(model);
+        }
+
+        return this
+          .getContact(doc.contact._id)
+          .then(contact => {
+            model.sendTo = contact;
+            this.globalActions.setRightActionBar(model);
+          });
+      })
+    );
+  }, { dispatch: false });
+
+  setSelectMode = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.setSelectMode),
+      tap(({ payload: { selectMode } }) => {
+        this.globalActions.setSelectMode(selectMode);
+        this.globalActions.unsetSelected();
+        this.router.navigate(['/reports']);
+      }),
+    );
+  }, { dispatch: false });
+
+  selectAll = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.selectAll),
+      withLatestFrom(this.store.select(Selectors.getFilters)),
+      tap(([,filters]) => {
+        return this.searchService
+          .search('reports', filters, { limit: 500, hydrateContactNames: true })
+          .then((summaries) => {
+            const selected = summaries.map(summary => {
+              return {
+                _id: summary?._id,
+                summary: summary,
+                expanded: false,
+                lineage: summary?.lineage,
+                contact: summary?.contact,
+              };
+            });
+            this.reportActions.setSelectedReports(selected);
+            this.globalActions.settingSelected(true);
+            this.reportActions.setRightActionBar();
+          })
+          .catch(err => {
+            console.error('Error selecting all', err);
+          });
       }),
     );
   }, { dispatch: false });

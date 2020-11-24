@@ -1,5 +1,5 @@
 import { FormsModule } from '@angular/forms';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
@@ -7,9 +7,8 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { LanguagesService } from '@mm-services/languages.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
-import { Observable } from 'rxjs';
+import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 
 describe('UpdatePasswordComponent', () => {
 
@@ -17,7 +16,6 @@ describe('UpdatePasswordComponent', () => {
   let fixture: ComponentFixture<UpdatePasswordComponent>;
   let userSettingsService;
   let updateUserService;
-  let languagesService;
   let translateService;
 
   beforeEach(async(() => {
@@ -36,26 +34,20 @@ describe('UpdatePasswordComponent', () => {
         }
       )
     };
-    languagesService = {
-      get: sinon.stub().resolves(
-        [{code: 'en', name: 'English'}]
-      )
-    };
-    translateService = { get: sinon.stub().returns(new Observable()) };
     return TestBed
       .configureTestingModule({
         imports: [
           FormsModule,
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
         declarations: [
           UpdatePasswordComponent,
+          MmModal,
         ],
         providers: [
           { provide: UpdateUserService, useValue: updateUserService },
           { provide: UserSettingsService, useValue: userSettingsService },
-          { provide: LanguagesService, useValue: languagesService },
           { provide: BsModalRef, useValue: new BsModalRef() },
-          { provide: TranslateService, useValue: translateService }
         ]
       })
       .compileComponents()
@@ -88,6 +80,9 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('password must be filled', () => {
+    translateService = {
+      get: sinon.spy(TranslateService.prototype, 'get'),
+    };
     component.editUserModel.password = '';
     component.updatePassword();
     expect(translateService.get.called).to.equal(true);
@@ -97,6 +92,9 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('password must be long enough', () => {
+    translateService = {
+      get: sinon.spy(TranslateService.prototype, 'get'),
+    };
     component.editUserModel.password = '2sml4me';
     component.editUserModel.passwordConfirm = '2sml4me';
     component.editUserModel.currentPassword = '2xml4me';
@@ -107,6 +105,9 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('password must be hard to brute force', () => {
+    translateService = {
+      get: sinon.spy(TranslateService.prototype, 'get'),
+    };
     component.editUserModel.password = 'password';
     component.editUserModel.passwordConfirm = 'password';
     component.editUserModel.currentPassword = '2xml4me';
@@ -117,6 +118,9 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('error if password and confirm do not match', () => {
+    translateService = {
+      get: sinon.spy(TranslateService.prototype, 'get'),
+    };
     const password = '1QrAs$$3%%kkkk445234234234';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password + 'a';
@@ -128,6 +132,9 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('user is updated with password change', () => {
+    translateService = {
+      get: sinon.spy(TranslateService.prototype, 'get'),
+    };
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
     component.editUserModel.password = password;
@@ -144,6 +151,9 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('errors if current password is not provided', () => {
+    translateService = {
+      get: sinon.spy(TranslateService.prototype, 'get'),
+    };
     const password = '1QrAs$$3%%kkkk445234234234';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
