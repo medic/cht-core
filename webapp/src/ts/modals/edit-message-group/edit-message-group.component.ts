@@ -78,7 +78,7 @@ export class EditMessageGroupComponent extends MmModalAbstract
   }
 
   private removeDatePickers(index?) {
-    if (typeof index !== 'undefined') {
+    if (index !== undefined) {
       this.datePickers[index]?.remove();
       this.datePickers[index] = null;
       return;
