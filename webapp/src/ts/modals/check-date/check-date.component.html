@@ -1,0 +1,23 @@
+<mm-modal
+  id="'check-date'"
+  [titleKey]="'date.incorrect.title'"
+  [submitKey]="'date.incorrect.confirm'"
+  [cancelKey]="false"
+  (onCancel)="cancel()"
+  (onSubmit)="close()"
+>
+  <div role="document">
+    <div class="modal-body">
+      <p translate>date.incorrect.description</p>
+      <p translate>date.incorrect.advice</p>
+      <p>
+        <span translate>date.incorrect.reported</span>:
+        <span>{{reportedLocalDate | simpleDateTime}}</span>
+      </p>
+      <p *ngIf="expectedLocalDate">
+        <span translate>date.incorrect.expected</span>:
+        <span>{{expectedLocalDate | simpleDateTime}}</span>
+      </p>
+    </div>
+  </div>
+</mm-modal>
