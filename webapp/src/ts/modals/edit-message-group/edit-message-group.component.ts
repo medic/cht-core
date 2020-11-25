@@ -29,13 +29,9 @@ export class EditMessageGroupComponent extends MmModalAbstract
   private datePickers = {};
 
   ngOnInit() {
-    this.getSettings();
+    this.settingsPromise = this.settingsService.get();
     // task_id variable is only used within this component, to uniquely identify each task in the group
     this.model?.group?.rows?.forEach(row => row.task_id = uuid());
-  }
-
-  private getSettings() {
-    this.settingsPromise = this.settingsService.get();
   }
 
   private getNextHalfHour() {
@@ -58,15 +54,17 @@ export class EditMessageGroupComponent extends MmModalAbstract
   private initDatePickers() {
     this.settingsPromise.then((settings:any) => {
       $('#edit-message-group input.datepicker').each((index, element) => {
-        const taskId = $(element).data('task-id');
+        const $element = $(element);
+        const taskId = $element.data('task-id');
         if (this.datePickers[taskId]) {
           // already has datepicker!
           return;
         }
 
-        $(element).daterangepicker(
+        const task = this.model.group.rows.find(task => task.task_id === taskId);
+        $element.daterangepicker(
           {
-            startDate: new Date(this.model.group.rows[index].due),
+            startDate: new Date(task.due),
             singleDatePicker: true,
             timePicker: true,
             applyClass: 'btn-primary',
@@ -78,12 +76,10 @@ export class EditMessageGroupComponent extends MmModalAbstract
             },
           },
           (date) => {
-            const taskId = $(element).data('task-id');
-            const task = this.model.group.rows.find(task => task.task_id === taskId);
             task.due = date.toISOString();
           }
         );
-        this.datePickers[taskId] = $(element).data('daterangepicker');
+        this.datePickers[taskId] = $element.data('daterangepicker');
       });
     });
   }
@@ -96,8 +92,7 @@ export class EditMessageGroupComponent extends MmModalAbstract
     }
 
     Object.keys(this.datePickers).forEach((key) => {
-      const datepicker = this.datePickers[key];
-      datepicker && datepicker.remove();
+      this.datePickers[key]?.remove();
       delete this.datePickers[key];
     });
   }
