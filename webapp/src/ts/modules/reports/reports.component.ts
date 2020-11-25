@@ -32,7 +32,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   reportsList;
   filteredReportsList;
-  selectedReports;
+  selectedIds;
   forms;
   error;
   errorSyntax;
@@ -68,7 +68,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getReportsList),
-      this.store.select(Selectors.getSelectedReports),
+      this.store.select(Selectors.getSelectedIds),
       this.store.select(Selectors.listContains),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getFilters),
@@ -77,7 +77,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       reportsList,
-      selectedReports,
+      selectedIds,
       listContains,
       forms,
       filters,
@@ -86,7 +86,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       selectMode,
     ]) => {
       this.reportsList = reportsList;
-      this.selectedReports = selectedReports;
+      this.selectedIds = selectedIds;
       this.listContains = listContains;
       this.forms = forms;
       this.filters = filters;
@@ -169,7 +169,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.error = false;
       this.errorSyntax = false;
       this.loading = true;
-      if (this.selectedReports?.length && isMobile()) {
+      if (this.selectedIds?.size && isMobile()) {
         this.globalActions.unsetSelected();
       }
 
@@ -274,7 +274,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     }
 
     if (this.selectMode) {
-      const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
+      const isSelected = this.selectedIds.has(report._id);
       if (!isSelected) {
         // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
         // the selectReport action will actually get all details

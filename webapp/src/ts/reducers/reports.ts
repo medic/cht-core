@@ -8,6 +8,7 @@ const initialState = {
   reports: [],
   reportsById: new Map(),
   selected: [],
+  selectedById: new Set(),
   verifyingReport: false,
   filters: {},
 };
@@ -76,14 +77,17 @@ const _reportsReducer = createReducer(
     Actions.setSelectedReports,
     GlobalActions.clearSelected,
     (state) => {
-      const reportsById = new Map(state.reportsById);
+      /*const reportsById = new Map(state.reportsById);
       const reports = state.reports.map(report => {
         report = setSelected(state, report);
         reportsById.set(report._id, report);
         return report;
       });
 
-      return { ...state, reports, reportsById };
+      return { ...state, reports, reportsById };*/
+      const selectedById = new Set();
+      state.selected.forEach(report => selectedById.add(report._id));
+      return { ...state, selectedById };
     }
   ),
 

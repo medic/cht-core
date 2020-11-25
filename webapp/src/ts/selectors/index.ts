@@ -55,6 +55,7 @@ export const Selectors = {
     return (id) => reportsState.reportsById.has(id);
   }),
   getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selected),
+  getSelectedIds: createSelector(getReportsState, (reportsState) => reportsState.selectedById),
   getSelectedReportsSummaries: createSelector(getReportsState, (reportsState) => {
     return reportsState.selected?.map(item => item.formatted || item.summary);
   }),
