@@ -13,6 +13,7 @@ import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
+import { initialState } from 'ngx-bootstrap/timepicker/reducer/timepicker.reducer';
 
 @Component({
   templateUrl: './tasks-content.component.html'

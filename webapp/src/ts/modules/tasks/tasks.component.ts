@@ -7,7 +7,6 @@ import * as moment from 'moment';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { GlobalActions } from '@mm-actions/global';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
@@ -19,7 +18,6 @@ import { TourService } from '@mm-services/tour.service';
 })
 export class TasksComponent implements OnInit, OnDestroy {
   private subscription = new Subscription();
-  private globalActions;
   private tasksActions;
 
   constructor(
@@ -31,7 +29,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     private tourService:TourService,
     private route:ActivatedRoute,
   ) {
-    this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
   }
 
