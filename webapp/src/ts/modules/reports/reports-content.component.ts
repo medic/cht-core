@@ -21,9 +21,8 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   loadingContent;
   selectedReports;
   selectMode;
-
-  validChecks = { }; // todo
-  summaries = { }; // todo
+  validChecks;
+  summaries;
 
 
   constructor(
@@ -41,18 +40,21 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedReports),
       this.store.select(Selectors.getSelectedReportsSummaries),
+      this.store.select(Selectors.getSelectedReportsValidChecks),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       selectedReports,
       summaries,
+      validChecks,
       forms,
       loadingContent,
       selectMode,
     ]) => {
       this.selectedReports = selectedReports;
       this.summaries = summaries;
+      this.validChecks = validChecks;
       this.loadingContent = loadingContent;
       this.forms = forms;
       this.selectMode = selectMode;
@@ -76,22 +78,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
             return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
           }
         } else {
-          // everything here is todo
-          //const selectedReports = this.selectedReports;
           this.reportsActions.selectReport(change.id, { silent: true });
-
-          // todo when adding report verification, check if this code is still needed
-          /*ctrl.selectReport(change.id, { silent: true })
-            .then(function() {
-              if((change.doc && selectedReports[0].formatted.verified !== change.doc.verified) ||
-                (change.doc && ('oldVerified' in selectedReports[0].formatted &&
-                  selectedReports[0].formatted.oldVerified !== change.doc.verified))) {
-                ctrl.setSelectedReports(selectedReports);
-                $timeout(function() {
-                  ctrl.setFirstSelectedReportFormattedProperty({ verified: change.doc.verified });
-                });
-              }
-            });*/
         }
       }
     });

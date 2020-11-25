@@ -1,7 +1,7 @@
 import { Store, createAction } from '@ngrx/store';
+
 import { createMultiValueAction, createSingleValueAction } from './actionUtils';
 import { GlobalActions } from '@mm-actions/global';
-
 
 export const Actions = {
   selectReport: createMultiValueAction('SELECT_REPORT'),
@@ -10,8 +10,16 @@ export const Actions = {
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
   setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
+  toggleVerifyingReport: createAction('TOGGLE_VERIFYING_REPORT'),
+  verifyReport: createSingleValueAction('VERIFY_REPORT', 'verified'),
   updateSelectedReportItem: createMultiValueAction('UPDATE_SELECTED_REPORT_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
+  launchEditFacilityDialog: createAction('LAUNCH_EDIT_FACILITY_DIALOG'),
+  setFirstSelectedReportDocProperty: createSingleValueAction('SET_FIRST_SELECTED_REPORT_DOC_PROPERTY', 'doc'),
+  setFirstSelectedReportFormattedProperty: createSingleValueAction(
+    'SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY',
+    'formatted'
+  ),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
@@ -100,165 +108,25 @@ export class ReportsActions {
     globalActions.setLoadingContent(true);
     this.store.dispatch(Actions.selectAll());
   }
-}
-/*
 
-angular.module('inboxServices').factory('ReportsActions',
-  function(
-    $log,
-    $state,
-    $translate,
-    ActionUtils,
-    Auth,
-    DB,
-    GlobalActions,
-    LiveList,
-    MarkRead,
-    Modal,
-    ReportViewModelGenerator,
-    Search,
-    Selectors,
-    ServicesActions
-  ) {
-    'use strict';
-    'ngInject';
-
-    return function(dispatch) {
-
-      const globalActions = GlobalActions(dispatch);
-      const servicesActions = ServicesActions(dispatch);
-
-      function setFirstSelectedReportDocProperty(doc) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_FIRST_SELECTED_REPORT_DOC_PROPERTY, 'doc', doc));
-      }
-
-      function setFirstSelectedReportFormattedProperty(formatted) {
-        dispatch(ActionUtils.createSingleValueAction(
-          actionTypes.SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY, 'formatted', formatted
-        ));
-      }
-
-      function toggleVerifyingReport() {
-        dispatch((dispatch, getState) => {
-          const verifyingReport = Selectors.getVerifyingReport(getState());
-          setVerifyingReport(!verifyingReport);
-          setRightActionBar();
-        });
-      }
-
-      function verifyReport(reportIsVerified) {
-        dispatch((dispatch, getState) => {
-
-          const getFirstSelected = () => Selectors.getSelectedReports(getState())[0];
-
-          if (!getFirstSelected().doc.form) {
-            return;
-          }
-
-          globalActions.setLoadingSubActionBar(true);
-
-          const promptUserToConfirmVerification = () => {
-            const verificationTranslationKey = reportIsVerified ? 'reports.verify.valid' : 'reports.verify.invalid';
-            return Modal({
-              templateUrl: 'templates/modals/verify_confirm.html',
-              controller: 'VerifyReportModalCtrl',
-              model: {
-                proposedVerificationState: $translate.instant(verificationTranslationKey),
-              },
-            })
-              .then(() => true)
-              .catch(() => false);
-          };
-
-          const shouldReportBeVerified = canUserEdit => {
-            // verify if user verifications are allowed
-            if (canUserEdit) {
-              return true;
-            }
-
-            // don't verify if user can't edit and this is an edit
-            const docHasExistingResult = getFirstSelected().doc.verified !== undefined;
-            if (docHasExistingResult) {
-              return false;
-            }
-
-            // verify if this is not an edit and the user accepts  prompt
-            return promptUserToConfirmVerification();
-          };
-
-          const writeVerificationToDoc = () => {
-            if (getFirstSelected().doc.contact) {
-              const minifiedContact = lineageFactory().minifyLineage(getFirstSelected().doc.contact);
-              setFirstSelectedReportDocProperty({ contact: minifiedContact });
-            }
-
-            const clearVerification = getFirstSelected().doc.verified === reportIsVerified;
-            if (clearVerification) {
-              setFirstSelectedReportDocProperty({
-                verified: undefined,
-                verified_date: undefined,
-              });
-            } else {
-              setFirstSelectedReportDocProperty({
-                verified: reportIsVerified,
-                verified_date: Date.now(),
-              });
-            }
-            servicesActions.setLastChangedDoc(getFirstSelected().doc);
-
-            return DB()
-              .get(getFirstSelected().doc._id)
-              .then(existingRecord => {
-                setFirstSelectedReportDocProperty({ _rev: existingRecord._rev });
-                return DB().post(getFirstSelected().doc);
-              })
-              .catch(err => $log.error('Error verifying message', err))
-              .finally(() => {
-                const oldVerified = getFirstSelected().formatted.verified;
-                const newVerified = oldVerified === reportIsVerified ? undefined : reportIsVerified;
-                setFirstSelectedReportFormattedProperty({ verified: newVerified, oldVerified: oldVerified });
-                globalActions.setRightActionBarVerified(newVerified);
-              });
-          };
-
-          globalActions.setLoadingSubActionBar(true);
-          Auth.has('can_edit_verification')
-            .then(canUserEditVerifications => shouldReportBeVerified(canUserEditVerifications))
-            .then(shouldVerify => {
-              if (shouldVerify) {
-                return writeVerificationToDoc();
-              }
-            })
-            .catch(err => $log.error(`Error verifying message: ${err}`))
-            .finally(() => globalActions.setLoadingSubActionBar(false));
-        });
-      }
-
-      function launchEditFacilityDialog() {
-        dispatch((dispatch, getState) => {
-          const selectedReports = Selectors.getSelectedReports(getState());
-          Modal({
-            templateUrl: 'templates/modals/edit_report.html',
-            controller: 'EditReportCtrl',
-            controllerAs: 'editReportCtrl',
-            model: { report: selectedReports[0].doc },
-          });
-        });
-      }
-
-      const setCheckboxElements = value => {
-        $('#reports-list input[type="checkbox"]').prop('checked', value);
-      };
-
-      return {
-        launchEditFacilityDialog,
-        setFirstSelectedReportDocProperty,
-        setFirstSelectedReportFormattedProperty,
-        setVerifyingReport,
-        toggleVerifyingReport,
-        verifyReport,
-      };
-    };
+  launchEditFacilityDialog() {
+    this.store.dispatch(Actions.launchEditFacilityDialog());
   }
-);
-*/
+
+  toggleVerifyingReport() {
+    this.store.dispatch(Actions.toggleVerifyingReport());
+    this.setRightActionBar();
+  }
+
+  verifyReport(verified) {
+    return this.store.dispatch(Actions.verifyReport(verified));
+  }
+
+  setFirstSelectedReportDocProperty(doc) {
+    return this.store.dispatch(Actions.setFirstSelectedReportDocProperty(doc));
+  }
+
+  setFirstSelectedReportFormattedProperty(formatted) {
+    return this.store.dispatch(Actions.setFirstSelectedReportFormattedProperty(formatted));
+  }
+}

@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
+import { Subject } from 'rxjs';
 
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
@@ -17,8 +18,10 @@ describe('UpdatePasswordComponent', () => {
   let userSettingsService;
   let updateUserService;
   let translateService;
+  let bsModalRef;
 
   beforeEach(async(() => {
+    bsModalRef = { hide: sinon.stub(), onHide: new Subject() };
     updateUserService = {
       update: sinon.stub().resolves({}),
     };
@@ -47,7 +50,7 @@ describe('UpdatePasswordComponent', () => {
         providers: [
           { provide: UpdateUserService, useValue: updateUserService },
           { provide: UserSettingsService, useValue: userSettingsService },
-          { provide: BsModalRef, useValue: new BsModalRef() },
+          { provide: BsModalRef, useValue: bsModalRef },
         ]
       })
       .compileComponents()

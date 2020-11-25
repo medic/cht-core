@@ -5,6 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import { Subject } from 'rxjs';
 
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { DbService } from '@mm-services/db.service';
@@ -17,7 +18,7 @@ describe('DeleteDocConfirmComponent', () => {
   let dbService;
 
   beforeEach(async(() => {
-    bdModalRef = { hide: sinon.stub() };
+    bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
     dbService = { get: () => ({ put: sinon.stub().resolves(true) }) };
 
     return TestBed
