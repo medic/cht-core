@@ -1,7 +1,6 @@
 import { AfterViewChecked, AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { BsModalRef } from 'ngx-bootstrap/modal';
-import { v4 as uuid } from 'uuid';
 
 import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -26,12 +25,10 @@ export class EditMessageGroupComponent extends MmModalAbstract
 
   private shouldInitDatePickers = false;
   private settingsPromise;
-  private datePickers = {};
+  private datePickers = [];
 
   ngOnInit() {
     this.settingsPromise = this.settingsService.get();
-    // task_id variable is only used within this component, to uniquely identify each task in the group
-    this.model?.group?.rows?.forEach(row => row.task_id = uuid());
   }
 
   private getNextHalfHour() {
@@ -47,21 +44,17 @@ export class EditMessageGroupComponent extends MmModalAbstract
     return time;
   }
 
-  trackBy(index, task) {
-    return task.task_id;
-  }
-
   private initDatePickers() {
     this.settingsPromise.then((settings:any) => {
-      $('#edit-message-group input.datepicker').each((index, element) => {
+      $('#edit-message-group input.datepicker').each((idx, element) => {
         const $element = $(element);
-        const taskId = $element.data('task-id');
-        if (this.datePickers[taskId]) {
+        const index = $element.data('index');
+        if (this.datePickers[index]) {
           // already has datepicker!
           return;
         }
 
-        const task = this.model.group.rows.find(task => task.task_id === taskId);
+        const task = this.model.group.rows[index];
         $element.daterangepicker(
           {
             startDate: new Date(task.due),
@@ -79,21 +72,24 @@ export class EditMessageGroupComponent extends MmModalAbstract
             task.due = date.toISOString();
           }
         );
-        this.datePickers[taskId] = $element.data('daterangepicker');
+        this.datePickers[index] = $element.data('daterangepicker');
       });
     });
   }
 
-  private removeDatePickers(taskId?) {
-    if (taskId) {
-      this.datePickers[taskId]?.remove();
-      delete this.datePickers[taskId];
+  private removeDatePickers(index?) {
+    if (typeof index !== 'undefined') {
+      this.datePickers[index]?.remove();
+      this.datePickers[index] = null;
       return;
     }
 
-    Object.keys(this.datePickers).forEach((key) => {
-      this.datePickers[key]?.remove();
-      delete this.datePickers[key];
+    this.datePickers.forEach((datepicker, index) => {
+      datepicker?.remove();
+      // ngx-bootstrap modals have an issue where they don't release objects properly
+      // https://github.com/valor-software/ngx-bootstrap/issues/5971
+      // so explicitly delete these to free up memory
+      this.datePickers[index] = null;
     });
   }
 
@@ -101,14 +97,14 @@ export class EditMessageGroupComponent extends MmModalAbstract
     this.initDatePickers();
   }
 
-  deleteTask(task) {
+  deleteTask(index) {
+    // remove datepicker BEFORE removing the html element
+    this.removeDatePickers(index);
+    const task = this.model.group.rows[index];
     if (!task) {
       return;
     }
-    // remove datepicker BEFORE removing the html element
-    this.removeDatePickers(task.id);
     task.deleted = true;
-    this.shouldInitDatePickers = true;
   }
 
   addTask() {
@@ -118,7 +114,6 @@ export class EditMessageGroupComponent extends MmModalAbstract
       group: this.model.group.number,
       state: 'scheduled',
       messages: [{ message: '' }],
-      task_id: uuid(),
     });
     this.shouldInitDatePickers = true;
   }

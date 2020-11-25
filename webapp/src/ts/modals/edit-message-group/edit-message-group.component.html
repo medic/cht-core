@@ -9,12 +9,12 @@
 >
   <form action="" method="POST">
 
-    <fieldset *ngFor="let task of model.group.rows; trackBy: trackBy" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
+    <fieldset *ngFor="let task of model.group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
       <ng-container *ngIf="!task.deleted">
         <div class="form-group">
           <label>
             <span translate>tasks.0.messages.0.message</span>
-            <a class="btn btn-link fa fa-trash-o" (click)="deleteTask(task)" *ngIf="task.state === 'scheduled' || task.state === 'muted'"></a>
+            <a class="btn btn-link fa fa-trash-o" (click)="deleteTask(index)" *ngIf="task.state === 'scheduled' || task.state === 'muted'"></a>
           </label>
           <input type="text" class="form-control" *ngFor="let message of task.messages" [(ngModel)]="message.message" [ngModelOptions]="{standalone: true}" [disabled]="task.hasOwnProperty('translation_key')"/>
         </div>
@@ -22,7 +22,7 @@
         <div class="form-group">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-            <input type="text" class="form-control datepicker" [value]="task.due" [attr.data-task-id]="task.task_id" />
+            <input type="text" class="form-control datepicker" [value]="task.due" [attr.data-index]="index" />
           </div>
         </div>
       </ng-container>

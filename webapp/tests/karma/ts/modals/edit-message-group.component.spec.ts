@@ -4,7 +4,6 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import * as uuid from 'uuid';
 
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 import { EditGroupService } from '@mm-services/edit-group.service';
@@ -28,7 +27,6 @@ describe('EditMessageGroupComponent', () => {
 
     editGroupService = { edit: sinon.stub().resolves() };
     settingsService = { get: sinon.stub().resolves({}) };
-
 
     return TestBed
       .configureTestingModule({
@@ -105,28 +103,26 @@ describe('EditMessageGroupComponent', () => {
         group: {
           number: 3,
           rows: [
-            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
-            { due: 'day before', group: 3, state: 'state', task_id: 2 },
-            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
           ]
         }
       };
-      sinon.stub(uuid, 'v4').returns('the id');
 
       component.addTask();
       expect(component.model.group.number).to.equal(3);
       expect(component.model.group.rows.length).to.equal(4);
       expect(component.model.group.rows).to.deep.equal([
-        { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
-        { due: 'day before', group: 3, state: 'state', task_id: 2 },
-        { due: 'day before', group: 3, state: 'state', task_id: 3 },
+        { due: 'yesterday', group: 3, state: 'state' },
+        { due: 'day before', group: 3, state: 'state' },
+        { due: 'day before', group: 3, state: 'state' },
         {
           due: new Date(NOW).toISOString(),
           added: true,
           group: 3,
           state: 'scheduled',
           messages: [{ message: '' }],
-          task_id: 'the id',
         },
       ]);
     });
@@ -156,9 +152,9 @@ describe('EditMessageGroupComponent', () => {
         group: {
           number: 3,
           rows: [
-            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
-            { due: 'day before', group: 3, state: 'state', task_id: 2 },
-            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
           ]
         }
       };
@@ -169,9 +165,36 @@ describe('EditMessageGroupComponent', () => {
         group: {
           number: 3,
           rows: [
-            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
-            { due: 'day before', group: 3, state: 'state', task_id: 2 },
-            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+          ]
+        }
+      });
+    });
+
+    it('should not crash on bad index', () => {
+      component.model = {
+        report: { _id: 'report' },
+        group: {
+          number: 3,
+          rows: [
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+          ]
+        }
+      };
+
+      component.deleteTask(1000);
+      expect(component.model).to.deep.equal({
+        report: { _id: 'report' },
+        group: {
+          number: 3,
+          rows: [
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
           ]
         }
       });
@@ -183,22 +206,34 @@ describe('EditMessageGroupComponent', () => {
         group: {
           number: 3,
           rows: [
-            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
-            { due: 'day before', group: 3, state: 'state', task_id: 2 },
-            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state' },
           ]
         }
       };
 
-      component.deleteTask(component.model.group.rows[1]);
+      component.deleteTask(1);
       expect(component.model).to.deep.equal( {
         report: { _id: 'report' },
         group: {
           number: 3,
           rows: [
-            { due: 'yesterday', group: 3, state: 'state', task_id: 1 },
-            { due: 'day before', group: 3, state: 'state', task_id: 2, deleted: true },
-            { due: 'day before', group: 3, state: 'state', task_id: 3 },
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state', deleted: true },
+            { due: 'day before', group: 3, state: 'state' },
+          ]
+        }
+      });
+      component.deleteTask(2);
+      expect(component.model).to.deep.equal( {
+        report: { _id: 'report' },
+        group: {
+          number: 3,
+          rows: [
+            { due: 'yesterday', group: 3, state: 'state' },
+            { due: 'day before', group: 3, state: 'state', deleted: true },
+            { due: 'day before', group: 3, state: 'state', deleted: true },
           ]
         }
       });
