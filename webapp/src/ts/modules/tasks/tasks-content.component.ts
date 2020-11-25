@@ -13,7 +13,6 @@ import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
-import { initialState } from 'ngx-bootstrap/timepicker/reducer/timepicker.reducer';
 
 @Component({
   templateUrl: './tasks-content.component.html'
@@ -58,8 +57,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit() {
     this.telemetryData = { preRender: Date.now() };
-    this.subscribeToRouteParams();
     this.subscribeToStore();
+    this.subscribeToRouteParams();
 
     this.form = null;
     this.formId = null;
@@ -68,7 +67,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.geoHandle && this.geoHandle.cancel();
+    this.geoHandle?.cancel();
   }
 
   private subscribeToStore() {
@@ -108,7 +107,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     // - the tasks list is loaded
     // - the view is inited
     // - every time route params change
-    // reactive programming!
+
     const setSelectedSubscription = combineLatest(
       this.route.params,
       this.store.select(Selectors.getTasksLoaded),
@@ -132,7 +131,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const task = this.tasksList.find(task => task._id === id);
+    const task = this.tasksList.find(task => task?._id === id);
     if (!task) {
       this.tasksActions.setSelectedTask(null);
       this.globalActions.unsetSelected();
@@ -151,7 +150,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
         this.globalActions.setShowContent(true);
 
         if (this.hasOneActionAndNoFields(hydratedTask)) {
-          this.performAction(hydratedTask.actions[0], true);
+          return this.performAction(hydratedTask.actions[0], true);
         }
       });
   }
