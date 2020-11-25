@@ -54,7 +54,7 @@ export class CheckDateService {
         });
       })
       .catch(() => {
-        // if server request fails, then check date against 2016/02/01, or
+        // if server request fails, then check date against 2020-11-24, or
         // any more recent date in the past that developers choose to update
         // the check value to.
         if (Date.now() < A_DATE_IN_THE_PAST) {
