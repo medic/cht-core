@@ -21,6 +21,7 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
+import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 
 
 @NgModule({
@@ -41,6 +42,7 @@ import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
     EditReportComponent,
     VerifyReportComponent,
     CheckDateComponent,
+    EditMessageGroupComponent,
   ],
   imports: [
     CommonModule,
@@ -62,6 +64,7 @@ import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
     EditReportComponent,
     VerifyReportComponent,
     CheckDateComponent,
+    EditMessageGroupComponent,
   ]
 })
 export class ModalsModule { }

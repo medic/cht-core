@@ -66,6 +66,9 @@ describe('EditReportComponent', () => {
 
   it('should create', () => {
     expect(component).to.exist;
+    expect(setError.callCount).to.equal(0);
+    expect(setProcessing.callCount).to.equal(0);
+    expect(setFinished.callCount).to.equal(0);
   });
 
   it('should close select2 when modal is hidden', () => {

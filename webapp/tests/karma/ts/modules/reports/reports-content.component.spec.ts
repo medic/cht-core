@@ -14,6 +14,10 @@ import { Selectors } from '@mm-selectors/index';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
+import { MessageStateService } from '@mm-services/message-state.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
+
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
@@ -22,7 +26,9 @@ describe('Reports Content Component', () => {
   let changesService;
   let searchFiltersService;
   let activatedRoute;
+  let messageStateService;
   let router;
+  let modalService;
 
   beforeEach(async(() => {
     const mockedSelectors = [
@@ -36,6 +42,8 @@ describe('Reports Content Component', () => {
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
     router = { navigate: sinon.stub() };
+    messageStateService = { any: sinon.stub(), set: sinon.stub().resolves() };
+    modalService = { show: sinon.stub().resolves() };
 
     return TestBed
       .configureTestingModule({
@@ -45,6 +53,7 @@ describe('Reports Content Component', () => {
         ],
         declarations: [
           ReportsContentComponent,
+          EditMessageGroupComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -53,6 +62,8 @@ describe('Reports Content Component', () => {
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: Router, useValue: router },
+          { provide: MessageStateService, useValue: messageStateService },
+          { provide: ModalService, useValue: modalService },
         ]
       })
       .compileComponents()
@@ -68,7 +79,7 @@ describe('Reports Content Component', () => {
     sinon.restore();
   });
 
-  it('should create ReportsComponent', () => {
+  it('should create ReportsContentComponent', () => {
     expect(component).to.exist;
   });
 
@@ -240,6 +251,94 @@ describe('Reports Content Component', () => {
       component.deselect(report, event);
       expect(removeSelectedReport.callCount).to.equal(1);
       expect(removeSelectedReport.args[0]).to.deep.equal([report]);
+    });
+  });
+
+  describe('edit', () => {
+    it('should open modal', async () => {
+      const report = { _id: 'report '};
+      const group = { rows: [{ id: 'task' }] };
+
+      await component.edit(report, group);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.deep.equal([
+        EditMessageGroupComponent,
+        { initialState: { model: { report, group } } },
+      ]);
+      expect(modalService.show.args[0][1].initialState.model.group).to.not.equal(group);
+    });
+  });
+
+  describe('schedule', () => {
+    it('should set message state to scheduled', async () => {
+      const report = { _id: 'doc_id' };
+      const group = { rows: [{ group: 1, message: 2 }, { group: 1, message: 3 }] };
+      const locals:any = {};
+
+      const promise = component.schedule(report, group, locals);
+
+      expect(locals.loading).to.equal(true);
+      expect(messageStateService.set.callCount).to.equal(1);
+      expect(messageStateService.set.args[0]).to.deep.equal([ 'doc_id', 1, 'muted', 'scheduled' ]);
+      await promise;
+    });
+
+    it('should not crash on incorrect input', async () => {
+      await component.schedule(false, false, {});
+    });
+
+    it('should reset loading on crash', async () => {
+      const report = { _id: 'doc_id' };
+      const group = { rows: [{ group: 1, message: 2 }, { group: 1, message: 3 }] };
+      const locals:any = {};
+      messageStateService.set.rejects();
+
+      const promise = component.schedule(report, group, locals);
+
+      expect(locals.loading).to.equal(true);
+      expect(messageStateService.set.callCount).to.equal(1);
+      expect(messageStateService.set.args[0]).to.deep.equal([ 'doc_id', 1, 'muted', 'scheduled' ]);
+      await promise;
+      expect(locals.loading).to.equal(false);
+    });
+  });
+
+  describe('mute', () => {
+    it('should set message state to scheduled', async () => {
+      const report = { _id: 'report_id' };
+      const group = { rows: [{ group: 33, message: 2 }, { group: 33, message: 3 }] };
+      const locals:any = {};
+
+      const promise = component.mute(report, group, locals);
+
+      expect(locals.loading).to.equal(true);
+      expect(messageStateService.set.callCount).to.equal(1);
+      expect(messageStateService.set.args[0]).to.deep.equal([ 'report_id', 33, 'scheduled', 'muted' ]);
+      await promise;
+    });
+
+    it('should not crash on incorrect input', async () => {
+      await component.mute(false, false, {});
+    });
+  });
+
+  describe('canMute', () => {
+    it('should return value from service', () => {
+      messageStateService.any.returns('lalalal');
+      const group = { the: 'group' };
+      expect(component.canMute(group)).to.equal('lalalal');
+      expect(messageStateService.any.callCount).to.equal(1);
+      expect(messageStateService.any.args[0]).to.deep.equal([group, 'scheduled']);
+    });
+  });
+
+  describe('canSchedule', () => {
+    it('should return value from service', () => {
+      messageStateService.any.returns('canScheduleisTrue');
+      const group = { the: 'other group' };
+      expect(component.canSchedule(group)).to.equal('canScheduleisTrue');
+      expect(messageStateService.any.callCount).to.equal(1);
+      expect(messageStateService.any.args[0]).to.deep.equal([group, 'muted']);
     });
   });
 
