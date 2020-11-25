@@ -1,6 +1,6 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -33,7 +33,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     private geolocationService:GeolocationService,
     private dbService:DbService,
     private router:Router,
-    private changeDetectorRef:ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -54,9 +53,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   private telemetryData:any;
   private enketoError;
   private enketoSaving;
-  private routeParams;
-  private tasksLoaded;
-  private viewInited;
+  private viewInited = new Subject();
 
   ngOnInit() {
     this.telemetryData = { preRender: Date.now() };
@@ -103,38 +100,31 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       this.tasksList = taskList;
     });
     this.subscription.add(subscription);
-    const tasksListSubscription = this.store.select(Selectors.getTasksLoaded).subscribe(loaded => {
-      this.tasksLoaded = loaded;
-      console.error('tasks loaded', this.tasksLoaded);
-      this.setSelected();
-    });
-    this.subscription.add(tasksListSubscription);
   }
 
   private subscribeToRouteParams() {
-    const routeSubscription =  this.route.params.subscribe((params) => {
-      if (this.routeParams?.id !== params?.id) {
-        console.error('new', params, 'old', this.routeParams);
-        this.routeParams = params;
-        this.setSelected();
+    // we only want to load the current task once:
+    // - the tasks list is loaded
+    // - the view is inited
+    // - every time route params change
+    // reactive programming!
+    const setSelectedSubscription = combineLatest(
+      this.route.params,
+      this.store.select(Selectors.getTasksLoaded),
+      this.viewInited,
+    ).subscribe(([params, loaded, inited]) => {
+      if (loaded && params && inited) {
+        this.setSelected(params.id);
       }
     });
-    this.subscription.add(routeSubscription);
+    this.subscription.add(setSelectedSubscription);
   }
 
   ngAfterViewInit() {
-    this.viewInited = true;
-    this.setSelected();
+    this.viewInited.next(true);
   }
 
-  private setSelected() {
-    console.error('set selected', this.tasksLoaded, this.routeParams, this.viewInited);
-    if (!this.tasksLoaded || !this.routeParams || !this.viewInited) {
-      return;
-    }
-
-    const id = this.routeParams.id;
-
+  private setSelected(id) {
     if (!id) {
       this.tasksActions.setSelectedTask(null);
       this.globalActions.unsetSelected();
@@ -143,6 +133,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const task = this.tasksList.find(task => task._id === id);
     if (!task) {
+      this.tasksActions.setSelectedTask(null);
+      this.globalActions.unsetSelected();
       return;
     }
 
@@ -303,7 +295,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       .save(this.formId, this.form, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
-        this.globalActions.snackbarContent(this.translateService.instant('report.created'));
+        this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
 
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setEnketoEditedStatus(false);

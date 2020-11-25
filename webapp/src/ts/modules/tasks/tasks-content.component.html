@@ -47,7 +47,7 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content" *ngIf="selectedTask && form && !loadingContent && !loadingForm">
+  <div class="col-sm-8 item-content" [hidden]="!selectedTask || !form || loadingForm || loadingContent || contentError">
     <div class="body">
       <mm-enketo id="task-report" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
     </div>

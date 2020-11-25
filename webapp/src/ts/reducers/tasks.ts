@@ -42,7 +42,7 @@ const _tasksReducer = createReducer(
     return {
       ...state,
       selected,
-      tasksList: state.tasksList.map(task => ({ ...task, selected: task._id === selected._id })),
+      tasksList: state.tasksList.map(task => ({ ...task, selected: task?._id === selected?._id })),
     };
   }),
 );
