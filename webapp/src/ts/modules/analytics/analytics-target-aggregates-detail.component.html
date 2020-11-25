@@ -14,14 +14,14 @@
           <div class="row heading">
             <div class="icon" [innerHTML]="selected.icon | resourceIcon"></div>
             <div class="heading-content">
-              <h2 *ngIf="selected.translation_key; else noTranslationKey">{{ selected.translation_key | translate }}</h2>
-              <ng-template #noTranslationKey><h2>{{ selected.title | translateFrom }}</h2></ng-template>
+              <h2 *ngIf="selected.translation_key; else noTranslationKeyTpl">{{ selected.translation_key | translate }}</h2>
+              <ng-template #noTranslationKeyTpl><h2>{{ selected.title | translateFrom }}</h2></ng-template>
             </div>
           </div>
 
           <div class="cell">
-            <label *ngIf="selected.hasGoal; else doesntHaveGoal" translate>analytics.target.aggregates.supervisees.meeting.goal</label>
-            <ng-template #doesntHaveGoal><label translate>analytics.target.aggregates.total</label></ng-template>
+            <label *ngIf="selected.hasGoal; else doesntHaveGoalTpl" translate>analytics.target.aggregates.supervisees.meeting.goal</label>
+            <ng-template #doesntHaveGoalTpl><label translate>analytics.target.aggregates.total</label></ng-template>
             <p>{{ selected.aggregateValue?.summary }}</p>
           </div>
         </div>
@@ -44,7 +44,7 @@
               [attr.data-record-id]="item.contact?._id"
               class="content-row target"
               [ngClass]="{ 'has-goal': selected.hasGoal, 'goal-met': item.value?.goalMet || !selected.hasGoal}">
-            <a [routerLink]="'/contacts/' + item.contact?._id">
+            <a [routerLink]="['/', 'contacts', item.contact?._id]">
               <div class="col-xs-6 col-md-4">
                 <div class="content">
                   <div class="heading">
@@ -56,10 +56,10 @@
                 </div>
               </div>
               <div class="col-xs-6 col-md-8 text-right">
-                <div *ngIf="!selected.progressBar; else selectedIsProgressBar" class="detail" >
+                <div *ngIf="!selected.progressBar; else selectedIsProgressBarTpl" class="detail" >
                   <mm-analytics-targets-details [target]="selected" [value]="item.value"></mm-analytics-targets-details>
                 </div>
-                <ng-template #selectedIsProgressBar>
+                <ng-template #selectedIsProgressBarTpl>
                   <mm-analytics-targets-progress [target]="selected" [value]="item.value" [aggregate]="true"></mm-analytics-targets-progress>
                 </ng-template>
               </div>

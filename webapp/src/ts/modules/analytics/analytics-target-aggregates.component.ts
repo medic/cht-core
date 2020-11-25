@@ -28,13 +28,13 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToStore();
-    this.targetAggregatesActions.setTargetAggregatesError(null);
-    this.targetAggregatesActions.setTargetAggregates(null);
     this.getTargetAggregates();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.targetAggregatesActions.setTargetAggregatesError(null);
+    this.targetAggregatesActions.setTargetAggregates(null);
   }
 
   private subscribeToStore() {

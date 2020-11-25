@@ -23,11 +23,12 @@ export const routes:Routes = [
       {
         path: 'targets',
         component: AnalyticsTargetsComponent,
-        data: { name: 'targets' }
+        data: { moduleId: 'targets' }
       },
       {
         path: 'target-aggregates',
         component: AnalyticsTargetAggregatesComponent,
+        data: { moduleId: 'target-aggregates' },
         children: [
           {
             path: '',

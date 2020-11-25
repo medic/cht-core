@@ -31,7 +31,7 @@ export const Selectors = {
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
 
-  //enketo
+  // enketo
   getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
   getEnketoEditedStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.edited),
   getEnketoSavingStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.saving),
@@ -98,7 +98,6 @@ export const Selectors = {
 const getUnreadCount = state => getGlobalState(state).unreadCount;
 
 // Analytics
-const getAnalyticsState = state => state.analytics;
 const getSelectedAnalytics = state => getAnalyticsState(state).selected;
 
 // Contacts
@@ -131,7 +130,6 @@ angular.module('inboxServices').constant('Selectors', {
   getAndroidAppVersion,
   getUnreadCount,
 
-  getAnalyticsState,
   getSelectedAnalytics,
 
   getContactsState,
@@ -147,9 +145,5 @@ angular.module('inboxServices').constant('Selectors', {
   getTasksState,
   getSelectedTask,
   getLoadTasks,
-
-  getTargetAggregates,
-  getSelectedTargetAggregate,
-  getTargetAggregatesError,
 });
 */

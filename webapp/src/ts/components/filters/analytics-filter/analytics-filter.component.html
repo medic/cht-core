@@ -14,7 +14,7 @@
     </span>
 
     <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
-      <li role="presentation" *ngFor="let module of analyticsModules">
+      <li role="presentation" *ngFor="let module of analyticsModules" [attr.data-id]="module.id">
         <a (click)="navigate(module)" role="menuitem" tabindex="-1">{{ module.label | translate }}</a>
       </li>
     </ul>

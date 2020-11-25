@@ -17,11 +17,12 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   private targetAggregatesActions: TargetAggregatesActions;
   private globalActions: GlobalActions;
   subscriptions: Subscription = new Subscription();
-  aggregates = null;
+  private aggregates = null;
   selected = null;
   error = null;
-  paramTargetId = null; // Defaulting value so initially it'll be different from route's params and show content section
-  shouldLoadDetail;
+  // Defaulting value so initially it'll be different from route's params and show content section
+  private paramTargetId = null;
+  private shouldLoadDetail;
 
   constructor(
     private store: Store,

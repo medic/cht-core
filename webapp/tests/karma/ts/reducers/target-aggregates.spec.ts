@@ -70,6 +70,44 @@ describe('Target Aggregates Reducer', () => {
     expect(result).to.deep.include(expectedState);
   });
 
+  it('should set selected property to item in targetAggregates', () => {
+    state = {
+      selected: null,
+      targetAggregates: [{id: '124'}, {id: '567'}],
+      error: false,
+    };
+    const data = {id: '124'};
+    const action = Actions.setSelectedTargetAggregate(data);
+    const expectedState = {
+      selected: {id: '124'},
+      targetAggregates: [{id: '124', selected: true}, {id: '567', selected: false}],
+      error: false
+    };
+
+    const result = targetAggregatesReducer(state, action);
+
+    expect(result).to.deep.include(expectedState);
+  });
+
+  it('should update selected property to item in targetAggregates', () => {
+    state = {
+      selected: {id: '124'},
+      targetAggregates: [{id: '124', selected: true}, {id: '567', selected: false}],
+      error: false,
+    };
+    const data = {id: '567'};
+    const action = Actions.setSelectedTargetAggregate(data);
+    const expectedState = {
+      selected: {id: '567'},
+      targetAggregates: [{id: '124', selected: false}, {id: '567', selected: true}],
+      error: false
+    };
+
+    const result = targetAggregatesReducer(state, action);
+
+    expect(result).to.deep.include(expectedState);
+  });
+
   it('should set error in state', () => {
     const data = true;
     const action = Actions.setTargetAggregatesError(data);

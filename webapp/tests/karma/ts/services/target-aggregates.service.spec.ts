@@ -637,7 +637,7 @@ describe('TargetAggregatesService', () => {
       searchService.search.resolves([]);
       dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
       translateService.instant = sinon.stub().returnsArg(0);
-      translateFromService.get.callsFake(echo => echo);
+      translateFromService.get.returnsArg(0);
 
       const result = await service.getAggregates();
 

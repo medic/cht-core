@@ -20,7 +20,7 @@
         <mm-content-row
           *ngFor="let contact of contactsList; trackBy: listTrackBy"
           [id]="contact._id"
-          route="contacts"
+          [route]="['/', 'contacts', contact._id]"
           [icon]="contact.icon"
           [heading]="contact.heading"
           [valid]="contact.valid"

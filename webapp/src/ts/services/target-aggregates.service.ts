@@ -81,17 +81,11 @@ export class TargetAggregatesService {
     return this.dbService
       .get()
       .allDocs(opts)
-      .then(result => {
-        return result && result.rows && result.rows[0] && result.rows[0].doc;
-      });
+      .then(result => result?.rows?.[0]?.doc);
   }
 
   private getTargetsConfig(settings, aggregatesOnly = false) {
-    return settings &&
-      settings.tasks &&
-      settings.tasks.targets &&
-      settings.tasks.targets.items.filter(target => aggregatesOnly ? target.aggregate : true)
-      || [];
+    return settings?.tasks?.targets?.items?.filter(target => aggregatesOnly ? target.aggregate : true) || [];
   }
 
   private calculatePercent(value) {
@@ -106,17 +100,17 @@ export class TargetAggregatesService {
     return this.translateFromService.get(target.title);
   }
 
-  private getAggregate(targetConfig) {
-    const aggregate = { ...targetConfig };
+  private getAggregate(originalTargetConfig) {
+    const targetConfig = { ...originalTargetConfig };
 
-    aggregate.values = [];
-    aggregate.hasGoal = aggregate.goal > 0;
-    aggregate.isPercent = aggregate.type === 'percent';
-    aggregate.progressBar = aggregate.hasGoal || aggregate.isPercent;
-    aggregate.heading = this.getTranslatedTitle(aggregate);
-    aggregate.aggregateValue = { pass: 0, total: 0 };
+    targetConfig.values = [];
+    targetConfig.hasGoal = targetConfig.goal > 0;
+    targetConfig.isPercent = targetConfig.type === 'percent';
+    targetConfig.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
+    targetConfig.heading = this.getTranslatedTitle(targetConfig);
+    targetConfig.aggregateValue = { pass: 0, total: 0 };
 
-    return aggregate;
+    return targetConfig;
   }
 
   private getRelevantTargetDocs(targetDocs, contacts) {
