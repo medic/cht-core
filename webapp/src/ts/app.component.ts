@@ -566,7 +566,6 @@ export class AppComponent implements OnInit, OnDestroy {
         setShowContent: globalActions.setShowContent,
         setShowPrivacyPolicy: globalActions.setShowPrivacyPolicy,
         setTitle: globalActions.setTitle,
-        setUnreadCount: globalActions.setUnreadCount,
         unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus,
       };

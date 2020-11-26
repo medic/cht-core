@@ -254,8 +254,6 @@ angular.module('inboxServices').factory('GlobalActions',
         deleteDoc,
         openGuidedSetup,
         openTourSelect,
-        setUnreadCount,
-        updateUnreadCount,
       };
     };
   }

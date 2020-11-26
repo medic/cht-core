@@ -148,8 +148,6 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
-  case actionTypes.SET_UNREAD_COUNT:
-    return Object.assign({}, state, { unreadCount: action.payload.unreadCount });
   case actionTypes.SET_VERSION:
     return Object.assign({}, state, { version: action.payload.version });
   default:
