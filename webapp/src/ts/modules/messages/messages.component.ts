@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -12,6 +12,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ExportService } from '@mm-services/export.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { TourService } from '@mm-services/tour.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -28,12 +29,14 @@ export class MessagesComponent implements OnInit, OnDestroy {
   error = false;
 
   constructor(
+    private route: ActivatedRoute,
     private router: Router,
     private store: Store,
     private changesService: ChangesService,
     private messageContactService: MessageContactService,
     private exportService: ExportService,
     private modalService: ModalService,
+    private tourService: TourService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -60,6 +63,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
         this.error = error;
       });
     this.subscriptions.add(selectorsSubscription);
+
+    this.tourService.startIfNeeded(this.route.snapshot);
 
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
@@ -105,7 +110,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
-    this.modalService.show(SendMessageComponent);
+    this.modalService
+      .show(SendMessageComponent)
+      .catch(() => {});
   }
 
   private setConversations(conversations = [], {merge = false} = {}) {

@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { Router } from '@angular/router';
 
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ChangesService } from '@mm-services/changes.service';
@@ -20,6 +21,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ComponentsModule } from '@mm-components/components.module';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { TourService } from '@mm-services/tour.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -42,6 +44,9 @@ describe('Reports Component', () => {
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getEnketoSavingStatus, value: false },
     ];
+    const tourServiceMock = {
+      startIfNeeded: () => {}
+    };
 
     searchService = { search: sinon.stub().resolves([]) };
     changesService = { subscribe: sinon.stub().resolves(of({})) };
@@ -71,6 +76,7 @@ describe('Reports Component', () => {
           { provide: SettingsService, useValue: {} },
           // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
+          { provide: TourService, useValue: tourServiceMock },
         ]
       })
       .compileComponents()
@@ -105,9 +111,13 @@ describe('Reports Component', () => {
   it('listTrackBy() should return unique identifier', () => {
     const report = { _id: 'report', _rev: 'the rev', read: true, some: 'data', fields: {} };
     const otherReport = { _id: 'report2', _rev: 'the other rev', read: false, some: 'otherdata', fields: {} };
+    const unselected = { _id: 'theid', _rev: 'rev', read: true, selected: false };
+    const selected = { _id: 'selected', _rev: 'rv', read: false, selected: true };
 
-    expect(component.listTrackBy(0, report)).to.equal('reportthe revtrue');
-    expect(component.listTrackBy(1, otherReport)).to.equal('report2the other revfalse');
+    expect(component.listTrackBy(0, report)).to.equal('reportthe revtrueundefined');
+    expect(component.listTrackBy(1, otherReport)).to.equal('report2the other revfalseundefined');
+    expect(component.listTrackBy(2, unselected)).to.equal('theidrevtruefalse');
+    expect(component.listTrackBy(3, selected)).to.equal('selectedrvfalsetrue');
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
@@ -116,60 +126,76 @@ describe('Reports Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  /*
-  describe('verifying reports', () => {
-    todo enable these tests once we have verification
-    const scenarios = [
-      /!* User scenarios with permission to edit *!/
-      { canEdit: true, initial: undefined, setTo: true, expectVerified: true, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: undefined, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: true, setTo: false, expectVerified: false, expectPost: true, expectedDate: 0 },
-      { canEdit: true, initial: false, setTo: false, expectVerified: undefined,
-        expectPost: true, expectedDate: undefined },
-      { canEdit: true, initial: true, setTo: true, expectVerified: undefined,
-        expectPost: true, expectedDate: undefined },
+  describe('toggleSelected', () => {
+    let navigate;
+    let addSelectedReport;
+    let selectReport;
+    let removeSelectedReport;
 
-      /!* User scenarios without permission to edit *!/
-      { canEdit: false, initial: undefined, setTo: false, expectVerified: false, confirm: true,
-        expectPost: true, expectedDate: 0 },
-      { canEdit: false, initial: undefined, setTo: true, expectVerified: undefined, confirm: false,
-        expectPost: false, expectedDate: undefined },
-      { canEdit: false, initial: true, setTo: false, expectVerified: true, expectPost: false, expectedDate: 0 },
-      { canEdit: false, initial: false, setTo: false, expectVerified: false, expectPost: false, expectedDate: 0 },
-    ];
-
-    scenarios.forEach(scenario => {
-      const { canEdit, initial, setTo, confirm, expectPost, expectedDate, expectVerified  } = scenario;
-      it(`user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`, () => {
-        hasAuth = canEdit ? hasAuth.resolves(true) : hasAuth.resolves(false);
-        confirm ? modal.resolves() : modal.rejects();
-        post.returns(Promise.resolve());
-
-        createController();
-        reportsActions.setSelectedReports([{
-          _id: 'abc',
-          doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
-        }]);
-        scope.$broadcast('VerifyReport', setTo);
-        return Q.resolve(() => {
-          expect(modal.callCount).to.eq(confirm !== undefined ? 1 : 0);
-          if (expectPost) {
-            expect(post.callCount).to.equal(1);
-            expect(post.args[0]).to.deep.equal([{
-              _id: 'def',
-              name: 'hello',
-              form: 'P',
-              rev: '1',
-              verified_date: expectedDate,
-              verified: expectVerified,
-            }]);
-          } else {
-            expect(post.called).to.be.false;
-          }
-        });
-      });
+    beforeEach(() => {
+      navigate = sinon.stub(Router.prototype, 'navigate');
+      addSelectedReport = sinon.stub(ReportsActions.prototype, 'addSelectedReport');
+      selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      removeSelectedReport = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
     });
-  });*/
+
+    it('should not crash when called without report (for some reason)', () => {
+      component.toggleSelected(undefined);
+      expect(navigate.callCount).to.equal(0);
+      expect(addSelectedReport.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+      expect(removeSelectedReport.callCount).to.equal(0);
+    });
+
+    it('should navigate when not in select mode', () => {
+      component.selectMode = false;
+      component.toggleSelected({ _id: 'report_id' });
+
+      expect(navigate.callCount).to.equal(1);
+      expect(navigate.args[0]).to.deep.equal([['/reports', 'report_id']]);
+      expect(addSelectedReport.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+      expect(removeSelectedReport.callCount).to.equal(0);
+    });
+
+    it('should add selected report when in select mode and not already selected', () => {
+      component.selectMode = true;
+      component.selectedReports = null;
+
+      component.toggleSelected({ _id: 'rid' });
+      expect(addSelectedReport.callCount).to.equal(1);
+      expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(selectReport.callCount).to.equal(1);
+      expect(selectReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(removeSelectedReport.callCount).to.equal(0);
+      expect(navigate.callCount).to.equal(0);
+    });
+
+    it('should add selected report when in select mode and not already selected with some selected reports', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      component.toggleSelected({ _id: 'rid' });
+      expect(addSelectedReport.callCount).to.equal(1);
+      expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(selectReport.callCount).to.equal(1);
+      expect(selectReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(removeSelectedReport.callCount).to.equal(0);
+      expect(navigate.callCount).to.equal(0);
+    });
+
+    it('should remove selected report if in select mode and already selected', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'rid' }];
+
+      component.toggleSelected({ _id: 'rid' });
+      expect(addSelectedReport.callCount).to.equal(0);
+      expect(selectReport.callCount).to.equal(0);
+      expect(removeSelectedReport.callCount).to.equal(1);
+      expect(removeSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(navigate.callCount).to.equal(0);
+    });
+  });
 
   describe('Changes listener', () => {
     it('filters reports', () => {

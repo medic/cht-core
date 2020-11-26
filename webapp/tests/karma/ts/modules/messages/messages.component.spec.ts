@@ -13,6 +13,7 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { TourService } from '@mm-services/tour.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -30,6 +31,9 @@ describe('Messages Component', () => {
     };
     changesService = {
       subscribe: sinon.stub().resolves(of({}))
+    };
+    const tourServiceMock = {
+      startIfNeeded: () => {}
     };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
@@ -55,7 +59,8 @@ describe('Messages Component', () => {
           { provide: MessageContactService, useValue: messageContactService },
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: exportService, useValue: {} },
-          { provide: ModalService, useValue: modalService }
+          { provide: ModalService, useValue: modalService },
+          { provide: TourService, useValue: tourServiceMock }
         ]
       })
       .compileComponents()

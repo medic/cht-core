@@ -45,8 +45,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoError;
   enketoStatus;
   enketoSaving;
+  enketoEdited;
   form;
   errorTranslationKey;
+  cancelCallback;
 
   private geoHandle:any;
   private globalActions;
@@ -63,18 +65,22 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
+      this.store.select(Selectors.getCancelCallback),
     ).subscribe(([
       loadingContent,
       selectedReports,
       enketoStatus,
       enketoSaving,
       enketoError,
+      cancelCallback,
     ]) => {
       this.selectedReports = selectedReports;
       this.loadingContent = loadingContent;
       this.enketoStatus = enketoStatus;
+      this.enketoEdited = enketoStatus.edited;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
+      this.cancelCallback = cancelCallback;
     });
     this.subscription.add(reduxSubscription);
   }
@@ -95,10 +101,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setCancelCallback() {
     this.routeSnapshot = this.route.snapshot;
-    if (this.routeSnapshot.params && (this.routeSnapshot.params.reportsId || this.routeSnapshot.params.formId)) {
+    if (this.routeSnapshot.params && (this.routeSnapshot.params.reportId || this.routeSnapshot.params.formId)) {
       this.globalActions.setCancelCallback(() => {
-        if (this.routeSnapshot.params.reportsId) {
-          this.router.navigate(['/reports', this.routeSnapshot.params.reportsId]);
+        if (this.routeSnapshot.params.reportId) {
+          this.router.navigate(['/reports', this.routeSnapshot.params.reportId]);
         } else {
           this.router.navigate(['/reports']);
         }
@@ -193,18 +199,21 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
                  */
               })
               .catch((err) => {
-                this.errorTranslationKey = err.translationKey || 'error.loading.form';
-                this.globalActions.setLoadingContent(false);
+                this.setError(err);
                 console.error('Error loading form.', err);
               });
           });
       })
       .catch((err) => {
-        this.globalActions.setLoadingContent(false);
-        this.errorTranslationKey = err.translationKey || 'error.loading.form';
-        this.contentError = true;
+        this.setError(err);
         console.error('Error setting selected doc', err);
       });
+  }
+
+  private setError(err) {
+    this.errorTranslationKey = err.translationKey || 'error.loading.form';
+    this.globalActions.setLoadingContent(false);
+    this.contentError = true;
   }
 
   ngOnDestroy() {

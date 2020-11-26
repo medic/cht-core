@@ -1,13 +1,13 @@
 <div role="document" id="{{id}}">
   <div class="modal-header">
     <button type="button" class="cancel close" [disabled]="status?.processing" (click)="onCancel.emit()">&times;</button>
-    <h2 translate>{{titleKey}}</h2>
+    <h2>{{titleKey | translate}}</h2>
   </div>
   <div class="modal-body"><ng-content></ng-content></div>
   <div class="modal-footer">
     <p class="note" *ngIf="status?.error" translate>{{status?.error}}</p>
-    <a class="btn cancel" [ngClass]="{ 'disabled': status?.processing }" (click)="onCancel.emit()" translate>{{cancelKey || 'Cancel'}}</a>
-    <a class="btn submit" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="!status?.processing" translate>{{submitKey}}</a>
+    <a class="btn cancel" [ngClass]="{ 'disabled': status?.processing }" (click)="onCancel.emit()" *ngIf="cancelKey !== false" translate>{{cancelKey || 'Cancel'}}</a>
+    <a class="btn submit" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="submitKey && !status?.processing" translate>{{submitKey}}</a>
     <a class="btn submit disabled" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger }" *ngIf="status?.processing" translate>{{submittingKey || submitKey}}</a>
   </div>
 </div>

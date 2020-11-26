@@ -27,6 +27,10 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
+import { StartupModalsService } from '@mm-services/startup-modals.service';
+import { TourService } from '@mm-services/tour.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { CheckDateService } from '@mm-services/check-date.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -61,41 +65,44 @@ export class AppComponent implements OnInit {
   translationsLoaded;
 
   currentTab = '';
-  showContent = false;
+  showContent;
   privacyPolicyAccepted = true;
   showPrivacyPolicy = false;
-  selectMode = false;
-  minimalTabs = false;
+  selectMode;
+  minimalTabs;
   adminUrl;
   canLogOut = false;
-  tours = [];
   replicationStatus;
   androidAppVersion;
   nonContactForms;
 
   constructor (
     private dbSyncService:DBSyncService,
-    private store: Store,
-    private translateService: TranslateService,
-    private translationLoaderService: TranslationLoaderService,
-    private languageService: LanguageService,
-    private setLanguageService: SetLanguageService,
-    private sessionService: SessionService,
-    private authService: AuthService,
-    private resourceIconsService: ResourceIconsService,
-    private changesService: ChangesService,
-    private updateServiceWorker: UpdateServiceWorkerService,
-    private locationService: LocationService,
-    private modalService: ModalService,
+    private store:Store,
+    private translateService:TranslateService,
+    private translationLoaderService:TranslationLoaderService,
+    private languageService:LanguageService,
+    private setLanguageService:SetLanguageService,
+    private sessionService:SessionService,
+    private authService:AuthService,
+    private resourceIconsService:ResourceIconsService,
+    private changesService:ChangesService,
+    private updateServiceWorker:UpdateServiceWorkerService,
+    private locationService:LocationService,
+    private modalService:ModalService,
     private router:Router,
     private feedbackService:FeedbackService,
     private formatDateService:FormatDateService,
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private countMessageService: CountMessageService,
-    private privacyPoliciesService: PrivacyPoliciesService
+    private changeDetectorRef:ChangeDetectorRef,
+    private countMessageService:CountMessageService,
+    private privacyPoliciesService:PrivacyPoliciesService,
+    private routeSnapshotService:RouteSnapshotService,
+    private startupModalsService:StartupModalsService,
+    private tourService:TourService,
+    private checkDateService:CheckDateService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -133,8 +140,11 @@ export class AppComponent implements OnInit {
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
+          this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
+        const data = this.routeSnapshotService.get()?.data;
+        this.globalActions.setSnapshotData(data);
       }
     });
   }
@@ -220,6 +230,7 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       replicationStatus,
       androidAppVersion,
@@ -228,6 +239,7 @@ export class AppComponent implements OnInit {
       showContent,
       privacyPolicyAccepted,
       showPrivacyPolicy,
+      selectMode,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
@@ -236,6 +248,7 @@ export class AppComponent implements OnInit {
       this.showContent = showContent;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.selectMode = selectMode;
       this.changeDetectorRef.detectChanges();
     });
 
@@ -323,7 +336,18 @@ export class AppComponent implements OnInit {
     });
 
     this.countMessageService.init();
-    this.checkPrivacyPolicy();
+    this
+      .checkPrivacyPolicy()
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the startup modals,
+          // otherwise the modals will start from the privacy
+          // policy component after the user accepts the terms
+          this.startupModalsService.showStartupModals();
+        }
+      })
+      .then(() => this.checkDateService.check());
     this.initForms();
   }
 
@@ -372,13 +396,13 @@ export class AppComponent implements OnInit {
           if (err) {
             return console.error('Error fetching form definitions', err);
           }
-          this.nonContactForms = xForms.map((xForm) => {
-            return {
+          this.nonContactForms = xForms
+            .map((xForm) => ({
               code: xForm.internalId,
               icon: xForm.icon,
               title: translateTitle(xForm.translation_key, xForm.title),
-            };
-          });
+            }))
+            .sort((a, b) => a.title - b.title);
         });
       })
       .catch(err => console.error('Failed to retrieve forms', err));
@@ -387,7 +411,7 @@ export class AppComponent implements OnInit {
   private setAppTitle() {
     this.resourceIconsService.getAppTitle().then(title => {
       document.title = title;
-      (<any>window).$('.header-logo').attr('title', `${title}`);
+      $('.header-logo').attr('title', `${title}`);
     });
   }
 
@@ -402,12 +426,14 @@ export class AppComponent implements OnInit {
 
   private showUpdateReady() {
     const TWO_HOURS = 2 * 60 * 60 * 1000;
-    this.modalService.show(ReloadingComponent, {}, () => {
-      console.debug('Delaying update');
-      setTimeout(() => {
-        this.showUpdateReady();
-      }, TWO_HOURS);
-    });
+    this.modalService
+      .show(ReloadingComponent)
+      .catch(() => {
+        console.debug('Delaying update');
+        setTimeout(() => {
+          this.showUpdateReady();
+        }, TWO_HOURS);
+      });
     //closeDropdowns();
   }
 
@@ -417,6 +443,7 @@ export class AppComponent implements OnInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
+        return { privacyPolicy, accepted };
       })
       .catch(err => console.error('Failed to load privacy policy', err));
   }

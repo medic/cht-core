@@ -26,10 +26,14 @@ export class ConfigurationUserComponent implements OnInit {
   }
 
   updatePassword() {
-    this.modalService.show(UpdatePasswordComponent);
+    this.modalService
+      .show(UpdatePasswordComponent)
+      .catch(() => {});
   }
 
   editSettings() {
-    this.modalService.show(EditUserSettingsComponent);
+    this.modalService
+      .show(EditUserSettingsComponent)
+      .catch(() => {});
   }
 }

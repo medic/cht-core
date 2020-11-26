@@ -6,11 +6,13 @@ import sinon from 'sinon';
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { GlobalActions } from '@mm-actions/global';
+import { StartupModalsService } from '@mm-services/startup-modals.service';
 
 describe('PrivacyPoliciesComponent', () => {
   let component: PrivacyPolicyComponent;
   let fixture: ComponentFixture<PrivacyPolicyComponent>;
   let privacyPoliciesService;
+  let startupModalsService;
 
   beforeEach(async(() => {
     privacyPoliciesService = {
@@ -20,12 +22,17 @@ describe('PrivacyPoliciesComponent', () => {
       decodeUnicode: sinon.stub(),
     };
 
+    startupModalsService = {
+      showStartupModals: sinon.stub().resolves()
+    };
+
     return TestBed
       .configureTestingModule({
         declarations: [ PrivacyPolicyComponent ],
         providers: [
           provideMockStore(),
-          { provide: PrivacyPoliciesService, useValue: privacyPoliciesService }
+          { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
+          { provide: StartupModalsService, useValue: startupModalsService }
         ]
       })
       .compileComponents()
@@ -82,6 +89,7 @@ describe('PrivacyPoliciesComponent', () => {
     expect(component.loading).to.equal(false);
     expect(setShowPrivacyPolicySpy.callCount).to.equal(0);
     expect(setPrivacyPolicyAcceptedSpy.callCount).to.equal(0);
+    expect(startupModalsService.showStartupModals.callCount).to.equal(0);
   });
 
   it('should accept privacy policy', async () => {
@@ -100,5 +108,6 @@ describe('PrivacyPoliciesComponent', () => {
     expect(privacyPoliciesService.accept.args[0][0]).to.deep.equal(policy);
     expect(setPrivacyPolicyAcceptedSpy.callCount).to.equal(1);
     expect(setPrivacyPolicyAcceptedSpy.args[0][0]).to.equal(true);
+    expect(startupModalsService.showStartupModals.callCount).to.equal(1);
   });
 });

@@ -13,6 +13,8 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
+import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
+import { TourService } from '@mm-services/tour.service';
 
 
 @Component({
@@ -41,6 +43,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
+    private tourService: TourService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -68,6 +71,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.globalActions.setMinimalTabs(this.permittedTabs.length > 3);
       });
     });
+
+    this.tourService.getTours().then(tours => {
+      this.tours = tours;
+    });
   }
 
   ngOnDestroy() {
@@ -75,19 +82,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openGuidedSetup() {
-    this.modalService.show(GuidedSetupComponent);
+    this.modalService
+      .show(GuidedSetupComponent)
+      .catch(() => {});
   }
 
   openTourSelect() {
-
+    this.modalService
+      .show(TourSelectComponent)
+      .catch(() => {});
   }
 
   openFeedback() {
-    this.modalService.show(FeedbackComponent);
+    this.modalService
+      .show(FeedbackComponent)
+      .catch(() => {});
   }
 
   logout() {
-    this.modalService.show(LogoutConfirmComponent);
+    this.modalService
+      .show(LogoutConfirmComponent)
+      .catch(() => {});
   }
 
   replicate() {
