@@ -5,17 +5,18 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { Observable } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { EnketoService } from '@mm-services/enketo.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { DbService } from '@mm-services/db.service';
-import { ActivatedRoute } from '@angular/router';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 import { GlobalActions } from '@mm-actions/global';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
+import { TasksActions } from '@mm-actions/tasks';
 
 describe('TasksContentComponent', () => {
   let tasks;
@@ -26,6 +27,8 @@ describe('TasksContentComponent', () => {
   let route;
   let store;
   let geolocationService;
+  let enketoService;
+  let router;
 
   let compileComponent;
   let component:TasksContentComponent;
@@ -38,6 +41,8 @@ describe('TasksContentComponent', () => {
     route = { params: new Observable(obs => obs.next({ id: '123' })) };
     setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
     geolocationService = { init: sinon.stub() };
+    enketoService = { render, unload: sinon.stub(), save: sinon.stub() };
+    router = { navigate: sinon.stub() };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -55,11 +60,12 @@ describe('TasksContentComponent', () => {
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ActivatedRoute, useValue: route },
-        { provide: EnketoService, useValue: { render }},
+        { provide: EnketoService, useValue: enketoService },
         { provide: DbService, useValue: { get: () => ({ get })}},
         { provide: XmlFormsService, useValue: XmlForms },
         { provide: TelemetryService, useValue: { record: sinon.stub() }},
         { provide: GeolocationService, useValue: geolocationService },
+        { provide: Router, useValue: router },
       ],
     });
 
@@ -120,10 +126,13 @@ describe('TasksContentComponent', () => {
     }];
     const form = { _id: 'myform', title: 'My Form' };
     XmlForms.get.resolves(form);
+    geolocationService.init.returns({ just: 'an object reference' });
     await compileComponent();
 
     expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['contact']]);
+
+    expect(geolocationService.init.callCount).to.equal(1);
 
     expect(render.callCount).to.eq(1);
     expect(render.args[0][2]).to.deep.eq({
@@ -151,6 +160,24 @@ describe('TasksContentComponent', () => {
 
     expect(render.callCount).to.eq(1);
     expect(render.args[0][2]).to.deep.eq({ contact: { _id: 'dne' } });
+  });
+
+  it('should work when form not found', async () => {
+    XmlForms.get.rejects({ status: 404 });
+    tasks = [{
+      _id: '123',
+      forId: 'dne',
+      actions: [{
+        type: 'report',
+        form: 'A',
+      }]
+    }];
+    await compileComponent();
+
+    expect(render.callCount).to.eq(0);
+    expect(component.errorTranslationKey).to.equal('error.loading.form');
+    expect(component.contentError).to.equal(true);
+    expect(component.loadingForm).to.equal(false);
   });
 
   it('does not load form when task has more than one action', async () => {
@@ -241,4 +268,197 @@ describe('TasksContentComponent', () => {
     });
   }));
 
+  describe('perform action', () => {
+    beforeEach(() => {
+      sinon.stub(GlobalActions.prototype, 'setCancelCallback');
+      sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      sinon.stub(TasksActions.prototype, 'setSelectedTask');
+    });
+
+    it('should do nothing for random action type', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+      await component.performAction(undefined);
+
+      expect(XmlForms.get.callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.setCancelCallback).callCount).to.equal(0);
+    });
+
+    it('should set cancel callback correctly when not skipping details', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+      component.form = 'someform';
+      component.loadingForm = true;
+      component.contentError = true;
+
+      await component.performAction({});
+
+      expect((<any>GlobalActions.prototype.setCancelCallback).callCount).to.equal(1);
+      const cancelCallback = (<any>GlobalActions.prototype.setCancelCallback).args[0][0];
+      expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(0);
+      cancelCallback();
+      expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setSelectedTask).args[0]).to.deep.equal([null]);
+      expect(enketoService.unload.callCount).to.equal(1);
+      expect(component.form).to.equal(null);
+      expect(component.loadingForm).to.equal(false);
+      expect(component.contentError).to.equal(false);
+      expect((<any>GlobalActions.prototype.clearCancelCallback).callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(0);
+    });
+
+    it('should set cancel callback correctly when skipping details', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+      component.form = 'someform';
+      component.loadingForm = true;
+      component.contentError = true;
+
+      await component.performAction({}, true);
+
+      expect((<any>GlobalActions.prototype.setCancelCallback).callCount).to.equal(1);
+      const cancelCallback = (<any>GlobalActions.prototype.setCancelCallback).args[0][0];
+      expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(0);
+      cancelCallback();
+      expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setSelectedTask).args[0]).to.deep.equal([null]);
+      expect(enketoService.unload.callCount).to.equal(0);
+      expect(component.form).to.equal('someform');
+      expect(component.loadingForm).to.equal(true);
+      expect(component.contentError).to.equal(false);
+      expect((<any>GlobalActions.prototype.clearCancelCallback).callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
+    });
+
+    it('should work with action of type "contact"', () => {
+      // todo once the feature is migrated
+    });
+
+    it('should render form when action type is report', async () => {
+      const form = { _id: 'myform', title: 'My Form' };
+      XmlForms.get.resolves(form);
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      sinon.stub(GlobalActions.prototype, 'setEnketoError');
+
+      await component.performAction({ type: 'report', form: 'myform', content: { my: 'content' } });
+
+      expect(XmlForms.get.callCount).to.equal(1);
+      expect(XmlForms.get.args[0]).to.deep.equal(['myform']);
+      expect(enketoService.render.callCount).to.equal(1);
+      expect(enketoService.render.args[0]).to.deep.include.members([
+        '#task-report',
+        { _id: 'myform', title: 'My Form' },
+        { my: 'content' },
+      ]);
+      const markFormEdited = enketoService.render.args[0][3];
+      const resetFormError = enketoService.render.args[0][4];
+
+      expect(setEnketoEditedStatus.callCount).to.equal(1);
+      expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
+      expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
+
+      markFormEdited();
+      expect(setEnketoEditedStatus.callCount).to.equal(2);
+      expect(setEnketoEditedStatus.args[1]).to.deep.equal([true]);
+      expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
+
+      resetFormError();
+      expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
+
+      store.overrideSelector(Selectors.getEnketoError, 'error');
+      store.refreshState();
+      resetFormError();
+      expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(1);
+    });
+  });
+
+  describe('saving', () => {
+    let setEnketoError;
+    let setEnketoSavingStatus;
+    let unsetSelected;
+    let clearCancelCallback;
+
+    beforeEach(() => {
+      setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
+      unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+    });
+
+    it('should do nothing if already saving', async () => {
+      await compileComponent([]);
+
+      store.overrideSelector(Selectors.getEnketoSavingStatus, true);
+      store.refreshState();
+
+      await component.save();
+      expect(enketoService.save.callCount).to.equal(0);
+    });
+
+    it('should catch save errors', async () => {
+      enketoService.save.rejects({ some: 'error' });
+      store.overrideSelector(Selectors.getEnketoError, 'error');
+      const geoHandle = { geo: 'handle' };
+      geolocationService.init.returns(geoHandle);
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      component.formId = 'the form id';
+      component.form = { the: 'form' };
+
+      const saving = component.save();
+      expect(setEnketoSavingStatus.callCount).to.equal(1);
+      expect(setEnketoSavingStatus.args[0]).to.deep.equal([true]);
+      expect(setEnketoError.callCount).to.equal(1);
+      expect(setEnketoError.args[0]).to.deep.equal([null]);
+
+      await saving;
+      expect(enketoService.save.callCount).to.equal(1);
+      expect(enketoService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
+
+      expect(setEnketoSavingStatus.callCount).to.equal(2);
+      expect(setEnketoSavingStatus.args[1]).to.deep.equal([false]);
+      expect(setEnketoError.callCount).to.equal(2);
+      expect(setEnketoEditedStatus.callCount).to.equal(0);
+      expect(enketoService.unload.callCount).to.equal(0);
+      expect(clearCancelCallback.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
+      expect(unsetSelected.callCount).to.equal(0);
+    });
+
+    it('should redirect correctly after save', async () => {
+      enketoService.save.resolves([]);
+      const geoHandle = { geo: 'handle' };
+      geolocationService.init.returns(geoHandle);
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      component.formId = 'the form id';
+      component.form = { the: 'form' };
+
+      const saving = component.save();
+      expect(setEnketoSavingStatus.callCount).to.equal(1);
+      expect(setEnketoSavingStatus.args[0]).to.deep.equal([true]);
+      expect(setEnketoError.callCount).to.equal(0);
+
+      await saving;
+      expect(enketoService.save.callCount).to.equal(1);
+      expect(enketoService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
+
+      expect(setEnketoSavingStatus.callCount).to.equal(2);
+      expect(setEnketoSavingStatus.args[1]).to.deep.equal([false]);
+      expect(setEnketoEditedStatus.callCount).to.equal(1);
+      expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
+      expect(enketoService.unload.callCount).to.equal(1);
+      expect(enketoService.unload.args[0]).to.deep.equal([{ the: 'form' }]);
+      expect(clearCancelCallback.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
+      expect(setEnketoError.callCount).to.equal(0);
+      expect(unsetSelected.callCount).to.equal(1);
+    });
+  });
 });

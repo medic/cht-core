@@ -12,16 +12,16 @@
         <mm-content-row
           *ngFor="let task of tasksList; trackBy: listTrackBy"
           [id]="task._id"
-          route="tasks"
+          [route]="['/', 'tasks', task._id]"
           [date]="task.date"
           [overdue]="task.overdue"
           [icon]="task.icon"
-          [heading]="task.contact?.name"
+          [heading]="task.contact?.name || ''"
           [summary]="task.title"
           [warning]="task.priorityLabel"
           dateFormat="taskDueDate"
           [showStatus]="false"
-          [selected]="task.selected"
+          [selected]="task._id === selectedTask?._id"
         >
         </mm-content-row>
       </ul>

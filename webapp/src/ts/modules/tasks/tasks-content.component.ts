@@ -216,6 +216,10 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   performAction(action, skipDetails?) {
+    if (!action) {
+      return;
+    }
+
     this.globalActions.setCancelCallback(() => {
       this.tasksActions.setSelectedTask(null);
       if (skipDetails) {
@@ -230,7 +234,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     });
 
     this.contentError = false;
-
     if (action.type === 'report') {
       this.loadingForm = true;
       this.formId = action.form;
@@ -263,7 +266,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
             this.telemetryData.postRender - this.telemetryData.preRender);
         })
         .catch((err) => {
-          this.errorTranslationKey = err.translationKey || 'error.loading.form';
+          this.errorTranslationKey = err?.translationKey || 'error.loading.form';
           this.contentError = true;
           this.loadingForm = false;
           console.error('Error loading form.', err);

@@ -38,13 +38,7 @@ const _tasksReducer = createReducer(
 
   on(Actions.setTasksLoaded, (state, { payload: { loaded }}) => ({ ...state, loaded })),
 
-  on(Actions.setSelectedTask, (state, { payload: { selected } }) => {
-    return {
-      ...state,
-      selected,
-      tasksList: state.tasksList.map(task => ({ ...task, selected: task?._id === selected?._id })),
-    };
-  }),
+  on(Actions.setSelectedTask, (state, { payload: { selected } }) => ({ ...state, selected })),
 );
 
 export function tasksReducer(state, action) {

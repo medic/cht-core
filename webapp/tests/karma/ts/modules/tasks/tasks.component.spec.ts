@@ -87,7 +87,7 @@ describe('TasksComponent', () => {
     expect(Tour.callCount).to.eq(0);
   });
 
-  it('task engine is disabled', async () => {
+  it('rules engine is disabled', async () => {
     RulesEngine.isEnabled.resolves(false);
 
     await new Promise(resolve => {
@@ -100,7 +100,7 @@ describe('TasksComponent', () => {
     expect(component.tasksDisabled).to.be.true;
   });
 
-  it('task engine throws in initialization', async () => {
+  it('rules engine throws in initialization', async () => {
     RulesEngine.isEnabled.rejects('error');
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
@@ -208,6 +208,6 @@ describe('TasksComponent', () => {
     expect(Telemetry.record.callCount).to.equal(2);
     expect(Telemetry.record.args[0][0]).to.equal('tasks:load');
     expect(Telemetry.record.args[1][0]).to.equal('tasks:refresh');
+    expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
-
 });
