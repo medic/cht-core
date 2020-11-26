@@ -18,7 +18,7 @@ import { DbService } from '@mm-services/db.service';
   templateUrl: './tasks-content.component.html'
 })
 export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
-  private subscription = new Subscription();
+  subscription = new Subscription();
   private globalActions;
   private tasksActions;
 

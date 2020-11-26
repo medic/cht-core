@@ -76,6 +76,20 @@ describe('TasksComponent', () => {
     clock?.restore();
   });
 
+  it('should ngOnDestroy should unsubscribe and clear state', async () => {
+    await getComponent();
+
+    const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
+    const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
+    const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
+    component.ngOnDestroy();
+    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+    expect(setTasksList.callCount).to.equal(1);
+    expect(setTasksList.args[0]).to.deep.equal([[]]);
+    expect(setTasksLoaded.callCount).to.equal(1);
+    expect(setTasksLoaded.args[0]).to.deep.equal([false]);
+  });
+
   it('initial state before resolving tasks', async () => {
     RulesEngine.isEnabled.callsFake(() => new Promise(() => {}));
     await getComponent();

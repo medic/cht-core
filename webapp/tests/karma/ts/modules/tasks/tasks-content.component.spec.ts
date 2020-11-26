@@ -87,6 +87,27 @@ describe('TasksContentComponent', () => {
     sinon.restore();
   });
 
+  it('should unsubscribe and cancel geohandle when destroyed', async () => {
+    const geoHandle = { cancel: sinon.stub() };
+    geolocationService.init.returns(geoHandle);
+    tasks = [{
+      _id: '123',
+      actions: [{
+        type: 'report',
+        form: 'A',
+        content: 'nothing'
+      }]
+    }];
+    const form = { _id: 'myform', title: 'My Form' };
+    XmlForms.get.resolves(form);
+
+    await compileComponent();
+    const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
+    component.ngOnDestroy();
+    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+    expect(geoHandle.cancel.callCount).to.equal(1);
+  });
+
   it('loads form when task has one action and no fields (without hydration)', async () => {
     tasks = [{
       _id: '123',
