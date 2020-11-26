@@ -21,7 +21,7 @@ jobs:
         node-version: 10.x
 
     - name: Push my CHT app to staging
-      uses: './.github/actions/deploy-with-medic-conf'
+      uses: 'medic/cht-core/deploy-with-medic-conf@master'
       with:
         directory: 'my_app_folder'
         hostname: myapp.staging.company.org
