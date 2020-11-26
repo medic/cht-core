@@ -1,11 +1,16 @@
 angular.module('inboxServices').service('Geolocation',
   function(
-    $q
+    $q,
+    $window
   ) {
     'use strict';
     'ngInject';
 
     return function() {
+
+      if ($window.medicmobile_android && typeof $window.medicmobile_android.getLocationPermissions === 'function') {
+        $window.medicmobile_android.getLocationPermissions();
+      }
 
       if (!navigator.geolocation) {
         return $q.reject({
