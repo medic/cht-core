@@ -21,11 +21,11 @@
 
       <div class="item-summary" (click)="toggleExpand(selection)">
         <span class="icon" [innerHTML]="summaries[$index] | formIcon:forms"></span>
-        <a class="deselect" *ngIf="selectMode" (click)="deselect(summaries[$index], $event)">
+        <a class="deselect" *ngIf="selectMode" (click)="deselect(selection, $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status" *ngIf="validChecks[$index] && summaries[$index].verified === undefined">
+          <div class="status" *ngIf="!validChecks[$index] || summaries[$index].verified !== undefined">
             <span *ngIf="validChecks[$index] && summaries[$index].verified" class="verification-badge verified">
               <report-verify-valid-icon></report-verify-valid-icon>
             </span>
@@ -107,31 +107,32 @@
           <h2 translate>tasks</h2>
           <ul>
             <li *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
-              <h3>{{group.name}}</h3>
-              <p>
-                <span *ngIf="!group.loading">
-                  <!--TODO migrate these functions-->
-                  <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
-                  <a class="btn btn-link" ng-click="mute(selection, group)" ng-show="canMute(group)" translate>Mute</a>
-                  <a class="btn btn-link" ng-click="schedule(selection, group)" ng-show="canSchedule(group)" translate>Schedule</a>
+              <ng-container *ngIf="{ loading: false } as localContext">
+                <h3>{{group.name}}</h3>
+                <p>
+                <span *ngIf="!localContext.loading">
+                  <a class="btn btn-link" (click)="edit(selection, group)" translate>Edit</a>
+                  <a class="btn btn-link" (click)="mute(selection, group, localContext)" *ngIf="canMute(group)" translate>Mute</a>
+                  <a class="btn btn-link" (click)="schedule(selection, group, localContext)" *ngIf="canSchedule(group)" translate>Schedule</a>
                 </span>
-                <span class="inline loader" *ngIf="group.loading"></span>
-              </p>
-              <ul class="task-list">
-                <li *ngFor="let task of group.rows">
-                  <ul>
-                    <li *ngFor="let message of task?.messages">
-                      <p>{{message.message}}</p>
-                      <div class="message-error" *ngIf="message.error">
-                        <span translate>messages.errors.invalid</span>
-                        <span translate>{{message.error}}</span>
-                      </div>
-                    </li>
-                  </ul>
-                  <span class="task-state {{ task.error ? 'has-error' : ''}}" [innerHTML]="task | state | async"></span>
-                </li>
-                <li class="clear"></li>
-              </ul>
+                  <span class="inline loader" *ngIf="localContext.loading"></span>
+                </p>
+                <ul class="task-list">
+                  <li *ngFor="let task of group.rows_sorted">
+                    <ul>
+                      <li *ngFor="let message of task?.messages">
+                        <p>{{message.message}}</p>
+                        <div class="message-error" *ngIf="message.error">
+                          <span translate>messages.errors.invalid</span>
+                          <span translate>{{message.error}}</span>
+                        </div>
+                      </li>
+                    </ul>
+                    <span class="task-state {{ task.error ? 'has-error' : ''}}" [innerHTML]="task | state | async"></span>
+                  </li>
+                  <li class="clear"></li>
+                </ul>
+              </ng-container>
             </li>
           </ul>
         </div>

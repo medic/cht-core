@@ -17,7 +17,7 @@
         <mm-content-row
           *ngFor="let report of reportsList; trackBy: listTrackBy"
           [id]="report._id"
-          route="reports"
+          (click)="toggleSelected(report)"
           [icon]="report.icon"
           [heading]="report.heading"
           [date]="report.reported_date"
@@ -28,6 +28,7 @@
           [statusIcon]="report.statusIcon"
           [lineage]="report.lineage"
           [unread]="!report.read"
+          [selected]="report.selected"
         >
         </mm-content-row>
       </ul>

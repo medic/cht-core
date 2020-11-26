@@ -601,7 +601,7 @@ export class FormatDataRecordService {
       group.rows.push(copy);
     });
     Object.keys(groups).forEach((key) => {
-      groups[key].rows = _.sortBy(groups[key].rows, 'timestamp');
+      groups[key].rows_sorted = _.sortBy(groups[key].rows, 'timestamp');
       doc.scheduled_tasks_by_group.push(groups[key]);
     });
 

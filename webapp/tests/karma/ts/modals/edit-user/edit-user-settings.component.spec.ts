@@ -11,6 +11,7 @@ import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settin
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import {SetLanguageService} from '@mm-services/language.service';
+import { Subject } from 'rxjs';
 
 describe('EditUserSettingsComponent', () => {
 
@@ -20,6 +21,7 @@ describe('EditUserSettingsComponent', () => {
   let updateUserService;
   let languagesService;
   let setLanguageService;
+  let bdModalRef;
 
   beforeEach(async(() => {
     updateUserService = {
@@ -47,6 +49,8 @@ describe('EditUserSettingsComponent', () => {
       )
     };
     setLanguageService = { set: sinon.stub() };
+    bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
+
     return TestBed
       .configureTestingModule({
         declarations: [
@@ -62,7 +66,7 @@ describe('EditUserSettingsComponent', () => {
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: LanguagesService, useValue: languagesService },
           { provide: SetLanguageService, useValue: setLanguageService },
-          { provide: BsModalRef, useValue: new BsModalRef() },
+          { provide: BsModalRef, useValue: bdModalRef },
         ]
       })
       .compileComponents()

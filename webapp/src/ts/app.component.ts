@@ -32,6 +32,8 @@ import { TourService } from '@mm-services/tour.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { CheckDateService } from '@mm-services/check-date.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -66,11 +68,11 @@ export class AppComponent implements OnInit, OnDestroy {
   translationsLoaded;
 
   currentTab = '';
-  showContent = false;
+  showContent;
   privacyPolicyAccepted = true;
   showPrivacyPolicy = false;
-  selectMode = false;
-  minimalTabs = false;
+  selectMode;
+  minimalTabs;
   adminUrl;
   canLogOut = false;
   replicationStatus;
@@ -80,32 +82,34 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor (
     private dbSyncService:DBSyncService,
-    private store: Store,
-    private translateService: TranslateService,
-    private translationLoaderService: TranslationLoaderService,
-    private languageService: LanguageService,
-    private setLanguageService: SetLanguageService,
-    private sessionService: SessionService,
-    private authService: AuthService,
-    private resourceIconsService: ResourceIconsService,
-    private changesService: ChangesService,
-    private updateServiceWorker: UpdateServiceWorkerService,
-    private locationService: LocationService,
-    private modalService: ModalService,
+    private store:Store,
+    private translateService:TranslateService,
+    private translationLoaderService:TranslationLoaderService,
+    private languageService:LanguageService,
+    private setLanguageService:SetLanguageService,
+    private sessionService:SessionService,
+    private authService:AuthService,
+    private resourceIconsService:ResourceIconsService,
+    private changesService:ChangesService,
+    private updateServiceWorker:UpdateServiceWorkerService,
+    private locationService:LocationService,
+    private modalService:ModalService,
     private router:Router,
     private feedbackService:FeedbackService,
     private formatDateService:FormatDateService,
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private countMessageService: CountMessageService,
-    private privacyPoliciesService: PrivacyPoliciesService,
-    private startupModalsService: StartupModalsService,
-    private tourService: TourService,
-    private unreadRecordsService: UnreadRecordsService,
-    private rulesEngineService: RulesEngineService,
-    private recurringProcessManagerService: RecurringProcessManagerService,
+    private changeDetectorRef:ChangeDetectorRef,
+    private countMessageService:CountMessageService,
+    private privacyPoliciesService:PrivacyPoliciesService,
+    private routeSnapshotService:RouteSnapshotService,
+    private startupModalsService:StartupModalsService,
+    private tourService:TourService,
+    private checkDateService:CheckDateService,
+    private unreadRecordsService:UnreadRecordsService,
+    private rulesEngineService:RulesEngineService,
+    private recurringProcessManagerService:RecurringProcessManagerService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -146,6 +150,8 @@ export class AppComponent implements OnInit, OnDestroy {
           this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
+        const data = this.routeSnapshotService.get()?.data;
+        this.globalActions.setSnapshotData(data);
       }
     });
   }
@@ -231,6 +237,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       replicationStatus,
       androidAppVersion,
@@ -239,6 +246,7 @@ export class AppComponent implements OnInit, OnDestroy {
       showContent,
       privacyPolicyAccepted,
       showPrivacyPolicy,
+      selectMode,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
@@ -247,6 +255,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.showContent = showContent;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.selectMode = selectMode;
       this.changeDetectorRef.detectChanges();
     });
 
@@ -350,7 +359,8 @@ export class AppComponent implements OnInit, OnDestroy {
       })
       .then(() => this.initRulesEngine())
       .then(() => this.initUnreadCount())
-      .then(() => this.startRecurringProcesses());
+      .then(() => this.startRecurringProcesses())
+      .then(() => this.checkDateService.check());
   }
 
   ngOnDestroy(): void {
@@ -403,13 +413,13 @@ export class AppComponent implements OnInit, OnDestroy {
           if (err) {
             return console.error('Error fetching form definitions', err);
           }
-          this.nonContactForms = xForms.map((xForm) => {
-            return {
+          this.nonContactForms = xForms
+            .map((xForm) => ({
               code: xForm.internalId,
               icon: xForm.icon,
               title: translateTitle(xForm.translation_key, xForm.title),
-            };
-          });
+            }))
+            .sort((a, b) => a.title - b.title);
         });
       })
       .catch(err => console.error('Failed to retrieve forms', err));
@@ -418,7 +428,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private setAppTitle() {
     this.resourceIconsService.getAppTitle().then(title => {
       document.title = title;
-      (<any>window).$('.header-logo').attr('title', `${title}`);
+      $('.header-logo').attr('title', `${title}`);
     });
   }
 
@@ -603,8 +613,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // initialisation tasks that can occur after the UI has been rendered
     ctrl.setupPromise = SessionService.init()
-      .then(() => initForms())
-      .then(() => CheckDate());
+      .then(() => initForms());
 
     LiveListConfig();
 

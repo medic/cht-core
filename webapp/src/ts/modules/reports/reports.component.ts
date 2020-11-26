@@ -1,5 +1,5 @@
 import { find as _find, assignIn as _assignIn } from 'lodash-es';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
@@ -57,6 +57,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private tourService: TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
+    private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -73,6 +74,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getFilters),
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getEnketoEditedStatus),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       reportsList,
       selectedReports,
@@ -81,14 +83,21 @@ export class ReportsComponent implements OnInit, OnDestroy {
       filters,
       showContent,
       enketoEdited,
+      selectMode,
     ]) => {
       this.reportsList = reportsList;
+      // selected objects have the form
+      //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
+      // where the summary is the data required for the collapsed view,
+      // report is the db doc, and expanded is whether to how the details
+      // or just the summary in the content pane.
       this.selectedReports = selectedReports;
       this.listContains = listContains;
       this.forms = forms;
       this.filters = filters;
       this.showContent = showContent;
       this.enketoEdited = enketoEdited;
+      this.selectMode = selectMode;
     });
     this.subscription.add(reduxSubscription);
 
@@ -126,6 +135,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     // when navigating back from another tab, if there are reports in the state, angular will try to render them
     this.reportsActions.resetReportsList();
     this.reportsActions.setSelectedReports([]);
+    this.globalActions.setSelectMode(false);
   }
 
   private getReportHeading(form, report) {
@@ -238,7 +248,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, report) {
-    return report._id + report._rev + report.read;
+    return report._id + report._rev + report.read + report.selected;
   }
 
   private setActionBarData() {
@@ -253,246 +263,34 @@ export class ReportsComponent implements OnInit, OnDestroy {
         });
         const $link = $(e.target).closest('a');
         $link.addClass('mm-icon-disabled');
-        // todo in the PR that will migrate full functionality of the actionbar
-        // ideally, this should be a new redux action + reducer instead of jquery and timeout
-        /*$timeout(function() {
-         $link.removeClass('mm-icon-disabled');
-         }, 2000);*/
-
+        this.ngZone.runOutsideAngular(() => {
+          setTimeout(() => {
+            $link.removeClass('mm-icon-disabled');
+          }, 2000);
+        });
         this.exportService.export('reports', exportFilters, { humanReadable: true });
       },
     });
   }
-}
-/*
 
-angular
-  .module('inboxControllers')
-  .controller('ReportsCtrl', function(
-    $log,
-    $ngRedux,
-    $scope,
-    $state,
-    $stateParams,
-    $timeout,
-    AddReadStatus,
-    Changes,
-    Export,
-    GlobalActions,
-    LiveList,
-    ReportsActions,
-    Search,
-    SearchFilters,
-    Selectors,
-    ServicesActions,
-    Tour
-  ) {
-    'use strict';
-    'ngInject';
+  toggleSelected(report) {
+    if (!report?._id) {
+      return;
+    }
 
-    const ctrl = this;
-    const mapStateToTarget = state => ({
-      enketoEdited: Selectors.getEnketoEditedStatus(state),
-      filters: Selectors.getFilters(state),
-      forms: Selectors.getForms(state),
-      selectMode: Selectors.getSelectMode(state),
-      selectedReports: Selectors.getSelectedReports(state),
-      selectedReportsDocs: Selectors.getSelectedReportsDocs(state),
-      showContent: Selectors.getShowContent(state),
-      unreadCount: Selectors.getUnreadCount(state),
-      verifyingReport: Selectors.getVerifyingReport(state)
-    });
-    const mapDispatchToTarget = function(dispatch) {
-      const globalActions = GlobalActions(dispatch);
-      const reportsActions = ReportsActions(dispatch);
-      const servicesActions = ServicesActions(dispatch);
-      return Object.assign({}, globalActions, servicesActions, reportsActions);
-    };
-    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-    // selected objects have the form
-    //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
-    // where the summary is the data required for the collapsed view,
-    // report is the db doc, and expanded is whether to how the details
-    // or just the summary in the content pane.
-
-
-
-
-
-    const updateLiveList = function(updated) {
-      return AddReadStatus.reports(updated).then(function() {
-        updated.forEach(function(report) {
-          liveList.update(report);
-        });
-        ctrl.hasReports = liveList.count() > 0;
-        liveList.refresh();
-        if ($state.params.id) {
-          liveList.setSelected($state.params.id);
-        }
-        setActionBarData();
-        return updated;
-      });
-    };
-
-    const query = function(opts) {
-      const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
-      if (options.limit < PAGE_SIZE) {
-        options.limit = PAGE_SIZE;
-      }
-      if (!options.silent) {
-        ctrl.error = false;
-        ctrl.errorSyntax = false;
-        ctrl.loading = true;
-        if (ctrl.selectedReports.length && responsive.isMobile()) {
-          ctrl.unsetSelected();
-        }
-      }
-      if (options.skip) {
-        ctrl.appending = true;
-        options.skip = liveList.count();
-      } else if (!options.silent) {
-        liveList.set([]);
-      }
-
-      Search('reports', ctrl.filters, options)
-        .then(updateLiveList)
-        .then(function(data) {
-          ctrl.moreItems = liveList.moreItems = data.length >= options.limit;
-          ctrl.loading = false;
-          ctrl.appending = false;
-          ctrl.error = false;
-          ctrl.errorSyntax = false;
-          if (
-            !$state.params.id &&
-            !responsive.isMobile() &&
-            !ctrl.selectedReports &&
-            !ctrl.selectMode &&
-            $state.is('reports.detail')
-          ) {
-            $timeout(function() {
-              const id = $('.inbox-items li')
-                .first()
-                .attr('data-record-id');
-              $state.go('reports.detail', { id: id }, { location: 'replace' });
-            });
-          }
-          syncCheckboxes();
-          initScroll();
-        })
-        .catch(function(err) {
-          ctrl.error = true;
-          ctrl.loading = false;
-          if (
-            ctrl.filters.search &&
-            err.reason &&
-            err.reason.toLowerCase().indexOf('bad query syntax') !== -1
-          ) {
-            // invalid freetext filter query
-            ctrl.errorSyntax = true;
-          }
-          $log.error('Error loading messages', err);
-        });
-    };
-
-    /!**
-     * @param {Boolean} force Show list even if viewing the content on mobile
-     *!/
-    ctrl.search = function(force) {
-      // clears report selection for any text search or filter selection
-      // does not clear selection when someone is editing a form
-      if((ctrl.filters.search || Object.keys(ctrl.filters).length > 1) && !ctrl.enketoEdited) {
-        $state.go('reports.detail', { id: null }, { notify: false });
-        ctrl.clearSelection();
-      }
-      if (!force && responsive.isMobile() && ctrl.showContent) {
-        // leave content shown
-        return;
-      }
-      ctrl.loading = true;
-      if (
-        ctrl.filters.search ||
-        (ctrl.filters.forms &&
-          ctrl.filters.forms.selected &&
-          ctrl.filters.forms.selected.length) ||
-        (ctrl.filters.facilities &&
-          ctrl.filters.facilities.selected &&
-          ctrl.filters.facilities.selected.length) ||
-        (ctrl.filters.date &&
-          (ctrl.filters.date.to || ctrl.filters.date.from)) ||
-        (ctrl.filters.valid === true || ctrl.filters.valid === false) ||
-        (ctrl.filters.verified && ctrl.filters.verified.length)
-      ) {
-        ctrl.filtered = true;
-        liveList = LiveList['report-search'];
+    if (this.selectMode) {
+      const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
+      if (!isSelected) {
+        // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
+        // the selectReport action will actually get all details
+        this.reportsActions.addSelectedReport(report);
+        this.reportsActions.selectReport(report);
       } else {
-        ctrl.filtered = false;
-        liveList = LiveList.reports;
+        this.reportsActions.removeSelectedReport(report);
       }
-      query();
-    };
-
-    const initScroll = function() {
-      scrollLoader.init(function() {
-        if (!ctrl.loading && ctrl.moreItems) {
-          query({ skip: true });
-        }
-      });
-    };
-
-    if (!$state.params.id) {
-      ctrl.unsetSelected();
+      return;
     }
 
-    if ($stateParams.tour) {
-      Tour.start($stateParams.tour);
-    }
-
-
-
-    ctrl.search();
-
-    $('.inbox').on('click', '#reports-list .content-row', function(e) {
-      if (ctrl.selectMode) {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = $(e.target).closest('li[data-record-id]');
-        const reportId = target.attr('data-record-id');
-        const checkbox = target.find('input[type="checkbox"]');
-        const alreadySelected = _.find(ctrl.selectedReports, { _id: reportId });
-        // timeout so if the user clicked the checkbox it has time to
-        // register before we set it to the correct value.
-        $timeout(function() {
-          checkbox.prop('checked', !alreadySelected);
-          if (!alreadySelected) {
-            ctrl.selectReport(reportId);
-          } else {
-            ctrl.removeSelectedReport(reportId);
-          }
-        });
-      }
-    });
-
-    const syncCheckboxes = function() {
-      $('#reports-list li').each(function() {
-        const id = $(this).attr('data-record-id');
-        const found = _.find(ctrl.selectedReports, { _id: id });
-        $(this)
-          .find('input[type="checkbox"]')
-          .prop('checked', found);
-      });
-    };
-
-    setActionBarData();
-
-    $scope.$on('$destroy', function() {
-      unsubscribe();
-      changeListener.unsubscribe();
-      if (!$state.includes('reports')) {
-        SearchFilters.destroy();
-        LiveList.$reset('reports', 'report-search');
-        $('.inbox').off('click', '#reports-list .content-row');
-      }
-    });
-  });
-*/
+    this.router.navigate(['/reports', report._id]);
+  }
+}

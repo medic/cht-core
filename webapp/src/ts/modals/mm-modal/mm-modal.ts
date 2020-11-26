@@ -41,6 +41,8 @@ export class MmModalAbstract {
   readonly modalClosePromise;
   static id;
 
+  private resolved = false;
+
   constructor(
     public bsModalRef:BsModalRef,
   ) {
@@ -55,6 +57,10 @@ export class MmModalAbstract {
       this.modalClosePromise.resolve = resolve;
       this.modalClosePromise.reject = reject;
     });
+
+    bsModalRef.onHide
+      .pipe(take(1)) // so we don't need to unsubscribe
+      .subscribe(() => !this.resolved && this.cancel());
   }
 
   status = {
@@ -93,11 +99,13 @@ export class MmModalAbstract {
   modalAccept() {
     this.modalClosePromise?.resolve && this.modalClosePromise.resolve();
     this.bsModalRef.hide();
+    this.resolved = true;
   }
 
   modalReject() {
     this.modalClosePromise?.reject && this.modalClosePromise.reject();
     this.bsModalRef.hide();
+    this.resolved = true;
   }
 }
 

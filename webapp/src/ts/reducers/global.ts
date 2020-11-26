@@ -9,6 +9,7 @@ const initialState = {
   },
   cancelCallback: null,
   currentTab: null,
+  snapshotData: null,
   enketoStatus: {
     edited: false,
     saving: false,
@@ -50,6 +51,9 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setCurrentTab, (state, { payload: { currentTab } }) => {
     return { ...state, currentTab };
+  }),
+  on(Actions.setSnapshotData, (state, { payload: { snapshotData } }) => {
+    return { ...state, snapshotData };
   }),
   on(Actions.setSnackbarContent, (state, { payload: { content } }) => {
     return { ...state, snackbarContent: content };
@@ -93,6 +97,21 @@ const _globalReducer = createReducer(
       actionBar: { ...state.actionBar, left }
     };
   }),
+  on(Actions.setRightActionBar, (state, { payload: { right } }) => {
+    return {
+      ...state,
+      actionBar: { ...state.actionBar, right }
+    };
+  }),
+  on(Actions.setRightActionBarVerified, (state, { payload: { verified } }) => {
+    return {
+      ...state,
+      actionBar: {
+        ...state.actionBar,
+        right: { ...state.actionBar?.right, verified },
+      },
+    };
+  }),
   on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
     return {
       ...state,
@@ -107,6 +126,9 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
     return { ...state, cancelCallback };
+  }),
+  on(Actions.setLoadingSubActionbar, (state, { payload: { loading } }) => {
+    return { ...state, loadingSubActionBar: loading };
   }),
   on(Actions.setUnreadCount, (state, { payload: { unreadCount } }) => {
     return { ...state, unreadCount: unreadCount };
@@ -126,32 +148,8 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
-  case actionTypes.SET_ACTION_BAR_LEFT:
-    return Object.assign({}, state, {
-      actionBar: Object.assign({}, state.actionBar, {
-        left: Object.assign({}, state.actionBar.left, action.payload.left)
-      })
-    });
-  case actionTypes.SET_ACTION_BAR_RIGHT:
-    return Object.assign({}, state, {
-      actionBar: Object.assign({}, state.actionBar, {
-        right: Object.assign({}, state.actionBar.right, action.payload.right)
-      })
-    });
-  case actionTypes.SET_ACTION_BAR_RIGHT_VERIFIED:
-    return Object.assign({}, state, {
-      actionBar: Object.assign({}, state.actionBar, {
-        right: Object.assign({}, state.actionBar.right, { verified: action.payload.verified })
-      })
-    });
-  case actionTypes.SET_CANCEL_CALLBACK:
-    return Object.assign({}, state, { cancelCallback: action.payload.cancelCallback });
-  case actionTypes.SET_ENKETO_STATUS:
-    return Object.assign({}, state, {
-      enketoStatus: Object.assign({}, state.enketoStatus, action.payload.enketoStatus)
-    });
-  case actionTypes.SET_LOADING_SUB_ACTION_BAR:
-    return Object.assign({}, state, { loadingSubActionBar: action.payload.loadingSubActionBar });
+  case actionTypes.SET_UNREAD_COUNT:
+    return Object.assign({}, state, { unreadCount: action.payload.unreadCount });
   case actionTypes.SET_VERSION:
     return Object.assign({}, state, { version: action.payload.version });
   default:

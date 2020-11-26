@@ -91,7 +91,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   openTourSelect() {
-    this.modalService.show(TourSelectComponent)
+    this.modalService
+      .show(TourSelectComponent)
       .catch(() => {});
   }
 
