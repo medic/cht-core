@@ -227,6 +227,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     });
 
     this.contentError = false;
+    this.resetFormError();
     if (action.type === 'report') {
       this.loadingForm = true;
       this.formId = action.form;

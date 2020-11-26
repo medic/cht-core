@@ -162,6 +162,59 @@ describe('TasksContentComponent', () => {
     });
   });
 
+  it('successful hydration with existent action content', async () => {
+    tasks = [{
+      _id: '123',
+      forId: 'contact',
+      actions: [{
+        type: 'report',
+        form: 'A',
+        content: {
+          something: 'nothing',
+          contact: { some: 'thing' },
+        },
+      }, {
+        type: 'report',
+        form: 'B',
+        content: {
+          something: 'other',
+        },
+      }]
+    }];
+    const setSelectedTask = sinon.stub(TasksActions.prototype, 'setSelectedTask');
+    const form = { _id: 'myform', title: 'My Form' };
+    XmlForms.get.resolves(form);
+    geolocationService.init.returns({ just: 'an object reference' });
+    await compileComponent();
+
+    expect(get.callCount).to.eq(1);
+    expect(get.args).to.deep.eq([['contact']]);
+
+    expect(render.callCount).to.eq(0);
+    expect(setSelectedTask.callCount).to.equal(1);
+    expect(setSelectedTask.args[0]).to.deep.equal([
+      {
+        _id: '123',
+        forId: 'contact',
+        actions: [{
+          type: 'report',
+          form: 'A',
+          content: {
+            something: 'nothing',
+            contact: { some: 'thing' },
+          },
+        }, {
+          type: 'report',
+          form: 'B',
+          content: {
+            something: 'other',
+            contact: { _id: 'contact' },
+          },
+        }]
+      }
+    ]);
+  });
+
   it('unsuccessful hydration', async () => {
     get.rejects({ status: 404 });
     tasks = [{
