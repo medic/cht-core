@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subscription, Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -13,16 +13,14 @@ import { GlobalActions } from '@mm-actions/global';
   selector: 'analytics-target-aggregates-detail',
   templateUrl: './analytics-target-aggregates-detail.component.html'
 })
-export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestroy {
+export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestroy, AfterViewInit {
   private targetAggregatesActions: TargetAggregatesActions;
   private globalActions: GlobalActions;
   subscriptions: Subscription = new Subscription();
-  private aggregates = null;
   selected = null;
   error = null;
-  // Defaulting value so initially it'll be different from route's params and show content section
-  private paramTargetId = null;
-  private shouldLoadDetail;
+  private aggregates = null;
+  private viewInited = new Subject();
 
   constructor(
     private store: Store,
@@ -36,40 +34,46 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   }
 
   ngOnInit(): void {
-    const subscription = combineLatest(
-      this.route.params,
-      this.store.select(Selectors.getTargetAggregates),
-      this.store.select(Selectors.getSelectedTargetAggregate),
-      this.store.select(Selectors.getTargetAggregatesError),
-    )
-      .subscribe(([
-        params,
-        aggregates,
-        selected,
-        error
-      ]) => {
-        this.selected = selected;
-        this.error = error;
-        this.aggregates = aggregates;
-        this.shouldLoadDetail = this.paramTargetId !== params.id;
-        this.paramTargetId = params.id;
-        this.getAggregatesDetail(this.paramTargetId);
-        this.changeDetectorRef.detectChanges();
-      });
-    this.subscriptions.add(subscription);
+    this.subscribeToStore();
+    this.subscribeToRouteParams();
+  }
+
+  ngAfterViewInit(): void {
+    this.viewInited.next(true);
+    this.changeDetectorRef.detectChanges();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
+  private subscribeToStore() {
+    const subscriptionStore = combineLatest(
+      this.store.select(Selectors.getTargetAggregates),
+      this.store.select(Selectors.getSelectedTargetAggregate),
+      this.store.select(Selectors.getTargetAggregatesError)
+    ).subscribe(([aggregates, selected, error]) => {
+      this.aggregates = aggregates;
+      this.selected = selected;
+      this.error = error;
+    });
+    this.subscriptions.add(subscriptionStore);
+  }
+
+  private subscribeToRouteParams() {
+    const subscription = combineLatest(
+      this.route.params,
+      this.viewInited,
+      this.store.select(Selectors.getTargetAggregatesLoaded),
+    ).subscribe(([params, inited, loaded]) => {
+      if (loaded && inited && params) {
+        this.getAggregatesDetail(params.id);
+      }
+    });
+    this.subscriptions.add(subscription);
+  }
+
   private getAggregatesDetail(aggregateId) {
-    if (!this.aggregates || !this.shouldLoadDetail) {
-      return;
-    }
-
-    this.shouldLoadDetail = false;
-
     if (!aggregateId) {
       this.globalActions.setShowContent(false);
       this.targetAggregatesActions.setSelectedTargetAggregate(null);

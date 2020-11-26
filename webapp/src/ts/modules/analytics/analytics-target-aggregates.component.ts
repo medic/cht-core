@@ -35,6 +35,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
     this.targetAggregatesActions.setTargetAggregatesError(null);
     this.targetAggregatesActions.setTargetAggregates(null);
+    this.targetAggregatesActions.setTargetAggregates(false);
   }
 
   private subscribeToStore() {
@@ -69,6 +70,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       })
       .then(aggregates => {
         this.targetAggregatesActions.setTargetAggregates(aggregates);
+        this.targetAggregatesActions.setTargetAggregatesLoaded(true);
       })
       .catch(err => {
         console.error('Error getting aggregate targets', err);

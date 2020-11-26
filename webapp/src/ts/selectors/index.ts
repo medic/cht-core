@@ -91,6 +91,10 @@ export const Selectors = {
     getTargetAggregatesState,
     (targetAggregatesState) => targetAggregatesState.selected
   ),
+  getTargetAggregatesLoaded: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.targetAggregatesLoaded
+  ),
   getTargetAggregatesError: createSelector(
     getTargetAggregatesState,
     (targetAggregatesState) => targetAggregatesState.error

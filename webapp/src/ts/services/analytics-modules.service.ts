@@ -42,7 +42,8 @@ export class AnalyticsModulesService {
     };
   }
 
-  private getReportingRatesModule(settings, scheduledForms) { // ToDo: To confirm if removing this module. Migration: #26
+  private getReportingRatesModule(settings, scheduledForms) {
+    // ToDo: To confirm if removing this module. Migration: #26
     return {
       id: 'reporting',
       label: 'Reporting Rates',
