@@ -1,7 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
-import { Actions } from '../actions/tasks';
-import { Actions as GlobalActions } from '../actions/global';
+import { Actions } from '@mm-actions/tasks';
+import { Actions as GlobalActions } from '@mm-actions/global';
 
 const initialState = {
   tasksList: [],

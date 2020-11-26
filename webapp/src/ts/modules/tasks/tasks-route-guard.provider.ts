@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
-import { TasksContentComponent } from './tasks-content.component';
+import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 
 @Injectable({
   providedIn: 'root'

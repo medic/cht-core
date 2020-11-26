@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
 import { TranslateService } from '@ngx-translate/core';
@@ -41,7 +41,7 @@ export class RulesEngineCoreFactoryService {
 @Injectable({
   providedIn: 'root'
 })
-export class RulesEngineService {
+export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
   private readonly MAX_LINEAGE_DEPTH = 50;
   private readonly ENSURE_FRESHNESS_SECS = 120;
@@ -68,6 +68,10 @@ export class RulesEngineService {
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   private initialize() {
