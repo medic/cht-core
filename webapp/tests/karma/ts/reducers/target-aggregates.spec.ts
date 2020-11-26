@@ -11,6 +11,7 @@ describe('Target Aggregates Reducer', () => {
       selected: null,
       targetAggregates: [],
       error: false,
+      targetAggregatesLoaded: false,
     };
   });
 
@@ -75,6 +76,7 @@ describe('Target Aggregates Reducer', () => {
       selected: null,
       targetAggregates: [{id: '124'}, {id: '567'}],
       error: false,
+      targetAggregatesLoaded: false,
     };
     const data = {id: '124'};
     const action = Actions.setSelectedTargetAggregate(data);
@@ -94,6 +96,7 @@ describe('Target Aggregates Reducer', () => {
       selected: {id: '124'},
       targetAggregates: [{id: '124', selected: true}, {id: '567', selected: false}],
       error: false,
+      targetAggregatesLoaded: false,
     };
     const data = {id: '567'};
     const action = Actions.setSelectedTargetAggregate(data);

@@ -41,7 +41,8 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     const mockSelectors = [
       { selector: Selectors.getTargetAggregates, value: [ 'aggregates' ] },
       { selector: Selectors.getSelectedTargetAggregate, value: null },
-      { selector: Selectors.getTargetAggregatesError, value: null }
+      { selector: Selectors.getTargetAggregatesError, value: null },
+      { selector: Selectors.getTargetAggregatesLoaded, value: true }
     ];
 
     return TestBed
