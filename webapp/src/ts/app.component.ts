@@ -468,7 +468,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private initUnreadCount() {
     this.unreadRecordsService.init((err, data) => {
       if (err) {
-        return console.error('Error fetching read status', err);
+        console.error('Error fetching read status', err);
+        return;
       }
       this.globalActions.setUnreadCount(data);
     });

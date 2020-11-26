@@ -137,8 +137,7 @@ angular.module('inboxDirectives').directive('mmHeader', function() {
       const mapStateToTarget = function(state) {
         return {
           currentTab: Selectors.getCurrentTab(state),
-          replicationStatus: Selectors.getReplicationStatus(state),
-          showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state)
+          replicationStatus: Selectors.getReplicationStatus(state)
         };
       };
       const mapDispatchToTarget = function(dispatch) {
