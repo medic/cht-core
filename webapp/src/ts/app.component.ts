@@ -31,6 +31,7 @@ import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { TourService } from '@mm-services/tour.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { CheckDateService } from '@mm-services/check-date.service';
+import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -75,6 +76,7 @@ export class AppComponent implements OnInit {
   replicationStatus;
   androidAppVersion;
   nonContactForms;
+  expiredModalShown = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -416,12 +418,12 @@ export class AppComponent implements OnInit {
   }
 
   private showSessionExpired() {
-    /* Modal({
-     templateUrl: 'templates/modals/session_expired.html',
-     controller: 'SessionExpiredModalCtrl',
-     controllerAs: 'SessionExpiredModalCtrl',
-     singleton: true,
-     });*/
+    if (!this.expiredModalShown) {
+      this.expiredModalShown = true;
+      this.modalService
+        .show(SessionExpiredComponent)
+        .catch(() => this.expiredModalShown = false);
+    }
   }
 
   private showUpdateReady() {
@@ -729,15 +731,6 @@ export class AppComponent implements OnInit {
         }, 2 * 60 * 60 * 1000);
       });
       closeDropdowns();
-    };
-
-    const showSessionExpired = function() {
-      Modal({
-        templateUrl: 'templates/modals/session_expired.html',
-        controller: 'SessionExpiredModalCtrl',
-        controllerAs: 'SessionExpiredModalCtrl',
-        singleton: true,
-      });
     };
 
     ChangesService({
