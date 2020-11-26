@@ -1,11 +1,12 @@
 import { Store, createAction } from '@ngrx/store';
-import { createSingleValueAction } from './actionUtils';
+import { createSingleValueAction, createMultiValueAction } from './actionUtils';
 
 export const Actions = {
   updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts'),
   setSelectedContacts: createSingleValueAction('SET_SELECTED_CONTACTS', 'selected'),
   resetContactsList: createAction('RESET_CONTACTS_LIST'),
   removeContactFromList: createSingleValueAction('REMOVE_CONTACT_FROM_LIST', 'contact'),
+  selectContact: createMultiValueAction('SELECT_CONTACT')
 };
 
 export class ContactsActions {
@@ -27,6 +28,10 @@ export class ContactsActions {
 
   removeContactFromList(contact) {
     return this.store.dispatch(Actions.removeContactFromList(contact));
+  }
+
+  selectContact(contact) {
+    return this.store.dispatch(Actions.selectContact({ contact }));
   }
 
   // const translateTitle = (key, label) => {
