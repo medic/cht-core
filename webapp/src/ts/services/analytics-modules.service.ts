@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { SettingsService } from './settings.service';
 import { AuthService } from './auth.service';
 import { ScheduledFormsService } from './scheduled-forms.service';
@@ -12,11 +13,11 @@ export class AnalyticsModulesService {
     private authService:AuthService,
     private scheduledFormsService:ScheduledFormsService,
     private settingsService:SettingsService,
-  ) {
-  }
+  ) { }
 
   private getTargetsModule(settings) {
     return {
+      id: 'targets',
       label: 'analytics.targets',
       route: 'analytics/targets',
       available: () => {
@@ -29,8 +30,9 @@ export class AnalyticsModulesService {
 
   private getTargetAggregatesModule (settings, canAggregateTargets) {
     return {
+      id: 'target-aggregates',
       label: 'analytics.target.aggregates',
-      route: 'analytics/target-aggregates/detail',
+      route: 'analytics/target-aggregates',
       available: () => {
         return settings.tasks &&
           settings.tasks.targets &&
@@ -41,7 +43,9 @@ export class AnalyticsModulesService {
   }
 
   private getReportingRatesModule(settings, scheduledForms) {
+    // ToDo: To confirm if removing this module. Migration: #26
     return {
+      id: 'reporting',
       label: 'Reporting Rates',
       route: 'analytics/reporting',
       available: () => {
@@ -67,7 +71,7 @@ export class AnalyticsModulesService {
       ])
       .then(([settings, scheduledForms, canAggregateTargets]) => {
         const modules = this.getModules(settings, scheduledForms, canAggregateTargets);
-        console.debug('AnalyticsMobules. Enabled modules: ', modules.map(module => module.label));
+        console.debug('AnalyticsModules. Enabled modules: ', modules.map(module => module.label));
         return modules;
       });
   }
