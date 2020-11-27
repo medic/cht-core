@@ -81,13 +81,13 @@ export const Selectors = {
   getSelectedContact: createSelector(getContactsState, (contactsState) => contactsState.selected),
   getLoadingSelectedContactChildren: createSelector(
     getContactsState,
-    (contactsState) => contactsState.contacts.contacts
+    (contactsState) => contactsState.contacts
   ),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
-    (contactsState) => contactsState.contacts.contacts
+    (contactsState) => contactsState.contacts
   ),
-  getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.contacts.contacts),
+  getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.loadingSummary),
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 };

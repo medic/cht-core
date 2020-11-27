@@ -48,7 +48,6 @@ export class ContactsContentComponent implements OnInit {
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
-      console.log('selcted contact is', selectedContact);
       this.selectedContact = selectedContact;
       this.selectedContactChildren = selectedContactChildren;
       this.loadingContent = loadingContent;

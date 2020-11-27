@@ -6,7 +6,12 @@ export const Actions = {
   setSelectedContacts: createSingleValueAction('SET_SELECTED_CONTACTS', 'selected'),
   resetContactsList: createAction('RESET_CONTACTS_LIST'),
   removeContactFromList: createSingleValueAction('REMOVE_CONTACT_FROM_LIST', 'contact'),
-  selectContact: createMultiValueAction('SELECT_CONTACT')
+  selectContact: createMultiValueAction('SELECT_CONTACT'),
+  setSelected: createSingleValueAction('SET_SELECTED_CONTACT', 'selected'),
+  setContactsLoadingSummary: createSingleValueAction('SET_CONTACT_LOADING_SUMMARY', 'value'),
+  setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
+  receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
+  receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports')
 };
 
 export class ContactsActions {
@@ -30,8 +35,28 @@ export class ContactsActions {
     return this.store.dispatch(Actions.removeContactFromList(contact));
   }
 
-  selectContact(contact) {
-    return this.store.dispatch(Actions.selectContact({ contact }));
+  selectContact(id, { silent=false }={}) {
+    return this.store.dispatch(Actions.selectContact({ id, silent }));
+  }
+
+  setSelected(model) {
+    return this.store.dispatch(Actions.setSelected(model));
+  }
+
+  setContactsLoadingSummary(value) {
+    return this.store.dispatch(Actions.setContactsLoadingSummary(value));
+  }
+
+  setLoadingSelectedContact() {
+    return this.store.dispatch(Actions.setLoadingSelectedContact());
+  }
+
+  receiveSelectedContactChildren(children) {
+    return this.store.dispatch(Actions.receiveSelectedContactChildren(children));
+  }
+
+  receiveSelectedContactReports(reports) {
+    return this.store.dispatch(Actions.receiveSelectedContactReports(reports));
   }
 
   // const translateTitle = (key, label) => {
