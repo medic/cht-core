@@ -31,7 +31,7 @@ export class RecurringProcessManagerService {
     }
 
     this.recurringProcesses.updateRelativeDates = setInterval(
-      this.relativeDateService.updateRelativeDates,
+      () => this.relativeDateService.updateRelativeDates(),
       10 * 60 * 1000
     );
   }
@@ -46,7 +46,7 @@ export class RecurringProcessManagerService {
     }
 
     this.recurringProcesses.updateReadDocsCount = setInterval(
-      this.unreadRecordsService.count,
+      () => this.unreadRecordsService.count(),
       5 * 60 * 1000
     );
   }

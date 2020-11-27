@@ -76,9 +76,8 @@ export class ReportsEffects {
       ofType(ReportActionList.setSelected),
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectMode)),
-        this.store.pipe(select(Selectors.getUnreadCount))
       ),
-      exhaustMap(([{ payload: { selected } }, selectMode, unreadCount]) => {
+      exhaustMap(([{ payload: { selected } }, selectMode]) => {
         const model = { ...selected };
         let refreshing = true;
 
@@ -98,10 +97,6 @@ export class ReportsEffects {
             this.selectedReports[0]._id === selected?.doc?._id;
           if (!refreshing) {
             this.reportActions.setVerifyingReport(false);
-          }
-
-          if (unreadCount) {
-            this.globalActions.updateUnreadCount({ report: unreadCount.report - 1 });
           }
 
           model.expanded = true;
@@ -133,12 +128,20 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.markReportRead),
       concatMap(action => of(action).pipe(
-        withLatestFrom(this.store.select(Selectors.getListReport, { id: action?.payload?.id })),
+        withLatestFrom(
+          this.store.select(Selectors.getListReport, { id: action?.payload?.id }),
+          this.store.pipe(select(Selectors.getUnreadCount))
+        ),
       )),
-      exhaustMap(([action, report]) => {
+      exhaustMap(([action, report, unreadCount]) => {
         if ((report && report.read) || !action?.payload?.id) {
           return of();
         }
+
+        if (unreadCount) {
+          this.globalActions.updateUnreadCount({ report: unreadCount.report - 1 });
+        }
+
         // we could be reaching this effect before the list is loaded
         // in these cases, we skip updating the list and just update the database
         const readReport = report ? { ...report, read: true } : { _id: action?.payload?.id, form: true };

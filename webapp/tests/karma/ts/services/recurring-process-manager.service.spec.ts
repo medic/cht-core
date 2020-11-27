@@ -44,8 +44,11 @@ describe('RecurringProcessManagerService', () => {
     service.startUpdateRelativeDate();
     
     expect(setInterval.callCount).to.equal(1);
-    expect(setInterval.args[0][0]).to.equal(relativeDateService.updateRelativeDates);
     expect(setInterval.args[0][1]).to.equal(10 * 60 * 1000);
+    const updateRelativeDates = setInterval.args[0][0];
+    updateRelativeDates();
+    expect(updateRelativeDates).to.be.a('function');
+    expect(relativeDateService.updateRelativeDates.callCount).to.equal(1);
   });
 
   it('should cancel the UpdateRelativeDates interval', () => {
@@ -73,8 +76,11 @@ describe('RecurringProcessManagerService', () => {
     service.startUpdateReadDocsCount();
 
     expect(setInterval.callCount).to.equal(1);
-    expect(setInterval.args[0][0]).to.equal(unreadRecordsService.count);
     expect(setInterval.args[0][1]).to.equal(5 * 60 * 1000);
+    const count = setInterval.args[0][0];
+    count();
+    expect(count).to.be.a('function');
+    expect(unreadRecordsService.count.callCount).to.equal(1);
   });
 
   it('should cancel the UpdateReadDocsCount interval', () => {
