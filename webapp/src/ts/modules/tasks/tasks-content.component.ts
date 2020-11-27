@@ -18,10 +18,6 @@ import { DbService } from '@mm-services/db.service';
   templateUrl: './tasks-content.component.html'
 })
 export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
-  subscription = new Subscription();
-  private globalActions;
-  private tasksActions;
-
   constructor(
     private translateService:TranslateService,
     private route:ActivatedRoute,
@@ -37,6 +33,10 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
   }
+
+  subscription = new Subscription();
+  private globalActions;
+  private tasksActions;
 
   enketoStatus;
   enketoEdited;
@@ -167,7 +167,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
           return {
             ...action,
             content: {
-              ...action.content,
+              ...action?.content,
               contact: action?.content?.contact || contact
             },
           };
@@ -208,6 +208,24 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  private renderForm(action, formDoc) {
+    this.globalActions.setEnketoEditedStatus(false);
+    const markFormEdited = this.markFormEdited.bind(this);
+    const resetFormError = this.resetFormError.bind(this);
+
+    return this.enketoService
+      .render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
+      .then((formInstance) => {
+        this.form = formInstance;
+        this.loadingForm = false;
+        if (formDoc.translation_key) {
+          this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
+        } else {
+          this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
+        }
+      });
+  }
+
   performAction(action, skipDetails?) {
     if (!action) {
       return;
@@ -233,23 +251,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       this.formId = action.form;
       return this.xmlFormsService
         .get(action.form)
-        .then((formDoc) => {
-          this.globalActions.setEnketoEditedStatus(false);
-          const markFormEdited = this.markFormEdited.bind(this);
-          const resetFormError = this.resetFormError.bind(this);
-
-          return this.enketoService
-            .render('#task-report', formDoc, action.content, markFormEdited, resetFormError)
-            .then((formInstance) => {
-              this.form = formInstance;
-              this.loadingForm = false;
-              if (formDoc.translation_key) {
-                this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
-              } else {
-                this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
-              }
-            });
-        })
+        .then((formDoc) => this.renderForm(action, formDoc))
         .then(() => {
           this.telemetryData.postRender = Date.now();
           this.telemetryData.action = action.content.doc ? 'edit' : 'add';

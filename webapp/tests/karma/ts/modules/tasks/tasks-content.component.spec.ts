@@ -23,7 +23,7 @@ describe('TasksContentComponent', () => {
   let setEnketoEditedStatus;
   let render;
   let get;
-  let XmlForms;
+  let xmlFormsService;
   let route;
   let store;
   let geolocationService;
@@ -36,7 +36,7 @@ describe('TasksContentComponent', () => {
 
   beforeEach(() => {
     render = sinon.stub().resolves();
-    XmlForms = { get: sinon.stub().resolves() };
+    xmlFormsService = { get: sinon.stub().resolves() };
     get = sinon.stub().resolves({ _id: 'contact' });
     route = { params: new Observable(obs => obs.next({ id: '123' })) };
     setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
@@ -62,7 +62,7 @@ describe('TasksContentComponent', () => {
         { provide: ActivatedRoute, useValue: route },
         { provide: EnketoService, useValue: enketoService },
         { provide: DbService, useValue: { get: () => ({ get })}},
-        { provide: XmlFormsService, useValue: XmlForms },
+        { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: TelemetryService, useValue: { record: sinon.stub() }},
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
@@ -99,7 +99,7 @@ describe('TasksContentComponent', () => {
       }]
     }];
     const form = { _id: 'myform', title: 'My Form' };
-    XmlForms.get.resolves(form);
+    xmlFormsService.get.resolves(form);
 
     await compileComponent();
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
@@ -118,7 +118,7 @@ describe('TasksContentComponent', () => {
       }]
     }];
     const form = { _id: 'myform', title: 'My Form' };
-    XmlForms.get.resolves(form);
+    xmlFormsService.get.resolves(form);
     await compileComponent();
 
     expect(component.formId).to.equal('A');
@@ -146,7 +146,7 @@ describe('TasksContentComponent', () => {
       }]
     }];
     const form = { _id: 'myform', title: 'My Form' };
-    XmlForms.get.resolves(form);
+    xmlFormsService.get.resolves(form);
     geolocationService.init.returns({ just: 'an object reference' });
     await compileComponent();
 
@@ -183,7 +183,7 @@ describe('TasksContentComponent', () => {
     }];
     const setSelectedTask = sinon.stub(TasksActions.prototype, 'setSelectedTask');
     const form = { _id: 'myform', title: 'My Form' };
-    XmlForms.get.resolves(form);
+    xmlFormsService.get.resolves(form);
     geolocationService.init.returns({ just: 'an object reference' });
     await compileComponent();
 
@@ -226,7 +226,7 @@ describe('TasksContentComponent', () => {
       }]
     }];
     const form = { _id: 'myform', title: 'My Form' };
-    XmlForms.get.resolves(form);
+    xmlFormsService.get.resolves(form);
     await compileComponent();
 
     expect(get.callCount).to.eq(1);
@@ -237,7 +237,7 @@ describe('TasksContentComponent', () => {
   });
 
   it('should work when form not found', async () => {
-    XmlForms.get.rejects({ status: 404 });
+    xmlFormsService.get.rejects({ status: 404 });
     tasks = [{
       _id: '123',
       forId: 'dne',
@@ -299,7 +299,7 @@ describe('TasksContentComponent', () => {
         content: 'nothing'
       }]
     }];
-    XmlForms.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
+    xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
     await compileComponent();
 
     expect(component.loadingForm).to.equal(false);
@@ -319,7 +319,7 @@ describe('TasksContentComponent', () => {
       }]
     };
     const form = { _id: 'myform', title: 'My Form' };
-    XmlForms.get.resolves(form);
+    xmlFormsService.get.resolves(form);
     store.overrideSelector(Selectors.getTasksLoaded, false);
     store.refreshState();
 
@@ -354,7 +354,7 @@ describe('TasksContentComponent', () => {
       sinon.resetHistory();
       await component.performAction(undefined);
 
-      expect(XmlForms.get.callCount).to.equal(0);
+      expect(xmlFormsService.get.callCount).to.equal(0);
       expect((<any>GlobalActions.prototype.setCancelCallback).callCount).to.equal(0);
     });
 
@@ -411,7 +411,7 @@ describe('TasksContentComponent', () => {
 
     it('should render form when action type is report', async () => {
       const form = { _id: 'myform', title: 'My Form' };
-      XmlForms.get.resolves(form);
+      xmlFormsService.get.resolves(form);
       await compileComponent([]);
       sinon.resetHistory();
 
@@ -419,8 +419,8 @@ describe('TasksContentComponent', () => {
 
       await component.performAction({ type: 'report', form: 'myform', content: { my: 'content' } });
 
-      expect(XmlForms.get.callCount).to.equal(1);
-      expect(XmlForms.get.args[0]).to.deep.equal(['myform']);
+      expect(xmlFormsService.get.callCount).to.equal(1);
+      expect(xmlFormsService.get.args[0]).to.deep.equal(['myform']);
       expect(enketoService.render.callCount).to.equal(1);
       expect(enketoService.render.args[0]).to.deep.include.members([
         '#task-report',

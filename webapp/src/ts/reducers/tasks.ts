@@ -9,7 +9,7 @@ const initialState = {
   loaded: false,
 };
 
-const orderBy = (t1, t2) => {
+const orderByDueDate = (t1, t2) => {
   const lhs = t1?.dueDate;
   const rhs = t2?.dueDate;
   if (!lhs && !rhs) {
@@ -32,7 +32,7 @@ const _tasksReducer = createReducer(
   on(Actions.setTasksList, (state, { payload: { tasks } }) => {
     return {
       ...state,
-      tasksList: [...tasks].sort(orderBy),
+      tasksList: [...tasks].sort(orderByDueDate),
     };
   }),
 

@@ -17,9 +17,6 @@ import { TourService } from '@mm-services/tour.service';
   templateUrl: './tasks.component.html',
 })
 export class TasksComponent implements OnInit, OnDestroy {
-  subscription = new Subscription();
-  private tasksActions;
-
   constructor(
     private store:Store,
     private changesService:ChangesService,
@@ -31,6 +28,9 @@ export class TasksComponent implements OnInit, OnDestroy {
   ) {
     this.tasksActions = new TasksActions(store);
   }
+
+  subscription = new Subscription();
+  private tasksActions;
 
   tasksList;
   selectedTask;

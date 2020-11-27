@@ -18,10 +18,10 @@ import { Selectors } from '@mm-selectors/index';
 
 describe('TasksComponent', () => {
   let getComponent;
-  let Changes;
-  let RulesEngine;
-  let Telemetry;
-  let Tour;
+  let changesService;
+  let rulesEngineService;
+  let telemetryService;
+  let tourService;
   let contactTypesService;
   let clock;
   let store;
@@ -30,14 +30,14 @@ describe('TasksComponent', () => {
   let fixture: ComponentFixture<TasksComponent>;
 
   beforeEach(async () => {
-    Changes = sinon.stub();
-    RulesEngine = {
+    changesService = { subscribe: sinon.stub() };
+    rulesEngineService = {
       isEnabled: sinon.stub().resolves(true),
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
     };
 
-    Tour = sinon.stub();
-    Telemetry = { record: sinon.stub() };
+    tourService = { startIfNeeded: sinon.stub() };
+    telemetryService = { record: sinon.stub() };
     contactTypesService = {
       includes: sinon.stub(),
     };
@@ -49,10 +49,10 @@ describe('TasksComponent', () => {
       ],
       providers: [
         provideMockStore(),
-        { provide: ChangesService, useValue: { subscribe: Changes }},
-        { provide: RulesEngineService, useValue: RulesEngine },
-        { provide: TelemetryService, useValue: Telemetry },
-        { provide: TourService, useValue: { startIfNeeded: TourService } },
+        { provide: ChangesService, useValue: changesService },
+        { provide: RulesEngineService, useValue: rulesEngineService },
+        { provide: TelemetryService, useValue: telemetryService },
+        { provide: TourService, useValue: tourService },
         { provide: ContactTypesService, useValue: contactTypesService }
       ],
       declarations: [
@@ -82,7 +82,9 @@ describe('TasksComponent', () => {
     const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
     const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
+
     component.ngOnDestroy();
+
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
     expect(setTasksList.callCount).to.equal(1);
     expect(setTasksList.args[0]).to.deep.equal([[]]);
@@ -91,23 +93,24 @@ describe('TasksComponent', () => {
   });
 
   it('initial state before resolving tasks', async () => {
-    RulesEngine.isEnabled.callsFake(() => new Promise(() => {}));
+    rulesEngineService.isEnabled.callsFake(() => new Promise(() => {}));
     await getComponent();
+
     expect(component.loading).to.be.true;
     expect(!!component.hasTasks).to.be.false;
     expect(!!component.error).to.be.false;
     expect(!!component.tasksDisabled).to.be.false;
-
-    expect(Tour.callCount).to.eq(0);
+    expect(tourService.startIfNeeded.callCount).to.eq(1);
   });
 
   it('rules engine is disabled', async () => {
-    RulesEngine.isEnabled.resolves(false);
+    rulesEngineService.isEnabled.resolves(false);
 
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
     });
+
     expect(component.loading).to.be.false;
     expect(!!component.hasTasks).to.be.false;
     expect(!!component.error).to.be.false;
@@ -115,11 +118,13 @@ describe('TasksComponent', () => {
   });
 
   it('rules engine throws in initialization', async () => {
-    RulesEngine.isEnabled.rejects('error');
+    rulesEngineService.isEnabled.rejects('error');
+
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
     });
+
     expect(component.loading).to.be.false;
     expect(!!component.hasTasks).to.be.false;
     expect(component.error).to.be.true;
@@ -136,7 +141,7 @@ describe('TasksComponent', () => {
       { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }},
       { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }},
     ];
-    RulesEngine.fetchTaskDocsForAllContacts.resolves(taskDocs);
+    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
 
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
@@ -162,7 +167,7 @@ describe('TasksComponent', () => {
     expect(component.tasksDisabled).to.be.false;
     expect(component.hasTasks).to.be.false;
     expect(!!component.error).to.be.false;
-    expect(RulesEngine.fetchTaskDocsForAllContacts.callCount).to.eq(1);
+    expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[[]]]);
   });
 
@@ -176,7 +181,7 @@ describe('TasksComponent', () => {
       getComponent();
     });
 
-    const changesFeed = Changes.args[0][0];
+    const changesFeed = changesService.subscribe.args[0][0];
     expect(!!changesFeed.filter({})).to.be.false;
     expect(changesFeed.filter({ id: 'person', doc: { _id: 'person', type: 'person' }})).to.be.true;
     expect(changesFeed.filter({ id: 'clinic', doc: { _id: 'clinic', type: 'clinic' }})).to.be.true;
@@ -192,14 +197,14 @@ describe('TasksComponent', () => {
       getComponent();
     });
 
-    expect(RulesEngine.fetchTaskDocsForAllContacts.callCount).to.eq(1);
-    expect(Telemetry.record.callCount).to.equal(1);
-    expect(Telemetry.record.args[0][0]).to.equal('tasks:load');
+    expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
+    expect(telemetryService.record.callCount).to.equal(1);
+    expect(telemetryService.record.args[0][0]).to.equal('tasks:load');
   });
 
   it('should should record telemetry on refresh', fakeAsync(async () => {
     sinon.stub(TasksActions.prototype, 'setTasksLoaded');
-    RulesEngine.isEnabled.resolves(true);
+    rulesEngineService.isEnabled.resolves(true);
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
@@ -212,16 +217,16 @@ describe('TasksComponent', () => {
     store.overrideSelector(Selectors.getTasksLoaded, true);
     store.refreshState();
 
-    const changesArgs = Changes.args[0][0];
+    const changesArgs = changesService.subscribe.args[0][0];
     const change = { doc: { type: 'task' } };
     changesArgs.callback(change);
     tick(2000); // wait for debounced function to fire
     flush();
 
-    expect(RulesEngine.fetchTaskDocsForAllContacts.callCount).to.eq(2);
-    expect(Telemetry.record.callCount).to.equal(2);
-    expect(Telemetry.record.args[0][0]).to.equal('tasks:load');
-    expect(Telemetry.record.args[1][0]).to.equal('tasks:refresh');
+    expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(2);
+    expect(telemetryService.record.callCount).to.equal(2);
+    expect(telemetryService.record.args[0][0]).to.equal('tasks:load');
+    expect(telemetryService.record.args[1][0]).to.equal('tasks:refresh');
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
 });

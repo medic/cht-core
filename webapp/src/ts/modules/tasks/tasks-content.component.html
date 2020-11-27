@@ -40,7 +40,7 @@
             <p>{{field.value | translateFrom:selectedTask}}</p>
           </li>
           <li class="actions" *ngIf="selectedTask.actions.length">
-            <a class="btn btn-primary" *ngFor="let action of selectedTask.actions" (click)="performAction(action)" >{{action.label | translateFrom:selectedTask}}</a>
+            <a class="btn btn-primary" *ngFor="let action of selectedTask.actions" (click)="performAction(action)">{{action.label | translateFrom:selectedTask}}</a>
           </li>
         </ul>
       </div>
