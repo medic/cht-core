@@ -605,8 +605,12 @@ export class EnketoService {
     }
 
     return geoHandle()
-      .catch(err => err)
+      .catch(err => {
+        console.log('whaaaat?');
+        return err;
+      })
       .then(geoData => {
+        console.log('geodata');
         docs.forEach(doc => {
           doc.geolocation_log = doc.geolocation_log || [];
           doc.geolocation_log.push({

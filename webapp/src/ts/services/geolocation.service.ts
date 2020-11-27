@@ -14,6 +14,7 @@ export class GeolocationService {
   private geo;
   private geoError;
   private watcher;
+  private timeout;
 
   constructor() {}
 
@@ -64,6 +65,7 @@ export class GeolocationService {
   }
 
   private failure(err) {
+    clearTimeout(this.timeout);
     console.debug('Geolocation error', err);
     this.geoError = err;
     if (this.deferred) {
@@ -84,12 +86,19 @@ export class GeolocationService {
         this.failure.bind(this),
         this.GEO_OPTIONS
       );
+      this.timeout = setTimeout(() => {
+        this.failure({
+          code: -1,
+          message: 'Geolocation timeout exceeded',
+        });
+      }, this.GEO_OPTIONS.timeout + 1);
     }
   }
 
   private stopWatching() {
     console.debug('Cancelling geolocation');
-    this.watcher && window.navigator.geolocation && window.navigator.geolocation.clearWatch(this.watcher);
+    window.navigator.geolocation?.clearWatch(this.watcher);
+    clearTimeout(this.timeout);
   }
 
   private defer() {
