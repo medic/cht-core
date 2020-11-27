@@ -11,6 +11,8 @@ import {Component} from '@angular/core';
 })
 export class SessionExpiredComponent extends MmModalAbstract {
 
+  static id = 'sessionExpired'; // to make the modal singleton
+
   constructor(
     bsModalRef:BsModalRef,
     private sessionService:SessionService,
@@ -19,6 +21,7 @@ export class SessionExpiredComponent extends MmModalAbstract {
   }
 
   submit() {
+    this.close();
     this.sessionService.navigateToLogin();
   }
 }

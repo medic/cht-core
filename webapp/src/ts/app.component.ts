@@ -76,7 +76,6 @@ export class AppComponent implements OnInit {
   replicationStatus;
   androidAppVersion;
   nonContactForms;
-  expiredModalShown = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -418,12 +417,9 @@ export class AppComponent implements OnInit {
   }
 
   private showSessionExpired() {
-    if (!this.expiredModalShown) {
-      this.expiredModalShown = true;
-      this.modalService
-        .show(SessionExpiredComponent)
-        .catch(() => this.expiredModalShown = false);
-    }
+    this.modalService
+      .show(SessionExpiredComponent)
+      .catch(() => {});
   }
 
   private showUpdateReady() {
