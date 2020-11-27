@@ -7,6 +7,7 @@ const getMessagesState = (state) => state.messages || {};
 const getContactsState = (state) => state.contacts || {};
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getAnalyticsState = (state) => state.analytics || {};
+const getTargetAggregatesState = (state) => state.targetAggregates || {};
 
 export const Selectors = {
   // global
@@ -30,7 +31,7 @@ export const Selectors = {
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
 
-  //enketo
+  // enketo
   getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
   getEnketoEditedStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.edited),
   getEnketoSavingStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.saving),
@@ -80,6 +81,24 @@ export const Selectors = {
   }),
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
+
+  // target Aggregates
+  getTargetAggregates: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.targetAggregates
+  ),
+  getSelectedTargetAggregate: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.selected
+  ),
+  getTargetAggregatesLoaded: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.targetAggregatesLoaded
+  ),
+  getTargetAggregatesError: createSelector(
+    getTargetAggregatesState,
+    (targetAggregatesState) => targetAggregatesState.error
+  ),
 };
 /*
 
@@ -88,7 +107,6 @@ export const Selectors = {
 const getUnreadCount = state => getGlobalState(state).unreadCount;
 
 // Analytics
-const getAnalyticsState = state => state.analytics;
 const getSelectedAnalytics = state => getAnalyticsState(state).selected;
 
 // Contacts
@@ -108,19 +126,11 @@ const getTasksState = state => state.tasks;
 const getSelectedTask = state => getTasksState(state).selected;
 const getLoadTasks = state => getTasksState(state).loaded;
 
-// Target Aggregates
-const getTargetAggregatesState = state => state.targetAggregates;
-const getTargetAggregates = state => getTargetAggregatesState(state).targetAggregates;
-const getSelectedTargetAggregate = state => getTargetAggregatesState(state).selected;
-const getTargetAggregatesError = state => getTargetAggregatesState(state).error;
-
-
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getAndroidAppVersion,
   getUnreadCount,
 
-  getAnalyticsState,
   getSelectedAnalytics,
 
   getContactsState,
@@ -133,9 +143,5 @@ angular.module('inboxServices').constant('Selectors', {
   getTasksState,
   getSelectedTask,
   getLoadTasks,
-
-  getTargetAggregates,
-  getSelectedTargetAggregate,
-  getTargetAggregatesError,
 });
 */

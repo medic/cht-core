@@ -108,7 +108,7 @@ describe('AnalyticsModulesService', () => {
         expect(result[0].available()).to.equal(true);
         expect(result[1]).to.include({
           label: 'analytics.target.aggregates',
-          route: 'analytics/target-aggregates/detail',
+          route: 'analytics/target-aggregates',
         });
         expect(result[1].available()).to.equal(true);
       });

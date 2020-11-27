@@ -24,6 +24,8 @@ import { MessagesContentComponent } from './messages/messages-content.component'
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
 import { AnalyticsModulesComponent } from './analytics/analytics-modules.component';
+import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
 
 @NgModule({
   declarations: [
@@ -43,6 +45,8 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
     PrivacyPolicyComponent,
     AnalyticsTargetsComponent,
     AnalyticsModulesComponent,
+    AnalyticsTargetAggregatesComponent,
+    AnalyticsTargetAggregatesDetailComponent,
   ],
   imports: [
     CommonModule,

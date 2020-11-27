@@ -26,11 +26,15 @@ import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-fil
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { ActionbarComponent } from './actionbar/actionbar.component';
+import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
+import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
+import {
+  AnalyticsTargetsDetailsComponent
+} from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +58,8 @@ import {
     ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
+    AnalyticsFilterComponent,
+    AnalyticsTargetsDetailsComponent,
   ],
   imports: [
     CommonModule,
@@ -84,6 +90,8 @@ import {
     ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
+    AnalyticsFilterComponent,
+    AnalyticsTargetsDetailsComponent,
   ]
 })
 export class ComponentsModule { }
