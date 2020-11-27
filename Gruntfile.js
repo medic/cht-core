@@ -608,7 +608,7 @@ module.exports = function(grunt) {
           const configuration = TRAVIS_BUILD_NUMBER ? 'production' : 'development';
           return [
             `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=${configuration}`,
+            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
@@ -629,7 +629,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            '../node_modules/.bin/ng test webapp --watch=false',
+            `../node_modules/.bin/ng test webapp --watch=false --progress=${TRAVIS_BUILD_NUMBER ? 'false' : 'true'}`,
             'cd ../',
           ].join(' && ');
         },
@@ -639,7 +639,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            '../node_modules/.bin/ng test webapp --watch=true',
+            '../node_modules/.bin/ng test webapp --watch=true --progress=true',
             'cd ../',
           ].join(' && ');
         },

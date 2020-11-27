@@ -93,7 +93,13 @@
             "polyfills": "src/ts/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "tests/karma/karma-unit.conf.js",
-            "progress": true,
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/js/bootstrapper/**",
+              "src/js/enketo/**",
+              "src/ts/environment/**",
+              "src/ts/polyfills.ts"
+            ],
             "assets": [
               "src/img",
               "src/fonts",
