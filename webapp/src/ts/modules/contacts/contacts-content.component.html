@@ -23,7 +23,7 @@
             <div class="heading-content">
               <h2>{{selectedContact.doc.name}}</h2>
               <div *ngIf="selectedContact.doc.date_of_death" translate>contact.deceased.title</div>
-              <div class="primary-contact" [hidden]="!selectedContact.isPrimaryContact">
+              <div class="primary-contact" *ngIf="selectedContact.isPrimaryContact">
                 <i class="fa fa-star primary"></i>
                 <span translate>{{selectedContact.type.primary_contact_key || 'Primary contact'}}</span>
               </div>

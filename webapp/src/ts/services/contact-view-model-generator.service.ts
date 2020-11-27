@@ -230,9 +230,10 @@ export class ContactViewModelGeneratorService {
   }
 
   loadChildren(model, options) {
-    model.children = [];
+    // model.children = [];
+    const newModel = Object.assign({children: []}, model);
     return this.contactTypesService.getAll().then(types => {
-      return this.getChildren(model, types, options)
+      return this.getChildren(newModel, types, options)
         .then(children => this.setChildrenMutedState(model, children))
         .then(children => this.addPrimaryContact(model.doc, children))
         .then(children => this.groupChildrenByType(children))

@@ -6,7 +6,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 const initialState = {
   contacts: [],
   contactsById: new Map(),
-  selected: [],
+  selected: null,
   filters: {},
   loadingSelectedChildren: false,
   loadingSelectedContacts: false,
@@ -81,12 +81,43 @@ const removeContact = (state, contact) => {
   return { ...state, contacts, contactsById };
 };
 
+const setLoadingSelectedContact = (state) => {
+  return { ...state, loadingSelectedChildren: true, loadingSelectedReports: true };
+};
+
+const setContactsLoadingSummary = (state, value) => {
+  return { ...state, loadingSummary: value };
+};
+
+const receiveSelectedContactChildren = (state, children) => {
+  return { ...state, loadingSelectedChildren: false, children };
+};
+
+const receiveSelectedContactReports = (state, reports) => {
+  return { ...state, loadingSelectedReports: false, reports };
+};
+
+const setSelectedConversation = (state, selected) => {
+  console.log('selected is being set::');
+  console.log(selected);
+  return { ...state, selected };
+};
+
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
   on(Actions.setSelectedContacts, (state, { payload: { selected } }) => ({ ...state, selected })),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
   on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),
+  on(Actions.setSelected, (state, { payload: { selected } }) => setSelectedConversation(state, selected)),
+  on(Actions.setLoadingSelectedContact, (state) => setLoadingSelectedContact(state)),
+  on(Actions.setContactsLoadingSummary, (state, { payload: { value }}) => setContactsLoadingSummary(state, value)),
+  on(Actions.receiveSelectedContactChildren, (state, { payload: { children }}) => {
+    return receiveSelectedContactChildren(state, children);
+  }),
+  on(Actions.receiveSelectedContactReports, (state, { payload: { reports }}) => {
+    return receiveSelectedContactReports(state, reports);
+  }),
 );
 
 export function contactsReducer(state, action) {
