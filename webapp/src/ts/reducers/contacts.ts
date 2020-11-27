@@ -90,17 +90,30 @@ const setContactsLoadingSummary = (state, value) => {
 };
 
 const receiveSelectedContactChildren = (state, children) => {
-  return { ...state, loadingSelectedChildren: false, children };
+  return {
+    ...state,
+    loadingSelectedChildren: false,
+    selected: Object.assign({}, state.selected, { children }),
+  };
 };
 
 const receiveSelectedContactReports = (state, reports) => {
-  return { ...state, loadingSelectedReports: false, reports };
+  return {
+    ...state,
+    loadingSelectedReports: false,
+    selected: Object.assign({}, state.selected, { reports }),
+  };
 };
 
-const setSelectedConversation = (state, selected) => {
-  console.log('selected is being set::');
-  console.log(selected);
+const setSelectedContact = (state, selected) => {
   return { ...state, selected };
+};
+
+const updateSelectedContact = (state, summary) => {
+  return {
+    ...state,
+    selected: Object.assign({}, state.selected, { summary }),
+  };
 };
 
 const _contactsReducer = createReducer(
@@ -109,7 +122,7 @@ const _contactsReducer = createReducer(
   on(Actions.setSelectedContacts, (state, { payload: { selected } }) => ({ ...state, selected })),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
   on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),
-  on(Actions.setSelected, (state, { payload: { selected } }) => setSelectedConversation(state, selected)),
+  on(Actions.setSelected, (state, { payload: { selected } }) => setSelectedContact(state, selected)),
   on(Actions.setLoadingSelectedContact, (state) => setLoadingSelectedContact(state)),
   on(Actions.setContactsLoadingSummary, (state, { payload: { value }}) => setContactsLoadingSummary(state, value)),
   on(Actions.receiveSelectedContactChildren, (state, { payload: { children }}) => {
@@ -118,6 +131,7 @@ const _contactsReducer = createReducer(
   on(Actions.receiveSelectedContactReports, (state, { payload: { reports }}) => {
     return receiveSelectedContactReports(state, reports);
   }),
+  on(Actions.updateSelectedContact, (state, { payload: { summary }}) => updateSelectedContact(state, summary))
 );
 
 export function contactsReducer(state, action) {
