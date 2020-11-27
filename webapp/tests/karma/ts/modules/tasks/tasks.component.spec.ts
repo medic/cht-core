@@ -147,6 +147,7 @@ describe('TasksComponent', () => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
     });
+
     expect(component.loading).to.be.false;
     expect(component.tasksDisabled).to.be.false;
     expect(component.hasTasks).to.be.true;
@@ -163,6 +164,7 @@ describe('TasksComponent', () => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
     });
+
     expect(component.loading).to.be.false;
     expect(component.tasksDisabled).to.be.false;
     expect(component.hasTasks).to.be.false;
@@ -176,6 +178,7 @@ describe('TasksComponent', () => {
       .withArgs(sinon.match({ type: 'person' })).returns(true)
       .withArgs(sinon.match({ type: 'clinic' })).returns(true)
       .withArgs(sinon.match({ type: 'contact' })).returns(true);
+
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
@@ -205,12 +208,13 @@ describe('TasksComponent', () => {
   it('should should record telemetry on refresh', fakeAsync(async () => {
     sinon.stub(TasksActions.prototype, 'setTasksLoaded');
     rulesEngineService.isEnabled.resolves(true);
+
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
     });
-
     flush();
+
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
     expect((<any>TasksActions.prototype.setTasksLoaded).args[0]).to.deep.equal([true]);
 

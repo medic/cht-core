@@ -103,6 +103,7 @@ describe('TasksContentComponent', () => {
 
     await compileComponent();
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
+
     component.ngOnDestroy();
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
     expect(geoHandle.cancel.callCount).to.equal(1);
@@ -119,6 +120,7 @@ describe('TasksContentComponent', () => {
     }];
     const form = { _id: 'myform', title: 'My Form' };
     xmlFormsService.get.resolves(form);
+
     await compileComponent();
 
     expect(component.formId).to.equal('A');
@@ -128,6 +130,7 @@ describe('TasksContentComponent', () => {
     expect(render.getCall(0).args[0]).to.equal('#task-report');
     expect(render.getCall(0).args[1]).to.deep.equal(form);
     expect(render.getCall(0).args[2]).to.equal('nothing');
+
     expect(get.callCount).to.eq(0);
     expect(setEnketoEditedStatus.callCount).to.equal(1);
     expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
@@ -148,13 +151,12 @@ describe('TasksContentComponent', () => {
     const form = { _id: 'myform', title: 'My Form' };
     xmlFormsService.get.resolves(form);
     geolocationService.init.returns({ just: 'an object reference' });
+
     await compileComponent();
 
     expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['contact']]);
-
     expect(geolocationService.init.callCount).to.equal(1);
-
     expect(render.callCount).to.eq(1);
     expect(render.args[0][2]).to.deep.eq({
       contact: { _id: 'contact' },
@@ -185,11 +187,11 @@ describe('TasksContentComponent', () => {
     const form = { _id: 'myform', title: 'My Form' };
     xmlFormsService.get.resolves(form);
     geolocationService.init.returns({ just: 'an object reference' });
+
     await compileComponent();
 
     expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['contact']]);
-
     expect(render.callCount).to.eq(0);
     expect(setSelectedTask.callCount).to.equal(1);
     expect(setSelectedTask.args[0]).to.deep.equal([
@@ -227,11 +229,11 @@ describe('TasksContentComponent', () => {
     }];
     const form = { _id: 'myform', title: 'My Form' };
     xmlFormsService.get.resolves(form);
+
     await compileComponent();
 
     expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['dne']]);
-
     expect(render.callCount).to.eq(1);
     expect(render.args[0][2]).to.deep.eq({ contact: { _id: 'dne' } });
   });
@@ -246,6 +248,7 @@ describe('TasksContentComponent', () => {
         form: 'A',
       }]
     }];
+
     await compileComponent();
 
     expect(render.callCount).to.eq(0);
@@ -258,6 +261,7 @@ describe('TasksContentComponent', () => {
     tasks = [{
       actions: [{}, {}] // two forms
     }];
+
     await compileComponent();
 
     expect(component.formId).to.equal(null);
@@ -282,6 +286,7 @@ describe('TasksContentComponent', () => {
         }]
       }]
     }];
+
     await compileComponent();
 
     expect(component.formId).to.equal(null);
@@ -300,6 +305,7 @@ describe('TasksContentComponent', () => {
       }]
     }];
     xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
+
     await compileComponent();
 
     expect(component.loadingForm).to.equal(false);
@@ -326,16 +332,15 @@ describe('TasksContentComponent', () => {
     await compileComponent([]);
 
     expect(render.callCount).to.equal(0);
-
     store.overrideSelector(Selectors.getTasksList, [notTask]);
     store.overrideSelector(Selectors.getTasksLoaded, true);
     store.refreshState();
     fixture.detectChanges();
+
     await fixture.whenStable();
     tick();
 
     expect(render.callCount).to.equal(1);
-
     expect(render.args[0][2]).to.deep.eq({
       contact: { _id: 'contact' },
       something: 'other',
@@ -361,19 +366,22 @@ describe('TasksContentComponent', () => {
     it('should set cancel callback correctly when not skipping details', async () => {
       await compileComponent([]);
       sinon.resetHistory();
+
       component.form = 'someform';
       component.loadingForm = true;
       component.contentError = true;
-
       await component.performAction({});
 
       expect((<any>GlobalActions.prototype.setCancelCallback).callCount).to.equal(1);
       const cancelCallback = (<any>GlobalActions.prototype.setCancelCallback).args[0][0];
       expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(0);
+
       cancelCallback();
+
       expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(1);
       expect((<any>TasksActions.prototype.setSelectedTask).args[0]).to.deep.equal([null]);
       expect(enketoService.unload.callCount).to.equal(1);
+
       expect(component.form).to.equal(null);
       expect(component.loadingForm).to.equal(false);
       expect(component.contentError).to.equal(false);
@@ -384,23 +392,27 @@ describe('TasksContentComponent', () => {
     it('should set cancel callback correctly when skipping details', async () => {
       await compileComponent([]);
       sinon.resetHistory();
+
       component.form = 'someform';
       component.loadingForm = true;
       component.contentError = true;
-
       await component.performAction({}, true);
 
       expect((<any>GlobalActions.prototype.setCancelCallback).callCount).to.equal(1);
       const cancelCallback = (<any>GlobalActions.prototype.setCancelCallback).args[0][0];
       expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(0);
+
       cancelCallback();
+
       expect((<any>TasksActions.prototype.setSelectedTask).callCount).to.equal(1);
       expect((<any>TasksActions.prototype.setSelectedTask).args[0]).to.deep.equal([null]);
       expect(enketoService.unload.callCount).to.equal(0);
+
       expect(component.form).to.equal('someform');
       expect(component.loadingForm).to.equal(true);
       expect(component.contentError).to.equal(false);
       expect((<any>GlobalActions.prototype.clearCancelCallback).callCount).to.equal(0);
+
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
     });
@@ -413,8 +425,8 @@ describe('TasksContentComponent', () => {
       const form = { _id: 'myform', title: 'My Form' };
       xmlFormsService.get.resolves(form);
       await compileComponent([]);
-      sinon.resetHistory();
 
+      sinon.resetHistory();
       sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
       await component.performAction({ type: 'report', form: 'myform', content: { my: 'content' } });
@@ -435,16 +447,20 @@ describe('TasksContentComponent', () => {
       expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
 
       markFormEdited();
+
       expect(setEnketoEditedStatus.callCount).to.equal(2);
       expect(setEnketoEditedStatus.args[1]).to.deep.equal([true]);
       expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
 
       resetFormError();
+
       expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
 
       store.overrideSelector(Selectors.getEnketoError, 'error');
       store.refreshState();
+
       resetFormError();
+
       expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(1);
     });
   });
@@ -467,8 +483,8 @@ describe('TasksContentComponent', () => {
 
       store.overrideSelector(Selectors.getEnketoSavingStatus, true);
       store.refreshState();
-
       await component.save();
+
       expect(enketoService.save.callCount).to.equal(0);
     });
 
@@ -482,20 +498,22 @@ describe('TasksContentComponent', () => {
 
       component.formId = 'the form id';
       component.form = { the: 'form' };
-
       const saving = component.save();
+
       expect(setEnketoSavingStatus.callCount).to.equal(1);
       expect(setEnketoSavingStatus.args[0]).to.deep.equal([true]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(setEnketoError.args[0]).to.deep.equal([null]);
 
       await saving;
+
       expect(enketoService.save.callCount).to.equal(1);
       expect(enketoService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args[1]).to.deep.equal([false]);
       expect(setEnketoError.callCount).to.equal(2);
+
       expect(setEnketoEditedStatus.callCount).to.equal(0);
       expect(enketoService.unload.callCount).to.equal(0);
       expect(clearCancelCallback.callCount).to.equal(0);
@@ -507,6 +525,7 @@ describe('TasksContentComponent', () => {
       enketoService.save.resolves([]);
       const geoHandle = { geo: 'handle' };
       geolocationService.init.returns(geoHandle);
+
       await compileComponent([]);
       sinon.resetHistory();
 
@@ -514,11 +533,13 @@ describe('TasksContentComponent', () => {
       component.form = { the: 'form' };
 
       const saving = component.save();
+
       expect(setEnketoSavingStatus.callCount).to.equal(1);
       expect(setEnketoSavingStatus.args[0]).to.deep.equal([true]);
       expect(setEnketoError.callCount).to.equal(0);
 
       await saving;
+
       expect(enketoService.save.callCount).to.equal(1);
       expect(enketoService.save.args[0]).to.deep.equal([ 'the form id', { the: 'form' }, geoHandle ]);
 
@@ -526,11 +547,14 @@ describe('TasksContentComponent', () => {
       expect(setEnketoSavingStatus.args[1]).to.deep.equal([false]);
       expect(setEnketoEditedStatus.callCount).to.equal(1);
       expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
+
       expect(enketoService.unload.callCount).to.equal(1);
       expect(enketoService.unload.args[0]).to.deep.equal([{ the: 'form' }]);
       expect(clearCancelCallback.callCount).to.equal(1);
+
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
+
       expect(setEnketoError.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(1);
     });
