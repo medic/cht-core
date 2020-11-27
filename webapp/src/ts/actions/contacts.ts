@@ -11,7 +11,8 @@ export const Actions = {
   setContactsLoadingSummary: createSingleValueAction('SET_CONTACT_LOADING_SUMMARY', 'value'),
   setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
   receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
-  receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports')
+  receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports'),
+  updateSelectedContact: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'summary')
 };
 
 export class ContactsActions {
@@ -57,6 +58,10 @@ export class ContactsActions {
 
   receiveSelectedContactReports(reports) {
     return this.store.dispatch(Actions.receiveSelectedContactReports(reports));
+  }
+
+  updateSelectedContact(summary) {
+    return this.store.dispatch(Actions.updateSelectedContact(summary));
   }
 
   // const translateTitle = (key, label) => {

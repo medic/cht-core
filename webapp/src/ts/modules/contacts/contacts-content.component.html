@@ -33,7 +33,7 @@
 
           <div class="loader" *ngIf="contactsLoadingSummary"></div>
           <div class="row flex grid" *ngIf="!contactsLoadingSummary">
-            <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of selectedContact.summary.field">
+            <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of selectedContact.summary.fields">
               <div class="cell {{field.label | lowercase}}">
                 <span *ngIf="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
                 <div>
@@ -69,7 +69,7 @@
         </div> -->
       </div>
 
-      <!-- <div class="card children" ng-repeat="group in selectedContact.children">
+      <div class="card children" *ngFor="let group of selectedContact.children">
         <div class="action-header cell">
           <div class="col-xs-10">
             <h3 translate>{{group.type.group_key}}</h3>
@@ -78,17 +78,14 @@
         </div>
 
         <ul>
-          <mm-content-row ng-repeat="child in group.contacts" *ngIf="!child.deceased"
-            id="child.doc._id"
-            route="'contacts'"
-            heading="child.doc.name"
-            summary="child.doc.title"
-            primary-contact="child.isPrimaryContact"
-            dob="child.doc.date_of_birth"
-            task-count="child.taskCount"
-            is-muted="child.doc.muted"
-            display-muted="true"
-          />
+          <mm-content-row *ngFor="let child of group.contacts" 
+            [id]="child.doc._id"
+            [route]="'contacts'"
+            [heading]="child.doc.name"
+            [summary]="child.doc.title"
+            [dob]="child.doc.date_of_birth"
+            [muted]="child.doc.muted"
+          ></mm-content-row>
         </ul>
         <ul class="action deceased">
           <li *ngIf="group.deceasedCount > 0" class="content-row deceased">
@@ -98,7 +95,7 @@
             </a>
           </li>
         </ul>
-      </div> -->
+      </div>
 
       <!-- <div *ngIf="selectedContact.tasks" mm-auth="can_view_tasks">
         <div class="card tasks">
