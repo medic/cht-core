@@ -344,8 +344,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.countMessageService.init();
 
-    this.initForms();
-
+    // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise
       .then(() => this.checkPrivacyPolicy())
       .then(({ privacyPolicy, accepted }: any = {}) => {
@@ -360,6 +359,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .then(() => this.initRulesEngine())
       .then(() => this.initUnreadCount())
       .then(() => this.startRecurringProcesses())
+      .then(() => this.initForms())
       .then(() => this.checkDateService.check());
   }
 
@@ -610,10 +610,6 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     ctrl.dbWarmedUp = true;
-
-    // initialisation tasks that can occur after the UI has been rendered
-    ctrl.setupPromise = SessionService.init()
-      .then(() => initForms());
 
     LiveListConfig();
 
