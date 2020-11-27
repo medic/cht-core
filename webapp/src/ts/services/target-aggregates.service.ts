@@ -3,16 +3,16 @@ import * as moment from 'moment';
 import { isString as _isString } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
 
-import { UHCSettingsService } from './uhc-settings.service';
-import { DbService } from './db.service';
-import { TranslateFromService } from './translate-from.service';
-import { SearchService } from './search.service';
-import { GetDataRecordsService } from './get-data-records.service';
-import { UserSettingsService } from './user-settings.service';
-import { ContactTypesService } from './contact-types.service';
-import { AuthService } from './auth.service';
-import { SettingsService } from './settings.service';
-import { CalendarIntervalService } from './calendar-interval.service';
+import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { DbService } from '@mm-services/db.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
+import { SearchService } from '@mm-services/search.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { AuthService } from '@mm-services/auth.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 
 @Injectable({
   providedIn: 'root'

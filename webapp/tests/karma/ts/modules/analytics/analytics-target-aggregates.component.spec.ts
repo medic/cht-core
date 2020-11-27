@@ -21,7 +21,8 @@ describe('Analytics Target Aggregates Component', () => {
     };
     targetAggregatesActions = {
       setTargetAggregates: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregates'),
-      setTargetAggregatesError: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregatesError')
+      setTargetAggregatesError: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregatesError'),
+      setTargetAggregatesLoaded: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregatesLoaded')
     };
     const mockedSelectors = [
       { selector: 'getSelectedTargetAggregate', value: null },
@@ -65,11 +66,15 @@ describe('Analytics Target Aggregates Component', () => {
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
+    sinon.reset();
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
 
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+    expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(1);
+    expect(targetAggregatesActions.setTargetAggregates.callCount).to.equal(1);
+    expect(targetAggregatesActions.setTargetAggregatesLoaded.callCount).to.equal(1);
   });
 
   it('should set correct loading and error when TargetAggregates fails', fakeAsync(() => {

@@ -35,7 +35,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
     this.targetAggregatesActions.setTargetAggregatesError(null);
     this.targetAggregatesActions.setTargetAggregates(null);
-    this.targetAggregatesActions.setTargetAggregates(false);
+    this.targetAggregatesActions.setTargetAggregatesLoaded(false);
   }
 
   private subscribeToStore() {
