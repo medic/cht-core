@@ -1,11 +1,22 @@
 angular.module('inboxServices').service('Geolocation',
   function(
-    $q
+    $log,
+    $q,
+    $window
   ) {
     'use strict';
     'ngInject';
 
     return function() {
+
+      try {
+        if ($window.medicmobile_android && typeof $window.medicmobile_android.getLocationPermissions === 'function') {
+          $window.medicmobile_android.getLocationPermissions();
+        }
+      } catch(err) {
+        $log.warn('Error trying to get location permissions from Android', err);
+        // attempt to get location anyway...
+      }
 
       if (!navigator.geolocation) {
         return $q.reject({
