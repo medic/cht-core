@@ -1,5 +1,6 @@
 angular.module('inboxServices').service('Geolocation',
   function(
+    $log,
     $q,
     $window
   ) {
@@ -8,8 +9,13 @@ angular.module('inboxServices').service('Geolocation',
 
     return function() {
 
-      if ($window.medicmobile_android && typeof $window.medicmobile_android.getLocationPermissions === 'function') {
-        $window.medicmobile_android.getLocationPermissions();
+      try {
+        if ($window.medicmobile_android && typeof $window.medicmobile_android.getLocationPermissions === 'function') {
+          $window.medicmobile_android.getLocationPermissions();
+        }
+      } catch(err) {
+        $log.warn('Error trying to get location permissions from Android', err);
+        // attempt to get location anyway...
       }
 
       if (!navigator.geolocation) {
