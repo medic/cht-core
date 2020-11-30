@@ -22,6 +22,7 @@ import { EditReportComponent } from '@mm-modals/edit-report/edit-report.componen
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
+import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 
 
 @NgModule({
@@ -43,6 +44,7 @@ import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-me
     VerifyReportComponent,
     CheckDateComponent,
     EditMessageGroupComponent,
+    SessionExpiredComponent,
   ],
   imports: [
     CommonModule,
@@ -65,6 +67,7 @@ import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-me
     VerifyReportComponent,
     CheckDateComponent,
     EditMessageGroupComponent,
+    SessionExpiredComponent,
   ]
 })
 export class ModalsModule { }

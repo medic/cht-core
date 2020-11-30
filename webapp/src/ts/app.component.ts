@@ -34,6 +34,7 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { CheckDateService } from '@mm-services/check-date.service';
+import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -433,12 +434,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private showSessionExpired() {
-    /* Modal({
-     templateUrl: 'templates/modals/session_expired.html',
-     controller: 'SessionExpiredModalCtrl',
-     controllerAs: 'SessionExpiredModalCtrl',
-     singleton: true,
-     });*/
+    this.modalService
+      .show(SessionExpiredComponent)
+      .catch(() => {});
   }
 
   private showUpdateReady() {
@@ -739,15 +737,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }, 2 * 60 * 60 * 1000);
       });
       closeDropdowns();
-    };
-
-    const showSessionExpired = function() {
-      Modal({
-        templateUrl: 'templates/modals/session_expired.html',
-        controller: 'SessionExpiredModalCtrl',
-        controllerAs: 'SessionExpiredModalCtrl',
-        singleton: true,
-      });
     };
 
     ChangesService({
