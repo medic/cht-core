@@ -32,6 +32,8 @@ export const Actions = {
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
   setLoadingSubActionbar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
+  setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
+  updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
 };
 
 export class GlobalActions {
@@ -201,6 +203,14 @@ export class GlobalActions {
   setLoadingSubActionBar(loading) {
     return this.store.dispatch(Actions.setLoadingSubActionbar(loading));
   }
+
+  setUnreadCount(unreadCount) {
+    return this.store.dispatch(Actions.setUnreadCount(unreadCount));
+  }
+
+  updateUnreadCount(unreadCount) {
+    return this.store.dispatch(Actions.updateUnreadCount(unreadCount));
+  }
 }
 
 /*
@@ -218,15 +228,6 @@ angular.module('inboxServices').factory('GlobalActions',
     'ngInject';
 
     return function(dispatch) {
-
-
-      function setUnreadCount(unreadCount) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_UNREAD_COUNT, 'unreadCount', unreadCount));
-      }
-
-      function updateUnreadCount(unreadCount) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
-      }
 
       function deleteDoc(doc) {
         return dispatch((dispatch, getState) => {
@@ -253,8 +254,6 @@ angular.module('inboxServices').factory('GlobalActions',
         deleteDoc,
         openGuidedSetup,
         openTourSelect,
-        setUnreadCount,
-        updateUnreadCount,
       };
     };
   }
