@@ -274,7 +274,16 @@ export class AppComponent implements OnInit, OnDestroy {
       this.canLogOut = true;
     }
 
-    this.setupPromise = this.sessionService.init();
+    // initialisation tasks that can occur after the UI has been rendered
+    this.setupPromise = this.sessionService
+      .init()
+      .then(() => this.checkPrivacyPolicy())
+      .then(() => this.initRulesEngine())
+      .then(() => this.initForms())
+      .then(() => this.initUnreadCount())
+      .then(() => this.checkDateService.check())
+      .then(() => this.startRecurringProcesses());
+
     this.feedbackService.init();
 
     this.globalActions.setIsAdmin(this.sessionService.isAdmin());
@@ -344,24 +353,6 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     this.countMessageService.init();
-
-    // initialisation tasks that can occur after the UI has been rendered
-    this.setupPromise
-      .then(() => this.checkPrivacyPolicy())
-      .then(({ privacyPolicy, accepted }: any = {}) => {
-        if (!privacyPolicy || accepted) {
-          // If there is no privacy policy or the user already
-          // accepted the policy show the startup modals,
-          // otherwise the modals will start from the privacy
-          // policy component after the user accepts the terms
-          this.startupModalsService.showStartupModals();
-        }
-      })
-      .then(() => this.initRulesEngine())
-      .then(() => this.initUnreadCount())
-      .then(() => this.startRecurringProcesses())
-      .then(() => this.initForms())
-      .then(() => this.checkDateService.check());
   }
 
   ngOnDestroy(): void {
@@ -460,7 +451,16 @@ export class AppComponent implements OnInit, OnDestroy {
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
         return { privacyPolicy, accepted };
       })
-      .catch(err => console.error('Failed to load privacy policy', err));
+      .catch(err => console.error('Failed to load privacy policy', err))
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the startup modals,
+          // otherwise the modals will start from the privacy
+          // policy component after the user accepts the terms
+          this.startupModalsService.showStartupModals();
+        }
+      });
   }
 
   private initUnreadCount() {

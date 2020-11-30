@@ -55,7 +55,7 @@ export class DBSyncService {
         checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
-      onDenied: this.dbSyncRetryService.retryForbiddenFailure,
+      onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
     },
     {
       name: 'from',
@@ -64,7 +64,7 @@ export class DBSyncService {
         timeout: 1000 * 60 * 10, // 10 minutes
       },
       allowed: () => Promise.resolve(true),
-      onChange: this.rulesEngineService.monitorExternalChanges,
+      onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
   ];
   private inProgressSync;

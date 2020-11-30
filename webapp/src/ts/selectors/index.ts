@@ -8,6 +8,7 @@ const getContactsState = (state) => state.contacts || {};
 const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getAnalyticsState = (state) => state.analytics || {};
 const getTargetAggregatesState = (state) => state.targetAggregates || {};
+const getTasksState = state => state.tasks || {};
 
 export const Selectors = {
   // global
@@ -80,6 +81,7 @@ export const Selectors = {
   contactListContains: createSelector(getContactsState, (contactsState) => {
     return (id) => contactsState.contactsById.has(id);
   }),
+
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 
@@ -100,6 +102,11 @@ export const Selectors = {
     getTargetAggregatesState,
     (targetAggregatesState) => targetAggregatesState.error
   ),
+
+  // tasks
+  getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
+  getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
+  getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
 };
 /*
 
@@ -121,10 +128,6 @@ const getSelectedContactDoc = reselect.createSelector(
 );
 
 
-// Tasks
-const getTasksState = state => state.tasks;
-const getSelectedTask = state => getTasksState(state).selected;
-const getLoadTasks = state => getTasksState(state).loaded;
 
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
@@ -138,9 +141,5 @@ angular.module('inboxServices').constant('Selectors', {
   getLoadingSelectedContactReports,
   getSelectedContact,
   getSelectedContactDoc,
-
-  getTasksState,
-  getSelectedTask,
-  getLoadTasks,
 });
 */
