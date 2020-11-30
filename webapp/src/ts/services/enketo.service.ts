@@ -619,7 +619,7 @@ export class EnketoService {
       });
   }
 
-  save(formInternalId, form, geoHandle, docId) {
+  save(formInternalId, form, geoHandle, docId?) {
     return Promise
       .resolve(form.validate())
       .then((valid) => {

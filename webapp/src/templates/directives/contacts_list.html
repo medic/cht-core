@@ -1,9 +1,0 @@
-<div id="contacts-list" class="col-sm-4 inbox-items left-pane">
-  <ul class="unfiltered" ng-show="(!contactsListCtrl.loading || contactsListCtrl.appending) && !contactsListCtrl.filtered"></ul>
-  <ul class="filtered" ng-show="(!contactsListCtrl.loading || contactsListCtrl.appending) && contactsListCtrl.filtered"></ul>
-  <p ng-show="contactsListCtrl.error" class="alert alert-danger" role="alert" translate>Error fetching contacts</p>
-  <p class="loading-status" ng-show="!contactsListCtrl.error && !contactsListCtrl.loading && !contactsListCtrl.hasContacts" translate>No contacts found</p>
-  <p class="loading-status" ng-show="!contactsListCtrl.error && !contactsListCtrl.loading && contactsListCtrl.hasContacts && !contactsListCtrl.moreItems" translate>No more contacts</p>
-  <div class="loader" ng-show="contactsListCtrl.loading"></div>
-  <div class="padding"></div>
-</div>
