@@ -2,9 +2,9 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { find as _find } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
-import { DbService } from './db.service';
-import { ChangesService } from './changes.service';
-import { SessionService } from './session.service';
+import { DbService } from '@mm-services/db.service';
+import { ChangesService } from '@mm-services/changes.service';
+import { SessionService } from '@mm-services/session.service';
 import { ReadDocsProvider } from '@mm-providers/read-docs.provider';
 
 @Injectable({

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { RelativeDateService } from './relative-date.service';
-import { UnreadRecordsService } from './unread-records.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
+import { UnreadRecordsService } from '@mm-services/unread-records.service';
 
 @Injectable({
   providedIn: 'root'
