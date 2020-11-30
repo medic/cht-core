@@ -19,7 +19,7 @@
       <div class="body meta">
         <div class="card">
           <div class="row heading" [ngClass]="{'deceased': selectedContact.doc.date_of_death, 'muted':selectedContact.doc.date_of_death }">
-            <!-- <span ng-bind-html="selectedContact.type.icon | resourceIcon"></span> -->
+            <span class="resource-icon" [innerHTML]="selectedContact.type.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{selectedContact.doc.name}}</h2>
               <div *ngIf="selectedContact.doc.date_of_death" translate>contact.deceased.title</div>
@@ -35,11 +35,11 @@
           <div class="row flex grid" *ngIf="!contactsLoadingSummary">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of selectedContact.summary.fields">
               <div class="cell {{field.label | lowercase}}">
-                <span *ngIf="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
+                <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
                 <div>
                   <label translate ng-show="field.label">{{field.label}}</label>
-                  <!-- <p *ngIf="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p> -->
-                  <p *ngIf="!field.translate && field.filter" ng-bind-html="field.value"></p>
+                  <p *ngIf="field.translate" translate>{{field.value}}</p>
+                  <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
                   <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
                 </div>
               </div>
@@ -47,26 +47,28 @@
           </div>
         </div>
 
-        <!-- <div ng-repeat="card in selectedContact.summary.cards">
-          <div class="card">
-            <div class="action-header cell">
-              <h3 translate>{{card.label}}</h3>
-            </div>
-            <div class="row flex grid">
-              <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
-                <div class="cell">
-                  <span *ngIf="field.icon" class="field-icon" ng-bind-html="field.icon | resourceIcon"></span>
-                  <div>
-                    <label translate ng-show="field.label">{{field.label}}</label>
-                    <p *ngIf="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
-                    <p *ngIf="!field.translate && field.filter" ng-bind-html="field.value"></p>
-                    <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
+        <ng-container *ngIf="selectedContact.summary">
+          <div *ngFor="let card of selectedContact.summary.cards">
+            <div class="card">
+              <div class="action-header cell">
+                <h3 translate>{{card.label}}</h3>
+              </div>
+              <div class="row flex grid">
+                <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of card.fields">
+                  <div class="cell">
+                    <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
+                    <div>
+                      <label translate  *ngIf="field.label">{{field.label}}</label>
+                      <p *ngIf="field.translate" translate>{{field.value}}</p>
+                      <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
+                      <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div> -->
+        </ng-container>
       </div>
 
       <div class="card children" *ngFor="let group of selectedContact.children">
@@ -78,14 +80,19 @@
         </div>
 
         <ul>
-          <mm-content-row *ngFor="let child of group.contacts" 
-            [id]="child.doc._id"
-            [route]="'contacts'"
-            [heading]="child.doc.name"
-            [summary]="child.doc.title"
-            [dob]="child.doc.date_of_birth"
-            [muted]="child.doc.muted"
-          ></mm-content-row>
+          <ng-container *ngFor="let child of group.contacts" >
+            <mm-content-row *ngIf="!child.deceased"
+              [id]="child.doc._id"
+              [route]="'contacts'"
+              [heading]="child.doc.name"
+              [summary]="''"
+              [primaryContact]="child.isPrimaryContact"
+              [dob]="child.doc.date_of_birth"
+              [taskCount]="child.taskCount"
+              [muted]="child.doc.muted"
+              [displayMuted]="true"
+            ></mm-content-row>
+          </ng-container>
         </ul>
         <ul class="action deceased">
           <li *ngIf="group.deceasedCount > 0" class="content-row deceased">

@@ -50,7 +50,7 @@ export class ContactsEffects {
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
         }
-        return from(this.contactViewModelGeneratorService.getContact(id, { getChildPlaces: false, merge: false })).pipe(
+        return from(this.contactViewModelGeneratorService.getContact(id, { getChildPlaces: true, merge: false })).pipe(
           map(model => this.contactsActions.setSelected(model)),
           catchError(error => {
             console.error('Error selecting contact', error);
@@ -73,7 +73,7 @@ export class ContactsEffects {
         this.contactsActions.setLoadingSelectedContact();
         this.contactsActions.setContactsLoadingSummary(true);
         this.globalActions.clearCancelCallback();
-        const options = { getChildPlaces: false };
+        const options = { getChildPlaces: true };
         // const lazyLoadedContactData = this.loadSelectedContactChildren(selectedContact, { getChildPlaces: false })
         //   .then(() => this.loadSelectedContactReports(selectedContact, forms));
         // .then(() => loadSelectedContactTargetDoc(selected));
