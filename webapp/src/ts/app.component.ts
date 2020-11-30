@@ -1,6 +1,6 @@
 import { ActivationEnd, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -29,6 +29,9 @@ import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { TourService } from '@mm-services/tour.service';
+import { UnreadRecordsService } from '@mm-services/unread-records.service';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 
@@ -59,7 +62,7 @@ const SYNC_STATUS = {
   selector: 'app-root',
   templateUrl: './app.component.html',
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   private globalActions;
   setupPromise;
   translationsLoaded;
@@ -75,6 +78,7 @@ export class AppComponent implements OnInit {
   replicationStatus;
   androidAppVersion;
   nonContactForms;
+  unreadCount = {};
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -103,6 +107,9 @@ export class AppComponent implements OnInit {
     private startupModalsService:StartupModalsService,
     private tourService:TourService,
     private checkDateService:CheckDateService,
+    private unreadRecordsService:UnreadRecordsService,
+    private rulesEngineService:RulesEngineService,
+    private recurringProcessManagerService:RecurringProcessManagerService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -336,8 +343,10 @@ export class AppComponent implements OnInit {
     });
 
     this.countMessageService.init();
-    this
-      .checkPrivacyPolicy()
+
+    // initialisation tasks that can occur after the UI has been rendered
+    this.setupPromise
+      .then(() => this.checkPrivacyPolicy())
       .then(({ privacyPolicy, accepted }: any = {}) => {
         if (!privacyPolicy || accepted) {
           // If there is no privacy policy or the user already
@@ -347,8 +356,16 @@ export class AppComponent implements OnInit {
           this.startupModalsService.showStartupModals();
         }
       })
+      .then(() => this.initRulesEngine())
+      .then(() => this.initUnreadCount())
+      .then(() => this.startRecurringProcesses())
+      .then(() => this.initForms())
       .then(() => this.checkDateService.check());
-    this.initForms();
+  }
+
+  ngOnDestroy(): void {
+    this.recurringProcessManagerService.stopUpdateRelativeDate();
+    this.recurringProcessManagerService.stopUpdateReadDocsCount();
   }
 
   private initForms() {
@@ -447,6 +464,31 @@ export class AppComponent implements OnInit {
       })
       .catch(err => console.error('Failed to load privacy policy', err));
   }
+
+  private initUnreadCount() {
+    this.unreadRecordsService.init((err, data) => {
+      if (err) {
+        console.error('Error fetching read status', err);
+        return;
+      }
+      this.globalActions.setUnreadCount(data);
+    });
+  }
+
+  private initRulesEngine() {
+    return this.rulesEngineService
+      .isEnabled()
+      .then(isEnabled => console.info(`RulesEngine Status: ${ isEnabled ? 'Enabled' : 'Disabled' }`))
+      .catch(err => console.error('RuleEngine failed to initialize', err));
+  }
+
+  private startRecurringProcesses() {
+    this.recurringProcessManagerService.startUpdateRelativeDate();
+
+    if (this.sessionService.isOnlineOnly()) {
+      this.recurringProcessManagerService.startUpdateReadDocsCount();
+    }
+  }
 }
 
 
@@ -474,22 +516,16 @@ export class AppComponent implements OnInit {
     DatabaseConnectionMonitor,
     Debug,
     Feedback,
-
     JsonForms,
     Language,
     LiveListConfig,
     LocationService,
-    RecurringProcessManager,
-
-    RulesEngine,
-
     SetLanguage,
     Snackbar,
     Telemetry,
     Tour,
     TranslateFrom,
     TranslationLoaderService,
-    UnreadRecords,
     UpdateServiceWorkerService,
     WealthQuintilesWatcher,
     XmlForms
@@ -531,7 +567,6 @@ export class AppComponent implements OnInit {
         setShowContent: globalActions.setShowContent,
         setShowPrivacyPolicy: globalActions.setShowPrivacyPolicy,
         setTitle: globalActions.setTitle,
-        setUnreadCount: globalActions.setUnreadCount,
         unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus,
       };
@@ -576,15 +611,6 @@ export class AppComponent implements OnInit {
 
     ctrl.dbWarmedUp = true;
 
-    // initialisation tasks that can occur after the UI has been rendered
-    ctrl.setupPromise = SessionService.init()
-      .then(() => checkPrivacyPolicy())
-      .then(() => initRulesEngine())
-      .then(() => initForms())
-      .then(() => initUnreadCount())
-      .then(() => CheckDate())
-      .then(() => startRecurringProcesses());
-
     LiveListConfig();
 
     ctrl.setLoadingContent(false);
@@ -616,22 +642,6 @@ export class AppComponent implements OnInit {
         ctrl.setSelectMode(false);
       }
     });
-
-    ctrl.unreadCount = {};
-    const initUnreadCount = () => {
-      UnreadRecords(function(err, data) {
-        if (err) {
-          return $log.error('Error fetching read status', err);
-        }
-        ctrl.setUnreadCount(data);
-      });
-    };
-
-
-
-    const initRulesEngine = () => RulesEngine.isEnabled()
-      .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
-      .catch(err => $log.error('RuleEngine failed to initialize', err));
 
     // get the forms for the forms filter
 
@@ -746,18 +756,9 @@ export class AppComponent implements OnInit {
       callback: change => $translate.refresh(TranslationLoaderService.getCode(change.id)),
     });
 
-    const startRecurringProcesses = () => {
-      RecurringProcessManager.startUpdateRelativeDate();
-      if (SessionService.isOnlineOnly()) {
-        RecurringProcessManager.startUpdateReadDocsCount();
-      }
-    };
-
     $scope.$on('$destroy', function() {
       unsubscribe();
       dbClosedDeregister();
-      RecurringProcessManager.stopUpdateRelativeDate();
-      RecurringProcessManager.stopUpdateReadDocsCount();
     });
 
     const userCtx = SessionService.userCtx();

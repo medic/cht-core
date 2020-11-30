@@ -30,6 +30,7 @@ export const Selectors = {
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
+  getUnreadCount: createSelector(getGlobalState, (globalState) => globalState.unreadCount),
 
   // enketo
   getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
@@ -104,7 +105,6 @@ export const Selectors = {
 
 // Global
 
-const getUnreadCount = state => getGlobalState(state).unreadCount;
 
 // Analytics
 const getSelectedAnalytics = state => getAnalyticsState(state).selected;
@@ -129,7 +129,6 @@ const getLoadTasks = state => getTasksState(state).loaded;
 angular.module('inboxServices').constant('Selectors', {
   getGlobalState,
   getAndroidAppVersion,
-  getUnreadCount,
 
   getSelectedAnalytics,
 
