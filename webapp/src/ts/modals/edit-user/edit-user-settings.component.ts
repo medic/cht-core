@@ -1,10 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { EditUserAbstract } from './edit-user.component';
-import {BsModalRef} from 'ngx-bootstrap/modal';
-import {UserSettingsService} from '@mm-services/user-settings.service';
-import {UpdateUserService} from '@mm-services/update-user.service';
-import {LanguagesService} from '@mm-services/languages.service';
-import {SetLanguageService} from '@mm-services/language.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
+
+import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { UpdateUserService } from '@mm-services/update-user.service';
+import { LanguagesService } from '@mm-services/languages.service';
+import { SetLanguageService } from '@mm-services/language.service';
 
 @Component({
   selector: 'update-password',
