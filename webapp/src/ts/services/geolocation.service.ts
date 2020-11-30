@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { TelemetryService } from '@mm-services/telemetry.service';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -14,8 +16,11 @@ export class GeolocationService {
   private geo;
   private geoError;
   private watcher;
+  private timeout;
 
-  constructor() {}
+  constructor(
+    private telemetryService:TelemetryService,
+  ) {}
 
   private getAndroidPermission () {
     try {
@@ -31,11 +36,12 @@ export class GeolocationService {
 
   private finalise () {
     console.debug('Finalising geolocation');
-    window.navigator.geolocation && window.navigator.geolocation.clearWatch(this.watcher);
+    window.navigator.geolocation?.clearWatch(this.watcher);
+    clearTimeout(this.timeout);
 
     if (this.geo) {
       // Throughout the life of this handle we managed to get a GPS coordinate at least once
-      // Telemetry.record('geolocation:success', geo.coords.accuracy);
+      this.telemetryService.record('geolocation:success', this.geo.coords.accuracy);
       this.deferred.resolve({
         latitude: this.geo.coords.latitude,
         longitude: this.geo.coords.longitude,
@@ -47,8 +53,8 @@ export class GeolocationService {
       });
     } else {
       // We never managed to get a handle, here is the latest error
-      // Telemetry.record(`geolocation:failure:${geoError.code}`);
-      this.deferred.reject({
+      this.telemetryService.record(`geolocation:failure:${this.geoError.code}`);
+      this.deferred.resolve({
         code: this.geoError.code,
         message: this.geoError.message,
       });
@@ -74,29 +80,32 @@ export class GeolocationService {
   private startWatching() {
     console.debug('Initiating new geolocation watcher');
     if (!window.navigator.geolocation) {
-      this.geoError = {
+      return this.failure({
         code: -1,
         message: 'Geolocation API unavailable.',
-      };
-    } else {
-      this.watcher = window.navigator.geolocation.watchPosition(
-        this.success.bind(this),
-        this.failure.bind(this),
-        this.GEO_OPTIONS
-      );
+      });
     }
+
+    this.watcher = window.navigator.geolocation.watchPosition(
+      this.success.bind(this),
+      this.failure.bind(this),
+      this.GEO_OPTIONS
+    );
+    this.timeout = setTimeout(() => {
+      this.failure({ code: -1, message: 'Geolocation timeout exceeded' });
+    }, this.GEO_OPTIONS.timeout + 1);
   }
 
   private stopWatching() {
     console.debug('Cancelling geolocation');
-    this.watcher && window.navigator.geolocation && window.navigator.geolocation.clearWatch(this.watcher);
+    window.navigator.geolocation?.clearWatch(this.watcher);
+    clearTimeout(this.timeout);
   }
 
   private defer() {
     this.deferred = {};
-    this.deferred.promise = new Promise((resolve, reject) => {
+    this.deferred.promise = new Promise((resolve) => {
       this.deferred.resolve = resolve;
-      this.deferred.reject = reject;
     });
   }
 
