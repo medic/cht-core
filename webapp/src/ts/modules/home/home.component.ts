@@ -16,7 +16,7 @@ export class HomeComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.findFirstAuthorizedTab().then(route => {
+    return this.findFirstAuthorizedTab().then(route => {
       if (!route) {
         route = 'error';
       }
