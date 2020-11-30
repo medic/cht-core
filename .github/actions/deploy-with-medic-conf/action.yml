@@ -12,7 +12,6 @@ inputs:
   username:
     description: The username of an administrator account on the instance at "inputs.hostname". This user will make the deployment.
     required: true
-    default: 'medic'
 
   password:
     description: The password for user with name "inputs.username"
