@@ -273,27 +273,10 @@ export class AppComponent implements OnInit, OnDestroy {
       this.canLogOut = true;
     }
 
-    /* ctrl.setupPromise = SessionService.init()
-      .then(() => checkPrivacyPolicy())
-      .then(() => initRulesEngine())
-      .then(() => initForms())
-      .then(() => initUnreadCount())
-      .then(() => CheckDate())
-      .then(() => startRecurringProcesses());
-    */
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = this.sessionService
       .init()
       .then(() => this.checkPrivacyPolicy())
-      .then(({ privacyPolicy, accepted }: any = {}) => {
-        if (!privacyPolicy || accepted) {
-          // If there is no privacy policy or the user already
-          // accepted the policy show the startup modals,
-          // otherwise the modals will start from the privacy
-          // policy component after the user accepts the terms
-          this.startupModalsService.showStartupModals();
-        }
-      })
       .then(() => this.initRulesEngine())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
@@ -470,7 +453,16 @@ export class AppComponent implements OnInit, OnDestroy {
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
         return { privacyPolicy, accepted };
       })
-      .catch(err => console.error('Failed to load privacy policy', err));
+      .catch(err => console.error('Failed to load privacy policy', err))
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the startup modals,
+          // otherwise the modals will start from the privacy
+          // policy component after the user accepts the terms
+          this.startupModalsService.showStartupModals();
+        }
+      });
   }
 
   private initUnreadCount() {
