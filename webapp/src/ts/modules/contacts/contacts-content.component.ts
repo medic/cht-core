@@ -35,7 +35,6 @@ export class ContactsContentComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('this should be loaded');
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getLoadingSelectedContactChildren),
@@ -62,8 +61,6 @@ export class ContactsContentComponent implements OnInit {
 
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
-        console.log('selecting from this place here');
-        // this.reportsActions.selectReport(this.route.snapshot.params.id);
         this.contactsActions.selectContact(this.route.snapshot.params.id);
         this.globalActions.clearCancelCallback();
 
@@ -79,6 +76,10 @@ export class ContactsContentComponent implements OnInit {
   setReportsTimeWindowMonths(months) {
     this.reportsTimeWindowMonths = months;
     this.reportStartDate = months ? moment().subtract(months, 'months') : null;
+  }
+  filteredReports() {
+    const reports = this.selectedContact.reports;
+    return reports.filter((report) => !this.reportStartDate || this.reportStartDate.isBefore(report.reported_date));
   }
 }
 

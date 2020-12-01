@@ -85,7 +85,7 @@ export const Selectors = {
   ),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
-    (contactsState) => contactsState.contacts
+    (contactsState) => contactsState.loadingSelectedReports
   ),
   getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.loadingSummary),
   // analytics
