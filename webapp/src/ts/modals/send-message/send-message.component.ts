@@ -10,6 +10,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SendMessageService } from '@mm-services/send-message.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { Select2SearchService } from '@mm-services/select2-search.service';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   selector: 'send-message',
@@ -35,7 +36,8 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
     private contactTypesService: ContactTypesService,
     bsModalRef: BsModalRef,
     private sendMessageService: SendMessageService,
-    private select2SearchService: Select2SearchService
+    private select2SearchService: Select2SearchService,
+    private translateHelperService:TranslateHelperService,
   ) {
     super(bsModalRef);
   }
@@ -53,8 +55,11 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
       return;
     }
 
-    const fieldLabel = this.translateService.instant('tasks.0.messages.0.message');
-    this.errors.message = this.translateService.instant('field is required', { field: fieldLabel });
+    return this.translateHelperService
+      .fieldIsRequired('tasks.0.messages.0.message')
+      .then(value => {
+        this.errors.message = value;
+      });
   }
 
   private validatePhoneNumber(settings, data) {
@@ -73,9 +78,11 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
   private validatePhoneNumbers(settings, recipients) {
     // Recipients is mandatory
     if (!recipients || !recipients.length) {
-      const fieldLabel = this.translateService.instant('tasks.0.messages.0.to');
-      this.errors.phone = this.translateService.instant('field is required', { field: fieldLabel });
-      return;
+      return this.translateHelperService
+        .fieldIsRequired('tasks.0.messages.0.to')
+        .then(value => {
+          this.errors.phone = value;
+        });
     }
 
     // All recipients must have a valid phone number
@@ -83,8 +90,12 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
 
     if (errors.length) {
       const errorRecipients = _map(errors, (error) => this.templateSelection(error)).join(', ');
-      this.errors.phone = this.translateService.instant('Invalid contact numbers', { recipients: errorRecipients });
-      return;
+      return this.translateService
+        .get('Invalid contact numbers', { recipients: errorRecipients })
+        .toPromise()
+        .then(value => {
+          this.errors.phone = value;
+        });
     }
 
     this.errors.phone = false;
@@ -191,14 +202,18 @@ export class SendMessageComponent extends MmModalAbstract implements AfterViewIn
       .then((settings) => {
         const message = this.fields.message && this.fields.message.trim();
         const recipients = (<any>$('.message-form #send-message-phone')).select2('data');
-        this.validateMessage(message);
-        this.validatePhoneNumbers(settings, recipients);
-
-        if (!this.errors.message && !this.errors.phone) {
-          return this.sendMessageService
-            .send(recipients, message)
-            .then(() => this.close());
-        }
+        return Promise
+          .all([
+            this.validateMessage(message),
+            this.validatePhoneNumbers(settings, recipients),
+          ])
+          .then(() => {
+            if (!this.errors.message && !this.errors.phone) {
+              return this.sendMessageService
+                .send(recipients, message)
+                .then(() => this.close());
+            }
+          });
       })
       .then(() => this.setFinished())
       .catch((err) => this.setError(err, 'Error sending message'));

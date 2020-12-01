@@ -1,5 +1,5 @@
 import { FormsModule } from '@angular/forms';
-import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
@@ -10,6 +10,7 @@ import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.co
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 describe('UpdatePasswordComponent', () => {
 
@@ -17,7 +18,7 @@ describe('UpdatePasswordComponent', () => {
   let fixture: ComponentFixture<UpdatePasswordComponent>;
   let userSettingsService;
   let updateUserService;
-  let translateService;
+  let translateHelperService;
   let bsModalRef;
 
   beforeEach(async(() => {
@@ -37,6 +38,11 @@ describe('UpdatePasswordComponent', () => {
         }
       )
     };
+    translateHelperService = {
+      fieldIsRequired: sinon.stub().resolvesArg(0),
+      get: sinon.stub().resolvesArg(0),
+    };
+
     return TestBed
       .configureTestingModule({
         imports: [
@@ -51,6 +57,7 @@ describe('UpdatePasswordComponent', () => {
           { provide: UpdateUserService, useValue: updateUserService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: BsModalRef, useValue: bsModalRef },
+          { provide: TranslateHelperService, useValue: translateHelperService },
         ]
       })
       .compileComponents()
@@ -83,68 +90,52 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('password must be filled', () => {
-    translateService = {
-      get: sinon.spy(TranslateService.prototype, 'get'),
-    };
     component.editUserModel.password = '';
     component.updatePassword();
-    expect(translateService.get.called).to.equal(true);
-    expect(translateService.get.getCall(0).args[0]).to.equal('field is required');
-    expect(translateService.get.getCall(0).args[1]).to.deep.equal({ field: 'password' });
+    expect(translateHelperService.fieldIsRequired.called).to.equal(true);
+    expect(translateHelperService.fieldIsRequired.args[0]).to.deep.equal(['Password']);
     expect(updateUserService.update.called).to.equal(false);
   });
 
   it('password must be long enough', () => {
-    translateService = {
-      get: sinon.spy(TranslateService.prototype, 'get'),
-    };
     component.editUserModel.password = '2sml4me';
     component.editUserModel.passwordConfirm = '2sml4me';
     component.editUserModel.currentPassword = '2xml4me';
     component.updatePassword();
-    expect(translateService.get.called).to.equal(true);
-    expect(translateService.get.getCall(0).args[0]).to.equal('password.length.minimum');
+    expect(translateHelperService.get.called).to.equal(true);
+    expect(translateHelperService.get.getCall(0).args[0]).to.equal('password.length.minimum');
     expect(updateUserService.update.called).to.equal(false);
   });
 
   it('password must be hard to brute force', () => {
-    translateService = {
-      get: sinon.spy(TranslateService.prototype, 'get'),
-    };
     component.editUserModel.password = 'password';
     component.editUserModel.passwordConfirm = 'password';
     component.editUserModel.currentPassword = '2xml4me';
     component.updatePassword();
-    expect(translateService.get.called).to.equal(true);
-    expect(translateService.get.getCall(0).args[0]).to.equal('password.weak');
+    expect(translateHelperService.get.called).to.equal(true);
+    expect(translateHelperService.get.getCall(0).args[0]).to.equal('password.weak');
     expect(updateUserService.update.called).to.equal(false);
   });
 
   it('error if password and confirm do not match', () => {
-    translateService = {
-      get: sinon.spy(TranslateService.prototype, 'get'),
-    };
     const password = '1QrAs$$3%%kkkk445234234234';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password + 'a';
     component.editUserModel.currentPassword = '2xml4me';
     component.updatePassword();
-    expect(translateService.get.called).to.equal(true);
-    expect(translateService.get.getCall(0).args[0]).to.equal('Passwords must match');
+    expect(translateHelperService.get.called).to.equal(true);
+    expect(translateHelperService.get.getCall(0).args[0]).to.equal('Passwords must match');
     expect(updateUserService.update.called).to.equal(false);
   });
 
   it('user is updated with password change', () => {
-    translateService = {
-      get: sinon.spy(TranslateService.prototype, 'get'),
-    };
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
     component.editUserModel.currentPassword = currentPassword;
     component.updatePassword();
-    expect(translateService.get.called).to.equal(false);
+    expect(translateHelperService.get.called).to.equal(false);
     expect(component.errors).to.deep.equal({});
     expect(updateUserService.update.called).to.equal(true);
     expect(updateUserService.update.getCall(0).args[0]).to.equal('admin');
@@ -154,17 +145,13 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('errors if current password is not provided', () => {
-    translateService = {
-      get: sinon.spy(TranslateService.prototype, 'get'),
-    };
     const password = '1QrAs$$3%%kkkk445234234234';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
 
     component.updatePassword();
-    expect(translateService.get.called).to.equal(true);
-    expect(translateService.get.getCall(0).args[0]).to.equal('field is required');
-    expect(translateService.get.getCall(0).args[1]).to.deep.equal({ field: 'currentPassword' });
+    expect(translateHelperService.fieldIsRequired.called).to.equal(true);
+    expect(translateHelperService.fieldIsRequired.getCall(0).args[0]).to.deep.equal('Current Password');
     expect(updateUserService.update.called).to.equal(false);
   });
 });
