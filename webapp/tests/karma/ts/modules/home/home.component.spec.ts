@@ -65,7 +65,7 @@ describe('HomeComponent', () => {
       .withArgs(['can_view_tasks', 'can_view_tasks_tab']).resolves(false)
       .withArgs(['can_view_reports', 'can_view_reports_tab']).resolves(true)
       .withArgs(['can_view_analytics', 'can_view_analytics_tab']).resolves(false)
-      .withArgs(['can_view_contacts_tab', 'can_view_contacts_tab']).resolves(true);
+      .withArgs(['can_view_contacts', 'can_view_contacts_tab']).resolves(true);
 
     await component.ngOnInit();
     expect(routerMock.navigate.callCount).to.equal(1);
