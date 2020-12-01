@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
+import * as moment from 'moment';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -21,6 +22,8 @@ export class ContactsContentComponent implements OnInit {
   selectedContactChildren;
   forms;
   loadingSelectedContactReports;
+  reportStartDate;
+  reportsTimeWindowMonths;
 
   constructor(
     private store: Store,
@@ -70,6 +73,12 @@ export class ContactsContentComponent implements OnInit {
       }
     });
     this.subscription.add(routeSubscription);
+    this.setReportsTimeWindowMonths(3);
+  }
+
+  setReportsTimeWindowMonths(months) {
+    this.reportsTimeWindowMonths = months;
+    this.reportStartDate = months ? moment().subtract(months, 'months') : null;
   }
 }
 
