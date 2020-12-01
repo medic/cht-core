@@ -13,3 +13,17 @@ export class FilterReportsPipe implements PipeTransform {
     return reports.filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
   }
 }
+
+@Pipe({
+  name: 'filterTasks'
+})
+@Injectable({
+  providedIn: 'root'
+})
+export class FilterTasksPipe implements PipeTransform {
+  constructor(){}
+
+  transform(tasks, taskEndDate) {
+    return tasks.filter((task) => !taskEndDate || task.dueDate <= taskEndDate);
+  }
+}

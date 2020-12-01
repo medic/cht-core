@@ -24,7 +24,7 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { SafeHtmlPipe } from '@mm-pipes/safe-html.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
-import { FilterReportsPipe } from '@mm-pipes/contacts.pipe';
+import { FilterReportsPipe, FilterTasksPipe } from '@mm-pipes/contacts.pipe';
 
 @NgModule({
   declarations: [
@@ -53,6 +53,7 @@ import { FilterReportsPipe } from '@mm-pipes/contacts.pipe';
     PhonePipe,
     TranslateFromPipe,
     FilterReportsPipe,
+    FilterTasksPipe,
   ],
   imports: [
     CommonModule,
@@ -83,6 +84,7 @@ import { FilterReportsPipe } from '@mm-pipes/contacts.pipe';
     PhonePipe,
     TranslateFromPipe,
     FilterReportsPipe,
+    FilterTasksPipe,
   ]
 })
 export class PipesModule { }
