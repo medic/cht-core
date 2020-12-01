@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 @Component({
   selector: 'feedback-modal',
@@ -23,6 +24,7 @@ export class FeedbackComponent extends MmModalAbstract {
     private feedbackService: FeedbackService,
     private translateService: TranslateService,
     private store: Store,
+    private translateHelperService:TranslateHelperService,
   ) {
     super(bsModalRef);
     this.globalActions = new GlobalActions(store);
@@ -33,10 +35,8 @@ export class FeedbackComponent extends MmModalAbstract {
       this.error.message = false;
       return Promise.resolve();
     } else {
-      return this
-        .translateService
-        .get('field is required', { field: 'Bug description' })
-        .toPromise()
+      return this.translateHelperService
+        .fieldIsRequired('Bug description')
         .then(value => this.error.message = value);
     }
   }

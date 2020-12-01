@@ -141,16 +141,3 @@ const _globalReducer = createReducer(
 export const globalReducer = (state, action) => {
   return _globalReducer(state, action);
 };
-/*
-module.exports = function(state, action) {
-  if (typeof state === 'undefined') {
-    state = initialState;
-  }
-
-  switch (action.type) {
-  case actionTypes.SET_VERSION:
-    return Object.assign({}, state, { version: action.payload.version });
-  default:
-    return state;
-  }
-};*/
