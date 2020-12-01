@@ -105,37 +105,37 @@
         </ul>
       </div>
 
-      <!-- <div *ngIf="selectedContact.tasks" mm-auth="can_view_tasks">
+      <div *ngIf="selectedContact.tasks" mm-auth="can_view_tasks">
         <div class="card tasks">
           <div class="action-header cell">
             <h3 translate>Tasks</h3>
             <span class="table-filter">
-              <a ng-click="setTasksTimeWindowWeeks(1)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
-              <a ng-click="setTasksTimeWindowWeeks(2)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
-              <a ng-click="setTasksTimeWindowWeeks()" class="btn btn-link" ng-class="{selected: !tasksTimeWindowWeeks}" translate>view.all</a>
+              <a (click)="setTasksTimeWindowWeeks(1)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 1" translate [translateParams]="{WEEKS: 1}">n.week</a>
+              <a (click)="setTasksTimeWindowWeeks(2)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 2" translate [translateParams]="{WEEKS: 2}">n.week</a>
+              <a (click)="setTasksTimeWindowWeeks()" class="btn btn-link" [class.selected]="!tasksTimeWindowWeeks" translate>view.all</a>
             </span>
           </div>
           <ul>
-            <mm-content-row ng-repeat="task in selectedContact.tasks | filter:filterTasks as filteredTasks"
+            <mm-content-row *ngFor="let task of selectedContact.tasks"
               id="task._id"
               route="'tasks'"
               icon="task.icon"
               date="task.dueDate"
               overdue="task.overdue"
-              date-format="'taskDueDate'"
+              dateFormat="'taskDueDate'"
               heading="selectedContact.children.length ? (task.contact && task.contact.name) : task.title"
               summary="selectedContact.children.length ? task.title : ''"
               warning="task.priorityLabel"
-            />
+            ></mm-content-row>
           </ul>
           <div class="row" *ngIf="!filteredTasks.length">
             <div class="cell col">
               <span *ngIf="!tasksTimeWindowWeeks" translate>tasks.none</span>
-              <span *ngIf="tasksTimeWindowWeeks" translate translate-values="{WEEKS: tasksTimeWindowWeeks}" translate-interpolation="messageformat">tasks.none.n.weeks</span>
+              <span *ngIf="tasksTimeWindowWeeks" translate [translateParams]="{WEEKS: tasksTimeWindowWeeks}">tasks.none.n.weeks</span>
             </div>
           </div>
         </div>
-      </div> -->
+      </div>
 
       <div mm-auth="can_view_reports">
         <div class="card reports">

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
@@ -12,7 +12,7 @@ import { ContactsActions } from '@mm-actions/contacts';
   selector: 'contacts-content',
   templateUrl: './contacts-content.component.html'
 })
-export class ContactsContentComponent implements OnInit {
+export class ContactsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   private globalActions;
   private contactsActions;
@@ -24,6 +24,8 @@ export class ContactsContentComponent implements OnInit {
   loadingSelectedContactReports;
   reportStartDate;
   reportsTimeWindowMonths;
+  taskEndDate;
+  tasksTimeWindowWeeks;
 
   constructor(
     private store: Store,
@@ -71,15 +73,31 @@ export class ContactsContentComponent implements OnInit {
     });
     this.subscription.add(routeSubscription);
     this.setReportsTimeWindowMonths(3);
+    this.setTasksTimeWindowWeeks(1);
   }
 
-  setReportsTimeWindowMonths(months) {
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  setReportsTimeWindowMonths(months?) {
     this.reportsTimeWindowMonths = months;
     this.reportStartDate = months ? moment().subtract(months, 'months') : null;
   }
+
   filteredReports() {
     const reports = this.selectedContact.reports;
     return reports.filter((report) => !this.reportStartDate || this.reportStartDate.isBefore(report.reported_date));
+  }
+
+  filteredTasks() {
+    const tasks = this.selectedContact.tasks;
+    return tasks.filter((task) => !this.taskEndDate || task.dueDate <= this.taskEndDate);
+  }
+
+  setTasksTimeWindowWeeks(weeks?) {
+    this.tasksTimeWindowWeeks = weeks;
+    this.taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
   }
 }
 

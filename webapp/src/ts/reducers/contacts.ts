@@ -116,6 +116,28 @@ const updateSelectedContact = (state, summary) => {
   };
 };
 
+const updateSelectedContactsTasks = (state, tasks) => {
+  const taskCounts = {};
+  tasks.forEach(task => {
+    const childId = task.emission.forId;
+    if (taskCounts[childId]) {
+      taskCounts[childId] = taskCounts[childId] + 1;
+    } else {
+      taskCounts[childId] = 1;
+    }
+  });
+  const children = state.selected.children.map(group => {
+    const contacts = group.contacts.map(child => {
+      return Object.assign({}, child, { taskCount: taskCounts[child.id] });
+    });
+    return { ...group, contacts };
+  });
+  const mappedTasks = tasks.map(doc => doc.emission);
+  return Object.assign({}, state, {
+    selected: Object.assign({}, state.selected, { tasks: mappedTasks, children })
+  });
+};
+
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
@@ -131,7 +153,8 @@ const _contactsReducer = createReducer(
   on(Actions.receiveSelectedContactReports, (state, { payload: { reports }}) => {
     return receiveSelectedContactReports(state, reports);
   }),
-  on(Actions.updateSelectedContact, (state, { payload: { summary }}) => updateSelectedContact(state, summary))
+  on(Actions.updateSelectedContact, (state, { payload: { summary }}) => updateSelectedContact(state, summary)),
+  on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks))
 );
 
 export function contactsReducer(state, action) {

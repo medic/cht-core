@@ -9,6 +9,7 @@ import { ContactViewModelGeneratorService } from '@mm-services/contact-view-mode
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -20,6 +21,7 @@ export class ContactsEffects {
     private store: Store,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private contactSummaryService: ContactSummaryService,
+    private tasksForContactService: TasksForContactService,
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -120,19 +122,9 @@ export class ContactsEffects {
       exhaustMap(([payload, selectedContact]) => {
         const selected: any = Object.assign({}, selectedContact);
         this.contactsActions.setContactsLoadingSummary(true);
-        // this.contactSummaryService.get(
-        //   selected.doc,
-        //   selected.reports,
-        //   selected.lineage
-        // ).then(() => {
-        //   return of(this.contactsActions.setContactsLoadingSummary(false));
-        // });
-        // this.contactsActions.setContactsLoadingSummary(false);
-        // return of(this.contactSummaryService.get(
-        //   selected.doc,
-        //   selected.reports,
-        //   selected.lineage
-        // ));
+        this.tasksForContactService.get(selected).then((tasks) => {
+          return this.contactsActions.updateSelectedContactsTasks(tasks);
+        });
         return from(this.contactSummaryService.get(selected.doc, selected.reports, selected.lineage)).pipe(
           map(summary => {
             this.contactsActions.setContactsLoadingSummary(false);
