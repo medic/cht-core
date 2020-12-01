@@ -34,12 +34,6 @@
   "public_access": false,
   "default_country_code": 1,
   "gateway_number": "+13125551212",
-  "kujua-reporting": [
-    {
-      "code": "VPD",
-      "reporting_freq": "weekly"
-    }
-  ],
   "schedule_morning_hours": 0,
   "schedule_morning_minutes": 0,
   "schedule_evening_hours": 23,
