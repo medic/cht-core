@@ -9,8 +9,7 @@ import { Injectable, Pipe, PipeTransform } from '@angular/core';
 export class FilterReportsPipe implements PipeTransform {
   constructor(){}
 
-  transform(report, reportStartDate) {
-    console.log('pipe called with', report, reportStartDate);
-    return !reportStartDate || reportStartDate.isBefore(report.reported_date);
+  transform(reports, reportStartDate) {
+    return reports.filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
   }
 }

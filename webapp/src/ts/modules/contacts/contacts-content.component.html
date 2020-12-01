@@ -85,6 +85,7 @@
               [id]="child.doc._id"
               [route]="'contacts'"
               [heading]="child.doc.name"
+              [summary]="''"
               [primaryContact]="child.isPrimaryContact"
               [dob]="child.doc.date_of_birth"
               [taskCount]="child.taskCount"
@@ -141,15 +142,15 @@
           <div class="action-header cell">
             <h3 translate>Reports</h3>
             <span class="table-filter">
-              <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-interpolation="messageformat">3.month</a>
-              <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-interpolation="messageformat">6.month</a>
-              <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
+              <a (click)="setReportsTimeWindowMonths(3)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 3"  translate [translateParams]="{ MONTHS: 3 }">n.month</a>
+              <a (click)="setReportsTimeWindowMonths(6)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 6"  translate [translateParams]="{ MONTHS: 6 }">n.month</a>
+              <a (click)="setReportsTimeWindowMonths()" class="btn btn-link" [class.selected]="!reportsTimeWindowMonths" translate>view.all</a>
             </span>
           </div>
           <div class="loader" *ngIf="loadingSelectedContactReports"></div>
           <div *ngIf="!loadingSelectedContactReports">
             <ul>
-              <mm-content-row *ngFor="let report of selectedContact.reports | filterReports:'reportStartDate' as filteredReports"
+              <mm-content-row *ngFor="let report of selectedContact.reports | filterReports: reportStartDate"
                 id="report._id"
                 route="'reports'"
                 icon="report | formIconName:forms"
@@ -161,12 +162,12 @@
                 verified="report.verified"
               ></mm-content-row>
             </ul>
-            <!-- <div class="row" *ngIf="!filteredReports.length">
+            <div class="row" *ngIf="!filteredReports.length">
               <div class="cell col">
                 <span *ngIf="!reportsTimeWindowMonths" translate>reports.none</span>
-                <span *ngIf="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
+                <span *ngIf="reportsTimeWindowMonths" translate [translateParams]="{MONTHS: reportsTimeWindowMonths}">reports.none.n.months</span>
               </div>
-            </div> -->
+            </div>
           </div>
         </div>
       </div>
