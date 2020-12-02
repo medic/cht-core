@@ -1,10 +1,17 @@
-describe('ContactViewModelGenerator service', () => {
+import { TestBed } from '@angular/core/testing';
+import { assert } from 'chai';
+import sinon from 'sinon';
+import { TranslateService } from '@ngx-translate/core';
 
-  'use strict';
+import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { SearchService } from '@mm-services/search.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { DbService } from '@mm-services/db.service';
 
-  const assert = chai.assert;
-  let service;
-  let ContactTypes;
+describe.only('ContactViewModelGenerator service', () => {
+  let service: ContactViewModelGeneratorService;
   let lineageModelGenerator;
   let childContactPerson;
   let deceasedChildPerson;
@@ -14,99 +21,98 @@ describe('ContactViewModelGenerator service', () => {
   let childPlace2;
   let dbGet;
   let dbQuery;
-  let dbAllDocs;
+  // let dbAllDocs;
   let doc;
   let search;
-  let GetDataRecords;
+  let getDataRecords;
   let Session;
   let forms;
 
   const childPlaceIcon = 'fa-mushroom';
 
-  const stubDbGet = (err, doc) => {
-    dbGet.withArgs(doc._id).returns(KarmaUtils.promise(err, doc));
+  const stubDbGet = (doc) => {
+    return dbGet.resolves(doc);
   };
 
-  const stubLineageModelGenerator = (err, contact, lineage) => {
-    lineageModelGenerator.contact.returns(KarmaUtils.promise(err, {
+  const stubLineageModelGenerator = (contact, lineage?) => {
+    return lineageModelGenerator.contact.resolves({
       _id: contact && contact._id,
       doc: contact,
       lineage: lineage
-    }));
+    });
   };
 
-  const stubDbQueryChildren = (err, parentId, docs = []) => {
+  const stubDbQueryChildren = (parentId, docs = []) => {
     docs = docs.map(doc => {
       return { doc: doc };
     });
-    dbQuery.returns(KarmaUtils.promise(err, { rows: docs }));
+    dbQuery.resolves({ rows: docs });
   };
 
-  const stubSearch = (err, reports) => {
-    search.returns(KarmaUtils.promise(err, reports));
+  const stubSearch = (reports) => {
+    search.resolves(reports);
   };
 
-  const stubGetDataRecords = (err, dataRecords) => {
-    GetDataRecords.returns(KarmaUtils.promise(err, dataRecords));
+  const stubGetDataRecords = (dataRecords) => {
+    getDataRecords.resolves(dataRecords);
   };
 
   beforeEach(() => {
-    module('inboxApp');
-    module($provide => {
-      search = sinon.stub();
-      dbGet = sinon.stub();
-      dbQuery = sinon.stub();
-      dbAllDocs = sinon.stub();
-      const types = [
-        { id: 'family' },
-        { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
-        { id: 'chp', person: true, parents: [ 'mushroom' ] },
-        { id: 'red-herring' },
-        { id: 'clinic', parents: [ 'mushroom' ] },
-        { id: 'mushroom', name_key: 'label.mushroom' }
-      ];
-      ContactTypes = { getAll: sinon.stub().resolves(types) };
-      lineageModelGenerator = { contact: sinon.stub() };
-      GetDataRecords = sinon.stub();
-      Session = { isOnlineOnly: function() {} };
+    search = sinon.stub();
+    dbGet = sinon.stub();
+    dbQuery = sinon.stub();
+    // dbAllDocs = sinon.stub();
+    getDataRecords = sinon.stub();
+    const types = [
+      { id: 'family' },
+      { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
+      { id: 'chp', person: true, parents: [ 'mushroom' ] },
+      { id: 'red-herring' },
+      { id: 'clinic', parents: [ 'mushroom' ] },
+      { id: 'mushroom', name_key: 'label.mushroom' }
+    ];
+    lineageModelGenerator = { contact: sinon.stub() };
+    Session = { isOnlineOnly: function() {} };
+    const parentId = 'districtsdistrict';
+    const contactId = 'mario';
+    childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
+    deceasedChildPerson = {
+      _id: 'deceaseduuid',
+      name: 'casper',
+      type: 'person',
+      date_of_death: 123456789,
+      parent: { _id: parentId }
+    };
 
-      $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet, query: dbQuery, allDocs: dbAllDocs }));
-      $provide.value('Search', search);
-      $provide.value('ContactTypes', ContactTypes);
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('LineageModelGenerator', lineageModelGenerator);
-      $provide.value('GetDataRecords', GetDataRecords);
-      $provide.value('Session', Session);
+    childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
 
-      const parentId = 'districtsdistrict';
-      const contactId = 'mario';
-      childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
-      deceasedChildPerson = {
-        _id: 'deceaseduuid',
-        name: 'casper',
-        type: 'person',
-        date_of_death: 123456789,
-        parent: { _id: parentId }
-      };
+    childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
+    childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
+    childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
 
-      childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
+    doc = {
+      _id: parentId,
+      type: 'clinic',
+      contact: { _id: contactId }
+    };
+    forms = [];
 
-      childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
-      childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
-      childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
-
-      doc = {
-        _id: parentId,
-        type: 'clinic',
-        contact: { _id: contactId }
-      };
-      forms = [];
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: TranslateService, useValue: { instant: sinon.stub() } },
+        { provide: SearchService, useValue: { search } },
+        { provide: ContactTypesService, useValue: { getAll: sinon.stub().resolves(types) } },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
+        { provide: GetDataRecordsService, useValue: { get: getDataRecords } },
+        { provide: DbService, useValue: { get: () => ({ query: dbQuery }) } },
+      ]
     });
-    inject(_ContactViewModelGenerator_ => service = _ContactViewModelGenerator_);
+
+    service = TestBed.inject(ContactViewModelGeneratorService);
   });
 
   afterEach(function() {
-    KarmaUtils.restore(GetDataRecords);
+    sinon.restore();
   });
 
   function waitForModelToLoad(model) {
@@ -122,13 +128,14 @@ describe('ContactViewModelGenerator service', () => {
       });
   }
 
-  describe('Place', () => {
+  describe.only('Place', () => {
     const runPlaceTest = (childrenArray) => {
-      stubLineageModelGenerator(null, doc);
-      stubDbGet(null, childContactPerson);
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, childrenArray);
+      stubLineageModelGenerator(doc);
+      console.log('calling with', childContactPerson);
+      stubSearch([]);
+      stubGetDataRecords([]);
+      stubDbQueryChildren(doc._id, childrenArray);
+
       return service.getContact(doc._id)
         .then(waitForModelToLoad);
     };
@@ -182,11 +189,11 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('if no contact person in children, persons still get displayed', () => {
-      stubLineageModelGenerator(null, doc);
-      stubDbGet({ status: 404 }, childContactPerson);
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, [childPerson]);
+      stubLineageModelGenerator(doc);
+      // stubDbGet(childContactPerson);
+      stubSearch([]);
+      stubGetDataRecords([]);
+      stubDbQueryChildren(doc._id, [childPerson]);
       return service.getContact(doc._id)
         .then(waitForModelToLoad)
         .then(model => {
@@ -331,9 +338,9 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Person', () => {
     const runPersonTest = parentDoc => {
-      stubLineageModelGenerator(null, childContactPerson, [ parentDoc ]);
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
+      stubLineageModelGenerator(childContactPerson, [ parentDoc ]);
+      stubSearch([]);
+      stubGetDataRecords([]);
       return service.getContact(childContactPerson._id);
     };
 
@@ -357,16 +364,16 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Reports', () => {
     const runReportsTest = childrenArray => {
-      stubLineageModelGenerator(null, doc);
-      stubDbGet({ status: 404 }, childContactPerson);
-      stubDbQueryChildren(null, doc._id, childrenArray);
+      stubLineageModelGenerator(doc);
+      stubDbGet(childContactPerson);
+      stubDbQueryChildren(doc._id, childrenArray);
       return service.getContact(doc._id);
     };
 
     it('sets the returned reports as selected', () => {
       sinon.stub(Session, 'isOnlineOnly').returns(true);
-      stubSearch(null, [ { _id: 'ab' } ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ { _id: 'ab' } ]);
+      stubGetDataRecords([]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -378,8 +385,8 @@ describe('ContactViewModelGenerator service', () => {
     it('sorts reports by reported_date', () => {
       const report1 = { _id: 'ab', reported_date: 123 };
       const report2 = { _id: 'cd', reported_date: 456 };
-      stubSearch(null, [ report1, report2 ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ report1, report2 ]);
+      stubGetDataRecords([]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -390,8 +397,8 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('includes reports from children', () => {
-      stubSearch(null, [ { _id: 'ab' },{ _id: 'cd' } ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ { _id: 'ab' },{ _id: 'cd' } ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
         .then(waitForModelToLoad)
         .then(model => {
@@ -408,8 +415,8 @@ describe('ContactViewModelGenerator service', () => {
       childPerson.patient_id = '12345';
       const report1 = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
       const report2 = { _id: 'cd', fields: { patient_id: childPerson.patient_id, patient_name: 'Jack' } };
-      stubSearch(null, [ report1, report2 ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ report1, report2 ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
@@ -427,8 +434,8 @@ describe('ContactViewModelGenerator service', () => {
         { _id: 'aa', reported_date: 123 },
         { _id: 'bb', reported_date: 345 }
       ];
-      stubSearch(null, [ expectedReports[0], expectedReports[1] ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ expectedReports[0], expectedReports[1] ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
@@ -441,8 +448,8 @@ describe('ContactViewModelGenerator service', () => {
     it('includes subjectIds in reports search so JSON reports are found', () => {
       doc.patient_id = 'cd';
       doc.place_id = 'ef';
-      stubSearch(null, [ { _id: 'ab' } ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ { _id: 'ab' } ]);
+      stubGetDataRecords([]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(() => {
@@ -458,8 +465,8 @@ describe('ContactViewModelGenerator service', () => {
     it('adds patient_name to reports', () => {
       childPerson.patient_id = '12345';
       const report = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ report ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson])
         .then(waitForModelToLoad)
         .then(model => {
@@ -478,8 +485,8 @@ describe('ContactViewModelGenerator service', () => {
     it('adds heading to reports', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', validSubject: 'ac', subject: { value: 'ad' } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -491,8 +498,8 @@ describe('ContactViewModelGenerator service', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', form: 'a', validSubject: 'ac', subject: { value: 'ad' } };
       forms = [ { code: 'a', subjectKey: 'some.key' } ];
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -503,8 +510,8 @@ describe('ContactViewModelGenerator service', () => {
     it('does not add heading to reports when there are no valid subject', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', subject: { value: 'ad' } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -515,8 +522,8 @@ describe('ContactViewModelGenerator service', () => {
     it('does not add heading to reports when there are no valid subject value', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', validSubject: 'ac' };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -526,8 +533,8 @@ describe('ContactViewModelGenerator service', () => {
 
     it('does not add heading to reports when no data record is found', () => {
       const report = { _id: 'ab' };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -539,8 +546,8 @@ describe('ContactViewModelGenerator service', () => {
       const report = { _id: 'a' };
       const dataRecordA = { _id: 'a', validSubject: 'avs', subject: { value: 'asv' } };
       const dataRecordB = { _id: 'b', validSubject: 'bvs', subject: { value: 'bsv' } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecordB, dataRecordA ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecordB, dataRecordA ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
@@ -551,11 +558,11 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('muting', () => {
     const runMutingTest = (doc, lineage) => {
-      stubLineageModelGenerator(null, doc, lineage);
-      stubDbGet(null, {});
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, []);
+      stubLineageModelGenerator(doc, lineage);
+      stubDbGet({});
+      stubSearch([]);
+      stubGetDataRecords([]);
+      stubDbQueryChildren(doc._id, []);
       return service.getContact(doc._id);
     };
 

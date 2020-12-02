@@ -11,6 +11,16 @@ import { GetDataRecordsService } from './get-data-records.service';
 
 const registrationUtils = require('@medic/registration-utils');
 
+const PRIMARY_CONTACT_COMPARATOR = (lhs, rhs) => {
+  if (lhs.isPrimaryContact) {
+    return -1;
+  }
+  if (rhs.isPrimaryContact) {
+    return 1;
+  }
+  return 0;
+};
+
 /**
  * Hydrates the given contact by uuid and creates a model which
  * holds the doc and associated information for rendering. eg:
@@ -54,18 +64,8 @@ export class ContactViewModelGeneratorService {
     return lhsId.localeCompare(rhsId);
   }
 
-  private PRIMARY_CONTACT_COMPARATOR(lhs, rhs) {
-    if (lhs.isPrimaryContact) {
-      return -1;
-    }
-    if (rhs.isPrimaryContact) {
-      return 1;
-    }
-    return 0;
-  }
-
   private NAME_COMPARATOR = (lhs, rhs) => {
-    const primary = this.PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
+    const primary = PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
     if (primary !== 0) {
       return primary;
     }
@@ -82,7 +82,7 @@ export class ContactViewModelGeneratorService {
   };
 
   private AGE_COMPARATOR(lhs, rhs) {
-    const primary = this.PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
+    const primary = PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
     if (primary !== 0) {
       return primary;
     }
@@ -229,8 +229,7 @@ export class ContactViewModelGeneratorService {
     return childModels;
   }
 
-  loadChildren(model, options) {
-    // model.children = [];
+  loadChildren(model, options?) {
     const newModel = Object.assign({children: []}, model);
     return this.contactTypesService.getAll().then(types => {
       return this.getChildren(newModel, types, options)
@@ -317,7 +316,7 @@ export class ContactViewModelGeneratorService {
     model.type = types.find(type => type.id === typeId);
   }
 
-  getContact(id, options) {
+  getContact(id, options?) {
     return Promise
       .all([
         this.contactTypesService.getAll(),
