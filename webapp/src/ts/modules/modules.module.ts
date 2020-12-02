@@ -7,8 +7,9 @@ import { FormsModule } from '@angular/forms';
 
 import  { PipesModule } from '@mm-pipes/pipes.module';
 
+import { HomeComponent } from '@mm-modules/home/home.component';
 import { AboutComponent } from './about/about.component';
-import {ConfigurationUserComponent} from './configuration-user/configuration-user.component';
+import { ConfigurationUserComponent } from './configuration-user/configuration-user.component';
 import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -31,6 +32,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
 
 @NgModule({
   declarations: [
+    HomeComponent,
     AboutComponent,
     ConfigurationUserComponent,
     ErrorComponent,
@@ -62,6 +64,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     FormsModule,
   ],
   exports: [
+    HomeComponent,
     AboutComponent,
     ConfigurationUserComponent,
     ErrorComponent,
