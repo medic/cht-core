@@ -40,7 +40,7 @@ describe('Contacts Reducer', () => {
           ['4', { _id: '4', name: 'Person 2','type':'person' }],
         ]),
         filters: {},
-        selected: [],
+        selected: null,
         loadingSelectedChildren: false,
         loadingSelectedContacts: false,
         loadingSummary: false,
