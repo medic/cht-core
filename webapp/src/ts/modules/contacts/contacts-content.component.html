@@ -117,18 +117,18 @@
           </div>
           <ul>
             <mm-content-row *ngFor="let task of selectedContact.tasks"
-              id="task._id"
-              route="'tasks'"
-              icon="task.icon"
-              date="task.dueDate"
-              overdue="task.overdue"
-              dateFormat="'taskDueDate'"
-              heading="selectedContact.children.length ? (task.contact && task.contact.name) : task.title"
-              summary="selectedContact.children.length ? task.title : ''"
-              warning="task.priorityLabel"
+              [id]="task._id"
+              [route]="'tasks'"
+              [icon]="task.icon"
+              [date]="task.dueDate"
+              [overdue]="task.overdue"
+              [dateFormat]="'taskDueDate'"
+              [heading]="selectedContact.children.length ? (task.contact && task.contact.name) : task.title"
+              [summary]="selectedContact.children.length ? task.title : ''"
+              [warning]="task.priorityLabel"
             ></mm-content-row>
           </ul>
-          <div class="row" *ngIf="!filteredTasks.length">
+          <div class="row" *ngIf="!filteredTasks().length">
             <div class="cell col">
               <span *ngIf="!tasksTimeWindowWeeks" translate>tasks.none</span>
               <span *ngIf="tasksTimeWindowWeeks" translate [translateParams]="{WEEKS: tasksTimeWindowWeeks}">tasks.none.n.weeks</span>
@@ -151,18 +151,18 @@
           <div *ngIf="!loadingSelectedContactReports">
             <ul>
               <mm-content-row *ngFor="let report of selectedContact.reports | filterReports: reportStartDate"
-                id="report._id"
-                route="'reports'"
-                icon="report | formIconName:forms"
-                date="report.reported_date"
-                heading="selectedContact.children.length ? report.heading : (report | summary:forms)"
-                summary="selectedContact.children.length ? (report | summary:forms) : ''"
-                show-status="true"
-                valid="report.valid"
-                verified="report.verified"
+                [id]="report._id"
+                [route]="'reports'"
+                [icon]="report | formIconName:forms"
+                [date]="report.reported_date"
+                [heading]="selectedContact.children.length ? report.heading : (report | summary:forms)"
+                [summary]="selectedContact.children.length ? (report | summary:forms) : ''"
+                [showStatus]="true"
+                [valid]="report.valid"
+                [verified]="report.verified"
               ></mm-content-row>
             </ul>
-            <div class="row" *ngIf="!filteredReports.length">
+            <div class="row" *ngIf="!filteredReports().length">
               <div class="cell col">
                 <span *ngIf="!reportsTimeWindowMonths" translate>reports.none</span>
                 <span *ngIf="reportsTimeWindowMonths" translate [translateParams]="{MONTHS: reportsTimeWindowMonths}">reports.none.n.months</span>
