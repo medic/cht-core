@@ -54,7 +54,13 @@
               "extractLicenses": false,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "optimization": false
+              "optimization": false,
+              "fileReplacements": [
+                {
+                  "replace": "src/ts/environments/environment.ts",
+                  "with": "src/ts/environments/environment.prod.ts"
+                }
+              ]
             },
             "production": {
               "fileReplacements": [
