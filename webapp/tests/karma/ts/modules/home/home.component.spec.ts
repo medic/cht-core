@@ -56,7 +56,7 @@ describe('HomeComponent', () => {
 
     await component.ngOnInit();
     expect(routerMock.navigate.callCount).to.equal(1);
-    expect(routerMock.navigate.args[0][0]).to.deep.equal(['error']);
+    expect(routerMock.navigate.args[0][0]).to.deep.equal(['error', '403']);
   });
 
   it('handles some permissions', async () => {
