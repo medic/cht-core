@@ -1,8 +1,5 @@
 <div class="row header">
   <div class="inner">
-
-    <span id="mobile-detection"></span>
-
     <a routerLink="home">
       <div class="logo">
         <div class="logo-full" [innerHtml]="'logo' | headerLogo"></div>
@@ -136,5 +133,7 @@
         <div class="button-label" translate>{{tab.translation}}</div>
       </a>
     </div>
+
+    <mobile-detection></mobile-detection>
   </div>
 </div>

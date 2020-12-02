@@ -35,6 +35,7 @@ import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filte
 import {
   AnalyticsTargetsDetailsComponent
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
+import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import {
     AnalyticsTargetsProgressComponent,
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
+    MobileDetectionComponent,
   ],
   imports: [
     CommonModule,

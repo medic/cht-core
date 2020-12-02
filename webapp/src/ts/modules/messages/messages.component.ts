@@ -12,8 +12,8 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ExportService } from '@mm-services/export.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
-import { isMobile } from '@mm-providers/responsive.provider';
 import { TourService } from '@mm-services/tour.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -38,6 +38,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private exportService: ExportService,
     private modalService: ModalService,
     private tourService: TourService,
+    private responsiveService:ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -93,7 +94,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private displayFirstConversation(conversations = []) {
-    if (isMobile()) {
+    if (this.responsiveService.isMobile()) {
       return;
     }
 

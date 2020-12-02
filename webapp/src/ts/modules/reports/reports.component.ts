@@ -5,7 +5,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { isMobile } from '@mm-providers/responsive.provider';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
@@ -16,6 +15,7 @@ import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 const PAGE_SIZE = 50;
 
@@ -59,6 +59,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private exportService:ExportService,
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
+    private responsiveService:ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -175,7 +176,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.error = false;
       this.errorSyntax = false;
       this.loading = true;
-      if (this.selectedReports?.length && isMobile()) {
+      if (this.selectedReports?.length && this.responsiveService.isMobile()) {
         this.globalActions.unsetSelected();
       }
 
@@ -239,7 +240,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.router.navigate(['reports']);
       this.reportsActions.clearSelection();
     }
-    if (!force && isMobile() && this.showContent) {
+    if (!force && this.responsiveService.isMobile() && this.showContent) {
       // leave content shown
       return;
     }
