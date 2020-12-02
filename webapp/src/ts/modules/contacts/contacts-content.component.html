@@ -98,7 +98,7 @@
         <ul class="action deceased">
           <li *ngIf="group.deceasedCount > 0" class="content-row deceased">
             <a ui-sref="contacts.deceased({ id: selectedContact.doc._id })">
-              <span translate translate-values="{ count: group.deceasedCount }">contact.deceased.view</span>
+              <span translate [translateParams]="{ count: group.deceasedCount }">contact.deceased.view</span>
               <i class="fa fa-chevron-right"></i>
             </a>
           </li>
