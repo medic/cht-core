@@ -17,12 +17,13 @@
  *        any further changes.
  */
 import { Injectable, NgZone } from '@angular/core';
-import { DbService } from './db.service';
-import { SessionService } from './session.service';
 import { Store } from '@ngrx/store';
+import { Subject } from 'rxjs';
+
+import { DbService } from '@mm-services/db.service';
+import { SessionService } from '@mm-services/session.service';
 import { Selectors } from '@mm-selectors/index';
 import { ServicesActions } from '@mm-actions/services';
-import { Subject } from 'rxjs';
 
 const RETRY_MILLIS = 5000;
 

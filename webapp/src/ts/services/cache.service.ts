@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
-import {ChangesService} from './changes.service';
+
+import {ChangesService} from '@mm-services/changes.service';
 
 @Injectable({
   providedIn: 'root'

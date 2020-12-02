@@ -1,13 +1,13 @@
 import { isMobile } from '@mm-providers/responsive.provider';
-import { AuthService } from './auth.service';
-import { FeedbackService } from './feedback.service';
-import { AnalyticsModulesService } from './analytics-modules.service';
-import { SessionService } from './session.service';
-
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { compact  as _compact } from 'lodash-es';
+
+import { AuthService } from '@mm-services/auth.service';
+import { FeedbackService } from '@mm-services/feedback.service';
+import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'

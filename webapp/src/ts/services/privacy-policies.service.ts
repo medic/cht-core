@@ -1,9 +1,9 @@
 import { Injectable, SecurityContext } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
-import { DbService } from './db.service';
-import { LanguageService } from './language.service';
-import { UserSettingsService } from './user-settings.service';
+import { DbService } from '@mm-services/db.service';
+import { LanguageService } from '@mm-services/language.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'

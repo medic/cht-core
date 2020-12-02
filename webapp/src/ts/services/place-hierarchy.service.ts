@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { ContactTypesService } from './contact-types.service';
-import { SettingsService } from './settings.service';
-import { ContactsService } from './contacts.service';
+
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { ContactsService } from '@mm-services/contacts.service';
 
 
 @Injectable({

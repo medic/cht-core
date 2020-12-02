@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { FormatDataRecordService } from './format-data-record.service';
-import { GetSubjectSummariesService } from './get-subject-summaries.service';
-import { GetSummariesService } from './get-summaries.service';
-import { LineageModelGeneratorService } from './lineage-model-generator.service';
 import { isString } from 'lodash-es';
+
+import { FormatDataRecordService } from '@mm-services/format-data-record.service';
+import { GetSubjectSummariesService } from '@mm-services/get-subject-summaries.service';
+import { GetSummariesService } from '@mm-services/get-summaries.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 /**
  * Hydrates the given contact by uuid and creates a model which

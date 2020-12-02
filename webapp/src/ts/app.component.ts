@@ -1,6 +1,6 @@
 import { ActivationEnd, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -35,6 +35,7 @@ import { RecurringProcessManagerService } from '@mm-services/recurring-process-m
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
+import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -63,7 +64,7 @@ const SYNC_STATUS = {
   selector: 'app-root',
   templateUrl: './app.component.html',
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit {
   private globalActions;
   setupPromise;
   translationsLoaded;
@@ -111,6 +112,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private unreadRecordsService:UnreadRecordsService,
     private rulesEngineService:RulesEngineService,
     private recurringProcessManagerService:RecurringProcessManagerService,
+    private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -230,6 +232,118 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.subscribeToStore();
+    this.setupRouter();
+    this.loadTranslations();
+    this.setupDb();
+    this.startWealthQuintiles();
+    this.countMessageService.init();
+    this.feedbackService.init();
+
+    // initialisation tasks that can occur after the UI has been rendered
+    this.setupPromise = this.sessionService
+      .init()
+      .then(() => this.checkPrivacyPolicy())
+      .then(() => this.initRulesEngine())
+      .then(() => this.initForms())
+      .then(() => this.initUnreadCount())
+      .then(() => this.checkDateService.check())
+      .then(() => this.startRecurringProcesses());
+
+    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
+    this.watchChangesBranding();
+    this.watchChangesInboxDDoc();
+    this.watchChangesInboxUserContext();
+    this.watchChangesInboxTranslations();
+    this.setAppTitle();
+    this.setupAndroidVersion();
+    this.persistStorage();
+  }
+
+  private setupAndroidVersion() {
+    if (typeof window.medicmobile_android?.getAppVersion === 'function') {
+      this.globalActions.setAndroidAppVersion(window.medicmobile_android.getAppVersion());
+    }
+
+    if (this.androidAppVersion) {
+      this.authService
+        .has('can_log_out_on_android')
+        .then(canLogout => this.canLogOut = canLogout);
+    } else {
+      this.canLogOut = true;
+    }
+  }
+
+  private persistStorage() {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage
+        .persist()
+        .then(granted => {
+          if (granted) {
+            console.info('Persistent storage granted: storage will not be cleared except by explicit user action');
+          } else {
+            console.info('Persistent storage denied: storage may be cleared by the UA under storage pressure.');
+          }
+        });
+    }
+  }
+
+  private watchChangesBranding() {
+    this.changesService.subscribe({
+      key: 'branding-icon',
+      filter: change => change.id === 'branding',
+      callback: () => this.setAppTitle(),
+    });
+  }
+
+  private watchChangesInboxDDoc() {
+    this.changesService.subscribe({
+      key: 'inbox-ddoc',
+      filter: (change) => {
+        return (
+          change.id === '_design/medic' ||
+          change.id === '_design/medic-client' ||
+          change.id === 'service-worker-meta' ||
+          change.id === 'settings'
+        );
+      },
+      callback: (change) => {
+        if (change.id === 'service-worker-meta') {
+          this.updateServiceWorker.update(() => this.showUpdateReady());
+        } else {
+          !environment.production && this.globalActions.setSnackbarContent(`${change.id} changed`);
+          this.showUpdateReady();
+        }
+      },
+    });
+  }
+
+  private watchChangesInboxUserContext() {
+    const userCtx = this.sessionService.userCtx();
+    this.changesService.subscribe({
+      key: 'inbox-user-context',
+      filter: (change) => {
+        return (
+          userCtx &&
+          userCtx.name &&
+          change.id === `org.couchdb.user:${userCtx.name}`
+        );
+      },
+      callback: () => {
+        this.sessionService.init().then(refresh => refresh && this.showUpdateReady());
+      },
+    });
+  }
+
+  private watchChangesInboxTranslations() {
+    this.changesService.subscribe({
+      key: 'inbox-translations',
+      filter: change => this.translationLoaderService.test(change.id),
+      callback: change => this.translateService.reloadLang(this.translationLoaderService.getCode(change.id)),
+    });
+  }
+
+  private subscribeToStore() {
     combineLatest(
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getAndroidAppVersion),
@@ -259,105 +373,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.selectMode = selectMode;
       this.changeDetectorRef.detectChanges();
     });
-
-    this.setupRouter();
-    this.loadTranslations();
-    this.setupDb();
-
-    if (typeof window.medicmobile_android?.getAppVersion === 'function') {
-      this.globalActions.setAndroidAppVersion(window.medicmobile_android.getAppVersion());
-    }
-
-    if (this.androidAppVersion) {
-      this.authService.has('can_log_out_on_android').then(canLogout => this.canLogOut = canLogout);
-    } else {
-      this.canLogOut = true;
-    }
-
-    // initialisation tasks that can occur after the UI has been rendered
-    this.setupPromise = this.sessionService
-      .init()
-      .then(() => this.checkPrivacyPolicy())
-      .then(() => this.initRulesEngine())
-      .then(() => this.initForms())
-      .then(() => this.initUnreadCount())
-      .then(() => this.checkDateService.check())
-      .then(() => this.startRecurringProcesses());
-
-    this.feedbackService.init();
-
-    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
-
-    this.changesService.subscribe({
-      key: 'branding-icon',
-      filter: change => change.id === 'branding',
-      callback: () => this.setAppTitle(),
-    });
-    this.setAppTitle();
-
-    if (navigator.storage && navigator.storage.persist) {
-      navigator.storage.persist().then(granted => {
-        if (granted) {
-          console.info('Persistent storage granted: storage will not be cleared except by explicit user action');
-        } else {
-          console.info('Persistent storage denied: storage may be cleared by the UA under storage pressure.');
-        }
-      });
-    }
-
-    this.changesService.subscribe({
-      key: 'inbox-ddoc',
-      filter: (change) => {
-        return (
-          change.id === '_design/medic' ||
-          change.id === '_design/medic-client' ||
-          change.id === 'service-worker-meta' ||
-          change.id === 'settings'
-        );
-      },
-      callback: (change) => {
-        if (change.id === 'service-worker-meta') {
-          this.updateServiceWorker.update(() => this.showUpdateReady());
-        } else {
-          !environment.production && this.globalActions.setSnackbarContent(`${change.id} changed`);
-          this.showUpdateReady();
-        }
-      },
-    });
-
-    const userCtx = this.sessionService.userCtx();
-    this.changesService.subscribe({
-      key: 'inbox-user-context',
-      filter: (change) => {
-        return (
-          userCtx &&
-          userCtx.name &&
-          change.id === `org.couchdb.user:${userCtx.name}`
-        );
-      },
-      callback: () => {
-        this.sessionService.init().then(refresh => refresh && this.showUpdateReady());
-      },
-    });
-
-    this.changesService.subscribe({
-      key: 'inbox-translations',
-      filter: change => this.translationLoaderService.test(change.id),
-      callback: change => this.translateService.reloadLang(this.translationLoaderService.getCode(change.id)),
-    });
-
-    this.changesService.subscribe({
-      key: 'branding-icon',
-      filter: change => change.id === 'branding',
-      callback: () => this.setAppTitle(),
-    });
-
-    this.countMessageService.init();
-  }
-
-  ngOnDestroy(): void {
-    this.recurringProcessManagerService.stopUpdateRelativeDate();
-    this.recurringProcessManagerService.stopUpdateReadDocsCount();
   }
 
   private initForms() {
@@ -418,10 +433,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private setAppTitle() {
-    this.resourceIconsService.getAppTitle().then(title => {
-      document.title = title;
-      $('.header-logo').attr('title', `${title}`);
-    });
+    this.resourceIconsService
+      .getAppTitle()
+      .then(title => {
+        document.title = title;
+        $('.header-logo').attr('title', `${title}`);
+      });
   }
 
   private showSessionExpired() {
@@ -486,6 +503,16 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.sessionService.isOnlineOnly()) {
       this.recurringProcessManagerService.startUpdateReadDocsCount();
     }
+  }
+
+  private startWealthQuintiles() {
+    this.authService
+      .has('can_write_wealth_quintiles')
+      .then(canWriteQuintiles => {
+        if (canWriteQuintiles) {
+          this.wealthQuintilesWatcherService.start();
+        }
+      });
   }
 }
 
@@ -695,8 +722,6 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
 
-    CountMessages.init();
-
     // close select2 dropdowns in the background
     const closeDropdowns = function() {
       $('select.select2-hidden-accessible').each(function() {
@@ -739,37 +764,9 @@ export class AppComponent implements OnInit, OnDestroy {
       closeDropdowns();
     };
 
-    ChangesService({
-      key: 'inbox-translations',
-      filter: change => TranslationLoaderService.test(change.id),
-      callback: change => $translate.refresh(TranslationLoaderService.getCode(change.id)),
-    });
-
     $scope.$on('$destroy', function() {
-      unsubscribe();
       dbClosedDeregister();
     });
 
-    const userCtx = SessionService.userCtx();
-    ChangesService({
-      key: 'inbox-user-context',
-      filter: function(change) {
-        return (
-          userCtx &&
-          userCtx.name &&
-          change.id === `org.couchdb.user:${userCtx.name}`
-        );
-      },
-      callback: function() {
-        SessionService.init().then(refresh => refresh && showUpdateReady());
-      },
-    });
-
-    AuthService.has('can_write_wealth_quintiles')
-      .then(canWriteQuintiles => {
-        if (canWriteQuintiles) {
-          WealthQuintilesWatcher.start();
-        }
-      });
   });
 })();*/

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { SettingsService } from './settings.service';
 import * as _ from 'lodash-es';
+
+import { SettingsService } from '@mm-services/settings.service';
 
 @Injectable({
   providedIn: 'root'

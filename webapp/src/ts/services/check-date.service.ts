@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { TelemetryService } from './telemetry.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 

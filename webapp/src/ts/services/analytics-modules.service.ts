@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { SettingsService } from './settings.service';
-import { AuthService } from './auth.service';
-import { ScheduledFormsService } from './scheduled-forms.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { AuthService } from '@mm-services/auth.service';
+import { ScheduledFormsService } from '@mm-services/scheduled-forms.service';
 
 
 @Injectable({
