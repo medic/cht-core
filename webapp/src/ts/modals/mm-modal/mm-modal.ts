@@ -4,7 +4,7 @@
  * Usage:
  * <mm-modal [attributes]>[modal body]</mm-modal>
  */
-import { Component, Injectable, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Injectable, Input, Output, EventEmitter, HostListener, Attribute } from '@angular/core';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { v4 as uuid } from 'uuid';
 import { take } from 'rxjs/operators';
@@ -16,7 +16,7 @@ import { take } from 'rxjs/operators';
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class MmModal {
   @Input() status;
-  @Input() id;
+  @Attribute('id') id;
   @Input() titleKey;
   @Input() submitKey;
   @Input() submittingKey;
@@ -25,6 +25,7 @@ export class MmModal {
   @Output() onSubmit: EventEmitter<any> = new EventEmitter();
   @Input() disableSubmit;
   @Input() danger;
+
 
   constructor() {
   }
@@ -39,7 +40,6 @@ export class MmModal {
 })
 export class MmModalAbstract {
   readonly modalClosePromise;
-  static id;
 
   private resolved = false;
 
