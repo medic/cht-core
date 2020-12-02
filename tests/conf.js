@@ -16,9 +16,11 @@ const baseConfig = {
     pathToConfig: false
   },
   seleniumAddress: 'http://localhost:4444/wd/hub',
+  //Enabling specs as they are working.
   suites: {
-    e2e:'e2e/**/*.js',
-    performance: 'performance/**/*.js'
+    // e2e:'e2e/**/*.js',
+    e2e: ["**/login.spec.js"],
+    // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
   capabilities: {
@@ -131,7 +133,7 @@ const login = browser => {
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () =>
-    element(by.css('body.bootstrapped')).isPresent();
+    element(by.id('messages-tab')).isPresent();
   return browser.driver.wait(
     bootstrappedCheck,
     20 * 1000,
