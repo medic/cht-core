@@ -11,7 +11,6 @@ window.$ = window.jQuery = require('jquery');
 window.Tour = require('../js/bootstrap-tour-standalone');
 
 //import * as Select2 from '../../node_modules/select2/dist/js/select2.full';
-//require('nvd3');
 
 import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
