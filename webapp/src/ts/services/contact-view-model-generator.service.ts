@@ -318,7 +318,6 @@ export class ContactViewModelGeneratorService {
   }
 
   getContact(id, options) {
-    console.log('get contact being called');
     return Promise
       .all([
         this.contactTypesService.getAll(),
