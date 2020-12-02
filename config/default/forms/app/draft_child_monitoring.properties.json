@@ -1,0 +1,9 @@
+{
+  "title": "Draft Child Monitoring",
+  "icon": "draft-icon",
+  "context": {
+    "person": true,
+    "place": false
+  }
+}
+
