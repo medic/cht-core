@@ -17,7 +17,7 @@ import { TranslateHelperService } from '@mm-services/translate-helper.service';
   templateUrl: './send-message.component.html',
 })
 export class SendMessageComponent extends MmModalAbstract implements AfterViewInit {
-  static id = 'send-message';
+  static id = 'send-message-modal';
 
   errors = {
     message: false,

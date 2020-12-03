@@ -8,7 +8,7 @@ import { MmModalAbstract } from '../mm-modal/mm-modal';
   templateUrl: './navigation-confirm.component.html'
 })
 export class NavigationConfirmComponent extends MmModalAbstract {
-  static id = 'navigation-confirm';
+  static id = 'navigation-confirm-modal';
 
   constructor(
     bsModalRef: BsModalRef,
