@@ -5,23 +5,44 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/immunization_and_growth/group_assessment/clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/location/no:label">
             <value>No</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/clinic/yes:label">
+          <text id="/immunization_and_growth/group_assessment/location/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/clinic:label">
+          <text id="/immunization_and_growth/group_assessment/location:label">
             <value>Did <output value=" /immunization_and_growth/patient_name "/> attend immunization clinic?</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/location/home:label">
-            <value>At the <output value=" /immunization_and_growth/patient_name "/> home</value>
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
+            <value>BCG</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/location/phone:label">
-            <value>By phone</value>
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
+            <value>Inactivated Polio Vaccine (IPV)</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/location:label">
-            <value>Where is this follow up happening?</value>
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
+            <value>Measles vaccine</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
+            <value>Oral Polio Vaccine</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
+            <value>Pentavalent vaccine</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
+            <value>Pneumococcal vaccine</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
+            <value>RotaVirus vaccine</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
+            <value>Yellow fever vaccine</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
+            <value>Which vaccines did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
           </text>
           <text id="/immunization_and_growth/group_assessment:label">
             <value>Clinic Attendance</value>
@@ -79,22 +100,43 @@
           </text>
         </translation>
         <translation lang="fr">
-          <text id="/immunization_and_growth/group_assessment/clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/location/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/clinic/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/clinic:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/home:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/phone:label">
+          <text id="/immunization_and_growth/group_assessment/location/yes:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment/location:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment:label">
@@ -153,23 +195,44 @@
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/immunization_and_growth/group_assessment/clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/location/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/clinic/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/clinic:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/home:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/phone:label">
+          <text id="/immunization_and_growth/group_assessment/location/yes:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment/location:label">
             <value>yes</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
+            <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment:label">
             <value>-</value>
@@ -227,22 +290,43 @@
           </text>
         </translation>
         <translation lang="id">
-          <text id="/immunization_and_growth/group_assessment/clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/location/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/clinic/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/clinic:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/home:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/phone:label">
+          <text id="/immunization_and_growth/group_assessment/location/yes:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment/location:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment:label">
@@ -301,22 +385,43 @@
           </text>
         </translation>
         <translation lang="sw">
-          <text id="/immunization_and_growth/group_assessment/clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/location/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/group_assessment/clinic/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/clinic:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/home:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/group_assessment/location/phone:label">
+          <text id="/immunization_and_growth/group_assessment/location/yes:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment/location:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/group_assessment:label">
@@ -376,7 +481,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-03_13-03">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-03_13-21">
           <inputs>
             <meta>
               <location>
@@ -408,7 +513,7 @@
           <patient_name/>
           <group_assessment>
             <location/>
-            <clinic/>
+            <vaccines/>
           </group_assessment>
           <meta tag="hidden">
             <instanceID/>
@@ -429,7 +534,7 @@
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/parent/parent/_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/immunization_and_growth/patient_name" type="string"/>
       <bind nodeset="/immunization_and_growth/group_assessment/location" required="true()" type="select1"/>
-      <bind nodeset="/immunization_and_growth/group_assessment/clinic" required="true()" type="select1"/>
+      <bind nodeset="/immunization_and_growth/group_assessment/vaccines" required="true()" type="select"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/immunization_and_growth/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -458,25 +563,53 @@
       <select1 ref="/immunization_and_growth/group_assessment/location">
         <label ref="jr:itext('/immunization_and_growth/group_assessment/location:label')"/>
         <item>
-          <label ref="jr:itext('/immunization_and_growth/group_assessment/location/home:label')"/>
-          <value>home</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/immunization_and_growth/group_assessment/location/phone:label')"/>
-          <value>phone</value>
-        </item>
-      </select1>
-      <select1 ref="/immunization_and_growth/group_assessment/clinic">
-        <label ref="jr:itext('/immunization_and_growth/group_assessment/clinic:label')"/>
-        <item>
-          <label ref="jr:itext('/immunization_and_growth/group_assessment/clinic/yes:label')"/>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/location/yes:label')"/>
           <value>yes</value>
         </item>
         <item>
-          <label ref="jr:itext('/immunization_and_growth/group_assessment/clinic/no:label')"/>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/location/no:label')"/>
           <value>no</value>
         </item>
       </select1>
+      <select ref="/immunization_and_growth/group_assessment/vaccines">
+        <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines:label')"/>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/bcg:label')"/>
+          <value>bcg</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/oral_polio:label')"/>
+          <value>oral_polio</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/rotavirus:label')"/>
+          <value>rotavirus</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/pneumococcal:label')"/>
+          <value>pneumococcal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/pentavalent:label')"/>
+          <value>pentavalent</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label')"/>
+          <value>inactivated_polio</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/measles:label')"/>
+          <value>measles</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/yellow_fever:label')"/>
+          <value>yellow_fever</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/nitamin_a:label')"/>
+          <value>nitamin_a</value>
+        </item>
+      </select>
     </group>
   </h:body>
 </h:html>
