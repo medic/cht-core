@@ -32,6 +32,7 @@ describe('Analytics Target Aggregates Component', () => {
 
     return TestBed
       .configureTestingModule({
+        declarations: [ AnalyticsTargetAggregatesComponent ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
