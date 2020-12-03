@@ -10,7 +10,7 @@ import { take } from 'rxjs/operators';
   templateUrl: './bulk-delete-confirm.component.html'
 })
 export class BulkDeleteConfirmComponent extends MmModalAbstract {
-  static id = 'bulkDeleteConfirm';
+  static id = 'bulk-delete-confirm-modal';
 
   totalDocsSelected = 0;
   totalDocsDeleted = 0;

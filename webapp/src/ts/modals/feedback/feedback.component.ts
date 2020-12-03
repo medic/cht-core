@@ -17,7 +17,7 @@ export class FeedbackComponent extends MmModalAbstract {
   error:{ message? } = {};
   model:{ message? } = {};
 
-  static id = 'feedback';
+  static id = 'feedback-modal';
 
   constructor(
     bsModalRef: BsModalRef,

@@ -8,7 +8,7 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   templateUrl: './verify-report.component.html'
 })
 export class VerifyReportComponent extends MmModalAbstract {
-  static id = 'verify-report';
+  static id = 'verify-report-modal';
 
   model = { proposedVerificationState: undefined };
 
