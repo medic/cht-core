@@ -1,0 +1,9 @@
+{
+  "title": "Child treatment follow up",
+  "icon": "draft-icon",
+  "context": {
+    "person": true,
+    "place": false
+  }
+}
+

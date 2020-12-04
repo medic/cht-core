@@ -1,0 +1,9 @@
+{
+  "title": "Child assessment",
+  "icon": "draft-icon",
+  "context": {
+    "person": true,
+    "place": false
+  }
+}
+

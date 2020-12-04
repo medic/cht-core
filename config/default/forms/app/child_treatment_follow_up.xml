@@ -1,0 +1,444 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Child treatment follow up</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/child_treatment_follow_up/group_assessment/availabe_date:label">
+            <value>When would you like to follow up the <output value=" /child_treatment_follow_up/patient_name "/> again</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available:label">
+            <value>Is <output value=" /child_treatment_follow_up/patient_name "/> available?</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment:label">
+            <value>Clinic Attendance</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:hint">
+            <value>Select a person from the list</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/name:label">
+            <value>Patient Name</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/_id:label">
+            <value>Family UUID</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/_id:label">
+            <value>CHW Area UUID</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/name:label">
+            <value>CHW Name</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent/_id:label">
+            <value>CU UUID</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent:label">
+            <value>Great Grandparent</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/phone:label">
+            <value>CHW Phone</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent:label">
+            <value>Grandparent</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent:label">
+            <value>Parent</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/patient_id:label">
+            <value>Medic ID</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact:label">
+            <value>Contact</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source:label">
+            <value>Source</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source_id:label">
+            <value>Source_ID</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs:label">
+            <value>Patient</value>
+          </text>
+          <text id="/child_treatment_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="fr">
+          <text id="/child_treatment_follow_up/group_assessment/availabe_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/patient_name:label">
+            <value>../inputs/contact/name</value>
+          </text>
+        </translation>
+        <translation lang="hi">
+          <text id="/child_treatment_follow_up/group_assessment/availabe_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available:label">
+            <value>yes</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="id">
+          <text id="/child_treatment_follow_up/group_assessment/availabe_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs:label">
+            <value>./source = 'user'</value>
+          </text>
+          <text id="/child_treatment_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="sw">
+          <text id="/child_treatment_follow_up/group_assessment/availabe_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment/available:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/group_assessment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:hint">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/_id:label">
+            <value>db-object</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent/phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/parent:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/contact:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs/source_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_treatment_follow_up/inputs:label">
+            <value>field-list</value>
+          </text>
+          <text id="/child_treatment_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <child_treatment_follow_up delimiter="#" id="child_treatment_follow_up" prefix="J1!child_treatment_follow_up!" version="2020-12-03_16-38">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <patient_id/>
+              <name/>
+              <parent>
+                <_id/>
+                <parent>
+                  <_id/>
+                  <name/>
+                  <phone/>
+                  <parent>
+                    <_id/>
+                  </parent>
+                </parent>
+              </parent>
+            </contact>
+          </inputs>
+          <patient_name/>
+          <group_assessment>
+            <available/>
+            <availabe_date/>
+          </group_assessment>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </child_treatment_follow_up>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/child_treatment_follow_up/inputs" relevant="/source = 'user'"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/source" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/source_id" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/name" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/parent/parent/_id" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/parent/parent/name" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/parent/parent/phone" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/inputs/contact/parent/parent/parent/_id" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/child_treatment_follow_up/patient_name" type="string"/>
+      <bind nodeset="/child_treatment_follow_up/group_assessment/available" required="true()" type="select1"/>
+      <bind nodeset="/child_treatment_follow_up/group_assessment/availabe_date" required="true()" type="date"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/child_treatment_follow_up/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/child_treatment_follow_up/inputs">
+      <label ref="jr:itext('/child_treatment_follow_up/inputs:label')"/>
+      <group ref="/child_treatment_follow_up/inputs/contact">
+        <label ref="jr:itext('/child_treatment_follow_up/inputs/contact:label')"/>
+        <input ref="/child_treatment_follow_up/inputs/contact/_id">
+          <label ref="jr:itext('/child_treatment_follow_up/inputs/contact/_id:label')"/>
+          <hint ref="jr:itext('/child_treatment_follow_up/inputs/contact/_id:hint')"/>
+        </input>
+        <group ref="/child_treatment_follow_up/inputs/contact/parent">
+          <label ref="jr:itext('/child_treatment_follow_up/inputs/contact/parent:label')"/>
+          <group ref="/child_treatment_follow_up/inputs/contact/parent/parent">
+            <label ref="jr:itext('/child_treatment_follow_up/inputs/contact/parent/parent:label')"/>
+            <group ref="/child_treatment_follow_up/inputs/contact/parent/parent/parent">
+              <label ref="jr:itext('/child_treatment_follow_up/inputs/contact/parent/parent/parent:label')"/>
+            </group>
+          </group>
+        </group>
+      </group>
+    </group>
+    <group ref="/child_treatment_follow_up/group_assessment">
+      <label ref="jr:itext('/child_treatment_follow_up/group_assessment:label')"/>
+      <select1 ref="/child_treatment_follow_up/group_assessment/available">
+        <label ref="jr:itext('/child_treatment_follow_up/group_assessment/available:label')"/>
+        <item>
+          <label ref="jr:itext('/child_treatment_follow_up/group_assessment/available/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_treatment_follow_up/group_assessment/available/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/child_treatment_follow_up/group_assessment/availabe_date">
+        <label ref="jr:itext('/child_treatment_follow_up/group_assessment/availabe_date:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>
