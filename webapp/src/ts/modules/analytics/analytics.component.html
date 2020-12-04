@@ -1,11 +1,11 @@
 <div class="filters">
   <div class="inner">
-    <!--<mm-analytics-filters analytics-modules="analyticsModules"></mm-analytics-filters>-->
+    <mm-analytics-filters [analyticsModules]="analyticsModules"></mm-analytics-filters>
     <mm-navigation></mm-navigation>
   </div>
 </div>
 
-<div class="inner" data-page="reporting_rates">
+<div class="inner">
   <router-outlet></router-outlet>
 </div>
 

@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -29,6 +29,17 @@ describe('Geolocation service', () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  it('should work when no geolocation api', () => {
+    // @ts-ignore
+    sinon.replaceGetter(window, 'navigator', () => ({}));
+    return service.init()().then(returned => {
+      expect(returned).to.deep.equal({
+        code: -1,
+        message: 'Geolocation API unavailable.',
+      });
+    });
   });
 
   describe('Geolocation', () => {
@@ -167,7 +178,6 @@ describe('Geolocation service', () => {
 
       const promise = service
         .init()()
-        .catch(err => err)
         .then(returned => {
           expect(returned.code).to.equal(43);
         });
@@ -176,6 +186,59 @@ describe('Geolocation service', () => {
 
       return promise;
     });
+
+    it('should resolve promise even if watcher never calls any callback', fakeAsync(() => {
+      window.navigator.geolocation.watchPosition = sinon.stub(); // make sure this never calls anything!
+
+      const deferred = service.init();
+      expect((<any>window.navigator.geolocation.watchPosition).callCount).to.equal(1);
+
+      tick(31 * 1000);
+
+      return deferred().then(error => {
+        expect(error).to.deep.equal({
+          code: -1,
+          message: 'Geolocation timeout exceeded'
+        });
+      });
+    }));
+
+    it('timeout should prioritize success from geolocation', fakeAsync(async () => {
+      const position = {
+        latitude: 1,
+        longitude: 2,
+        altitude: 3,
+        accuracy: 4,
+        altitudeAccuracy: 5,
+        heading: 6,
+        speed: 7,
+      };
+      (<any>window.navigator.geolocation.watchPosition).callsFake(success => {
+        setTimeout(() => success({ coords: position }), 30 * 1000);
+      });
+
+      const deferred = service.init();
+      expect((<any>window.navigator.geolocation.watchPosition).callCount).to.equal(1);
+
+      tick(31 * 1000);
+
+      const result = await deferred();
+      expect(result).to.deep.equal(position);
+    }));
+
+    it('timeout should prioritize failure from geolocation', fakeAsync(async () => {
+      (<any>window.navigator.geolocation.watchPosition).callsFake((_, failure) => {
+        setTimeout(() => failure({ code: 'true', message: 'no' }), 30 * 1000);
+      });
+
+      const deferred = service.init();
+      expect((<any>window.navigator.geolocation.watchPosition).callCount).to.equal(1);
+
+      tick(31 * 1000);
+
+      const error = await deferred();
+      expect(error).to.deep.equal({ code: 'true', message: 'no' });
+    }));
 
     describe('android api', () => {
       const position = {

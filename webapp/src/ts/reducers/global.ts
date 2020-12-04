@@ -130,27 +130,14 @@ const _globalReducer = createReducer(
   on(Actions.setLoadingSubActionbar, (state, { payload: { loading } }) => {
     return { ...state, loadingSubActionBar: loading };
   }),
+  on(Actions.setUnreadCount, (state, { payload: { unreadCount } }) => {
+    return { ...state, unreadCount: unreadCount };
+  }),
+  on(Actions.updateUnreadCount, (state, { payload: { unreadCount } }) => {
+    return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
+  }),
 );
 
 export const globalReducer = (state, action) => {
   return _globalReducer(state, action);
 };
-/*
-module.exports = function(state, action) {
-  if (typeof state === 'undefined') {
-    state = initialState;
-  }
-
-  switch (action.type) {
-  case actionTypes.SET_UNREAD_COUNT:
-    return Object.assign({}, state, { unreadCount: action.payload.unreadCount });
-  case actionTypes.SET_VERSION:
-    return Object.assign({}, state, { version: action.payload.version });
-  case actionTypes.UPDATE_UNREAD_COUNT:
-    return Object.assign({}, state, {
-      unreadCount: Object.assign({}, state.unreadCount, action.payload.unreadCount)
-    });
-  default:
-    return state;
-  }
-};*/

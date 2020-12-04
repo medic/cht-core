@@ -22,7 +22,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
   lineageLib;
   model = { doc: null }; // Automatically assigned by BsModalRef
 
-  static id = 'delete-doc-confirm';
+  static id = 'delete-doc-confirm-modal';
 
   constructor(
     private store: Store,

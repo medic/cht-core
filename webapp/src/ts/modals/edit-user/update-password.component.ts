@@ -1,11 +1,11 @@
-const passwordTester = require('simple-password-tester');
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
-import { TranslateService } from '@ngx-translate/core';
+import * as passwordTester from 'simple-password-tester';
 
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
 import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -29,13 +29,13 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
     password?;
   } = {};
 
-  static id = 'update-password';
+  static id = 'update-password-modal';
 
   constructor(
     bsModalRef: BsModalRef,
     userSettingsService: UserSettingsService,
-    private translateService: TranslateService,
     private updateUserService: UpdateUserService,
+    private translateHelperService:TranslateHelperService,
   ) {
     super(bsModalRef, userSettingsService);
   }
@@ -50,19 +50,20 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
     if (this.validatePasswordFields()) {
       const updates = { password: this.editUserModel.password };
       const username = this.editUserModel.username;
-      this.updateUserService.update(username, updates, username, this.editUserModel.currentPassword)
+      this.updateUserService
+        .update(username, updates, username, this.editUserModel.currentPassword)
         .then(() => {
           this.setFinished();
           this.windowReload();
         })
         .catch(err => {
           if (err.status === 0) { //Offline Status
-            this.translateService.get('online.action.message').toPromise().then(value => {
+            this.translateHelperService.get('online.action.message').then(value => {
               this.errors.currentPassword = value;
               this.setError(err, value);
             });
           } else if (err.status === 401) {
-            this.translateService.get('password.incorrect').toPromise().then(value => {
+            this.translateHelperService.get('password.incorrect').then(value => {
               this.errors.currentPassword = value;
               this.setError(err, value);
             });
@@ -88,9 +89,8 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
 
   private validateRequired(fieldName, fieldDisplayName) {
     if (!this.editUserModel[fieldName]) {
-      this.translateService
-        .get('field is required', { field: fieldName })
-        .toPromise()
+      this.translateHelperService
+        .fieldIsRequired(fieldDisplayName)
         .then(value => {
           this.errors[fieldName] = value;
         })
@@ -105,17 +105,19 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
   private validatePasswordStrength() {
     const password = this.editUserModel.password || '';
     if (password.length < PASSWORD_MINIMUM_LENGTH) {
-      this.translateService.get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH })
-        .toPromise()
+      this.translateHelperService
+        .get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH })
         .then((value) => {
           this.errors.password = value;
         });
       return false;
     }
     if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-      this.translateService.get('password.weak').toPromise().then(value => {
-        this.errors.password = value;
-      });
+      this.translateHelperService
+        .get('password.weak')
+        .then(value => {
+          this.errors.password = value;
+        });
       return false;
     }
     return true;
@@ -123,7 +125,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
 
   private validateConfirmPasswordMatches() {
     if (this.editUserModel.password !== this.editUserModel.passwordConfirm) {
-      this.translateService.get('Passwords must match').toPromise().then(value => {
+      this.translateHelperService.get('Passwords must match').then(value => {
         this.errors.password = value;
       });
       return false;

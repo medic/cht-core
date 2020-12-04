@@ -9,7 +9,7 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   templateUrl: './logout-confirm.component.html'
 })
 export class LogoutConfirmComponent extends MmModalAbstract {
-  static id = 'logout-confirm';
+  static id = 'logout-confirm-modal';
 
   constructor(
     bsModalRef: BsModalRef,

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { routes as homeRoutes } from '@mm-modules/home/home.routes';
 import { routes as aboutRoutes } from '@mm-modules/about/about.routes';
 import { routes as confUserRoutes } from '@mm-modules/configuration-user/configuration-user.routes';
 import { routes as analyticsRoutes } from '@mm-modules/analytics/analytics.routes';
@@ -9,8 +10,10 @@ import { routes as reportRoutes } from '@mm-modules/reports/reports.routes';
 import { routes as messagesRoutes } from '@mm-modules/messages/messages.routes';
 import { routes as contactsRoutes } from '@mm-modules/contacts/contacts.routes';
 import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policy/privacy-policy.routes';
+import { routes as tasksRoutes } from '@mm-modules/tasks/tasks.routes';
 
 const routes: Routes = [
+  ...homeRoutes,
   ...aboutRoutes,
   ...confUserRoutes,
   ...analyticsRoutes,
@@ -18,6 +21,7 @@ const routes: Routes = [
   ...messagesRoutes,
   ...contactsRoutes,
   ...privacyPolicyRoutes,
+  ...tasksRoutes,
   ...errorRoutes,
 ];
 

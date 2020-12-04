@@ -12,7 +12,7 @@ import { take } from 'rxjs/operators';
   templateUrl: './edit-report.component.html'
 })
 export class EditReportComponent extends MmModalAbstract implements AfterViewInit {
-  static id = 'editReport';
+  static id = 'edit-report-modal';
 
   model:any = { report: {} };
 

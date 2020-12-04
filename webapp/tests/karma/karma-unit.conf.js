@@ -1,5 +1,6 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
+const path = require('path');
 
 module.exports = function (config) {
   config.set({
@@ -9,14 +10,15 @@ module.exports = function (config) {
       require('karma-mocha'),
       require('karma-chrome-launcher'),
       require('karma-mocha-reporter'),
-      require('@angular-devkit/build-angular/plugins/karma')
+      require('@angular-devkit/build-angular/plugins/karma'),
+      require('karma-coverage-istanbul-reporter'),
     ],
     client: {
       captureConsole: true,
     },
-    reporters: ['mocha'],
+    reporters: ['mocha', 'coverage-istanbul'],
     mochaReporter: {
-      output: 'autowatch',
+      output: 'full',
       showDiff: true,
     },
     logLevel: config.LOG_INFO,
@@ -24,9 +26,8 @@ module.exports = function (config) {
     colors: true,
     autoWatch: true,
     singleRun: false,
-    restartOnFileChange: true,
+    restartOnFileChange: false,
     browsers: ['ChromeHeadless'],
-    browserNoActivityTimeout: 60000,
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
@@ -38,6 +39,12 @@ module.exports = function (config) {
       level: 'log',
       format: '%b %T: %m',
       terminal: true,
+    },
+    coverageIstanbulReporter: {
+      reports: [ 'html', 'lcovonly', 'text-summary' ],
+      dir: path.join(__dirname, 'coverage'),
+      fixWebpackSourcePaths: true,
+      skipFilesWithNoCoverage: true,
     },
   });
 };

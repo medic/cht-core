@@ -32,6 +32,8 @@ export const Actions = {
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
   setLoadingSubActionbar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
+  setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
+  updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
 };
 
 export class GlobalActions {
@@ -201,62 +203,12 @@ export class GlobalActions {
   setLoadingSubActionBar(loading) {
     return this.store.dispatch(Actions.setLoadingSubActionbar(loading));
   }
-}
 
-/*
-
-angular.module('inboxServices').factory('GlobalActions',
-  function(
-    $state,
-    $timeout,
-    ActionUtils,
-    LiveList,
-    Modal,
-    Selectors
-  ) {
-    'use strict';
-    'ngInject';
-
-    return function(dispatch) {
-
-
-      function setUnreadCount(unreadCount) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_UNREAD_COUNT, 'unreadCount', unreadCount));
-      }
-
-      function updateUnreadCount(unreadCount) {
-        dispatch(ActionUtils.createSingleValueAction(actionTypes.UPDATE_UNREAD_COUNT, 'unreadCount', unreadCount));
-      }
-
-      function deleteDoc(doc) {
-        return dispatch((dispatch, getState) => {
-          return Modal({
-            templateUrl: 'templates/modals/delete_doc_confirm.html',
-            controller: 'DeleteDocConfirm',
-            controllerAs: 'deleteDocConfirmCtrl',
-            model: { doc },
-          })
-            .then(() => {
-              const selectMode = Selectors.getSelectMode(getState());
-              if (
-                !selectMode &&
-                ($state.includes('contacts') || $state.includes('reports'))
-              ) {
-                $state.go($state.current.name, { id: null });
-              }
-            })
-            .catch(() => {}); // modal dismissed is ok
-        });
-      }
-
-      return {
-        deleteDoc,
-        openGuidedSetup,
-        openTourSelect,
-        setUnreadCount,
-        updateUnreadCount,
-      };
-    };
+  setUnreadCount(unreadCount) {
+    return this.store.dispatch(Actions.setUnreadCount(unreadCount));
   }
-);
-*/
+
+  updateUnreadCount(unreadCount) {
+    return this.store.dispatch(Actions.updateUnreadCount(unreadCount));
+  }
+}

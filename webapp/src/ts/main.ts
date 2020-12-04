@@ -9,10 +9,8 @@ window.PouchDB = require('pouchdb-browser').default;
 window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 window.Tour = require('../js/bootstrap-tour-standalone');
-//window.d3 = require('d3');
 
 //import * as Select2 from '../../node_modules/select2/dist/js/select2.full';
-//require('nvd3');
 
 import { enableProdMode } from '@angular/core';
 import '@angular/compiler';

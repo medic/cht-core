@@ -7,8 +7,9 @@ import { FormsModule } from '@angular/forms';
 
 import  { PipesModule } from '@mm-pipes/pipes.module';
 
+import { HomeComponent } from '@mm-modules/home/home.component';
 import { AboutComponent } from './about/about.component';
-import {ConfigurationUserComponent} from './configuration-user/configuration-user.component';
+import { ConfigurationUserComponent } from './configuration-user/configuration-user.component';
 import { ErrorComponent } from './error/error.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -24,9 +25,14 @@ import { MessagesContentComponent } from './messages/messages-content.component'
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
 import { AnalyticsModulesComponent } from './analytics/analytics-modules.component';
+import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target-aggregates.component';
+import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
+import { TasksComponent } from '@mm-modules/tasks/tasks.component';
+import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 
 @NgModule({
   declarations: [
+    HomeComponent,
     AboutComponent,
     ConfigurationUserComponent,
     ErrorComponent,
@@ -43,6 +49,10 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
     PrivacyPolicyComponent,
     AnalyticsTargetsComponent,
     AnalyticsModulesComponent,
+    AnalyticsTargetAggregatesComponent,
+    AnalyticsTargetAggregatesDetailComponent,
+    TasksComponent,
+    TasksContentComponent,
   ],
   imports: [
     CommonModule,
@@ -54,6 +64,7 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
     FormsModule,
   ],
   exports: [
+    HomeComponent,
     AboutComponent,
     ConfigurationUserComponent,
     ErrorComponent,
@@ -62,6 +73,7 @@ import { AnalyticsModulesComponent } from './analytics/analytics-modules.compone
     MessagesComponent,
     ContactsComponent,
     PrivacyPolicyComponent,
+    TasksComponent,
   ]
 })
 export class ModulesModule { }

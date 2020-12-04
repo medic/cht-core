@@ -75,7 +75,7 @@ describe('AnalyticsComponent', () => {
   it('should set selected the specified module', fakeAsync(() => {
     sinon.reset();
     const analyticsModules = [
-      { route: 'reporting' },
+      { route: 'target-aggregates' },
       { route: 'targets' }
     ];
     activatedRoute.snapshot.routeConfig.path = 'targets';
@@ -114,7 +114,7 @@ describe('AnalyticsComponent', () => {
     activatedRoute.snapshot.routeConfig.path = 'analytics';
     const navigateStub = sinon.stub(router, 'navigate');
     const analyticsModules = [
-      { route: 'reporting' },
+      { route: 'target-aggregates' },
       { route: 'targets' }
     ];
     analyticsModulesService.get.resolves(analyticsModules);

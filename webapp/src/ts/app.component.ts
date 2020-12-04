@@ -1,6 +1,6 @@
 import { ActivationEnd, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -29,8 +29,12 @@ import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { TourService } from '@mm-services/tour.service';
+import { UnreadRecordsService } from '@mm-services/unread-records.service';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { CheckDateService } from '@mm-services/check-date.service';
+import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -59,7 +63,7 @@ const SYNC_STATUS = {
   selector: 'app-root',
   templateUrl: './app.component.html',
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   private globalActions;
   setupPromise;
   translationsLoaded;
@@ -75,6 +79,7 @@ export class AppComponent implements OnInit {
   replicationStatus;
   androidAppVersion;
   nonContactForms;
+  unreadCount = {};
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -103,6 +108,9 @@ export class AppComponent implements OnInit {
     private startupModalsService:StartupModalsService,
     private tourService:TourService,
     private checkDateService:CheckDateService,
+    private unreadRecordsService:UnreadRecordsService,
+    private rulesEngineService:RulesEngineService,
+    private recurringProcessManagerService:RecurringProcessManagerService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -266,7 +274,16 @@ export class AppComponent implements OnInit {
       this.canLogOut = true;
     }
 
-    this.setupPromise = this.sessionService.init();
+    // initialisation tasks that can occur after the UI has been rendered
+    this.setupPromise = this.sessionService
+      .init()
+      .then(() => this.checkPrivacyPolicy())
+      .then(() => this.initRulesEngine())
+      .then(() => this.initForms())
+      .then(() => this.initUnreadCount())
+      .then(() => this.checkDateService.check())
+      .then(() => this.startRecurringProcesses());
+
     this.feedbackService.init();
 
     this.globalActions.setIsAdmin(this.sessionService.isAdmin());
@@ -336,19 +353,11 @@ export class AppComponent implements OnInit {
     });
 
     this.countMessageService.init();
-    this
-      .checkPrivacyPolicy()
-      .then(({ privacyPolicy, accepted }: any = {}) => {
-        if (!privacyPolicy || accepted) {
-          // If there is no privacy policy or the user already
-          // accepted the policy show the startup modals,
-          // otherwise the modals will start from the privacy
-          // policy component after the user accepts the terms
-          this.startupModalsService.showStartupModals();
-        }
-      })
-      .then(() => this.checkDateService.check());
-    this.initForms();
+  }
+
+  ngOnDestroy(): void {
+    this.recurringProcessManagerService.stopUpdateRelativeDate();
+    this.recurringProcessManagerService.stopUpdateReadDocsCount();
   }
 
   private initForms() {
@@ -416,12 +425,9 @@ export class AppComponent implements OnInit {
   }
 
   private showSessionExpired() {
-    /* Modal({
-     templateUrl: 'templates/modals/session_expired.html',
-     controller: 'SessionExpiredModalCtrl',
-     controllerAs: 'SessionExpiredModalCtrl',
-     singleton: true,
-     });*/
+    this.modalService
+      .show(SessionExpiredComponent)
+      .catch(() => {});
   }
 
   private showUpdateReady() {
@@ -445,7 +451,41 @@ export class AppComponent implements OnInit {
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
         return { privacyPolicy, accepted };
       })
-      .catch(err => console.error('Failed to load privacy policy', err));
+      .catch(err => console.error('Failed to load privacy policy', err))
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the startup modals,
+          // otherwise the modals will start from the privacy
+          // policy component after the user accepts the terms
+          this.startupModalsService.showStartupModals();
+        }
+      });
+  }
+
+  private initUnreadCount() {
+    this.unreadRecordsService.init((err, data) => {
+      if (err) {
+        console.error('Error fetching read status', err);
+        return;
+      }
+      this.globalActions.setUnreadCount(data);
+    });
+  }
+
+  private initRulesEngine() {
+    return this.rulesEngineService
+      .isEnabled()
+      .then(isEnabled => console.info(`RulesEngine Status: ${ isEnabled ? 'Enabled' : 'Disabled' }`))
+      .catch(err => console.error('RuleEngine failed to initialize', err));
+  }
+
+  private startRecurringProcesses() {
+    this.recurringProcessManagerService.startUpdateRelativeDate();
+
+    if (this.sessionService.isOnlineOnly()) {
+      this.recurringProcessManagerService.startUpdateReadDocsCount();
+    }
   }
 }
 
@@ -474,22 +514,16 @@ export class AppComponent implements OnInit {
     DatabaseConnectionMonitor,
     Debug,
     Feedback,
-
     JsonForms,
     Language,
     LiveListConfig,
     LocationService,
-    RecurringProcessManager,
-
-    RulesEngine,
-
     SetLanguage,
     Snackbar,
     Telemetry,
     Tour,
     TranslateFrom,
     TranslationLoaderService,
-    UnreadRecords,
     UpdateServiceWorkerService,
     WealthQuintilesWatcher,
     XmlForms
@@ -531,7 +565,6 @@ export class AppComponent implements OnInit {
         setShowContent: globalActions.setShowContent,
         setShowPrivacyPolicy: globalActions.setShowPrivacyPolicy,
         setTitle: globalActions.setTitle,
-        setUnreadCount: globalActions.setUnreadCount,
         unsetSelected: globalActions.unsetSelected,
         updateReplicationStatus: globalActions.updateReplicationStatus,
       };
@@ -576,15 +609,6 @@ export class AppComponent implements OnInit {
 
     ctrl.dbWarmedUp = true;
 
-    // initialisation tasks that can occur after the UI has been rendered
-    ctrl.setupPromise = SessionService.init()
-      .then(() => checkPrivacyPolicy())
-      .then(() => initRulesEngine())
-      .then(() => initForms())
-      .then(() => initUnreadCount())
-      .then(() => CheckDate())
-      .then(() => startRecurringProcesses());
-
     LiveListConfig();
 
     ctrl.setLoadingContent(false);
@@ -616,22 +640,6 @@ export class AppComponent implements OnInit {
         ctrl.setSelectMode(false);
       }
     });
-
-    ctrl.unreadCount = {};
-    const initUnreadCount = () => {
-      UnreadRecords(function(err, data) {
-        if (err) {
-          return $log.error('Error fetching read status', err);
-        }
-        ctrl.setUnreadCount(data);
-      });
-    };
-
-
-
-    const initRulesEngine = () => RulesEngine.isEnabled()
-      .then(isEnabled => $log.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
-      .catch(err => $log.error('RuleEngine failed to initialize', err));
 
     // get the forms for the forms filter
 
@@ -731,33 +739,15 @@ export class AppComponent implements OnInit {
       closeDropdowns();
     };
 
-    const showSessionExpired = function() {
-      Modal({
-        templateUrl: 'templates/modals/session_expired.html',
-        controller: 'SessionExpiredModalCtrl',
-        controllerAs: 'SessionExpiredModalCtrl',
-        singleton: true,
-      });
-    };
-
     ChangesService({
       key: 'inbox-translations',
       filter: change => TranslationLoaderService.test(change.id),
       callback: change => $translate.refresh(TranslationLoaderService.getCode(change.id)),
     });
 
-    const startRecurringProcesses = () => {
-      RecurringProcessManager.startUpdateRelativeDate();
-      if (SessionService.isOnlineOnly()) {
-        RecurringProcessManager.startUpdateReadDocsCount();
-      }
-    };
-
     $scope.$on('$destroy', function() {
       unsubscribe();
       dbClosedDeregister();
-      RecurringProcessManager.stopUpdateRelativeDate();
-      RecurringProcessManager.stopUpdateReadDocsCount();
     });
 
     const userCtx = SessionService.userCtx();

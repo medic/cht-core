@@ -53,14 +53,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getUnreadCount),
     ).subscribe(([
       replicationStatus,
       currentTab,
-      showPrivacyPolicy
+      showPrivacyPolicy,
+      unreadCount
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
+      this.unreadCount = unreadCount;
     });
     this.subscription.add(subscription);
 
@@ -109,56 +112,3 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.dbSyncService.sync(true);
   }
 }
-/*
-
-angular.module('inboxDirectives').directive('mmHeader', function() {
-  return {
-    restrict: 'E',
-    templateUrl: 'templates/directives/header.html',
-    controller: function(
-      $ngRedux,
-      $q,
-      $scope,
-      AuthService,
-      DBSyncService,
-      GlobalActions,
-      HeaderTabsService,
-      Modal,
-      Selectors,
-      SettingsService,
-      Tour
-    ) {
-      'ngInject';
-
-      const ctrl = this;
-      const mapStateToTarget = function(state) {
-        return {
-          currentTab: Selectors.getCurrentTab(state),
-          replicationStatus: Selectors.getReplicationStatus(state),
-          showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state),
-          unreadCount: Selectors.getUnreadCount(state),
-        };
-      };
-      const mapDispatchToTarget = function(dispatch) {
-        const globalActions = GlobalActions(dispatch);
-        return {
-          openGuidedSetup: globalActions.openGuidedSetup,
-          openTourSelect: globalActions.openTourSelect,
-          setMinimalTabs: globalActions.setMinimalTabs
-        };
-      };
-      const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-      Tour.getTours().then(tours => ctrl.tours = tours);
-
-      $scope.$on('$destroy', unsubscribe);
-    },
-    controllerAs: 'headerCtrl',
-    bindToController: {
-      adminUrl: '<',
-      canLogOut: '<',
-      tours: '<'
-    }
-  };
-});
-*/
