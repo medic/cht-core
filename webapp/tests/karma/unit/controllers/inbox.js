@@ -125,6 +125,7 @@ describe('InboxCtrl controller', () => {
   });
 
   afterEach(() => sinon.restore());
+
   it('should start the relative date update recurring process', () => {
     const ctrl = createController();
     privacyPoliciesPromise.resolve();
@@ -132,12 +133,6 @@ describe('InboxCtrl controller', () => {
     return ctrl.setupPromise.then(() => {
       chai.expect(RecurringProcessManager.startUpdateRelativeDate.callCount).to.equal(1);
     });
-  });
-
-  it('should cancel the relative date update recurring process when destroyed', () => {
-    createController();
-    scope.$destroy();
-    chai.expect(RecurringProcessManager.stopUpdateRelativeDate.callCount).to.equal(1);
   });
 
   it('should not start the UpdateUnreadDocsCount recurring process when not online', () => {

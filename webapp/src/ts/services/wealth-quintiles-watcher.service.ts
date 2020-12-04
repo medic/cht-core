@@ -41,7 +41,7 @@ export class WealthQuintilesWatcherService implements OnDestroy {
         include_docs: true
       })
       .then((result:any) => {
-        const updatedDocs:any[] = [];
+        const updatedDocs:any = [];
 
         result.rows.forEach((row:any) => {
           if (row.doc.wealth_quintile_national === changedFields.NationalQuintile

@@ -384,8 +384,7 @@ export class AppComponent implements OnInit {
       return key ? this.translateService.instant(key) : this.translateFromService.get(label);
     };
 
-    return this
-      .translationsLoaded
+    return this.translationsLoaded
       .then(() => this.jsonFormsService.get())
       .then((jsonForms) => {
         const jsonFormSummaries = jsonForms.map((jsonForm) => {
