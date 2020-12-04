@@ -7,6 +7,8 @@ import * as moment from 'moment';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
+import { ChangesService } from '@mm-services/changes.service';
+import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 
 @Component({
   selector: 'contacts-content',
@@ -29,8 +31,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store,
-    private route:ActivatedRoute,
-    private router:Router,
+    private route: ActivatedRoute,
+    private router: Router,
+    private changesService: ChangesService,
+    private contactChangeFilterService: ContactChangeFilterService,
   ){
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -71,7 +75,27 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.globalActions.unsetSelected();
       }
     });
+
+    const changesSubscription = this.changesService.subscribe({
+      key: 'contacts-content',
+      filter: (change) => {
+        return this.contactChangeFilterService.matchContact(change, this.selectedContact) ||
+               this.contactChangeFilterService.isRelevantContact(change, this.selectedContact) ||
+               this.contactChangeFilterService.isRelevantReport(change, this.selectedContact);
+      },
+      callback: (change) => {
+        if (
+          this.contactChangeFilterService.matchContact(change, this.selectedContact) &&
+          this.contactChangeFilterService.isDeleted(change)) {
+          const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
+          return this.router.navigate(['/contacts', { id: parentId }]);
+        }
+        return this.contactsActions.selectContact(change.id, { silent: true });
+      }
+    });
+
     this.subscription.add(routeSubscription);
+    this.subscription.add(changesSubscription);
     this.setReportsTimeWindowMonths(3);
     this.setTasksTimeWindowWeeks(1);
   }
@@ -215,23 +239,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 //     });
 
 //     const debouncedReloadContact = Debounce(selectContact, 1000, 10 * 1000);
-
-//     const changeListener = Changes({
-//       key: 'contacts-content',
-//       filter: function(change) {
-//         return ContactChangeFilter.matchContact(change, ctrl.selectedContact) ||
-//                ContactChangeFilter.isRelevantContact(change, ctrl.selectedContact) ||
-//                ContactChangeFilter.isRelevantReport(change, ctrl.selectedContact);
-//       },
-//       callback: function(change) {
-//         if (ContactChangeFilter.matchContact(change, ctrl.selectedContact) && ContactChangeFilter.isDeleted(change)) {
-//           debouncedReloadContact.cancel();
-//           const parentId = ctrl.selectedContact.doc.parent && ctrl.selectedContact.doc.parent._id;
-//           return $state.go('contacts.detail', { id: parentId || null });
-//         }
-//         return debouncedReloadContact(ctrl.selectedContact.doc._id, true);
-//       }
-//     });
 
 //     $scope.$on('$destroy', function() {
 //       unsubscribe();
