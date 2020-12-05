@@ -5,80 +5,56 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/immunization_and_growth/app/bch/bcg_date:jr:constraintMsg">
+          <text id="/immunization_and_growth/bch/bcg_date:jr:constraintMsg">
             <value>Date is in future</value>
           </text>
-          <text id="/immunization_and_growth/app/bch/bcg_date:label">
+          <text id="/immunization_and_growth/bch/bcg_date:label">
             <value>Enter the date when BCG vaccine was given</value>
           </text>
-          <text id="/immunization_and_growth/app/bch:label">
+          <text id="/immunization_and_growth/bch:label">
             <value>BCG</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/no:label">
             <value>No</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/yes:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic:label">
             <value>Did <output value=" /immunization_and_growth/patient_name "/> attend immunization clinic?</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/bcg:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
             <value>BCG</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/inactivated_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
             <value>Inactivated Polio Vaccine (IPV)</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/measles:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
             <value>Measles vaccine</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/nitamin_a:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
             <value>Vitamin A</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/oral_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
             <value>Oral Polio Vaccine</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pentavalent:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
             <value>Pentavalent vaccine</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pneumococcal:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
             <value>Pneumococcal vaccine</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/rotavirus:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
             <value>RotaVirus vaccine</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/yellow_fever:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
             <value>Yellow fever vaccine</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>Which vaccines did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment:label">
+          <text id="/immunization_and_growth/group_assessment:label">
             <value>Clinic Attendance</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:jr:constraintMsg">
-            <value>Date is in future</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:label">
-            <value>Enter the date when BCG vaccine was given</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_0:label">
-            <value>Birth Polio (OPV 0)</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_1:label">
-            <value>1st dose OPV</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_2:label">
-            <value>2nd dose OPV</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_3:label">
-            <value>3rd dose OPV</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose:label">
-            <value>Which dose of Oral Polio Vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv:label">
-            <value>Oral Polio Vaccine</value>
           </text>
           <text id="/immunization_and_growth/inputs/contact/_id:hint">
             <value>Select a person from the list</value>
@@ -128,87 +104,84 @@
           <text id="/immunization_and_growth/inputs:label">
             <value>Patient</value>
           </text>
+          <text id="/immunization_and_growth/opv/opv_date:jr:constraintMsg">
+            <value>Date is in future</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_date:label">
+            <value>Enter the date when BCG vaccine was given</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_0:label">
+            <value>Birth Polio (OPV 0)</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_1:label">
+            <value>1st dose OPV</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_2:label">
+            <value>2nd dose OPV</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_3:label">
+            <value>3rd dose OPV</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose:label">
+            <value>Which dose of Oral Polio Vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
+          </text>
+          <text id="/immunization_and_growth/opv:label">
+            <value>Oral Polio Vaccine</value>
+          </text>
           <text id="/immunization_and_growth/patient_name:label">
             <value>-</value>
           </text>
         </translation>
         <translation lang="fr">
-          <text id="/immunization_and_growth/app/bch/bcg_date:jr:constraintMsg">
+          <text id="/immunization_and_growth/bch/bcg_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/bch/bcg_date:label">
+          <text id="/immunization_and_growth/bch/bcg_date:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/bch:label">
+          <text id="/immunization_and_growth/bch:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/yes:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/yes:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/bcg:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/inactivated_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/measles:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/nitamin_a:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/oral_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pentavalent:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pneumococcal:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/rotavirus:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/yellow_fever:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_0:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_2:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_3:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app:label">
+          <text id="/immunization_and_growth/group_assessment:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/inputs/contact/_id:hint">
@@ -257,6 +230,30 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_0:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_3:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_name:label">
@@ -264,82 +261,55 @@
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/immunization_and_growth/app/bch/bcg_date:jr:constraintMsg">
+          <text id="/immunization_and_growth/bch/bcg_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/bch/bcg_date:label">
+          <text id="/immunization_and_growth/bch/bcg_date:label">
             <value>yes</value>
           </text>
-          <text id="/immunization_and_growth/app/bch:label">
+          <text id="/immunization_and_growth/bch:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/yes:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/yes:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic:label">
             <value>yes</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/bcg:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/inactivated_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/measles:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/nitamin_a:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/oral_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pentavalent:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pneumococcal:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/rotavirus:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/yellow_fever:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:label">
-            <value>yes</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_0:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_2:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_3:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose:label">
-            <value>yes</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app:label">
+          <text id="/immunization_and_growth/group_assessment:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/inputs/contact/_id:hint">
@@ -390,87 +360,84 @@
           <text id="/immunization_and_growth/inputs:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/opv/opv_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_date:label">
+            <value>yes</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_0:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_3:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose:label">
+            <value>yes</value>
+          </text>
+          <text id="/immunization_and_growth/opv:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/patient_name:label">
             <value>-</value>
           </text>
         </translation>
         <translation lang="id">
-          <text id="/immunization_and_growth/app/bch/bcg_date:jr:constraintMsg">
+          <text id="/immunization_and_growth/bch/bcg_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/bch/bcg_date:label">
+          <text id="/immunization_and_growth/bch/bcg_date:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/bch:label">
+          <text id="/immunization_and_growth/bch:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/yes:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/yes:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/bcg:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/inactivated_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/measles:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/nitamin_a:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/oral_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pentavalent:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pneumococcal:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/rotavirus:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/yellow_fever:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_0:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_2:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_3:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app:label">
+          <text id="/immunization_and_growth/group_assessment:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/inputs/contact/_id:hint">
@@ -521,87 +488,84 @@
           <text id="/immunization_and_growth/inputs:label">
             <value>./source = 'user'</value>
           </text>
+          <text id="/immunization_and_growth/opv/opv_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_0:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_3:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/patient_name:label">
             <value>-</value>
           </text>
         </translation>
         <translation lang="sw">
-          <text id="/immunization_and_growth/app/bch/bcg_date:jr:constraintMsg">
+          <text id="/immunization_and_growth/bch/bcg_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/bch/bcg_date:label">
+          <text id="/immunization_and_growth/bch/bcg_date:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/bch:label">
+          <text id="/immunization_and_growth/bch:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/no:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/no:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic/yes:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic/yes:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/attend_clinic:label">
+          <text id="/immunization_and_growth/group_assessment/attend_clinic:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/bcg:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/inactivated_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/measles:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/nitamin_a:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/nitamin_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/oral_polio:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/oral_polio:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pentavalent:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pentavalent:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/pneumococcal:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/pneumococcal:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/rotavirus:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/rotavirus:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines/yellow_fever:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines/yellow_fever:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment/vaccines:label">
+          <text id="/immunization_and_growth/group_assessment/vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/app/group_assessment:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_date:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_0:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_2:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose/opv_dose_3:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv/opv_dose:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app/opv:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/app:label">
+          <text id="/immunization_and_growth/group_assessment:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/inputs/contact/_id:hint">
@@ -652,13 +616,37 @@
           <text id="/immunization_and_growth/inputs:label">
             <value>field-list</value>
           </text>
+          <text id="/immunization_and_growth/opv/opv_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_0:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose/opv_dose_3:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv/opv_dose:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/opv:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/patient_name:label">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-04_14-22">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-04_15-59">
           <inputs>
             <meta>
               <location>
@@ -688,19 +676,17 @@
             </contact>
           </inputs>
           <patient_name/>
-          <app>
-            <group_assessment>
-              <attend_clinic/>
-              <vaccines/>
-            </group_assessment>
-            <bch>
-              <bcg_date/>
-            </bch>
-            <opv>
-              <opv_dose/>
-              <opv_date/>
-            </opv>
-          </app>
+          <group_assessment>
+            <attend_clinic/>
+            <vaccines/>
+          </group_assessment>
+          <bch>
+            <bcg_date/>
+          </bch>
+          <opv>
+            <opv_dose/>
+            <opv_date/>
+          </opv>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -719,12 +705,12 @@
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/parent/parent/_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/immunization_and_growth/patient_name" type="string"/>
-      <bind nodeset="/immunization_and_growth/app/group_assessment/attend_clinic" required="true()" type="select1"/>
-      <bind nodeset="/immunization_and_growth/app/group_assessment/vaccines" relevant="selected( /immunization_and_growth/app/group_assessment/attend_clinic , 'bcg')" required="true()" type="select"/>
-      <bind nodeset="/immunization_and_growth/app/bch" relevant="selected( /immunization_and_growth/app/group_assessment/vaccines , 'bcg')"/>
-      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/app/bch/bcg_date:jr:constraintMsg')" nodeset="/immunization_and_growth/app/bch/bcg_date" required="true()" type="date"/>
-      <bind nodeset="/immunization_and_growth/app/opv/opv_dose" required="true()" type="select"/>
-      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/app/opv/opv_date:jr:constraintMsg')" nodeset="/immunization_and_growth/app/opv/opv_date" required="true()" type="date"/>
+      <bind nodeset="/immunization_and_growth/group_assessment/attend_clinic" required="true()" type="select1"/>
+      <bind nodeset="/immunization_and_growth/group_assessment/vaccines" relevant="selected( /immunization_and_growth/group_assessment/attend_clinic , 'yes')" required="true()" type="select"/>
+      <bind nodeset="/immunization_and_growth/bch" relevant="selected( /immunization_and_growth/group_assessment/vaccines , 'bcg')"/>
+      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/bch/bcg_date:jr:constraintMsg')" nodeset="/immunization_and_growth/bch/bcg_date" required="true()" type="date"/>
+      <bind nodeset="/immunization_and_growth/opv/opv_dose" required="true()" type="select"/>
+      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/opv/opv_date:jr:constraintMsg')" nodeset="/immunization_and_growth/opv/opv_date" required="true()" type="date"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/immunization_and_growth/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -748,91 +734,89 @@
         </group>
       </group>
     </group>
-    <group ref="/immunization_and_growth/app">
-      <group ref="/immunization_and_growth/app/group_assessment">
-        <label ref="jr:itext('/immunization_and_growth/app/group_assessment:label')"/>
-        <select1 ref="/immunization_and_growth/app/group_assessment/attend_clinic">
-          <label ref="jr:itext('/immunization_and_growth/app/group_assessment/attend_clinic:label')"/>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/attend_clinic/yes:label')"/>
-            <value>yes</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/attend_clinic/no:label')"/>
-            <value>no</value>
-          </item>
-        </select1>
-        <select ref="/immunization_and_growth/app/group_assessment/vaccines">
-          <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines:label')"/>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/bcg:label')"/>
-            <value>bcg</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/oral_polio:label')"/>
-            <value>oral_polio</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/rotavirus:label')"/>
-            <value>rotavirus</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/pneumococcal:label')"/>
-            <value>pneumococcal</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/pentavalent:label')"/>
-            <value>pentavalent</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/inactivated_polio:label')"/>
-            <value>inactivated_polio</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/measles:label')"/>
-            <value>measles</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/yellow_fever:label')"/>
-            <value>yellow_fever</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/group_assessment/vaccines/nitamin_a:label')"/>
-            <value>nitamin_a</value>
-          </item>
-        </select>
-      </group>
-      <group ref="/immunization_and_growth/app/bch">
-        <label ref="jr:itext('/immunization_and_growth/app/bch:label')"/>
-        <input ref="/immunization_and_growth/app/bch/bcg_date">
-          <label ref="jr:itext('/immunization_and_growth/app/bch/bcg_date:label')"/>
-        </input>
-      </group>
-      <group ref="/immunization_and_growth/app/opv">
-        <label ref="jr:itext('/immunization_and_growth/app/opv:label')"/>
-        <select ref="/immunization_and_growth/app/opv/opv_dose">
-          <label ref="jr:itext('/immunization_and_growth/app/opv/opv_dose:label')"/>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/opv/opv_dose/opv_dose_0:label')"/>
-            <value>opv_dose_0</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/opv/opv_dose/opv_dose_1:label')"/>
-            <value>opv_dose_1</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/opv/opv_dose/opv_dose_2:label')"/>
-            <value>opv_dose_2</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/immunization_and_growth/app/opv/opv_dose/opv_dose_3:label')"/>
-            <value>opv_dose_3</value>
-          </item>
-        </select>
-        <input ref="/immunization_and_growth/app/opv/opv_date">
-          <label ref="jr:itext('/immunization_and_growth/app/opv/opv_date:label')"/>
-        </input>
-      </group>
+    <group appearance="field-list" ref="/immunization_and_growth/group_assessment">
+      <label ref="jr:itext('/immunization_and_growth/group_assessment:label')"/>
+      <select1 ref="/immunization_and_growth/group_assessment/attend_clinic">
+        <label ref="jr:itext('/immunization_and_growth/group_assessment/attend_clinic:label')"/>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/attend_clinic/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/attend_clinic/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select ref="/immunization_and_growth/group_assessment/vaccines">
+        <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines:label')"/>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/bcg:label')"/>
+          <value>bcg</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/oral_polio:label')"/>
+          <value>oral_polio</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/rotavirus:label')"/>
+          <value>rotavirus</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/pneumococcal:label')"/>
+          <value>pneumococcal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/pentavalent:label')"/>
+          <value>pentavalent</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/inactivated_polio:label')"/>
+          <value>inactivated_polio</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/measles:label')"/>
+          <value>measles</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/yellow_fever:label')"/>
+          <value>yellow_fever</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/group_assessment/vaccines/nitamin_a:label')"/>
+          <value>nitamin_a</value>
+        </item>
+      </select>
+    </group>
+    <group appearance="field-list" ref="/immunization_and_growth/bch">
+      <label ref="jr:itext('/immunization_and_growth/bch:label')"/>
+      <input ref="/immunization_and_growth/bch/bcg_date">
+        <label ref="jr:itext('/immunization_and_growth/bch/bcg_date:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/immunization_and_growth/opv">
+      <label ref="jr:itext('/immunization_and_growth/opv:label')"/>
+      <select ref="/immunization_and_growth/opv/opv_dose">
+        <label ref="jr:itext('/immunization_and_growth/opv/opv_dose:label')"/>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/opv/opv_dose/opv_dose_0:label')"/>
+          <value>opv_dose_0</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/opv/opv_dose/opv_dose_1:label')"/>
+          <value>opv_dose_1</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/opv/opv_dose/opv_dose_2:label')"/>
+          <value>opv_dose_2</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/opv/opv_dose/opv_dose_3:label')"/>
+          <value>opv_dose_3</value>
+        </item>
+      </select>
+      <input ref="/immunization_and_growth/opv/opv_date">
+        <label ref="jr:itext('/immunization_and_growth/opv/opv_date:label')"/>
+      </input>
     </group>
   </h:body>
 </h:html>
