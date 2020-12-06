@@ -96,6 +96,7 @@
   require('./update-service-worker');
   require('./update-settings');
   require('./update-user');
+  require('./user-login');
   require('./user');
   require('./user-contact');
   require('./version');

@@ -49,5 +49,6 @@
   require('./tour-select');
   require('./verify-report-modal');
   require('./welcome-modal');
+  require('./updated-password');
 
 }());

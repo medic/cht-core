@@ -9,10 +9,14 @@ describe('EditUserCtrl controller', () => {
   let UpdateUser;
   let CreateUser;
   let UserSettings;
+  let UserLogin;
   let translate;
   let Translate;
   let userToEdit;
   let ctrl;
+  let $window;
+  let $uibModalInstance;
+  let modal;
 
   beforeEach(() => {
     module('inboxApp');
@@ -23,7 +27,10 @@ describe('EditUserCtrl controller', () => {
       { value: { code: 'fr' } }
     ] }));
     UpdateUser = sinon.stub();
-    UpdateUser.returns(Promise.resolve());
+    UserLogin = sinon.stub();
+    $window = {location: {reload: sinon.stub()}};
+    $uibModalInstance = {close: sinon.stub(), rendered: Promise.resolve()};
+    modal = sinon.stub();
     CreateUser = sinon.stub();
     CreateUser.returns(Promise.resolve());
     UserSettings = sinon.stub();
@@ -45,12 +52,12 @@ describe('EditUserCtrl controller', () => {
     window.$.callThrough();
 
     module($provide => {
-      $provide.factory('$uibModalInstance', () => {
-        return {
-          rendered: Promise.resolve(),
-          close: () => {}
-        };
-      });
+      // $provide.factory('$uibModalInstance', () => {
+      //   return {
+      //     rendered: Promise.resolve(),
+      //     close: () => {},
+      //   };
+      // });
       $provide.factory('processingFunction', () => {
         return null;
       });
@@ -58,8 +65,12 @@ describe('EditUserCtrl controller', () => {
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('CreateUser', CreateUser);
       $provide.value('UserSettings', UserSettings);
+      $provide.value('UserLogin', UserLogin);
       $provide.value('translate', translate);
       $provide.value('Translate', Translate);
+      $provide.value('$window', $window);
+      $provide.value('$uibModalInstance', $uibModalInstance);
+      $provide.value('Modal', modal);
 
     });
 
@@ -84,7 +95,7 @@ describe('EditUserCtrl controller', () => {
           },
           'Select2Search': sinon.stub(),
           'SetLanguage': sinon.stub(),
-          '$window': {location: {reload: sinon.stub()}},
+          // '$window': {location: {reload: sinon.stub()}},
           '$translate': translate
         });
       };
@@ -99,6 +110,7 @@ describe('EditUserCtrl controller', () => {
     KarmaUtils.restore(
       UpdateUser,
       UserSettings,
+      UserLogin,
       translationsDbQuery,
       jQuery);
   });
@@ -186,11 +198,19 @@ describe('EditUserCtrl controller', () => {
     it('user is updated with password change', done => {
       mockEditCurrentUser(userToEdit);
       const password = '1QrAs$$3%%kkkk445234234234';
+      const loginData = JSON.stringify({
+        user: 'user.name',
+        password: password,
+        redirect: '',
+        locale: ''
+      });
 
       setTimeout(() => {
         ctrl.editUserModel.currentPassword = 'something';
         ctrl.editUserModel.password = password;
         ctrl.editUserModel.passwordConfirm = password;
+        UpdateUser.returns(Promise.resolve());
+        UserLogin.returns(Promise.resolve());
 
         ctrl.updatePassword();
 
@@ -200,6 +220,79 @@ describe('EditUserCtrl controller', () => {
           chai.expect(UpdateUser.getCall(0).args[1].password).to.equal(password);
           chai.expect(UpdateUser.getCall(0).args[2]).to.equal('user.name');
           chai.expect(UpdateUser.getCall(0).args[3]).to.equal('something');
+          chai.expect(UserLogin.called).to.equal(true);
+          chai.expect(UserLogin.getCall(0).args[0]).to.equal(loginData);
+          done();
+        });
+      });
+    });
+
+    it('should login user when password is correclty updated', done => {
+      mockEditCurrentUser(userToEdit);
+      const password = '1QrAs$$3%%kkkk445234234234';
+      const loginData = JSON.stringify({
+        user: 'user.name',
+        password: password,
+        redirect: '',
+        locale: ''
+      });
+
+      setTimeout(() => {
+        ctrl.editUserModel.currentPassword = 'something';
+        ctrl.editUserModel.password = password;
+        ctrl.editUserModel.passwordConfirm = password;
+        const modalData = {
+          templateUrl: 'templates/modals/updated_password.html',
+          controller: 'UpdatedPasswordCtrl',
+          controllerAs: 'updatedPasswordCtrl'
+        }
+        UpdateUser.returns(Promise.resolve());
+        UserLogin.returns(Promise.reject({status: 302}));
+
+        ctrl.updatePassword();
+
+        setTimeout(() => {
+          chai.expect(UpdateUser.called).to.equal(true);
+          chai.expect(UserLogin.called).to.equal(true);
+          chai.expect(UserLogin.getCall(0).args[0]).to.equal(loginData);
+          chai.expect(scope.setFinished.called).to.equal(true);
+          chai.expect($uibModalInstance.close.called).to.equal(true);
+          chai.expect(modal.called).to.equal(true);
+          chai.expect(modal.getCall(0).args[0]).to.deep.equal(modalData);
+          chai.expect($window.location.reload.called).to.equal(false);
+          done();
+        });
+      });
+    });
+
+    it('should refresh page when login is not successful', done => {
+      mockEditCurrentUser(userToEdit);
+      const password = '1QrAs$$3%%kkkk445234234234';
+      const loginData = JSON.stringify({
+        user: 'user.name',
+        password: password,
+        redirect: '',
+        locale: ''
+      });
+
+      setTimeout(() => {
+        ctrl.editUserModel.currentPassword = 'something';
+        ctrl.editUserModel.password = password;
+        ctrl.editUserModel.passwordConfirm = password;
+        UpdateUser.returns(Promise.resolve());
+        UserLogin.returns(Promise.reject({status: 401}));
+
+        ctrl.updatePassword();
+
+        setTimeout(() => {
+          chai.expect(UpdateUser.called).to.equal(true);
+          chai.expect(UserLogin.called).to.equal(true);
+          chai.expect(UserLogin.getCall(0).args[0]).to.equal(loginData);
+          chai.expect(scope.setFinished.called).to.equal(false);
+          chai.expect($uibModalInstance.close.called).to.equal(false);
+          chai.expect(modal.called).to.equal(false);
+          chai.expect($window.location.reload.called).to.equal(true);
+          chai.expect($window.location.reload.getCall(0).args[0]).to.equal(true);
           done();
         });
       });

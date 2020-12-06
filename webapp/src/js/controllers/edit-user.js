@@ -20,7 +20,9 @@ const PASSWORD_MINIMUM_SCORE = 50;
       SetLanguage,
       Translate,
       UpdateUser,
-      UserSettings
+      UserLogin,
+      UserSettings,
+      Modal
     ) {
       'ngInject';
 
@@ -147,17 +149,44 @@ const PASSWORD_MINIMUM_SCORE = 50;
         ctrl.editUserModel.contact = $('#edit-user-profile [name=contactSelect]').val();
       };
 
+      const getLoginData = function(username, password) {
+        return JSON.stringify({
+          user: username,
+          password: password,
+          redirect: '',
+          locale: ''
+        })
+      }; 
+
       // Submit function if template is update_password.html
       ctrl.updatePassword = function() {
         ctrl.errors = {};
         $scope.setProcessing();
         if (validatePasswordFields()) {
-          const updates = { password: ctrl.editUserModel.password };
+          const password = ctrl.editUserModel.password;
+          const updates = { password };
           const username = ctrl.editUserModel.username;
           UpdateUser(username, updates, username, ctrl.editUserModel.currentPassword)
             .then(function() {
-              $scope.setFinished();
-              $window.location.reload(true);
+              const data = getLoginData(username, password);
+              UserLogin(data)
+                .then(function(response) {
+                  $log.info('User Login Response', response);
+                })
+                .catch(function(err) {
+                  if (err.status === 302) {
+                    $scope.setFinished();
+                    $uibModalInstance.close();
+      
+                    Modal({
+                      templateUrl: 'templates/modals/updated_password.html',
+                      controller: 'UpdatedPasswordCtrl',
+                      controllerAs: 'updatedPasswordCtrl'
+                    }).catch(() => {}); // modal dismissed is ok
+                  } else {
+                    $window.location.reload(true);
+                  }
+                });
             })
             .catch(function(err) {
               if (err.status === -1) { //Offline Status

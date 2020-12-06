@@ -88,6 +88,7 @@ describe('InboxCtrl controller', () => {
       $provide.value('Settings', () => Promise.resolve({ setup_complete: true }));
       $provide.value('$timeout', sinon.stub());
       $provide.value('UpdateUser', updateUser);
+      $provide.value('UserLogin', userLogin);
       $provide.value('UpdateSettings', sinon.stub());
       $provide.value('UserSettings', () =>  Promise.resolve({ known: false }));
       $provide.value('Telemetry', { record: sinon.stub() });
