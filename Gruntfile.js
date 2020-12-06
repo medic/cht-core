@@ -458,11 +458,11 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --ignore "api/src/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/src/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --watch sentinel --watch "shared-libs/**/src/**" sentinel/server.js',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9228 --watch sentinel --watch "shared-libs/**/src/**" sentinel/server.js',
       },
       'blank-link-check': {
         cmd: `echo "Checking for dangerous _blank links..." &&
@@ -756,23 +756,36 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'e2e-tests': {
+      'e2e-web-tests': {
         options: {
+          configFile: TRAVIS_TAG || TRAVIS_BRANCH?'tests/conf-travis.js':'tests/conf.js',
           args: {
-            suite: 'e2e'
-          },
-          configFile: 'tests/conf.js'
+            suite: 'web',
+          }
+        }
+      },
+      'e2e-mobile-tests': {
+        options: {
+          configFile: TRAVIS_TAG || TRAVIS_BRANCH?'tests/conf-travis.js':'tests/conf.js',
+          args: {
+            suite: 'mobile',
+            capabilities: {
+              chromeOptions: {
+                'args': ['headless','disable-gpu'],
+                mobileEmulation: { 'deviceName': 'Nexus 5' }
+              }
+            }
+          }
         }
       },
       'e2e-tests-debug': {
         options: {
           configFile: 'tests/conf.js',
           args: {
-            suite: 'e2e'
-          },
-          capabilities: {
-            chromeOptions: {
-              args: ['window-size=1024,768']
+            capabilities: {
+              chromeOptions: {
+                args: [ 'window-size=1024,768' ]
+              }
             }
           }
         }
@@ -1020,9 +1033,20 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
   ]);
 
+  grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
+    'protractor:e2e-web-tests',
+    'exec:clean-test-database',
+  ]);
+  grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
+    'protractor:e2e-mobile-tests',
+    'exec:clean-test-database',
+  ]);
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
-    'protractor:e2e-tests',
+    'protractor:e2e-web-tests',
+    'protractor:e2e-mobile-tests',
     'exec:clean-test-database',
   ]);
 
@@ -1092,7 +1116,8 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
     'exec:e2e-servers',
-    'protractor:e2e-tests',
+    'protractor:e2e-web-tests',
+    'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [

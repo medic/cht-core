@@ -3,7 +3,7 @@ version: '3.7'
 services:
   medic-os:
     container_name: medic-os
-    image: medicmobile/medic-os:cht-3.9.0-rc.1
+    image: medicmobile/medic-os:cht-3.9.0-rc.2
     volumes:
       - medic-data:/srv
     ports:
@@ -20,7 +20,7 @@ services:
 
   haproxy:
     container_name: haproxy
-    image: medicmobile/haproxy:rc-1.16
+    image: medicmobile/haproxy:rc-1.17
     volumes:
       - medic-data:/srv
     environment:
