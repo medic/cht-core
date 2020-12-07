@@ -4,7 +4,7 @@
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash-es';
 
-import { ContactTypesService } from './contact-types.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 const isValidInput = function(object) {
   return !!(object && object.doc);
@@ -86,7 +86,6 @@ export class ContactChangeFilterService {
   }
 
   isDeleted(change) {
-    console.log('is deleted', change.deleted);
     return !!change && !!change.deleted;
   }
 }
