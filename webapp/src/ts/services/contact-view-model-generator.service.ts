@@ -153,7 +153,7 @@ export class ContactViewModelGeneratorService {
     }
 
     // If the primary contact is not a child, fetch the document
-    return this.dbService.get(contactId)
+    return this.dbService.get().get(contactId)
       .then(doc => {
         children.push({
           doc: doc,
