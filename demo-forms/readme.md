@@ -2,7 +2,7 @@
 
 ## Intro
 
-These forms can be used to quickly test specific XForm features. For example, if you load the `geopoint` form, you can test the Enketo Geopoint feature in an isolated way without having to worry about whether or not other form fields might be causing issues.
+These forms can be used to quickly test specific XForm features. For example, if you load the `geopoint` form, you can test the Enketo Geopoint feature in an isolated way without having to worry if other form fields might be causing issues.
 
 ## Loading
 
