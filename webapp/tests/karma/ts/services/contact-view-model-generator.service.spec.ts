@@ -117,7 +117,7 @@ describe('ContactViewModelGenerator service', () => {
     service = TestBed.inject(ContactViewModelGeneratorService);
   });
 
-  afterEach(function() {
+  afterEach(() => {
     sinon.restore();
   });
 
