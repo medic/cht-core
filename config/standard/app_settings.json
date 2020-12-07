@@ -42,12 +42,6 @@
   "public_access": false,
   "default_country_code": "254",
   "gateway_number": "+254741095736",
-  "kujua-reporting": [
-    {
-      "code": "SS",
-      "reporting_freq": "monthly"
-    }
-  ],
   "anc_forms": {
     "registration": "R",
     "registrationLmp": "P",

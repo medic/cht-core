@@ -20,7 +20,7 @@ export class GuidedSetupComponent extends MmModalAbstract implements AfterViewIn
   settingsLoaded = false;
   settings = <any>{};
 
-  static id = 'guided-setup';
+  static id = 'guided-setup-modal';
 
   constructor(
     bsModalRef: BsModalRef,

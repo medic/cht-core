@@ -12,7 +12,7 @@ export class ReloadingComponent  extends MmModalAbstract {
     super(bsModalRef);
   }
 
-  static id = 'reloadingModal';
+  static id = 'reloading-modal';
 
   submit() {
     this.close();
