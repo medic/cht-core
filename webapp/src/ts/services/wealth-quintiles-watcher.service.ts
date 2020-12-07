@@ -24,7 +24,7 @@ export class WealthQuintilesWatcherService implements OnDestroy {
   start() {
     const subscription = this.changesService.subscribe({
       key: 'wealth-quintiles',
-      filter: (change:any) => !!(change?.doc?.fields && 'NationalQuintile' in change?.doc?.fields),
+      filter: (change:any) => !!(change?.doc?.fields && 'NationalQuintile' in change.doc.fields),
       callback: (change:any) => this.updateDocs(change)
     });
     this.subscriptions.add(subscription);
