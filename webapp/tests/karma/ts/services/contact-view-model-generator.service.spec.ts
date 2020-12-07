@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -10,7 +10,7 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
 
-describe.only('ContactViewModelGenerator service', () => {
+describe('ContactViewModelGenerator service', () => {
   let service: ContactViewModelGeneratorService;
   let lineageModelGenerator;
   let childContactPerson;
@@ -30,8 +30,14 @@ describe.only('ContactViewModelGenerator service', () => {
 
   const childPlaceIcon = 'fa-mushroom';
 
-  const stubDbGet = (doc) => {
-    return dbGet.resolves(doc);
+  const stubDbGet = (err, doc) => {
+    if (err) {
+      return dbGet.rejects(err);
+    }
+    if (dbGet.withArgs(doc._id)) {
+      return dbGet.resolves(doc);
+    }
+    return () => ({ query: dbQuery });
   };
 
   const stubLineageModelGenerator = (contact, lineage?) => {
@@ -99,12 +105,12 @@ describe.only('ContactViewModelGenerator service', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: TranslateService, useValue: { instant: sinon.stub() } },
+        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
         { provide: SearchService, useValue: { search } },
         { provide: ContactTypesService, useValue: { getAll: sinon.stub().resolves(types) } },
         { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
         { provide: GetDataRecordsService, useValue: { get: getDataRecords } },
-        { provide: DbService, useValue: { get: () => ({ query: dbQuery }) } },
+        { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
       ]
     });
 
@@ -128,10 +134,10 @@ describe.only('ContactViewModelGenerator service', () => {
       });
   }
 
-  describe.only('Place', () => {
+  describe('Place', () => {
     const runPlaceTest = (childrenArray) => {
       stubLineageModelGenerator(doc);
-      console.log('calling with', childContactPerson);
+      stubDbGet(null, childContactPerson);
       stubSearch([]);
       stubGetDataRecords([]);
       stubDbQueryChildren(doc._id, childrenArray);
@@ -190,7 +196,7 @@ describe.only('ContactViewModelGenerator service', () => {
 
     it('if no contact person in children, persons still get displayed', () => {
       stubLineageModelGenerator(doc);
-      // stubDbGet(childContactPerson);
+      stubDbGet({ status: 404 }, childContactPerson);
       stubSearch([]);
       stubGetDataRecords([]);
       stubDbQueryChildren(doc._id, [childPerson]);
@@ -365,7 +371,7 @@ describe.only('ContactViewModelGenerator service', () => {
   describe('Reports', () => {
     const runReportsTest = childrenArray => {
       stubLineageModelGenerator(doc);
-      stubDbGet(childContactPerson);
+      stubDbGet({ status: 404 }, childContactPerson);
       stubDbQueryChildren(doc._id, childrenArray);
       return service.getContact(doc._id);
     };
@@ -377,8 +383,8 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports.length).to.equal(1);
-          chai.expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports.length).to.equal(1);
+          expect(model.reports[0]._id).to.equal('ab');
         });
     });
 
@@ -390,9 +396,9 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports.length).to.equal(2);
-          chai.expect(model.reports[0]._id).to.equal(report2._id);
-          chai.expect(model.reports[1]._id).to.equal(report1._id);
+          expect(model.reports.length).to.equal(2);
+          expect(model.reports[0]._id).to.equal(report2._id);
+          expect(model.reports[1]._id).to.equal(report1._id);
         });
     });
 
@@ -402,12 +408,12 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(search.args[0][1].subjectIds)
+          expect(search.args[0][1].subjectIds)
             .to.have.members([ doc._id, childPerson._id, childPerson2._id, deceasedChildPerson._id ]);
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(model.reports.length).to.equal(2);
-          chai.expect(model.reports[0]._id).to.equal('ab');
-          chai.expect(model.reports[1]._id).to.equal('cd');
+          expect(search.callCount).to.equal(1);
+          expect(model.reports.length).to.equal(2);
+          expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports[1]._id).to.equal('cd');
         });
     });
 
@@ -420,12 +426,12 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(model.reports.length).to.equal(2);
-          chai.expect(model.reports[0]._id).to.equal('ab');
-          chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
-          chai.expect(model.reports[1]._id).to.equal('cd');
-          chai.expect(model.reports[1].fields.patient_name).to.equal('Jack'); // don't add if name already defined
+          expect(search.callCount).to.equal(1);
+          expect(model.reports.length).to.equal(2);
+          expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
+          expect(model.reports[1]._id).to.equal('cd');
+          expect(model.reports[1].fields.patient_name).to.equal('Jack'); // don't add if name already defined
         });
     });
 
@@ -439,9 +445,9 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(search.args[0][1].subjectIds).to.have.members([ doc._id, childPerson._id, childPerson2._id ]);
-          chai.assert.deepEqual(model.reports, [ expectedReports[1], expectedReports[0]]);
+          expect(search.callCount).to.equal(1);
+          expect(search.args[0][1].subjectIds).to.have.members([ doc._id, childPerson._id, childPerson2._id ]);
+          assert.deepEqual(model.reports, [ expectedReports[1], expectedReports[0]]);
         });
     });
 
@@ -453,12 +459,12 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(() => {
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(search.args[0][0]).to.equal('reports');
-          chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
-          chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
-          chai.expect(search.args[0][1].subjectIds).to.include('cd');
-          chai.expect(search.args[0][1].subjectIds).to.include('ef');
+          expect(search.callCount).to.equal(1);
+          expect(search.args[0][0]).to.equal('reports');
+          expect(search.args[0][1].subjectIds.length).to.equal(3);
+          expect(search.args[0][1].subjectIds).to.include(doc._id);
+          expect(search.args[0][1].subjectIds).to.include('cd');
+          expect(search.args[0][1].subjectIds).to.include('ef');
         });
     });
 
@@ -471,14 +477,14 @@ describe.only('ContactViewModelGenerator service', () => {
         .then(waitForModelToLoad)
         .then(model => {
           // search queried
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(search.args[0][0]).to.equal('reports');
-          chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
-          chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
+          expect(search.callCount).to.equal(1);
+          expect(search.args[0][0]).to.equal('reports');
+          expect(search.args[0][1].subjectIds).to.include(doc._id);
+          expect(search.args[0][1].subjectIds.length).to.equal(3);
 
-          chai.expect(model.reports.length).to.equal(1);
-          chai.expect(model.reports[0]._id).to.equal('ab');
-          chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
+          expect(model.reports.length).to.equal(1);
+          expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
         });
     });
 
@@ -490,7 +496,7 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal(dataRecord.subject.value);
+          expect(model.reports[0].heading).to.equal(dataRecord.subject.value);
         });
     });
 
@@ -503,7 +509,7 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal('some.key');
+          expect(model.reports[0].heading).to.equal('some.key');
         });
     });
 
@@ -515,7 +521,7 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
+          expect(model.reports[0].heading).to.equal('report.subject.unknown');
         });
     });
 
@@ -527,7 +533,7 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
+          expect(model.reports[0].heading).to.equal('report.subject.unknown');
         });
     });
 
@@ -538,7 +544,7 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.be.an('undefined');
+          expect(model.reports[0].heading).to.be.an('undefined');
         });
     });
 
@@ -551,7 +557,7 @@ describe.only('ContactViewModelGenerator service', () => {
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal(dataRecordA.subject.value);
+          expect(model.reports[0].heading).to.equal(dataRecordA.subject.value);
         });
     });
   });
@@ -559,7 +565,7 @@ describe.only('ContactViewModelGenerator service', () => {
   describe('muting', () => {
     const runMutingTest = (doc, lineage) => {
       stubLineageModelGenerator(doc, lineage);
-      stubDbGet({});
+      stubDbGet(null, {});
       stubSearch([]);
       stubGetDataRecords([]);
       stubDbQueryChildren(doc._id, []);
@@ -569,14 +575,14 @@ describe.only('ContactViewModelGenerator service', () => {
     it('should reflect self muted state when muted', () => {
       const doc = { _id: 'doc', muted: true, contact_type: 'family' };
       return runMutingTest(doc, []).then(result => {
-        chai.expect(result.doc.muted).to.equal(true);
+        expect(result.doc.muted).to.equal(true);
       });
     });
 
     it('should reflect self unmuted state when no lineage', () => {
       const doc = { _id: 'doc', contact_type: 'family' };
       return runMutingTest(doc, []).then(result => {
-        chai.expect(result.doc.muted).to.equal(false);
+        expect(result.doc.muted).to.equal(false);
       });
     });
 
@@ -585,7 +591,7 @@ describe.only('ContactViewModelGenerator service', () => {
       const lineage = [{ _id: 'p1' }, { _id: 'p2' }];
 
       return runMutingTest(doc, lineage).then(result => {
-        chai.expect(result.doc.muted).to.equal(false);
+        expect(result.doc.muted).to.equal(false);
       });
     });
 
@@ -594,7 +600,7 @@ describe.only('ContactViewModelGenerator service', () => {
       const lineage = [{ _id: 'p1' }, { _id: 'p2', muted: true }, { _id: 'p3' }];
 
       return runMutingTest(doc, lineage).then(result => {
-        chai.expect(result.doc.muted).to.equal(true);
+        expect(result.doc.muted).to.equal(true);
       });
     });
   });
