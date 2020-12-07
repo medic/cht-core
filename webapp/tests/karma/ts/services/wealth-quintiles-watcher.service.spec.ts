@@ -56,12 +56,14 @@ describe('WealthQuintilesWatcherService', () => {
   });
 
   it('should filter relevant changes', () => {
-    const notRelevantChange = { doc: { fields: { field: '123' } } };
+    const notRelevantChange1 = { doc: { fields: { field: '123' } } };
+    const notRelevantChange2 = { doc: { } };
     const relevantChange = { doc: { fields: { NationalQuintile: '10' } } };
 
     service.start();
 
-    expect(changesFilter(notRelevantChange)).to.equal(false);
+    expect(changesFilter(notRelevantChange1)).to.equal(false);
+    expect(changesFilter(notRelevantChange2)).to.equal(false);
     expect(changesFilter(relevantChange)).to.equal(true);
   });
 
