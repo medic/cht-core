@@ -6,7 +6,7 @@ These forms can be used to quickly test specific XForm features. For example, if
 
 ## Loading
 
-The forms can either be loaded in via the web admin GUI or through command line using `medic-conf`. 
+The forms can be loaded via the web admin GUI or through the command line using `medic-conf`.
 
 ### Admin Web GUI
 
