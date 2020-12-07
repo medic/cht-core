@@ -171,7 +171,7 @@ export class AppComponent implements OnInit {
     // automatically.
     if (this.dbSyncService.isEnabled()) {
       // Delay it by 10 seconds so it doesn't slow down initial load.
-      setTimeout(() => this.dbSyncService.sync(), 10000);
+      setTimeout(() => this.dbSyncService.sync(), 10 * 1000);
     } else {
       console.debug('You have administrative privileges; not replicating');
       this.globalActions.updateReplicationStatus({ disabled: true });
@@ -198,13 +198,16 @@ export class AppComponent implements OnInit {
         this.globalActions.updateReplicationStatus({ disabled: true });
         return;
       }
+
       if (state === 'unknown') {
         this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
+
       const now = Date.now();
       const lastTrigger = this.replicationStatus.lastTrigger;
       const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
+
       if (state === 'inProgress') {
         this.globalActions.updateReplicationStatus({
           current: SYNC_STATUS.inProgress,
@@ -213,6 +216,7 @@ export class AppComponent implements OnInit {
         console.info(`Replication started after ${delay} seconds since previous attempt`);
         return;
       }
+
       const statusUpdates:any = {};
       if (to === 'success') {
         statusUpdates.lastSuccessTo = now;
@@ -255,6 +259,7 @@ export class AppComponent implements OnInit {
     this.watchChangesInboxDDoc();
     this.watchChangesInboxUserContext();
     this.watchChangesInboxTranslations();
+    this.watchDBSyncStatus();
     this.setAppTitle();
     this.setupAndroidVersion();
     this.persistStorage();
@@ -340,6 +345,21 @@ export class AppComponent implements OnInit {
       key: 'inbox-translations',
       filter: change => this.translationLoaderService.test(change.id),
       callback: change => this.translateService.reloadLang(this.translationLoaderService.getCode(change.id)),
+    });
+  }
+
+  private watchDBSyncStatus() {
+    window.addEventListener('online', () => this.dbSyncService.setOnlineStatus(true), false);
+    window.addEventListener('offline', () => this.dbSyncService.setOnlineStatus(false), false);
+
+    this.changesService.subscribe({
+      key: 'sync-status',
+      callback: () => {
+        if (!this.dbSyncService.isSyncInProgress()) {
+          this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.required });
+          this.dbSyncService.sync();
+        }
+      },
     });
   }
 
@@ -620,18 +640,6 @@ export class AppComponent implements OnInit {
       // Disable debug for everything but localhost
       Debug.set(false);
     }
-
-    $window.addEventListener('online', () => DBSyncService.setOnlineStatus(true), false);
-    $window.addEventListener('offline', () => DBSyncService.setOnlineStatus(false), false);
-    ChangesService({
-      key: 'sync-status',
-      callback: function() {
-        if (!DBSyncService.isSyncInProgress()) {
-          ctrl.updateReplicationStatus({ current: SYNC_STATUS.required });
-          DBSyncService.sync();
-        }
-      },
-    });
 
     ctrl.dbWarmedUp = true;
 

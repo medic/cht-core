@@ -35,10 +35,11 @@ import { GlobalActions } from '@mm-actions/global';
 import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 
-describe.only('AppComponent', () => {
+describe('AppComponent', () => {
   let getComponent;
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
+  let clock;
 
   // Services
   let dbSyncService;
@@ -62,6 +63,7 @@ describe.only('AppComponent', () => {
   let startupModalsService;
   let unreadRecordsService;
   let setLanguageService;
+  let translateService;
   // End Services
 
   let globalActions;
@@ -86,6 +88,7 @@ describe.only('AppComponent', () => {
     startupModalsService = { showStartupModals: sinon.stub() };
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
+    translateService = { instant: sinon.stub().returnsArg(0) };
     recurringProcessManagerService = {
       startUpdateRelativeDate: sinon.stub(),
       startUpdateReadDocsCount: sinon.stub(),
@@ -96,7 +99,7 @@ describe.only('AppComponent', () => {
     };
     sessionService = {
       init: sinon.stub().resolves(),
-      isAdmin: sinon.stub(),
+      isAdmin: sinon.stub().returns(true),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
     };
@@ -111,7 +114,9 @@ describe.only('AppComponent', () => {
     globalActions = {
       updateReplicationStatus: sinon.stub(GlobalActions.prototype, 'updateReplicationStatus'),
       setPrivacyPolicyAccepted: sinon.stub(GlobalActions.prototype, 'setPrivacyPolicyAccepted'),
-      setShowPrivacyPolicy: sinon.stub(GlobalActions.prototype, 'setShowPrivacyPolicy')
+      setShowPrivacyPolicy: sinon.stub(GlobalActions.prototype, 'setShowPrivacyPolicy'),
+      setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
+      setIsAdmin: sinon.stub(GlobalActions.prototype, 'setIsAdmin')
     };
     originalPouchDB = window.PouchDB;
     window.PouchDB = {
@@ -131,7 +136,7 @@ describe.only('AppComponent', () => {
       providers: [
         provideMockStore(),
         { provide: DBSyncService, useValue: dbSyncService },
-        { provide: TranslateService, useValue: {} },
+        { provide: TranslateService, useValue: translateService },
         { provide: TranslationLoaderService, useValue: {} },
         { provide: LanguageService, useValue: languageService },
         { provide: SetLanguageService, useValue: setLanguageService },
@@ -173,27 +178,97 @@ describe.only('AppComponent', () => {
 
   afterEach(() => {
     sinon.restore();
+    clock && clock.restore();
     window.PouchDB = originalPouchDB;
+    window.localStorage.removeItem('medic-last-replicated-date');
   });
 
-  it('should create component and start services', async () => {
+  it('should create component and init services', async () => {
     await getComponent();
     await component.setupPromise;
 
     expect(component).to.exist;
-    expect(privacyPoliciesService.hasAccepted.callCount).to.equal(1);
-    expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
-    expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
-    expect(rulesEngineService.isEnabled.callCount).to.equal(1);
-    expect(checkDateService.check.callCount).to.equal(1);
-    expect(unreadRecordsService.init.callCount).to.equal(1);
-    expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');
+    // load translations
     expect(languageService.get.callCount).to.equal(1);
     expect(setLanguageService.set.callCount).to.equal(1);
+    // start wealth quintiles
+    expect(wealthQuintilesWatcherService.start.callCount).to.equal(1);
+    // init count message service
+    expect(countMessageService.init.callCount).to.equal(1);
+    // init feedback service
+    expect(feedbackService.init.callCount).to.equal(1);
+    // check privacy policy
+    expect(privacyPoliciesService.hasAccepted.callCount).to.equal(1);
+    // init rules engine
+    expect(rulesEngineService.isEnabled.callCount).to.equal(1);
+    // init unread count
+    expect(unreadRecordsService.init.callCount).to.equal(1);
+    expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');
+    // check date service
+    expect(checkDateService.check.callCount).to.equal(1);
+    // start recurring processes
+    expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
+    expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
+
+    expect(globalActions.setIsAdmin.callCount).to.equal(1);
+    expect(globalActions.setIsAdmin.args[0][0]).to.equal(true);
   });
 
-  it('should set translation and subscribe to xmlFormService', async () => {
-// ToDo: in progress
+  it('should subscribe to xmlFormService when initing forms', async () => {
+    const form1 = {
+      code: '123',
+      name: 'something',
+      translation_key: 'form1',
+      title: 'title',
+      icon: 'icon',
+      subject_key: '4566'
+    };
+    const form2 = {
+      internalId: '456',
+      name: 'something',
+      translation_key: 'form2',
+      title: 'title',
+      icon: 'icon',
+      subject_key: '7899'
+    };
+    jsonFormsService.get.resolves([form1]);
+
+    await getComponent();
+    await component.setupPromise;
+    await component.translationsLoaded;
+
+    expect(jsonFormsService.get.callCount).to.equal(1);
+    expect(xmlFormsService.subscribe.callCount).to.equal(2);
+
+    expect(xmlFormsService.subscribe.getCall(0).args[0]).to.equal('FormsFilter');
+    expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal( { contactForms: false, ignoreContext: true });
+    expect(xmlFormsService.subscribe.getCall(0).args[2]).to.be.a('Function');
+    xmlFormsService.subscribe.getCall(0).args[2](false, [form2]);
+    expect(globalActions.setForms.callCount).to.equal(1);
+    expect(globalActions.setForms.args[0][0]).to.have.deep.members([
+      {
+        code: '123',
+        icon: 'icon',
+        subjectKey: '4566',
+        title: 'form1'
+      },
+      {
+        code: '456',
+        icon: 'icon',
+        subjectKey: '7899',
+        title: 'form2'
+      }
+    ]);
+
+    expect(xmlFormsService.subscribe.getCall(1).args[0]).to.equal('AddReportMenu');
+    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal( { contactForms: false });
+    expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
+    xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
+    expect(component.nonContactForms).to.have.deep.members([{
+      code: '456',
+      icon: 'icon',
+      title: 'form2'
+    }]);
   });
 
   it('should set privacy policy and start modals if privacy accepted', async () => {
@@ -228,43 +303,146 @@ describe.only('AppComponent', () => {
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(1);
   });
 
-  it('should watch changes in translations, ddoc and user context', async () => {
-    await getComponent();
+  it('should set app title', async () => {
+    resourceIconsService.getAppTitle.resolves('My App');
 
-    expect(changesListener['inbox-translations']).to.be.an('object');
-    expect(changesListener['inbox-ddoc']).to.be.an('object');
-    expect(changesListener['inbox-user-context']).to.be.an('object');
+    await getComponent();
+    await Promise.resolve();
+
+    expect(resourceIconsService.getAppTitle.callCount).to.equal(1);
+    expect(document.title).to.equal('My App');
   });
 
-  it('inbox-user-context change listener should filter only logged in user, if exists', async () => {
-    sessionService.userCtx.returns({ name: 'adm', roles: ['alpha', 'omega'] });
+  describe('Setup DB', () => {
+    it('should disable dbsync in replication status', async () => {
+      dbSyncService.isEnabled.returns(false);
+      window.localStorage.setItem('medic-last-replicated-date', '12345');
 
-    await getComponent();
+      await getComponent();
 
-    expect(changesListener['inbox-user-context'].filter({ id: 'something' })).to.equal(false);
-    expect(changesListener['inbox-user-context'].filter({ id: 'someperson' })).to.equal(false);
-    expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
-    expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:adm' })).to.equal(true);
+      expect(globalActions.updateReplicationStatus.callCount).to.equal(2);
+      expect(globalActions.updateReplicationStatus.getCall(0).args).to.deep.equal([{
+        disabled: false,
+        lastTrigger: undefined,
+        lastSuccessTo: 12345
+      }]);
+      expect(globalActions.updateReplicationStatus.getCall(1).args).to.deep.equal([{disabled: true}]);
+      expect(dbSyncService.subscribe.callCount).to.equal(1);
+    });
 
-    sessionService.userCtx.returns(false);
+    it('should sync db if enabled', async () => {
+      clock = sinon.useFakeTimers();
+      dbSyncService.isEnabled.returns(true);
 
-    await getComponent();
+      await getComponent();
 
-    expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a' }}))
-      .to.equal(false);
+      expect(globalActions.updateReplicationStatus.callCount).to.equal(1);
+      expect(globalActions.updateReplicationStatus.args[0]).to.deep.equal([{
+        disabled: false,
+        lastTrigger: undefined,
+        lastSuccessTo: NaN
+      }]);
+
+      clock.tick(10 * 1000);
+      await Promise.resolve();
+
+      expect(dbSyncService.sync.callCount).to.equal(1);
+      expect(dbSyncService.subscribe.callCount).to.equal(1);
+    });
+
+    it('should set dbSync replication status in subcription callback', async () => {
+      clock = sinon.useFakeTimers();
+      await getComponent();
+      component.replicationStatus = {};
+      const callback = dbSyncService.subscribe.args[0][0];
+
+      callback({ state: 'disabled' });
+      expect(globalActions.updateReplicationStatus.callCount).to.equal(3);
+      expect(globalActions.updateReplicationStatus.getCall(2).args).to.deep.equal([{ disabled: true }]);
+
+      callback({ state: 'unknown' });
+      expect(globalActions.updateReplicationStatus.callCount).to.equal(4);
+      expect(globalActions.updateReplicationStatus.getCall(3).args).to.deep.equal([{
+        current: {
+          icon: 'fa-info-circle',
+          key: 'sync.status.unknown'
+        }
+      }]);
+
+      callback({ state: 'inProgress' });
+      expect(globalActions.updateReplicationStatus.callCount).to.equal(5);
+      expect(globalActions.updateReplicationStatus.getCall(4).args).to.deep.equal([{
+        lastTrigger: 0,
+        current: {
+          icon: 'fa-refresh',
+          key: 'sync.status.in_progress',
+          disableSyncButton: true
+        }
+      }]);
+
+      callback({ state: '', to: 'success', from: 'success' });
+      expect(globalActions.updateReplicationStatus.callCount).to.equal(6);
+      expect(globalActions.updateReplicationStatus.getCall(5).args).to.deep.equal([{
+        current: {
+          icon: 'fa-check',
+          key: 'sync.status.not_required',
+          className: 'success'
+        },
+        lastSuccessFrom: 0,
+        lastSuccessTo: 0
+      }]);
+
+      callback({ state: '', to: 'success', from: 'fail' });
+      expect(globalActions.updateReplicationStatus.callCount).to.equal(7);
+      expect(globalActions.updateReplicationStatus.getCall(6).args).to.deep.equal([{
+        current: {
+          icon: 'fa-exclamation-triangle',
+          key: 'sync.status.required',
+          className: 'required'
+        },
+        lastSuccessTo: 0
+      }]);
+    });
   });
 
-  it('inbox-user-context change listener callback should check current session', async () => {
-    await getComponent();
+  describe('Watch changes', () => {
+    it('should watch changes in branding, dbSync, translations, ddoc and user context', async () => {
+      await getComponent();
 
-    expect(sessionService.init.callCount).to.equal(1);
-    changesListener['inbox-user-context'].callback();
-    expect(sessionService.init.callCount).to.equal(2);
-  });
+      expect(changesListener['branding-icon']).to.be.an('object');
+      expect(changesListener['sync-status']).to.be.an('object');
+      expect(changesListener['inbox-translations']).to.be.an('object');
+      expect(changesListener['inbox-ddoc']).to.be.an('object');
+      expect(changesListener['inbox-user-context']).to.be.an('object');
+    });
 
-/* ToDo enable once change listener of sync-status is migrated
-  describe('sync status changes', () => {
-    it('does nothing if sync in progress', async () => {
+    it('inbox-user-context change listener should filter only logged in user, if exists', async () => {
+      sessionService.userCtx.returns({ name: 'adm', roles: ['alpha', 'omega'] });
+
+      await getComponent();
+
+      expect(changesListener['inbox-user-context'].filter({ id: 'something' })).to.equal(false);
+      expect(changesListener['inbox-user-context'].filter({ id: 'someperson' })).to.equal(false);
+      expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
+      expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:adm' })).to.equal(true);
+
+      sessionService.userCtx.returns(false);
+
+      await getComponent();
+
+      expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a' }}))
+        .to.equal(false);
+    });
+
+    it('inbox-user-context change listener callback should check current session', async () => {
+      await getComponent();
+
+      expect(sessionService.init.callCount).to.equal(1);
+      changesListener['inbox-user-context'].callback();
+      expect(sessionService.init.callCount).to.equal(2);
+    });
+
+    it('sync-status change listener callback should do nothing if sync in progress', async () => {
       dbSyncService.isSyncInProgress.returns(true);
 
       await getComponent();
@@ -274,7 +452,7 @@ describe.only('AppComponent', () => {
       expect(dbSyncService.sync.callCount).to.equal(0);
     });
 
-    it('calls sync if not currently syncing', async () => {
+    it('sync-status change listener callback should call sync if not currently syncing', async () => {
       dbSyncService.isSyncInProgress.returns(false);
 
       await getComponent();
@@ -284,5 +462,4 @@ describe.only('AppComponent', () => {
       expect(dbSyncService.sync.callCount).to.equal(1);
     });
   });
-*/
 });
