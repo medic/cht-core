@@ -100,7 +100,7 @@ describe('Filters reports', () => {
 
   it('by date', () => {
     commonElements.goToReports();
-    helper.waitElementToPresent(element(by.css('#reports-list .unfiltered li:first-child')));
+    helper.waitElementToPresent(element(by.css('#reports-list li:first-child')));
 
     let clear = '';
     for (let i = 0; i < 20; i++) {
@@ -114,11 +114,11 @@ describe('Filters reports', () => {
     element(by.css('#freetext')).click(); // blur the datepicker
 
     helper.waitElementToPresent(element(by.css('#reports-list .loader')));
-    helper.waitElementToPresent(element(by.css('#reports-list .filtered li:first-child')));
+    helper.waitElementToPresent(element(by.css('#reports-list li:first-child')));
 
-    expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
-    expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
-    expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[3] + '"]')).count()).toBe(1);
+    expect(element.all(by.css('#reports-list li')).count()).toBe(2);
+    expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
+    expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[3] + '"]')).count()).toBe(1);
 
   });
 });
