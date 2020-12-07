@@ -2,6 +2,7 @@ const utils = require('../utils');
 const helper = require('../helper');
 const moment = require('moment');
 const commonElements = require('../page-objects/common/common.po.js');
+const reportsTab = require('../page-objects/reports/reports.po.js')
 
 describe('Filters reports', () => {
   const reports = [
@@ -100,25 +101,16 @@ describe('Filters reports', () => {
 
   it('by date', () => {
     commonElements.goToReports();
-    helper.waitElementToPresent(element(by.css('#reports-list li:first-child')));
+    helper.waitElementToPresent(reportsTab.firstReport);
 
-    let clear = '';
-    for (let i = 0; i < 20; i++) {
-      clear += protractor.Key.BACK_SPACE;
-    }
+    reportsTab.filterByDate('05/16/2016', '05/17/2016')
+    
+    helper.waitElementToPresent(reportsTab.listLoader);
+    helper.waitElementToPresent(reportsTab.firstReport);
 
-    element(by.css('#date-filter')).click();
-    element(by.css('.daterangepicker [name="daterangepicker_start"]')).click().sendKeys(clear + '05/16/2016');
-    element(by.css('.daterangepicker [name="daterangepicker_end"]'))
-      .click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
-    element(by.css('#freetext')).click(); // blur the datepicker
-
-    helper.waitElementToPresent(element(by.css('#reports-list .loader')));
-    helper.waitElementToPresent(element(by.css('#reports-list li:first-child')));
-
-    expect(element.all(by.css('#reports-list li')).count()).toBe(2);
-    expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
-    expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[3] + '"]')).count()).toBe(1);
+    expect(reportsTab.allReports.count()).toBe(2);
+    expect(reportsTab.reportByUUID(savedUuids[1]).count()).toBe(1);
+    expect(reportsTab.reportByUUID(savedUuids[3]).count()).toBe(1);
 
   });
 });
