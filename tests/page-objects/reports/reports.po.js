@@ -11,12 +11,19 @@ const list = element(by.css(reportListID));
 const listLoader =  element(by.css(`${reportListID} .loader`));
 const firstReport = element(by.css(`${reportListID} li:first-child`));
 const allReports = element.all(by.css(`${reportListID} li`));
+const reportSummary = element(by.css('#reports-content .item-summary'));
 
 module.exports = {
   allReports: allReports,
   firstReport: firstReport,
   listLoader: listLoader,
   list: list,
+  loadReport: async uuid => {
+    let report = module.exports.reportByUUID(uuid).first();
+    await helper.waitElementToBeClickable(report);
+    await helper.clickElement(report);
+    await helper.waitElementToPresent(reportSummary, 3000);
+  },
   reportByUUID: uuid => {
     return list.all(by.css('li[data-record-id="' + uuid + '"]'));
   },
