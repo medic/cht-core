@@ -27,23 +27,6 @@ export class ContactsEffects {
     this.globalActions = new GlobalActions(store);
   }
 
-  // private loadSelectedContactChildren(selected, options) {
-  //   return this.contactViewModelGeneratorService.loadChildren(selected, options).then(children => {
-  //     return this.contactsActions.receiveSelectedContactChildren(children);
-  //   });
-  // }
-
-  // private loadSelectedContactReports(selected, forms) {
-  //   return this.contactViewModelGeneratorService.loadReports(selected, forms).then(reports => {
-  //     return this.contactsActions.receiveSelectedContactReports(reports);
-  //   });
-  // }
-
-  // TODO:
-  // private loadSelectedContactTargetDoc(selected) {
-  //   return '';
-  // }
-
   selectContact = createEffect(() => {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
@@ -76,9 +59,6 @@ export class ContactsEffects {
         this.contactsActions.setContactsLoadingSummary(true);
         this.globalActions.clearCancelCallback();
         const options = { getChildPlaces: true };
-        // const lazyLoadedContactData = this.loadSelectedContactChildren(selectedContact, { getChildPlaces: false })
-        //   .then(() => this.loadSelectedContactReports(selectedContact, forms));
-        // .then(() => loadSelectedContactTargetDoc(selected));
         return from(this.contactViewModelGeneratorService.loadChildren(selectedContact, options)).pipe(
           map(children => {
             return this.contactsActions.receiveSelectedContactChildren(children);
@@ -99,7 +79,7 @@ export class ContactsEffects {
         this.store.pipe(select(Selectors.getSelectedContact)),
         this.store.pipe(select(Selectors.getForms)),
       ),
-      exhaustMap(([payload, selectedContact, forms]) => {
+      exhaustMap(([, selectedContact, forms]) => {
         return from(this.contactViewModelGeneratorService.loadReports(selectedContact, forms)).pipe(
           map(reports => {
             return this.contactsActions.receiveSelectedContactReports(reports);
@@ -119,7 +99,7 @@ export class ContactsEffects {
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectedContact))
       ),
-      exhaustMap(([payload, selectedContact]) => {
+      exhaustMap(([, selectedContact]) => {
         const selected: any = Object.assign({}, selectedContact);
         this.contactsActions.setContactsLoadingSummary(true);
         this.tasksForContactService.get(selected).then((tasks) => {
