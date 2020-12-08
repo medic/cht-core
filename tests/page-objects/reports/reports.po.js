@@ -6,7 +6,7 @@ const reportBodyDetails = '#reports-content .report-body .details';
 const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_start"]'));
 const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
 const dateFilter = element(by.css('#date-filter'));
-const reportListID = '#reports-list'
+const reportListID = '#reports-list';
 const list = element(by.css(reportListID));
 const listLoader =  element(by.css(`${reportListID} .loader`));
 const firstReport = element(by.css(`${reportListID} li:first-child`));

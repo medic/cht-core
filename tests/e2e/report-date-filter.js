@@ -2,7 +2,7 @@ const utils = require('../utils');
 const helper = require('../helper');
 const moment = require('moment');
 const commonElements = require('../page-objects/common/common.po.js');
-const reportsTab = require('../page-objects/reports/reports.po.js')
+const reportsTab = require('../page-objects/reports/reports.po.js');
 
 describe('Filters reports', () => {
   const reports = [
@@ -103,7 +103,7 @@ describe('Filters reports', () => {
     commonElements.goToReports();
     helper.waitElementToPresent(reportsTab.firstReport);
 
-    reportsTab.filterByDate('05/16/2016', '05/17/2016')
+    reportsTab.filterByDate('05/16/2016', '05/17/2016');
     
     helper.waitElementToPresent(reportsTab.listLoader);
     helper.waitElementToPresent(reportsTab.firstReport);
