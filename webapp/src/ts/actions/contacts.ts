@@ -13,7 +13,8 @@ export const Actions = {
   receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
   receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports'),
   updateSelectedContact: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'summary'),
-  updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks')
+  updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
+  receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
 };
 
 export class ContactsActions {
@@ -67,6 +68,10 @@ export class ContactsActions {
 
   updateSelectedContactsTasks(tasks) {
     return this.store.dispatch(Actions.updateSelectedContactsTasks(tasks));
+  }
+
+  receiveSelectedContactTargetDoc(targetDoc) {
+    return this.store.dispatch(Actions.receiveSelectedContactTargetDoc(targetDoc));
   }
 
   // const translateTitle = (key, label) => {

@@ -3,6 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store, select } from '@ngrx/store';
 import { from, of } from 'rxjs';
 import { map, exhaustMap, filter, catchError, withLatestFrom } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -10,6 +11,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
+import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -22,6 +24,8 @@ export class ContactsEffects {
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private contactSummaryService: ContactSummaryService,
     private tasksForContactService: TasksForContactService,
+    private targetAggregateService: TargetAggregatesService,
+    private translateService: TranslateService,
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -59,6 +63,8 @@ export class ContactsEffects {
         this.contactsActions.setContactsLoadingSummary(true);
         this.globalActions.clearCancelCallback();
         const options = { getChildPlaces: true };
+        const title = (selected.type && selected.type.name_key) || 'contact.profile';
+        this.globalActions.setTitle(this.translateService.instant(title));
         return from(this.contactViewModelGeneratorService.loadChildren(selectedContact, options)).pipe(
           map(children => {
             return this.contactsActions.receiveSelectedContactChildren(children);
@@ -114,4 +120,22 @@ export class ContactsEffects {
       })
     );
   },{ dispatch: false });
+
+  receiveSelectedContactTargetDoc = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ContactActionList.updateSelectedContact),
+      withLatestFrom(
+        this.store.pipe(select(Selectors.getSelectedContact))
+      ),
+      exhaustMap(([, selectedContact]) => {
+        return from(this.targetAggregateService.getCurrentTargetDoc(selectedContact)).pipe(
+          map(targetDoc => {
+            return this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
+          })
+        );
+      })
+    );
+  },{ dispatch: false });
+
+  // TODO: effects to set right action bar
 }

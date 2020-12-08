@@ -138,6 +138,13 @@ const updateSelectedContactsTasks = (state, tasks) => {
   });
 };
 
+const receiveSelectedContactTargetDoc = (state, targetDoc) => {
+  return {
+    ...state,
+    selected: Object.assign({}, state.selected, { targetDoc }),
+  };
+};
+
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
@@ -154,7 +161,10 @@ const _contactsReducer = createReducer(
     return receiveSelectedContactReports(state, reports);
   }),
   on(Actions.updateSelectedContact, (state, { payload: { summary }}) => updateSelectedContact(state, summary)),
-  on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks))
+  on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks)),
+  on(Actions.receiveSelectedContactTargetDoc, (state, { payload: { targetDoc }}) => {
+    return receiveSelectedContactTargetDoc(state, targetDoc);
+  }),
 );
 
 export function contactsReducer(state, action) {
