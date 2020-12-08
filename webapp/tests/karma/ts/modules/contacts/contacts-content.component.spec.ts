@@ -85,7 +85,6 @@ describe('Contacts content component', () => {
   });
 
   describe('Change feed process', () => {
-    let doc;
     let change;
 
     beforeEach(() => {
@@ -97,26 +96,6 @@ describe('Contacts content component', () => {
       };
       change = { doc: {} };
     });
-
-    // const runChangeFeedProcessTest = () => {
-    //   stateParams = { id: doc._id };
-    //   getSelectedContact.returns({ doc });
-    //   ctrl = createController();
-    //   return ctrl.setupPromise;
-    // };
-
-    // const stubContactChangeFilter = (config) => {
-    //   _.each(config, (returnValues, method) => {
-    //     contactChangeFilter[method] = sinon.stub();
-    //     if (returnValues instanceof Array) {
-    //       _.each(returnValues, (value, call) => {
-    //         contactChangeFilter[method].onCall(call).returns(value);
-    //       });
-    //     } else {
-    //       contactChangeFilter[method].returns(returnValues);
-    //     }
-    //   });
-    // };
 
     it('updates information when selected contact is updated', () => {
       const changesFilter = changesService.subscribe.args[0][0].filter;
