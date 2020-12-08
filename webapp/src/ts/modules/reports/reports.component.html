@@ -10,8 +10,8 @@
 
     <div id="reports-list" class="col-sm-4 inbox-items left-pane">
       <div class="selection-count" *ngIf="selectMode">
-        <span *ngIf="selectedReports?.length === 1" translate>select.mode.count.singular</span>
-        <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 }">select.mode.count.plural</span>
+        <span *ngIf="selectedReports?.length === 1">{{'select.mode.count.singular' | translate}}</span>
+        <span *ngIf="selectedReports?.length !== 1" translate="select.mode.count.plural" [translateParams]="{ number: selectedReports?.length || 0 }"></span>
       </div>
       <ul [hidden]="loading && !appending">
         <mm-content-row
@@ -34,12 +34,12 @@
       </ul>
       <p *ngIf="error" class="alert alert-danger" role="alert">
         <span *ngIf="errorSyntax">
-          <span translate>invalid.query</span>
+          <span>{{'invalid.query' | translate}}</span>
         </span>
-        <span *ngIf="!errorSyntax" translate>Error fetching reports</span>
+        <span *ngIf="!errorSyntax">{{'Error fetching reports' | translate }}</span>
       </p>
-      <p class="loading-status" *ngIf="!error && !loading && !hasReports" translate>reports.none</p>
-      <p class="loading-status" *ngIf="!loading && hasReports && !moreItems" translate>No more reports</p>
+      <p class="loading-status" *ngIf="!error && !loading && !hasReports">{{'reports.none' | translate}}</p>
+      <p class="loading-status" *ngIf="!loading && hasReports && !moreItems">{{'No more reports' | translate}}</p>
       <div class="loader" *ngIf="loading"></div>
 
       <div class="padding"></div>

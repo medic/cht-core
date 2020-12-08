@@ -67,6 +67,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    console.log('initing');
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getReportsList),
       this.store.select(Selectors.getSelectedReports),
@@ -195,7 +196,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         updatedReports = this.prepareReports(updatedReports);
 
         this.reportsActions.updateReportsList(updatedReports);
-        // set action bar data todo
+        console.log('update reports!');
 
         this.moreItems = updatedReports.length >= options.limit;
         this.hasReports = !!updatedReports.length;
@@ -203,9 +204,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
         this.appending = false;
         this.error = false;
         this.errorSyntax = false;
-
-        // set first report selected if conditions todo
-        // scrolling todo
 
         this.initScroll();
         this.setActionBarData();

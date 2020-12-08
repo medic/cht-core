@@ -6,8 +6,7 @@ import {
   Output,
   ViewChild,
   Input,
-  OnInit,
-  AfterViewInit
+  OnInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { sortBy as _sortBy } from 'lodash-es';
@@ -24,7 +23,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-form-type-filter',
   templateUrl: './form-type-filter.component.html'
 })
-export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter, AfterViewInit {
+export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   private globalActions;
 
   subscription: Subscription = new Subscription();
@@ -51,12 +50,6 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
       this.forms = _sortBy(forms, 'name');
     });
     this.subscription.add(subscription);
-  }
-
-  ngAfterViewInit() {
-    // this is needed because the change detection doesn't run normally at this point, and we're using the
-    // child component's methods in the view.
-    this.cd.detectChanges();
   }
 
   applyFilter(forms) {

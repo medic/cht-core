@@ -18,7 +18,7 @@
 </multi-dropdown-filter>
 
 <ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent" let-selectedParent="selectedParent">
-  <li role="presentation" [class.selected]="dropdownFilter?.isSelected(facility)" [class.disabled]="selectedParent">
+  <li role="presentation" [class.selected]="dropdownFilter?.selected.has(facility)" [class.disabled]="selectedParent">
     <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}" (click)="!selectedParent && toggle(facility)">
       {{itemLabel(facility) | async }}
     </a>
@@ -26,7 +26,7 @@
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
         [ngTemplateOutlet]="facilityTemplate"
-        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: dropdownFilter?.isSelected(facility), facilityDepth: facilityDepth + 1 }">
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: dropdownFilter?.selected.has(facility), facilityDepth: facilityDepth + 1 }">
       </ng-container>
     </ul>
   </li>

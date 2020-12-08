@@ -6,8 +6,7 @@ import {
   Output,
   ViewChild,
   Input,
-  OnInit,
-  AfterViewInit
+  OnInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription, from } from 'rxjs';
@@ -26,7 +25,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter, AfterViewInit {
+export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   subscription:Subscription = new Subscription();
   private globalActions;
   isAdmin;
@@ -98,12 +97,6 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
     hierarchy.forEach(facility => sortChildren(facility));
 
     return _sortBy(hierarchy, iteratee => iteratee.doc?.name);
-  }
-
-  ngAfterViewInit() {
-    // this is needed because the change detection doesn't run normally at this point, and we're using the
-    // child component's methods in the view.
-    this.cd.detectChanges();
   }
 
   applyFilter(facilities) {
