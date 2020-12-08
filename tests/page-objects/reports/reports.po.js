@@ -9,15 +9,11 @@ const dateFilter = element(by.css('#date-filter'));
 
 // Left hand side list elements
 const reportListID = '#reports-list';
-
-//Right hand side elements
-const reportSummary = element(by.css('#reports-content .item-summary')); 
-const submitterPhone = reportSummary.element(by.css('.sender .phone'));
-const submitterName =  reportSummary.element(by.css('.sender .name'));
-const subjectName = reportSummary.element(by.css('.subject .name'));
-const summaryFormName = reportSummary.element(by.css('.subject + div'));
-const formNameNoSubject = reportSummary.element(by.css('mm-sender + div'));
-
+const list = element(by.css(reportListID));
+const listLoader =  element(by.css(`${reportListID} .loader`));
+const firstReport = element(by.css(`${reportListID} li:first-child`));
+const allReports = element.all(by.css(`${reportListID} li`));
+const reportSummary = element(by.css('#reports-content .item-summary'));
 
 module.exports = {
   allReports: () => element.all(by.css(`${reportListID} li`)),
@@ -34,18 +30,11 @@ module.exports = {
   firstReport: firstReport,
   listLoader: listLoader,
   list: list,
-  subject: async reportElement =>  {
-    return reportElement.element(by.css('.content .heading h4 span'));
-  },
-  formName: async reportElement =>  {
-    return reportElement.element(by.css('.summary'));
-  },
   loadReport: async uuid => {
-    const report = module.exports.reportByUUID(uuid).first();
+    let report = module.exports.reportByUUID(uuid).first();
     await helper.waitElementToBeClickable(report);
     await helper.clickElement(report);
     await helper.waitElementToPresent(reportSummary, 3000);
-    return report;
   },
   reportByUUID: uuid => {
     return list.all(by.css('li[data-record-id="' + uuid + '"]'));
