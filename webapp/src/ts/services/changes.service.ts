@@ -1,28 +1,15 @@
 /**
- * Module to listen for database changes.
- *
- * This function combines all the app changes listeners into one
- * db listener so only one connection is required.
- *
- * @param (Object) options
- *   - id (String): Some unique id to stop duplicate registrations
- *   - callback (function): The function to invoke when a change is detected.
- *        The function is given the pouchdb change object as a parameter
- *        including the changed doc.
- *   - filter (function) (optional): A function to invoke to determine if the
- *        callback should be called on the given change object.
- *   - metaDb (boolean) (optional): Watch the meta db instead of the medic db
- * @returns (Object)
- *   - unsubscribe (function): Invoke this function to stop being notified of
- *        any further changes.
+ * Service to listen for database changes.
  */
 import { Injectable, NgZone } from '@angular/core';
-import { DbService } from './db.service';
-import { SessionService } from './session.service';
 import { Store } from '@ngrx/store';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+
+import { DbService } from '@mm-services/db.service';
+import { SessionService } from '@mm-services/session.service';
 import { Selectors } from '@mm-selectors/index';
 import { ServicesActions } from '@mm-actions/services';
-import { Subject } from 'rxjs';
 
 const RETRY_MILLIS = 5000;
 
@@ -128,13 +115,29 @@ export class ChangesService {
       });
   }
 
+  /**
+   * This function combines all the app changes listeners into one db listener so only one connection is required.
+   * @param options (Object)
+   *   - key (String)(Required): Some unique id to stop duplicate registrations
+   *   - debounce (Number)(Optional): Milliseconds to wait between emissions of value before executing filter & callback
+   *   - callback (function)(Required): The function to invoke when a change is detected.
+   *        The function is given the pouchdb change object as a parameter
+   *        including the changed doc.
+   *   - filter (function)(optional): A function to invoke to determine if the
+   *        callback should be called on the given change object.
+   *   - metaDb (boolean)(optional): Watch the meta db instead of the medic db
+   * @returns (Object)
+   *   - unsubscribe (function): Invoke this function to stop being notified of
+   *        any further changes.
+   */
   subscribe(options) {
     const db = options.metaDb ? this.dbs.meta : this.dbs.medic;
     if (db.subscriptions[options.key]) {
       db.subscriptions[options.key].unsubscribe();
     }
 
-    const subscription = db.observable.subscribe(change => {
+    const observable = options.debounce ? db.observable.pipe(debounceTime(options.debounce)) : db.observable;
+    const subscription = observable.subscribe(change => {
       try {
         if (!options.filter || options.filter(change)) {
           options.callback(change);
