@@ -355,7 +355,6 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private watchTranslationsChanges() {
     this.changesService.subscribe({
       key: 'translations',
       filter: change => TranslationDocsMatcherProvider.test(change.id),
