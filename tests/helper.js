@@ -244,7 +244,7 @@ module.exports = {
 
   waitForAngularComplete: () => {
     return browser.wait(() => {
-      console.warn('browser.AngularComplete() should be doing this. Start replacing and see if this is required')
+      console.warn('browser.AngularComplete() should be doing this. Start replacing and see if this is required');
       browser.sleep(200);
       return browser.executeScript(
         'return typeof angular === "undefined" ? 0 : ' +
