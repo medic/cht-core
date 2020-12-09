@@ -192,9 +192,12 @@ describe('AndroidApi service', () => {
     });
 
     it('should catch parse errors', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const response = '{ this:  }is not valid json';
       service.mrdtResponse(response);
       expect(mrdtService.respond.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0].message.startsWith('Unable to parse JSON response')).to.equal(true);
     });
   });
 
@@ -207,9 +210,12 @@ describe('AndroidApi service', () => {
     });
 
     it('should catch parse errors', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const response = '{ this:  }is not valid json';
       service.mrdtTimeTakenResponse(response);
       expect(mrdtService.respondTimeTaken.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0].message.startsWith('Unable to parse JSON response')).to.equal(true);
     });
   });
 
