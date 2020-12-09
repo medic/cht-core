@@ -25,7 +25,7 @@ module.exports = {
   list: () => element(by.css(reportListID)),
   reportByUUID: uuid => module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]')),
   subjectName: subjectName,
-  summaryFormName, summaryFormName,
+  summaryFormName: summaryFormName,
   submitterName: submitterName,
   submitterPhone: submitterPhone,
   allReports: allReports,
@@ -33,13 +33,13 @@ module.exports = {
   listLoader: listLoader,
   list: list,
   subject: async reportElement =>  {
-    return reportElement.element(by.css('.content .heading h4 span'))
+    return reportElement.element(by.css('.content .heading h4 span'));
   },
   formName: async reportElement =>  {
-    return reportElement.element(by.css('.summary'))
+    return reportElement.element(by.css('.summary'));
   },
   loadReport: async uuid => {
-    let report = module.exports.reportByUUID(uuid).first();
+    const report = module.exports.reportByUUID(uuid).first();
     await helper.waitElementToBeClickable(report);
     await helper.clickElement(report);
     await helper.waitElementToPresent(reportSummary, 3000);
