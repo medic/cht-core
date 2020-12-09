@@ -219,15 +219,14 @@ describe('Reports Summary', () => {
 
   const testListLineage = (expected) => {
     expected.forEach((parent, key) => {
-      expect(getElementText('#reports-list li .detail .lineage li:nth-child('+ (key + 1) +')'))
+      expect(getElementText(element(by.css('#reports-list li .detail .lineage li:nth-child('+ (key + 1) +')'))))
         .toBe(parent);
     });
   };
 
   const testSummaryLineage = (expected) => {
     expected.forEach((parent, key) => {
-      const css = '#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')';
-      expect(getElementText(element(by.css(css))))
+      expect(getElementText(element(by.css('#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')'))))
         .toBe(parent);
     });
   };
@@ -302,22 +301,21 @@ describe('Reports Summary', () => {
       };
       await commonElements.goToReports();
       await saveReport(REPORT);
-      await reportsTab.loadReport(REPORT._id);
+      let report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel();
-      expect(getElementText('#reports-list li .content .heading h4 span')).toBe(MARIA.name);
-      expect(getElementText('#reports-list li .summary')).toBe('REF_REF');
+      expect(getElementText(await reportsTab.subject(report))).toBe(MARIA.name);
+      
+      expect(getElementText(await reportsTab.formName(report))).toBe('REF_REF');
           //shows subject lineage breadcrumbs
       testListLineage(['TAG Place', 'Health Center', 'District']);
 
           //RHS
-      browser.wait(() => getElementText('#reports-content .item-summary .sender .phone'),
-        10000
-        );
-      expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
-      expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
+      browser.wait(() => getElementText(reportsTab.submitterPhone),10000);
+      expect(getElementText(await reportsTab.subjectName)).toBe(MARIA.name);
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('REF_REF');
       testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-      expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`Submitted by ${CAROL.name}`);
-      expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
+      expect(getElementText(await reportsTab.submitterName)).toMatch(`Submitted by ${CAROL.name}`);
+      expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
     it('Concerning reports using doc id', async () => {
