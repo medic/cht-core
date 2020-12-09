@@ -21,7 +21,7 @@ export class FormatProvider {
     if (part) {
       part = _.escape(part);
       if (entity._id) {
-        const url = `/contacts/${entity._id}`;
+        const url = `/#/contacts/${entity._id}`;
         part = '<a href="' + url + '">' + part + '</a>';
       }
       return part;
