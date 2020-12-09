@@ -240,7 +240,6 @@ export class AppComponent implements OnInit {
     this.setupRouter();
     this.loadTranslations();
     this.setupDb();
-    this.startWealthQuintiles();
     this.countMessageService.init();
     this.feedbackService.init();
 
@@ -257,12 +256,13 @@ export class AppComponent implements OnInit {
     this.globalActions.setIsAdmin(this.sessionService.isAdmin());
     this.watchChangesBranding();
     this.watchChangesInboxDDoc();
-    this.watchChangesInboxUserContext();
-    this.watchChangesInboxTranslations();
+    this.watchUserContextChanges();
+    this.watchTranslationsChanges();
     this.watchDBSyncStatus();
     this.setAppTitle();
     this.setupAndroidVersion();
-    this.persistStorage();
+    this.requestPersistentStorage();
+    this.startWealthQuintiles();
   }
 
   private setupAndroidVersion() {
@@ -279,7 +279,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private persistStorage() {
+  private requestPersistentStorage() {
     if (navigator.storage && navigator.storage.persist) {
       navigator.storage
         .persist()
@@ -323,7 +323,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private watchChangesInboxUserContext() {
+  private watchUserContextChanges() {
     const userCtx = this.sessionService.userCtx();
     this.changesService.subscribe({
       key: 'inbox-user-context',
@@ -340,7 +340,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private watchChangesInboxTranslations() {
+  private watchTranslationsChanges() {
     this.changesService.subscribe({
       key: 'inbox-translations',
       filter: change => this.translationLoaderService.test(change.id),

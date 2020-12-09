@@ -31,28 +31,28 @@ export class WealthQuintilesWatcherService implements OnDestroy {
   }
 
   private updateDocs(change:any) {
-    const changedFields = change.doc.fields;
+    const fields = change.doc.fields;
 
     this.dbService
       .get()
       .query('medic-client/contacts_by_parent', {
-        startkey: [ changedFields.place_id ],
-        endkey: [ changedFields.place_id, {} ],
+        startkey: [ fields.place_id ],
+        endkey: [ fields.place_id, {} ],
         include_docs: true
       })
       .then((result:any) => {
         const updatedDocs:any = [];
 
         result.rows.forEach((row:any) => {
-          if (row.doc.wealth_quintile_national === changedFields.NationalQuintile
-            && row.doc.wealth_quintile_urban === changedFields.UrbanQuintile) {
+          if (row.doc.wealth_quintile_national === fields.NationalQuintile
+            && row.doc.wealth_quintile_urban === fields.UrbanQuintile) {
             return;
           }
 
           updatedDocs.push({
             ...row.doc,
-            wealth_quintile_national: changedFields.NationalQuintile,
-            wealth_quintile_urban: changedFields.UrbanQuintile
+            wealth_quintile_national: fields.NationalQuintile,
+            wealth_quintile_urban: fields.UrbanQuintile
           });
         });
 

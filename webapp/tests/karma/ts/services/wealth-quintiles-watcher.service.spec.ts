@@ -79,8 +79,16 @@ describe('WealthQuintilesWatcherService', () => {
           }
         },
         {
-          doc: { // without quintiles
+          doc: {
             _id: '2',
+            place_id: '123',
+            wealth_quintile_national: 90,
+            wealth_quintile_urban: 50
+          }
+        },
+        {
+          doc: { // without quintiles
+            _id: '3',
             place_id: '123'
           }
         }
@@ -114,7 +122,7 @@ describe('WealthQuintilesWatcherService', () => {
         wealth_quintile_urban: 50
       },
       {
-        _id: '2',
+        _id: '3',
         place_id: '123',
         wealth_quintile_national: 90,
         wealth_quintile_urban: 50
