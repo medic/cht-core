@@ -118,7 +118,7 @@
           <ul>
             <mm-content-row *ngFor="let task of selectedContact.tasks"
               [id]="task._id"
-              [route]="'tasks'"
+              [route]="['../../', 'tasks', task._id]"
               [icon]="task.icon"
               [date]="task.dueDate"
               [overdue]="task.overdue"
@@ -152,7 +152,7 @@
             <ul>
               <mm-content-row *ngFor="let report of selectedContact.reports | filterReports: reportStartDate"
                 [id]="report._id"
-                [route]="'reports'"
+                [route]="['../../', 'reports', report._id]"
                 [icon]="report | formIconName:forms"
                 [date]="report.reported_date"
                 [heading]="selectedContact.children.length ? report.heading : (report | summary:forms)"
