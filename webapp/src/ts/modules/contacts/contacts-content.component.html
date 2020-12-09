@@ -83,7 +83,7 @@
           <ng-container *ngFor="let child of group.contacts" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
-              [route]="'contacts'"
+              [route]="['../', child.id]"
               [heading]="child.doc.name"
               [summary]="''"
               [primaryContact]="child.isPrimaryContact"
@@ -97,7 +97,7 @@
         </ul>
         <ul class="action deceased">
           <li *ngIf="group.deceasedCount > 0" class="content-row deceased">
-            <a ui-sref="contacts.deceased({ id: selectedContact.doc._id })">
+            <a [routerLink]="['/contacts', selectedContact.doc._id, 'deceased']">
               <span translate [translateParams]="{ count: group.deceasedCount }">contact.deceased.view</span>
               <i class="fa fa-chevron-right"></i>
             </a>
