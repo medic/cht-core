@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { ContactTypesService } from './contact-types.service';
-import { DbService } from './db.service';
-import { SessionService } from './session.service';
+
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { DbService } from '@mm-services/db.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { find as _find, map as _map } from 'lodash-es';
 
-import { LineageModelGeneratorService } from './lineage-model-generator.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 @Injectable({
   providedIn: 'root'

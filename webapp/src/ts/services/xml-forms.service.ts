@@ -1,12 +1,12 @@
 import {Injectable} from '@angular/core';
 import { Subject } from 'rxjs';
 
-import { AuthService } from './auth.service';
-import { ChangesService } from './changes.service';
-import { ContactTypesService } from './contact-types.service';
-import { DbService } from './db.service';
-import { UserContactService } from './user-contact.service';
-import { XmlFormsContextUtilsService } from './xml-forms-context-utils.service';
+import { AuthService } from '@mm-services/auth.service';
+import { ChangesService } from '@mm-services/changes.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { DbService } from '@mm-services/db.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 
 @Injectable({

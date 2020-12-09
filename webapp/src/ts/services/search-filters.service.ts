@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { FreetextFilterComponent } from '../components/filters/freetext-filter/freetext-filter.component';
+
+import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 
 @Injectable({
   providedIn: 'root'

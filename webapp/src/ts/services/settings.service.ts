@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { DbService } from './db.service';
-import { CacheService } from './cache.service';
+
+import { DbService } from '@mm-services/db.service';
+import { CacheService } from '@mm-services/cache.service';
 
 @Injectable({
   providedIn: 'root'
