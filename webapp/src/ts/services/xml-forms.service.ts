@@ -34,8 +34,7 @@ export class XmlFormsService {
       },
       callback: () => {
         this.init = this.getForms();
-        this
-          .init
+        this.init
           .then(forms => this.notify(null, forms))
           .catch((err) => this.notify(err));
       }

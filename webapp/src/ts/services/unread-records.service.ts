@@ -108,6 +108,7 @@ export class UnreadRecordsService implements OnDestroy {
         // listen for changes in the medic db and update the count
         const statusMedicSubscription = this.changesService.subscribe({
           key: 'read-status-medic',
+          debounce: 500, // Reacting once all consecutive changes are done (example: after replication of docs)
           filter: (change) => change.doc && change.doc.type === 'data_record',
           callback: (change) => this.changeHandler(change, this.callback)
         });
@@ -117,6 +118,7 @@ export class UnreadRecordsService implements OnDestroy {
         const statusMetaSubscription = this.changesService.subscribe({
           metaDb: true,
           key: 'read-status-meta',
+          debounce: 500, // Reacting once all consecutive changes are done (example: after replication of docs
           callback: () => this.getCount(this.callback)
         });
         this.subscriptions.add(statusMetaSubscription);
