@@ -15,10 +15,12 @@ export const routes: Routes = [
       {
         path: '',
         component: ContactsContentComponent,
+        data: { name: 'contacts.detail' },
       },
       {
         path: ':id',
         component: ContactsContentComponent,
+        data: { name: 'contacts.detail' },
       },
       {
         path: ':id/deceased',
