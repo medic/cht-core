@@ -327,7 +327,7 @@ describe('Reports Summary', () => {
       expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
-    it('Concerning reports using doc id', () => {
+    it('Concerning reports using doc id', async () => {
       const REPORT = {
         _id: 'REF_REF_V2',
         form: 'RR',
@@ -346,23 +346,22 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(20, 'minutes').valueOf()
       };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(waitForSentinel)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(MARIA.name);
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('REF_REF');
-          //shows subject lineage breadcrumbs
-          testListLineage(['TAG Place', 'Health Center', 'District']);
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      await waitForSentinel();
+      expect(getElementText(await reportsTab.subject(report))).toBe(MARIA.name);
+      
+      expect(getElementText(await reportsTab.formName(report))).toBe('REF_REF');
+      //shows subject lineage breadcrumbs
+      testListLineage(['TAG Place', 'Health Center', 'District']);
 
-          //RHS
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(MARIA.name);
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('REF_REF');
-          testSummaryLineage(['TAG Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-        });
+      //RHS
+      expect(getElementText(await reportsTab.subjectName)).toBe(MARIA.name);
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('REF_REF');
+      testSummaryLineage(['TAG Place', 'Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toMatch(`Submitted by ${CAROL.name}`);
+      expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
     it('Concerning reports with unknown patient_id', () => {
