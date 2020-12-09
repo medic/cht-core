@@ -270,6 +270,7 @@ describe('Enketo service', () => {
     }));
 
     it('leaves img wrapped and hides loader if failed to load', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
@@ -290,6 +291,8 @@ describe('Enketo service', () => {
         expect(loader.is(':hidden')).to.equal(true);
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(0);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error fetching media file');
       });
     });
 
@@ -463,6 +466,7 @@ describe('Enketo service', () => {
     });
 
     it('ContactSummary receives empty lineage if contact doc is missing', () => {
+      const consoleWarnMock = sinon.stub(console, 'warn');
       LineageModelGenerator.contact.rejects({ code: 404 });
 
       UserContact.resolves({
@@ -491,6 +495,8 @@ describe('Enketo service', () => {
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][2].length).to.equal(0);
+        expect(consoleWarnMock.callCount).to.equal(1);
+        expect(consoleWarnMock.args[0][0].startsWith('Enketo failed to get lineage of contact')).to.be.true;
       });
     });
   });
