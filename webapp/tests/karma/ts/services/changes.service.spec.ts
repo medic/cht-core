@@ -1,5 +1,5 @@
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { TestBed, async } from '@angular/core/testing';
+import { TestBed, async, fakeAsync, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -61,7 +61,7 @@ describe('Changes service', () => {
 
   afterEach(() => sinon.restore());
 
-  it('calls the callback', (done) => {
+  it('should call the callback', (done) => {
 
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
@@ -81,7 +81,7 @@ describe('Changes service', () => {
     changesCalls.medic.callbacks.change(expected);
   });
 
-  it('calls the callback for the meta db too', (done) => {
+  it('should call the callback for the meta db too', (done) => {
 
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
@@ -102,7 +102,7 @@ describe('Changes service', () => {
     changesCalls.meta.callbacks.change(expected);
   });
 
-  it('calls the most recent callback only', (done) => {
+  it('should call the most recent callback only', (done) => {
 
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
@@ -132,7 +132,7 @@ describe('Changes service', () => {
     changesCalls.medic.callbacks.change(expected);
   });
 
-  it('calls all registered callbacks', (done) => {
+  it('should call all registered callbacks', (done) => {
 
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
     const results = { key1: [], key2: [] };
@@ -169,7 +169,7 @@ describe('Changes service', () => {
     done();
   });
 
-  it('calls the callback if filter passes', (done) => {
+  it('should call the callback if filter passes', (done) => {
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
     const results = { key1: [], key2: [] };
 
@@ -204,7 +204,25 @@ describe('Changes service', () => {
     done();
   });
 
-  it('removes the listener when unsubscribe called', (done) => {
+  it('should call the callback after debounce time is completed', fakeAsync(() => {
+    const options = {
+      key: 'abc',
+      debounce: 500,
+      callback: sinon.stub()
+    };
+
+    service.subscribe(options);
+    changesCalls.medic.callbacks.change({ doc: {} });
+
+    tick(150);
+    expect(options.callback.callCount).to.equal(0);
+    tick(150);
+    expect(options.callback.callCount).to.equal(0);
+    tick(200);
+    expect(options.callback.callCount).to.equal(1);
+  }));
+
+  it('should remove the listener when unsubscribe called', (done) => {
     // register callback
     const listener = service.subscribe({
       key: 'yek',
@@ -224,7 +242,7 @@ describe('Changes service', () => {
     done();
   });
 
-  it('reregisters the callback next time', (done) => {
+  it('should re-register the callback next time', (done) => {
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
     // register callback
@@ -252,7 +270,7 @@ describe('Changes service', () => {
     changesCalls.medic.callbacks.change(expected);
   });
 
-  it('re-attaches where it left off if it loses connection', (done) => {
+  it('should re-attach where it left off if it loses connection', (done) => {
     const clock = sinon.useFakeTimers();
     const first = { seq: '2-XYZ', id: 'x', changes: [ { rev: '2-abc' } ] };
     const second = { seq: '3-ZYX', id: 'y', changes: [ { rev: '1-abc' } ] };
@@ -280,7 +298,7 @@ describe('Changes service', () => {
     changesCalls.medic.callbacks.change(second);
   });
 
-  it('hydrates the change with a doc when it matches the last update when include_docs = false', done => {
+  it('should hydrate the change with a doc when it matches the last update when include_docs = false', done => {
     const setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     const changes = [
       { id: '1' },
@@ -346,7 +364,7 @@ describe('Changes service', () => {
     changesCalls.medic.callbacks.change(changes[4]);
   });
 
-  it('leaves change.doc unchanged when include_docs = true', done => {
+  it('should leave change.doc unchanged when include_docs = true', done => {
     const setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     const changes = [
       { id: '1', doc: { _id: '1', data: 0 } },
