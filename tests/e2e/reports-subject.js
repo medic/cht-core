@@ -400,7 +400,7 @@ describe('Reports Summary', () => {
       expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
-    it('Concerning reports using patient name', () => {
+    it('Concerning reports using patient name', async () => {
       const REPORT = {
         _id: 'NAM_NAM_V',
         form: 'NN',
@@ -419,27 +419,24 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(40, 'minutes').valueOf()
       };
 
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      await waitForSentinel();
+      expect(getElementText(await reportsTab.subject(report))).toBe(GEORGE.name);
+      expect(getElementText(await reportsTab.formName(report))).toBe('NAM_NAM');
+      //shows subject lineage breadcrumbs
+      testListLineage(['Bob Place', 'Health Center', 'District']);
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(waitForSentinel)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(GEORGE.name);
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('NAM_NAM');
-          //shows submitter lineage breadcrumbs
-          testListLineage(['Bob Place', 'Health Center', 'District']);
-
-          //RHS
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(GEORGE.name);
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('NAM_NAM');
-          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-        });
+      //RHS
+      expect(getElementText(await reportsTab.subjectName)).toBe(GEORGE.name);
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('NAM_NAM');
+      testSummaryLineage(['Bob Place', 'Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toMatch(`Submitted by ${CAROL.name}`);
+      expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
-    it('Concerning reports using missing required patient name', () => {
+    it('Concerning reports using missing required patient name', async () => {
       const REPORT = {
         _id: 'NAM_NAM_I',
         form: 'NN',
@@ -464,26 +461,24 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(50, 'minutes').valueOf()
       };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(waitForSentinel)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe('Unknown subject');
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('NAM_NAM');
-          //shows subject lineage breadcrumbs
-          testListLineage(['Bob Place', 'Health Center', 'District']);
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      await waitForSentinel();
+      expect(getElementText(await reportsTab.subject(report))).toBe('Unknown subject');
+      expect(getElementText(await reportsTab.formName(report))).toBe('NAM_NAM');
+      //shows subject lineage breadcrumbs
+      testListLineage(['Bob Place', 'Health Center', 'District']);
 
-          //RHS
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('NAM_NAM');
-          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-        });
+      //RHS
+      expect(getElementText(await reportsTab.subjectName)).toBe('Unknown subject');
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('NAM_NAM');
+      testSummaryLineage(['Bob Place', 'Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toMatch(`Submitted by ${CAROL.name}`);
+      expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
-    it('Concerning reports using place_id', () => {
+    it('Concerning reports using place_id', async () => {
       const REPORT = {
         _id: 'PREF_PREF_V',
         form: 'P',
@@ -502,26 +497,24 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(60, 'minutes').valueOf()
       };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(waitForSentinel)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(TAG_PLACE.name);
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('PID_PID');
-          //shows subject lineage breadcrumbs
-          testListLineage(['Health Center', 'District']);
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      await waitForSentinel();
+      expect(getElementText(await reportsTab.subject(report))).toBe(TAG_PLACE.name);
+      expect(getElementText(await reportsTab.formName(report))).toBe('PID_PID');
+      //shows subject lineage breadcrumbs
+      testListLineage(['Health Center', 'District']);
 
-          //RHS
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(TAG_PLACE.name);
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
-          testSummaryLineage(['Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-        });
+      //RHS
+      expect(getElementText(await reportsTab.subjectName)).toBe(TAG_PLACE.name);
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('PID_PID');
+      testListLineage(['Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toMatch(`Submitted by ${CAROL.name}`);
+      expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
-    it('Concerning reports using unknown place_id', () => {
+    it('Concerning reports using unknown place_id', async () => {
       const REPORT = {
         _id: 'PREF_PREF_I',
         form: 'P',
@@ -540,26 +533,24 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(2, 'hours').valueOf()
       };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(waitForSentinel)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe('Unknown subject');
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('PID_PID');
-          //shows submitter lineage breadcrumbs
-          testListLineage(['Bob Place', 'Health Center', 'District']);
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      await waitForSentinel();
+      expect(getElementText(await reportsTab.subject(report))).toBe('Unknown subject');
+      expect(getElementText(await reportsTab.formName(report))).toBe('PID_PID');
+      //shows subject lineage breadcrumbs
+      testListLineage(['Bob Place', 'Health Center', 'District']);
 
-          //RHS
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe('Unknown subject');
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
-          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch(`${CAROL.name}`);
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-        });
+      //RHS
+      expect(getElementText(await reportsTab.subjectName)).toBe('Unknown subject');
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('PID_PID');
+      testListLineage(['Bob Place', 'Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toMatch(`Submitted by ${CAROL.name}`);
+      expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
-    it('Concerning reports which do not have a subject', () => {
+    it('Concerning reports which do not have a subject', async () => {
       const REPORT = {
         _id: 'SURVEY_REPORT',
         form: 'S',
@@ -578,25 +569,24 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(10, 'hours').valueOf()
       };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(waitForSentinel)
-        .then(() => {
-          //LHS - shows submitter information when report has no subject
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(CAROL.name);
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('SURVEY');
-          testListLineage(['Bob Place', 'Health Center', 'District']);
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      await waitForSentinel();
+      expect(getElementText(await reportsTab.subject(report))).toBe(CAROL.name);
+      expect(getElementText(await reportsTab.formName(report))).toBe('SURVEY');
+      //shows subject lineage breadcrumbs
+      testListLineage(['Bob Place', 'Health Center', 'District']);
 
-          //RHS - shows submitter information when report has no subject
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe(CAROL.name);
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe(CAROL.phone);
-          expect(getElementText('#reports-content .item-summary mm-sender + div')).toBe('SURVEY');
-          testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-          expect(element(by.css('#reports-content .item-summary .subject')).isPresent()).toBe(false);
-        });
+      //RHS
+      expect(await reportsTab.subjectName.isPresent()).toBe(false);
+      expect(await getElementText(reportsTab.formNameNoSubject)).toBe('SURVEY');
+      testListLineage(['Bob Place', 'Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toBe(CAROL.name);
+      expect(getElementText(await reportsTab.submitterPhone)).toBe(CAROL.phone);
     });
 
-    it('Concerning reports which have an unknown sender and have a known subject', () => {
+    it('Concerning reports which have an unknown sender and have a known subject', async () => {
       const REPORT = {
         _id: 'PID_US',
         form: 'P',
@@ -615,25 +605,23 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(6, 'hours').valueOf()
       };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(BOB_PLACE.name);
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('PID_PID');
-          //shows submitter lineage breadcrumbs
-          testListLineage(['Health Center', 'District']);
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      expect(getElementText(await reportsTab.subject(report))).toBe(BOB_PLACE.name);
+      expect(getElementText(await reportsTab.formName(report))).toBe('PID_PID');
+      //shows subject lineage breadcrumbs
+      testListLineage(['Health Center', 'District']);
 
-          //RHS
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(BOB_PLACE.name);
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
-          testSummaryLineage(['Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toMatch('555');
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe('');
-        });
+      //RHS
+      expect(getElementText(await reportsTab.subjectName)).toBe(BOB_PLACE.name);
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('PID_PID');
+      testSummaryLineage(['Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toMatch('555');
+      expect(getElementText(await reportsTab.submitterPhone)).toBe('');
     });
 
-    it('Concerning reports which have an unknown sender with no phone number', () => {
+    it('Concerning reports which have an unknown sender with no phone number', async () => {
       const REPORT = {
         _id: 'PID_USNP',
         form: 'P',
@@ -652,22 +640,20 @@ describe('Reports Summary', () => {
         reported_date: moment().subtract(6, 'hours').valueOf()
       };
 
-      return saveReport(REPORT)
-        .then(loadReport)
-        .then(() => {
-          //LHS
-          expect(getElementText('#reports-list .unfiltered li .content .heading h4 span')).toBe(BOB_PLACE.name);
-          expect(getElementText('#reports-list .unfiltered li .summary')).toBe('PID_PID');
-          //shows submitter lineage breadcrumbs
-          testListLineage(['Health Center', 'District']);
+      await commonElements.goToReports();
+      await saveReport(REPORT);
+      const report = await reportsTab.loadReport(REPORT._id);
+      expect(getElementText(await reportsTab.subject(report))).toBe(BOB_PLACE.name);
+      expect(getElementText(await reportsTab.formName(report))).toBe('PID_PID');
+      //shows subject lineage breadcrumbs
+      testListLineage(['Health Center', 'District']);
 
-          //RHS
-          expect(getElementText('#reports-content .item-summary .subject .name')).toBe(BOB_PLACE.name);
-          expect(getElementText('#reports-content .item-summary .subject + div')).toBe('PID_PID');
-          testSummaryLineage(['Health Center', 'District']);
-          expect(getElementText('#reports-content .item-summary .sender .name')).toBe('Unknown sender');
-          expect(getElementText('#reports-content .item-summary .sender .phone')).toBe('');
-        });
+      //RHS
+      expect(getElementText(await reportsTab.subjectName)).toBe(BOB_PLACE.name);
+      expect(getElementText(await reportsTab.summaryFormName)).toBe('PID_PID');
+      testSummaryLineage(['Health Center', 'District']);
+      expect(getElementText(await reportsTab.submitterName)).toMatch('Unknown sender');
+      expect(getElementText(await reportsTab.submitterPhone)).toBe('');
     });
   });
 });
