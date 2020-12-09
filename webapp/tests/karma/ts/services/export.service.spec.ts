@@ -41,11 +41,12 @@ describe('Export Service', () => {
     const type = 'ABC';
     const filters = { acb: '123' };
     const options = { option1: '1' };
-    const consoleErrorSpy = sinon.spy(console, 'error');
+    const consoleErrorMock = sinon.stub(console, 'error');
 
     service.export(type, filters, options);
 
     expect(ajaxDownloadProvider.download.callCount).to.equal(0);
-    expect(consoleErrorSpy.callCount).to.equal(1);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0].message.startsWith('Unknown download type: ')).to.be.true;
   });
 });
