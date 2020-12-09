@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { TranslateService } from '@ngx-translate/core';
-import { SettingsService } from './settings.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 @Injectable({
   providedIn: 'root'

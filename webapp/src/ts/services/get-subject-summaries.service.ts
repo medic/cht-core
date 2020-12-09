@@ -1,8 +1,9 @@
 import * as _ from 'lodash-es';
 import {Injectable} from '@angular/core';
-import { DbService } from './db.service';
-import { GetSummariesService } from './get-summaries.service';
-import { LineageModelGeneratorService } from './lineage-model-generator.service';
+
+import { DbService } from '@mm-services/db.service';
+import { GetSummariesService } from '@mm-services/get-summaries.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 @Injectable({
   providedIn: 'root'

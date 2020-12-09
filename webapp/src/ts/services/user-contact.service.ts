@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
-import { UserSettingsService } from './user-settings.service';
-import { LineageModelGeneratorService } from './lineage-model-generator.service';
+
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 @Injectable({
   providedIn: 'root'
