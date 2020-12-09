@@ -20,8 +20,10 @@ const submitterPhone = reportSummary.element(by.css('.sender .phone'));
 const submitterName =  reportSummary.element(by.css('.sender .name'));
 const subjectName = reportSummary.element(by.css('.subject .name'));
 const summaryFormName = reportSummary.element(by.css('.subject + div'));
+const formNameNoSubject = reportSummary.element(by.css('mm-sender + div'));
 
 module.exports = {
+  formNameNoSubject: formNameNoSubject,
   subjectName: subjectName,
   summaryFormName: summaryFormName,
   submitterName: submitterName,
