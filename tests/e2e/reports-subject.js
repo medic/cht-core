@@ -1,6 +1,6 @@
 const utils = require('../utils');
 const commonElements = require('../page-objects/common/common.po.js');
-const reportsTab = require('../page-objects/reports/reports.po')
+const reportsTab = require('../page-objects/reports/reports.po');
 const helper = require('../helper');
 const moment = require('moment');
 
@@ -226,7 +226,8 @@ describe('Reports Summary', () => {
 
   const testSummaryLineage = (expected) => {
     expected.forEach((parent, key) => {
-      expect(getElementText(element(by.css('#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')'))))
+      const css = '#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')';
+      expect(getElementText(element(by.css(css))))
         .toBe(parent);
     });
   };
@@ -301,15 +302,15 @@ describe('Reports Summary', () => {
       };
       await commonElements.goToReports();
       await saveReport(REPORT);
-      let report = await reportsTab.loadReport(REPORT._id);
+      const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel();
       expect(getElementText(await reportsTab.subject(report))).toBe(MARIA.name);
       
       expect(getElementText(await reportsTab.formName(report))).toBe('REF_REF');
-          //shows subject lineage breadcrumbs
+      //shows subject lineage breadcrumbs
       testListLineage(['TAG Place', 'Health Center', 'District']);
 
-          //RHS
+      //RHS
       browser.wait(() => getElementText(reportsTab.submitterPhone),10000);
       expect(getElementText(await reportsTab.subjectName)).toBe(MARIA.name);
       expect(getElementText(await reportsTab.summaryFormName)).toBe('REF_REF');
