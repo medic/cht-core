@@ -132,18 +132,18 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   }
 
   navigateToContactAdd(type, parentId, from?) {
-    const data = {
+    /*const data = {
       type: type,
       parent_id: parentId,
       from: from
-    };
+    };*/
     // ToDo navigate to contact.add and send data
   }
 
   navigateToContactEdit(selectedContact) {
-    const data = {
+    /*const data = {
       id: selectedContact._id
-    };
+    };*/
     // ToDo navigate to contact.edit and send data
   }
 

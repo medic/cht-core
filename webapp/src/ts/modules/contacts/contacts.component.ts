@@ -21,6 +21,8 @@ import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
+import { ExportService } from '@mm-services/export.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 const PAGE_SIZE = 50;
 
@@ -53,6 +55,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   additionalListItem = false;
   simprintsEnabled;
   enketoEdited;
+  allowedChildPlaces = [];
 
   constructor(
     private store: Store,
@@ -71,6 +74,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
     private router: Router,
+    private exportService: ExportService,
+    private xmlFormsService: XmlFormsService
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -146,9 +151,9 @@ export class ContactsComponent implements OnInit, OnDestroy{
             selected: this.childPlaces.map(type => type.id)
           }
         };
-        // TODO: Not migrated these yet
-        // updateAllowedChildPlaces();
-        // setActionBarData();
+
+        this.updateAllowedChildPlaces();
+        this.setActionBarData();
         return this.search();
       })
       .catch((err) => {
@@ -380,8 +385,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.appending = false;
         this.error = false;
         this.initScroll();
-        // TODO: enable method below
-        // setActionBarData();
+        this.setActionBarData();
       })
       .catch(err => {
         this.error = true;
@@ -421,22 +425,27 @@ export class ContactsComponent implements OnInit, OnDestroy{
     return contact._id + contact._rev;
   }
 
-  // const setActionBarData = () => {
-  //   ctrl.setLeftActionBar({
-  //     hasResults: ctrl.hasContacts,
-  //     userFacilityId: usersHomePlace && usersHomePlace._id,
-  //     childPlaces: allowedChildPlaces,
-  //     exportFn: function() {
-  //       Export('contacts', ctrl.filters, { humanReadable: true });
-  //     },
-  //   });
-  // };
+  setActionBarData() {
+    this.globalActions.setLeftActionBar({
+      hasResults: this.hasContacts,
+      userFacilityId: this.usersHomePlace && this.usersHomePlace._id,
+      childPlaces: this.allowedChildPlaces,
+      exportFn: () => {
+        this.exportService.export('contacts', this.filters, { humanReadable: true });
+      }
+    });
+  }
 
-  // const updateAllowedChildPlaces = () => {
-  //   XmlForms.listen('ContactsListCtrl',{ contactForms: true }, (err, forms) => {
-  //     const allowCreateLink = contactType => forms && forms.find(form => form._id === contactType.create_form);
-  //     allowedChildPlaces = childPlaces.filter(allowCreateLink);
-  //     setActionBarData();
-  //   });
-  // };
+  updateAllowedChildPlaces() {
+    this.xmlFormsService.subscribe(
+      'ContactList',
+      { contactForms: true },
+      (err, forms) => this.allowedChildPlaces = this.filterAllowedChildPlaces(forms, this.childPlaces)
+    );
+    this.setActionBarData();
+  }
+
+  private filterAllowedChildPlaces(forms, childPlaces) {
+    return childPlaces.filter(contactType => forms?.find(form => form._id === contactType.create_form));
+  }
 }
