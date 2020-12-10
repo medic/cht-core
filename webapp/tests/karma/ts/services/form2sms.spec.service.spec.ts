@@ -68,6 +68,7 @@ describe('Form2Sms service', () => {
     });
 
     it('should throw for a non-existent form', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       // given
       const doc = aFormSubmission();
       // and there's no form
@@ -77,7 +78,11 @@ describe('Form2Sms service', () => {
       return service
         .transform(doc)
         .then(smsContent => assert.fail(`Should have thrown, but instead returned ${smsContent}`))
-        .catch(err => assert.equal(err.message, 'expected'));
+        .catch(err => {
+          assert.equal(err.message, 'expected');
+          assert.equal(consoleErrorMock.callCount, 1);
+          assert.isTrue(consoleErrorMock.args[0][0].startsWith('Form2Sms failed: '));
+        });
     });
 
     it('should parse attached code for a form', () => {
