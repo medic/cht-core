@@ -50,7 +50,6 @@ describe('Create user meta db : ', () => {
     commonElements.goToLoginPage();
     loginPage.login(userName, password, false);
     commonElements.calm();
-    helper.waitForAngularComplete();
 
     const doc = { _id: userName };
     const postData = doc;
