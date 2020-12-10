@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { DbService } from './db.service';
-import { GetDataRecordsService } from './get-data-records.service';
-import { HydrateMessagesService } from './hydrate-messages.service';
+import { DbService } from '@mm-services/db.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { HydrateMessagesService } from '@mm-services/hydrate-messages.service';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 
 @Injectable({

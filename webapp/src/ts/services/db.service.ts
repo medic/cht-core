@@ -8,8 +8,8 @@ const USERS_DB_SUFFIX = 'users';
 
 import { Injectable } from '@angular/core';
 
-import { SessionService } from './session.service';
-import { LocationService } from './location.service';
+import { SessionService } from '@mm-services/session.service';
+import { LocationService } from '@mm-services/location.service';
 import { POUCHDB_OPTIONS } from '../constants';
 
 @Injectable({

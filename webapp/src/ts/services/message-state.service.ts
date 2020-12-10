@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { some as _some, forEach as _forEach } from 'lodash-es';
 import * as taskUtils from '@medic/task-utils';
 
-import { DbService } from './db.service';
+import { DbService } from '@mm-services/db.service';
 
 @Injectable({
   providedIn: 'root'

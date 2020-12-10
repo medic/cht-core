@@ -8,8 +8,8 @@ current user's role has all the permissions of any of the provided groups.
 */
 import { Injectable } from '@angular/core';
 
-import { SessionService } from './session.service';
-import { SettingsService } from './settings.service';
+import { SessionService } from '@mm-services/session.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 
 @Injectable({

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { DbService } from './db.service';
+import { DbService } from '@mm-services/db.service';
 import { ReadDocsProvider } from '@mm-providers/read-docs.provider';
 
 @Injectable({
