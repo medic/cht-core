@@ -31,8 +31,8 @@ const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 module.exports = {
   calm: () => {
     const bootstrapperSelector = by.css('.bootstrap-layer');
-    helper.waitElementToPresent(element(bootstrapperSelector));
-    helper.waitElementToDisappear(bootstrapperSelector);
+    // helper.waitElementToPresent(element(bootstrapperSelector));
+    // helper.waitElementToDisappear(bootstrapperSelector);
     helper.waitUntilReady(medicLogo);
   },
 
