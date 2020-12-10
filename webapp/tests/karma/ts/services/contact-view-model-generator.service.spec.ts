@@ -1,10 +1,17 @@
+import { TestBed } from '@angular/core/testing';
+import { assert, expect } from 'chai';
+import sinon from 'sinon';
+import { TranslateService } from '@ngx-translate/core';
+
+import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { SearchService } from '@mm-services/search.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { DbService } from '@mm-services/db.service';
+
 describe('ContactViewModelGenerator service', () => {
-
-  'use strict';
-
-  const assert = chai.assert;
-  let service;
-  let ContactTypes;
+  let service: ContactViewModelGeneratorService;
   let lineageModelGenerator;
   let childContactPerson;
   let deceasedChildPerson;
@@ -14,99 +21,104 @@ describe('ContactViewModelGenerator service', () => {
   let childPlace2;
   let dbGet;
   let dbQuery;
-  let dbAllDocs;
+  // let dbAllDocs;
   let doc;
   let search;
-  let GetDataRecords;
+  let getDataRecords;
   let Session;
   let forms;
 
   const childPlaceIcon = 'fa-mushroom';
 
   const stubDbGet = (err, doc) => {
-    dbGet.withArgs(doc._id).returns(KarmaUtils.promise(err, doc));
+    if (err) {
+      return dbGet.rejects(err);
+    }
+    if (dbGet.withArgs(doc._id)) {
+      return dbGet.resolves(doc);
+    }
+    return () => ({ query: dbQuery });
   };
 
-  const stubLineageModelGenerator = (err, contact, lineage) => {
-    lineageModelGenerator.contact.returns(KarmaUtils.promise(err, {
+  const stubLineageModelGenerator = (contact, lineage?) => {
+    return lineageModelGenerator.contact.resolves({
       _id: contact && contact._id,
       doc: contact,
       lineage: lineage
-    }));
+    });
   };
 
-  const stubDbQueryChildren = (err, parentId, docs = []) => {
+  const stubDbQueryChildren = (parentId, docs = []) => {
     docs = docs.map(doc => {
       return { doc: doc };
     });
-    dbQuery.returns(KarmaUtils.promise(err, { rows: docs }));
+    dbQuery.resolves({ rows: docs });
   };
 
-  const stubSearch = (err, reports) => {
-    search.returns(KarmaUtils.promise(err, reports));
+  const stubSearch = (reports) => {
+    search.resolves(reports);
   };
 
-  const stubGetDataRecords = (err, dataRecords) => {
-    GetDataRecords.returns(KarmaUtils.promise(err, dataRecords));
+  const stubGetDataRecords = (dataRecords) => {
+    getDataRecords.resolves(dataRecords);
   };
 
   beforeEach(() => {
-    module('inboxApp');
-    module($provide => {
-      search = sinon.stub();
-      dbGet = sinon.stub();
-      dbQuery = sinon.stub();
-      dbAllDocs = sinon.stub();
-      const types = [
-        { id: 'family' },
-        { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
-        { id: 'chp', person: true, parents: [ 'mushroom' ] },
-        { id: 'red-herring' },
-        { id: 'clinic', parents: [ 'mushroom' ] },
-        { id: 'mushroom', name_key: 'label.mushroom' }
-      ];
-      ContactTypes = { getAll: sinon.stub().resolves(types) };
-      lineageModelGenerator = { contact: sinon.stub() };
-      GetDataRecords = sinon.stub();
-      Session = { isOnlineOnly: function() {} };
+    search = sinon.stub();
+    dbGet = sinon.stub();
+    dbQuery = sinon.stub();
+    // dbAllDocs = sinon.stub();
+    getDataRecords = sinon.stub();
+    const types = [
+      { id: 'family' },
+      { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
+      { id: 'chp', person: true, parents: [ 'mushroom' ] },
+      { id: 'red-herring' },
+      { id: 'clinic', parents: [ 'mushroom' ] },
+      { id: 'mushroom', name_key: 'label.mushroom' }
+    ];
+    lineageModelGenerator = { contact: sinon.stub() };
+    Session = { isOnlineOnly: function() {} };
+    const parentId = 'districtsdistrict';
+    const contactId = 'mario';
+    childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
+    deceasedChildPerson = {
+      _id: 'deceaseduuid',
+      name: 'casper',
+      type: 'person',
+      date_of_death: 123456789,
+      parent: { _id: parentId }
+    };
 
-      $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet, query: dbQuery, allDocs: dbAllDocs }));
-      $provide.value('Search', search);
-      $provide.value('ContactTypes', ContactTypes);
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('LineageModelGenerator', lineageModelGenerator);
-      $provide.value('GetDataRecords', GetDataRecords);
-      $provide.value('Session', Session);
+    childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
 
-      const parentId = 'districtsdistrict';
-      const contactId = 'mario';
-      childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
-      deceasedChildPerson = {
-        _id: 'deceaseduuid',
-        name: 'casper',
-        type: 'person',
-        date_of_death: 123456789,
-        parent: { _id: parentId }
-      };
+    childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
+    childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
+    childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
 
-      childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
+    doc = {
+      _id: parentId,
+      type: 'clinic',
+      contact: { _id: contactId }
+    };
+    forms = [];
 
-      childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
-      childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
-      childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
-
-      doc = {
-        _id: parentId,
-        type: 'clinic',
-        contact: { _id: contactId }
-      };
-      forms = [];
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
+        { provide: SearchService, useValue: { search } },
+        { provide: ContactTypesService, useValue: { getAll: sinon.stub().resolves(types) } },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
+        { provide: GetDataRecordsService, useValue: { get: getDataRecords } },
+        { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
+      ]
     });
-    inject(_ContactViewModelGenerator_ => service = _ContactViewModelGenerator_);
+
+    service = TestBed.inject(ContactViewModelGeneratorService);
   });
 
-  afterEach(function() {
-    KarmaUtils.restore(GetDataRecords);
+  afterEach(() => {
+    sinon.restore();
   });
 
   function waitForModelToLoad(model) {
@@ -124,11 +136,12 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Place', () => {
     const runPlaceTest = (childrenArray) => {
-      stubLineageModelGenerator(null, doc);
+      stubLineageModelGenerator(doc);
       stubDbGet(null, childContactPerson);
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, childrenArray);
+      stubSearch([]);
+      stubGetDataRecords([]);
+      stubDbQueryChildren(doc._id, childrenArray);
+
       return service.getContact(doc._id)
         .then(waitForModelToLoad);
     };
@@ -182,11 +195,11 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('if no contact person in children, persons still get displayed', () => {
-      stubLineageModelGenerator(null, doc);
+      stubLineageModelGenerator(doc);
       stubDbGet({ status: 404 }, childContactPerson);
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, [childPerson]);
+      stubSearch([]);
+      stubGetDataRecords([]);
+      stubDbQueryChildren(doc._id, [childPerson]);
       return service.getContact(doc._id)
         .then(waitForModelToLoad)
         .then(model => {
@@ -331,9 +344,9 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Person', () => {
     const runPersonTest = parentDoc => {
-      stubLineageModelGenerator(null, childContactPerson, [ parentDoc ]);
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
+      stubLineageModelGenerator(childContactPerson, [ parentDoc ]);
+      stubSearch([]);
+      stubGetDataRecords([]);
       return service.getContact(childContactPerson._id);
     };
 
@@ -357,50 +370,50 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Reports', () => {
     const runReportsTest = childrenArray => {
-      stubLineageModelGenerator(null, doc);
+      stubLineageModelGenerator(doc);
       stubDbGet({ status: 404 }, childContactPerson);
-      stubDbQueryChildren(null, doc._id, childrenArray);
+      stubDbQueryChildren(doc._id, childrenArray);
       return service.getContact(doc._id);
     };
 
     it('sets the returned reports as selected', () => {
       sinon.stub(Session, 'isOnlineOnly').returns(true);
-      stubSearch(null, [ { _id: 'ab' } ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ { _id: 'ab' } ]);
+      stubGetDataRecords([]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports.length).to.equal(1);
-          chai.expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports.length).to.equal(1);
+          expect(model.reports[0]._id).to.equal('ab');
         });
     });
 
     it('sorts reports by reported_date', () => {
       const report1 = { _id: 'ab', reported_date: 123 };
       const report2 = { _id: 'cd', reported_date: 456 };
-      stubSearch(null, [ report1, report2 ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ report1, report2 ]);
+      stubGetDataRecords([]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports.length).to.equal(2);
-          chai.expect(model.reports[0]._id).to.equal(report2._id);
-          chai.expect(model.reports[1]._id).to.equal(report1._id);
+          expect(model.reports.length).to.equal(2);
+          expect(model.reports[0]._id).to.equal(report2._id);
+          expect(model.reports[1]._id).to.equal(report1._id);
         });
     });
 
     it('includes reports from children', () => {
-      stubSearch(null, [ { _id: 'ab' },{ _id: 'cd' } ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ { _id: 'ab' },{ _id: 'cd' } ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(search.args[0][1].subjectIds)
+          expect(search.args[0][1].subjectIds)
             .to.have.members([ doc._id, childPerson._id, childPerson2._id, deceasedChildPerson._id ]);
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(model.reports.length).to.equal(2);
-          chai.expect(model.reports[0]._id).to.equal('ab');
-          chai.expect(model.reports[1]._id).to.equal('cd');
+          expect(search.callCount).to.equal(1);
+          expect(model.reports.length).to.equal(2);
+          expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports[1]._id).to.equal('cd');
         });
     });
 
@@ -408,17 +421,17 @@ describe('ContactViewModelGenerator service', () => {
       childPerson.patient_id = '12345';
       const report1 = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
       const report2 = { _id: 'cd', fields: { patient_id: childPerson.patient_id, patient_name: 'Jack' } };
-      stubSearch(null, [ report1, report2 ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ report1, report2 ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(model.reports.length).to.equal(2);
-          chai.expect(model.reports[0]._id).to.equal('ab');
-          chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
-          chai.expect(model.reports[1]._id).to.equal('cd');
-          chai.expect(model.reports[1].fields.patient_name).to.equal('Jack'); // don't add if name already defined
+          expect(search.callCount).to.equal(1);
+          expect(model.reports.length).to.equal(2);
+          expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
+          expect(model.reports[1]._id).to.equal('cd');
+          expect(model.reports[1].fields.patient_name).to.equal('Jack'); // don't add if name already defined
         });
     });
 
@@ -427,63 +440,63 @@ describe('ContactViewModelGenerator service', () => {
         { _id: 'aa', reported_date: 123 },
         { _id: 'bb', reported_date: 345 }
       ];
-      stubSearch(null, [ expectedReports[0], expectedReports[1] ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ expectedReports[0], expectedReports[1] ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson, childPerson2])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(search.args[0][1].subjectIds).to.have.members([ doc._id, childPerson._id, childPerson2._id ]);
-          chai.assert.deepEqual(model.reports, [ expectedReports[1], expectedReports[0]]);
+          expect(search.callCount).to.equal(1);
+          expect(search.args[0][1].subjectIds).to.have.members([ doc._id, childPerson._id, childPerson2._id ]);
+          assert.deepEqual(model.reports, [ expectedReports[1], expectedReports[0]]);
         });
     });
 
     it('includes subjectIds in reports search so JSON reports are found', () => {
       doc.patient_id = 'cd';
       doc.place_id = 'ef';
-      stubSearch(null, [ { _id: 'ab' } ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ { _id: 'ab' } ]);
+      stubGetDataRecords([]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(() => {
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(search.args[0][0]).to.equal('reports');
-          chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
-          chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
-          chai.expect(search.args[0][1].subjectIds).to.include('cd');
-          chai.expect(search.args[0][1].subjectIds).to.include('ef');
+          expect(search.callCount).to.equal(1);
+          expect(search.args[0][0]).to.equal('reports');
+          expect(search.args[0][1].subjectIds.length).to.equal(3);
+          expect(search.args[0][1].subjectIds).to.include(doc._id);
+          expect(search.args[0][1].subjectIds).to.include('cd');
+          expect(search.args[0][1].subjectIds).to.include('ef');
         });
     });
 
     it('adds patient_name to reports', () => {
       childPerson.patient_id = '12345';
       const report = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, []);
+      stubSearch([ report ]);
+      stubGetDataRecords([]);
       return runReportsTest([childPerson])
         .then(waitForModelToLoad)
         .then(model => {
           // search queried
-          chai.expect(search.callCount).to.equal(1);
-          chai.expect(search.args[0][0]).to.equal('reports');
-          chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
-          chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
+          expect(search.callCount).to.equal(1);
+          expect(search.args[0][0]).to.equal('reports');
+          expect(search.args[0][1].subjectIds).to.include(doc._id);
+          expect(search.args[0][1].subjectIds.length).to.equal(3);
 
-          chai.expect(model.reports.length).to.equal(1);
-          chai.expect(model.reports[0]._id).to.equal('ab');
-          chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
+          expect(model.reports.length).to.equal(1);
+          expect(model.reports[0]._id).to.equal('ab');
+          expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
         });
     });
 
     it('adds heading to reports', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', validSubject: 'ac', subject: { value: 'ad' } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal(dataRecord.subject.value);
+          expect(model.reports[0].heading).to.equal(dataRecord.subject.value);
         });
     });
 
@@ -491,47 +504,47 @@ describe('ContactViewModelGenerator service', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', form: 'a', validSubject: 'ac', subject: { value: 'ad' } };
       forms = [ { code: 'a', subjectKey: 'some.key' } ];
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal('some.key');
+          expect(model.reports[0].heading).to.equal('some.key');
         });
     });
 
     it('does not add heading to reports when there are no valid subject', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', subject: { value: 'ad' } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
+          expect(model.reports[0].heading).to.equal('report.subject.unknown');
         });
     });
 
     it('does not add heading to reports when there are no valid subject value', () => {
       const report = { _id: 'ab' };
       const dataRecord = { _id: 'ab', validSubject: 'ac' };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecord ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecord ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal('report.subject.unknown');
+          expect(model.reports[0].heading).to.equal('report.subject.unknown');
         });
     });
 
     it('does not add heading to reports when no data record is found', () => {
       const report = { _id: 'ab' };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.be.an('undefined');
+          expect(model.reports[0].heading).to.be.an('undefined');
         });
     });
 
@@ -539,37 +552,37 @@ describe('ContactViewModelGenerator service', () => {
       const report = { _id: 'a' };
       const dataRecordA = { _id: 'a', validSubject: 'avs', subject: { value: 'asv' } };
       const dataRecordB = { _id: 'b', validSubject: 'bvs', subject: { value: 'bsv' } };
-      stubSearch(null, [ report ]);
-      stubGetDataRecords(null, [ dataRecordB, dataRecordA ]);
+      stubSearch([ report ]);
+      stubGetDataRecords([ dataRecordB, dataRecordA ]);
       return runReportsTest([])
         .then(waitForModelToLoad)
         .then(model => {
-          chai.expect(model.reports[0].heading).to.equal(dataRecordA.subject.value);
+          expect(model.reports[0].heading).to.equal(dataRecordA.subject.value);
         });
     });
   });
 
   describe('muting', () => {
     const runMutingTest = (doc, lineage) => {
-      stubLineageModelGenerator(null, doc, lineage);
+      stubLineageModelGenerator(doc, lineage);
       stubDbGet(null, {});
-      stubSearch(null, []);
-      stubGetDataRecords(null, []);
-      stubDbQueryChildren(null, doc._id, []);
+      stubSearch([]);
+      stubGetDataRecords([]);
+      stubDbQueryChildren(doc._id, []);
       return service.getContact(doc._id);
     };
 
     it('should reflect self muted state when muted', () => {
       const doc = { _id: 'doc', muted: true, contact_type: 'family' };
       return runMutingTest(doc, []).then(result => {
-        chai.expect(result.doc.muted).to.equal(true);
+        expect(result.doc.muted).to.equal(true);
       });
     });
 
     it('should reflect self unmuted state when no lineage', () => {
       const doc = { _id: 'doc', contact_type: 'family' };
       return runMutingTest(doc, []).then(result => {
-        chai.expect(result.doc.muted).to.equal(false);
+        expect(result.doc.muted).to.equal(false);
       });
     });
 
@@ -578,7 +591,7 @@ describe('ContactViewModelGenerator service', () => {
       const lineage = [{ _id: 'p1' }, { _id: 'p2' }];
 
       return runMutingTest(doc, lineage).then(result => {
-        chai.expect(result.doc.muted).to.equal(false);
+        expect(result.doc.muted).to.equal(false);
       });
     });
 
@@ -587,7 +600,7 @@ describe('ContactViewModelGenerator service', () => {
       const lineage = [{ _id: 'p1' }, { _id: 'p2', muted: true }, { _id: 'p3' }];
 
       return runMutingTest(doc, lineage).then(result => {
-        chai.expect(result.doc.muted).to.equal(true);
+        expect(result.doc.muted).to.equal(true);
       });
     });
   });

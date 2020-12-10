@@ -37,6 +37,7 @@ import { RouteGuardProvider } from './providers/route-guard.provider';
 import { ExceptionHandlerProvider } from './providers/exception-handler.provider';
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { ReportsEffects } from '@mm-effects/reports.effects';
+import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { reducers } from './reducers';
@@ -89,7 +90,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BsDropdownModule.forRoot(),
     FormsModule,
     AccordionModule.forRoot(),
-    EffectsModule.forRoot([ GlobalEffects, ReportsEffects ]),
+    EffectsModule.forRoot([ GlobalEffects, ReportsEffects, ContactsEffects ]),
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },

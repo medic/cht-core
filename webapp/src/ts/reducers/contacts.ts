@@ -6,7 +6,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 const initialState = {
   contacts: [],
   contactsById: new Map(),
-  selected: [],
+  selected: null,
   filters: {},
   loadingSelectedChildren: false,
   loadingSelectedContacts: false,
@@ -81,12 +81,90 @@ const removeContact = (state, contact) => {
   return { ...state, contacts, contactsById };
 };
 
+const setLoadingSelectedContact = (state) => {
+  return { ...state, loadingSelectedChildren: true, loadingSelectedReports: true };
+};
+
+const setContactsLoadingSummary = (state, value) => {
+  return { ...state, loadingSummary: value };
+};
+
+const receiveSelectedContactChildren = (state, children) => {
+  return {
+    ...state,
+    loadingSelectedChildren: false,
+    selected: Object.assign({}, state.selected, { children }),
+  };
+};
+
+const receiveSelectedContactReports = (state, reports) => {
+  return {
+    ...state,
+    loadingSelectedReports: false,
+    selected: Object.assign({}, state.selected, { reports }),
+  };
+};
+
+const setSelectedContact = (state, selected) => {
+  return { ...state, selected };
+};
+
+const updateSelectedContact = (state, summary) => {
+  return {
+    ...state,
+    selected: Object.assign({}, state.selected, { summary }),
+  };
+};
+
+const updateSelectedContactsTasks = (state, tasks) => {
+  const taskCounts = {};
+  tasks.forEach(task => {
+    const childId = task.emission.forId;
+    if (taskCounts[childId]) {
+      taskCounts[childId] = taskCounts[childId] + 1;
+    } else {
+      taskCounts[childId] = 1;
+    }
+  });
+  const children = state.selected.children.map(group => {
+    const contacts = group.contacts.map(child => {
+      return Object.assign({}, child, { taskCount: taskCounts[child.id] });
+    });
+    return { ...group, contacts };
+  });
+  const mappedTasks = tasks.map(doc => doc.emission);
+  return Object.assign({}, state, {
+    selected: Object.assign({}, state.selected, { tasks: mappedTasks, children })
+  });
+};
+
+const receiveSelectedContactTargetDoc = (state, targetDoc) => {
+  return {
+    ...state,
+    selected: Object.assign({}, state.selected, { targetDoc }),
+  };
+};
+
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
   on(Actions.setSelectedContacts, (state, { payload: { selected } }) => ({ ...state, selected })),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
   on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),
+  on(Actions.setSelected, (state, { payload: { selected } }) => setSelectedContact(state, selected)),
+  on(Actions.setLoadingSelectedContact, (state) => setLoadingSelectedContact(state)),
+  on(Actions.setContactsLoadingSummary, (state, { payload: { value }}) => setContactsLoadingSummary(state, value)),
+  on(Actions.receiveSelectedContactChildren, (state, { payload: { children }}) => {
+    return receiveSelectedContactChildren(state, children);
+  }),
+  on(Actions.receiveSelectedContactReports, (state, { payload: { reports }}) => {
+    return receiveSelectedContactReports(state, reports);
+  }),
+  on(Actions.updateSelectedContact, (state, { payload: { summary }}) => updateSelectedContact(state, summary)),
+  on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks)),
+  on(Actions.receiveSelectedContactTargetDoc, (state, { payload: { targetDoc }}) => {
+    return receiveSelectedContactTargetDoc(state, targetDoc);
+  }),
 );
 
 export function contactsReducer(state, action) {

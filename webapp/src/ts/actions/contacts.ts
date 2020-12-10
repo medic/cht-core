@@ -1,11 +1,20 @@
 import { Store, createAction } from '@ngrx/store';
-import { createSingleValueAction } from './actionUtils';
+import { createSingleValueAction, createMultiValueAction } from './actionUtils';
 
 export const Actions = {
   updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts'),
   setSelectedContacts: createSingleValueAction('SET_SELECTED_CONTACTS', 'selected'),
   resetContactsList: createAction('RESET_CONTACTS_LIST'),
   removeContactFromList: createSingleValueAction('REMOVE_CONTACT_FROM_LIST', 'contact'),
+  selectContact: createMultiValueAction('SELECT_CONTACT'),
+  setSelected: createSingleValueAction('SET_SELECTED_CONTACT', 'selected'),
+  setContactsLoadingSummary: createSingleValueAction('SET_CONTACT_LOADING_SUMMARY', 'value'),
+  setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
+  receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
+  receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports'),
+  updateSelectedContact: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'summary'),
+  updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
+  receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
 };
 
 export class ContactsActions {
@@ -27,6 +36,42 @@ export class ContactsActions {
 
   removeContactFromList(contact) {
     return this.store.dispatch(Actions.removeContactFromList(contact));
+  }
+
+  selectContact(id, { silent=false }={}) {
+    return this.store.dispatch(Actions.selectContact({ id, silent }));
+  }
+
+  setSelected(model) {
+    return this.store.dispatch(Actions.setSelected(model));
+  }
+
+  setContactsLoadingSummary(value) {
+    return this.store.dispatch(Actions.setContactsLoadingSummary(value));
+  }
+
+  setLoadingSelectedContact() {
+    return this.store.dispatch(Actions.setLoadingSelectedContact());
+  }
+
+  receiveSelectedContactChildren(children) {
+    return this.store.dispatch(Actions.receiveSelectedContactChildren(children));
+  }
+
+  receiveSelectedContactReports(reports) {
+    return this.store.dispatch(Actions.receiveSelectedContactReports(reports));
+  }
+
+  updateSelectedContact(summary) {
+    return this.store.dispatch(Actions.updateSelectedContact(summary));
+  }
+
+  updateSelectedContactsTasks(tasks) {
+    return this.store.dispatch(Actions.updateSelectedContactsTasks(tasks));
+  }
+
+  receiveSelectedContactTargetDoc(targetDoc) {
+    return this.store.dispatch(Actions.receiveSelectedContactTargetDoc(targetDoc));
   }
 
   // const translateTitle = (key, label) => {
