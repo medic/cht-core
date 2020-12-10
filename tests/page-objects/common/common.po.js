@@ -28,8 +28,8 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 module.exports = {
   calm: () => {
     const bootstrapperSelector = by.css('.bootstrap-layer');
-    helper.waitElementToPresent(element(bootstrapperSelector));
-    helper.waitElementToDisappear(bootstrapperSelector);
+    // helper.waitElementToPresent(element(bootstrapperSelector));
+    // helper.waitElementToDisappear(bootstrapperSelector);
     helper.waitUntilReady(medicLogo);
   },
 
