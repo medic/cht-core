@@ -23,6 +23,7 @@ import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.co
 import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
+import { ContactsMutedComponent } from './contacts-muted/contacts-muted.component';
 
 
 @NgModule({
@@ -45,6 +46,7 @@ import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expi
     CheckDateComponent,
     EditMessageGroupComponent,
     SessionExpiredComponent,
+    ContactsMutedComponent,
   ],
   imports: [
     CommonModule,
