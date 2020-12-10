@@ -126,7 +126,7 @@ describe('Contacts content component', () => {
 
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0][0][1].id).to.equal('parent_id');
+      expect(router.navigate.args[0][0][0]).to.equal('/contacts/parent_id');
     });
 
     it('clears when selected contact is deleted and has no parent', () => {

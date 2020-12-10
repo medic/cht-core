@@ -45,8 +45,8 @@ describe('lineage', () => {
         { _id: 'b', contact: { phone: '+123' } }
       ];
       const actual = format.lineage(given);
-      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="/contacts/a">clinic</a></li>' +
-        '<li><a href="/contacts/b">+123</a></li></ol>');
+      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="/#/contacts/a">clinic</a></li>' +
+        '<li><a href="/#/contacts/b">+123</a></li></ol>');
     });
 
     it('escapes entity names', () => {
@@ -56,8 +56,8 @@ describe('lineage', () => {
       ];
       const actual = format.lineage(given);
       assert.equal(actual, '<ol class="horizontal lineage">' +
-        '<li><a href="/contacts/a">&lt;b&gt;clinic&lt;/b&gt;</a></li>' +
-        '<li><a href="/contacts/b">&lt;blink&gt;+123&lt;/blink&gt;</a></li></ol>');
+        '<li><a href="/#/contacts/a">&lt;b&gt;clinic&lt;/b&gt;</a></li>' +
+        '<li><a href="/#/contacts/b">&lt;blink&gt;+123&lt;/blink&gt;</a></li></ol>');
     });
 
   });
@@ -79,8 +79,8 @@ describe('lineage', () => {
         }
       };
       const actual = format.lineage(given);
-      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="/contacts/a">clinic</a></li>' +
-        '<li>centre</li><li><a href="/contacts/c">+456</a></li></ol>');
+      assert.equal(actual, '<ol class="horizontal lineage"><li><a href="/#/contacts/a">clinic</a></li>' +
+        '<li>centre</li><li><a href="/#/contacts/c">+456</a></li></ol>');
     });
 
   });

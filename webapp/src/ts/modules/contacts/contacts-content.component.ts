@@ -88,7 +88,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           this.contactChangeFilterService.matchContact(change, this.selectedContact) &&
           this.contactChangeFilterService.isDeleted(change)) {
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
-          return this.router.navigate(['/contacts', { id: parentId }]);
+          return this.router.navigate([`/contacts/${parentId}`]);
         }
         return this.contactsActions.selectContact(change.id, { silent: true });
       }
