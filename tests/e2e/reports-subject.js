@@ -236,25 +236,17 @@ describe('Reports Summary', () => {
     return utils.saveDoc(report);
   };
 
-  const loadReport = () => {
-    commonElements.goToReports(true);
-    helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li .summary')));
-    helper.clickElement(element(by.css('#reports-list .unfiltered li .summary')));
-    helper.waitElementToPresent(element(by.css('#reports-content .item-summary')), 3000);
-    return Promise.resolve();
-  };
-
   // wait till report was seen by sentinel
   // Sometimes, sentinel processes the report after the report is set as selected, but before the report-content
   // controller change feed listener is set up. Result is that the report-content is never updated with the new data
   // To counter this, we reload the page after we wait for the change for the first time.
-  const waitForSentinel = () => {
+  const waitForSentinel = (reportID) => {
     return browser
       .wait(() => element(
         by.cssContainingText('#reports-content .item-summary .sender .phone', CAROL.phone)).isPresent(),
       10000
       )
-      .catch(loadReport);
+      .catch(reportsTab.loadReport(reportID));
   };
 
   // since the LHS might be refreshed, random StaleElementReferenceErrors were frequent enough
