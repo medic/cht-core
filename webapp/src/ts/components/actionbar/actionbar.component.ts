@@ -126,4 +126,25 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   trackByForms(idx, form) {
     return form.code;
   }
+
+  trackById(idx, item) {
+    return item.id;
+  }
+
+  navigateToContactAdd(type, parentId, from?) {
+    const data = {
+      type: type,
+      parent_id: parentId,
+      from: from
+    };
+    // ToDo navigate to contact.add and send data
+  }
+
+  navigateToContactEdit(selectedContact) {
+    const data = {
+      id: selectedContact._id
+    };
+    // ToDo navigate to contact.edit and send data
+  }
+
 }
