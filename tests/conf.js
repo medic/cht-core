@@ -20,8 +20,8 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: ['**/login.spec.js',
-    'tests/e2e/create-meta-db.js'
-  ],
+      'tests/e2e/create-meta-db.js',
+    ],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',

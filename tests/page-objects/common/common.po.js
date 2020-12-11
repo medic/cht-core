@@ -27,7 +27,7 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 
 module.exports = {
   calm: async () => {
-    const bootstrapperSelector = by.css('.bootstrap-layer');
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
     // await helper.waitElementToDisappear(bootstrapperSelector);
