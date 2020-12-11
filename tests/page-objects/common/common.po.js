@@ -26,11 +26,12 @@ const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 
 module.exports = {
-  calm: () => {
+  calm: async () => {
     const bootstrapperSelector = by.css('.bootstrap-layer');
-    // helper.waitElementToPresent(element(bootstrapperSelector));
-    // helper.waitElementToDisappear(bootstrapperSelector);
-    helper.waitUntilReady(medicLogo);
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReady(medicLogo);
   },
 
   checkAbout: () => {
