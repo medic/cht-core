@@ -98,27 +98,27 @@ describe('RulesEngineService', () => {
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
 
-    fetchTasksResult = false;
+    fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
     fetchTasksForRecursive = sinon.stub();
     fetchTasksFor.events = {};
     fetchTasksForRecursive.callsFake((event, fn) => {
       fetchTasksFor.events[event] = fetchTasksFor.events[event] || [];
       fetchTasksFor.events[event].push(fn);
-      const promise = fetchTasksResult ? fetchTasksResult() : Promise.resolve();
+      const promise = fetchTasksResult();
       promise.on = fetchTasksForRecursive;
       return promise;
     });
     fetchTasksFor.returns({ on: fetchTasksForRecursive });
 
-    fetchTargetsResult = false;
+    fetchTargetsResult = () => Promise.resolve();
     fetchTargets = sinon.stub();
     fetchTargets.events = {};
     fetchTargetsRecursive = sinon.stub();
     fetchTargetsRecursive.callsFake((event, fn) => {
       fetchTargets.events[event] = fetchTargets.events[event] || [];
       fetchTargets.events[event].push(fn);
-      const promise = fetchTargetsResult ? fetchTargetsResult() : Promise.resolve();
+      const promise = fetchTargetsResult();
       promise.on = fetchTargetsRecursive;
       return promise;
     });
