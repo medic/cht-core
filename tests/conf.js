@@ -27,6 +27,7 @@ const baseConfig = {
       '**/infodocs.js',
       '**/common.specs.js',
       '**/content-security-policy.js',
+      'tests/e2e/create-meta-db.js',
     ],
     // performance: 'performance/**/*.js'
   },
