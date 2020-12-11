@@ -42,26 +42,26 @@ describe('Create user meta db : ', () => {
   beforeEach(utils.beforeEach);
   afterEach(utils.afterEach);
 
-  it('should allow a new user to read/write from meta db', () => {
-    usersPage.openAddUserModal();
-    addUserModal.fillForm(userName, fullName, password);
-    addUserModal.submit();
-    helper.waitForAngularComplete();
-    commonElements.goToLoginPage();
-    loginPage.login(userName, password, false);
-    commonElements.calm();
+  it('should allow a new user to read/write from meta db', async () => {
+    await usersPage.openAddUserModal();
+    await addUserModal.fillForm(userName, fullName, password);
+    await addUserModal.submit();
+    await helper.waitForAngularComplete();
+    await commonElements.goToLoginPage();
+    await loginPage.login(userName, password, false);
+    await commonElements.calm();
 
     const doc = { _id: userName };
     const postData = doc;
 
-    browser.wait(() => {
+    await browser.wait(() => {
       return utils.requestOnTestMetaDb(_.defaults({
         method: 'POST',
         body: postData
       }, options));
     });
 
-    browser.wait(() => {
+    await browser.wait(() => {
       return utils.requestOnTestMetaDb(_.defaults({
         path: '/_changes'
       }, options)).then(response => {
