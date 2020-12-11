@@ -1,10 +1,14 @@
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
+const helper=require('../../helper');
 
 describe('Hamburger Menu tests : ', () => {
+
   beforeEach(utils.beforeEach);
 
   it('should open Configuration wizard', () => {
+    helper.waitUntilReady(element(by.css('#update-available')),60000);
+    helper.handleUpdateModal();
     commonElements.openMenu();
     commonElements.checkConfigurationWizard();
   });
