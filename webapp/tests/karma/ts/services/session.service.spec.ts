@@ -54,15 +54,19 @@ describe('Session service', () => {
   });
 
   it('logs out', async () => {
+    const consoleWarnMock = sinon.stub(console, 'warn');
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend.delete.withArgs('/_session').returns(of());
     await service.logout();
     expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
+    expect(consoleWarnMock.callCount).to.equal(1);
+    expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
   });
 
   it('logs out if no user context', async () => {
+    const consoleWarnMock = sinon.stub(console, 'warn');
     cookieGet.returns(JSON.stringify({}));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
@@ -70,14 +74,19 @@ describe('Session service', () => {
     await service.init();
     expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
+    expect(consoleWarnMock.callCount).to.equal(1);
+    expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
   });
 
   it('cookie gets deleted when session expires', async () => {
+    const consoleWarnMock = sinon.stub(console, 'warn');
     cookieGet.returns(JSON.stringify({ name: 'bryan' }));
     Location.dbName = 'DB_NAME';
     $httpBackend.get.withArgs('/_session').returns(throwError({ status: 401 }));
     await service.init();
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
+    expect(consoleWarnMock.callCount).to.equal(1);
+    expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
   });
 
   it('does not log out if server not found', async () => {
@@ -88,6 +97,8 @@ describe('Session service', () => {
   });
 
   it('logs out if remote userCtx inconsistent', async () => {
+    const consoleWarnMock = sinon.stub(console, 'warn');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
     cookieGet.returns(JSON.stringify({ name: 'bryan' }));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
@@ -96,6 +107,8 @@ describe('Session service', () => {
     await service.init();
     expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
+    expect(consoleWarnMock.callCount).to.equal(1);
+    expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
   });
 
   it('does not log out if remote userCtx consistent', async () => {
