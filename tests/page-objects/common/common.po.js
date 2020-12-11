@@ -10,7 +10,7 @@ const hamburgerMenu = element(by.css('.dropdown.options>a'));
 const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
 const logoutButton = $('[ng-click=logout]');
 // Configuration wizard
-const wizardTitle = element(by.css('.modal-header>h2'));
+const wizardTitle = element(by.css('[ng-click="headerCtrl.openGuidedSetup()"]'));
 const defaultCountryCode = element(
   by.css('#select2-default-country-code-setup-container')
 );
@@ -40,8 +40,8 @@ module.exports = {
 
   checkConfigurationWizard: () => {
     openSubmenu('configuration wizard');
-    expect(wizardTitle.getText()).toEqual('Configuration wizard');
-    expect(defaultCountryCode.getText()).toEqual('Canada (+1)');
+    expect(wizardTitle.getText()).toEqual('Easy Setup Wizard');
+    expect(helper.getTextFromElement(defaultCountryCode)).toEqual('Canada (+1)');
     expect(finishBtn.getText()).toEqual('Finish');
     skipSetup.click();
   },
@@ -49,7 +49,7 @@ module.exports = {
   checkGuidedTour: () => {
     openSubmenu('guided');
     expect(tourBtns.count()).toEqual(4);
-    genericCancelBtn.click();
+    helper.clickElement(genericCancelBtn);
   },
 
   checkReportBug: () => {
