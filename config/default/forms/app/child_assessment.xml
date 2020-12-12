@@ -5,23 +5,215 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/child_assessment/group_assessment/referred_for_danger/no:label">
+          <text id="/child_assessment/breathing/breathing_count:label">
+            <value>How many breaths per minute?</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_71:label">
+            <value>Press timer and count the number of breaths for a full 60 seconds</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_73:label">
+            <value>The child does not have fast breathing</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_74:label">
+            <value>The child has fast breathing</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_75:label">
+            <value>This person does not have fast breathing</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_76:label">
+            <value>This person has fast breathing</value>
+          </text>
+          <text id="/child_assessment/breathing:label">
+            <value>Breathing</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+            <value>14 days or more</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+            <value>1  day or less</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+            <value>2 days</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+            <value>3 days</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+            <value>4 to 6 days</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+            <value>7 to 13 days</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time:label">
+            <value>How long has this cough lasted?</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no/no:label">
             <value>No</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger/yes:label">
+          <text id="/child_assessment/cough/cough_yes_no/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger:label">
-            <value><output value=" /child_assessment/patient_name "/> is below 2 months. Refer to health facility. Have you referred them for danger signs management?</value>
+          <text id="/child_assessment/cough/cough_yes_no:label">
+            <value>Does <output value=" /child_assessment/patient_name "/> have a Cough?</value>
           </text>
-          <text id="/child_assessment/group_assessment:label">
-            <value>Under 2 months assessment</value>
+          <text id="/child_assessment/cough:label">
+            <value>Cough</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding:label">
+            <value>Bleeding from nose, mouth, skin, other sites?</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath:label">
+            <value>Difficulty in breathing?</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest:label">
+            <value>Chest indrawing?</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink:label">
+            <value>Not able to drink or feed anything</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever:label">
+            <value>Fever</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold:label">
+            <value>Feels hot or unusually cold</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active:label">
+            <value>Becomes less active</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_present:label">
+            <value>Does <output value=" /child_assessment/patient_name "/> have any of these signs?</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy:label">
+            <value>Unusually sleepy or unconscious</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit:label">
+            <value>Vomiting everything</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow:label">
+            <value>Whole body becomes yellow</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening:label">
+            <value>Danger signs screening</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood:label">
+            <value>Is there blood in the diarrhea?</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3:label">
+            <value>Less than 3</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3_more:label">
+            <value>3 or more</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
+            <value>Number of stools passed in the last day</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+            <value>14 days or more</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+            <value>1  day or less</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+            <value>2 days</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+            <value>3 days</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+            <value>4 to 6 days</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+            <value>7 to 13 days</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last:label">
+            <value>How long has the diarrhea lasted?</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no:label">
+            <value>Has Diarrhea 3 or more loose stools in 24hrs?</value>
+          </text>
+          <text id="/child_assessment/diarrhea:label">
+            <value>Diarrhea</value>
           </text>
           <text id="/child_assessment/inputs/contact/_id:hint">
             <value>Select a person from the list</value>
           </text>
           <text id="/child_assessment/inputs/contact/_id:label">
             <value>Patient ID</value>
+          </text>
+          <text id="/child_assessment/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
           </text>
           <text id="/child_assessment/inputs/contact/name:label">
             <value>Patient Name</value>
@@ -53,6 +245,9 @@
           <text id="/child_assessment/inputs/contact/patient_id:label">
             <value>Medic ID</value>
           </text>
+          <text id="/child_assessment/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
           <text id="/child_assessment/inputs/contact:label">
             <value>Contact</value>
           </text>
@@ -65,27 +260,396 @@
           <text id="/child_assessment/inputs:label">
             <value>Patient</value>
           </text>
-          <text id="/child_assessment/patient_name:label">
-            <value>-</value>
+          <text id="/child_assessment/malaria/generated_note_name_53:label">
+            <value>Use your thermometer to take the patient's temperature</value>
+          </text>
+          <text id="/child_assessment/malaria/generated_note_name_58:label">
+            <value>Do the Rapid Diagnostic Test for Malaria (mRDT)</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain:label">
+            <value>Does <output value=" /child_assessment/patient_name "/> have painful groins swelling?</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/14:label">
+            <value>14 days or more</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/1:label">
+            <value>1  day or less</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/2:label">
+            <value>2 days</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/3:label">
+            <value>3 days</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/4:label">
+            <value>4 to 6 days</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/7:label">
+            <value>7 to 13 days</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length:label">
+            <value>How long has the fever lasted?</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash:label">
+            <value>Does <output value=" /child_assessment/patient_name "/> have skin rash?</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/no_test_kits:label">
+            <value>Test Kits not available</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/other:label">
+            <value>Other</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no:label">
+            <value>Why was malaria test not done?</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no_other:label">
+            <value>Why was malaria test not done?</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred:label">
+            <value>Have you referred <output value=" /child_assessment/patient_name "/> for malaria test?</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/negative:label">
+            <value>Negative</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/not_done:label">
+            <value>Not done</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/positive:label">
+            <value>Positive</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results:label">
+            <value>Rapid Malaria Tests Results</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:jr:constraintMsg">
+            <value>Temperature has to be between 34 and 42</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:label">
+            <value>What is the Temperature?</value>
+          </text>
+          <text id="/child_assessment/malaria:label">
+            <value>Malaria</value>
+          </text>
+          <text id="/child_assessment/malnutrition/generated_note_name_87:label">
+            <value>Use your MUAC strap to take the childs MUAC</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/green:label">
+            <value>Green</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/red:label">
+            <value>Red</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/yellow:label">
+            <value>Yellow</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color:label">
+            <value>What is the color of the MUAC strap?</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet:label">
+            <value>Swelling of both feet of the child?</value>
+          </text>
+          <text id="/child_assessment/malnutrition:label">
+            <value>Malnutrition</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_100:label">
+            <value>{{List of the Danger Signs &amp;amp; other symptoms identified}}</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_101:label">
+            <value>Diagnosis(es)</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_102:label">
+            <value>{{Cough/Diarrhea/Malaria}}</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_103:label">
+            <value>Refer urgently to Health facility&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_104:label">
+            <value>Have you referred <output value=" /child_assessment/patient_name "/> to the health facility? Yes/No</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_105:label">
+            <value>Important Instructions</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_106:label">
+            <value>For instructions and treatment see below table</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_107:label">
+            <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_108:label">
+            <value>Ask to see <output value=" /child_assessment/patient_name "/> again in 3 days and 6 days in follow up visits even if they improve{{if treatment only}}</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_93:label">
+            <value>Patient Assessment&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_94:label">
+            <value>Be sure you submit to complete this action</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_95:label">
+            <value>Patient Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_96:label">
+            <value><output value=" /child_assessment/patient_name "/></value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_97:label">
+            <value><output value=" /child_assessment/inputs/contact/sex "/></value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_98:label">
+            <value><output value=" /child_assessment/patient_age_in_years "/> years <output value=" /child_assessment/patient_age_in_months "/> months</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_99:label">
+            <value>Signs &amp; Symptoms&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred:label">
+            <value><output value=" /child_assessment/patient_name "/> is below 2 months. Refer to health facility. Have you referred them for danger signs management?</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_no:label">
+            <value>You cannot do an assessment for this age. If you do not want to refer for danger signs, use the other appropriate forms like immunization for other actions</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_yes:label">
+            <value>Remember to follow up in 3 days</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment:label">
+            <value>Under 2 months assessment</value>
           </text>
         </translation>
         <translation lang="fr">
-          <text id="/child_assessment/group_assessment/referred_for_danger/no:label">
+          <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger/yes:label">
+          <text id="/child_assessment/breathing/generated_note_name_71:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger:label">
+          <text id="/child_assessment/breathing/generated_note_name_73:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment:label">
+          <text id="/child_assessment/breathing/generated_note_name_74:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_75:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_76:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_present:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3_more:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/inputs/contact/date_of_birth:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/name:label">
@@ -118,6 +682,9 @@
           <text id="/child_assessment/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/inputs/contact:label">
             <value>-</value>
           </text>
@@ -128,94 +695,413 @@
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/generated_note_name_53:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/generated_note_name_58:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/no_test_kits:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no_other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/negative:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/not_done:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/positive:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/generated_note_name_87:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/green:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/red:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/yellow:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_years:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_name:label">
             <value>../inputs/contact/name</value>
           </text>
-        </translation>
-        <translation lang="hi">
-          <text id="/child_assessment/group_assessment/referred_for_danger/no:label">
+          <text id="/child_assessment/summary/generated_note_name_100:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger/yes:label">
+          <text id="/child_assessment/summary/generated_note_name_101:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger:label">
-            <value>yes</value>
-          </text>
-          <text id="/child_assessment/group_assessment:label">
+          <text id="/child_assessment/summary/generated_note_name_102:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/_id:hint">
+          <text id="/child_assessment/summary/generated_note_name_103:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/_id:label">
+          <text id="/child_assessment/summary/generated_note_name_104:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/name:label">
+          <text id="/child_assessment/summary/generated_note_name_105:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent/_id:label">
+          <text id="/child_assessment/summary/generated_note_name_106:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent/parent/_id:label">
+          <text id="/child_assessment/summary/generated_note_name_107:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent/parent/name:label">
+          <text id="/child_assessment/summary/generated_note_name_108:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent/parent/parent/_id:label">
+          <text id="/child_assessment/summary/generated_note_name_93:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent/parent/parent:label">
+          <text id="/child_assessment/summary/generated_note_name_94:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent/parent/phone:label">
+          <text id="/child_assessment/summary/generated_note_name_95:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent/parent:label">
+          <text id="/child_assessment/summary/generated_note_name_96:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/parent:label">
+          <text id="/child_assessment/summary/generated_note_name_97:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact/patient_id:label">
+          <text id="/child_assessment/summary/generated_note_name_98:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/contact:label">
+          <text id="/child_assessment/summary/generated_note_name_99:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/source:label">
+          <text id="/child_assessment/summary:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs/source_id:label">
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/no:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/inputs:label">
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/yes:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/patient_name:label">
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment:label">
             <value>-</value>
           </text>
         </translation>
         <translation lang="id">
-          <text id="/child_assessment/group_assessment/referred_for_danger/no:label">
+          <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger/yes:label">
+          <text id="/child_assessment/breathing/generated_note_name_71:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger:label">
+          <text id="/child_assessment/breathing/generated_note_name_73:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment:label">
+          <text id="/child_assessment/breathing/generated_note_name_74:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_75:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_76:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_present:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3_more:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/inputs/contact/date_of_birth:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/name:label">
@@ -246,6 +1132,9 @@
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/inputs/contact/sex:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact:label">
@@ -260,21 +1149,402 @@
           <text id="/child_assessment/inputs:label">
             <value>./source = 'user'</value>
           </text>
+          <text id="/child_assessment/malaria/generated_note_name_53:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/generated_note_name_58:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/no_test_kits:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no_other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/negative:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/not_done:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/positive:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/generated_note_name_87:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/green:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/red:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/yellow:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_years:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_100:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_101:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_102:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_103:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_104:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_105:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_106:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_107:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_108:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_93:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_94:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_95:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_96:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_97:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_98:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_99:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment:label">
             <value>-</value>
           </text>
         </translation>
         <translation lang="sw">
-          <text id="/child_assessment/group_assessment/referred_for_danger/no:label">
+          <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger/yes:label">
+          <text id="/child_assessment/breathing/generated_note_name_71:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment/referred_for_danger:label">
+          <text id="/child_assessment/breathing/generated_note_name_73:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/group_assessment:label">
+          <text id="/child_assessment/breathing/generated_note_name_74:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_75:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/generated_note_name_76:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_time:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough/cough_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/cough:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_bleeding:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_breath:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_chest:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_drink:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_hot_cold:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_less_active:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_present:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_sleepy:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_vomit:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening/danger_signs_yellow:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/danger_signs_screening:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_blood:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3_more:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_last:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea/diarrhea_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/diarrhea:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/_id:hint">
@@ -282,6 +1552,9 @@
           </text>
           <text id="/child_assessment/inputs/contact/_id:label">
             <value>db-object</value>
+          </text>
+          <text id="/child_assessment/inputs/contact/date_of_birth:label">
+            <value>-</value>
           </text>
           <text id="/child_assessment/inputs/contact/name:label">
             <value>-</value>
@@ -313,6 +1586,9 @@
           <text id="/child_assessment/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/inputs/contact:label">
             <value>-</value>
           </text>
@@ -325,13 +1601,205 @@
           <text id="/child_assessment/inputs:label">
             <value>field-list</value>
           </text>
+          <text id="/child_assessment/malaria/generated_note_name_53:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/generated_note_name_58:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_groin_pain:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/14:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length/7:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_length:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_fever_rash:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/no_test_kits:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no/other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_reason_no_other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_referred:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/negative:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/not_done:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results/positive:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_results:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria/malaria_temp:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malaria:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/generated_note_name_87:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/green:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/red:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color/yellow:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_muac_color:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition/malnutrition_swollen_feet:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/malnutrition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_age_in_years:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_100:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_101:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_102:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_103:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_104:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_105:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_106:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_107:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_108:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_93:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_94:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_95:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_96:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_97:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_98:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/generated_note_name_99:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment/two_mo_referred_yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/two_mo_assessment:label">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2020-12-04_11-56">
+        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2020-12-11_17-05">
           <inputs>
             <meta>
               <location>
@@ -345,6 +1813,8 @@
             <source_id/>
             <contact>
               <_id/>
+              <date_of_birth>0</date_of_birth>
+              <sex/>
               <patient_id/>
               <name/>
               <parent>
@@ -361,19 +1831,92 @@
             </contact>
           </inputs>
           <patient_name/>
-          <group_assessment>
-            <referred_for_danger/>
-          </group_assessment>
+          <patient_age_in_years tag="hidden">0</patient_age_in_years>
+          <patient_age_in_months tag="hidden">0</patient_age_in_months>
+          <patient_age_in_days tag="hidden"/>
+          <two_mo_assessment>
+            <two_mo_referred/>
+            <two_mo_referred_yes/>
+            <two_mo_referred_no/>
+          </two_mo_assessment>
+          <danger_signs_screening>
+            <danger_signs_present/>
+            <danger_signs_sleepy/>
+            <danger_signs_less_active/>
+            <danger_signs_yellow/>
+            <danger_signs_hot_cold/>
+            <danger_signs_bleeding/>
+            <danger_signs_vomit/>
+            <danger_signs_chest/>
+            <danger_signs_drink/>
+            <danger_signs_breath/>
+            <danger_signs_fever/>
+          </danger_signs_screening>
+          <malaria>
+            <generated_note_name_53/>
+            <malaria_temp/>
+            <malaria_fever_length/>
+            <malaria_fever_rash/>
+            <malaria_fever_groin_pain/>
+            <generated_note_name_58/>
+            <malaria_results/>
+            <malaria_reason_no/>
+            <malaria_reason_no_other/>
+            <malaria_referred/>
+          </malaria>
+          <cough>
+            <cough_yes_no/>
+            <cough_time/>
+          </cough>
+          <breathing>
+            <generated_note_name_71/>
+            <breathing_count/>
+            <generated_note_name_73/>
+            <generated_note_name_74/>
+            <generated_note_name_75/>
+            <generated_note_name_76/>
+          </breathing>
+          <diarrhea>
+            <diarrhea_yes_no/>
+            <diarrhea_last/>
+            <diarrhea_in_day/>
+            <diarrhea_blood/>
+          </diarrhea>
+          <malnutrition>
+            <generated_note_name_87/>
+            <malnutrition_muac_color/>
+            <malnutrition_swollen_feet/>
+          </malnutrition>
+          <summary tag="hidden">
+            <generated_note_name_93/>
+            <generated_note_name_94/>
+            <generated_note_name_95/>
+            <generated_note_name_96/>
+            <generated_note_name_97/>
+            <generated_note_name_98/>
+            <generated_note_name_99/>
+            <generated_note_name_100/>
+            <generated_note_name_101/>
+            <generated_note_name_102/>
+            <generated_note_name_103/>
+            <generated_note_name_104/>
+            <generated_note_name_105/>
+            <generated_note_name_106/>
+            <generated_note_name_107/>
+            <generated_note_name_108/>
+          </summary>
           <meta tag="hidden">
             <instanceID/>
           </meta>
         </child_assessment>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/child_assessment/inputs" relevant="/source = 'user'"/>
+      <bind nodeset="/child_assessment/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/child_assessment/inputs/source" type="string"/>
       <bind nodeset="/child_assessment/inputs/source_id" type="string"/>
       <bind nodeset="/child_assessment/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/child_assessment/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/child_assessment/inputs/contact/sex" type="string"/>
       <bind nodeset="/child_assessment/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/child_assessment/inputs/contact/name" type="string"/>
       <bind nodeset="/child_assessment/inputs/contact/parent/_id" type="string"/>
@@ -382,7 +1925,91 @@
       <bind nodeset="/child_assessment/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/child_assessment/inputs/contact/parent/parent/parent/_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/child_assessment/patient_name" type="string"/>
-      <bind nodeset="/child_assessment/group_assessment/referred_for_danger" required="true()" type="select1"/>
+      <bind calculate="floor( difference-in-months(  /child_assessment/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/child_assessment/patient_age_in_years" type="string"/>
+      <bind calculate="difference-in-months(  /child_assessment/inputs/contact/date_of_birth , today() )" nodeset="/child_assessment/patient_age_in_months" type="string"/>
+      <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /child_assessment/inputs/contact/date_of_birth ) )" nodeset="/child_assessment/patient_age_in_days" type="string"/>
+      <bind nodeset="/child_assessment/two_mo_assessment/two_mo_referred" relevant=" /child_assessment/patient_age_in_months  &lt;= 2" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/two_mo_assessment/two_mo_referred_yes" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/two_mo_assessment/two_mo_referred_no" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'no')" type="string"/>
+      <bind nodeset="/child_assessment/danger_signs_screening" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_present" readonly="true()" required="true()" type="string"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_sleepy" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_less_active" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_yellow" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_hot_cold" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_bleeding" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_vomit" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_chest" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_drink" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_breath" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_fever" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malaria" relevant=" /child_assessment/patient_age_in_months  &gt; 2 and 
+selected( /child_assessment/danger_signs_screening/danger_signs_fever , 'yes')"/>
+      <bind nodeset="/child_assessment/malaria/generated_note_name_53" readonly="true()" required="true()" type="string"/>
+      <bind constraint=" /child_assessment/malaria/malaria_temp  &gt;= 34 and  /child_assessment/malaria/malaria_temp  &lt;= 42" jr:constraintMsg="jr:itext('/child_assessment/malaria/malaria_temp:jr:constraintMsg')" nodeset="/child_assessment/malaria/malaria_temp" required="true()" type="decimal"/>
+      <bind nodeset="/child_assessment/malaria/malaria_fever_length" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malaria/malaria_fever_rash" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malaria/malaria_fever_groin_pain" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malaria/generated_note_name_58" readonly="true()" relevant="selected( /child_assessment/danger_signs_screening/danger_signs_sleepy , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_less_active , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_yellow , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_hot_cold , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_bleeding , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_vomit , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_chest , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_drink , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_breath , 'no') and
+not(selected( /child_assessment/malaria/malaria_fever_length , '7')) and
+not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" type="string"/>
+      <bind nodeset="/child_assessment/malaria/malaria_results" relevant="selected( /child_assessment/danger_signs_screening/danger_signs_sleepy , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_less_active , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_yellow , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_hot_cold , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_bleeding , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_vomit , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_chest , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_drink , 'no') and 
+selected( /child_assessment/danger_signs_screening/danger_signs_breath , 'no') and
+not(selected( /child_assessment/malaria/malaria_fever_length , '7')) and
+not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malaria/malaria_reason_no" relevant="selected( /child_assessment/malaria/malaria_results , 'not_done')" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malaria/malaria_reason_no_other" relevant="selected( /child_assessment/malaria/malaria_reason_no , 'other')" type="string"/>
+      <bind nodeset="/child_assessment/malaria/malaria_referred" relevant="selected( /child_assessment/malaria/malaria_results , 'not_done')" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/cough" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
+      <bind nodeset="/child_assessment/cough/cough_yes_no" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/cough/cough_time" relevant="selected( /child_assessment/cough/cough_yes_no , 'yes')" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/breathing" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
+      <bind nodeset="/child_assessment/breathing/generated_note_name_71" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/breathing/breathing_count" required="true()" type="int"/>
+      <bind nodeset="/child_assessment/breathing/generated_note_name_73" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and (( /child_assessment/patient_age_in_months  &lt;= 12 and  /child_assessment/breathing/breathing_count  &lt;= 50) or ( /child_assessment/patient_age_in_months  &gt; 12 and  /child_assessment/patient_age_in_years  &lt;= 5 and  /child_assessment/breathing/breathing_count  &lt;= 40))" type="string"/>
+      <bind nodeset="/child_assessment/breathing/generated_note_name_74" readonly="true()" relevant="( /child_assessment/patient_age_in_months  &lt;= 12 and  /child_assessment/breathing/breathing_count  &gt; 50) or ( /child_assessment/patient_age_in_months  &gt; 12 and  /child_assessment/patient_age_in_years  &lt;= 5 and  /child_assessment/breathing/breathing_count  &gt; 40)" type="string"/>
+      <bind nodeset="/child_assessment/breathing/generated_note_name_75" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and  /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &lt; 24" type="string"/>
+      <bind nodeset="/child_assessment/breathing/generated_note_name_76" readonly="true()" relevant=" /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &lt; 24" type="string"/>
+      <bind nodeset="/child_assessment/diarrhea" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
+      <bind nodeset="/child_assessment/diarrhea/diarrhea_yes_no" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/diarrhea/diarrhea_last" relevant="selected( /child_assessment/diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/diarrhea/diarrhea_in_day" relevant="selected( /child_assessment/diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/diarrhea/diarrhea_blood" relevant="selected( /child_assessment/diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malnutrition" relevant=" /child_assessment/patient_age_in_months  &gt;= 6 and  /child_assessment/patient_age_in_years  &lt;= 5"/>
+      <bind nodeset="/child_assessment/malnutrition/generated_note_name_87" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/malnutrition/malnutrition_muac_color" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/malnutrition/malnutrition_swollen_feet" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_93" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_94" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_95" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_96" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_97" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_98" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_99" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_100" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_101" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_102" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_103" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_104" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_105" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_106" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_107" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_108" readonly="true()" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/child_assessment/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -391,7 +2018,7 @@
       <label ref="jr:itext('/child_assessment/inputs:label')"/>
       <group ref="/child_assessment/inputs/contact">
         <label ref="jr:itext('/child_assessment/inputs/contact:label')"/>
-        <input ref="/child_assessment/inputs/contact/_id">
+        <input appearance="db-object" ref="/child_assessment/inputs/contact/_id">
           <label ref="jr:itext('/child_assessment/inputs/contact/_id:label')"/>
           <hint ref="jr:itext('/child_assessment/inputs/contact/_id:hint')"/>
         </input>
@@ -406,19 +2033,449 @@
         </group>
       </group>
     </group>
-    <group ref="/child_assessment/group_assessment">
-      <label ref="jr:itext('/child_assessment/group_assessment:label')"/>
-      <select1 ref="/child_assessment/group_assessment/referred_for_danger">
-        <label ref="jr:itext('/child_assessment/group_assessment/referred_for_danger:label')"/>
+    <group appearance="field-list" ref="/child_assessment/two_mo_assessment">
+      <label ref="jr:itext('/child_assessment/two_mo_assessment:label')"/>
+      <select1 ref="/child_assessment/two_mo_assessment/two_mo_referred">
+        <label ref="jr:itext('/child_assessment/two_mo_assessment/two_mo_referred:label')"/>
         <item>
-          <label ref="jr:itext('/child_assessment/group_assessment/referred_for_danger/yes:label')"/>
+          <label ref="jr:itext('/child_assessment/two_mo_assessment/two_mo_referred/yes:label')"/>
           <value>yes</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/group_assessment/referred_for_danger/no:label')"/>
+          <label ref="jr:itext('/child_assessment/two_mo_assessment/two_mo_referred/no:label')"/>
           <value>no</value>
         </item>
       </select1>
+      <input ref="/child_assessment/two_mo_assessment/two_mo_referred_yes">
+        <label ref="jr:itext('/child_assessment/two_mo_assessment/two_mo_referred_yes:label')"/>
+      </input>
+      <input ref="/child_assessment/two_mo_assessment/two_mo_referred_no">
+        <label ref="jr:itext('/child_assessment/two_mo_assessment/two_mo_referred_no:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/child_assessment/danger_signs_screening">
+      <label ref="jr:itext('/child_assessment/danger_signs_screening:label')"/>
+      <input ref="/child_assessment/danger_signs_screening/danger_signs_present">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_present:label')"/>
+      </input>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_sleepy">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_sleepy:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_sleepy/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_sleepy/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_less_active">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_less_active:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_less_active/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_less_active/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_yellow">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_yellow:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_yellow/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_yellow/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_hot_cold">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_hot_cold:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_hot_cold/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_hot_cold/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_bleeding">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_bleeding:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_bleeding/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_bleeding/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_vomit">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_vomit:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_vomit/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_vomit/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_chest">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_chest:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_chest/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_chest/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_drink">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_drink:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_drink/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_drink/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_breath">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_breath:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_breath/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_breath/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/danger_signs_screening/danger_signs_fever">
+        <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_fever:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_fever/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/danger_signs_screening/danger_signs_fever/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/child_assessment/malaria">
+      <label ref="jr:itext('/child_assessment/malaria:label')"/>
+      <input ref="/child_assessment/malaria/generated_note_name_53">
+        <label ref="jr:itext('/child_assessment/malaria/generated_note_name_53:label')"/>
+      </input>
+      <input ref="/child_assessment/malaria/malaria_temp">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_temp:label')"/>
+      </input>
+      <select1 ref="/child_assessment/malaria/malaria_fever_length">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_fever_length:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_length/1:label')"/>
+          <value>1</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_length/2:label')"/>
+          <value>2</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_length/3:label')"/>
+          <value>3</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_length/4:label')"/>
+          <value>4</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_length/7:label')"/>
+          <value>7</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_length/14:label')"/>
+          <value>14</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/malaria/malaria_fever_rash">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_fever_rash:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_rash/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_rash/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/malaria/malaria_fever_groin_pain">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_fever_groin_pain:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_groin_pain/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_fever_groin_pain/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/child_assessment/malaria/generated_note_name_58">
+        <label ref="jr:itext('/child_assessment/malaria/generated_note_name_58:label')"/>
+      </input>
+      <select1 ref="/child_assessment/malaria/malaria_results">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_results:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_results/positive:label')"/>
+          <value>positive</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_results/negative:label')"/>
+          <value>negative</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_results/not_done:label')"/>
+          <value>not_done</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/malaria/malaria_reason_no">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_reason_no:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_reason_no/no_test_kits:label')"/>
+          <value>no_test_kits</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_reason_no/other:label')"/>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/child_assessment/malaria/malaria_reason_no_other">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_reason_no_other:label')"/>
+      </input>
+      <select1 ref="/child_assessment/malaria/malaria_referred">
+        <label ref="jr:itext('/child_assessment/malaria/malaria_referred:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_referred/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malaria/malaria_referred/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/child_assessment/cough">
+      <label ref="jr:itext('/child_assessment/cough:label')"/>
+      <select1 ref="/child_assessment/cough/cough_yes_no">
+        <label ref="jr:itext('/child_assessment/cough/cough_yes_no:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_yes_no/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_yes_no/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/cough/cough_time">
+        <label ref="jr:itext('/child_assessment/cough/cough_time:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_1:label')"/>
+          <value>cough_time_1</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_2:label')"/>
+          <value>cough_time_2</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_3:label')"/>
+          <value>cough_time_3</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_4:label')"/>
+          <value>cough_time_4</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_7:label')"/>
+          <value>cough_time_7</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_14:label')"/>
+          <value>cough_time_14</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/child_assessment/breathing">
+      <label ref="jr:itext('/child_assessment/breathing:label')"/>
+      <input ref="/child_assessment/breathing/generated_note_name_71">
+        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_71:label')"/>
+      </input>
+      <input ref="/child_assessment/breathing/breathing_count">
+        <label ref="jr:itext('/child_assessment/breathing/breathing_count:label')"/>
+      </input>
+      <input ref="/child_assessment/breathing/generated_note_name_73">
+        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_73:label')"/>
+      </input>
+      <input ref="/child_assessment/breathing/generated_note_name_74">
+        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_74:label')"/>
+      </input>
+      <input ref="/child_assessment/breathing/generated_note_name_75">
+        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_75:label')"/>
+      </input>
+      <input ref="/child_assessment/breathing/generated_note_name_76">
+        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_76:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/child_assessment/diarrhea">
+      <label ref="jr:itext('/child_assessment/diarrhea:label')"/>
+      <select1 ref="/child_assessment/diarrhea/diarrhea_yes_no">
+        <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_yes_no:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_yes_no/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_yes_no/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/diarrhea/diarrhea_last">
+        <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label')"/>
+          <value>diarrhea_last_1</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label')"/>
+          <value>diarrhea_last_2</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label')"/>
+          <value>diarrhea_last_3</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label')"/>
+          <value>diarrhea_last_4</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label')"/>
+          <value>diarrhea_last_7</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label')"/>
+          <value>diarrhea_last_14</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/diarrhea/diarrhea_in_day">
+        <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_in_day:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3:label')"/>
+          <value>diarrhea_in_day_3</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_in_day/diarrhea_in_day_3_more:label')"/>
+          <value>diarrhea_in_day_3_more</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/diarrhea/diarrhea_blood">
+        <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_blood:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_blood/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_blood/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/child_assessment/malnutrition">
+      <label ref="jr:itext('/child_assessment/malnutrition:label')"/>
+      <input ref="/child_assessment/malnutrition/generated_note_name_87">
+        <label ref="jr:itext('/child_assessment/malnutrition/generated_note_name_87:label')"/>
+      </input>
+      <select1 ref="/child_assessment/malnutrition/malnutrition_muac_color">
+        <label ref="jr:itext('/child_assessment/malnutrition/malnutrition_muac_color:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malnutrition/malnutrition_muac_color/red:label')"/>
+          <value>red</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malnutrition/malnutrition_muac_color/green:label')"/>
+          <value>green</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malnutrition/malnutrition_muac_color/yellow:label')"/>
+          <value>yellow</value>
+        </item>
+      </select1>
+      <select1 ref="/child_assessment/malnutrition/malnutrition_swollen_feet">
+        <label ref="jr:itext('/child_assessment/malnutrition/malnutrition_swollen_feet:label')"/>
+        <item>
+          <label ref="jr:itext('/child_assessment/malnutrition/malnutrition_swollen_feet/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_assessment/malnutrition/malnutrition_swollen_feet/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list summary" ref="/child_assessment/summary">
+      <input appearance="h1 yellow" ref="/child_assessment/summary/generated_note_name_93">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_93:label')"/>
+      </input>
+      <input appearance="h4 center" ref="/child_assessment/summary/generated_note_name_94">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_94:label')"/>
+      </input>
+      <input appearance="h1 green" ref="/child_assessment/summary/generated_note_name_95">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_95:label')"/>
+      </input>
+      <input appearance="center" ref="/child_assessment/summary/generated_note_name_96">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_96:label')"/>
+      </input>
+      <input appearance="center" ref="/child_assessment/summary/generated_note_name_97">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_97:label')"/>
+      </input>
+      <input appearance="center" ref="/child_assessment/summary/generated_note_name_98">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_98:label')"/>
+      </input>
+      <input appearance="h1 blue" ref="/child_assessment/summary/generated_note_name_99">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_99:label')"/>
+      </input>
+      <input ref="/child_assessment/summary/generated_note_name_100">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_100:label')"/>
+      </input>
+      <input appearance="h1 green" ref="/child_assessment/summary/generated_note_name_101">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_101:label')"/>
+      </input>
+      <input ref="/child_assessment/summary/generated_note_name_102">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_102:label')"/>
+      </input>
+      <input appearance="h1 red" ref="/child_assessment/summary/generated_note_name_103">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_103:label')"/>
+      </input>
+      <input ref="/child_assessment/summary/generated_note_name_104">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_104:label')"/>
+      </input>
+      <input appearance="h1 blue" ref="/child_assessment/summary/generated_note_name_105">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_105:label')"/>
+      </input>
+      <input ref="/child_assessment/summary/generated_note_name_106">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_106:label')"/>
+      </input>
+      <input appearance="h1 lime" ref="/child_assessment/summary/generated_note_name_107">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_107:label')"/>
+      </input>
+      <input ref="/child_assessment/summary/generated_note_name_108">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_108:label')"/>
+      </input>
     </group>
   </h:body>
 </h:html>

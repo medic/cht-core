@@ -3,7 +3,8 @@
   "icon": "draft-icon",
   "context": {
     "person": true,
-    "place": false
+    "place": false,
+    "expression": "contact.type === 'person' && summary.alive && (!contact.date_of_birth ||  ageInYears(contact) < 5)"
   }
 }
 
