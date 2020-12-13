@@ -53,7 +53,7 @@ module.exports = {
     helper.waitUntilReady(getSubmitButton()); // wait for form to load
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
-    getEmailField().sendKeys('bede@mobile.org');
+    getEmailField().sendKeys('tester@mobile.org');
     getPhoneField().sendKeys('0064212134566');
     helper.selectDropdownByValue(getLanguageField(), 'en', 2);
     helper.selectDropdownByValue(getRoleField(), 'string:national_admin');

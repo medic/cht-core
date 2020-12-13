@@ -1,17 +1,29 @@
-const utils = require('../../utils');
-const usersPage = require('../../page-objects/users/users.po.js');
-const helper = require('../../helper');
-const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
-
-const addedUser = 'fulltester';
-const fullName = 'Full Tester';
-const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
+const utils=require('../../utils');
+const usersPage=require('../../page-objects/users/users.po.js');
+const helper=require('../../helper');
+const addUserModal=require('../../page-objects/users/add-user-modal.po.js');
+const { browser }=require('protractor');
+const addedUser='fulltester';
+const fullName='Full Tester';
+const errorMessagePassword=element(by.css('#edit-password ~ .help-block'));
 
 describe('Add user  : ', () => {
-  beforeAll(()=>{
-    helper.waitUntilReady(element(
-      by.xpath(`//*[contains(normalize-space(text()), "No messages found")]`)
-    ));
+  let originalTimeout;
+  const admin=element(by.xpath(`//*[contains(normalize-space(text()), "Administrator")]`));
+  const messageTab=element(by.xpath(`//*[contains(normalize-space(text()), "No messages found")]`));
+  beforeEach(function () {
+    helper.handleUpdateModal();
+    originalTimeout=jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL=60000;
+  });
+
+  afterEach(function () {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL=originalTimeout;
+  });
+  beforeAll(() => {
+    browser.sleep(20000);
+    helper.handleUpdateModal();
+    helper.waitUntilReady(messageTab);
   });
   afterAll(done =>
     utils.request(`/_users/${addedUser}`)
@@ -19,10 +31,11 @@ describe('Add user  : ', () => {
         path: `/_users/${addedUser}?rev=${doc._rev}`,
         method: 'DELETE'
       }))
-      .catch(() => {}) // If this fails we don't care
+      .catch(() => { }) // If this fails we don't care
       .then(() => utils.afterEach(done)));
 
   it('should add user with valid password', () => {
+    helper.waitUntilReady(messageTab);
     usersPage.openAddUserModal();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
@@ -34,10 +47,18 @@ describe('Add user  : ', () => {
         .catch(() => {
           return true;
         });
-    }, 2000);
-    helper.waitForAngularComplete();
-    expect(helper.isTextDisplayed(addedUser)).toBe(true);
-    expect(helper.isTextDisplayed(fullName)).toBe(true);
+    }, 20000);
+    //waitForLoaderToDisappear();
+    helper.waitUntilReady(admin);
+    browser.refresh();
+    const users =element.all(by.repeater('user in users'));
+    helper.waitUntilReady(users);
+    // eslint-disable-next-line promise/catch-or-return
+    users.get(1).getText().then(text=> {
+      console.log('bede...', text);
+      expect(text).toContain(addedUser);
+      expect(text).toContain(fullName);
+    });
   });
 
   it('should reject passwords shorter than 8 characters', () => {
@@ -77,7 +98,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('', 'Not Saved', '%4wbbygxkgdwvdwT65');
     addUserModal.submit();
-    const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
+    const errorMessageUserName=element.all(by.css('span.help-block.ng-binding')).get(0);
     helper.waitUntilReady(errorMessageUserName);
     expect(errorMessageUserName.getText()).toContain('required');
     element(by.css('button.cancel.close')).click();
