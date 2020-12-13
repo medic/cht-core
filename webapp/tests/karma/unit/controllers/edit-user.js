@@ -89,7 +89,6 @@ describe('EditUserCtrl controller', () => {
           },
           'Select2Search': sinon.stub(),
           'SetLanguage': sinon.stub(),
-          // '$window': {location: {reload: sinon.stub()}},
           '$translate': translate
         });
       };
