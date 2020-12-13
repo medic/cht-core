@@ -3,8 +3,8 @@ const usersPage = require('../../page-objects/users/users.po.js');
 const helper = require('../../helper');
 const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
-const addedUser = 'fulltester' + new Date().getTime();
-const fullName = 'Bede Ngaruko';
+const addedUser = 'fulltester';
+const fullName = 'Full Tester';
 const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
 describe('Add user  : ', () => {
