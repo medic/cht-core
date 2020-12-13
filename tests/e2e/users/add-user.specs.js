@@ -8,7 +8,11 @@ const fullName = 'Full Tester';
 const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
 describe('Add user  : ', () => {
-
+beforeAll(()=>{
+  helper.waitUntilReady(element(
+    by.xpath(`//*[contains(normalize-space(text()), "No messages found")]`)
+  ));
+})
   afterAll(done =>
     utils.request(`/_users/${addedUser}`)
       .then(doc => utils.request({
