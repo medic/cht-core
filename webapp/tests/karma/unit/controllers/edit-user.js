@@ -52,12 +52,6 @@ describe('EditUserCtrl controller', () => {
     window.$.callThrough();
 
     module($provide => {
-      // $provide.factory('$uibModalInstance', () => {
-      //   return {
-      //     rendered: Promise.resolve(),
-      //     close: () => {},
-      //   };
-      // });
       $provide.factory('processingFunction', () => {
         return null;
       });
