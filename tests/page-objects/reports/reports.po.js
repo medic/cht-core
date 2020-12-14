@@ -51,14 +51,9 @@ module.exports = {
     return list.all(by.css('li[data-record-id="' + uuid + '"]'));
   },
   filterByDate: (startDate, endDate) => {
-    let clear = '';
-    for (let i = 0; i < 20; i++) {
-      clear += protractor.Key.BACK_SPACE;
-    }
-
     dateFilter.click();
-    datePickerStart.click().sendKeys(clear + startDate);
-    datePickerEnd.click().sendKeys(clear + endDate + protractor.Key.ENTER);
+    datePickerStart.click().clear().sendKeys(startDate);
+    datePickerEnd.click().clear().sendKeys(endDate + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
   },
   expectReportsToExist: uuids => {
