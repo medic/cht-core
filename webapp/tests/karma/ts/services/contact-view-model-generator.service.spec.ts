@@ -21,11 +21,9 @@ describe('ContactViewModelGenerator service', () => {
   let childPlace2;
   let dbGet;
   let dbQuery;
-  // let dbAllDocs;
   let doc;
   let search;
   let getDataRecords;
-  let Session;
   let forms;
 
   const childPlaceIcon = 'fa-mushroom';
@@ -67,7 +65,6 @@ describe('ContactViewModelGenerator service', () => {
     search = sinon.stub();
     dbGet = sinon.stub();
     dbQuery = sinon.stub();
-    // dbAllDocs = sinon.stub();
     getDataRecords = sinon.stub();
     const types = [
       { id: 'family' },
@@ -78,7 +75,6 @@ describe('ContactViewModelGenerator service', () => {
       { id: 'mushroom', name_key: 'label.mushroom' }
     ];
     lineageModelGenerator = { contact: sinon.stub() };
-    Session = { isOnlineOnly: function() {} };
     const parentId = 'districtsdistrict';
     const contactId = 'mario';
     childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
@@ -207,7 +203,7 @@ describe('ContactViewModelGenerator service', () => {
         });
     });
 
-    it(`if contact doesn't belong to place, it still gets displayed`, () => {
+    it('if contact does not belong to place, it still gets displayed', () => {
       return runPlaceTest([]).then(model => {
         assert.equal(model.children[0].contacts.length, 1);
         assert.equal(model.children[0].contacts[0].doc._id, childContactPerson._id);
@@ -377,7 +373,6 @@ describe('ContactViewModelGenerator service', () => {
     };
 
     it('sets the returned reports as selected', () => {
-      sinon.stub(Session, 'isOnlineOnly').returns(true);
       stubSearch([ { _id: 'ab' } ]);
       stubGetDataRecords([]);
       return runReportsTest([])

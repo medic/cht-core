@@ -6,8 +6,6 @@ import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.component';
-// import { SettingsService } from '@mm-services/settings.service';
-// import { GlobalActions } from '@mm-actions/global';
 import { ContactsActions } from '@mm-actions/contacts';
 import { Selectors } from '@mm-selectors/index';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
@@ -97,21 +95,23 @@ describe('Contacts content component', () => {
       change = { doc: {} };
     });
 
-    it('updates information when selected contact is updated', () => {
+    it('should update information when selected contact is updated', () => {
       const changesFilter = changesService.subscribe.args[0][0].filter;
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
       contactChangeFilterService.matchContact.returns(true);
       contactChangeFilterService.isDeleted.returns(false);
+
       expect(changesFilter(change)).to.equal(true);
       expect(selectContact.callCount).to.equal(0);
+
       changesCallback(change);
 
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(selectContact.callCount).to.equal(1);
     });
 
-    it('redirects to parent when selected contact is deleted', () => {
+    it('should redirect to parent when selected contact is deleted', () => {
       selectedContact.doc.parent = { _id: 'parent_id' };
       contactChangeFilterService.matchContact.returns(true);
       contactChangeFilterService.isDeleted.returns(true);
@@ -129,7 +129,7 @@ describe('Contacts content component', () => {
       expect(router.navigate.args[0][0][0]).to.equal('/contacts/parent_id');
     });
 
-    it('clears when selected contact is deleted and has no parent', () => {
+    it('shoul clear when selected contact is deleted and has no parent', () => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const changesFilter = changesService.subscribe.args[0][0].filter;
       contactChangeFilterService.matchContact.returns(true);
@@ -141,7 +141,7 @@ describe('Contacts content component', () => {
       expect(router.navigate.callCount).to.equal(1);
     });
 
-    it('updates information when relevant contact change is received', () => {
+    it('should update information when relevant contact change is received', () => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const changesFilter = changesService.subscribe.args[0][0].filter;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
@@ -156,7 +156,7 @@ describe('Contacts content component', () => {
       expect(selectContact.callCount).to.equal(1);
     });
 
-    it('updates information when relevant report change is received', () => {
+    it('should update information when relevant report change is received', () => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const changesFilter = changesService.subscribe.args[0][0].filter;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');

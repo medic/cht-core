@@ -2,7 +2,7 @@
  * Service to identify relevant changes in relation to a Contact document.
  */
 import { Injectable } from '@angular/core';
-import * as _ from 'lodash-es';
+import { some } from 'lodash-es';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 
@@ -17,9 +17,9 @@ const isReport = function(change) {
 const matchReportSubject = function(report, contact) {
   if (report.doc.fields && (
     (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc._id) ||
-      (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc.patient_id) ||
-      (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc._id) ||
-      (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc.place_id))) {
+    (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc.patient_id) ||
+    (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc._id) ||
+    (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc.place_id))) {
     return true;
   }
 
@@ -38,24 +38,16 @@ const isChild = function(change, contact) {
 };
 
 const wasChild = function(change, contact) {
-  return _.some(contact.children, function(children) {
-    return children instanceof Array && _.some(children, function(child) {
+  return some(contact.children, function(children) {
+    return children instanceof Array && some(children, function(child) {
       return child.doc._id === change.doc._id;
     });
   });
 };
 
 const isAncestor = function(change, contact) {
-  return _.some(contact.lineage, function(lineage) {
+  return some(contact.lineage, function(lineage) {
     return !!lineage && lineage._id === change.doc._id;
-  });
-};
-
-const matchChildReportSubject = function(change, contact) {
-  return _.some(contact.children, function(children) {
-    return children instanceof Array && _.some(children, function(child) {
-      return matchReportSubject(change, child);
-    });
   });
 };
 
@@ -66,6 +58,14 @@ export class ContactChangeFilterService {
   constructor(
     private contactTypesService: ContactTypesService
   ){}
+
+  private matchChildReportSubject(change, contact) {
+    return some(contact.children, function(children) {
+      return children instanceof Array && some(children, function(child) {
+        return matchReportSubject(change, child);
+      });
+    });
+  }
   
   matchContact(change, contact) {
     return isValidInput(contact) && contact.doc._id === change.id;
@@ -75,7 +75,7 @@ export class ContactChangeFilterService {
     return isValidInput(change) &&
            isValidInput(contact) &&
            isReport(change) &&
-           (matchReportSubject(change, contact) || matchChildReportSubject(change, contact));
+           (matchReportSubject(change, contact) || this.matchChildReportSubject(change, contact));
   }
 
   isRelevantContact(change, contact) {

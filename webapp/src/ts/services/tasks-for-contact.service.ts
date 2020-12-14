@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 
-import { ContactTypesService } from './contact-types.service';
-import { RulesEngineService } from './rules-engine.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +27,8 @@ export class TasksForContactService {
   }
 
   private areTasksEnabled(type) {
-    return this.rulesEngineService.isEnabled()
+    return this.rulesEngineService
+      .isEnabled()
       .then(isRulesEngineEnabled => {
         if (!isRulesEngineEnabled) {
           return false;
@@ -39,20 +40,22 @@ export class TasksForContactService {
         }
 
         // ... or a leaf place type
-        return this.contactTypesService.getAll().then(types => {
-          const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type.id));
-          return !hasChild;
-        });
+        return this.contactTypesService
+          .getAll()
+          .then(types => {
+            const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type.id));
+            return !hasChild;
+          });
       });
   }
 
   private decorateAndSortTasks(tasks) {
-    tasks.forEach(function(task) {
+    tasks.forEach((task) => {
       const dueDate = moment(task.emission.dueDate, 'YYYY-MM-DD');
       task.emission.overdue = dueDate.isBefore(moment());
     });
 
-    tasks.sort(function(a, b) {	
+    tasks.sort((a, b) => {	
       return a.emission.dueDate < b.emission.dueDate ? -1 : 1;	
     });
 
@@ -60,14 +63,16 @@ export class TasksForContactService {
   }
 
   get(model) {
-    return this.areTasksEnabled(model.type)
+    return this
+      .areTasksEnabled(model.type)
       .then(enabled => {
         if (!enabled) {
           return [];
         }
 
         const contactIds = this.getIdsForTasks(model);
-        return this.rulesEngineService.fetchTaskDocsFor(contactIds)
+        return this.rulesEngineService
+          .fetchTaskDocsFor(contactIds)
           .then(tasks => this.decorateAndSortTasks(tasks));
       });
   }

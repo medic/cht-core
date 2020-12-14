@@ -40,7 +40,7 @@ export class ContactsEffects {
           this.globalActions.setLoadingShowContent(id);
         }
         return from(this.contactViewModelGeneratorService.getContact(id, { getChildPlaces: true, merge: false })).pipe(
-          map(model => this.contactsActions.setSelected(model)),
+          map(model => this.contactsActions.setSelectedContact(model)),
           catchError(error => {
             console.error('Error selecting contact', error);
             return of(this.globalActions.unsetSelected());
@@ -50,14 +50,14 @@ export class ContactsEffects {
     );
   }, { dispatch: false });
 
-  setSelected = createEffect(() => {
+  setSelectedContact = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ContactActionList.setSelected),
+      ofType(ContactActionList.setSelectedContact),
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectedContact))
       ),
       exhaustMap(([{ payload: { selected } }, selectedContact]) => {
-        const refreshing = (selectedContact && selectedContact.doc._id) === selected.id;
+        const refreshing = selectedContact?.doc?._id === selected.id;
         this.globalActions.settingSelected(refreshing);
         this.contactsActions.setLoadingSelectedContact();
         this.contactsActions.setContactsLoadingSummary(true);
@@ -106,11 +106,13 @@ export class ContactsEffects {
         this.store.pipe(select(Selectors.getSelectedContact))
       ),
       exhaustMap(([, selectedContact]) => {
-        const selected: any = Object.assign({}, selectedContact);
+        const selected: any = { ...selectedContact };
         this.contactsActions.setContactsLoadingSummary(true);
-        this.tasksForContactService.get(selected).then((tasks) => {
-          return this.contactsActions.updateSelectedContactsTasks(tasks);
-        });
+        this.tasksForContactService
+          .get(selected)
+          .then((tasks) => {
+            return this.contactsActions.updateSelectedContactsTasks(tasks);
+          });
         return from(this.contactSummaryService.get(selected.doc, selected.reports, selected.lineage)).pipe(
           map(summary => {
             this.contactsActions.setContactsLoadingSummary(false);
