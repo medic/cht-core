@@ -94,3 +94,56 @@ From here we get the ddocs update sequences. Stage the branch which is associate
 Once the medic script completes we begin setting up for jmeter. The `start_jmeter_ec2.sh` script launches a new ec2 instance with the `user-data` script at `cht-core/tests/scalability/run_suite.sh`. 
 
 The script clones cht-core and navigates to the scalability dir. Then installs java, nodejs, jmeter, and its plugins. Executes the scalability suite which is defined in the `cht-core/tests/scalability/sync.jmx`, and finally it uploads the results to an s3 bucket. 
+
+
+
+### Running jmeter against an existing url
+
+#### Changes to github actions
+
+Disable the medic startup in `.github/workflows/scalability.yml`
+``` yaml
+      - name: Start EC2 and Medics
+        run: cd tests/scalability && ./start_ec2_medic.sh $TAG_NAME
+```
+
+Set `MEDIC_URL` environment variable in the github action.
+``` yaml
+      - name: Set MEDIC_URL var
+        run: echo "::set-env name=MEDIC_URL::https://gamma.dev.medicmobile.org"
+```
+
+Modify the on trigger to run against your branch. [github action config](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#example-using-multiple-events-with-activity-types-or-configuration)
+``` yaml
+  on:
+    # Trigger the workflow on push or pull request,
+    # but only for the main branch
+    push:
+      branches:
+      - <branch_name>
+```
+
+
+
+#### Changes to scripts/config
+
+Set the branch instead of tag name in the `tests/scalability/start_jmeter_ec2.sh` . This is built to normally run against a version tag. Since we want a specific branch need to set to yours or it could be the main branch. 
+
+``` sh
+export TAG_NAME=<your_branch_name>
+sed -i '2s~^~'S3_PATH=s3://medic-e2e/scalability/$TAG_NAME-$GITHUB_RUN_ID'\n~' run_suite.sh
+sed -i '2s~^~'TAG_NAME=$TAG_NAME'\n~' run_suite.sh
+```
+
+Specify your users and passwords. 
+
+We run against 10 users and passwords by default. This is controlled by the number of threads in the thread group. When executing the jmeter command specify the `-Jnumber_of_threads=100`. It is important to note that if the number of users in the `config.json` file does not match the number of threads. The test will run but reuses the defined users. So if you had 10 users in `config.json` and specificed 100 threads. You would see the same user log in 10 times and replicate 10 times. 
+
+Example command change:
+
+`./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jnumber_of_threads=100 -l ./report/cli_run.jtl -e -o ./report`
+
+
+`tests/scalability/config.json` is where the usernames and passwords are stored. Specify the number of users to the count of threads being executed. The url in this file is updated by the scripts when running. You can ignore this. 
+
+Once it is complete the tests will log the results to s3 bucket `S3_PATH=s3://medic-e2e/scalability/$TAG_NAME-$GITHUB_RUN_ID`
