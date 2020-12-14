@@ -16,14 +16,14 @@ describe('Contact summary info', () => {
         if (!linkedDoc) {
           return;
         }
-        
+
         if (linkedDoc.type === 'data_record') {
           fields.push({
             label: key,
             value: linkedDoc.form,
             width: 3,
           });
-        } else {              
+        } else {
           fields.push({
             label: key,
             value: linkedDoc.name + ' ' + linkedDoc.phone,
@@ -189,7 +189,8 @@ describe('Contact summary info', () => {
       selectContact('carol');
     } catch (err) {
       browser.refresh();
-      helper.waitForAngularComplete();
+      //helper.waitForAngularComplete();
+      helper.waitUntilReady(element(by.css('#contacts-tab')));
       helper.clickElement(element(by.css('#contacts-tab')));
       selectContact('carol');
     }

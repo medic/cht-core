@@ -18,8 +18,8 @@ const baseConfig = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   //Enabling specs as they are working.
   suites: {
-    // e2e:'e2e/**/*.js',
-    e2e: ['**/login.spec.js'],
+    e2e:'e2e/forms/submit-photo-upload-form.spec.js',
+    //e2e: ['**/login.spec.js'],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
@@ -30,7 +30,7 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
+      args: ['--window-size=1024,768','--headless', '--disable-gpu']
     }
   },
   jasmineNodeOpts: {
@@ -136,8 +136,8 @@ const login = browser => {
     element(by.css('.app-root.bootstrapped')).isPresent();
   return browser.driver.wait(
     bootstrappedCheck,
-    20 * 1000,
-    'Login should be complete within 20 seconds'
+    40 * 1000,
+    'Login should be complete within 40 seconds'
   );
 };
 
