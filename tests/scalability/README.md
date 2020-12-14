@@ -147,3 +147,24 @@ Example command change:
 `tests/scalability/config.json` is where the usernames and passwords are stored. Specify the number of users to the count of threads being executed. The url in this file is updated by the scripts when running. You can ignore this. 
 
 Once it is complete the tests will log the results to s3 bucket `S3_PATH=s3://medic-e2e/scalability/$TAG_NAME-$GITHUB_RUN_ID`
+
+
+
+### Running Jmeter Script on a linux machine. 
+
+This script will clone cht-core. Install jmeter and it's plug ins. Run jmeter scalability suite, and publish the results to S3. Also this is for a ubuntu 18.04
+
+In the run_suite.sh set these environment vars in the start of the script or the normal option for setting your env vars on linux.
+
+``` sh
+export MEDIC_URL=https://gamma.dev.medicmobile.org
+export TAG_NAME=master
+```
+
+Change `./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -l ./report/cli_run.jtl -e -o ./report` to include the proper number of threads 
+
+`./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jnumber_of_threads=100 -l ./report/cli_run.jtl -e -o ./report`
+
+Update config.json and include the usernames and passwords. The run_suite.sh will update the url based on what is set in `MEDIC_URL` environment var
+
+You can disable the s3 upload unless your environment is configured to have access to do so. Otherwise you will have a report folder in the cloned repo directory that has the results from the run.  
