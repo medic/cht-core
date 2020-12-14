@@ -178,7 +178,6 @@
               <ul class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
                 <!-- TODO: Order actionBar.right.relevantForms by 'title' -->
                 <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms">
-                  <!-- TODO: test once show-muted-modal is migrated show-muted-modal to-state="contacts.report" to-state-params="{ id: selectedContactDoc._id, formId: form.code } -->
                   <a (click)="actionBar.right.openContactMutedModal($event, form)">
                     <span [innerHTML]="form.icon | resourceIcon"></span>
                     <span class="content">{{ form.title }}</span>
