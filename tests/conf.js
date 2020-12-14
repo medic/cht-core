@@ -21,7 +21,7 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     e2e: [
       '**/login.spec.js',
-      '**/report-date-filter.js'
+      '**/report-date-filter.js',
     ],
     // performance: 'performance/**/*.js'
   },
