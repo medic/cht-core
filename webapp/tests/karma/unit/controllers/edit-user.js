@@ -238,7 +238,7 @@ describe('EditUserCtrl controller', () => {
           templateUrl: 'templates/modals/updated_password.html',
           controller: 'UpdatedPasswordCtrl',
           controllerAs: 'updatedPasswordCtrl'
-        }
+        };
         UpdateUser.returns(Promise.resolve());
         UserLogin.returns(Promise.reject({status: 302}));
 

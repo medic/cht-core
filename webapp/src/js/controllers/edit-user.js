@@ -17,12 +17,12 @@ const PASSWORD_MINIMUM_SCORE = 50;
       $uibModalInstance,
       $window,
       Languages,
+      Modal,
       SetLanguage,
       Translate,
       UpdateUser,
       UserLogin,
-      UserSettings,
-      Modal
+      UserSettings
     ) {
       'ngInject';
 
@@ -155,7 +155,7 @@ const PASSWORD_MINIMUM_SCORE = 50;
           password: password,
           redirect: '',
           locale: ''
-        })
+        });
       }; 
 
       // Submit function if template is update_password.html
