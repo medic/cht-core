@@ -8,7 +8,7 @@
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>How many breaths per minute?</value>
           </text>
-          <text id="/child_assessment/breathing/generated_note_name_71:label">
+          <text id="/child_assessment/breathing/breathing_timer:label">
             <value>Press timer and count the number of breaths for a full 60 seconds</value>
           </text>
           <text id="/child_assessment/breathing/generated_note_name_73:label">
@@ -26,22 +26,22 @@
           <text id="/child_assessment/breathing:label">
             <value>Breathing</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+          <text id="/child_assessment/cough/cough_time/14:label">
             <value>14 days or more</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+          <text id="/child_assessment/cough/cough_time/1:label">
             <value>1  day or less</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+          <text id="/child_assessment/cough/cough_time/2:label">
             <value>2 days</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+          <text id="/child_assessment/cough/cough_time/3:label">
             <value>3 days</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+          <text id="/child_assessment/cough/cough_time/4:label">
             <value>4 to 6 days</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+          <text id="/child_assessment/cough/cough_time/7:label">
             <value>7 to 13 days</value>
           </text>
           <text id="/child_assessment/cough/cough_time:label">
@@ -173,22 +173,22 @@
           <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
             <value>Number of stools passed in the last day</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/14:label">
             <value>14 days or more</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/1:label">
             <value>1  day or less</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/2:label">
             <value>2 days</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/3:label">
             <value>3 days</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/4:label">
             <value>4 to 6 days</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/7:label">
             <value>7 to 13 days</value>
           </text>
           <text id="/child_assessment/diarrhea/diarrhea_last:label">
@@ -445,7 +445,7 @@
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/breathing/generated_note_name_71:label">
+          <text id="/child_assessment/breathing/breathing_timer:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/breathing/generated_note_name_73:label">
@@ -463,22 +463,22 @@
           <text id="/child_assessment/breathing:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+          <text id="/child_assessment/cough/cough_time/14:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+          <text id="/child_assessment/cough/cough_time/1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+          <text id="/child_assessment/cough/cough_time/2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+          <text id="/child_assessment/cough/cough_time/3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+          <text id="/child_assessment/cough/cough_time/4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+          <text id="/child_assessment/cough/cough_time/7:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/cough/cough_time:label">
@@ -592,6 +592,21 @@
           <text id="/child_assessment/danger_signs_screening:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/data/__any_danger:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__danger_signs_with_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__danger_signs_without_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__fast_breathing_child:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/diarrhea/diarrhea_blood/no:label">
             <value>-</value>
           </text>
@@ -610,22 +625,22 @@
           <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/14:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/7:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/diarrhea/diarrhea_last:label">
@@ -897,7 +912,7 @@
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/breathing/generated_note_name_71:label">
+          <text id="/child_assessment/breathing/breathing_timer:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/breathing/generated_note_name_73:label">
@@ -915,22 +930,22 @@
           <text id="/child_assessment/breathing:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+          <text id="/child_assessment/cough/cough_time/14:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+          <text id="/child_assessment/cough/cough_time/1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+          <text id="/child_assessment/cough/cough_time/2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+          <text id="/child_assessment/cough/cough_time/3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+          <text id="/child_assessment/cough/cough_time/4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+          <text id="/child_assessment/cough/cough_time/7:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/cough/cough_time:label">
@@ -1044,6 +1059,21 @@
           <text id="/child_assessment/danger_signs_screening:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/data/__any_danger:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__danger_signs_with_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__danger_signs_without_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__fast_breathing_child:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/diarrhea/diarrhea_blood/no:label">
             <value>-</value>
           </text>
@@ -1062,22 +1092,22 @@
           <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/14:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/7:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/diarrhea/diarrhea_last:label">
@@ -1349,7 +1379,7 @@
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/breathing/generated_note_name_71:label">
+          <text id="/child_assessment/breathing/breathing_timer:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/breathing/generated_note_name_73:label">
@@ -1367,22 +1397,22 @@
           <text id="/child_assessment/breathing:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_14:label">
+          <text id="/child_assessment/cough/cough_time/14:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_1:label">
+          <text id="/child_assessment/cough/cough_time/1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_2:label">
+          <text id="/child_assessment/cough/cough_time/2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_3:label">
+          <text id="/child_assessment/cough/cough_time/3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_4:label">
+          <text id="/child_assessment/cough/cough_time/4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/cough/cough_time/cough_time_7:label">
+          <text id="/child_assessment/cough/cough_time/7:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/cough/cough_time:label">
@@ -1496,6 +1526,21 @@
           <text id="/child_assessment/danger_signs_screening:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/data/__any_danger:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__danger_signs_with_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__danger_signs_without_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__fast_breathing_child:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/diarrhea/diarrhea_blood/no:label">
             <value>-</value>
           </text>
@@ -1514,22 +1559,22 @@
           <text id="/child_assessment/diarrhea/diarrhea_in_day:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/14:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label">
+          <text id="/child_assessment/diarrhea/diarrhea_last/7:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/diarrhea/diarrhea_last:label">
@@ -1799,7 +1844,7 @@
         </translation>
       </itext>
       <instance>
-        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2020-12-11_17-05">
+        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2020-12-14_13-42">
           <inputs>
             <meta>
               <location>
@@ -1869,7 +1914,7 @@
             <cough_time/>
           </cough>
           <breathing>
-            <generated_note_name_71/>
+            <breathing_timer/>
             <breathing_count/>
             <generated_note_name_73/>
             <generated_note_name_74/>
@@ -1905,6 +1950,12 @@
             <generated_note_name_107/>
             <generated_note_name_108/>
           </summary>
+          <data tag="hidden">
+            <__danger_signs_without_fever/>
+            <__danger_signs_with_fever/>
+            <__fast_breathing_child/>
+            <__any_danger/>
+          </data>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -1932,7 +1983,7 @@
       <bind nodeset="/child_assessment/two_mo_assessment/two_mo_referred_yes" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
       <bind nodeset="/child_assessment/two_mo_assessment/two_mo_referred_no" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'no')" type="string"/>
       <bind nodeset="/child_assessment/danger_signs_screening" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
-      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_present" readonly="true()" required="true()" type="string"/>
+      <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_present" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_sleepy" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_less_active" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/danger_signs_screening/danger_signs_yellow" required="true()" type="select1"/>
@@ -1950,26 +2001,10 @@ selected( /child_assessment/danger_signs_screening/danger_signs_fever , 'yes')"/
       <bind nodeset="/child_assessment/malaria/malaria_fever_length" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/malaria/malaria_fever_rash" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/malaria/malaria_fever_groin_pain" required="true()" type="select1"/>
-      <bind nodeset="/child_assessment/malaria/generated_note_name_58" readonly="true()" relevant="selected( /child_assessment/danger_signs_screening/danger_signs_sleepy , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_less_active , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_yellow , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_hot_cold , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_bleeding , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_vomit , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_chest , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_drink , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_breath , 'no') and
+      <bind nodeset="/child_assessment/malaria/generated_note_name_58" readonly="true()" relevant="selected( /child_assessment/data/__danger_signs_without_fever , 'no') and
 not(selected( /child_assessment/malaria/malaria_fever_length , '7')) and
 not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" type="string"/>
-      <bind nodeset="/child_assessment/malaria/malaria_results" relevant="selected( /child_assessment/danger_signs_screening/danger_signs_sleepy , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_less_active , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_yellow , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_hot_cold , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_bleeding , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_vomit , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_chest , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_drink , 'no') and 
-selected( /child_assessment/danger_signs_screening/danger_signs_breath , 'no') and
+      <bind nodeset="/child_assessment/malaria/malaria_results" relevant="selected( /child_assessment/data/__danger_signs_without_fever , 'no') and
 not(selected( /child_assessment/malaria/malaria_fever_length , '7')) and
 not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/malaria/malaria_reason_no" relevant="selected( /child_assessment/malaria/malaria_results , 'not_done')" required="true()" type="select1"/>
@@ -1979,10 +2014,10 @@ not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required=
       <bind nodeset="/child_assessment/cough/cough_yes_no" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/cough/cough_time" relevant="selected( /child_assessment/cough/cough_yes_no , 'yes')" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/breathing" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
-      <bind nodeset="/child_assessment/breathing/generated_note_name_71" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/breathing/breathing_timer" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/breathing/breathing_count" required="true()" type="int"/>
-      <bind nodeset="/child_assessment/breathing/generated_note_name_73" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and (( /child_assessment/patient_age_in_months  &lt;= 12 and  /child_assessment/breathing/breathing_count  &lt;= 50) or ( /child_assessment/patient_age_in_months  &gt; 12 and  /child_assessment/patient_age_in_years  &lt;= 5 and  /child_assessment/breathing/breathing_count  &lt;= 40))" type="string"/>
-      <bind nodeset="/child_assessment/breathing/generated_note_name_74" readonly="true()" relevant="( /child_assessment/patient_age_in_months  &lt;= 12 and  /child_assessment/breathing/breathing_count  &gt; 50) or ( /child_assessment/patient_age_in_months  &gt; 12 and  /child_assessment/patient_age_in_years  &lt;= 5 and  /child_assessment/breathing/breathing_count  &gt; 40)" type="string"/>
+      <bind nodeset="/child_assessment/breathing/generated_note_name_73" readonly="true()" relevant="selected( /child_assessment/data/__fast_breathing_child , 'no')" type="string"/>
+      <bind nodeset="/child_assessment/breathing/generated_note_name_74" readonly="true()" relevant="selected( /child_assessment/data/__fast_breathing_child , 'yes')" type="string"/>
       <bind nodeset="/child_assessment/breathing/generated_note_name_75" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and  /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &lt; 24" type="string"/>
       <bind nodeset="/child_assessment/breathing/generated_note_name_76" readonly="true()" relevant=" /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &lt; 24" type="string"/>
       <bind nodeset="/child_assessment/diarrhea" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
@@ -2004,12 +2039,49 @@ not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required=
       <bind nodeset="/child_assessment/summary/generated_note_name_100" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/generated_note_name_101" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/generated_note_name_102" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_103" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_104" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_103" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_104" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'yes')" type="string"/>
       <bind nodeset="/child_assessment/summary/generated_note_name_105" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/generated_note_name_106" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/generated_note_name_107" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/generated_note_name_108" readonly="true()" type="string"/>
+      <bind calculate="if(
+ selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes') or 
+ selected( /child_assessment/danger_signs_screening/danger_signs_sleepy , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_less_active , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_yellow , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_hot_cold , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_bleeding , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_vomit , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_chest , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_drink , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_breath , 'yes') 
+ ,&quot;yes&quot;, &quot;no&quot;
+ )" nodeset="/child_assessment/data/__danger_signs_without_fever" type="string"/>
+      <bind calculate="if(
+ selected( /child_assessment/data/__danger_signs_without_fever , 'yes') or
+ selected( /child_assessment/danger_signs_screening/danger_signs_fever , 'yes') 
+ ,&quot;yes&quot;, &quot;no&quot;
+ )" nodeset="/child_assessment/data/__danger_signs_with_fever" type="string"/>
+      <bind calculate="if(
+ ( /child_assessment/patient_age_in_months  &lt;= 12 and  /child_assessment/breathing/breathing_count  &gt; 50) or 
+ ( /child_assessment/patient_age_in_months  &gt; 12 and  /child_assessment/patient_age_in_years  &lt;= 5 and  /child_assessment/breathing/breathing_count  &gt; 40) 
+ ,&quot;yes&quot;, &quot;no&quot;
+ )" nodeset="/child_assessment/data/__fast_breathing_child" type="string"/>
+      <bind calculate="if(
+ selected( /child_assessment/data/__danger_signs_with_fever , 'yes') or
+ selected( /child_assessment/malaria/malaria_fever_length , '7') or
+ selected( /child_assessment/malaria/malaria_fever_length , '14') or
+ selected( /child_assessment/malaria/malaria_results , 'not_done') or
+ selected( /child_assessment/cough/cough_time , '14') or
+ selected( /child_assessment/diarrhea/diarrhea_last , '14') or
+ selected( /child_assessment/diarrhea/diarrhea_blood , 'yes') or
+ selected( /child_assessment/data/__fast_breathing_child , 'yes') or
+ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'red') or
+ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') or
+ selected( /child_assessment/malnutrition/malnutrition_swollen_feet , 'yes') 
+ ,&quot;yes&quot;, &quot;no&quot;
+ )" nodeset="/child_assessment/data/__any_danger" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/child_assessment/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -2286,35 +2358,35 @@ not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required=
       <select1 ref="/child_assessment/cough/cough_time">
         <label ref="jr:itext('/child_assessment/cough/cough_time:label')"/>
         <item>
-          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_1:label')"/>
-          <value>cough_time_1</value>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/1:label')"/>
+          <value>1</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_2:label')"/>
-          <value>cough_time_2</value>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/2:label')"/>
+          <value>2</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_3:label')"/>
-          <value>cough_time_3</value>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/3:label')"/>
+          <value>3</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_4:label')"/>
-          <value>cough_time_4</value>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/4:label')"/>
+          <value>4</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_7:label')"/>
-          <value>cough_time_7</value>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/7:label')"/>
+          <value>7</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/cough/cough_time/cough_time_14:label')"/>
-          <value>cough_time_14</value>
+          <label ref="jr:itext('/child_assessment/cough/cough_time/14:label')"/>
+          <value>14</value>
         </item>
       </select1>
     </group>
     <group appearance="field-list" ref="/child_assessment/breathing">
       <label ref="jr:itext('/child_assessment/breathing:label')"/>
-      <input ref="/child_assessment/breathing/generated_note_name_71">
-        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_71:label')"/>
+      <input appearance="countdown-timer" ref="/child_assessment/breathing/breathing_timer">
+        <label ref="jr:itext('/child_assessment/breathing/breathing_timer:label')"/>
       </input>
       <input ref="/child_assessment/breathing/breathing_count">
         <label ref="jr:itext('/child_assessment/breathing/breathing_count:label')"/>
@@ -2348,28 +2420,28 @@ not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required=
       <select1 ref="/child_assessment/diarrhea/diarrhea_last">
         <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last:label')"/>
         <item>
-          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_1:label')"/>
-          <value>diarrhea_last_1</value>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/1:label')"/>
+          <value>1</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_2:label')"/>
-          <value>diarrhea_last_2</value>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/2:label')"/>
+          <value>2</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_3:label')"/>
-          <value>diarrhea_last_3</value>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/3:label')"/>
+          <value>3</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_4:label')"/>
-          <value>diarrhea_last_4</value>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/4:label')"/>
+          <value>4</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_7:label')"/>
-          <value>diarrhea_last_7</value>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/7:label')"/>
+          <value>7</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/diarrhea_last_14:label')"/>
-          <value>diarrhea_last_14</value>
+          <label ref="jr:itext('/child_assessment/diarrhea/diarrhea_last/14:label')"/>
+          <value>14</value>
         </item>
       </select1>
       <select1 ref="/child_assessment/diarrhea/diarrhea_in_day">
@@ -2477,5 +2549,6 @@ not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required=
         <label ref="jr:itext('/child_assessment/summary/generated_note_name_108:label')"/>
       </input>
     </group>
+    <group appearance="hidden" ref="/child_assessment/data"/>
   </h:body>
 </h:html>

@@ -752,8 +752,7 @@
           <text id="/immunization_and_growth/summary/generated_note_name_186:label">
             <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be in 3 days after <output value=" /immunization_and_growth/next_appointment/next_appointment_date "/></value></text>
           <text id="/immunization_and_growth/summary/generated_note_name_187:label">
-            <value>Follow up <output value=" /immunization_and_growth/patient_name "/> on return within 1 day</value>
-          </text>
+            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be in 1 day after <output value=" /immunization_and_growth/developmental_milestones/developmental_next_assignment_date "/></value></text>
           <text id="/immunization_and_growth/summary/generated_note_name_188:label">
             <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be in 1 day after <output value=" /immunization_and_growth/developmental_milestones/developmental_next_assignment_date "/></value></text>
           <text id="/immunization_and_growth/summary/generated_note_name_189:label">
@@ -4192,7 +4191,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-11_16-45">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-14_12-44">
           <inputs>
             <meta>
               <location>
