@@ -136,6 +136,4 @@ export class ContactsEffects {
       })
     );
   },{ dispatch: false });
-
-  // TODO: effects to set right action bar
 }
