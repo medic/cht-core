@@ -12,7 +12,7 @@ export const Actions = {
   setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
   receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
   receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports'),
-  updateSelectedContact: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'summary'),
+  updateSelectedContactSummary: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'summary'),
   updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
   receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
 };
@@ -62,8 +62,8 @@ export class ContactsActions {
     return this.store.dispatch(Actions.receiveSelectedContactReports(reports));
   }
 
-  updateSelectedContact(summary) {
-    return this.store.dispatch(Actions.updateSelectedContact(summary));
+  updateSelectedContactSummary(summary) {
+    return this.store.dispatch(Actions.updateSelectedContactSummary(summary));
   }
 
   updateSelectedContactsTasks(tasks) {

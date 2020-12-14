@@ -56,8 +56,8 @@ export class ContactsEffects {
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectedContact))
       ),
-      exhaustMap(([{ payload: { selected } }, selectedContact]) => {
-        const refreshing = selectedContact?.doc?._id === selected.id;
+      exhaustMap(([{ payload: { selected } }, previousSelectedContact]) => {
+        const refreshing = previousSelectedContact?.doc?._id === selected.id;
         this.globalActions.settingSelected(refreshing);
         this.contactsActions.setLoadingSelectedContact();
         this.contactsActions.setContactsLoadingSummary(true);
@@ -65,7 +65,7 @@ export class ContactsEffects {
         const options = { getChildPlaces: true };
         const title = (selected.type && selected.type.name_key) || 'contact.profile';
         this.globalActions.setTitle(this.translateService.instant(title));
-        return from(this.contactViewModelGeneratorService.loadChildren(selectedContact, options)).pipe(
+        return from(this.contactViewModelGeneratorService.loadChildren(previousSelectedContact, options)).pipe(
           map(children => {
             return this.contactsActions.receiveSelectedContactChildren(children);
           }),
@@ -116,7 +116,7 @@ export class ContactsEffects {
         return from(this.contactSummaryService.get(selected.doc, selected.reports, selected.lineage)).pipe(
           map(summary => {
             this.contactsActions.setContactsLoadingSummary(false);
-            return this.contactsActions.updateSelectedContact(summary);
+            return this.contactsActions.updateSelectedContactSummary(summary);
           })
         );
       })
@@ -125,7 +125,7 @@ export class ContactsEffects {
 
   receiveSelectedContactTargetDoc = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ContactActionList.updateSelectedContact),
+      ofType(ContactActionList.updateSelectedContactSummary),
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectedContact))
       ),

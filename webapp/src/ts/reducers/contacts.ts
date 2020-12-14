@@ -109,7 +109,7 @@ const setSelectedContact = (state, selected) => {
   return { ...state, selected };
 };
 
-const updateSelectedContact = (state, summary) => {
+const updateSelectedContactSummary = (state, summary) => {
   return {
     ...state,
     selected: { ...state.selected, summary },
@@ -154,7 +154,9 @@ const _contactsReducer = createReducer(
   on(Actions.receiveSelectedContactReports, (state, { payload: { reports }}) => {
     return receiveSelectedContactReports(state, reports);
   }),
-  on(Actions.updateSelectedContact, (state, { payload: { summary }}) => updateSelectedContact(state, summary)),
+  on(Actions.updateSelectedContactSummary, (state, { payload: { summary }}) => {
+    return updateSelectedContactSummary(state, summary);
+  }),
   on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks)),
   on(Actions.receiveSelectedContactTargetDoc, (state, { payload: { targetDoc }}) => {
     return receiveSelectedContactTargetDoc(state, targetDoc);
