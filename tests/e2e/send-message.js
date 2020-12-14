@@ -75,20 +75,20 @@ describe('Send message', () => {
   });
 
   const messageInList = identifier => {
-    return `#message-list li[data-record-id="${identifier}"]`;
+    return `#message-list li[test-id="${identifier}"]`;
   };
 
   const smsMsg = key => {
     return `Hello ${key} this is a test SMS`;
   };
 
-  const openSendMessageModal = () => {
+  const openSendMessageModal = async () => {
     helper.waitElementToBeClickable(
-      element(by.css('.general-actions .send-message'))
+      await element(by.css('.general-actions .send-message'))
     );
-    helper.clickElement(element(by.css('.general-actions .send-message')));
-    helper.waitElementToPresent(element(by.id('send-message')), 5000);
-    helper.waitElementToBeVisible(element(by.id('send-message')), 5000);
+    await helper.clickElement(element(by.css('.general-actions .send-message')));
+    await helper.waitElementToPresent(element(by.id('send-message')), 5000);
+    await helper.waitElementToBeVisible(element(by.id('send-message')), 5000);
   };
 
   const findSelect2Entry = (selector, expectedValue) => {
@@ -108,17 +108,17 @@ describe('Send message', () => {
       });
   };
 
-  const searchSelect2 = (
+  const searchSelect2 = async (
     searchText,
     totalExpectedResults,
     entrySelector,
     entryText
   ) => {
-    element(by.css('#send-message input.select2-search__field')).sendKeys(
+    element(await by.css('#send-message input.select2-search__field')).sendKeys(
       searchText
     );
 
-    browser.wait(() => {
+    await browser.wait(() => {
       return protractor.promise
         .all([
           findSelect2Entry(entrySelector, entryText)
@@ -142,7 +142,7 @@ describe('Send message', () => {
     return findSelect2Entry(entrySelector, entryText).first();
   };
 
-  const enterCheckAndSelect = (
+  const enterCheckAndSelect = async (
     searchText,
     totalExpectedResults,
     entrySelector,
@@ -153,7 +153,7 @@ describe('Send message', () => {
       existingEntryCount
     );
 
-    const entry = searchSelect2(
+    const entry = await searchSelect2(
       searchText,
       totalExpectedResults,
       entrySelector,
@@ -161,7 +161,7 @@ describe('Send message', () => {
     );
     entry.click();
 
-    browser.wait(() => {
+    await browser.wait(() => {
       return element
         .all(by.css('li.select2-selection__choice'))
         .count()
@@ -169,10 +169,10 @@ describe('Send message', () => {
     }, 2000);
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     element(by.css('#send-message a.btn.submit:not(.ng-hide)')).click();
 
-    browser.wait(() => {
+    await browser.wait(() => {
       return element(by.css('#send-message'))
         .isDisplayed()
         .then(isDisplayed => {
@@ -184,21 +184,21 @@ describe('Send message', () => {
         });
     }, 2000);
 
-    utils.resetBrowser();
+    // utils.resetBrowser();
   };
 
-  const clickLhsEntry = (entryId, entryName) => {
+  const clickLhsEntry = async (entryId, entryName) => {
     entryName = entryName || entryId;
 
     const liIdentifier = messageInList(entryId);
-    helper.waitUntilReady(element(by.css(liIdentifier)));
+    await helper.waitUntilReady(element(by.css(liIdentifier)));
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
 
     const aIdentifier = `${liIdentifier} a`;
-    helper.waitUntilReady(element(by.css(aIdentifier)));
-    element(by.css(aIdentifier)).click();
+    await helper.waitUntilReady(element(by.css(aIdentifier)));
+    await element(by.css(aIdentifier)).click();
 
-    browser.wait(() => {
+    await browser.wait(() => {
       const el = element(by.css('#message-header .name'));
       if (helper.waitUntilReady(el)) {
         return helper.getTextFromElement(el).then(text => {
@@ -221,18 +221,18 @@ describe('Send message', () => {
   };
 
   describe('Send message modal', () => {
-    it('can send messages to raw phone numbers', () => {
-      common.goToMessages();
+    it('can send messages to raw phone numbers', async () => {
+      await common.goToMessages();
       expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
-      openSendMessageModal();
-      enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
-      sendMessage();
-      clickLhsEntry(RAW_PH);
+      await openSendMessageModal();
+      await enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
+      await element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
+      await sendMessage();
+      await clickLhsEntry(RAW_PH);
 
-      expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      lastMessageIs(smsMsg('raw'));
+      expect(await element.all(by.css('#message-content li')).count()).toBe(1);
+      await lastMessageIs(smsMsg('raw'));
     });
 
     it('can send messages to contacts with phone numbers', () => {
