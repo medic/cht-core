@@ -32,6 +32,7 @@ describe('Analytics Target Aggregates Component', () => {
 
     return TestBed
       .configureTestingModule({
+        declarations: [ AnalyticsTargetAggregatesComponent ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
@@ -80,6 +81,7 @@ describe('Analytics Target Aggregates Component', () => {
   it('should set correct loading and error when TargetAggregates fails', fakeAsync(() => {
     sinon.reset();
     targetAggregatesService.isEnabled.rejects({ some: 'err' });
+    const consoleErrorMock = sinon.stub(console, 'error');
     
     component.ngOnInit();
     tick();
@@ -90,6 +92,8 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesActions.setTargetAggregatesError.callCount).to.equal(1);
     expect(targetAggregatesActions.setTargetAggregatesError.args[0][0]).to.deep.equal({ some: 'err' });
     expect(component.enabled).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error getting aggregate targets');
   }));
 
   it('should set aggregates disabled', fakeAsync(() => {

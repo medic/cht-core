@@ -3,6 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { Subject } from 'rxjs';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
@@ -10,8 +11,8 @@ import { UpdateUserService } from '@mm-services/update-user.service';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
-import {SetLanguageService} from '@mm-services/language.service';
-import { Subject } from 'rxjs';
+import { MmModal } from '@mm-modals/mm-modal/mm-modal';
+import { SetLanguageService } from '@mm-services/language.service';
 
 describe('EditUserSettingsComponent', () => {
 
@@ -55,6 +56,7 @@ describe('EditUserSettingsComponent', () => {
       .configureTestingModule({
         declarations: [
           EditUserSettingsComponent,
+          MmModal,
         ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),

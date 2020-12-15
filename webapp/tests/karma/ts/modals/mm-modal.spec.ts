@@ -62,6 +62,7 @@ describe('MmModalAbstract', () => {
 
   describe('setError', () => {
     it('should set error without message or severity', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       child = new mmModalChild(bsModuleRef);
       child.setError('error');
       expect(child.status).to.deep.equal({
@@ -69,9 +70,12 @@ describe('MmModalAbstract', () => {
         error: undefined,
         severity: undefined,
       });
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
     });
 
     it('should set error without severity', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       child = new mmModalChild(bsModuleRef);
       child.setError('error', 'this is what happened');
       expect(child.status).to.deep.equal({
@@ -79,9 +83,12 @@ describe('MmModalAbstract', () => {
         error: 'this is what happened',
         severity: undefined,
       });
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
     });
 
     it('should set error', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       child = new mmModalChild(bsModuleRef);
       child.setError('error', 'this is what happened', 'very severe');
       expect(child.status).to.deep.equal({
@@ -89,6 +96,8 @@ describe('MmModalAbstract', () => {
         error: 'this is what happened',
         severity: 'very severe',
       });
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
     });
   });
 
