@@ -99,7 +99,6 @@ describe('Session service', () => {
   it('logs out if remote userCtx inconsistent', async () => {
     const consoleWarnMock = sinon.stub(console, 'warn');
     cookieGet.returns(JSON.stringify({ name: 'bryan' }));
-    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
     $httpBackend.get.withArgs('/_session').returns(of([{ data: { userCtx: { name: 'jimmy' } } }]));
