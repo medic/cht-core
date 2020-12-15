@@ -167,99 +167,97 @@
       </div>
 
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'contacts'">
-        <div *ngIf="selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedContactDoc && !loadingContent && snapshotData?.name === 'contacts.detail'">
-            <span>
-              <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
-                <span class="fa fa-plus"></span>
-                <p translate>action.report.add</p>
+        <div class="actions dropup" *ngIf="showActionBar && selectedContactDoc && !loadingContent && snapshotData?.name === 'contacts.detail'">
+          <span>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
+              <span class="fa fa-plus"></span>
+              <p translate>action.report.add</p>
+            </a>
+            <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
+              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms" [attr.id]="form.id">
+                <a (click)="actionBar.right.openContactMutedModal($event, form)">
+                  <span [innerHTML]="form.icon | resourceIcon"></span>
+                  <span class="content">{{ form.title }}</span>
+                </a>
+              </li>
+            </ul>
+          </span>
+
+          <span *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ group.permission }}">
+            <ng-container *ngIf="group.types?.length > 1">
+              <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown">
+                <span class="fa-stack">
+                  <i class="fa {{ group.menu_icon }}"></i>
+                  <i class="fa fa-plus fa-stack-1x"></i>
+                </span>
+                <p translate>{{ group.menu_key }}</p>
               </a>
-              <ul class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
-                <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms">
-                  <a (click)="actionBar.right.openContactMutedModal($event, form)">
-                    <span [innerHTML]="form.icon | resourceIcon"></span>
-                    <span class="content">{{ form.title }}</span>
+              <ul class="dropdown-menu mm-dropdown-menu with-icon">
+                <li *ngFor="let type of group.types; trackBy: trackById">
+                  <a (click)="navigateToContactAdd(type.id, selectedContactDoc._id)">
+                    <span [innerHTML]="type.icon | resourceIcon"></span>
+                    <span class="content" translate>{{ type.create_key }}</span>
                   </a>
                 </li>
               </ul>
-            </span>
+            </ng-container>
 
-            <span *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ group.permission }}">
-              <ng-container *ngIf="group.types?.length > 1">
-                <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown">
-                  <span class="fa-stack">
-                    <i class="fa {{ group.menu_icon }}"></i>
-                    <i class="fa fa-plus fa-stack-1x"></i>
-                  </span>
-                  <p translate>{{ group.menu_key }}</p>
-                </a>
-                <ul class="dropdown-menu mm-dropdown-menu with-icon">
-                  <li *ngFor="let type of group.types; trackBy: trackById">
-                    <a (click)="navigateToContactAdd(type.id, selectedContactDoc._id)">
-                      <span [innerHTML]="type.icon | resourceIcon"></span>
-                      <span class="content" translate>{{ type.create_key }}</span>
-                    </a>
-                  </li>
-                </ul>
-              </ng-container>
+            <a *ngIf="group.types?.length === 1"
+               class="mm-icon mm-icon-inverse mm-icon-caption"
+               (click)="navigateToContactAdd(group.types[0]?.id, selectedContactDoc._id)"
+            >
+              <span class="fa-stack">
+                <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
+                <i class="fa fa-plus fa-stack-1x"></i>
+              </span>
+              <p translate>{{ group.types[0]?.create_key }}</p>
+            </a>
+          </span>
 
-              <a *ngIf="group.types?.length === 1"
-                 class="mm-icon mm-icon-inverse mm-icon-caption"
-                 (click)="navigateToContactAdd(group.types[0]?.id, selectedContactDoc._id)"
-              >
-                <span class="fa-stack">
-                  <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
-                  <i class="fa fa-plus fa-stack-1x"></i>
-                </span>
-                <p translate>{{ group.types[0]?.create_key }}</p>
-              </a>
-            </span>
+          <a *ngIf="actionBar?.right?.sendTo"
+             mmAuth="can_view_call_action"
+             class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+             href="tel:{{ actionBar?.right?.sendTo?.phone }}"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+          >
+            <span class="fa fa-phone"></span>
+            <p translate>call</p>
+          </a>
+          <a *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_view_message_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+            href="sms:{{ actionBar?.right?.sendTo?.phone }}"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+          >
+            <span class="fa fa-envelope"></span>
+            <p translate>Send Message</p>
+          </a>
+          <a *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_view_message_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
+             [attr.data-send-to]="actionBar?.right?.sendTo?._id"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+          >
+            <span class="fa fa-envelope"></span>
+            <p translate>Send Message</p>
+          </a>
 
-            <a *ngIf="actionBar?.right?.sendTo"
-               mmAuth="can_view_call_action"
-               class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-               href="tel:{{ actionBar?.right?.sendTo?.phone }}"
-               [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
-            >
-              <span class="fa fa-phone"></span>
-              <p translate>call</p>
-            </a>
-            <a *ngIf="actionBar?.right?.sendTo"
-              mmAuth="can_view_message_action"
-              class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-              href="sms:{{ actionBar?.right?.sendTo?.phone }}"
-              [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
-            >
-              <span class="fa fa-envelope"></span>
-              <p translate>Send Message</p>
-            </a>
-            <a *ngIf="actionBar?.right?.sendTo"
-              mmAuth="can_view_message_action"
-              class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
-               [attr.data-send-to]="actionBar?.right?.sendTo?._id"
-              [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
-            >
-              <span class="fa fa-envelope"></span>
-              <p translate>Send Message</p>
-            </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption"
+             (click)="navigateToContactEdit(selectedContactDoc)"
+             [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
+          >
+            <span class="fa fa-pencil"></span>
+            <p translate>Edit</p>
+          </a>
 
-            <a class="mm-icon mm-icon-inverse mm-icon-caption"
-               (click)="navigateToContactEdit(selectedContactDoc)"
-               [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
-            >
-              <span class="fa fa-pencil"></span>
-              <p translate>Edit</p>
-            </a>
-
-            <a mmAuth="can_delete_contacts"
-              class="mm-icon mm-icon-inverse mm-icon-caption"
-              (click)="deleteDoc(selectedContactDoc)"
-              [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
-            >
-              <span class="fa fa-trash-o"></span>
-              <p translate>Delete</p>
-            </a>
-          </div>
+          <a mmAuth="can_delete_contacts"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            (click)="deleteDoc(selectedContactDoc)"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
+          >
+            <span class="fa fa-trash-o"></span>
+            <p translate>Delete</p>
+          </a>
         </div>
       </div>
 

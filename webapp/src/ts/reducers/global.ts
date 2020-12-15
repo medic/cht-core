@@ -100,7 +100,10 @@ const _globalReducer = createReducer(
   on(Actions.setRightActionBar, (state, { payload: { right } }) => {
     return {
       ...state,
-      actionBar: { ...state.actionBar, right }
+      actionBar: {
+        ...state.actionBar,
+        right: { ...state.actionBar?.right, ...right }
+      }
     };
   }),
   on(Actions.setRightActionBarVerified, (state, { payload: { verified } }) => {
