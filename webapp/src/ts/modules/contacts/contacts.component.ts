@@ -449,7 +449,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.globalActions.setLeftActionBar({
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace && this.usersHomePlace._id,
-      childPlaces: this.allowedChildPlaces.sort((a, b) => a.id.localeCompare(b.id)),
+      childPlaces: this.allowedChildPlaces?.sort((a, b) => a.id.localeCompare(b.id)),
       exportFn: () => {
         this.exportService.export('contacts', this.filters, { humanReadable: true });
       }
@@ -471,7 +471,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
           sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
           canDelete: !!this.selectedContact?.children?.every(group => !group.contacts?.length),
           canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id === this.selectedContact?.doc?._id,
-          openContactMutedModal: (event, form) => this.openContactMutedModal(event, form)
+          openContactMutedModal: (event, form) => this.openContactMutedModal(form)
         });
 
         if (subscriptionContactXmlForms) {
@@ -483,7 +483,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.subscription.add(subscription);
   }
 
-  private openContactMutedModal(event, form) {
+  private openContactMutedModal(form) {
     const routeData = { id: this.selectedContact._id, formId: form.code };
 
     if (!form.showUnmuteModal) {
@@ -564,7 +564,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
               showUnmuteModal: this.selectedContact.doc?.muted && !isUnmute
             };
           })
-          .sort((a, b) => a.title.localeCompare(b.title));
+          .sort((a, b) => a.title?.localeCompare(b.title));
 
         this.globalActions.setRightActionBar({ relevantForms: formSummaries });
       }
@@ -575,7 +575,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private filterAllowedChildType(forms, childTypes) {
-    return childTypes.filter(contactType => forms?.find(form => form._id === contactType.create_form));
+    return childTypes?.filter(contactType => forms?.find(form => form._id === contactType.create_form));
   }
 
   private getModelsFromChildTypes(childTypes) {
