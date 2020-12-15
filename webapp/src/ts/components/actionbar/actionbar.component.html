@@ -67,7 +67,6 @@
               mmAuth="can_create_places"
               class="dropdown-menu mm-dropdown-menu with-icon"
           >
-            <!-- TODO: sort actionBar.left.childPlaces by "id" !! -->
             <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
               <a (click)="navigateToContactAdd(child.id, actionBar.left.userFacilityId, 'list')">
                 <span [innerHTML]="child.icon | resourceIcon"></span>
@@ -176,7 +175,6 @@
                 <p translate>action.report.add</p>
               </a>
               <ul class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
-                <!-- TODO: Order actionBar.right.relevantForms by 'title' -->
                 <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms">
                   <a (click)="actionBar.right.openContactMutedModal($event, form)">
                     <span [innerHTML]="form.icon | resourceIcon"></span>
@@ -196,7 +194,6 @@
                   <p translate>{{ group.menu_key }}</p>
                 </a>
                 <ul class="dropdown-menu mm-dropdown-menu with-icon">
-                <!-- TODO order group.types by 'id' !! -->
                   <li *ngFor="let type of group.types; trackBy: trackById">
                     <a (click)="navigateToContactAdd(type.id, selectedContactDoc._id)">
                       <span [innerHTML]="type.icon | resourceIcon"></span>

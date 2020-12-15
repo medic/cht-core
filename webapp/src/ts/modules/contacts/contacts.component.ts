@@ -449,7 +449,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.globalActions.setLeftActionBar({
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace && this.usersHomePlace._id,
-      childPlaces: this.allowedChildPlaces,
+      childPlaces: this.allowedChildPlaces.sort((a, b) => a.id.localeCompare(b.id)),
       exportFn: () => {
         this.exportService.export('contacts', this.filters, { humanReadable: true });
       }
@@ -552,17 +552,19 @@ export class ContactsComponent implements OnInit, OnDestroy{
           return;
         }
 
-        const formSummaries = forms && forms.map(xForm => {
-          const title = xForm.translation_key ?
-            this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
-          const isUnmuteForm = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));
-          return {
-            code: xForm.internalId,
-            title: title,
-            icon: xForm.icon,
-            showUnmuteModal: this.selectedContact.doc?.muted && !isUnmuteForm
-          };
-        });
+        const formSummaries = forms
+          ?.map(xForm => {
+            const title = xForm.translation_key ?
+              this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
+            const isUnmute = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));
+            return {
+              code: xForm.internalId,
+              title: title,
+              icon: xForm.icon,
+              showUnmuteModal: this.selectedContact.doc?.muted && !isUnmute
+            };
+          })
+          .sort((a, b) => a.title.localeCompare(b.title));
 
         this.globalActions.setRightActionBar({ relevantForms: formSummaries });
       }
@@ -585,7 +587,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         menu_key: 'Add place',
         menu_icon: 'fa-building',
         permission: 'can_create_places',
-        types: grouped.places
+        types: grouped.places.sort((a, b) => a.id.localeCompare(b.id))
       });
     }
 
@@ -594,7 +596,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         menu_key: 'Add person',
         menu_icon: 'fa-user',
         permission: 'can_create_people',
-        types: grouped.persons
+        types: grouped.persons.sort((a, b) => a.id.localeCompare(b.id))
       });
     }
 
