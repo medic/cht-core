@@ -57,6 +57,9 @@ export class ContactsEffects {
         this.store.pipe(select(Selectors.getSelectedContact))
       ),
       exhaustMap(([{ payload: { selected } }, previousSelectedContact]) => {
+        if (!selected) {
+          return []; // return an empty stream if there is no selected contact
+        }
         const refreshing = previousSelectedContact?.doc?._id === selected.id;
         this.globalActions.settingSelected(refreshing);
         this.contactsActions.setLoadingSelectedContact();
@@ -78,7 +81,7 @@ export class ContactsEffects {
     );
   },{ dispatch: false });
 
-  receiveSelectedContactChildren = createEffect(() => {
+  receiveSelectedContactReports = createEffect(() => {
     return this.actions$.pipe(
       ofType(ContactActionList.receiveSelectedContactChildren),
       withLatestFrom(
@@ -99,7 +102,7 @@ export class ContactsEffects {
     );
   },{ dispatch: false });
 
-  receiveSelectedContactReports = createEffect(() => {
+  updateSelectedContactSummary = createEffect(() => {
     return this.actions$.pipe(
       ofType(ContactActionList.receiveSelectedContactReports),
       withLatestFrom(
@@ -117,7 +120,11 @@ export class ContactsEffects {
           map(summary => {
             this.contactsActions.setContactsLoadingSummary(false);
             return this.contactsActions.updateSelectedContactSummary(summary);
-          })
+          }),
+          catchError(error => {
+            console.error('Error loading summary', error);
+            return of(this.globalActions.unsetSelected());
+          }),
         );
       })
     );
@@ -133,11 +140,13 @@ export class ContactsEffects {
         return from(this.targetAggregateService.getCurrentTargetDoc(selectedContact)).pipe(
           map(targetDoc => {
             return this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
-          })
+          }),
+          catchError(error => {
+            console.error('Error loading target doc', error);
+            return of(this.globalActions.unsetSelected());
+          }),
         );
       })
     );
   },{ dispatch: false });
-
-  // TODO: effects to set right action bar
 }
