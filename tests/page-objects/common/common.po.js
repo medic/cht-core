@@ -1,5 +1,6 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
+const { element, browser } = require('protractor');
 
 const medicLogo = element(by.className('logo-full'));
 const genericSubmitButton = element(by.css('.btn.btn-primary'));
@@ -123,7 +124,8 @@ module.exports = {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
-      helper.waitForAngularComplete();
+      //helper.waitForAngularComplete();
+      helper.waitUntilReady(element(by.css('#reports-list')));
     }
   },
 
@@ -158,5 +160,7 @@ module.exports = {
 
 function openSubmenu(menuName) {
   helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
-  helper.waitForAngularComplete();
+  //throwing error: `Cannot read property 'pendingRequests' of undefined` - 
+  //helper.waitForAngularComplete();
+  browser.waitForAngular();
 }

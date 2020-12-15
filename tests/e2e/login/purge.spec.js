@@ -6,6 +6,7 @@ const loginPage = require('../../page-objects/login/login.po.js');
 const sentinelUtils = require('../sentinel/utils');
 const chai = require('chai');
 const helper = require('../../helper');
+const { element } = require('protractor');
 
 /* global window */
 
@@ -252,7 +253,8 @@ describe('Purging on login', () => {
     utils.resetBrowser();
     commonElements.goToLoginPage();
     loginPage.login(restrictedUserName, restrictedPass);
-    commonElements.calm();
+    //helper.waitUntilReady(element(by.css('#reports-list')));
+    helper.waitUntilReady(element(by.css('.inbox.page')));
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId]);
     reports.expectReportsToNotExist([badFormId]);
@@ -275,8 +277,7 @@ describe('Purging on login', () => {
       })
       .then(() => {
         utils.resetBrowser();
-        commonElements.calm();
-        helper.waitForAngularComplete();
+        helper.waitUntilReady(element(by.css('#reports-list')));
         return getPurgeLog();
       })
       .then(result => {
@@ -308,7 +309,7 @@ describe('Purging on login', () => {
         // get new settings that say to purge on every boot!
         commonElements.sync();
         utils.refreshToGetNewSettings();
-        commonElements.calm();
+        helper.waitUntilReady(element(by.css('#reports-list')));
         return getPurgeLog();
       })
       .then(result => {
