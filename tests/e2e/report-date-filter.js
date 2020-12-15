@@ -101,12 +101,12 @@ describe('Filters reports', () => {
 
   it('by date', () => {
     commonElements.goToReports();
-    helper.waitElementToPresent(reportsTab.firstReport);
+    helper.waitElementToPresent(reportsTab.firstReport());
 
     reportsTab.filterByDate('05/16/2016', '05/17/2016');
     
-    helper.waitElementToPresent(reportsTab.listLoader);
-    helper.waitElementToPresent(reportsTab.firstReport);
+    helper.waitElementToPresent(reportsTab.listLoader());
+    helper.waitElementToPresent(reportsTab.firstReport());
 
     expect(reportsTab.allReports().count()).toBe(2);
     expect(reportsTab.reportByUUID(savedUuids[1]).count()).toBe(1);
