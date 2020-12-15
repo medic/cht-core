@@ -162,8 +162,7 @@ describe('sms-gateway api', () => {
       // LHS
       helper.waitElementToPresent(
         element(by.css('#message-list li:first-child'))
-      );
-      helper.waitForAngularComplete();
+      );      
       helper.waitElementToBeVisible(
         element(by.css('#message-list li:first-child'))
       );
@@ -192,7 +191,6 @@ describe('sms-gateway api', () => {
           by.css('#message-content li.incoming:first-child .data p:first-child')
         )
       );
-      helper.waitForAngularComplete();
       const messageHeader = helper.getTextFromElement(
         element(by.css('#message-header .name'))
       );
@@ -256,7 +254,6 @@ describe('sms-gateway api', () => {
       helper.waitElementToPresent(
         element(by.css('#reports-content .body .item-summary .icon'))
       );
-      helper.waitForAngularComplete();
 
       // tasks
       const sentTaskState = helper.getTextFromElement(
@@ -367,7 +364,6 @@ describe('sms-gateway api', () => {
         element(by.css('#reports-content .body .item-summary .icon'))
       );
 
-      helper.waitForAngularComplete();
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
       const feedback = element(
