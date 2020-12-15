@@ -172,7 +172,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
       });
 
     this.subscribeToSelectedContact();
-    this.subscribeToContactXmlForms();
   }
 
   ngOnDestroy() {
@@ -457,7 +456,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private subscribeToSelectedContact() {
-    let subscriptionContactXmlForms;
+    let subscriptionSelectedContactForms;
+    let subscriptionAllContactForms;
     // Intention: this code will only run when the selected contact changes
     // and not when other store data changes.
     const subscription = this.store
@@ -474,11 +474,16 @@ export class ContactsComponent implements OnInit, OnDestroy{
           openContactMutedModal: (event, form) => this.openContactMutedModal(form)
         });
 
-        if (subscriptionContactXmlForms) {
-          subscriptionContactXmlForms.unsubscribe();
+        if (subscriptionSelectedContactForms) {
+          subscriptionSelectedContactForms.unsubscribe();
         }
 
-        subscriptionContactXmlForms = this.subscribeToSelectedContactXmlForms();
+        if (subscriptionAllContactForms) {
+          subscriptionAllContactForms.unsubscribe();
+        }
+
+        subscriptionAllContactForms = this.subscribeToAllContactXmlForms();
+        subscriptionSelectedContactForms = this.subscribeToSelectedContactXmlForms();
       });
     this.subscription.add(subscription);
   }
@@ -513,7 +518,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.childTypesBySelectedContact = await this.getChildren(this.selectedContact.type.id);
   }
 
-  private subscribeToContactXmlForms() {
+  private subscribeToAllContactXmlForms() {
     const contactFormsSubscription = this.xmlFormsService.subscribe(
       'ContactForms',
       { contactForms: true },
@@ -532,6 +537,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       }
     );
     this.subscription.add(contactFormsSubscription);
+    return contactFormsSubscription;
   }
 
   private subscribeToSelectedContactXmlForms() {
