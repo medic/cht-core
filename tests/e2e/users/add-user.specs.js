@@ -48,7 +48,7 @@ describe('Add user  : ', () => {
           return true;
         });
     }, 20000);
-    //waitForLoaderToDisappear();
+    
     helper.waitUntilReady(admin);
     browser.refresh();
     const users =element.all(by.repeater('user in users'));
