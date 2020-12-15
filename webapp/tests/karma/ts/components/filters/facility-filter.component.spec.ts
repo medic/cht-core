@@ -72,9 +72,12 @@ describe('Facility Filter Component', () => {
     });
 
     it('should catch errors when loading facilities', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       placeHierarchyService.get.rejects({ some: 'err' });
       await component.loadFacilities();
       expect(component.facilities).to.deep.equal([]);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading facilities');
     });
 
     it('should sort and flatten facilities recursively', async () => {

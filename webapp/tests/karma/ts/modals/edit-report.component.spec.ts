@@ -158,21 +158,27 @@ describe('EditReportComponent', () => {
     });
 
     it('should catch contactTypes errors', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       contactTypesService.getPersonTypes.rejects();
 
       await component.ngAfterViewInit();
 
       expect(contactTypesService.getPersonTypes.callCount).to.equal(1);
       expect(select2SearchService.init.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error initialising select2');
     });
 
     it('should catch select2 init errors', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       contactTypesService.getPersonTypes.resolves([{ id: 'patient', some: 'field' }]);
       select2SearchService.init.rejects();
 
       await component.ngAfterViewInit();
       expect(contactTypesService.getPersonTypes.callCount).to.equal(1);
       expect(select2SearchService.init.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error initialising select2');
     });
   });
 

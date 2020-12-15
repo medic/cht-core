@@ -71,6 +71,7 @@ describe('DeleteDocs service', () => {
       }
     };
     get.resolves(clinic);
+    const consoleErrorMock = sinon.stub(console, 'error');
     bulkDocs.resolves(
       // person is not deleted, but clinic is edited just fine. Oops.
       [
@@ -84,8 +85,9 @@ describe('DeleteDocs service', () => {
         assert.fail('expected error to be thrown');
       })
       .catch((err) => {
-        console.log(err);
         expect(err).to.be.ok;
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Deletion errors');
       });
   });
 
