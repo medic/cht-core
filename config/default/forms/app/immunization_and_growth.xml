@@ -4191,7 +4191,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-14_12-44">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-15_15-50">
           <inputs>
             <meta>
               <location>
@@ -5246,7 +5246,7 @@ selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" typ
       <input appearance="h1 yellow" ref="/immunization_and_growth/summary/generated_note_name_159">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_159:label')"/>
       </input>
-      <input appearance="h4 center" ref="/immunization_and_growth/summary/generated_note_name_160">
+      <input appearance="h2" ref="/immunization_and_growth/summary/generated_note_name_160">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_160:label')"/>
       </input>
       <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_161">
@@ -5273,31 +5273,31 @@ selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" typ
       <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_168">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_168:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_169">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_169">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_169:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_170">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_170">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_170:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_171">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_171">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_171:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_172">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_172">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_172:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_173">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_173">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_173:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_174">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_174">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_174:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_175">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_175">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_175:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_176">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_176">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_176:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_177">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_177">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_177:label')"/>
       </input>
       <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_178">
