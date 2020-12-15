@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -172,15 +172,16 @@ describe('RulesEngineService', () => {
       }
     };
 
-    //TODO Fix or remove this test
-    //     This test was failing silently, was not properly migrated
-    //     maybe because the service changes a bit its behaviour
-    //it('should disable when user has no permissions', async () => {
-    //  service = TestBed.inject(RulesEngineService);
-    //
-    //  expectAsyncToThrow(service.isEnabled, 'permission');
-    //  expect(telemetryService.record.callCount).to.equal(0);
-    //});
+    it('should disable when user has no permissions', async () => {
+      authService.has.resolves(false);
+      rulesEngineCoreStubs.isEnabled.returns(false);
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expect(result).to.equal(false);
+      expect(telemetryService.record.callCount).to.equal(0);
+    });
 
     it('should initialize enableTasks as disabled', async () => {
       authService.has.withArgs('can_view_tasks').resolves(false);
@@ -211,22 +212,21 @@ describe('RulesEngineService', () => {
       expect(rulesEngineCoreStubs.initialize.args[0][0]).to.nested.include({ enableTasks: true, enableTargets: false });
     });
 
-    //TODO Fix or remove this test
-    //     This test was failing silently, was not properly migrated
-    //     maybe because the service changes a bit its behaviour
-    //it('should be disabled for online users', async () => {
-    //  sessionService.isOnlineOnly.returns(true);
-    //  service = TestBed.inject(RulesEngineService);
-    //
-    //  const result = await service.isEnabled();
-    //
-    //  expectAsyncToThrow(result, 'permission');
-    //});
+    it('should be disabled for online users', async () => {
+      sessionService.isOnlineOnly.returns(true);
+      rulesEngineCoreStubs.isEnabled.returns(false);
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expect(result).to.equal(false);
+      expect(telemetryService.record.callCount).to.equal(0);
+    });
 
     it('should be disabled if initialize throws', async () => {
       rulesEngineCoreStubs.initialize.rejects('error');
       service = TestBed.inject(RulesEngineService);
-      await expectAsyncToThrow(async ()=> service.isEnabled(),  'error');
+      await expectAsyncToThrow(() => service.isEnabled(),  'error');
     });
 
     it('should filter targets by context', async () => {
@@ -451,32 +451,30 @@ describe('RulesEngineService', () => {
     expect(rulesEngineCoreStubs.fetchTargets.args[0][0]).to.have.keys('start', 'end');
   });
 
-  it('should ensure freshness of tasks and targets', async () => {
+  it('should ensure freshness of tasks and targets', fakeAsync(async () => {
     rulesEngineCoreStubs.getDirtyContacts.returns(Array.from({ length: 20 }).map(i => i));
-    clock = sinon.useFakeTimers(1000);
     service = TestBed.inject(RulesEngineService);
 
     await service.isEnabled();
-    clock.tick(500 * 1000);
-    await service.isEnabled(); // to resolve promises
+    tick(500 * 1000);
 
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
     expect(telemetryService.record.callCount).to.equal(5);
     expect(telemetryService.record.args[0][0]).to.equal('rules-engine:initialize');
     expect(telemetryService.record.args[1]).to.deep.equal(['rules-engine:tasks:dirty-contacts', 20]);
-    expect(telemetryService.record.args[2]).to.deep.equal(['rules-engine:targets:dirty-contacts', 20]);
-  });
+    expect(telemetryService.record.args[2]).to.deep.equal(['rules-engine:tasks:all-contacts', 0]);
+    expect(telemetryService.record.args[3]).to.deep.equal(['rules-engine:targets:dirty-contacts', 20]);
+    expect(telemetryService.record.args[4]).to.deep.equal(['rules-engine:targets', 0]);
+  }));
 
-  it('should ensure freshness of tasks only', async () => {
+  it('should ensure freshness of tasks only', fakeAsync(async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
-    clock = sinon.useFakeTimers(1000);
     service = TestBed.inject(RulesEngineService);
 
     await service.isEnabled();
     await service.fetchTargets();
-    clock.tick(500 * 1000);
-    await service.isEnabled(); // to resolve promises
+    tick(500 * 1000);
 
     expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
@@ -485,7 +483,8 @@ describe('RulesEngineService', () => {
     expect(telemetryService.record.args[2][0]).to.equal('rules-engine:ensureTargetFreshness:cancel');
     expect(telemetryService.record.args[3][0]).to.equal('rules-engine:targets');
     expect(telemetryService.record.args[4][0]).to.equal('rules-engine:tasks:dirty-contacts');
-  });
+    expect(telemetryService.record.args[5][0]).to.equal('rules-engine:tasks:all-contacts');
+  }));
 
   it('should cancel all ensure freshness threads', async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
