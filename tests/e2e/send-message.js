@@ -1,6 +1,7 @@
 const utils = require('../utils');
 const helper = require('../helper');
 const common = require('../page-objects/common/common.po');
+const messagesPo = require('../page-objects/messages/messages.po')
 
 /* eslint-disable no-console */
 describe('Send message', () => {
@@ -73,10 +74,6 @@ describe('Send message', () => {
       done();
     });
   });
-
-  const messageInList = identifier => {
-    return `#message-list li[test-id="${identifier}"]`;
-  };
 
   const smsMsg = key => {
     return `Hello ${key} this is a test SMS`;
@@ -190,13 +187,10 @@ describe('Send message', () => {
   const clickLhsEntry = async (entryId, entryName) => {
     entryName = entryName || entryId;
 
-    const liIdentifier = messageInList(entryId);
-    await helper.waitUntilReady(element(by.css(liIdentifier)));
-    expect(element.all(by.css(liIdentifier)).count()).toBe(1);
-
-    const aIdentifier = `${liIdentifier} a`;
-    await helper.waitUntilReady(element(by.css(aIdentifier)));
-    await element(by.css(aIdentifier)).click();
+    const liElement = await messagesPo.messageInList(entryName)
+    await helper.waitUntilReady(liElement);
+    expect(await element.all(liElement.locator()).count()).toBe(1);
+    await liElement.click();
 
     await browser.wait(() => {
       const el = element(by.css('#message-header .name'));
@@ -223,7 +217,7 @@ describe('Send message', () => {
   describe('Send message modal', () => {
     it('can send messages to raw phone numbers', async () => {
       await common.goToMessages();
-      expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
+      expect(await messagesPo.messageInList(RAW_PH).isPresent()).toBeFalsy();
 
       await openSendMessageModal();
       await enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);

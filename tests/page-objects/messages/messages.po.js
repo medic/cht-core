@@ -4,6 +4,7 @@ const sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-
 const exportButton = element(by.css('[ng-click=actionBar.left.exportFn()]'));
 
 module.exports = {
+  messageInList: identifier => element(by.css(`#message-list li[test-id="${identifier}"]`)),
   exportData: ()=> {
     helper.waitUntilReady(exportButton);
     exportButton.click();
