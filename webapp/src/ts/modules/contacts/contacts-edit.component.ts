@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { TranslateService } from '@ngx-translate/core';
 import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -13,6 +12,7 @@ import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { ContactsActions } from '@mm-actions/contacts';
+import { TranslateHelperService } from '@mm-services/translate-helper.service';
 
 
 @Component({
@@ -27,12 +27,12 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private store:Store,
     private route:ActivatedRoute,
     private router:Router,
-    private translateService:TranslateService,
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private enketoService:EnketoService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
     private contactSaveService:ContactSaveService,
+    private translateHelperService:TranslateHelperService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -48,8 +48,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   contentError;
   cancelCallback;
   enketoEdited;
+  enketoContact;
 
-  private enketoContact;
   private routeSnapshot;
 
   ngOnInit() {
@@ -66,14 +66,19 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       enketoEdited,
       enketoError,
       loadingContent,
+      cancelCallback,
     ]) => {
       this.enketoError = enketoError;
       this.enketoSaving = enketoSaving;
       this.enketoEdited = enketoEdited;
       this.enketoStatus = enketoStatus;
       this.loadingContent = loadingContent;
+      this.cancelCallback = cancelCallback;
     });
     this.subscription.add(storeSubscription);
+
+    this.routeSnapshot = this.route.snapshot;
+    this.resetState();
 
     const routeSubscription = this.route.params.subscribe((params) => {
       if (_isEqual(this.routeSnapshot.params, params)) {
@@ -83,30 +88,43 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       this.routeSnapshot = this.route.snapshot;
 
-      if (!this.routeSnapshot.params?.id) {
-        this.globalActions.unsetSelected();
-        this.globalActions.settingSelected();
-      }
+      this.resetState();
+      this.resetFormError();
+      this.initForm();
     });
     this.subscription.add(routeSubscription);
 
+    const queryParamsSubscription = this.route.queryParams.subscribe(() => {
+      this.routeSnapshot = this.route.snapshot;
+      this.setCancelCallback();
+    });
+    this.subscription.add(queryParamsSubscription);
+  }
+
+  private resetState() {
     this.globalActions.setLoadingContent(true);
     this.globalActions.setShowContent(true);
+
+    if (!this.routeSnapshot.params?.id) {
+      this.globalActions.unsetSelected();
+      this.globalActions.settingSelected();
+    }
+  }
+
+  private setCancelCallback() {
     this.globalActions.setCancelCallback(() => {
-      if (this.routeSnapshot.query?.from === 'list') {
+      if (this.routeSnapshot.queryParams?.from === 'list') {
         this.router.navigate(['/contacts']);
       } else {
         const parentContactId = this.routeSnapshot.params.id || this.routeSnapshot.params.parent_id;
         this.router.navigate(['/contacts', parentContactId]);
       }
     });
-
-    this.resetFormError();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    if (this.routeSnapshot.data.name !== 'contacts.add') {
+    if (this.routeSnapshot.data?.name !== 'contacts.add') {
       this.globalActions.setTitle();
       if (this.enketoContact?.formInstance) {
         this.enketoService.unload(this.enketoContact.formInstance);
@@ -115,6 +133,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.initForm();
+  }
+
+  private initForm() {
     this
       .getContact()
       .then(contact => this.getForm(contact))
@@ -179,8 +201,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       this.subscription.add(
         this.store.select(Selectors.getTranslationsLoaded).subscribe(loaded => {
           if (loaded) {
-            const title = this.translateService.instant(titleKey);
-            this.globalActions.setTitle(title);
+            this.translateHelperService
+              .get(titleKey)
+              .then(title => this.globalActions.setTitle(title));
           }
         })
       );
@@ -259,8 +282,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             console.debug('saved report', result);
 
             this.globalActions.setEnketoSavingStatus(false);
-            const snackBarContent = this.translateService.instant(docId ? 'contact.updated' : 'contact.created');
-            this.globalActions.setSnackbarContent(snackBarContent);
+            this.translateHelperService
+              .get(docId ? 'contact.updated' : 'contact.created')
+              .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
             this.globalActions.setEnketoEditedStatus(false);
 
             this.router.navigate(['/contacts', result.docId]);
@@ -268,7 +292,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           .catch((err) => {
             this.globalActions.setEnketoSavingStatus(false);
             console.error('Error submitting form data', err);
-            this.globalActions.setEnketoError(this.translateService.instant('Error updating contact'));
+            this.translateHelperService
+              .get('Error updating contact')
+              .then(error => this.globalActions.setEnketoError(error));
           });
       })
       .catch(() => {

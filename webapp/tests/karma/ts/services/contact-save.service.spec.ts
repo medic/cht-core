@@ -1,62 +1,67 @@
-const assert = chai.assert;
+import { TestBed } from '@angular/core/testing';
+import sinon from 'sinon';
+import { assert } from 'chai';
+import { provideMockStore } from '@ngrx/store/testing';
+
+import { DbService } from '@mm-services/db.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { ContactSaveService } from '@mm-services/contact-save.service';
+import { ServicesActions } from '@mm-actions/services';
 
 describe('ContactSave service', () => {
 
   let service;
   let bulkDocs;
   let get;
-  let ContactTypes;
-  let EnketoTranslation;
-  let ExtractLineage;
-  let ServicesActions;
+  let contactTypesService;
+  let enketoTranslationService;
+  let extractLineageService;
+  let setLastChangedDoc;
 
   beforeEach(() => {
-    EnketoTranslation = {
+    enketoTranslationService = {
       contactRecordToJs: sinon.stub(),
     };
 
-    ContactTypes = { isHardcodedType: sinon.stub().returns(false) };
-    ExtractLineage = sinon.stub();
+    contactTypesService = { isHardcodedType: sinon.stub().returns(false) };
+    extractLineageService = { extract: sinon.stub() };
     bulkDocs = sinon.stub();
     get = sinon.stub();
-    ServicesActions = { setLastChangedDoc: sinon.stub() };
+    setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
 
-    module('inboxApp');
-    module($provide => {
-      $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({
-        bulkDocs: bulkDocs,
-        get: get
-      }));
-      $provide.value('ContactTypes', ContactTypes);
-      $provide.value('EnketoTranslation', EnketoTranslation);
-      $provide.value('ExtractLineage', ExtractLineage);
-      $provide.value('ServicesActions', () => ServicesActions);
+    TestBed.configureTestingModule({
+      providers: [
+        provideMockStore(),
+        { provide: DbService, useValue: { get: () => ({ get, bulkDocs }) } },
+        { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: EnketoTranslationService, useValue: enketoTranslationService },
+        { provide: ExtractLineageService, useValue: extractLineageService },
+
+      ]
     });
-    inject(_ContactSave_ => {
-      service = _ContactSave_;
-    });
+
+    service = TestBed.inject(ContactSaveService);
   });
 
-  it('fetches and binds db types and minifies string contacts', () => {
+  afterEach(() => sinon.restore());
 
-    // given
+  it('fetches and binds db types and minifies string contacts', () => {
     const form = { getDataStr: () => '<data></data>' };
     const docId = null;
     const type = 'some-contact-type';
 
-    EnketoTranslation.contactRecordToJs.returns({
+    enketoTranslationService.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'abc' }
     });
     bulkDocs.returns(Promise.resolve([]));
     get.returns(Promise.resolve({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } }));
-    ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
+    extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
-    // when
-    return service(form, docId, type)
+    return service
+      .save(form, docId, type)
       .then(() => {
-
-        // then
         assert.equal(get.callCount, 1);
         assert.equal(get.args[0][0], 'abc');
 
@@ -71,30 +76,26 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(ServicesActions.setLastChangedDoc.callCount, 1);
-        assert.deepEqual(ServicesActions.setLastChangedDoc.args[0], [savedDocs[0]]);
+        assert.equal(setLastChangedDoc.callCount, 1);
+        assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
   it('fetches and binds db types and minifies object contacts', () => {
-
-    // given
     const form = { getDataStr: () => '<data></data>' };
     const docId = null;
     const type = 'some-contact-type';
 
-    EnketoTranslation.contactRecordToJs.returns({
+    enketoTranslationService.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
     });
     bulkDocs.returns(Promise.resolve([]));
     get.returns(Promise.resolve({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } }));
-    ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
+    extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
-    // when
-    return service(form, docId, type)
+    return service
+      .save(form, docId, type)
       .then(() => {
-
-        // then
         assert.equal(get.callCount, 1);
         assert.equal(get.args[0][0], 'abc');
 
@@ -109,19 +110,17 @@ describe('ContactSave service', () => {
             _id: 'def'
           }
         });
-        assert.equal(ServicesActions.setLastChangedDoc.callCount, 1);
-        assert.deepEqual(ServicesActions.setLastChangedDoc.args[0], [savedDocs[0]]);
+        assert.equal(setLastChangedDoc.callCount, 1);
+        assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
   it('should include parent ID in repeated children', () => {
-
-    // given
     const form = { getDataStr: () => '<data></data>' };
     const docId = null;
     const type = 'some-contact-type';
 
-    EnketoTranslation.contactRecordToJs.returns({
+    enketoTranslationService.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'NEW'},
       siblings: {
         contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
@@ -131,18 +130,16 @@ describe('ContactSave service', () => {
       },
     });
 
-    ExtractLineage.callsFake(contact => {
+    extractLineageService.extract.callsFake(contact => {
       contact.extracted = true;
       return contact;
     });
 
     bulkDocs.returns(Promise.resolve([]));
 
-    // when
-    return service(form, docId, type)
+    return service
+      .save(form, docId, type)
       .then(() => {
-
-        // then
         assert.isTrue(bulkDocs.calledOnce);
 
         const savedDocs = bulkDocs.args[0][0];
@@ -157,10 +154,10 @@ describe('ContactSave service', () => {
         assert.equal(savedDocs[2].parent._id, 'main1');
         assert.equal(savedDocs[2].parent.extracted, true);
 
-        assert.equal(ExtractLineage.callCount, 3);
+        assert.equal(extractLineageService.extract.callCount, 3);
 
-        assert.equal(ServicesActions.setLastChangedDoc.callCount, 1);
-        assert.deepEqual(ServicesActions.setLastChangedDoc.args[0], [savedDocs[0]]);
+        assert.equal(setLastChangedDoc.callCount, 1);
+        assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
       });
   });
 
