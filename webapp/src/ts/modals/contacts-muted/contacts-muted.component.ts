@@ -18,8 +18,8 @@ export class ContactsMutedComponent extends MmModalAbstract {
     this.close();
   }
 
-  cancel() {
-    this.close();
+  closeModal() {
+    this.cancel();
   }
 
 }
