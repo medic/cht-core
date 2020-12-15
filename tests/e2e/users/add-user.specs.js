@@ -53,12 +53,9 @@ describe('Add user  : ', () => {
     browser.refresh();
     const users =element.all(by.repeater('user in users'));
     helper.waitUntilReady(users);
-    // eslint-disable-next-line promise/catch-or-return
-    users.get(1).getText().then(text=> {
-      console.log('bede...', text);
-      expect(text).toContain(addedUser);
-      expect(text).toContain(fullName);
-    });
+    helper.waitUntilReady(element(by.xpath(`//*[contains(normalize-space(text()), 'Administrator')]`)));
+    expect(helper.isTextDisplayed(addedUser)).toBe(true);
+    expect(helper.isTextDisplayed(fullName)).toBe(true);
   });
 
   it('should reject passwords shorter than 8 characters', () => {
