@@ -1,11 +1,11 @@
 <mm-modal
   id="contacts-muted"
   [status]="status"
-  danger="true"
+  [danger]="true"
   titleKey="contact.muted.modal.title"
   submitKey="yes"
   cancelKey="no"
-  (onCancel)="cancel()"
+  (onCancel)="closeModal()"
   (onSubmit)="submit()"
 >
   <p translate>contact.muted.modal.text</p>
