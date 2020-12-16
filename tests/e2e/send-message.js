@@ -289,7 +289,7 @@ describe('Send message', () => {
       );
     };
     describe('Can send additional messages from message pane', () => {
-      const addAnAdditionalMessage = async (id, name) => {
+      const addAnAdditionalMessage = (id, name) => {
         openMessageContent(id, name);
         enterMessageText('Additional Message');
 
