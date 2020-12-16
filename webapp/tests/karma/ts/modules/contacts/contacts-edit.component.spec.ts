@@ -21,7 +21,7 @@ import { GlobalActions } from '@mm-actions/global';
 
 
 describe('ContactsEdit component', () => {
-  let contactTypes;
+  let contactTypesService;
   let translateHelperService;
   //let store;
   let router;
@@ -29,11 +29,11 @@ describe('ContactsEdit component', () => {
   let dbGet;
   let createComponent;
   let fixture;
-  //let component;
+  let component;
   let enketoService;
 
   beforeEach(() => {
-    contactTypes = { get: sinon.stub().resolves({}) };
+    contactTypesService = { get: sinon.stub().resolves() };
     translateHelperService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
     router = { navigate: sinon.stub() };
@@ -70,7 +70,7 @@ describe('ContactsEdit component', () => {
         { provide: ActivatedRoute, useValue: route },
         { provide: LineageModelGeneratorService, useValue: { contact: sinon.stub().resolves({ doc: {}}) } },
         { provide: EnketoService, useValue: enketoService },
-        { provide: ContactTypesService, useValue: contactTypes },
+        { provide: ContactTypesService, useValue: contactTypesService },
         { provide: ContactSaveService, useValue: { save: sinon.stub() } },
       ],
       declarations: [
@@ -82,7 +82,7 @@ describe('ContactsEdit component', () => {
     createComponent = () => {
       return TestBed.compileComponents().then(() => {
         fixture = TestBed.createComponent(ContactsEditComponent);
-        //component = fixture.componentInstance;
+        component = fixture.componentInstance;
         fixture.detectChanges();
         //store = TestBed.inject(MockStore);
       });
@@ -91,28 +91,44 @@ describe('ContactsEdit component', () => {
 
   afterEach(() => sinon.restore());
 
-  it('cancelling redirects to contacts list when query has `from` param equal to `list`', async () => {
-    let cancelCallback;
-    sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
+  describe('cancelCallback', () => {
 
-    await createComponent();
-    route.snapshot.queryParams = { from: 'list' };
-    route.queryParams.next();
+    it('cancelling redirects to contacts list when query has `from` param equal to `list`', async () => {
+      let cancelCallback;
+      sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
 
-    cancelCallback();
+      await createComponent();
+      route.snapshot.queryParams = { from: 'list' };
+      route.queryParams.next();
 
-    expect(router.navigate.callCount).to.equal(1);
-    expect(router.navigate.args[0]).to.deep.equal([[ '/contacts' ]]);
-  });
+      cancelCallback();
 
-  it('cancelling falls back to parent contact if new contact and query `from` param is not equal to `list`',
-    async () => {
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts' ]]);
+    });
+
+    it('cancelling falls back to parent contact if new contact and query `from` param is not equal to `list`',
+      async () => {
+        let cancelCallback;
+        route.snapshot.params = { parent_id: 'parent_id' };
+        sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
+
+        await createComponent();
+        route.snapshot.queryParams = { from: 'something' };
+        route.queryParams.next();
+
+        cancelCallback();
+
+        expect(router.navigate.callCount).to.equal(1);
+        expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'parent_id' ]]);
+      });
+
+    it('cancelling falls back to parent contact if new contact and query does not have `from` param', async () => {
       let cancelCallback;
       route.snapshot.params = { parent_id: 'parent_id' };
       sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
 
       await createComponent();
-      route.snapshot.queryParams = { from: 'something' };
       route.queryParams.next();
 
       cancelCallback();
@@ -121,32 +137,148 @@ describe('ContactsEdit component', () => {
       expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'parent_id' ]]);
     });
 
-  it('cancelling falls back to parent contact if new contact and query does not have `from` param', async () => {
-    let cancelCallback;
-    route.snapshot.params = { parent_id: 'parent_id' };
-    sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
+    it('cancelling falls back to contact if edit contact', async () => {
+      let cancelCallback;
+      route.snapshot.params = { id: 'id' };
+      sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
 
-    await createComponent();
-    route.queryParams.next();
+      await createComponent();
+      route.queryParams.next();
 
-    cancelCallback();
+      cancelCallback();
 
-    expect(router.navigate.callCount).to.equal(1);
-    expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'parent_id' ]]);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'id' ]]);
+    });
   });
 
-  it('cancelling falls back to contact if edit contact', async () => {
-    let cancelCallback;
-    route.snapshot.params = { id: 'id' };
-    sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
+  describe('initialization', () => {
+    it('should initialize the component', async () => {
+      const setLoadingContent = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
+      const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
+      await createComponent();
 
-    await createComponent();
-    route.queryParams.next();
+      expect(component.routeSnapshot).to.equal(route.snapshot);
+      expect(setLoadingContent.args[0]).to.deep.equal([true]);
+      expect(setShowContent.args).to.deep.equal([[true]]);
+    });
 
-    cancelCallback();
+    it('should unsubscribe on destroy', async () => {
+      await createComponent();
 
-    expect(router.navigate.callCount).to.equal(1);
-    expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'id' ]]);
+      const spy = sinon.spy(component.subscription, 'unsubscribe');
+      component.ngOnDestroy();
+      expect(spy.callCount).to.equal(1);
+      expect(enketoService.unload.callCount).to.equal(0);
+    });
+
+    it('should unload form on destroy', async () => {
+      await createComponent();
+
+      const spy = sinon.spy(component.subscription, 'unsubscribe');
+      component.enketoContact = { formInstance: 'form instance' };
+      component.ngOnDestroy();
+
+      expect(spy.callCount).to.equal(1);
+      expect(enketoService.unload.callCount).to.equal(1);
+      expect(enketoService.unload.args[0]).to.deep.equal(['form instance']);
+    });
   });
 
+  describe('loading form', () => {
+    describe('for new contact', () => {
+      it('should fail when no type', async () => {
+        await createComponent();
+        await component.ngAfterViewInit();
+
+        expect(contactTypesService.get.callCount).to.equal(1);
+        expect(contactTypesService.args[0]).to.deep.equal([undefined]);
+        expect(dbGet.callCount).to.equal(0);
+        expect(enketoService.renderContactForm.callCount).to.equal(0);
+        expect(component.enketoContact).to.deep.equal({
+          type: 'contact',
+          formInstance: false,
+          docId: undefined,
+        });
+      });
+
+      it('should fail when no formid', async () => {
+        route.snapshot.params = { type: 'random' };
+        await createComponent();
+        await component.ngAfterViewInit();
+
+        expect(contactTypesService.get.callCount).to.equal(1);
+        expect(contactTypesService.args[0]).to.deep.equal(['random']);
+        expect(dbGet.callCount).to.equal(0);
+        expect(enketoService.renderContactForm.callCount).to.equal(0);
+        expect(component.enketoContact).to.deep.equal({
+          type: 'contact',
+          formInstance: false,
+          docId: undefined,
+        });
+      });
+
+      it('should fail when no form', async () => {
+        route.snapshot.params = { type: 'person' };
+        contactTypesService.get.resolves({});
+        await createComponent();
+        await component.ngAfterViewInit();
+
+        expect(contactTypesService.get.callCount).to.equal(1);
+        expect(contactTypesService.args[0]).to.deep.equal(['person']);
+        expect(dbGet.callCount).to.equal(0);
+        expect(enketoService.renderContactForm.callCount).to.equal(0);
+        expect(component.enketoContact).to.deep.equal({
+          type: 'contact',
+          formInstance: false,
+          docId: undefined,
+        });
+
+      });
+
+      it('should render form', () => {
+
+      });
+    });
+
+    describe('for existent contact', () => {
+      it('should fail when no type', () => {
+
+      });
+
+      it('should fail when no formid', () => {
+
+      });
+
+      it('should fail when no form', () => {
+
+      });
+
+      it('should render form', () => {
+
+      });
+    });
+  });
+
+  describe('saving', () => {
+    it('should not save when already saving', () => {
+
+    });
+
+    it('should not save when invalid', () => {
+
+    });
+
+    it('should catch save errors', () => {
+
+    });
+
+    it('when saving new contact', () => {
+
+    });
+
+    it('when editing existent contact', () => {
+
+    });
+  });
 });

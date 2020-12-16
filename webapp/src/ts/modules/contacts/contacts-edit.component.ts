@@ -53,6 +53,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private routeSnapshot;
 
   ngOnInit() {
+    this.subscribeToStore();
+    this.subscribeToRoute();
+  }
+
+  private subscribeToStore() {
     const storeSubscription = combineLatest(
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
@@ -76,7 +81,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       this.cancelCallback = cancelCallback;
     });
     this.subscription.add(storeSubscription);
+  }
 
+  private subscribeToRoute() {
     this.routeSnapshot = this.route.snapshot;
     this.resetState();
 
@@ -133,11 +140,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.initForm();
+    return this.initForm();
   }
 
   private initForm() {
-    this
+    return this
       .getContact()
       .then(contact => this.getForm(contact))
       .then(formId => this.renderForm(formId))
@@ -175,7 +182,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private getForm(contact) {
     let formId;
     let titleKey;
-    const typeId = contact?.contact_type || contact?.type || this.routeSnapshot.params.type;
+    const typeId = contact?.contact_type || contact?.type || this.routeSnapshot.params?.type;
     return this.contactTypesService.get(typeId).then(type => {
       if (!type) {
         console.error(`Unknown contact type "${typeId}"`);
@@ -252,7 +259,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setEnketoContact(formInstance) {
     this.enketoContact = {
-      type: this.contact.contact_type || this.contact.type,
+      type: this.contact?.contact_type || this.contact?.type,
       formInstance: formInstance,
       docId: this.contactId,
     };
