@@ -93,7 +93,7 @@ describe('Privacy policy', () => {
   describe('for an online user', () => {
     afterEach(() => utils.deleteUsers([onlineUser]));
 
-    it('should show the correct privacy policy on login', () => {
+    it('should show the correct privacy policy on login', async () => {
       browser.wait(() => utils.createUsers([onlineUser]).then(() => true));
       commonElements.goToLoginPage();
       loginPage.login('online', password);
@@ -101,7 +101,8 @@ describe('Privacy policy', () => {
       helper.waitElementToPresent(element(by.css('#privacy-policy-wrapper')));
 
       const content = element(by.css('#privacy-policy-wrapper .html-content'));
-      expect(helper.getTextFromElement(content)).toEqual('English Privacy Policy\nMore markup');
+      await helper.getTextFromElement(content)
+        .then(text => expect(text).toEqual('English Privacy Policy\nMore markup'));
       const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
       acceptButton.click();
       
@@ -114,18 +115,19 @@ describe('Privacy policy', () => {
       browser.get(utils.getBaseUrl() + 'privacy-policy');
       const privacyPolicyContainer = element(by.css('.privacy-policy'));
       helper.waitElementToBeVisible(privacyPolicyContainer);
-      expect(helper.getTextFromElement(privacyPolicyContainer)).toEqual('English Privacy Policy\nMore markup');
+      await helper.getTextFromElement(privacyPolicyContainer)
+        .then(text => expect(text).toContain('English Privacy Policy\nMore markup'));
 
       commonElements.goToLoginPage();
       loginPage.login('online', password);
-       // no privacy policy on 2nd login
-
+      expect(commonElements.isAt('message-list'));
+      // no privacy policy on 2nd login
       commonElements.goToLoginPage();
       loginPage.login('online', password, false, 'fr'); // login in french now
       const contentFr = element(by.css('#privacy-policy-wrapper .html-content'));
-      expect(helper.getTextFromElement(contentFr)).toEqual('Politique de confidentialité en Francais\nPlus de markup');
-      element(by.css('#privacy-policy-wrapper .btn')).click();
-      
+      await helper.getTextFromElement(contentFr).then(text => expect(text)
+        .toEqual('Politique de confidentialité en Francais\nPlus de markup'));
+      element(by.css('#privacy-policy-wrapper .btn')).click();      
     });
   });
 
