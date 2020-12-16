@@ -19,7 +19,7 @@ const baseConfig = {
   //Enabling specs as they are working.
   suites: {
     // e2e:'e2e/**/*.js',
-    e2e: ['**/login.spec.js'],
+    e2e: ['**/privacy-policy.spec.js'],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',

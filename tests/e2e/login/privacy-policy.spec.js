@@ -104,10 +104,10 @@ describe('Privacy policy', () => {
       expect(helper.getTextFromElement(content)).toEqual('English Privacy Policy\nMore markup');
       const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
       acceptButton.click();
-      commonElements.calm();
+      
       utils.resetBrowser();
       // no privacy policy on next load
-      commonElements.calm();
+      
       closeTourModal();
       helper.handleUpdateModal();
 
@@ -118,14 +118,14 @@ describe('Privacy policy', () => {
 
       commonElements.goToLoginPage();
       loginPage.login('online', password);
-      commonElements.calm(); // no privacy policy on 2nd login
+       // no privacy policy on 2nd login
 
       commonElements.goToLoginPage();
       loginPage.login('online', password, false, 'fr'); // login in french now
       const contentFr = element(by.css('#privacy-policy-wrapper .html-content'));
       expect(helper.getTextFromElement(contentFr)).toEqual('Politique de confidentialité en Francais\nPlus de markup');
       element(by.css('#privacy-policy-wrapper .btn')).click();
-      commonElements.calm();
+      
     });
   });
 
@@ -143,10 +143,10 @@ describe('Privacy policy', () => {
       expect(helper.getTextFromElement(content)).toEqual('Politique de confidentialité en Francais\nPlus de markup');
       const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
       acceptButton.click();
-      commonElements.calm();
+      
       utils.resetBrowser();
       // no privacy policy on next load
-      commonElements.calm();
+      
       closeTourModal();
       helper.handleUpdateModal();
 
@@ -178,7 +178,7 @@ describe('Privacy policy', () => {
       const contentUpdated = element(by.css('#privacy-policy-wrapper .html-content')); // privacy policy updated
       expect(helper.getTextFromElement(contentUpdated)).toEqual(updatePrivacyPolicyInFrench);
       element(by.css('#privacy-policy-wrapper .btn')).click();
-      commonElements.calm();
+      
     });
   });
 });
