@@ -21,7 +21,6 @@ describe('Add user  : ', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL=originalTimeout;
   });
   beforeAll(() => {
-    browser.sleep(20000);
     helper.handleUpdateModal();
     helper.waitUntilReady(messageTab);
   });
@@ -48,7 +47,7 @@ describe('Add user  : ', () => {
           return true;
         });
     }, 20000);
-    
+
     helper.waitUntilReady(admin);
     browser.refresh();
     const users =element.all(by.repeater('user in users'));
