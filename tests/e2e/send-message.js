@@ -187,7 +187,7 @@ describe('Send message', () => {
   const clickLhsEntry = async (entryId, entryName) => {
     entryName = entryName || entryId;
 
-    const liElement = await messagesPo.messageInList(entryName)
+    const liElement = await messagesPo.messageInList(entryId)
     await helper.waitUntilReady(liElement);
     expect(await element.all(liElement.locator()).count()).toBe(1);
     await liElement.click();
@@ -221,7 +221,7 @@ describe('Send message', () => {
 
       await openSendMessageModal();
       await enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
-      await element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
+      await messagesPo.messageText(smsMsg('raw'));
       await sendMessage();
       await clickLhsEntry(RAW_PH);
 
@@ -229,73 +229,67 @@ describe('Send message', () => {
       await lastMessageIs(smsMsg('raw'));
     });
 
-    it('can send messages to contacts with phone numbers', () => {
-      common.goToMessages();
+    it('can send messages to contacts with phone numbers', async () => {
+      await common.goToMessages();
 
-      expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
+      expect(await messagesPo.messageInList(ALICE._id).isPresent()).toBeFalsy();
 
-      openSendMessageModal();
-      enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
-      sendMessage();
-      clickLhsEntry(ALICE._id, ALICE.name);
+      await openSendMessageModal();
+      await enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
+      await messagesPo.messageText(smsMsg('contact'));
+      await sendMessage();
+      await clickLhsEntry(ALICE._id,ALICE.name);
 
-      expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      lastMessageIs(smsMsg('contact'));
+      expect(await element.all(by.css('#message-content li')).count()).toBe(1);
+      await lastMessageIs(smsMsg('contact'));
     });
 
-    it('can send messages to contacts under everyone at with phone numbers', () => {
-      common.goToMessages();
+    it('can send messages to contacts under everyone at with phone numbers', async () => {
+      await common.goToMessages();
 
-      expect(
-        element(by.css(messageInList(CAROL.phone))).isPresent()
-      ).toBeFalsy();
-      expect(
-        element(by.css(messageInList(JAROL.phone))).isPresent()
-      ).toBeFalsy();
-      expect(
-        element(by.css(messageInList(DAVID.phone))).isPresent()
-      ).toBeFalsy();
+      expect(await messagesPo.messageInList(CAROL.phone).isPresent()).toBeFalsy();
+      expect(await messagesPo.messageInList(JAROL.phone).isPresent()).toBeFalsy();
+      expect(await messagesPo.messageInList(DAVID.phone).isPresent()).toBeFalsy();
 
-      openSendMessageModal();
-      enterCheckAndSelect(
+      await openSendMessageModal();
+      await enterCheckAndSelect(
         BOB_PLACE.name,
         2,
         contactNameSelector,
         everyoneAtText(BOB_PLACE.name)
       );
-      element(by.css('#send-message textarea')).sendKeys(smsMsg('everyoneAt'));
-      sendMessage();
+      await messagesPo.messageText(smsMsg('everyoneAt'));
+      await sendMessage();
 
-      expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
-      expect(element.all(by.css(messageInList(JAROL._id))).count()).toBe(0);
-      expect(element.all(by.css(messageInList(DAVID._id))).count()).toBe(0);
-      clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
+      expect(element.all(messagesPo.messageInList(CAROL._id).locator()).count()).toBe(0);
+      expect(element.all(messagesPo.messageInList(JAROL._id).locator()).count()).toBe(0);
+      expect(element.all(messagesPo.messageInList(DAVID._id).locator()).count()).toBe(0);
+      await clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
 
-      expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      lastMessageIs(smsMsg('everyoneAt'));
+      expect(await element.all(by.css('#message-content li')).count()).toBe(1);
+      await lastMessageIs(smsMsg('everyoneAt'));
     });
   });
 
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
-    const openMessageContent = (id, name) => {
-      common.goToMessages();
-      helper.waitUntilReady(element(by.css(messageInList(id))));
-      helper.waitElementToPresent(element(by.css(messageInList(id))), 2000);
-      clickLhsEntry(id, name);
+    const openMessageContent = async (id, name) => {
+      await common.goToMessages();
+      await helper.waitUntilReady(messagesPO.messageInList(id));
+      // helper.waitElementToPresent(messagesPO.messageInList(id), 2000);
+      await clickLhsEntry(id, name);
     };
-    const enterMessageText = message => {
-      element(by.css('#message-footer textarea')).click();
-      helper.waitElementToBeVisible(
+    const enterMessageText = async message => {
+      await element(by.css('#message-footer textarea')).click();
+      await helper.waitElementToBeVisible(
         element(by.css('#message-footer .message-actions .btn-primary'))
       );
-      browser.wait(
+      await browser.wait(
         element(by.css('#message-footer textarea')).sendKeys(message)
       );
     };
     describe('Can send additional messages from message pane', () => {
-      const addAnAdditionalMessage = (id, name) => {
+      const addAnAdditionalMessage = async (id, name) => {
         openMessageContent(id, name);
         enterMessageText('Additional Message');
 
@@ -321,29 +315,29 @@ describe('Send message', () => {
       });
     });
     describe('Can add recipients', () => {
-      it('For raw contacts', () => {
-        openMessageContent(RAW_PH);
-        enterMessageText('A third message');
+      // it('For raw contacts', () => {
+      //   openMessageContent(RAW_PH);
+      //   enterMessageText('A third message');
 
-        element(by.css('.message-actions .btn.btn-link')).click();
-        helper.waitForAngularComplete();
-        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
-        expect(
-          element.all(by.css('li.select2-selection__choice')).count()
-        ).toBe(1);
-        expect(
-          element(by.css('#send-message select>option')).getAttribute('value')
-        ).toBe(RAW_PH);
-        enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
-        sendMessage();
-        openMessageContent(RAW_PH);
-        expect(element.all(by.css('#message-content li')).count()).toBe(3);
+      //   element(by.css('.message-actions .btn.btn-link')).click();
+      //   helper.waitForAngularComplete();
+      //   expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
+      //   expect(
+      //     element.all(by.css('li.select2-selection__choice')).count()
+      //   ).toBe(1);
+      //   expect(
+      //     element(by.css('#send-message select>option')).getAttribute('value')
+      //   ).toBe(RAW_PH);
+      //   enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
+      //   sendMessage();
+      //   openMessageContent(RAW_PH);
+      //   expect(element.all(by.css('#message-content li')).count()).toBe(3);
 
-        lastMessageIs('A third message');
-        openMessageContent(ANOTHER_RAW_PH);
-        expect(element.all(by.css('#message-content li')).count()).toBe(1);
-        lastMessageIs('A third message');
-      });
+      //   lastMessageIs('A third message');
+      //   openMessageContent(ANOTHER_RAW_PH);
+      //   expect(element.all(by.css('#message-content li')).count()).toBe(1);
+      //   lastMessageIs('A third message');
+      // });
       it('For existing contacts', () => {
         openMessageContent(ALICE._id, ALICE.name);
         enterMessageText('A third message');
