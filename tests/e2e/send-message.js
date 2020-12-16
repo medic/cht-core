@@ -1,7 +1,7 @@
 const utils = require('../utils');
 const helper = require('../helper');
 const common = require('../page-objects/common/common.po');
-const messagesPo = require('../page-objects/messages/messages.po')
+const messagesPo = require('../page-objects/messages/messages.po');
 
 /* eslint-disable no-console */
 describe('Send message', () => {
@@ -187,7 +187,7 @@ describe('Send message', () => {
   const clickLhsEntry = async (entryId, entryName) => {
     entryName = entryName || entryId;
 
-    const liElement = await messagesPo.messageInList(entryId)
+    const liElement = await messagesPo.messageInList(entryId);
     await helper.waitUntilReady(liElement);
     expect(await element.all(liElement.locator()).count()).toBe(1);
     await liElement.click();
@@ -275,8 +275,8 @@ describe('Send message', () => {
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
       common.goToMessages();
-      helper.waitUntilReady(element(by.css(messageInList(id))));
-      helper.waitElementToPresent(element(by.css(messageInList(id))), 2000);
+      helper.waitUntilReady(messagesPo.messageInList(id));
+      helper.waitElementToPresent(messagesPo.messageInList(id), 2000);
       clickLhsEntry(id, name);
     };
     const enterMessageText = message => {
