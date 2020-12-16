@@ -274,17 +274,17 @@ describe('Send message', () => {
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
     const openMessageContent = async (id, name) => {
-      await common.goToMessages();
-      await helper.waitUntilReady(messagesPO.messageInList(id));
+      common.goToMessages();
+      helper.waitUntilReady(messagesPO.messageInList(id));
       // helper.waitElementToPresent(messagesPO.messageInList(id), 2000);
-      await clickLhsEntry(id, name);
+      clickLhsEntry(id, name);
     };
     const enterMessageText = async message => {
-      await element(by.css('#message-footer textarea')).click();
-      await helper.waitElementToBeVisible(
+      element(by.css('#message-footer textarea')).click();
+      helper.waitElementToBeVisible(
         element(by.css('#message-footer .message-actions .btn-primary'))
       );
-      await browser.wait(
+      browser.wait(
         element(by.css('#message-footer textarea')).sendKeys(message)
       );
     };
@@ -307,38 +307,38 @@ describe('Send message', () => {
         lastMessageIs('Additional Message');
       };
 
-      it('For raw contacts', () => {
+      xit('For raw contacts', () => {
         addAnAdditionalMessage(RAW_PH);
       });
-      it('For real contacts', () => {
+      xit('For real contacts', () => {
         addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', () => {
-      // it('For raw contacts', () => {
-      //   openMessageContent(RAW_PH);
-      //   enterMessageText('A third message');
+      xit('For raw contacts', () => {
+        openMessageContent(RAW_PH);
+        enterMessageText('A third message');
 
-      //   element(by.css('.message-actions .btn.btn-link')).click();
-      //   helper.waitForAngularComplete();
-      //   expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
-      //   expect(
-      //     element.all(by.css('li.select2-selection__choice')).count()
-      //   ).toBe(1);
-      //   expect(
-      //     element(by.css('#send-message select>option')).getAttribute('value')
-      //   ).toBe(RAW_PH);
-      //   enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
-      //   sendMessage();
-      //   openMessageContent(RAW_PH);
-      //   expect(element.all(by.css('#message-content li')).count()).toBe(3);
+        element(by.css('.message-actions .btn.btn-link')).click();
+        helper.waitForAngularComplete();
+        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
+        expect(
+          element.all(by.css('li.select2-selection__choice')).count()
+        ).toBe(1);
+        expect(
+          element(by.css('#send-message select>option')).getAttribute('value')
+        ).toBe(RAW_PH);
+        enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
+        sendMessage();
+        openMessageContent(RAW_PH);
+        expect(element.all(by.css('#message-content li')).count()).toBe(3);
 
-      //   lastMessageIs('A third message');
-      //   openMessageContent(ANOTHER_RAW_PH);
-      //   expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      //   lastMessageIs('A third message');
-      // });
-      it('For existing contacts', () => {
+        lastMessageIs('A third message');
+        openMessageContent(ANOTHER_RAW_PH);
+        expect(element.all(by.css('#message-content li')).count()).toBe(1);
+        lastMessageIs('A third message');
+      });
+      xit('For existing contacts', () => {
         openMessageContent(ALICE._id, ALICE.name);
         enterMessageText('A third message');
 
