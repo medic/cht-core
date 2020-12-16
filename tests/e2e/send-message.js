@@ -273,13 +273,13 @@ describe('Send message', () => {
 
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
-    const openMessageContent = async (id, name) => {
+    const openMessageContent = (id, name) => {
       common.goToMessages();
-      helper.waitUntilReady(messagesPO.messageInList(id));
-      // helper.waitElementToPresent(messagesPO.messageInList(id), 2000);
+      helper.waitUntilReady(element(by.css(messageInList(id))));
+      helper.waitElementToPresent(element(by.css(messageInList(id))), 2000);
       clickLhsEntry(id, name);
     };
-    const enterMessageText = async message => {
+    const enterMessageText = message => {
       element(by.css('#message-footer textarea')).click();
       helper.waitElementToBeVisible(
         element(by.css('#message-footer .message-actions .btn-primary'))
@@ -338,7 +338,7 @@ describe('Send message', () => {
         expect(element.all(by.css('#message-content li')).count()).toBe(1);
         lastMessageIs('A third message');
       });
-      xit('For existing contacts', () => {
+      it('For existing contacts', () => {
         openMessageContent(ALICE._id, ALICE.name);
         enterMessageText('A third message');
 
