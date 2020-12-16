@@ -19,6 +19,7 @@ const changeLocale = locale => {
   }
   element(by.css(`.locale[name="${locale}"]`)).click();
 };
+const getInboxPage=()=>element(by.css('.inbox.page'));
 
 module.exports = {
   login: (username, password, shouldFail, locale) => {
@@ -34,4 +35,5 @@ module.exports = {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
   },
+  waitForPageToLoad:()=>helper.waitUntilReady(getInboxPage),
 };

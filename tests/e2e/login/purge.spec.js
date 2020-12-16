@@ -253,7 +253,7 @@ describe('Purging on login', () => {
     utils.resetBrowser();
     commonElements.goToLoginPage();
     loginPage.login(restrictedUserName, restrictedPass);
-    helper.waitUntilReady(element(by.css('.inbox.page')));
+    loginPage.waitForPageToLoad();
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId]);
     reports.expectReportsToNotExist([badFormId]);
@@ -276,7 +276,7 @@ describe('Purging on login', () => {
       })
       .then(() => {
         utils.resetBrowser();
-        helper.waitUntilReady(element(by.css('#reports-list')));
+        reports.waitForReportToAppear();
         return getPurgeLog();
       })
       .then(result => {
@@ -308,7 +308,7 @@ describe('Purging on login', () => {
         // get new settings that say to purge on every boot!
         commonElements.sync();
         utils.refreshToGetNewSettings();
-        helper.waitUntilReady(element(by.css('#reports-list')));
+        reports.waitForReportToAppear();
         return getPurgeLog();
       })
       .then(result => {
