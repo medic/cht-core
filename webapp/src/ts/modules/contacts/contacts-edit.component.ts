@@ -44,8 +44,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   loadingContent;
   contact;
   contactId;
-  errorTranslationKey;
-  contentError;
+  errorTranslationKey = false;
+  contentError = false;
   cancelCallback;
   enketoEdited;
   enketoContact;
@@ -144,6 +144,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initForm() {
+    this.contentError = false;
+    this.errorTranslationKey = false;
+
     return this
       .getContact()
       .then(contact => this.getForm(contact))
@@ -231,12 +234,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private renderForm(formId) {
     if (!formId) {
-      // Disable next and prev buttons
-      $('#contact-form')
-        .find('.form-footer .btn')
-        .filter('.previous-page, .next-page')
-        .addClass('disabled');
-      return;
+      throw new Error('Unknown form');
     }
 
     this.globalActions.setEnketoEditedStatus(false);

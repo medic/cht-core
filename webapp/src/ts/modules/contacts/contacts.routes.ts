@@ -28,7 +28,6 @@ export const routes: Routes = [
         path: ':id/deceased',
         component: ContactsDeceasedComponent,
       },
-
       {
         path: 'add',
         component: ContactsEditComponent,

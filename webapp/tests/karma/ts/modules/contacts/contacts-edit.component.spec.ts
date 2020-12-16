@@ -256,11 +256,7 @@ describe('ContactsEdit component', () => {
         expect(contactTypesService.get.args[0]).to.deep.equal([undefined]);
         expect(dbGet.callCount).to.equal(0);
         expect(enketoService.renderContactForm.callCount).to.equal(0);
-        expect(component.enketoContact).to.deep.equal({
-          type: undefined,
-          docId: undefined,
-          formInstance: undefined,
-        });
+        expect(component.enketoContact).to.deep.equal(undefined);
       });
 
       it('should fail when no formId', async () => {
@@ -273,11 +269,7 @@ describe('ContactsEdit component', () => {
         expect(contactTypesService.get.args[0]).to.deep.equal(['random']);
         expect(dbGet.callCount).to.equal(0);
         expect(enketoService.renderContactForm.callCount).to.equal(0);
-        expect(component.enketoContact).to.deep.equal({
-          type: 'random',
-          formInstance: undefined,
-          docId: null,
-        });
+        expect(component.enketoContact).to.deep.equal(undefined);
       });
 
       it('should fail when no form', async () => {
@@ -326,7 +318,7 @@ describe('ContactsEdit component', () => {
           { _id: 'clinic_create_form_id', the: 'form' },
           { clinic: { type: 'contact', contact_type: 'clinic', parent: 'the_district' } },
         ]);
-        expect(component.contentError).to.equal(undefined);
+        expect(component.contentError).to.equal(false);
       });
 
       it('should render form without parent', async () => {
@@ -339,6 +331,7 @@ describe('ContactsEdit component', () => {
 
         await createComponent();
         await fixture.whenStable();
+
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['district_hospital']);
@@ -355,7 +348,7 @@ describe('ContactsEdit component', () => {
           { _id: 'district_create_form_id', the: 'form' },
           { district_hospital: { type: 'contact', contact_type: 'district_hospital', parent: undefined } },
         ]);
-        expect(component.contentError).to.equal(undefined);
+        expect(component.contentError).to.equal(false);
       });
     });
 
@@ -370,6 +363,7 @@ describe('ContactsEdit component', () => {
         });
         contactTypesService.get.resolves();
 
+
         await createComponent();
         await fixture.whenStable();
 
@@ -377,11 +371,7 @@ describe('ContactsEdit component', () => {
         expect(contactTypesService.get.args[0]).to.deep.equal(['missing_clinic_type']);
         expect(dbGet.callCount).to.equal(0);
         expect(enketoService.renderContactForm.callCount).to.equal(0);
-        expect(component.enketoContact).to.deep.equal({
-          type: undefined,
-          docId: undefined,
-          formInstance: undefined,
-        });
+        expect(component.enketoContact).to.deep.equal(undefined);
       });
 
       it('should fail when no formId', async () => {
@@ -401,11 +391,7 @@ describe('ContactsEdit component', () => {
         expect(contactTypesService.get.args[0]).to.deep.equal(['person_type']);
         expect(dbGet.callCount).to.equal(0);
         expect(enketoService.renderContactForm.callCount).to.equal(0);
-        expect(component.enketoContact).to.deep.equal({
-          type: 'person_type',
-          formInstance: undefined,
-          docId: 'the_person',
-        });
+        expect(component.enketoContact).to.deep.equal(undefined);
       });
 
       it('should fail when no form', async () => {
@@ -466,7 +452,7 @@ describe('ContactsEdit component', () => {
           formInstance: undefined,
           type: 'patient',
         });
-        expect(component.contentError).to.equal(undefined);
+        expect(component.contentError).to.equal(false);
       });
 
       it('should render form with create form', async () => {
@@ -501,7 +487,7 @@ describe('ContactsEdit component', () => {
           formInstance: undefined,
           type: 'a_clinic_type',
         });
-        expect(component.contentError).to.equal(undefined);
+        expect(component.contentError).to.equal(false);
       });
     });
   });
