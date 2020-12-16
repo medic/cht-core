@@ -1,6 +1,7 @@
 const utils = require('../utils');
 const commonElements = require('../page-objects/common/common.po.js');
 const helper = require('../helper');
+const { browser } = require('protractor');
 
 const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
 const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
@@ -248,6 +249,7 @@ describe('sms-gateway api', () => {
       helper.clickElement(
         element(by.css('#reports-list li:first-child .heading'))
       );
+      browser.waitForAngular();
       helper.waitElementToPresent(
         element(by.css('#reports-content .body .item-summary .icon'))
       );
@@ -356,6 +358,7 @@ describe('sms-gateway api', () => {
       helper.clickElement(
         element(by.css('#reports-list li:first-child .heading'))
       );
+      browser.waitForAngular();
       helper.waitElementToPresent(
         element(by.css('#reports-content .body .item-summary .icon'))
       );
