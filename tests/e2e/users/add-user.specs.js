@@ -2,18 +2,15 @@ const utils=require('../../utils');
 const usersPage=require('../../page-objects/users/users.po.js');
 const helper=require('../../helper');
 const addUserModal=require('../../page-objects/users/add-user-modal.po.js');
-const { browser }=require('protractor');
 const addedUser='fulltester';
 const fullName='Full Tester';
 const errorMessagePassword=element(by.css('#edit-password ~ .help-block'));
+const messageTab = element(by.css('.inbox.page'));
 
 describe('Add user  : ', () => {
-  const admin=element(by.xpath(`//*[contains(normalize-space(text()), "Administrator")]`));
-  const messageTab=element(by.xpath(`//*[contains(normalize-space(text()), "No messages found")]`));
   beforeEach(utils.beforeEach);
   beforeAll(() => {
     helper.handleUpdateModal();
-    helper.waitUntilReady(messageTab);
   });
   afterAll(done =>
     utils.request(`/_users/${addedUser}`)
@@ -39,11 +36,7 @@ describe('Add user  : ', () => {
         });
     }, 20000);
 
-    helper.waitUntilReady(admin);
-    browser.refresh();
-    const users =element.all(by.repeater('user in users'));
-    helper.waitUntilReady(users);
-    helper.waitUntilReady(element(by.xpath(`//*[contains(normalize-space(text()), 'Administrator')]`)));
+    helper.waitUntilReady(usersPage.getUsersList());
     expect(helper.isTextDisplayed(addedUser)).toBe(true);
     expect(helper.isTextDisplayed(fullName)).toBe(true);
   });
