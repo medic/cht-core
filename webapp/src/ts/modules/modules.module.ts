@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { FormsModule } from '@angular/forms';
 
 import  { PipesModule } from '@mm-pipes/pipes.module';
@@ -29,6 +30,7 @@ import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target
 import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
+import { ThemeComponent } from '@mm-modules/theme/theme.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +55,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     AnalyticsTargetAggregatesDetailComponent,
     TasksComponent,
     TasksContentComponent,
+    ThemeComponent,
   ],
   imports: [
     CommonModule,
@@ -62,6 +65,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     ComponentsModule,
     BsDropdownModule,
     FormsModule,
+    AccordionModule,
   ],
   exports: [
     HomeComponent,
