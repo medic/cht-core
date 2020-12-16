@@ -230,7 +230,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private renderForm(formId) {
-
     if (!formId) {
       // Disable next and prev buttons
       $('#contact-form')
@@ -239,6 +238,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         .addClass('disabled');
       return;
     }
+
     this.globalActions.setEnketoEditedStatus(false);
     return this.dbService
       .get()
@@ -267,7 +267,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   save() {
     if (this.enketoSaving) {
-      console.debug('Attempted to call contacts-edit:$scope.save more than once');
+      console.debug('Attempted to call contacts-edit:save more than once');
       return;
     }
 
@@ -286,7 +286,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         return this.contactSaveService
           .save(form, docId, this.enketoContact.type)
           .then((result) => {
-            console.debug('saved report', result);
+            console.debug('saved contact', result);
 
             this.globalActions.setEnketoSavingStatus(false);
             this.translateHelperService
@@ -299,7 +299,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           .catch((err) => {
             this.globalActions.setEnketoSavingStatus(false);
             console.error('Error submitting form data', err);
-            this.translateHelperService
+            return this.translateHelperService
               .get('Error updating contact')
               .then(error => this.globalActions.setEnketoError(error));
           });
