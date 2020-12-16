@@ -124,7 +124,6 @@ module.exports = {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
-      //helper.waitForAngularComplete();
       helper.waitUntilReady(element(by.css('#reports-list')));
     }
   },
@@ -160,7 +159,5 @@ module.exports = {
 
 function openSubmenu(menuName) {
   helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
-  //throwing error: `Cannot read property 'pendingRequests' of undefined` - 
-  //helper.waitForAngularComplete();
   browser.waitForAngular();
 }

@@ -253,7 +253,6 @@ describe('Purging on login', () => {
     utils.resetBrowser();
     commonElements.goToLoginPage();
     loginPage.login(restrictedUserName, restrictedPass);
-    //helper.waitUntilReady(element(by.css('#reports-list')));
     helper.waitUntilReady(element(by.css('.inbox.page')));
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId]);
