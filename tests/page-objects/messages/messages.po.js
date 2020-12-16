@@ -6,6 +6,9 @@ const exportButton = element(by.css('[ng-click=actionBar.left.exportFn()]'));
 module.exports = {
   messageInList: identifier => element(by.css(`#message-list li[test-id="${identifier}"]`)),
   messageText: text => element(by.css('#send-message textarea')).sendKeys(text),
+  sendMessage: () => element(by.css('.general-actions .send-message')),
+  sendMessageModal: () => element(by.id('send-message')),
+  messageRecipientSelect: () => element(by.css('#send-message input.select2-search__field')),
   exportData: ()=> {
     helper.waitUntilReady(exportButton);
     exportButton.click();
