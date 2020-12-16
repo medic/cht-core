@@ -8,18 +8,9 @@ const fullName='Full Tester';
 const errorMessagePassword=element(by.css('#edit-password ~ .help-block'));
 
 describe('Add user  : ', () => {
-  let originalTimeout;
   const admin=element(by.xpath(`//*[contains(normalize-space(text()), "Administrator")]`));
   const messageTab=element(by.xpath(`//*[contains(normalize-space(text()), "No messages found")]`));
-  beforeEach(function () {
-    helper.handleUpdateModal();
-    originalTimeout=jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL=60000;
-  });
-
-  afterEach(function () {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL=originalTimeout;
-  });
+  beforeEach(utils.beforeEach);
   beforeAll(() => {
     helper.handleUpdateModal();
     helper.waitUntilReady(messageTab);
