@@ -156,7 +156,7 @@ describe('Privacy policy', () => {
       const privacyPolicyContainer = element(by.css('.privacy-policy'));
       helper.waitElementToBeVisible(privacyPolicyContainer);
       expect(helper.getTextFromElement(privacyPolicyContainer))
-        .toEqual('Politique de confidentialité en Francais\nPlus de markup');
+        .toContain('Politique de confidentialité en Francais\nPlus de markup');
 
       const updatePrivacyPolicyInFrench = 'Cette text est totalement different c`est fois!';
 

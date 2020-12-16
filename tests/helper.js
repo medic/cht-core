@@ -237,10 +237,8 @@ module.exports = {
     }, timeout);
   },
 
-  waitElementToPresent: (elm, timeout) => {
-    timeout = timeout || 10000;
-    browser.wait(() => elm.isPresent(), timeout);
-  },
+  waitElementToPresent: (elm, timeout=10000) => browser.wait(() => elm.isPresent(), timeout),
+
 
   waitForAngularComplete: () => {
     return browser.wait(() => {
