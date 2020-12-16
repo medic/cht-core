@@ -22,8 +22,8 @@ module.exports = {
     }
 
     dateFilter.click();
-    datePickerStart.click().sendKeys(clear + startDate);
-    datePickerEnd.click().sendKeys(clear + endDate + protractor.Key.ENTER);
+    datePickerStart.click().sendKeys(clear + startDate.format("MM/DD/YYYY"));
+    datePickerEnd.click().sendKeys(clear + endDate.format("MM/DD/YYYY") + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
   },
   expectReportsToExist: uuids => {

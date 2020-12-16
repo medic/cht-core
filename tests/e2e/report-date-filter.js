@@ -103,7 +103,7 @@ describe('Filters reports', () => {
     commonElements.goToReports();
     helper.waitElementToPresent(reportsTab.firstReport());
 
-    reportsTab.filterByDate('05/16/2016', '05/17/2016');
+    reportsTab.filterByDate(moment('05/16/2016',"MM/DD/YYYY"), moment('05/17/2016',"MM/DD/YYYY"));
     
     helper.waitElementToPresent(reportsTab.listLoader());
     helper.waitElementToPresent(reportsTab.firstReport());
