@@ -155,7 +155,7 @@ describe('sms-gateway api', () => {
     });
     afterEach(helper.handleUpdateModal);
 
-    it('- shows content', () => {
+    it('- shows content', async() => {
       utils.resetBrowser();
       helper.clickElement(element(by.id('messages-tab')));
 
@@ -191,24 +191,21 @@ describe('sms-gateway api', () => {
           by.css('#message-content li.incoming:first-child .data p:first-child')
         )
       );
-      const messageHeader = helper.getTextFromElement(
+      await helper.getTextFromElement(
         element(by.css('#message-header .name'))
-      );
-      const messageText = helper.getTextFromElement(
+      ).then(messageHeader => expect(messageHeader).toBe('+64271234567'));
+      await helper.getTextFromElement(
         element(
           by.css('#message-content li.incoming:first-child .data p:first-child')
         )
-      );
-      const messageStatus = helper.getTextFromElement(
+      ).then(messageText => expect(messageText).toBe('hello'));
+      await helper.getTextFromElement(
         element(
           by.css(
             '#message-content li.incoming:first-child .data .state.received'
           )
         )
-      );
-      expect(messageHeader).toBe('+64271234567');
-      expect(messageText).toBe('hello');
-      expect(messageStatus).toBe('received');
+      ).then(messageStatus => expect(messageStatus).toBe('received'));
     });
   });
 
@@ -245,7 +242,7 @@ describe('sms-gateway api', () => {
         .catch(done.fail);
     });
 
-    it('- shows content', () => {
+    it('- shows content', async () => {
       commonElements.goToReports();
       helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
       helper.clickElement(
@@ -256,36 +253,35 @@ describe('sms-gateway api', () => {
       );
 
       // tasks
-      const sentTaskState = helper.getTextFromElement(
+      await helper.getTextFromElement(
         element(
           by.css('#reports-content .details > ul .task-list .task-state .state')
         )
-      );
-      const deliveredTaskState = helper.getTextFromElement(
+      ).then(sentTaskState => expect(sentTaskState).toBe('sent'));
+      
+      await helper.getTextFromElement(
         element(
           by.css(
             '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'
           )
         )
-      );
-      const scheduledTaskState = helper.getTextFromElement(
+      ).then(deliveredTaskState => expect(deliveredTaskState).toBe('delivered'));
+
+      await helper.getTextFromElement(
         element(
           by.css(
             '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state'
           )
         )
-      );
-      const failedTaskState = helper.getTextFromElement(
+      ).then(scheduledTaskState => expect(scheduledTaskState).toBe('scheduled'));
+      
+      await helper.getTextFromElement(
         element(
           by.css(
             '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state'
           )
         )
-      );
-      expect(sentTaskState).toBe('sent');
-      expect(deliveredTaskState).toBe('delivered');
-      expect(scheduledTaskState).toBe('scheduled');
-      expect(failedTaskState).toBe('failed');
+      ).then(failedTaskState => expect(failedTaskState).toBe('failed'));
     });
   });
 
