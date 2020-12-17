@@ -1,6 +1,7 @@
 const utils = require('../utils');
 const sUtils = require('./sentinel/utils');
 const commonElements = require('../page-objects/common/common.po.js');
+const tasks = require('../page-objects/tasks/tasks.po.js');
 const helper = require('../helper');
 const moment = require('moment');
 
@@ -251,45 +252,6 @@ describe('registration transition', () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
-    const checkItemSummary = () => {
-      const summaryElement = element(by.css('#reports-content .item-summary'));
-      expect(summaryElement.element(by.css('.sender .name')).getText()).toMatch(`Submitted by ${CAROL.name}`);
-      expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Siobhan');
-      expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-      expect(summaryElement.element(by.css('.position a')).getText()).toBe(BOB_PLACE.name);
-      expect(summaryElement.element(by.css('.detail')).isDisplayed()).toBeTruthy();
-      expect(summaryElement.element(by.css('.detail .status')).isDisplayed()).toBe(false);
-    };
-
-    const checkAutoResponse = (expectedDate) => {
-      const taskElement = element(by.css('#reports-content .details > ul'));
-      expect(taskElement.element(by.css('.task-list > li:nth-child(1) > ul > li')).getText())
-        .toBe('Thank you '+ CAROL.name +' for registering Siobhan');
-      expect(taskElement.element(
-        by.css('.task-list > li:nth-child(1) .task-state .state.forwarded-to-gateway')).isDisplayed()
-      ).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list > li:nth-child(1) .task-state .recipient')).getText())
-        .toBe(' to +64271234567');
-
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) > ul > li')).getText())
-        .toBe('LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
-      expect(taskElement.element(
-        by.css('.task-list > li:nth-child(2) .task-state .state.forwarded-to-gateway')).isDisplayed()
-      ).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) .task-state .recipient')).getText())
-        .toBe(' to +64271234567');
-    };
-
-    const checkScheduledTask = (childIndex, title, message) => {
-      const taskElement = element(by.css(
-        '#reports-content .details .scheduled-tasks > ul > li:nth-child(' + childIndex + ')'
-      ));
-      expect(taskElement.element(by.css('h3')).getText()).toContain(title);
-      expect(taskElement.element(by.css('.task-list li > ul > li')).getText()).toBe(message);
-      expect(taskElement.element(by.css('.task-list li .task-state .state.scheduled')).isDisplayed()).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');
-    };
-
     it('shows content', async () => {
       commonElements.goToReports(true);
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
@@ -305,11 +267,12 @@ describe('registration transition', () => {
 
       const expectedDate = computeExpectedDate();
 
-      checkItemSummary();
-      checkAutoResponse(expectedDate);
-      checkScheduledTask(1, 'ANC Reminders LMP:1', 'Visit 1 reminder for Siobhan');
-      checkScheduledTask(2, 'ANC Reminders LMP:2', 'Visit 2 reminder for Siobhan');
-      checkScheduledTask(3, 'ANC Reminders LMP:3', 'LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
+      tasks.checkItemSummary(BOB_PLACE, CAROL);
+      tasks.checkAutoResponse(CAROL, expectedDate);
+      tasks.checkScheduledTask(1, 'ANC Reminders LMP:1', 'Visit 1 reminder for Siobhan');
+      tasks.checkScheduledTask(2, 'ANC Reminders LMP:2', 'Visit 2 reminder for Siobhan');
+      tasks.checkScheduledTask(3, 'ANC Reminders LMP:3', 'LMP ' + expectedDate
+        .locale('sw').format('ddd, MMM Do, YYYY'));
     });
 
   });
