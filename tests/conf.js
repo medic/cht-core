@@ -137,8 +137,8 @@ const login = browser => {
     element(by.css('.inbox.bootstrapped')).isPresent();
   return browser.driver.wait(
     bootstrappedCheck,
-    40 * 1000,
-    'Login should be complete within 40 seconds'
+    20 * 1000,
+    'Login should be complete within 20 seconds'
   );
 };
 
