@@ -1,5 +1,6 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
+const { browser, element } = require('protractor');
 
 const medicLogo = element(by.className('logo-full'));
 const genericSubmitButton = element(by.css('.btn.btn-primary'));
@@ -9,8 +10,9 @@ const analyticsLink = element(by.id('analytics-tab'));
 const hamburgerMenu = element(by.css('.dropdown.options>a'));
 const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
 const logoutButton = $('[ng-click=logout]');
+
 // Configuration wizard
-const wizardTitle = element(by.css('[ng-click="headerCtrl.openGuidedSetup()"]'));
+const wizardTitle = element(by.css('.modal-header>h2'));
 const defaultCountryCode = element(
   by.css('#select2-default-country-code-setup-container')
 );
@@ -21,9 +23,10 @@ const tourBtns = element.all(by.css('.btn.tour-option'));
 // User settings
 const settings = element.all(by.css('.configuration a>span'));
 // Report bug
-const bugDescriptionField = element(by.css('[placeholder="Bug description"]'));
+const bugDescriptionField = element(by.css('.form-control'));
 const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
+const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 
 module.exports = {
   calm: () => {
@@ -38,12 +41,13 @@ module.exports = {
     expect(genericSubmitButton.getText()).toEqual('Reload');
   },
 
-  checkConfigurationWizard: () => {
+  checkConfigurationWizard: async () => {
     openSubmenu('configuration wizard');
-    expect(wizardTitle.getText()).toEqual('Easy Setup Wizard');
-    expect(helper.getTextFromElement(defaultCountryCode)).toEqual('Canada (+1)');
-    expect(finishBtn.getText()).toEqual('Finish');
-    skipSetup.click();
+    await helper.waitUntilReady(skipSetup);
+    await expect(helper.getTextFromElement(wizardTitle)).toEqual('Configuration wizard');
+    await expect(helper.getTextFromElement(defaultCountryCode)).toEqual('Canada (+1)');
+    await expect(finishBtn.getText()).toEqual('Finish');
+    await skipSetup.click();
   },
 
   checkGuidedTour: () => {
@@ -123,7 +127,6 @@ module.exports = {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
-      helper.waitForAngularComplete();
     }
   },
 
@@ -146,17 +149,20 @@ module.exports = {
 
   openMenu: () => {
     helper.waitUntilReady(messagesLink);
-    hamburgerMenu.click();
+    helper.clickElement(hamburgerMenu);
     helper.waitUntilReady(hamburgerMenuOptions);
   },
 
   confirmDelete: async () => {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
-  }
+  },
+  
+  expectDisplayDate:() => {
+    expect(displayTime.isPresent()).toBeTruthy();
+  },
 };
 
 function openSubmenu(menuName) {
   helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
-  helper.waitForAngularComplete();
 }

@@ -1,15 +1,12 @@
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
-const helper=require('../../helper');
 
 describe('Hamburger Menu tests : ', () => {
 
   beforeEach(utils.beforeEach);
 
   it('should open Configuration wizard', () => {
-    helper.waitUntilReady(element(by.css('#update-available')),60000);
-    helper.handleUpdateModal();
-    commonElements.openMenu();
+    commonElements.openMenu();    
     commonElements.checkConfigurationWizard();
   });
 
@@ -35,8 +32,7 @@ describe('Hamburger Menu tests : ', () => {
 
   it('should open Configuration app', () => {
     commonElements.goToConfiguration();
-    const display = element(by.css('[ui-sref="display.date-time"]'));
-    expect(display.isPresent()).toBeTruthy();
+    commonElements.expectDisplayDate();
     browser.get(utils.getBaseUrl() + 'messages/');
   });
 });

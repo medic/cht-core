@@ -134,7 +134,7 @@ const login = browser => {
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () =>
-    element(by.css('.inbox.bootstrapped')).isPresent();
+    element(by.css('.app-root.bootstrapped')).isPresent();
   return browser.driver.wait(
     bootstrappedCheck,
     20 * 1000,
