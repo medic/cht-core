@@ -18,7 +18,7 @@
     <div class="material">
       <div class="body meta">
         <div class="card">
-          <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.date_of_death }">
+          <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
             <span class="resource-icon" [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{selectedContact?.doc?.name}}</h2>
@@ -83,7 +83,7 @@
           <ng-container *ngFor="let child of group.contacts" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
-              [route]="['../', child.id]"
+              [route]="['/', 'contacts', child.id]"
               [heading]="child.doc.name"
               [summary]="''"
               [primaryContact]="child.isPrimaryContact"
@@ -118,13 +118,13 @@
           <ul>
             <mm-content-row *ngFor="let task of selectedContact?.tasks"
               [id]="task._id"
-              [route]="['../../', 'tasks', task._id]"
+              [route]="['/', 'tasks', task._id]"
               [icon]="task.icon"
               [date]="task.dueDate"
               [overdue]="task.overdue"
               [dateFormat]="'taskDueDate'"
-              [heading]="selectedContact?.children.length ? task.contact?.name : task.title"
-              [summary]="selectedContact?.children.length ? task.title : ''"
+              [heading]="selectedContact?.children?.length ? task.contact?.name : task.title"
+              [summary]="selectedContact?.children?.length ? task.title : ''"
               [warning]="task.priorityLabel"
             ></mm-content-row>
           </ul>
@@ -152,11 +152,11 @@
             <ul>
               <mm-content-row *ngFor="let report of selectedContact?.reports | filterReports: reportStartDate"
                 [id]="report._id"
-                [route]="['../../', 'reports', report._id]"
+                [route]="['/', 'reports', report._id]"
                 [icon]="report | formIconName:forms"
                 [date]="report.reported_date"
-                [heading]="selectedContact.children.length ? report.heading : (report | summary:forms)"
-                [summary]="selectedContact.children.length ? (report | summary:forms) : ''"
+                [heading]="selectedContact?.children?.length ? report.heading : (report | summary:forms)"
+                [summary]="selectedContact?.children?.length ? (report | summary:forms) : ''"
                 [showStatus]="true"
                 [valid]="report.valid"
                 [verified]="report.verified"

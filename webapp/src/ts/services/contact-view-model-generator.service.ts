@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
-import { groupBy, partial, find, flattenDeep, map } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
+import { 
+  groupBy as _groupBy, 
+  partial as _partial,
+  find as _find, 
+  flattenDeep as _flattenDeep, 
+  map as _map 
+} from 'lodash-es';
 
 import registrationUtils from '@medic/registration-utils';
 
@@ -10,16 +16,6 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SearchService } from '@mm-services/search.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
-
-const primaryContactComparator = (lhs, rhs) => {
-  if (lhs.isPrimaryContact) {
-    return -1;
-  }
-  if (rhs.isPrimaryContact) {
-    return 1;
-  }
-  return 0;
-};
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -50,6 +46,16 @@ export class ContactViewModelGeneratorService {
     private getDataRecordsService: GetDataRecordsService,
   ){}
 
+  private primaryContactComparator (lhs, rhs){
+    if (lhs.isPrimaryContact) {
+      return -1;
+    }
+    if (rhs.isPrimaryContact) {
+      return 1;
+    }
+    return 0;
+  }
+
   private typeComparator(lhs, rhs) {
     const lhsPerson = lhs.type?.person;
     const rhsPerson = rhs.type?.person;
@@ -65,7 +71,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private nameComparator(lhs, rhs) {
-    const primary = primaryContactComparator(lhs, rhs);
+    const primary = this.primaryContactComparator(lhs, rhs);
     if (primary !== 0) {
       return primary;
     }
@@ -82,7 +88,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private ageComparator(lhs, rhs) {
-    const primary = primaryContactComparator(lhs, rhs);
+    const primary = this.primaryContactComparator(lhs, rhs);
     if (primary !== 0) {
       return primary;
     }
@@ -135,7 +141,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private groupChildrenByType = children => {
-    return groupBy(children, child => child.doc.contact_type || child.doc.type);
+    return _groupBy(children, child => child.doc.contact_type || child.doc.type);
   };
 
   private addPrimaryContact(doc, children) {
@@ -172,7 +178,7 @@ export class ContactViewModelGeneratorService {
   private sortChildren(childModels) {
     childModels.forEach(group => {
       const comparator = group.type && group.type.sort_by_dob ? this.ageComparator : this.nameComparator;
-      group.contacts.sort(partial(this.mutedComparator, comparator));
+      group.contacts.sort(_partial(this.mutedComparator, comparator.bind(this)));
     });
     childModels.sort(this.typeComparator);
     return childModels;
@@ -262,7 +268,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private getHeading(report, forms) {
-    const form = find(forms, { code: report.form });
+    const form = _find(forms, { code: report.form });
     if (form && form.subjectKey) {
       return this.translateService.instant(form.subjectKey, report);
     }
@@ -276,7 +282,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private addHeading(reports, forms) {
-    const reportIds = map(reports, '_id');
+    const reportIds = _map(reports, '_id');
     return this.getDataRecordsService
       .get(reportIds)
       .then((dataRecords) => {
@@ -295,7 +301,7 @@ export class ContactViewModelGeneratorService {
     contactDocs.forEach((doc) => {
       subjectIds.push(registrationUtils.getSubjectIds(doc));
     });
-    const searchOptions = { subjectIds: flattenDeep(subjectIds) };
+    const searchOptions = { subjectIds: _flattenDeep(subjectIds) };
     return this.searchService
       .search('reports', searchOptions, { include_docs: true })
       .then((reports) => {

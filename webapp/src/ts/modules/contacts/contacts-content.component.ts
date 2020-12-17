@@ -68,6 +68,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
+      if (this.selectedContact !== selectedContact) {
+        this.setReportsTimeWindowMonths(3);
+        this.setTasksTimeWindowWeeks(1);
+      }
       this.selectedContact = selectedContact;
       this.selectedContactChildren = selectedContactChildren;
       this.loadingContent = loadingContent;

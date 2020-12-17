@@ -121,7 +121,7 @@ const updateSelectedContactsTasks = (state, tasks) => {
     const childId = task.emission.forId;
     taskCounts[childId] = taskCounts[childId] ? taskCounts[childId] + 1 : 1;
   });
-  const children = state.selected.children.map(group => {
+  const children = state.selected?.children?.map(group => {
     const contacts = group.contacts.map(child => {
       return { ...child, taskCount: taskCounts[child.id] };
     });

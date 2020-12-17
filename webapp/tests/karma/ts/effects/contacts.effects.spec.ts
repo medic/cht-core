@@ -70,7 +70,9 @@ describe('Contacts effects', () => {
     it('should skip when no provided id', async (() => {
       actions$ = of(ContactActionList.selectContact({  }));
       effects.selectContact.subscribe();
+
       expect(contactViewModelGeneratorService.getContact.callCount).to.equal(0);
+
     }));
 
     it('should load the contact when not silent', async () => {
@@ -124,6 +126,7 @@ describe('Contacts effects', () => {
     });
 
     it('should call the right actions actions if a contact is selelected', () => {
+      store.overrideSelector(Selectors.getSelectedContact, { _id: 'contactid', doc: { _id: 'contactid' } });
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
       effects.setSelectedContact.subscribe();
 
@@ -132,6 +135,14 @@ describe('Contacts effects', () => {
       expect(setContactsLoadingSummary.callCount).to.equal(1);
       expect(clearCancelCallback.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(settingSelected.args[0][0]).to.equal(false);
+      expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
+      expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal(
+        { _id: 'contactid', doc: { _id: 'contactid' } }
+      );
+      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal(
+        { getChildPlaces: true }
+      );
     });
 
     it('should catch loadChildren errors', fakeAsync(() => {
@@ -164,7 +175,7 @@ describe('Contacts effects', () => {
       expect(unsetSelected.callCount).to.equal(1);
     }));
 
-    it('should caall the receiveSelectedContactReports action', fakeAsync(() => {
+    it('should call the receiveSelectedContactReports action', fakeAsync(() => {
       actions$ = of(ContactActionList.receiveSelectedContactChildren([]));
       effects.receiveSelectedContactReports.subscribe();
       flush();
@@ -188,6 +199,8 @@ describe('Contacts effects', () => {
     });
 
     it('should call the right actions', fakeAsync(() => {
+      contactSummaryService.get.resolves({ summary: 'summary here'});
+      tasksForContactService.get.resolves(['task 1', 'task 2']);
       actions$ = of(ContactActionList.receiveSelectedContactReports([]));
       effects.updateSelectedContactSummary.subscribe();
       flush();
@@ -197,6 +210,8 @@ describe('Contacts effects', () => {
       expect(setContactsLoadingSummary.callCount).to.equal(2);
       expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
       expect(setContactsLoadingSummary.args[1][0]).to.equal(false);
+      expect(updateSelectedContactSummary.args[0][0]).to.deep.equal({ summary: 'summary here'});
+      expect(updateSelectedContactsTasks.args[0][0]).to.deep.equal(['task 1', 'task 2']);
     }));
 
     it('should catch contactSummaryService errors', fakeAsync(() => {

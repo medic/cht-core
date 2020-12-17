@@ -11,7 +11,7 @@ export const Actions = {
   setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
   receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
   receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports'),
-  updateSelectedContactSummary: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'summary'),
+  updateSelectedContactSummary: createSingleValueAction('UPDATE_SELECTED_CONTACT_SUMMARY', 'summary'),
   updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
   receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
 };
