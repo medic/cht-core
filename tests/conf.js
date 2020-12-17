@@ -26,6 +26,7 @@ const baseConfig = {
       '**/infodocs.js',
       '**/common.specs.js',
       '**/content-security-policy.js',
+      '**/message_duplicates.spec.js'
     ],
     // performance: 'performance/**/*.js'
   },
