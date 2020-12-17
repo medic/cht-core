@@ -24,6 +24,7 @@ const settings = element.all(by.css('.configuration a>span'));
 const bugDescriptionField = element(by.css('[placeholder="Bug description"]'));
 const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
+const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 
 module.exports = {
   calm: () => {
@@ -153,7 +154,11 @@ module.exports = {
   confirmDelete: async () => {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
-  }
+  },
+  
+  expectDisplayDate:() => {
+    expect(displayTime.isPresent()).toBeTruthy();
+  },
 };
 
 function openSubmenu(menuName) {

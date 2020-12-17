@@ -35,8 +35,7 @@ describe('Hamburger Menu tests : ', () => {
 
   it('should open Configuration app', () => {
     commonElements.goToConfiguration();
-    const display = element(by.css('[ui-sref="display.date-time"]'));
-    expect(display.isPresent()).toBeTruthy();
+    commonElements.expectDisplayDate();
     browser.get(utils.getBaseUrl() + 'messages/');
   });
 });
