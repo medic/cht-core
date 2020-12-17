@@ -39,9 +39,9 @@ const getCancelButton = () => {
 };
 
 module.exports = {
-  submit: () => {
-    helper.waitUntilReady(getSubmitButton());
-    getSubmitButton().click();
+  submit: async () => {
+    await helper.waitUntilReady(getSubmitButton());
+    await getSubmitButton().click();
   },
 
   cancel: () => {
