@@ -19,7 +19,9 @@ const baseConfig = {
   //Enabling specs as they are working.
   suites: {
     // e2e:'e2e/**/*.js',
-    e2e: ['**/login.spec.js'],
+    e2e: ['**/login.spec.js',
+      '**/sentinel/queue.spec.js',
+    ],
     mobile:'mobile/**/*.js',
     // performance: 'performance/**/*.js'
   },
