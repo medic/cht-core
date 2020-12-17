@@ -244,7 +244,7 @@ describe('Send message', () => {
       await lastMessageIs(smsMsg('contact'));
     });
 
-    it('can send messages to contacts under everyone at with phone numbers', async () => {
+    xit('can send messages to contacts under everyone at with phone numbers', async () => {
       await common.goToMessages();
 
       expect(await messagesPo.messageInList(CAROL.phone).isPresent()).toBeFalsy();
