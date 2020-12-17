@@ -19,7 +19,7 @@
       <div class="body meta">
         <div class="card">
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
-            <span class="resource-icon" [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
+            <span [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{selectedContact?.doc?.name}}</h2>
               <div *ngIf="selectedContact?.doc?.date_of_death" translate>contact.deceased.title</div>
