@@ -20,6 +20,13 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
+      '**/login.spec.js',
+      '**/report-date-filter.js',
+      '**/sentinel/queue.spec.js',
+      '**/api/routing.js',
+      '**/infodocs.js',
+      '**/common.specs.js',
+      '**/content-security-policy.js',
       '**/api/server.js',
     ],
     // performance: 'performance/**/*.js'
