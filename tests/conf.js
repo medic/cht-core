@@ -22,6 +22,7 @@ const baseConfig = {
     e2e: ['**/login.spec.js',
       '**/sentinel/queue.spec.js',
       '**/common.specs.js',
+      '**/sentinel_api_transitions.spec.js',
     ],
     // performance: 'performance/**/*.js'
   },
