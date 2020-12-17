@@ -163,5 +163,4 @@ module.exports = {
 
 function openSubmenu(menuName) {
   helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
-  helper.waitForAngularComplete();
 }
