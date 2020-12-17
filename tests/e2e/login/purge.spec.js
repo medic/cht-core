@@ -5,8 +5,6 @@ const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.po.js');
 const sentinelUtils = require('../sentinel/utils');
 const chai = require('chai');
-const helper = require('../../helper');
-const { element } = require('protractor');
 
 /* global window */
 
