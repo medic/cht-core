@@ -114,6 +114,7 @@ describe('ContactSummary service', () => {
   });
 
   it('does crash when contact summary throws an error', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     const script = `return contact.some.field;`;
 
     Settings.resolves({ contact_summary: script });
@@ -124,6 +125,8 @@ describe('ContactSummary service', () => {
       })
       .catch(function(err) {
         expect(err.message).to.equal('Configuration error');
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
       });
   });
 

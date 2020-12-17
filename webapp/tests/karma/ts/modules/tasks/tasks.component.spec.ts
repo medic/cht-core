@@ -118,6 +118,7 @@ describe('TasksComponent', () => {
   });
 
   it('rules engine throws in initialization', async () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     rulesEngineService.isEnabled.rejects('error');
 
     await new Promise(resolve => {
@@ -130,6 +131,8 @@ describe('TasksComponent', () => {
     expect(component.error).to.be.true;
     expect(!!component.tasksDisabled).to.be.false;
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[[]]]);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error getting tasks for all contacts');
   });
 
   it('tasks render', async () => {

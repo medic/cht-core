@@ -82,6 +82,7 @@ describe('EditMessageGroupComponent', () => {
     });
 
     it('should catch edit errors', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       editGroupService.edit.rejects({ some: 'err' });
       component.model = {
         report: { _id: 'the_report' },
@@ -91,6 +92,8 @@ describe('EditMessageGroupComponent', () => {
       expect(editGroupService.edit.callCount).to.equal(1);
       expect(editGroupService.edit.args[0]).to.deep.equal(['the_report', component.model.group]);
       expect(component.status.error).to.equal('Error updating group');
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
     });
   });
 

@@ -150,7 +150,7 @@ describe('TasksContentComponent', () => {
     }];
     const form = { _id: 'myform', title: 'My Form' };
     xmlFormsService.get.resolves(form);
-    geolocationService.init.returns({ just: 'an object reference' });
+    geolocationService.init.returns({ just: 'an object reference', cancel: sinon.stub() });
 
     await compileComponent();
 
@@ -186,7 +186,7 @@ describe('TasksContentComponent', () => {
     const setSelectedTask = sinon.stub(TasksActions.prototype, 'setSelectedTask');
     const form = { _id: 'myform', title: 'My Form' };
     xmlFormsService.get.resolves(form);
-    geolocationService.init.returns({ just: 'an object reference' });
+    geolocationService.init.returns({ just: 'an object reference', cancel: sinon.stub() });
 
     await compileComponent();
 
@@ -239,6 +239,7 @@ describe('TasksContentComponent', () => {
   });
 
   it('should work when form not found', async () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     xmlFormsService.get.rejects({ status: 404 });
     tasks = [{
       _id: '123',
@@ -255,6 +256,8 @@ describe('TasksContentComponent', () => {
     expect(component.errorTranslationKey).to.equal('error.loading.form');
     expect(component.contentError).to.equal(true);
     expect(component.loadingForm).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error loading form.');
   });
 
   it('does not load form when task has more than one action', async () => {
@@ -295,6 +298,7 @@ describe('TasksContentComponent', () => {
   });
 
   it('displays error if enketo fails to render', async () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     render.rejects('foo');
     tasks = [{
       _id: '123',
@@ -310,6 +314,8 @@ describe('TasksContentComponent', () => {
 
     expect(component.loadingForm).to.equal(false);
     expect(component.contentError).to.equal(true);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error loading form.');
   });
 
   it('should wait for the tasks to load before setting selected task', fakeAsync(async () => {
@@ -355,6 +361,7 @@ describe('TasksContentComponent', () => {
     });
 
     it('should do nothing for random action type', async () => {
+      xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
       await compileComponent([]);
       sinon.resetHistory();
       await component.performAction(undefined);
@@ -364,6 +371,7 @@ describe('TasksContentComponent', () => {
     });
 
     it('should set cancel callback correctly when not skipping details', async () => {
+      xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
       await compileComponent([]);
       sinon.resetHistory();
 
@@ -390,6 +398,7 @@ describe('TasksContentComponent', () => {
     });
 
     it('should set cancel callback correctly when skipping details', async () => {
+      xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
       await compileComponent([]);
       sinon.resetHistory();
 
@@ -479,6 +488,7 @@ describe('TasksContentComponent', () => {
     });
 
     it('should do nothing if already saving', async () => {
+      xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
       await compileComponent([]);
 
       store.overrideSelector(Selectors.getEnketoSavingStatus, true);
@@ -489,9 +499,11 @@ describe('TasksContentComponent', () => {
     });
 
     it('should catch save errors', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
+      xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
       enketoService.save.rejects({ some: 'error' });
       store.overrideSelector(Selectors.getEnketoError, 'error');
-      const geoHandle = { geo: 'handle' };
+      const geoHandle = { geo: 'handle', cancel: sinon.stub() };
       geolocationService.init.returns(geoHandle);
       await compileComponent([]);
       sinon.resetHistory();
@@ -519,11 +531,14 @@ describe('TasksContentComponent', () => {
       expect(clearCancelCallback.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error submitting form data: ');
     });
 
     it('should redirect correctly after save', async () => {
+      xmlFormsService.get.resolves({ id: 'myform', doc: { title: 'My Form' } });
       enketoService.save.resolves([]);
-      const geoHandle = { geo: 'handle' };
+      const geoHandle = { geo: 'handle', cancel: sinon.stub() };
       geolocationService.init.returns(geoHandle);
 
       await compileComponent([]);

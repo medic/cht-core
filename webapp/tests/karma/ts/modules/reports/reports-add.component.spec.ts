@@ -238,6 +238,7 @@ describe('Reports Add Component', () => {
       }));
 
       it('should catch form reading errors', fakeAsync(() => {
+        const consoleErrorMock = sinon.stub(console, 'error');
         sinon.resetHistory();
         xmlFormsService.get.rejects({ error: 'boom' });
 
@@ -246,9 +247,12 @@ describe('Reports Add Component', () => {
 
         expect(xmlFormsService.get.callCount).to.equal(1);
         expect(enketoService.render.callCount).to.equal(0);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error setting selected doc');
       }));
 
       it('should catch enketo errors', fakeAsync(() => {
+        const consoleErrorMock = sinon.stub(console, 'error');
         sinon.resetHistory();
         getReportContentService.getReportContent.resolves();
         xmlFormsService.get.resolves({ _id: 'my_form', some: 'content' });
@@ -260,6 +264,8 @@ describe('Reports Add Component', () => {
         expect(xmlFormsService.get.callCount).to.equal(1);
         expect(enketoService.render.callCount).to.equal(1);
         expect(component.form).to.equal(undefined);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error loading form.');
       }));
     });
 
@@ -313,6 +319,7 @@ describe('Reports Add Component', () => {
     }));
 
     it('should catch enketo saving error', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       component.form = { the: 'the form' };
       component.selectedReports = [{ formInternalId: 'delivery' }];
 
@@ -342,6 +349,8 @@ describe('Reports Add Component', () => {
       expect(setEnketoEditedStatus.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
       expect(setEnketoError.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error submitting form data: ');
     }));
 
     // todo add tests for editing existent reports when focusing on migrating that

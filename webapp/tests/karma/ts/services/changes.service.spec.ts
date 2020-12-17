@@ -271,6 +271,7 @@ describe('Changes service', () => {
   });
 
   it('should re-attach where it left off if it loses connection', (done) => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     const clock = sinon.useFakeTimers();
     const first = { seq: '2-XYZ', id: 'x', changes: [ { rev: '2-abc' } ] };
     const second = { seq: '3-ZYX', id: 'y', changes: [ { rev: '1-abc' } ] };
@@ -296,6 +297,9 @@ describe('Changes service', () => {
     changesCalls.medic.callbacks.error(new Error('Test error'));
     clock.tick(10000);
     changesCalls.medic.callbacks.change(second);
+    expect(consoleErrorMock.callCount).to.equal(2);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error watching for db changes');
+    expect(consoleErrorMock.args[1][0]).to.equal('Attempting changes reconnection in 5 seconds');
   });
 
   it('should hydrate the change with a doc when it matches the last update when include_docs = false', done => {

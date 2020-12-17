@@ -90,14 +90,18 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('password must be filled', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     component.editUserModel.password = '';
     component.updatePassword();
     expect(translateHelperService.fieldIsRequired.called).to.equal(true);
     expect(translateHelperService.fieldIsRequired.args[0]).to.deep.equal(['Password']);
     expect(updateUserService.update.called).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
   });
 
   it('password must be long enough', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     component.editUserModel.password = '2sml4me';
     component.editUserModel.passwordConfirm = '2sml4me';
     component.editUserModel.currentPassword = '2xml4me';
@@ -105,9 +109,12 @@ describe('UpdatePasswordComponent', () => {
     expect(translateHelperService.get.called).to.equal(true);
     expect(translateHelperService.get.getCall(0).args[0]).to.equal('password.length.minimum');
     expect(updateUserService.update.called).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
   });
 
   it('password must be hard to brute force', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     component.editUserModel.password = 'password';
     component.editUserModel.passwordConfirm = 'password';
     component.editUserModel.currentPassword = '2xml4me';
@@ -115,9 +122,12 @@ describe('UpdatePasswordComponent', () => {
     expect(translateHelperService.get.called).to.equal(true);
     expect(translateHelperService.get.getCall(0).args[0]).to.equal('password.weak');
     expect(updateUserService.update.called).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
   });
 
   it('error if password and confirm do not match', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     const password = '1QrAs$$3%%kkkk445234234234';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password + 'a';
@@ -126,6 +136,8 @@ describe('UpdatePasswordComponent', () => {
     expect(translateHelperService.get.called).to.equal(true);
     expect(translateHelperService.get.getCall(0).args[0]).to.equal('Passwords must match');
     expect(updateUserService.update.called).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
   });
 
   it('user is updated with password change', () => {
@@ -145,6 +157,7 @@ describe('UpdatePasswordComponent', () => {
   });
 
   it('errors if current password is not provided', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     const password = '1QrAs$$3%%kkkk445234234234';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
@@ -153,5 +166,7 @@ describe('UpdatePasswordComponent', () => {
     expect(translateHelperService.fieldIsRequired.called).to.equal(true);
     expect(translateHelperService.fieldIsRequired.getCall(0).args[0]).to.deep.equal('Current Password');
     expect(updateUserService.update.called).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
   });
 });
