@@ -32,7 +32,9 @@ const baseConfig = {
       '**/message_duplicates.spec.js',
       '**/api/server.js',
       'tests/e2e/create-meta-db.js',
+      '**/transitions/sms_workflows.spec.js',
     ]
+
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
