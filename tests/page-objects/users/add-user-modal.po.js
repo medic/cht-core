@@ -1,4 +1,9 @@
 const helper = require('../../helper');
+const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
+const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
+const facilitySelector = element(by.css('#facilitySelect ~ .help-block'));
+const contactSelector = element(by.css('#contactSelect ~ .help-block')); 
+const messageTab = element(by.css('.inbox.page'));
 
 const getUsernameField = () => {
   return element(by.id('edit-username'));
@@ -59,5 +64,26 @@ module.exports = {
     helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
     getPasswordField().sendKeys(password);
     getConfirmPasswordField().sendKeys(password);
+  },
+  
+  getErrorMessagePassword: () =>{
+    return errorMessagePassword.getText();
+  }, 
+
+  getErrorMessageUserName: () =>{
+    helper.waitUntilReady(errorMessageUserName);
+    return errorMessageUserName.getText();
+  },
+
+  getFacilitySelector :() => {
+    return facilitySelector.getText();
+  },
+
+  getContactSelector :() => {
+    return contactSelector.getText();
+  },
+  waitForPageToLoad: () => {
+    helper.waitUntilReady(messageTab);
   }
+
 };
