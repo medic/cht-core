@@ -274,8 +274,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoSavingStatus(true);
     this.globalActions.setEnketoError(null);
 
-    return form
-      .validate()
+    return Promise
+      .resolve(form.validate())
       .then((valid) => {
         if(!valid) {
           throw new Error('Validation failed.');
@@ -287,16 +287,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             console.debug('saved contact', result);
 
             this.globalActions.setEnketoSavingStatus(false);
+            this.globalActions.setEnketoEditedStatus(false);
+
             this.translateHelperService
               .get(docId ? 'contact.updated' : 'contact.created')
               .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
-            this.globalActions.setEnketoEditedStatus(false);
 
             this.router.navigate(['/contacts', result.docId]);
           })
           .catch((err) => {
-            this.globalActions.setEnketoSavingStatus(false);
             console.error('Error submitting form data', err);
+
+            this.globalActions.setEnketoSavingStatus(false);
             return this.translateHelperService
               .get('Error updating contact')
               .then(error => this.globalActions.setEnketoError(error));
