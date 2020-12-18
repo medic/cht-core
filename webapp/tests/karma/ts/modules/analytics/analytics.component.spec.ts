@@ -4,12 +4,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { of } from 'rxjs';
 
 import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
+import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { GlobalActions } from '@mm-actions/global';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
@@ -36,12 +40,20 @@ describe('AnalyticsComponent', () => {
       snapshot: {
         routeConfig: { path: '' },
       },
+      url: {
+        subscribe: sinon.stub().resolves(of({})),
+      }
     };
 
     return TestBed
       .configureTestingModule({
-        declarations: [ AnalyticsComponent ],
+        declarations: [
+          AnalyticsComponent,
+          AnalyticsFilterComponent,
+          NavigationComponent,
+        ],
         imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
         ],
         providers: [

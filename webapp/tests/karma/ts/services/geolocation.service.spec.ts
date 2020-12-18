@@ -273,12 +273,15 @@ describe('Geolocation service', () => {
       });
 
       it('should not crash if api throws an error', () => {
+        const consoleErrorMock = sinon.stub(console, 'error');
         window.medicmobile_android = { getLocationPermissions: sinon.stub().throws(new Error('error')) };
         // @ts-ignore
         window.navigator.geolocation.watchPosition.callsFake(success => success({ coords: position }));
         return service.init()().then(returned => {
           expect(returned).to.deep.equal(position);
           expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+          expect(consoleErrorMock.callCount).to.equal(1);
+          expect(consoleErrorMock.args[0][0].message).to.equal('error');
         });
       });
 

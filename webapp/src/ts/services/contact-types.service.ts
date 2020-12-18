@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-
 import * as contactTypesUtils from '@medic/contact-types-utils';
-import { SettingsService } from './settings.service';
+
+import { SettingsService } from '@mm-services/settings.service';
 
 @Injectable({
   providedIn: 'root'

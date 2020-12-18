@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { clone as _clone, flattenDeep as _flattenDeep } from 'lodash-es';
 import * as partialParse from 'partial-json-parser';
-
 import * as utilsFactory from '@medic/bulk-docs-utils';
-import { ChangesService } from './changes.service';
-import { DbService } from './db.service';
-import { ExtractLineageService } from './extract-lineage.service';
-import { SessionService } from './session.service';
+
+import { ChangesService } from '@mm-services/changes.service';
+import { DbService } from '@mm-services/db.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'

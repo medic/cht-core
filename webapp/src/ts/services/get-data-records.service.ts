@@ -1,9 +1,10 @@
 import { map as _map, isArray as _isArray } from 'lodash-es';
 import { Injectable } from '@angular/core';
-import { DbService } from './db.service';
-import { GetSubjectSummariesService } from './get-subject-summaries.service';
-import { GetSummariesService } from './get-summaries.service';
-import { HydrateContactNamesService } from './hydrate-contact-names.service';
+
+import { DbService } from '@mm-services/db.service';
+import { GetSubjectSummariesService } from '@mm-services/get-subject-summaries.service';
+import { GetSummariesService } from '@mm-services/get-summaries.service';
+import { HydrateContactNamesService } from '@mm-services/hydrate-contact-names.service';
 
 /**
  * Gets data records by the given array of ids.

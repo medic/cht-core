@@ -98,6 +98,7 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
   });
 
   it('should set error when aggregate is not found', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     sinon.reset();
     targetAggregatesService.getAggregateDetails.returns(false);
 
@@ -110,6 +111,8 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     expect(targetAggregatesActions.setSelectedTargetAggregate.callCount).to.equal(1);
     const error = targetAggregatesActions.setSelectedTargetAggregate.args[0][0].error;
     expect(error.translationKey).to.deep.equal('analytics.target.aggregates.error.not.found');
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error selecting target: target with id target not found');
   });
 
   it('should set title', () => {
