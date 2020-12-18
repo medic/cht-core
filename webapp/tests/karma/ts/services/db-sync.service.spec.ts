@@ -179,6 +179,7 @@ describe('DBSync service', () => {
     });
 
     it('error in replication with no docs to send results in "unknown" status', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
@@ -192,10 +193,14 @@ describe('DBSync service', () => {
         expect(onUpdate.callCount).to.eq(2);
         expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
         expect(onUpdate.args[1][0]).to.deep.eq({ state: 'unknown' });
+        expect(consoleErrorMock.callCount).to.equal(2);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error replicating to remote server');
+        expect(consoleErrorMock.args[1][0]).to.equal('Error replicating from remote server');
       });
     });
 
     it('error in replication results in "required" status', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
@@ -207,6 +212,9 @@ describe('DBSync service', () => {
         expect(onUpdate.callCount).to.eq(2);
         expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
         expect(onUpdate.args[1][0]).to.deep.eq({ to: 'required', from: 'required' });
+        expect(consoleErrorMock.callCount).to.equal(2);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error replicating to remote server');
+        expect(consoleErrorMock.args[1][0]).to.equal('Error replicating from remote server');
       });
     });
 
@@ -304,30 +312,46 @@ describe('DBSync service', () => {
       });
 
       it('if request too large', () => {
+        const consoleWarnMock = sinon.stub(console, 'warn');
         retries = 3;
         return service.sync().then(() => {
           expect(hasAuth.callCount).to.equal(1);
           expect(from.callCount).to.equal(1);
           expect(to.callCount).to.equal(4);
+          expect(consoleWarnMock.callCount).to.equal(3);
           expect(to.args[0][1].batch_size).to.equal(100);
           expect(to.args[1][1].batch_size).to.equal(50);
+          expect(consoleWarnMock.args[0][0].endsWith('Trying again with batch size of 50')).to.be.true;
           expect(to.args[2][1].batch_size).to.equal(25);
+          expect(consoleWarnMock.args[1][0].endsWith('Trying again with batch size of 25')).to.be.true;
           expect(to.args[3][1].batch_size).to.equal(12);
+          expect(consoleWarnMock.args[2][0].endsWith('Trying again with batch size of 12')).to.be.true;
         });
       });
 
       it('gives up once batch size is 1', () => {
+        const consoleErrorMock = sinon.stub(console, 'error');
+        const consoleWarnMock = sinon.stub(console, 'warn');
         retries = 100; // should not get this far...
         return service.sync().then(() => {
           expect(from.callCount).to.equal(1);
           expect(to.callCount).to.equal(7);
+          expect(consoleWarnMock.callCount).to.equal(6);
           expect(to.args[0][1].batch_size).to.equal(100);
           expect(to.args[1][1].batch_size).to.equal(50);
+          expect(consoleWarnMock.args[0][0].endsWith('Trying again with batch size of 50')).to.be.true;
           expect(to.args[2][1].batch_size).to.equal(25);
+          expect(consoleWarnMock.args[1][0].endsWith('Trying again with batch size of 25')).to.be.true;
           expect(to.args[3][1].batch_size).to.equal(12);
+          expect(consoleWarnMock.args[2][0].endsWith('Trying again with batch size of 12')).to.be.true;
           expect(to.args[4][1].batch_size).to.equal(6);
+          expect(consoleWarnMock.args[3][0].endsWith('Trying again with batch size of 6')).to.be.true;
           expect(to.args[5][1].batch_size).to.equal(3);
+          expect(consoleWarnMock.args[4][0].endsWith('Trying again with batch size of 3')).to.be.true;
           expect(to.args[6][1].batch_size).to.equal(1);
+          expect(consoleWarnMock.args[5][0].endsWith('Trying again with batch size of 1')).to.be.true;
+          expect(consoleErrorMock.callCount).to.equal(1);
+          expect(consoleErrorMock.args[0][0]).to.equal('Error replicating to remote server');
         });
       });
 
@@ -345,15 +369,19 @@ describe('DBSync service', () => {
     });
 
     it('"denied" from handle does nothing', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
       return service.sync().then(() => {
         from.events.denied();
         expect(dbSyncRetry.callCount).to.equal(0);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Denied replicating from remote server');
       });
     });
 
     it('"denied" to handle calls DBSyncRetry', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
       return service.sync().then(() => {
@@ -362,6 +390,8 @@ describe('DBSync service', () => {
         expect(dbSyncRetry.args[0]).to.deep.equal([{ some: 'err' }]);
         expect(to.callCount).to.equal(1);
         expect(from.callCount).to.equal(1);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Denied replicating to remote server');
       });
     });
   });

@@ -288,6 +288,7 @@ describe('Reports Content Component', () => {
     });
 
     it('should reset loading on crash', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const report = { _id: 'doc_id' };
       const group = { rows: [{ group: 1, message: 2 }, { group: 1, message: 3 }] };
       const locals:any = {};
@@ -300,6 +301,8 @@ describe('Reports Content Component', () => {
       expect(messageStateService.set.args[0]).to.deep.equal([ 'doc_id', 1, 'muted', 'scheduled' ]);
       await promise;
       expect(locals.loading).to.equal(false);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error setting message state');
     });
   });
 
