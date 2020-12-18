@@ -3,7 +3,6 @@ const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
 const facilitySelector = element(by.css('#facilitySelect ~ .help-block'));
 const contactSelector = element(by.css('#contactSelect ~ .help-block')); 
-const messageTab = element(by.css('.inbox.page'));
 
 const getUsernameField = () => {
   return element(by.id('edit-username'));
@@ -82,8 +81,5 @@ module.exports = {
   getContactSelector :() => {
     return contactSelector.getText();
   },
-  waitForPageToLoad: () => {
-    helper.waitUntilReady(messageTab);
-  }
 
 };
