@@ -19,10 +19,6 @@ import { TranslateHelperService } from '@mm-services/translate-helper.service';
   templateUrl: './contacts-edit.component.html'
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
-  subscription = new Subscription();
-  private globalActions;
-  private contactsActions;
-
   constructor(
     private store:Store,
     private route:ActivatedRoute,
@@ -37,6 +33,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
   }
+
+  subscription = new Subscription();
+  translationsLoadedSubscription;
+  private globalActions;
+  private contactsActions;
 
   enketoStatus;
   enketoSaving;
@@ -131,16 +132,15 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    if (this.routeSnapshot.data?.name !== 'contacts.add') {
-      this.globalActions.setTitle();
-      if (this.enketoContact?.formInstance) {
-        this.enketoService.unload(this.enketoContact.formInstance);
-      }
+    this.translationsLoadedSubscription?.unsubscribe();
+    this.globalActions.setTitle();
+    if (this.enketoContact?.formInstance) {
+      this.enketoService.unload(this.enketoContact.formInstance);
     }
   }
 
   ngAfterViewInit() {
-    return this.initForm();
+    this.initForm();
   }
 
   private initForm() {
@@ -149,9 +149,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
     return this
       .getContact()
-      .then(contact => this.getForm(contact))
-      .then(formId => this.renderForm(formId))
-      .then(formInstance => this.setEnketoContact(formInstance))
+      .then((contact) => this.getForm(contact))
+      .then((formId) => this.renderForm(formId))
+      .then((formInstance) => this.setEnketoContact(formInstance))
       .then(() => {
         this.globalActions.setLoadingContent(false);
       })
@@ -208,15 +208,16 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         titleKey = type.create_key;
       }
 
-      this.subscription.add(
-        this.store.select(Selectors.getTranslationsLoaded).subscribe(loaded => {
+      this.translationsLoadedSubscription?.unsubscribe();
+      this.translationsLoadedSubscription = this.store
+        .select(Selectors.getTranslationsLoaded)
+        .subscribe((loaded) => {
           if (loaded) {
             this.translateHelperService
               .get(titleKey)
-              .then(title => this.globalActions.setTitle(title));
+              .then((title) => this.globalActions.setTitle(title));
           }
-        })
-      );
+        });
 
       return formId;
     });

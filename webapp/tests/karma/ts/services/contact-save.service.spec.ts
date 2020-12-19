@@ -19,6 +19,7 @@ describe('ContactSave service', () => {
   let enketoTranslationService;
   let extractLineageService;
   let setLastChangedDoc;
+  let clock;
 
   beforeEach(() => {
     enketoTranslationService = {
@@ -38,14 +39,16 @@ describe('ContactSave service', () => {
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: EnketoTranslationService, useValue: enketoTranslationService },
         { provide: ExtractLineageService, useValue: extractLineageService },
-
       ]
     });
 
     service = TestBed.inject(ContactSaveService);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clock?.restore();
+  });
 
   it('fetches and binds db types and minifies string contacts', () => {
     const form = { getDataStr: () => '<data></data>' };
@@ -55,8 +58,8 @@ describe('ContactSave service', () => {
     enketoTranslationService.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'abc' }
     });
-    bulkDocs.returns(Promise.resolve([]));
-    get.returns(Promise.resolve({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } }));
+    bulkDocs.resolves([]);
+    get.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
     extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
     return service
@@ -89,8 +92,8 @@ describe('ContactSave service', () => {
     enketoTranslationService.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
     });
-    bulkDocs.returns(Promise.resolve([]));
-    get.returns(Promise.resolve({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } }));
+    bulkDocs.resolves([]);
+    get.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
     extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
     return service
@@ -135,7 +138,7 @@ describe('ContactSave service', () => {
       return contact;
     });
 
-    bulkDocs.returns(Promise.resolve([]));
+    bulkDocs.resolves([]);
 
     return service
       .save(form, docId, type)
@@ -155,6 +158,71 @@ describe('ContactSave service', () => {
         assert.equal(savedDocs[2].parent.extracted, true);
 
         assert.equal(extractLineageService.extract.callCount, 3);
+
+        assert.equal(setLastChangedDoc.callCount, 1);
+        assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
+      });
+  });
+
+  it('should copy old properties for existing contacts', () => {
+    const form = { getDataStr: () => '<data></data>' };
+    const docId = 'main1';
+    const type = 'some-contact-type';
+
+    enketoTranslationService.contactRecordToJs.returns({
+      doc: {
+        _id: 'main1',
+        type: 'contact',
+        contact_type: 'some-contact-type',
+        contact: { _id: 'contact', name: 'Richard' },
+        value: undefined,
+      }
+    });
+    bulkDocs.resolves([]);
+    get
+      .withArgs('main1')
+      .resolves({
+        _id: 'main1',
+        name: 'Richard',
+        parent: { _id: 'def' },
+        value: 33,
+        some: 'additional',
+        data: 'is present',
+      })
+      .withArgs('contact')
+      .resolves({ _id: 'contact', name: 'Richard', parent: { _id: 'def' } });
+
+    extractLineageService.extract
+      .withArgs(sinon.match({ _id: 'contact' }))
+      .returns({ _id: 'contact', parent: { _id: 'def' } })
+      .withArgs(sinon.match({ _id: 'def' }))
+      .returns({ _id: 'def' });
+    clock = sinon.useFakeTimers(5000);
+
+    return service
+      .save(form, docId, type)
+      .then(() => {
+        assert.equal(get.callCount, 2);
+        assert.deepEqual(get.args[0], ['main1']);
+        assert.deepEqual(get.args[1], ['contact']);
+
+        assert.equal(bulkDocs.callCount, 1);
+
+        const savedDocs = bulkDocs.args[0][0];
+
+        assert.equal(savedDocs.length, 1);
+        assert.deepEqual(savedDocs[0], {
+          _id: 'main1',
+          type: 'contact',
+          name: 'Richard',
+          contact_type: 'some-contact-type',
+          contact: { _id: 'contact', parent: { _id: 'def' } },
+          parent: { _id: 'def' },
+          value: 33,
+          some: 'additional',
+          data: 'is present',
+          reported_date: 5000,
+        });
 
         assert.equal(setLastChangedDoc.callCount, 1);
         assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);

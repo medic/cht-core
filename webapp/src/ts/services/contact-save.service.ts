@@ -1,7 +1,7 @@
 import { v4 as uuidV4 } from 'uuid';
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { reduce as _reduce, isObject as _isObject } from 'lodash-es';
+import { reduce as _reduce, isObject as _isObject, defaults as _defaults } from 'lodash-es';
 
 import { DbService } from '@mm-services/db.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
@@ -79,7 +79,7 @@ export class ContactSaveService {
   }
 
   private prepareRepeatedDocs(doc, repeated) {
-    const childData = (repeated && repeated.child_data) || [];
+    const childData = repeated?.child_data || [];
     return childData.map(child => {
       child.parent = this.extractLineageService.extract(doc);
       return this.prepare(child);
@@ -121,10 +121,9 @@ export class ContactSaveService {
 
         if (preparedSibling.parent === 'PARENT') {
           delete preparedSibling.parent;
-          // Cloning to avoid the circular reference we would make:
-          //   doc.fieldName.parent.fieldName.parent...
+          // Cloning to avoid the circular references
           doc[fieldName] = { ...preparedSibling };
-          // Because we're assigning the actual doc referencem, the DB().get
+          // Because we're assigning the actual doc reference, the dbService.get.get
           // to attach the full parent to the doc will also attach it here.
           preparedSibling.parent = doc;
         } else {
@@ -132,9 +131,7 @@ export class ContactSaveService {
         }
 
         preparedSiblings.push(preparedSibling);
-      } else if (original &&
-        original[fieldName] &&
-        original[fieldName]._id === value) {
+      } else if (original?.[fieldName]?._id === value) {
         doc[fieldName] = original[fieldName];
       } else {
         promiseChain = promiseChain.then(() => {
@@ -143,7 +140,7 @@ export class ContactSaveService {
             .get(value)
             .then((dbFieldValue) => {
               // In a correctly configured form one of these will be the
-              // parent This must happen before we attempt to run
+              // parent. This must happen before we attempt to run
               // ExtractLineage on any siblings or repeats, otherwise they
               // will extract an incomplete lineage
               doc[fieldName] = this.extractIfRequired(fieldName, dbFieldValue);
@@ -162,7 +159,7 @@ export class ContactSaveService {
       .then(original => {
         const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
         if (original) {
-          submitted.doc = $.extend({}, original, submitted.doc);
+          _defaults(submitted.doc, original);
         } else if (this.contactTypesService.isHardcodedType(type)) {
           // default hierarchy - maintain backwards compatibility
           submitted.doc.type = type;
@@ -175,7 +172,7 @@ export class ContactSaveService {
       })
       .then((preparedDocs) => {
         const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
-        this.servicesActions.setLastChangedDoc(primaryDoc|| preparedDocs.preparedDocs[0]);
+        this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
 
         return this.dbService
           .get()
