@@ -1,8 +1,8 @@
 const helper = require('../../helper');
 const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
-const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
+const errorMessageUserName = element(by.css('[test-id="errors-username"]'));
 const facilitySelector = element(by.css('#facilitySelect ~ .help-block'));
-const contactSelector = element(by.css('#contactSelect ~ .help-block')); 
+const contactSelector = element(by.css('#contactSelect ~ .help-block'));
 
 const getUsernameField = () => {
   return element(by.id('edit-username'));
@@ -67,10 +67,9 @@ module.exports = {
   
   getErrorMessagePassword: () =>{
     return errorMessagePassword.getText();
-  }, 
+  },
 
   getErrorMessageUserName: () =>{
-    helper.waitUntilReady(errorMessageUserName);
     return errorMessageUserName.getText();
   },
 
