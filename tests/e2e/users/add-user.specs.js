@@ -78,7 +78,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('', 'Not Saved', '%4wbbygxkgdwvdwT65');
     addUserModal.submit();
-    const errorMessageUserName=element.all(by.css('span.help-block.ng-binding')).get(0);
+    const errorMessageUserName=element.all(by.css('span[test-id="errors-username"]')).get(0);
     helper.waitUntilReady(errorMessageUserName);
     expect(errorMessageUserName.getText()).toContain('required');
     element(by.css('button.cancel.close')).click();
