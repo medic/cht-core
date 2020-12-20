@@ -11,9 +11,9 @@ const messageUtils = require('@medic/message-utils');
 
 const BATCH_SIZE = 1000;
 
-const getPatient = (patientShortcodeId) => {
+const getContactByShortcode = (shortcode) => {
   return utils
-    .getContactUuid(patientShortcodeId)
+    .getContactUuid(shortcode)
     .then(uuid => {
       if (!uuid) {
         return;
@@ -25,16 +25,24 @@ const getPatient = (patientShortcodeId) => {
 
 const getTemplateContext = (doc) => {
   const patientShortcodeId = doc.fields && doc.fields.patient_id;
-  if (!patientShortcodeId) {
+  const placeShortcodeId = doc.fields && doc.fields.place_id;
+  if (!patientShortcodeId && !placeShortcodeId) {
     return Promise.resolve();
   }
 
   return Promise
     .all([
       utils.getRegistrations({ id: patientShortcodeId }),
-      getPatient(patientShortcodeId)
+      utils.getRegistrations({ id: placeShortcodeId }),
+      getContactByShortcode(patientShortcodeId),
+      getContactByShortcode(placeShortcodeId),
     ])
-    .then(([ registrations, patient ]) => ({ registrations, patient }));
+    .then(([ patientRegistrations, placeRegistrations, patient, place ]) => ({
+      registrations: patientRegistrations,
+      placeRegistrations,
+      patient,
+      place,
+    }));
 };
 
 const updateScheduledTasks = (doc, context, dueDates) => {
