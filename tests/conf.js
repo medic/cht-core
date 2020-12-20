@@ -21,7 +21,9 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     mobile:'mobile/**/*.js',
     e2e: [
+      '**/sentinel/queue.spec.js',
       '**/login.spec.js',
+      '**/infodocs.js',
       '**/common.specs.js',
       'e2e/navigation/*.js',
     ],
