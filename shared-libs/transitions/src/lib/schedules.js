@@ -10,6 +10,16 @@ const messages = require('../lib/messages');
 const messageUtils = require('@medic/message-utils');
 const mutingUtils = require('../lib/muting_utils');
 
+const isMuted = (patient, place) => {
+  if (patient) {
+    return patient.muted || mutingUtils.isMutedInLineage(patient);
+  }
+
+  if (place) {
+    return place.muted || mutingUtils.isMutedInLineage(place);
+  }
+}
+
 module.exports = {
   // return [hour, minute, timezone]
   getSendTime: function(send_time) {
@@ -61,10 +71,10 @@ module.exports = {
   /*
      * Take doc and schedule config and setup schedule tasks.
      */
-  assignSchedule: function(doc, schedule, registrations, patient) {
+  assignSchedule: function(doc, schedule, patientRegistrations, patient, placeRegistrations, place) {
     const self = module.exports;
     const now = moment(date.getDate());
-    const muted = patient && (patient.muted || mutingUtils.isMutedInLineage(patient));
+    const muted = isMuted(patient, place);
     const allowedState = muted ? 'muted' : 'scheduled';
     const skipGroups = [];
 
@@ -144,8 +154,10 @@ module.exports = {
               msg,
               msg.recipient,
               {
-                registrations: registrations,
-                patient: patient
+                registrations: patientRegistrations,
+                patient: patient,
+                placeRegistrations: placeRegistrations,
+                place: place,
               });
           }
           const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';

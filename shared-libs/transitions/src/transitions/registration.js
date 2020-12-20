@@ -24,11 +24,11 @@ const findFirstDefinedValue = (doc, fields) => {
   return definedField && doc.fields[definedField];
 };
 
-const getRegistrations = (patientId) => {
-  if (!patientId) {
+const getRegistrations = (subjectId) => {
+  if (!subjectId) {
     return Promise.resolve([]);
   }
-  return utils.getRegistrations({ id: patientId });
+  return utils.getRegistrations({ id: subjectId });
 };
 
 const getPatientNameField = (params) => getNameField(params, 'patient');
@@ -293,41 +293,51 @@ const messageRelevant = (msg, doc) => {
 
 const addMessages = (config, doc) => {
   const patientId = doc.fields && doc.fields.patient_id;
+  const placeId = doc.fields && doc.fields.place_id;
   if (!config.messages || !config.messages.length) {
     return;
   }
 
-  return getRegistrations(patientId).then(registrations => {
-    const context = {
-      patient: doc.patient,
-      place: doc.place,
-      registrations: registrations,
-      templateContext: {
-        next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
-      },
-    };
-    config.messages.forEach(msg => {
-      if (messageRelevant(msg, doc)) {
-        messages.addMessage(doc, msg, msg.recipient, context);
-      }
+  return Promise
+    .all([getRegistrations(patientId), getRegistrations(placeId)])
+    .then(([ patientRegistrations, placeRegistrations ]) => {
+      const context = {
+        patient: doc.patient,
+        place: doc.place,
+        registrations: patientRegistrations,
+        placeRegistrations: placeRegistrations,
+        templateContext: {
+          next_msg: schedules.getNextTimes(doc, moment(date.getDate())),
+        },
+      };
+
+      config.messages.forEach(msg => {
+        if (messageRelevant(msg, doc)) {
+          messages.addMessage(doc, msg, msg.recipient, context);
+        }
+      });
     });
-  });
 };
 
 const assignSchedule = (options) => {
   const patientId = options.doc.fields && options.doc.fields.patient_id;
+  const placeId = options.doc.fields && options.doc.fields.place_id;
 
-  return getRegistrations(patientId).then(registrations => {
-    options.params.forEach(scheduleName => {
-      const schedule = schedules.getScheduleConfig(scheduleName);
-      schedules.assignSchedule(
-        options.doc,
-        schedule,
-        registrations,
-        options.doc.patient
-      );
+  return Promise
+    .all([ getRegistrations(patientId), getRegistrations(placeId) ])
+    .then(([ patientRegistrations, placeRegistrations ]) => {
+      options.params.forEach(scheduleName => {
+        const schedule = schedules.getScheduleConfig(scheduleName);
+        schedules.assignSchedule(
+          options.doc,
+          schedule,
+          patientRegistrations,
+          options.doc.patient,
+          placeRegistrations,
+          options.doc.place,
+        );
+      });
     });
-  });
 };
 
 const generateId = (doc, key) => {
@@ -646,20 +656,22 @@ module.exports = {
     return validate(registrationConfig, doc)
       .then(errors => {
         if (errors && errors.length > 0) {
-          messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient });
+          messages.addErrors(registrationConfig, doc, errors, { patient: doc.patient, place: doc.place });
           return true;
         }
 
         const patientId = doc.fields && doc.fields.patient_id;
+        const placeId = doc.fields && doc.fields.place_id;
 
-        if (!patientId) {
+        if (!patientId && !placeId) {
           return fireConfiguredTriggers(registrationConfig, doc);
         }
 
         // We're attaching this registration to an existing contact, let's
         // make sure it's valid
-        return utils.getContactUuid(patientId).then(patientContactId => {
-          if (!patientContactId) {
+        // todo should we explicitly require all subjects exist?
+        return utils.getContactUuid(patientId || placeId).then(subjectUuid => {
+          if (!subjectUuid) {
             transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
             return true;
           }

@@ -2144,6 +2144,7 @@ describe('registration', () => {
           patient: testPatient,
           place: undefined,
           registrations: testRegistration,
+          placeRegistrations: [],
           templateContext: {
             next_msg: {
               minutes: 0,
@@ -2202,6 +2203,7 @@ describe('registration', () => {
           patient: testPatient,
           place: undefined,
           registrations: testRegistration,
+          placeRegistrations: [],
           templateContext: {
             next_msg: {
               minutes: 0,
