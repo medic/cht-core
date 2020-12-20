@@ -18,7 +18,7 @@ const isMuted = (patient, place) => {
   if (place) {
     return place.muted || mutingUtils.isMutedInLineage(place);
   }
-}
+};
 
 module.exports = {
   // return [hour, minute, timezone]

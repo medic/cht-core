@@ -376,7 +376,7 @@ module.exports = function(Promise, DB) {
       .then(() => fetchPlaceUuids(hydratedDocs))
       .then(uuids => {
         placeUuids = uuids;
-        return fetchDocs(placeUuids)
+        return fetchDocs(placeUuids);
       })
       .then(function(places) {
         placeDocs = places;

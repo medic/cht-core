@@ -225,29 +225,36 @@ const messageRelevant = (msg, doc) => {
   }
 };
 
-const addMessagesToDoc = (doc, config, registrations) => {
+const addMessagesToDoc = (doc, config, registrations, placeRegistrations) => {
   config.messages.forEach(msg => {
     if (messageRelevant(msg, doc)) {
       messages.addMessage(doc, msg, msg.recipient, {
         patient: doc.patient,
         registrations: registrations,
+        place: doc.place,
+        placeRegistrations,
       });
     }
   });
 };
 
 const handleReport = (doc, config, callback) => {
-  utils
-    .getReportsBySubject({ ids: utils.getSubjectIds(doc.patient), registrations: true })
-    .then(registrations => {
-      addMessagesToDoc(doc, config, registrations);
-      addRegistrationToDoc(doc, registrations);
-      module.exports.silenceRegistrations(config, doc, registrations, err => {
+  return Promise
+    .all([
+      utils.getReportsBySubject({ ids: utils.getSubjectIds(doc.patient), registrations: true }),
+      utils.getReportsBySubject({ ids: utils.getSubjectIds(doc.place), registrations: true }),
+    ])
+    .then(([patientRegistrations, placeRegistrations]) => {
+      const allRegistrations = [...patientRegistrations, ...placeRegistrations];
+
+      addMessagesToDoc(doc, config, patientRegistrations, placeRegistrations);
+      addRegistrationToDoc(doc, allRegistrations);
+      module.exports.silenceRegistrations(config, doc, allRegistrations, err => {
         if (err) {
           return callback(err);
         }
 
-        addReportUUIDToRegistration(doc, config, registrations, callback);
+        addReportUUIDToRegistration(doc, config, allRegistrations, callback);
       });
     })
     .catch(callback);
@@ -284,7 +291,7 @@ module.exports = {
           return resolve(true);
         }
 
-        if (!doc.patient) {
+        if (!doc.patient && !doc.place) {
           transitionUtils.addRegistrationNotFoundError(doc, config);
           return resolve(true);
         }

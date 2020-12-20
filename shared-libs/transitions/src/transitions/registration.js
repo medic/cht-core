@@ -227,7 +227,10 @@ const triggers = {
       silence_for: null,
     };
 
-    const subjectIds = utils.getSubjectIds(options.doc.patient);
+    const subjectIds = [
+      ...utils.getSubjectIds(options.doc.patient),
+      ...utils.getSubjectIds(options.doc.place),
+    ];
     const caseId = options.doc.case_id ||
       (options.doc.fields && options.doc.fields.case_id);
     if (caseId) {
@@ -334,7 +337,7 @@ const assignSchedule = (options) => {
           patientRegistrations,
           options.doc.patient,
           placeRegistrations,
-          options.doc.place,
+          options.doc.place
         );
       });
     });
