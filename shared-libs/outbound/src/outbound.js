@@ -11,12 +11,12 @@
  */
 const _ = require('lodash');
 const crypto = require('crypto');
-//const objectPath = require('object-path');
-//const urlJoin = require('url-join');
+const objectPath = require('object-path');
+const urlJoin = require('url-join');
 const request = require('request-promise-native');
 const vm = require('vm');
 
-//const secureSettings = require('@medic/settings');
+const secureSettings = require('@medic/settings');
 
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
 
