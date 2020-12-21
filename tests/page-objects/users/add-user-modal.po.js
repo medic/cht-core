@@ -66,23 +66,23 @@ module.exports = {
   },
 
   expectErrorMessagePassword: async(errorMessage) =>{
-    return await errorMessagePassword.getText().then(text =>
+    return await helper.getTextFromElement(errorMessagePassword).then(text =>
       expect(text).toContain(errorMessage));
   },
 
   expectErrorMessageUserName: async (errorMessage) =>{
-    return await errorMessageUserName.getText().then(text =>
+    return await helper.getTextFromElement(errorMessageUserName).then(text =>
       expect(text).toContain(errorMessage));
   },
 
   requireFacility :async () => {
-    return await facilitySelector.getText().then(text =>
+    return await helper.getTextFromElement(facilitySelector).then(text =>
       expect(text).toContain('required'));
   },
 
   requireContact :async () => {
-    return await contactSelector.getText().then(text =>
+    return await helper.getTextFromElement(contactSelector).then(text =>
       expect(text).toContain('required'));
   },
-  
+
 };
