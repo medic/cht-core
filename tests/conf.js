@@ -26,6 +26,7 @@ const baseConfig = {
       '**/login.spec.js',
       '**/infodocs.js',
       '**/common.specs.js',
+      '**/content-security-policy.js',
       'e2e/navigation/*.js',
     ],
     // performance: 'performance/**/*.js'
