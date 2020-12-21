@@ -23,6 +23,7 @@ const baseConfig = {
       '**/sentinel/queue.spec.js',
       '**/infodocs.js',
       '**/common.specs.js',
+      '**/content-security-policy.js',
     ],
     // performance: 'performance/**/*.js'
   },
