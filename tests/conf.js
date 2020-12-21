@@ -18,9 +18,13 @@ const baseConfig = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   //Enabling specs as they are working.
   suites: {
-    e2e: [//'**/login.spec.js',
-      //'**/sentinel/queue.spec.js',
-      //'**/common.specs.js',
+    e2e: [
+      '**/login.spec.js',
+      '**/report-date-filter.js',
+      '**/sentinel/queue.spec.js',
+      '**/infodocs.js',
+      '**/common.specs.js',
+      '**/content-security-policy.js',
       '**/add-user.specs.js'
     ],
     // performance: 'performance/**/*.js'
