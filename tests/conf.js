@@ -22,6 +22,7 @@ const baseConfig = {
     mobile:'mobile/**/*.js',
     e2e: [
       '**/sentinel/queue.spec.js',
+      '**/report-date-filter.js',
       '**/login.spec.js',
       '**/infodocs.js',
       '**/common.specs.js',
