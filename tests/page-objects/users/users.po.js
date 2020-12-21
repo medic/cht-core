@@ -6,33 +6,32 @@ const getAddUserButton = () => {
 };
 
 module.exports = {
-  addUser: (username, password) => {
+  addUser: async(username, password) => {
     username.trim();
     password.trim();
-    helper.waitUntilReady(getAddUserButton());
+    await helper.waitUntilReady(getAddUserButton());
   },
 
-  editUser: (username, password) => {
+  editUser: async(username, password) => {
     username.trim();
     password.trim();
-    helper.waitUntilReady(getAddUserButton());
+    await helper.waitUntilReady(getAddUserButton());
   },
 
-  deleteUser: (username, password) => {
+  deleteUser: async (username, password) => {
     username.trim();
     password.trim();
-    helper.waitUntilReady(getAddUserButton());
+    await helper.waitUntilReady(getAddUserButton());
   },
 
-  openAddUserModal: () => {
-    browser.get(utils.getAdminBaseUrl() + 'users');
-    helper.waitElementToBeClickable(getAddUserButton());
-    getAddUserButton().click();
-    browser.waitForAngular();
+  openAddUserModal: async() => {
+    await browser.get(utils.getAdminBaseUrl() + 'users');
+    await helper.waitElementToBeClickable(getAddUserButton());
+    await getAddUserButton().click();
   },
 
-  getUsersList: () => {
-    helper.waitUntilReady(getAddUserButton());
-    return element.all(by.repeater('user in users'));
+  getUsersList: async() => {
+    await helper.waitUntilReady(getAddUserButton());
+    return await element.all(by.repeater('user in users'));
   }
 };
