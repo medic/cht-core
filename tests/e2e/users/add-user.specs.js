@@ -42,7 +42,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', 'short');
     addUserModal.submit();
-    expect(addUserModal.getErrorMessagePassword()).toBe('The password must be at least 8 characters long.');
+    addUserModal.expectErrorMessagePassword('The password must be at least 8 characters long.');
     addUserModal.cancel();
   });
 
@@ -50,7 +50,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', 'weakPassword');
     addUserModal.submit();
-    expect(addUserModal.getErrorMessagePassword()).toContain('The password is too easy to guess.');
+    addUserModal.expectErrorMessagePassword('The password is too easy to guess.');
     addUserModal.cancel();
   });
 
@@ -59,7 +59,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('user0', 'Not Saved', '%4wbbygxkgdwvdwT65');
     element(by.id('edit-password-confirm')).sendKeys('abc');
     addUserModal.submit();
-    expect(addUserModal.getErrorMessagePassword()).toMatch('Passwords must match');
+    addUserModal.expectErrorMessagePassword('Passwords must match');
     addUserModal.cancel();
   });
 
@@ -67,7 +67,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', '');
     addUserModal.submit();
-    expect(addUserModal.getErrorMessagePassword()).toContain('required');
+    addUserModal.expectErrorMessagePassword('required');
     addUserModal.cancel();
   });
 
@@ -75,7 +75,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('', 'Not Saved', '%4wbbygxkgdwvdwT65');
     addUserModal.submit();
-    expect(addUserModal.getErrorMessageUserName()).toContain('required');
+    addUserModal.expectErrorMessageUserName('required');
     addUserModal.cancel();
   });
 
@@ -84,8 +84,8 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
     helper.selectDropdownByValue(element(by.id('role')), 'string:district_admin');
     addUserModal.submit();
-    expect(addUserModal.getFacilitySelector()).toContain('required');
-    expect(addUserModal.getContactSelector()).toContain('required');
+    addUserModal.requireFacility();
+    addUserModal.requireContact();
     addUserModal.cancel();
   });
 });

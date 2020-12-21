@@ -64,21 +64,25 @@ module.exports = {
     getPasswordField().sendKeys(password);
     getConfirmPasswordField().sendKeys(password);
   },
+
+  expectErrorMessagePassword: async(errorMessage) =>{
+    return await errorMessagePassword.getText().then(text =>
+      expect(text).toContain(errorMessage));
+  },
+
+  expectErrorMessageUserName: async (errorMessage) =>{
+    return await errorMessageUserName.getText().then(text =>
+      expect(text).toContain(errorMessage));
+  },
+
+  requireFacility :async () => {
+    return await facilitySelector.getText().then(text =>
+      expect(text).toContain('required'));
+  },
+
+  requireContact :async () => {
+    return await contactSelector.getText().then(text =>
+      expect(text).toContain('required'));
+  },
   
-  getErrorMessagePassword: () =>{
-    return errorMessagePassword.getText();
-  },
-
-  getErrorMessageUserName: () =>{
-    return errorMessageUserName.getText();
-  },
-
-  getFacilitySelector :() => {
-    return facilitySelector.getText();
-  },
-
-  getContactSelector :() => {
-    return contactSelector.getText();
-  },
-
 };
