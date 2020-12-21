@@ -53,6 +53,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   additionalListItem = false;
   simprintsEnabled;
   enketoEdited;
+  selectedContact;
 
   constructor(
     private store: Store,
@@ -83,12 +84,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.store.select(Selectors.getContactsList),
       this.store.select(Selectors.getIsAdmin),
       this.store.select(Selectors.getFilters),
-      this.store.select(Selectors.contactListContains)
-    ).subscribe(([contactsList, isAdmin, filters, listContains]) => {
+      this.store.select(Selectors.contactListContains),
+      this.store.select(Selectors.getSelectedContact),
+    ).subscribe(([contactsList, isAdmin, filters, listContains, selectedContact]) => {
       this.contactsList = contactsList;
       this.isAdmin = isAdmin;
       this.filters = filters;
       this.listContains = listContains;
+      this.selectedContact = selectedContact;
     });
     this.subscription.add(reduxSubscription);
 
@@ -162,6 +165,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   ngOnDestroy() {
     this.contactsActions.resetContactsList();
+    this.contactsActions.clearSelection();
     this.subscription.unsubscribe();
     this.globalActions.clearFilters();
   }
