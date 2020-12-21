@@ -28,6 +28,7 @@ module.exports = {
     browser.get(utils.getAdminBaseUrl() + 'users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
+    browser.waitForAngular();
   },
 
   getUsersList: () => {
