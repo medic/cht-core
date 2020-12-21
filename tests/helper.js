@@ -76,7 +76,7 @@ module.exports = {
       )
       .then(() => {
         return element.getText().then(val => {
-          return val;
+          if(value){return val;}
         });
       })
       .catch(() => {
