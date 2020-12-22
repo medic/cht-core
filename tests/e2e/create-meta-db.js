@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const auth = require('../auth')();
-const helper = require('../helper');
 const utils = require('../utils');
 const usersPage = require('../page-objects/users/users.po.js');
 const commonElements = require('../page-objects/common/common.po.js');
