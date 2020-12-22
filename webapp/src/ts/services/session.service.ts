@@ -5,7 +5,8 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { DOCUMENT } from '@angular/common';
-import { LocationService } from './location.service';
+
+import { LocationService } from '@mm-services/location.service';
 
 @Injectable({
   providedIn: 'root'

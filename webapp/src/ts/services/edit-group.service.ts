@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { forEach as _forEach, filter as _filter } from 'lodash-es';
 
-import { DbService } from './db.service';
+import { DbService } from '@mm-services/db.service';
 
 @Injectable({
   providedIn: 'root'

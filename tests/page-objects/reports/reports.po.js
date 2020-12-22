@@ -6,8 +6,6 @@ const reportBodyDetails = '#reports-content .report-body .details';
 const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_start"]'));
 const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
 const dateFilter = element(by.css('#date-filter'));
-
-// Left hand side list elements
 const reportListID = '#reports-list';
 
 
@@ -38,8 +36,8 @@ module.exports = {
   },
   filterByDate: (startDate, endDate) => {
     dateFilter.click();
-    datePickerStart.click().clear().sendKeys(startDate);
-    datePickerEnd.click().clear().sendKeys(endDate + protractor.Key.ENTER);
+    datePickerStart.click().clear().sendKeys(startDate.format('MM/DD/YYYY'));
+    datePickerEnd.click().clear().sendKeys( endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
   },
   expectReportsToExist: uuids => {

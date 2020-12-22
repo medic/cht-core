@@ -1,6 +1,6 @@
 import * as _ from 'lodash-es';
 import {Injectable} from '@angular/core';
-import {GetSummariesService} from './get-summaries.service';
+import {GetSummariesService} from '@mm-services/get-summaries.service';
 
 @Injectable({
   providedIn: 'root'

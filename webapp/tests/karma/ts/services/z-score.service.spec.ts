@@ -48,16 +48,22 @@ describe('ZScore service', () => {
     it('returns undefined when no z-score doc', () => {
       allDocs.resolves({ rows: [ ] });
       return service.getScoreUtil().then(util => {
+        const consoleErrorMock = sinon.stub(console, 'error');
         const actual = util('weight-for-age', 'male', 10, 150);
         expect(actual).to.equal(undefined);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Doc "zscore-charts" not found');
       });
     });
 
     it('returns undefined for unconfigured chart', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       mockAllDocs({ charts: [] });
       return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'male', 10, 150);
         expect(actual).to.equal(undefined);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Requested z-score table not found');
       });
     });
 
@@ -121,10 +127,15 @@ describe('ZScore service', () => {
     });
 
     it('returns undefined when requested sex not configured', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       mockAllDocs(CONFIG_DOC);
       return service.getScoreUtil().then(util => {
         const actual = util('weight-for-age', 'female', 1, 25.7);
         expect(actual).to.equal(undefined);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal(
+          'The weight-for-age z-score table is not configured for female children'
+        );
       });
     });
 

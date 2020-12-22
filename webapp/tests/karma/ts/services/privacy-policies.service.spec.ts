@@ -225,13 +225,18 @@ describe('PrivacyPoliciesService', () => {
     });
 
     it('should throw DB errors', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       languageService.get.resolves('fr');
       localDb.get.rejects({ some: 'err' });
 
       return service
         .hasAccepted()
         .then(() => assert.fail('should have thrown'))
-        .catch(err => expect(err).to.deep.equal({ some: 'err' }));
+        .catch(err => {
+          expect(err).to.deep.equal({ some: 'err' });
+          expect(consoleErrorMock.callCount).to.equal(1);
+          expect(consoleErrorMock.args[0][0]).to.equal('Error retrieving privacy policies');
+        });
     });
   });
 

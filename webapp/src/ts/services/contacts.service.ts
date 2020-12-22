@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { CacheService } from './cache.service';
-import { ContactTypesService } from './contact-types.service';
-import { DbService } from './db.service';
 import { flattenDeep as _flattenDeep } from 'lodash-es';
+
+import { CacheService } from '@mm-services/cache.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { DbService } from '@mm-services/db.service';
 
 @Injectable({
   providedIn: 'root'

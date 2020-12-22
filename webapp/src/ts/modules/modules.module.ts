@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { FormsModule } from '@angular/forms';
 
 import  { PipesModule } from '@mm-pipes/pipes.module';
@@ -19,8 +20,9 @@ import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.com
 import { ComponentsModule } from '../components/components.module';
 import { MessagesComponent } from './messages/messages.component';
 import { ContactsComponent } from './contacts/contacts.component';
-import { ContactsContentComponent } from './contacts/contacts-content.component';
+import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.component';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
+import { ContactsDeceasedComponent } from '@mm-modules/contacts/contacts-deceased.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
@@ -29,6 +31,7 @@ import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target
 import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
+import { ThemeComponent } from '@mm-modules/theme/theme.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +48,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     ReportsFiltersComponent,
     ContactsContentComponent,
     ContactsFiltersComponent,
+    ContactsDeceasedComponent,
     MessagesContentComponent,
     PrivacyPolicyComponent,
     AnalyticsTargetsComponent,
@@ -53,6 +57,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     AnalyticsTargetAggregatesDetailComponent,
     TasksComponent,
     TasksContentComponent,
+    ThemeComponent,
   ],
   imports: [
     CommonModule,
@@ -62,6 +67,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     ComponentsModule,
     BsDropdownModule,
     FormsModule,
+    AccordionModule,
   ],
   exports: [
     HomeComponent,

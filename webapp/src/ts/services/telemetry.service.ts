@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import * as moment from 'moment';
 
-import { DbService } from './db.service';
-import { SessionService } from './session.service';
+import { DbService } from '@mm-services/db.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'

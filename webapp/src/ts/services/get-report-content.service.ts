@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { DbService } from './db.service';
-import { FileReaderService } from './file-reader.service';
+import { DbService } from '@mm-services/db.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 
 @Injectable({
   providedIn: 'root'

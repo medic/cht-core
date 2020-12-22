@@ -1,4 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -23,8 +25,10 @@ describe('Freetext Filter Component', () => {
     return TestBed
       .configureTestingModule({
         imports: [
+          BrowserAnimationsModule,
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          BsDropdownModule.forRoot(),   // Fix "Can't bind to 'insideClick' since it isn't a known property ..."
           RouterTestingModule,
         ],
         declarations: [

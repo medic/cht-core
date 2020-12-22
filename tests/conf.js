@@ -23,6 +23,11 @@ const baseConfig = {
       '**/login.spec.js',
       '**/report-date-filter.js',
       'tests/e2e/reports-subject.js',
+      '**/sentinel/queue.spec.js',
+      '**/api/routing.js',
+      '**/infodocs.js',
+      '**/common.specs.js',
+      '**/content-security-policy.js',
     ],
     // performance: 'performance/**/*.js'
   },

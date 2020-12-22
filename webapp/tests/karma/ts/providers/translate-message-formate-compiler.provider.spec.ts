@@ -47,9 +47,12 @@ describe('Translate MessageFormat compiler provider', () => {
 
     it('should catch message format throwing errors', () => {
       const mfCompile = sinon.stub(MessageFormat.prototype, 'compile').throws({ some: 'error' });
+      const consoleErrorMock = sinon.stub(console, 'error');
       service = new TranslateMessageFormatCompilerProvider();
       expect(service.compile('a {thing}')).to.equal('a {thing}');
       expect(mfCompile.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('messageformat compile error');
     });
   });
 

@@ -4,11 +4,11 @@ import { sortBy as _sortBy } from 'lodash-es';
 import * as phoneNumber from '@medic/phone-number';
 
 import { FormatProvider } from '@mm-providers/format.provider';
-import { LineageModelGeneratorService } from './lineage-model-generator.service';
-import { SearchService } from './search.service';
-import { SessionService } from './session.service';
-import { SettingsService } from './settings.service';
-import { ContactMutedService } from './contact-muted.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { SearchService } from '@mm-services/search.service';
+import { SessionService } from '@mm-services/session.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
 
 @Injectable({
   providedIn: 'root'

@@ -1,3 +1,10 @@
+import { TestBed } from '@angular/core/testing';
+import { assert, expect } from 'chai';
+import sinon from 'sinon';
+
+import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+
 describe('ContactChangeFilter service', () => {
 
   let service;
@@ -5,35 +12,39 @@ describe('ContactChangeFilter service', () => {
 
   beforeEach(() => {
     contactTypesIncludes = sinon.stub().returns(true);
-    module('inboxApp');
-    module($provide => {
-      $provide.value('ContactTypes', { includes: contactTypesIncludes });
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ContactTypesService, useValue: { includes: contactTypesIncludes } },
+      ]
     });
-    inject($injector => {
-      service = $injector.get('ContactChangeFilter');
-    });
+    service = TestBed.inject(ContactChangeFilterService);
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   it('checks for invalid input', () => {
-    chai.assert.equal(service.matchContact(), false);
-    chai.assert.equal(service.matchContact({}, { something: true }), false);
-    chai.assert.equal(service.matchContact('notAnObject', undefined), false);
-    chai.assert.equal(service.matchContact([undefined], 11), false);
-    chai.assert.equal(service.isDeleted(undefined), false);
+    assert.equal(service.matchContact(), false);
+    assert.equal(service.matchContact({}, { something: true }), false);
+    assert.equal(service.matchContact('notAnObject', undefined), false);
+    assert.equal(service.matchContact([undefined], 11), false);
+    assert.equal(service.isDeleted(undefined), false);
   });
 
   describe('matchContact', () => {
     it('returns true for same ID', () => {
       const change = { id: '123' };
       const contact = { doc: { _id: '123' } };
-      chai.expect(service.matchContact(change, contact)).to.equal(true);
+      expect(service.matchContact(change, contact)).to.equal(true);
     });
 
     it('returns false for different ID', () => {
       const change = { id: '456' };
       const contact = { doc: { _id: '123' } };
 
-      chai.expect(service.matchContact(change, contact)).to.equal(false);
+      expect(service.matchContact(change, contact)).to.equal(false);
     });
   });
 
@@ -46,9 +57,9 @@ describe('ContactChangeFilter service', () => {
       const change3 = { doc: {} };
       const contact = { doc: { _id: '123' } };
 
-      chai.expect(service.isRelevantContact(change1, contact)).to.equal(false);
-      chai.expect(service.isRelevantContact(change2, contact)).to.equal(false);
-      chai.expect(service.isRelevantContact(change3, contact)).to.equal(false);
+      expect(service.isRelevantContact(change1, contact)).to.equal(false);
+      expect(service.isRelevantContact(change2, contact)).to.equal(false);
+      expect(service.isRelevantContact(change3, contact)).to.equal(false);
     });
 
     it('returns true for new children', () => {
@@ -58,10 +69,10 @@ describe('ContactChangeFilter service', () => {
       const change4 = { doc: { type: 'district_hospital', parent: { _id: '123'} } };
       const contact = { doc: { _id: '123' } };
 
-      chai.expect(service.isRelevantContact(change1, contact)).to.equal(true);
-      chai.expect(service.isRelevantContact(change2, contact)).to.equal(true);
-      chai.expect(service.isRelevantContact(change3, contact)).to.equal(true);
-      chai.expect(service.isRelevantContact(change4, contact)).to.equal(true);
+      expect(service.isRelevantContact(change1, contact)).to.equal(true);
+      expect(service.isRelevantContact(change2, contact)).to.equal(true);
+      expect(service.isRelevantContact(change3, contact)).to.equal(true);
+      expect(service.isRelevantContact(change4, contact)).to.equal(true);
     });
 
     it('returns true for previous children', () => {
@@ -83,9 +94,9 @@ describe('ContactChangeFilter service', () => {
         }
       };
 
-      chai.expect(service.isRelevantContact(change1, contact)).to.equal(true);
-      chai.expect(service.isRelevantContact(change2, contact)).to.equal(true);
-      chai.expect(service.isRelevantContact(change3, contact)).to.equal(true);
+      expect(service.isRelevantContact(change1, contact)).to.equal(true);
+      expect(service.isRelevantContact(change2, contact)).to.equal(true);
+      expect(service.isRelevantContact(change3, contact)).to.equal(true);
     });
 
     it('returns true for ancestor', () => {
@@ -101,9 +112,9 @@ describe('ContactChangeFilter service', () => {
         ]
       };
 
-      chai.expect(service.isRelevantContact(change1, contact)).to.equal(true);
-      chai.expect(service.isRelevantContact(change2, contact)).to.equal(true);
-      chai.expect(service.isRelevantContact(change3, contact)).to.equal(true);
+      expect(service.isRelevantContact(change1, contact)).to.equal(true);
+      expect(service.isRelevantContact(change2, contact)).to.equal(true);
+      expect(service.isRelevantContact(change3, contact)).to.equal(true);
     });
 
     it('returns false for anything else', () => {
@@ -129,7 +140,7 @@ describe('ContactChangeFilter service', () => {
         ]
       };
 
-      chai.expect(service.isRelevantContact(change, contact)).to.equal(false);
+      expect(service.isRelevantContact(change, contact)).to.equal(false);
     });
 
     it('does not crash when lineage is undefined', () => {
@@ -157,7 +168,7 @@ describe('ContactChangeFilter service', () => {
         ]
       };
 
-      chai.expect(service.isRelevantContact(change, contact)).to.equal(false);
+      expect(service.isRelevantContact(change, contact)).to.equal(false);
     });
   });
 
@@ -197,153 +208,153 @@ describe('ContactChangeFilter service', () => {
 
     it('returns true for direct contact with matching doc ID', () => {
       change1.doc.fields.patient_id = 'id';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
     });
 
     it('returns true for direct contact with matching patient_id', () => {
       change1.doc.fields.patient_id = 'patient';
       change2.doc.patient_id = 'patient';
 
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
     it('returns true for direct contact with matching place_id doc ID', () => {
       change1.doc.fields.place_id = 'id';
       change2.doc.place_id = 'id';
 
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
     it('returns true for direct contact with matching place_id', () => {
       change1.doc.fields.place_id = 'place';
       change2.doc.place_id = 'place';
 
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
     it('returns true for child contact with matching doc ID', () => {
       change1.doc.fields.patient_id = 'child_id2';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
       change1.doc.fields.patient_id = 'child_id3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
 
       change1.doc.patient_id = 'child_id2';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
       change1.doc.patient_id = 'child_id3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
     });
 
     it('returns true for child contact with matching patient_id', () => {
       change1.doc.fields.patient_id = 'child_patient1';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
       change1.doc.fields.patient_id = 'child_patient3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
 
       change2.doc.patient_id = 'child_patient1';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
       change2.doc.patient_id = 'child_patient3';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
     it('returns true for child contact with matching place_id doc ID', () => {
       change1.doc.fields.place_id = 'child_id2';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
       change1.doc.fields.place_id = 'child_id3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
 
       change2.doc.place_id = 'child_id2';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
       change2.doc.place_id = 'child_id3';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
     it('returns true for child contact with matching place_id', () => {
       change1.doc.fields.place_id = 'child_place2';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
       change1.doc.fields.place_id = 'child_place3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(true);
+      expect(service.isRelevantReport(change1, contact)).to.equal(true);
 
       change2.doc.place_id = 'child_place2';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
       change2.doc.place_id = 'child_place3';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(true);
+      expect(service.isRelevantReport(change2, contact)).to.equal(true);
     });
 
     it('returns false for direct contact with different doc id', () => {
       change1.doc.fields.patient_id = 'nid';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
 
       change2.doc.patient_id = 'nid';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
     it('returns false for direct contact with different patient_id', () => {
       change1.doc.fields.patient_id = 'npatient';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
 
       change2.doc.patient_id = 'npatient';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
     it('returns false for direct contact with different place_id', () => {
       change1.doc.fields.place_id = 'nplace';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
 
       change2.doc.place_id = 'nplace';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
     it('returns false for child contact with different doc ID', () => {
       change1.doc.fields.patient_id = 'nchild_id2';
-      chai.expect(service.isRelevantReport(change1,  contact)).to.equal(false);
+      expect(service.isRelevantReport(change1,  contact)).to.equal(false);
       change1.doc.fields.patient_id = 'nchild_id3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
 
       change2.doc.patient_id = 'nchild_id2';
-      chai.expect(service.isRelevantReport(change2,  contact)).to.equal(false);
+      expect(service.isRelevantReport(change2,  contact)).to.equal(false);
       change2.doc.patient_id = 'nchild_id3';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
     it('returns false for child contact with different patient_id', () => {
       change1.doc.fields.patient_id = 'nchild_patient1';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
       change1.doc.fields.patient_id = 'nchild_patient3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
 
       change2.doc.patient_id = 'nchild_patient1';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
       change2.doc.patient_id = 'nchild_patient3';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
 
     it('returns false for child contact with different place_id', () => {
       change1.doc.fields.place_id = 'nchild_place2';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
       change1.doc.fields.place_id = 'nchild_place3';
-      chai.expect(service.isRelevantReport(change1, contact)).to.equal(false);
+      expect(service.isRelevantReport(change1, contact)).to.equal(false);
 
       change2.doc.place_id = 'nchild_place2';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
       change2.doc.place_id = 'nchild_place3';
-      chai.expect(service.isRelevantReport(change2, contact)).to.equal(false);
+      expect(service.isRelevantReport(change2, contact)).to.equal(false);
     });
   });
 
   describe('isDeleted', () => {
     it('returns true when deleted', () => {
       const change = { doc: { _id: '123' }, deleted: true };
-      chai.expect(service.isDeleted(change)).to.equal(true);
+      expect(service.isDeleted(change)).to.equal(true);
     });
 
     it('returns false when property is not set or validates to false', () => {
       const change1 = { doc: { _id: '123' }};
       const change2 = { doc: { _id: '123' }, deleted: false };
-      chai.expect(service.isDeleted(change1)).to.equal(false);
-      chai.expect(service.isDeleted(change2)).to.equal(false);
+      expect(service.isDeleted(change1)).to.equal(false);
+      expect(service.isDeleted(change2)).to.equal(false);
     });
   });
 
