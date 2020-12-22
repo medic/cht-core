@@ -267,7 +267,7 @@ module.exports = {
     );
   },
 
-  waitForAppToLoad: (timeout=20000) => {
+  waitForAppToLoad: (timeout=60000) => {
     const loadingStatus = element(by.css('.loading-status'));
     handleUpdateModal();
     return browser.wait(EC.presenceOf(loadingStatus), timeout);
