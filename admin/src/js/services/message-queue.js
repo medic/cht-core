@@ -118,40 +118,36 @@ angular.module('services').factory('MessageQueue',
     };
 
     const getSubjectsAndRegistrations = function(messages, settings) {
-      const patientIds = compactUnique(messages.map(function(message) {
-        // don't process items which already have generated messages
-        return !message.sms && message.context.patient_id;
-      }));
+      const shortcodes = compactUnique(messages.reduce(function(shortcodes, message) {
+        if (!message.sms) {
+          // don't process items which already have generated messages
+          return shortcodes;
+        }
 
-      const placeIds = compactUnique(messages.map(function(message) {
-        // don't process items which already have generated messages
-        return !message.sms && message.context.place_id;
-      }));
+        return shortcodes.concat(message.context.patient_id, message.context.place_id);
+      }, []));
 
-      if (!patientIds.length && !placeIds.length) {
+      if (!shortcodes.length) {
         return Promise.resolve(messages);
       }
 
-      const referenceKeys = [...patientIds, ...placeIds].map(function(shortcode) {
+      const referenceKeys = shortcodes.map(function(shortcode) {
         return [ 'shortcode', shortcode ];
       });
 
       return $q
         .all([
           DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
-          DB({ remote: true }).query('medic-client/registered_patients', { keys: patientIds, include_docs: true }),
-          DB({ remote: true }).query('medic-client/registered_patients', { keys: placeIds, include_docs: true }),
+          DB({ remote: true }).query('medic-client/registered_patients', { keys: shortcodes, include_docs: true }),
         ])
-        .then(function([contactsByReference, patientRegistrations, placeRegistrations]) {
-
-          patientRegistrations = getValidRegistrations(patientRegistrations, settings);
-          placeRegistrations = getValidRegistrations(placeRegistrations, settings);
+        .then(function([contactsByReference, registrations]) {
+          registrations = getValidRegistrations(registrations, settings);
 
           messages.forEach(function(message) {
             message.context.patient_uuid = findPatientUuid(contactsByReference, message);
             message.context.place_uuid = findPlaceUuid(contactsByReference, message);
-            message.context.registrations = findRegistrations(patientRegistrations, message, 'patient_id');
-            message.context.placeRegistrations = findRegistrations(placeRegistrations, message, 'place_id');
+            message.context.registrations = findRegistrations(registrations, message, 'patient_id');
+            message.context.placeRegistrations = findRegistrations(registrations, message, 'place_id');
           });
 
           return messages;
