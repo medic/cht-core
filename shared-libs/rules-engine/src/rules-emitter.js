@@ -20,6 +20,8 @@ const shutdown = () => {
   flow = undefined;
 };
 
+const NullFeedbackService = { submit: () => {} };
+
 module.exports = {
   /**
    * Initializes the rules emitter
@@ -31,7 +33,7 @@ module.exports = {
    * @param {Object} Feedback CHT Feedback service
    * @returns {Boolean} Success
    */
-  initialize: (settings, Feedback) => {
+  initialize: (settings, Feedback = NullFeedbackService) => {
     if (flow) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
@@ -55,9 +57,7 @@ module.exports = {
         },
       });
     } catch (err) {
-      if (feedbackService) {
-        feedbackService.submit('Configuration error in rules configuration: ' + err.message, false);
-      }
+      feedbackService.submit('Configuration error in rules configuration: ' + err.message, false);
       shutdown();
       throw err;
     }
@@ -152,9 +152,7 @@ const startSession = function() {
       session.match(err => {
         session.dispose();
         if (err) {
-          if (feedbackService) {
-            feedbackService.submit('Configuration error in rules configuration: ' + err.message, false);
-          }
+          feedbackService.submit('Configuration error in rules configuration: ' + err.message, false);
           return reject(err);
         }
 
