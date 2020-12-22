@@ -3,16 +3,15 @@ import { createSingleValueAction, createMultiValueAction } from './actionUtils';
 
 export const Actions = {
   updateContactsList: createSingleValueAction('UPDATE_CONTACTS_LIST', 'contacts'),
-  setSelectedContacts: createSingleValueAction('SET_SELECTED_CONTACTS', 'selected'),
   resetContactsList: createAction('RESET_CONTACTS_LIST'),
   removeContactFromList: createSingleValueAction('REMOVE_CONTACT_FROM_LIST', 'contact'),
   selectContact: createMultiValueAction('SELECT_CONTACT'),
-  setSelected: createSingleValueAction('SET_SELECTED_CONTACT', 'selected'),
+  setSelectedContact: createSingleValueAction('SET_SELECTED_CONTACT', 'selected'),
   setContactsLoadingSummary: createSingleValueAction('SET_CONTACT_LOADING_SUMMARY', 'value'),
   setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
   receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
   receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports'),
-  updateSelectedContact: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'summary'),
+  updateSelectedContactSummary: createSingleValueAction('UPDATE_SELECTED_CONTACT_SUMMARY', 'summary'),
   updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
   receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
 };
@@ -27,7 +26,7 @@ export class ContactsActions {
   }
 
   clearSelection() {
-    return this.store.dispatch(Actions.setSelectedContacts([]));
+    return this.store.dispatch(Actions.setSelectedContact(null));
   }
 
   resetContactsList() {
@@ -42,8 +41,8 @@ export class ContactsActions {
     return this.store.dispatch(Actions.selectContact({ id, silent }));
   }
 
-  setSelected(model) {
-    return this.store.dispatch(Actions.setSelected(model));
+  setSelectedContact(model) {
+    return this.store.dispatch(Actions.setSelectedContact(model));
   }
 
   setContactsLoadingSummary(value) {
@@ -62,8 +61,8 @@ export class ContactsActions {
     return this.store.dispatch(Actions.receiveSelectedContactReports(reports));
   }
 
-  updateSelectedContact(summary) {
-    return this.store.dispatch(Actions.updateSelectedContact(summary));
+  updateSelectedContactSummary(summary) {
+    return this.store.dispatch(Actions.updateSelectedContactSummary(summary));
   }
 
   updateSelectedContactsTasks(tasks) {

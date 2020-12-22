@@ -176,6 +176,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   ngOnDestroy() {
     this.contactsActions.resetContactsList();
+    this.contactsActions.clearSelection();
     this.subscription.unsubscribe();
     this.globalActions.clearFilters();
   }

@@ -309,5 +309,144 @@ describe('Contacts Reducer', () => {
     });
   });
 
-  // TODO: add tests for adding, removing and clearing selected contacts
+  describe('add selected contact', () => {
+    it('should add a selected contact to empty list', () => {
+      const selected = { _id: 'selected_report', some: 'data' };
+      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: { _id: 'selected_report', some: 'data' },
+      });
+    });
+
+    it('should add selected report to existing list', ()=> {
+      state = {
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ])
+      };
+      const selected = { _id: 'selected_report', some: 'data' };
+      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
+
+      expect(newState).to.deep.equal({
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: { _id: 'selected_report', some: 'data' },
+      });
+    });
+
+    it('should update if there is already a selected report', () => {
+      state = {
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: { _id: 'first_selected_report', some: 'data' }
+      };
+      const selected = { _id: 'second_selected_report', some: 'other data' };
+      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
+
+      expect(newState).to.deep.equal({
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: { _id: 'second_selected_report', some: 'other data' },
+      });
+
+      const newerState = contactsReducer(state, Actions.setSelectedContact(null));
+
+      expect(newerState).to.deep.equal({
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: null,
+      });
+    });
+  });
+
+  describe('updateSelectedContactSummary', () => {
+    it('should work when selected contact not set', () => {
+      const summary = { some: 'summary' };
+      const newState = contactsReducer(state, Actions.updateSelectedContactSummary(summary));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map([]),
+        filters: {},
+        selected: {
+          summary: { some: 'summary' }
+        },
+      });
+    });
+
+    it('should update a selected contact with the summary', () => {
+      state = {
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: { _id: 'first_selected_report', some: 'data' }
+      };
+      const summary = { some: 'summary' };
+      const newState = contactsReducer(state, Actions.updateSelectedContactSummary(summary));
+
+      expect(newState).to.deep.equal({
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: { _id: 'first_selected_report', some: 'data', summary: { some: 'summary' } }
+      });
+    });
+  });
 });

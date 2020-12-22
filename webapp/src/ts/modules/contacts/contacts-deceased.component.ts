@@ -32,6 +32,16 @@ export class ContactsDeceasedComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.subscribeToStore();
+    this.subscribeToRoute();
+    this.subscribeToChanges();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getSelectedContact),
@@ -40,25 +50,26 @@ export class ContactsDeceasedComponent implements OnInit, OnDestroy {
       this.loadingContent = loadingContent;
     });
     this.subscription.add(reduxSubscription);
+  }
 
+  subscribeToRoute() {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.selectContact(params.id);
       }
     });
     this.subscription.add(routeSubscription);
+  }
 
+  subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-deceased',
-      filter: function(change) {
-        return this.selectedContact && this.selectedContact.doc._id === change.id;
+      filter: (change) => {
+        return this.selectedContact?.doc?._id === change.id;
       },
-      callback: function(change) {
+      callback: (change) => {
         if (change.deleted) {
-          const parentId = this.selectedContact &&
-                           this.selectedContact.doc &&
-                           this.selectedContact.doc.parent &&
-                           this.selectedContact.doc.parent._id;
+          const parentId = this.selectedContact?.doc?.parent?._id;
           return this.router.navigate(['/contacts', { id: parentId || null }]);
         } else {
           // refresh the updated contact
@@ -67,10 +78,6 @@ export class ContactsDeceasedComponent implements OnInit, OnDestroy {
       }
     });
     this.subscription.add(changesSubscription);
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
   selectContact(id, silent?) {

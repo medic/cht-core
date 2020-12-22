@@ -1,25 +1,21 @@
 import { Injectable } from '@angular/core';
-import * as _ from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
+import { 
+  groupBy as _groupBy, 
+  partial as _partial,
+  find as _find, 
+  flattenDeep as _flattenDeep, 
+  map as _map 
+} from 'lodash-es';
 
-import { LineageModelGeneratorService } from './lineage-model-generator.service';
-import { DbService } from './db.service';
-import { ContactTypesService } from './contact-types.service';
-import { SearchService } from './search.service';
-import { ContactMutedService } from './contact-muted.service';
-import { GetDataRecordsService } from './get-data-records.service';
+import registrationUtils from '@medic/registration-utils';
 
-const registrationUtils = require('@medic/registration-utils');
-
-const PRIMARY_CONTACT_COMPARATOR = (lhs, rhs) => {
-  if (lhs.isPrimaryContact) {
-    return -1;
-  }
-  if (rhs.isPrimaryContact) {
-    return 1;
-  }
-  return 0;
-};
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { DbService } from '@mm-services/db.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { SearchService } from '@mm-services/search.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
+import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -50,9 +46,19 @@ export class ContactViewModelGeneratorService {
     private getDataRecordsService: GetDataRecordsService,
   ){}
 
-  private TYPE_COMPARATOR (lhs, rhs) {
-    const lhsPerson = lhs.type && lhs.type.person;
-    const rhsPerson = rhs.type && rhs.type.person;
+  private primaryContactComparator (lhs, rhs){
+    if (lhs.isPrimaryContact) {
+      return -1;
+    }
+    if (rhs.isPrimaryContact) {
+      return 1;
+    }
+    return 0;
+  }
+
+  private typeComparator(lhs, rhs) {
+    const lhsPerson = lhs.type?.person;
+    const rhsPerson = rhs.type?.person;
     if (lhsPerson && !rhsPerson) {
       return -1;
     }
@@ -64,8 +70,8 @@ export class ContactViewModelGeneratorService {
     return lhsId.localeCompare(rhsId);
   }
 
-  private NAME_COMPARATOR = (lhs, rhs) => {
-    const primary = PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
+  private nameComparator(lhs, rhs) {
+    const primary = this.primaryContactComparator(lhs, rhs);
     if (primary !== 0) {
       return primary;
     }
@@ -79,10 +85,10 @@ export class ContactViewModelGeneratorService {
       return -1;
     }
     return lhs.doc.name.localeCompare(rhs.doc.name);
-  };
+  }
 
-  private AGE_COMPARATOR(lhs, rhs) {
-    const primary = PRIMARY_CONTACT_COMPARATOR(lhs, rhs);
+  private ageComparator(lhs, rhs) {
+    const primary = this.primaryContactComparator(lhs, rhs);
     if (primary !== 0) {
       return primary;
     }
@@ -97,10 +103,10 @@ export class ContactViewModelGeneratorService {
     if (!lhs.doc.date_of_birth && rhs.doc.date_of_birth) {
       return -1;
     }
-    return this.NAME_COMPARATOR(lhs, rhs);
+    return this.nameComparator(lhs, rhs);
   }
 
-  private REPORTED_DATE_COMPARATOR(lhs, rhs) {
+  private reportedDateComparator(lhs, rhs) {
     if (lhs.reported_date > rhs.reported_date) {
       return -1;
     }
@@ -110,7 +116,7 @@ export class ContactViewModelGeneratorService {
     return 0;
   }
 
-  private MUTED_COMPARATOR(nextComparator, lhs, rhs) {
+  private mutedComparator(nextComparator, lhs, rhs) {
     if (!!lhs.doc.muted === !!rhs.doc.muted) {
       return nextComparator(lhs, rhs);
     }
@@ -119,9 +125,7 @@ export class ContactViewModelGeneratorService {
 
   private setPrimaryContact(model) {
     const immediateParent = model.lineage && model.lineage.length && model.lineage[0];
-    model.isPrimaryContact = immediateParent &&
-      immediateParent.contact &&
-      immediateParent.contact._id === model.doc._id;
+    model.isPrimaryContact = immediateParent?.contact?._id === model.doc._id;
   }
 
   private setMutedState = modelToMute => {
@@ -137,7 +141,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private groupChildrenByType = children => {
-    return _.groupBy(children, child => child.doc.contact_type || child.doc.type);
+    return _groupBy(children, child => child.doc.contact_type || child.doc.type);
   };
 
   private addPrimaryContact(doc, children) {
@@ -153,7 +157,9 @@ export class ContactViewModelGeneratorService {
     }
 
     // If the primary contact is not a child, fetch the document
-    return this.dbService.get().get(contactId)
+    return this.dbService
+      .get()
+      .get(contactId)
       .then(doc => {
         children.push({
           doc: doc,
@@ -171,10 +177,10 @@ export class ContactViewModelGeneratorService {
 
   private sortChildren(childModels) {
     childModels.forEach(group => {
-      const comparator = group.type && group.type.sort_by_dob ? this.AGE_COMPARATOR : this.NAME_COMPARATOR;
-      group.contacts.sort(_.partial(this.MUTED_COMPARATOR, comparator));
+      const comparator = group.type && group.type.sort_by_dob ? this.ageComparator : this.nameComparator;
+      group.contacts.sort(_partial(this.mutedComparator, comparator.bind(this)));
     });
-    childModels.sort(this.TYPE_COMPARATOR);
+    childModels.sort(this.typeComparator);
     return childModels;
   }
 
@@ -203,18 +209,22 @@ export class ContactViewModelGeneratorService {
       }
       options.keys = childTypes.map(type => [ contactId, type.id ]);
     }
-    return this.dbService.get().query('medic-client/contacts_by_parent', options)
+    return this.dbService
+      .get()
+      .query('medic-client/contacts_by_parent', options)
       .then(response => response.rows);
   }
 
   private buildChildModels(groups, types) {
-    return Object.keys(groups).map(typeId => {
-      return {
-        contacts: groups[typeId],
-        type: types.find(type => type.id === typeId),
-        deceasedCount: 0
-      };
-    });
+    return Object
+      .keys(groups)
+      .map(typeId => {
+        return {
+          contacts: groups[typeId],
+          type: types.find(type => type.id === typeId),
+          deceasedCount: 0
+        };
+      });
   }
 
   private markDeceased(childModels) {
@@ -230,16 +240,19 @@ export class ContactViewModelGeneratorService {
   }
 
   loadChildren(model, options?) {
-    const newModel = Object.assign({children: []}, model);
-    return this.contactTypesService.getAll().then(types => {
-      return this.getChildren(newModel, types, options)
-        .then(children => this.setChildrenMutedState(model, children))
-        .then(children => this.addPrimaryContact(model.doc, children))
-        .then(children => this.groupChildrenByType(children))
-        .then(groups => this.buildChildModels(groups, types))
-        .then(childModels => this.markDeceased(childModels))
-        .then(childModels => this.sortChildren(childModels));
-    });
+    const newModel = { ...model, children: [] };
+    return this.contactTypesService
+      .getAll()
+      .then(types => {
+        return this
+          .getChildren(newModel, types, options)
+          .then(children => this.setChildrenMutedState(model, children))
+          .then(children => this.addPrimaryContact(model.doc, children))
+          .then(children => this.groupChildrenByType(children))
+          .then(groups => this.buildChildModels(groups, types))
+          .then(childModels => this.markDeceased(childModels))
+          .then(childModels => this.sortChildren(childModels));
+      });
   }
 
   private addPatientName(reports, contacts) {
@@ -255,7 +268,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private getHeading(report, forms) {
-    const form = _.find(forms, { code: report.form });
+    const form = _find(forms, { code: report.form });
     if (form && form.subjectKey) {
       return this.translateService.instant(form.subjectKey, report);
     }
@@ -269,16 +282,18 @@ export class ContactViewModelGeneratorService {
   }
 
   private addHeading(reports, forms) {
-    const reportIds = _.map(reports, '_id');
-    return this.getDataRecordsService.get(reportIds).then((dataRecords) => {
-      dataRecords.forEach((dataRecord) => {
-        const report = reports.find(report => report._id === dataRecord._id);
-        if (report) {
-          report.heading = this.getHeading(dataRecord, forms);
-        }
+    const reportIds = _map(reports, '_id');
+    return this.getDataRecordsService
+      .get(reportIds)
+      .then((dataRecords) => {
+        dataRecords.forEach((dataRecord) => {
+          const report = reports.find(report => report._id === dataRecord._id);
+          if (report) {
+            report.heading = this.getHeading(dataRecord, forms);
+          }
+        });
+        return reports;
       });
-      return reports;
-    });
   }
 
   private getReports(contactDocs) {
@@ -286,13 +301,15 @@ export class ContactViewModelGeneratorService {
     contactDocs.forEach((doc) => {
       subjectIds.push(registrationUtils.getSubjectIds(doc));
     });
-    const searchOptions = { subjectIds: _.flattenDeep(subjectIds) };
-    return this.searchService.search('reports', searchOptions, { include_docs: true }).then((reports) => {
-      reports.forEach((report) => {
-        report.valid = !report.errors || !report.errors.length;
+    const searchOptions = { subjectIds: _flattenDeep(subjectIds) };
+    return this.searchService
+      .search('reports', searchOptions, { include_docs: true })
+      .then((reports) => {
+        reports.forEach((report) => {
+          report.valid = !report.errors || !report.errors.length;
+        });
+        return reports;
       });
-      return reports;
-    });
   }
 
   loadReports(model, forms) {
@@ -302,11 +319,12 @@ export class ContactViewModelGeneratorService {
         group.contacts.forEach(contact => contacts.push(contact.doc));
       }
     });
-    return this.getReports(contacts)
+    return this
+      .getReports(contacts)
       .then(reports => this.addHeading(reports, forms))
       .then((reports) => {
         this.addPatientName(reports, contacts);
-        reports.sort(this.REPORTED_DATE_COMPARATOR);
+        reports.sort(this.reportedDateComparator);
         return reports;
       });
   }
