@@ -9,11 +9,13 @@ const rulesEmitter = require('./rules-emitter');
 const rulesStateStore = require('./rules-state-store');
 const wireupToProvider = require('./provider-wireup');
 
+const NullFeedbackService = { submit: () => {} };
+
 /**
  * @param {Object} db CHT pouchdb database
  * @param {Object} Feedback CHT Feedback service
  */
-module.exports = (db, Feedback) => {
+module.exports = (db, Feedback=NullFeedbackService) => {
   const provider = pouchdbProvider(db);
   return {
     /**
@@ -79,7 +81,7 @@ module.exports = (db, Feedback) => {
       const cacheIsReset = rulesStateStore.rulesConfigChange(settings);
       if (cacheIsReset) {
         rulesEmitter.shutdown();
-        rulesEmitter.initialize(settings);
+        rulesEmitter.initialize(settings, Feedback);
       }
     },
 
