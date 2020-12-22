@@ -1,4 +1,3 @@
-
 const { expect } = require('chai');
 const moment = require('moment');
 const sinon = require('sinon');
@@ -6,6 +5,8 @@ const rewire = require('rewire');
 
 const { chtDocs, noolsPartnerTemplate, chtRulesSettings } = require('./mocks');
 const rulesEmitter = rewire('../src/rules-emitter');
+
+const feedbackService = { submit: sinon.stub() };
 
 describe('rules-emitter', () => {
   afterEach(() => {
@@ -28,8 +29,11 @@ describe('rules-emitter', () => {
 
     it('throw on invalid rules', async () => {
       const settingsDoc = settingsWithRules(`if (blah) {`);
-      expect(() => rulesEmitter.initialize(settingsDoc)).to.throw();
+      expect(() => rulesEmitter.initialize(settingsDoc, feedbackService)).to.throw();
       expect(rulesEmitter.isEnabled()).to.be.false;
+      expect(feedbackService.submit.callCount).to.equal(1);
+      expect(feedbackService.submit.args[0][0])
+        .to.equal('Configuration error in rules configuration: Error parsing if (blah) {');
     });
 
     it('can initialize twice if shutdown', () => {
@@ -156,6 +160,25 @@ describe('rules-emitter', () => {
       expect(() => rulesEmitter.getEmissionsFor([], [])).to.throw('fake');
       // unsure how to assert that the memory is freed in this scenario
     });
+  });
+
+  it('error thrown during session match is handled', async () => {
+    const rules = noolsPartnerTemplate(`throw Error('blah')`);
+    const contactDoc = { _id: 'contact' };
+    const settingsDoc = settingsWithRules(rules, contactDoc);
+
+    const initialized = rulesEmitter.initialize(settingsDoc, feedbackService);
+    expect(initialized).to.be.true;
+
+    try {
+      await rulesEmitter.getEmissionsFor([{}], []);
+      expect.fail('Error should have been thrown');
+    } catch (err) {
+      expect(err.message).to.equal('blah');
+      expect(feedbackService.submit.callCount).to.equal(1);
+      expect(feedbackService.submit.args[0][0]).to.equal('Configuration error in rules configuration: blah');
+    }
+
   });
 
   it('reports are sorted by reported_date before being pushed into nools', async () => {

@@ -4,11 +4,13 @@ describe('ContactSummary service', () => {
 
   let service;
   const Settings = sinon.stub();
+  const feedbackSubmit = sinon.stub();
 
   beforeEach(() => {
     module('inboxApp');
     module($provide => {
       $provide.value('Settings', Settings);
+      $provide.value('Feedback', { submit: feedbackSubmit });
       $provide.value('$filter', name => {
         if (name !== 'reversify') {
           throw new Error('unknown filter');
@@ -114,6 +116,9 @@ describe('ContactSummary service', () => {
       })
       .catch(function(err) {
         chai.expect(err.message).to.equal('Configuration error');
+        chai.expect(feedbackSubmit.callCount).to.equal(1);
+        chai.expect(feedbackSubmit.args[0][0])
+          .to.equal('Configuration error in contact-summary function: Cannot read property \'field\' of undefined');
       });
   });
 

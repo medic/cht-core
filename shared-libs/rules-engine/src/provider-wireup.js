@@ -27,9 +27,10 @@ module.exports = {
    * @param {Boolean} settings.enableTargets Flag to enable targets
    * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} userDoc User's hydrated contact document
+   * @param {Object} Feedback CHT Feedback service
    */
-  initialize: (provider, settings) => {
-    const isEnabled = rulesEmitter.initialize(settings);
+  initialize: (provider, settings, Feedback) => {
+    const isEnabled = rulesEmitter.initialize(settings, Feedback);
     if (!isEnabled) {
       return Promise.resolve();
     }

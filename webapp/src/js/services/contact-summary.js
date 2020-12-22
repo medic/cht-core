@@ -9,6 +9,7 @@ angular.module('inboxServices').service('ContactSummary',
   function(
     $filter,
     $log,
+    Feedback,
     Settings
   ) {
 
@@ -65,7 +66,8 @@ angular.module('inboxServices').service('ContactSummary',
           try {
             return fn(contact, reports || [], lineage || [], targetDoc);
           } catch (e) {
-            $log.error('Configuration error in contact-summary function: ' + e.message);
+            $log.error('Configuration error in contact-summary function', e);
+            Feedback.submit('Configuration error in contact-summary function: ' + e.message, false);
             throw new Error('Configuration error');
           }
         })

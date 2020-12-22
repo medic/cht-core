@@ -279,4 +279,9 @@ angular.module('inboxServices').factory('RulesEngine', function(
 });
 
 // RulesEngineCore allows for karma to test using a mock shared-lib
-angular.module('inboxServices').factory('RulesEngineCore', function(DB) { return rulesEngineCore(DB()); });
+angular.module('inboxServices').factory('RulesEngineCore', function(
+  DB,
+  Feedback
+) {
+  return rulesEngineCore(DB(), Feedback);
+});

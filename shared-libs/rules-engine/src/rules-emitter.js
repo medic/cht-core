@@ -10,6 +10,7 @@ const nootils = require('medic-nootils');
 const registrationUtils = require('@medic/registration-utils');
 
 let flow;
+let feedbackService;
 
 /**
 * Sets the rules emitter to an uninitialized state.
@@ -27,9 +28,10 @@ module.exports = {
    * @param {Object} settings.rules Rules code from settings doc
    * @param {Object[]} settings.taskSchedules Task schedules from settings doc
    * @param {Object} settings.contact The logged in user's contact document
+   * @param {Object} Feedback CHT Feedback service
    * @returns {Boolean} Success
    */
-  initialize: (settings) => {
+  initialize: (settings, Feedback) => {
     if (flow) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
@@ -37,6 +39,8 @@ module.exports = {
     if (!settings.rules) {
       return false;
     }
+
+    feedbackService = Feedback;
 
     shutdown();
 
@@ -51,6 +55,9 @@ module.exports = {
         },
       });
     } catch (err) {
+      if (feedbackService) {
+        feedbackService.submit('Configuration error in rules configuration: ' + err.message, false);
+      }
       shutdown();
       throw err;
     }
@@ -145,6 +152,9 @@ const startSession = function() {
       session.match(err => {
         session.dispose();
         if (err) {
+          if (feedbackService) {
+            feedbackService.submit('Configuration error in rules configuration: ' + err.message, false);
+          }
           return reject(err);
         }
 

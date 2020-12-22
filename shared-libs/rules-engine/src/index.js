@@ -10,9 +10,10 @@ const rulesStateStore = require('./rules-state-store');
 const wireupToProvider = require('./provider-wireup');
 
 /**
- * @param {Object} db Medic pouchdb database
+ * @param {Object} db CHT pouchdb database
+ * @param {Object} Feedback CHT Feedback service
  */
-module.exports = db => {
+module.exports = (db, Feedback) => {
   const provider = pouchdbProvider(db);
   return {
     /**
@@ -25,7 +26,7 @@ module.exports = db => {
      * @param {Object} settings.contact User's hydrated contact document
      * @param {Object} settings.user User's settings document
      */
-    initialize: (settings) => wireupToProvider.initialize(provider, settings),
+    initialize: (settings) => wireupToProvider.initialize(provider, settings, Feedback),
 
     /**
      * @returns {Boolean} True if the rules engine is enabled and ready for use
