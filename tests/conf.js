@@ -20,7 +20,7 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      '**/api/server.js',
+      '**/api/server.js', 
     ],
     // performance: 'performance/**/*.js'
   },
