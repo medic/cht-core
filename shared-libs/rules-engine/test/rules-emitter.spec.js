@@ -11,6 +11,7 @@ const feedbackService = { submit: sinon.stub() };
 describe('rules-emitter', () => {
   afterEach(() => {
     rulesEmitter.shutdown();
+    feedbackService.submit.reset();
   });
 
   const settingsWithRules = (rules, contact = {}, user= {}) => ({ rules, contact, user });
