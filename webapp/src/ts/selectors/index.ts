@@ -81,7 +81,16 @@ export const Selectors = {
   contactListContains: createSelector(getContactsState, (contactsState) => {
     return (id) => contactsState.contactsById.has(id);
   }),
-
+  getSelectedContact: createSelector(getContactsState, (contactsState) => contactsState.selected),
+  getLoadingSelectedContactChildren: createSelector(
+    getContactsState,
+    (contactsState) => contactsState.contacts
+  ),
+  getLoadingSelectedContactReports: createSelector(
+    getContactsState,
+    (contactsState) => contactsState.loadingSelectedReports
+  ),
+  getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.loadingSummary),
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 
