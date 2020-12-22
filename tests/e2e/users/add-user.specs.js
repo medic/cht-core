@@ -26,6 +26,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
+    addUserModal.waitForFormToDisappear();
     helper.waitUntilReady(usersPage.getUsersList());
     expect(helper.isTextDisplayed(addedUser)).toBe(true);
     expect(helper.isTextDisplayed(fullName)).toBe(true);

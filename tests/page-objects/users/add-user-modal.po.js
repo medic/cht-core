@@ -47,6 +47,7 @@ module.exports = {
     helper.waitUntilReady(getSubmitButton());
     getSubmitButton().click();
   },
+  
   waitForFormToDisappear:() => {
     browser.wait(() => {
       return element(by.css('#edit-user-profile')).isDisplayed()
