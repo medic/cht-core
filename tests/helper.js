@@ -266,5 +266,12 @@ module.exports = {
       browser.wait(() => elm.isDisplayed(), 12000)
     );
   },
+
+  waitForAppToLoad: (timeout=30000) => {
+    const loadingStatus = element(by.css('.loading-status'));
+    handleUpdateModal();
+    return browser.wait(EC.presenceOf(loadingStatus), timeout);
+  },
+
   handleUpdateModal,
 };

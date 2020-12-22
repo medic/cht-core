@@ -43,45 +43,56 @@ const getCancelButton = () => {
 };
 
 module.exports = {
-  submit: async () => {
-    await helper.waitUntilReady(getSubmitButton());
-    await getSubmitButton().click();
+  submit:  () => {
+    helper.waitUntilReady(getSubmitButton());
+    getSubmitButton().click();
+  },
+  waitForFormToDisappear:() => {
+    browser.wait(() => {
+      return element(by.css('#edit-user-profile')).isDisplayed()
+        .then(isDisplayed => {
+          return !isDisplayed;
+        })
+        .catch(() => {
+          return true;
+        });
+    }, 20000);
   },
 
-  cancel: async() => {
-    await helper.waitUntilReady(getCancelButton());
-    await getCancelButton().click();
+  cancel: () => {
+    helper.waitUntilReady(getCancelButton());
+    getCancelButton().click();
   },
 
-  fillForm: async(username, fullName, password, confirmPass=password) => {
-    await helper.waitUntilReady(getSubmitButton()); // wait for form to load
-    await getUsernameField().sendKeys(username);
-    await getFullNameField().sendKeys(fullName);
-    await getEmailField().sendKeys('tester@mobile.org');
-    await getPhoneField().sendKeys('0064212134566');
-    await helper.selectDropdownByValue(getLanguageField(), 'en', 2);
-    await helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
-    await getPasswordField().sendKeys(password);
-    await getConfirmPasswordField().sendKeys(confirmPass);
+  fillForm: (username, fullName, password, confirmPass=password) => {
+    helper.waitUntilReady(getSubmitButton()); // wait for form to load
+    getUsernameField().sendKeys(username);
+    getFullNameField().sendKeys(fullName);
+    getEmailField().sendKeys('tester@mobile.org');
+    getPhoneField().sendKeys('0064212134566');
+    helper.selectDropdownByValue(getLanguageField(), 'en', 2);
+    helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
+    getPasswordField().sendKeys(password);
+    getConfirmPasswordField().sendKeys(confirmPass);
   },
 
-  expectErrorMessagePassword: async(errorMessage) =>{
-    return await helper.getTextFromElement(errorMessagePassword).then(text =>
+  expectErrorMessagePassword: (errorMessage) =>{
+    return  helper.getTextFromElement(errorMessagePassword).then(text =>
       expect(text).toContain(errorMessage));
   },
 
-  expectErrorMessageUserName: async (errorMessage) =>{
-    return await helper.getTextFromElement(errorMessageUserName).then(text =>
+  expectErrorMessageUserName:  (errorMessage) =>{
+    return  helper.getTextFromElement(errorMessageUserName).then(text =>
       expect(text).toContain(errorMessage));
   },
 
-  requireFacility :async () => {
-    return await helper.getTextFromElement(facilitySelector).then(text =>
+  requireFacility : () => {
+    return  helper.getTextFromElement(facilitySelector).then(text =>
       expect(text).toContain('required'));
   },
 
-  requireContact :async () => {
-    return await helper.getTextFromElement(contactSelector).then(text =>
+  requireContact : () => {
+    return  helper.getTextFromElement(contactSelector).then(text =>
       expect(text).toContain('required'));
   },
 
