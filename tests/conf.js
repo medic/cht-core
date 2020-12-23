@@ -29,6 +29,7 @@ const baseConfig = {
       '**/common.specs.js',
       '**/content-security-policy.js',
       'e2e/navigation/*.js',
+      '**/api/server.js',
     ],
     // performance: 'performance/**/*.js'
   },
