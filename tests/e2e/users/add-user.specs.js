@@ -10,7 +10,7 @@ const fullName='Full Tester';
 describe('Add user  : ', () => {
   beforeEach(utils.beforeEach);
   beforeAll(() => {
-    helper.waitForAppToLoad();
+    browser.sleep(10000);//random sleep until travis gets better
     browser.get(utils.getAdminBaseUrl() + 'users');
   });
   afterAll(done =>

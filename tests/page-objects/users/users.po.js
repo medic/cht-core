@@ -26,7 +26,6 @@ module.exports = {
   openAddUserModal: () => {
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
-    browser.wait(helper.isTextDisplayed('This is what you will use to log in to the app.'), 5000);
   },
 
   getUsersList: () => {
