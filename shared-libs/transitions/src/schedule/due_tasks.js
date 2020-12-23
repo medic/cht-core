@@ -32,8 +32,8 @@ const getTemplateContext = (doc) => {
 
   return Promise
     .all([
-      utils.getRegistrations({ id: patientShortcodeId }),
-      utils.getRegistrations({ id: placeShortcodeId }),
+      patientShortcodeId && utils.getRegistrations({ id: patientShortcodeId }),
+      placeShortcodeId && utils.getRegistrations({ id: placeShortcodeId }),
       getContactByShortcode(patientShortcodeId),
       getContactByShortcode(placeShortcodeId),
     ])

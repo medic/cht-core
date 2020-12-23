@@ -68,9 +68,8 @@ module.exports = {
     });
     return ret;
   },
-  /*
-     * Take doc and schedule config and setup schedule tasks.
-     */
+
+  //Take doc and schedule config and setup schedule tasks.
   assignSchedule: function(doc, schedule, patientRegistrations, patient, placeRegistrations, place) {
     const self = module.exports;
     const now = moment(date.getDate());
@@ -92,8 +91,7 @@ module.exports = {
       return false;
     }
 
-    // if start_form property is null, we skip schedule creation, but mark
-    // transtition as complete.
+    // if start_form property is null, we skip schedule creation, but mark transition as complete.
     if (docStart === null) {
       return true;
     }

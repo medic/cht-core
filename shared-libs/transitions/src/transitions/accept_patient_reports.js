@@ -238,11 +238,23 @@ const addMessagesToDoc = (doc, config, registrations, placeRegistrations) => {
   });
 };
 
+const getRegistrations = (contact) => {
+  if (!contact) {
+    return [];
+  }
+  const subjectIds = utils.getSubjectIds(contact);
+  if (!subjectIds || !subjectIds.length) {
+    return [];
+  }
+
+  return utils.getReportsBySubject({ ids: subjectIds, registrations: true });
+};
+
 const handleReport = (doc, config, callback) => {
   return Promise
     .all([
-      utils.getReportsBySubject({ ids: utils.getSubjectIds(doc.patient), registrations: true }),
-      utils.getReportsBySubject({ ids: utils.getSubjectIds(doc.place), registrations: true }),
+      getRegistrations(doc.patient),
+      getRegistrations(doc.place),
     ])
     .then(([patientRegistrations, placeRegistrations]) => {
       const allRegistrations = [...patientRegistrations, ...placeRegistrations];

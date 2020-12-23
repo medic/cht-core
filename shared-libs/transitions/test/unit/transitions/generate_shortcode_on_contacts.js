@@ -15,7 +15,7 @@ describe('generate_shortcode_on_contacts transition', () => {
 
   it('adds patient_id to people', () => {
     sinon.stub(transitionUtils, 'getUniqueId').resolves('something');
-    transition.onMatch({});
+    transition.onMatch({ doc: {} });
     assert.equal(transitionUtils.getUniqueId.callCount, 1);
   });
 

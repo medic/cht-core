@@ -2233,18 +2233,64 @@ describe('registration', () => {
       return transition.triggers.clear_schedule({ doc: {}, params: [] });
     });
 
-    it('should query utils.getReportsBySubject with correct params', () => {
+    it('should query utils.getReportsBySubject with correct params with patient', () => {
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
-      sinon.stub(utils, 'getSubjectIds').returns(['uuid', 'patient_id']);
+      sinon.stub(utils, 'getSubjectIds')
+        .returns(['uuid', 'patient_id'])
+        .withArgs(undefined).returns([]);
       const doc = { patient: { _id: 'uuid', patient_id: 'patient_id' } };
       sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
 
       return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
-        utils.getSubjectIds.callCount.should.equal(1);
+        utils.getSubjectIds.callCount.should.equal(2);
         utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
         utils.getReportsBySubject.callCount.should.equal(1);
         utils.getReportsBySubject.args[0].should.deep.equal([ {
           ids: ['uuid', 'patient_id'],
+          registrations: true
+        } ]);
+      });
+    });
+
+    it('should query utils.getReportsBySubject with correct params with place', () => {
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds')
+        .returns(['uuid', 'place_id'])
+        .withArgs(undefined).returns([]);
+      const doc = { place: { _id: 'uuid', place_id: 'place_id' } };
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+
+      return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
+        utils.getSubjectIds.callCount.should.equal(2);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([ {
+          ids: ['uuid', 'place_id'],
+          registrations: true
+        } ]);
+      });
+    });
+
+    it('should query utils.getReportsBySubject with correct params with patient and place', () => {
+      const doc = {
+        patient: { _id: 'uuid', patient_id: 'patient_id' },
+        place: { _id: 'place_uuid', place_id: 'place_id' },
+      };
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(utils, 'getSubjectIds')
+        .withArgs(doc.patient).returns(['uuid', 'patient_id'])
+        .withArgs(doc.place).returns(['place_uuid', 'place_id']);
+      sinon.stub(acceptPatientReports, 'silenceRegistrations').callsArgWith(3, null);
+
+      return transition.triggers.clear_schedule({ doc, params: [] }).then(() => {
+        utils.getSubjectIds.callCount.should.equal(2);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        utils.getSubjectIds.args[1].should.deep.equal([doc.place]);
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([ {
+          ids: ['uuid', 'patient_id', 'place_uuid', 'place_id'],
           registrations: true
         } ]);
       });
@@ -2280,7 +2326,7 @@ describe('registration', () => {
         .catch((err) => {
           err.should.deep.equal({ some: 'error' });
           utils.getReportsBySubject.callCount.should.equal(1);
-          utils.getSubjectIds.callCount.should.equal(1);
+          utils.getSubjectIds.callCount.should.equal(2);
           acceptPatientReports.silenceRegistrations.callCount.should.equal(0);
         });
     });
@@ -2295,7 +2341,7 @@ describe('registration', () => {
         .catch(err => {
           err.should.deep.equal({ some: 'err' });
           utils.getReportsBySubject.callCount.should.equal(1);
-          utils.getSubjectIds.callCount.should.equal(1);
+          utils.getSubjectIds.callCount.should.equal(2);
           acceptPatientReports.silenceRegistrations.callCount.should.equal(1);
         });
     });

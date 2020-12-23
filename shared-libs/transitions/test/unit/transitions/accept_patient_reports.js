@@ -159,7 +159,7 @@ describe('accept_patient_reports', () => {
 
     it('adding silence_type to handleReport calls _silenceReminders', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3);
-      const doc = { _id: 'a', fields: { patient_id: 'x' } };
+      const doc = { _id: 'a', fields: { patient_id: 'x' }, patient: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
         { _id: 'a' }, // should not be silenced as it's the doc being processed
@@ -180,7 +180,7 @@ describe('accept_patient_reports', () => {
 
     it('adds registration_id property', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
-      const doc = { _id: 'z', fields: { patient_id: 'x' } };
+      const doc = { _id: 'z', fields: { patient_id: 'x' }, patient: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
         { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
@@ -195,7 +195,7 @@ describe('accept_patient_reports', () => {
 
     it('if there are multiple registrations uses the latest one', done => {
       sinon.stub(transition, '_silenceReminders').callsArgWith(3, null, true);
-      const doc = { _id: 'z', fields: { patient_id: 'x' } };
+      const doc = { _id: 'z', fields: { patient_id: 'x' }, patient: { patient_id: 'x' } };
       const config = { silence_type: 'x', messages: [] };
       const registrations = [
         { _id: 'a', reported_date: '2017-02-05T09:23:07.853Z' },
@@ -360,6 +360,7 @@ describe('accept_patient_reports', () => {
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
+        patient: { patient_id: 'x' },
         reported_date: '2018-09-28T19:45:00.000Z',
       };
       const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
@@ -422,11 +423,13 @@ describe('accept_patient_reports', () => {
       const doc1 = {
         _id: 'z',
         fields: { patient_id: 'x' },
+        patient: { patient_id: 'x' },
         reported_date: '2018-09-28T20:45:00.000Z',
       };
       const doc2 = {
         _id: 'z',
         fields: { patient_id: 'x' },
+        patient: { patient_id: 'x' },
         reported_date: '2018-09-28T21:45:00.000Z',
       };
       const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
@@ -498,6 +501,7 @@ describe('accept_patient_reports', () => {
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
+        patient: { patient_id: 'x' },
         reported_date: '2018-09-28T20:45:00.000Z',
       };
       const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
@@ -560,6 +564,7 @@ describe('accept_patient_reports', () => {
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
+        patient: { patient_id: 'x' },
         reported_date: '2018-12-15T18:45:00.000Z',
       };
       const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
@@ -632,6 +637,7 @@ describe('accept_patient_reports', () => {
       const doc = {
         _id: 'z',
         fields: { patient_id: 'x' },
+        patient: { patient_id: 'x' },
         reported_date: '2019-01-20T18:45:00.000Z',
       };
       const config = { silence_type: 'x', silence_for: '8 days', messages: [] };
@@ -700,10 +706,16 @@ describe('accept_patient_reports', () => {
     });
 
     it('should catch utils.getReportsBySubject errors', done => {
+      const doc = {
+        _id: 'z',
+        fields: { patient_id: 'x' },
+        patient: { patient_id: 'x' },
+        reported_date: '2019-01-20T18:45:00.000Z',
+      };
       sinon.stub(utils, 'getReportsBySubject').rejects({ some: 'error' });
       sinon.stub(utils, 'getSubjectIds').returns(['a', 'b']);
 
-      transition._handleReport({}, {}, (err, complete) => {
+      transition._handleReport(doc, {}, (err, complete) => {
         (!!complete).should.equal(false);
         err.should.deep.equal({ some: 'error' });
         utils.getReportsBySubject.callCount.should.equal(1);
