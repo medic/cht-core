@@ -12,6 +12,7 @@ const chai = require('chai');
 chai.config.truncateThreshold = 0;
 
 const baseConfig = {
+  SELENIUM_PROMISE_MANAGER: false,
   params:{
     pathToConfig: false
   },
