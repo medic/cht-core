@@ -24,6 +24,7 @@ const baseConfig = {
       '**/sentinel/queue.spec.js',
       '**/report-date-filter.js',
       '**/login.spec.js',
+      '**/docs-by-replication-key-view.js',
       '**/api/routing.js',
       '**/infodocs.js',
       '**/common.specs.js',
