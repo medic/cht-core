@@ -390,14 +390,19 @@ describe('messageUtils', () => {
       const doc = { name: 'alice', fields: { name: 'bob' } };
       const patient = { name: 'charles' };
       const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient, registrations });
+      const place = { name: 'charles area' };
+      const placeRegistrations = [{ name: 'mary', fields: { name: 'zeewa' } }];
+
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place, placeRegistrations });
       actual.name.should.equal('charles');
     });
 
     it('should pick place data second', () => {
       const doc = { name: 'alice', fields: { name: 'bob' } };
       const place = { name: 'charles' };
-      const actual = utils._extendedTemplateContext(doc, { place });
+      const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
+      const placeRegistrations = [{ name: 'mary', fields: { name: 'zeewa' } }];
+      const actual = utils._extendedTemplateContext(doc, { place, registrations, placeRegistrations });
       actual.name.should.equal('charles');
     });
 
@@ -406,7 +411,8 @@ describe('messageUtils', () => {
       const patient = { };
       const place = { };
       const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place });
+      const placeRegistrations = [{ name: 'mary', fields: { name: 'zeewa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place, placeRegistrations });
       actual.name.should.equal('bob');
     });
 
@@ -415,25 +421,48 @@ describe('messageUtils', () => {
       const patient = { };
       const place = { };
       const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place });
+      const placeRegistrations = [{ name: 'mary', fields: { name: 'zeewa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place, placeRegistrations });
       actual.name.should.equal('alice');
     });
 
-    it('picks registration[0].fields properties fifth', () => {
+    it('picks registrations[0].fields properties fifth', () => {
       const doc = { };
       const patient = { };
       const place = { };
       const registrations = [{ name: 'doug', fields: { name: 'elisa' } }];
-      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place });
+      const placeRegistrations = [{ name: 'mary', fields: { name: 'zeewa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place, placeRegistrations });
       actual.name.should.equal('elisa');
     });
 
-    it('picks registration[0].fields properties sixth', () => {
+    it('picks registrations[0] properties sixth', () => {
       const doc = { };
       const patient = { };
       const registrations = [{ name: 'doug' }];
-      const actual = utils._extendedTemplateContext(doc, { patient, registrations });
+      const placeRegistrations = [{ name: 'mary', fields: { name: 'zeewa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, placeRegistrations });
       actual.name.should.equal('doug');
+    });
+
+    it('picks placeRegistrations[0].fields properties seventh', () => {
+      const doc = { };
+      const patient = { };
+      const place = { };
+      const registrations = [];
+      const placeRegistrations = [{ name: 'mary', fields: { name: 'zeewa' } }];
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place, placeRegistrations });
+      actual.name.should.equal('zeewa');
+    });
+
+    it('picks placeRegistrations[0] properties eighth', () => {
+      const doc = { };
+      const patient = { };
+      const place = { };
+      const registrations = [];
+      const placeRegistrations = [{ name: 'mary' }];
+      const actual = utils._extendedTemplateContext(doc, { patient, registrations, place, placeRegistrations });
+      actual.name.should.equal('mary');
     });
 
     it('should allow registrations without a patient', () => {
@@ -696,6 +725,48 @@ describe('messageUtils', () => {
         const content = { message: 'sms' };
         const recipient = '1234';
         const context = { patient: { name: 'a' } };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal(undefined);
+      });
+
+      it('should add an error when placeRegistrations are provided without a place', () => {
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { placeRegistrations: [{ _id: 'a' }] };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal('messages.errors.place.missing');
+      });
+
+      it('should not add an error when no patient, no place and no registrations are provided', () => {
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { registrations: false };
+
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages[0].message).to.equal('sms');
+        expect(messages[0].to).to.equal('1234');
+        expect(messages[0].error).to.equal(undefined);
+      });
+
+      it('should not add an error when place is provided', () => {
+        const config = {};
+        const translate = null;
+        const doc = {};
+        const content = { message: 'sms' };
+        const recipient = '1234';
+        const context = { place: { name: 'a' } };
 
         const messages = utils.generate(config, translate, doc, content, recipient, context);
         expect(messages[0].message).to.equal('sms');
