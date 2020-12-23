@@ -47,7 +47,7 @@ module.exports = {
     helper.waitUntilReady(getSubmitButton());
     getSubmitButton().click();
   },
-  
+
   waitForFormToDisappear:() => {
     browser.wait(() => {
       return element(by.css('#edit-user-profile')).isDisplayed()
@@ -67,6 +67,7 @@ module.exports = {
 
   fillForm: (username, fullName, password, confirmPass=password) => {
     helper.waitUntilReady(getSubmitButton()); // wait for form to load
+    helper.waitUntilReady(getUsernameField());
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
     getEmailField().sendKeys('tester@mobile.org');
