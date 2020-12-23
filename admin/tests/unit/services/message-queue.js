@@ -527,21 +527,21 @@ describe('MessageQueue service', function() {
           due: 300
         }
       }, {
-        doc: { _id: 'report_id12', reported_date: 100, fields: { place_id: 'place3333' } },
+        doc: { _id: 'report_id13', reported_date: 100, fields: { place_id: 'place3333' } },
         value: {
           scheduled_sms: { translation_key: 'sms13', recipient: 'recipient' },
           task: { translation_key: 'task3', state: 'pending' },
           due: 300
         }
       }, {
-        doc: { _id: 'report_id12', reported_date: 100, place_id: 'place3333' },
+        doc: { _id: 'report_id14', reported_date: 100, place_id: 'place3333' },
         value: {
           scheduled_sms: { translation_key: 'sms13', recipient: 'recipient' },
           task: { translation_key: 'task3', state: 'pending' },
           due: 300
         }
       }, {
-        doc: { _id: 'report_id13', reported_date: 100, place_id: 'place4444' },
+        doc: { _id: 'report_id15', reported_date: 100, place_id: 'place4444' },
         value: {
           scheduled_sms: { translation_key: 'sms14', recipient: 'recipient' },
           task: { translation_key: 'task3', state: 'pending' },
@@ -561,11 +561,11 @@ describe('MessageQueue service', function() {
         .withArgs('medic-client/contacts_by_reference')
         .resolves({
           rows: [
-            { key: '1111', value: 'patient1' },
-            { key: '2222', value: 'patient2' },
-            { key: 'place1111', value: 'place1' },
-            { key: 'place2222', value: 'place2' },
-            { key: 'place3333', value: 'place3' },
+            { key: ['shortcode', '1111'], id: 'patient1' },
+            { key: ['shortcode', '2222'], id: 'patient2' },
+            { key: ['shortcode', 'place1111'], id: 'place1' },
+            { key: ['shortcode', 'place2222'], id: 'place2' },
+            { key: ['shortcode', 'place3333'], id: 'place3' },
           ],
         });
 
@@ -593,8 +593,7 @@ describe('MessageQueue service', function() {
         .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient' }}]});
 
       return service.query('tab').then(result => {
-        chai.expect(result.messages.length).to.equal(9);
-
+        chai.expect(result.messages.length).to.equal(15);
         chai.expect(query.callCount).to.equal(6);
         chai.expect(query.args[2]).to.deep.equal([
           'medic-client/contacts_by_reference',
@@ -686,7 +685,7 @@ describe('MessageQueue service', function() {
         }
       }, {
         doc: {
-          _id: 'report_id5',
+          _id: 'report_id6',
           reported_date: 200,
           fields: { place_id: 'place2222' }
         },
@@ -728,7 +727,8 @@ describe('MessageQueue service', function() {
         { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
         { key: 'place1111', doc: { type: 'invalid', place_id: 'place1111' } },
         { key: 'place1111', doc: { type: 'valid', place_id: 'place1111' } },
-        { key: 'place2222', doc: { type: 'invalid', place_id: 'place2222' } },
+        { key: 'place2222', doc: { type: 'valid', place_id: 'place2222' } },
+        { key: 'place2222', doc: { type: 'valid', place_id: 'place2222' } },
         { key: 'place2222', doc: { type: 'invalid', place_id: 'place2222' } },
       ]});
 
@@ -768,8 +768,8 @@ describe('MessageQueue service', function() {
         ]});
 
       return service.query('tab').then((result) => {
-        chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(8);
-        chai.expect(utils.messages.generate.callCount).to.equal(3);
+        chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(13);
+        chai.expect(utils.messages.generate.callCount).to.equal(6);
 
         chai.expect(utils.messages.generate.args[0].slice(2)).to.deep.equal([
           {
@@ -791,7 +791,11 @@ describe('MessageQueue service', function() {
               { type: 'valid', patient_id: '1111' },
               { type: 'valid', patient_id: '1111' },
               { type: 'valid', patient_id: '1111' }
-            ]
+            ],
+            place_id: undefined,
+            place_uuid: undefined,
+            placeRegistrations: [],
+            place: undefined,
           }
         ]);
 
@@ -811,7 +815,11 @@ describe('MessageQueue service', function() {
             patient_id: '2222',
             patient: { _id: 'patient2', patient_id: '2222', name: 'patient two' },
             patient_uuid: 'patient2',
-            registrations: [{ type: 'valid', patient_id: '2222' }]
+            registrations: [{ type: 'valid', patient_id: '2222' }],
+            place_id: undefined,
+            place_uuid: undefined,
+            placeRegistrations: [],
+            place: undefined,
           }
         ]);
 
@@ -831,7 +839,11 @@ describe('MessageQueue service', function() {
             patient_id: '3333',
             patient: { _id: 'patient3', patient_id: '3333', name: 'patient three' },
             patient_uuid: 'patient3',
-            registrations: []
+            registrations: [],
+            place_id: undefined,
+            place_uuid: undefined,
+            placeRegistrations: [],
+            place: undefined,
           }
         ]);
 
@@ -848,11 +860,72 @@ describe('MessageQueue service', function() {
           },
           'recipient3',
           {
+            patient_id: undefined,
+            patient_uuid: undefined,
+            patient: undefined,
             place_id: 'place1111',
             place: { _id: 'place1', place_id: 'place1111', name: 'place one' },
             place_uuid: 'place1',
             registrations: [],
-            placeRegistrations: [],
+            placeRegistrations: [
+              { type: 'valid', place_id: 'place1111' },
+            ],
+          }
+        ]);
+
+        chai.expect(utils.messages.generate.args[4].slice(2)).to.deep.equal([
+          {
+            _id: 'report_id5',
+            reported_date: 200,
+            fields: { patient_id: '2222', place_id: 'place2222' },
+            contact: undefined,
+          },
+          {
+            translationKey: 'sms4',
+            message: undefined
+          },
+          'recipient3',
+          {
+            patient_id: '2222',
+            patient_uuid: 'patient2',
+            patient: { _id: 'patient2', patient_id: '2222', name: 'patient two' },
+            place_id: 'place2222',
+            place: { _id: 'place2', place_id: 'place2222', name: 'place two' },
+            place_uuid: 'place2',
+            registrations: [
+              { type: 'valid', patient_id: '2222' },
+            ],
+            placeRegistrations: [
+              { type: 'valid', place_id: 'place2222' },
+              { type: 'valid', place_id: 'place2222' },
+            ],
+          }
+        ]);
+
+        chai.expect(utils.messages.generate.args[5].slice(2)).to.deep.equal([
+          {
+            _id: 'report_id6',
+            reported_date: 200,
+            fields: { place_id: 'place2222' },
+            contact: undefined,
+          },
+          {
+            translationKey: 'sms4',
+            message: undefined
+          },
+          'recipient3',
+          {
+            patient_id: undefined,
+            patient_uuid: undefined,
+            patient: undefined,
+            place_id: 'place2222',
+            place: { _id: 'place2', place_id: 'place2222', name: 'place two' },
+            place_uuid: 'place2',
+            registrations: [],
+            placeRegistrations: [
+              { type: 'valid', place_id: 'place2222' },
+              { type: 'valid', place_id: 'place2222' },
+            ],
           }
         ]);
 
@@ -894,7 +967,40 @@ describe('MessageQueue service', function() {
             due: 300,
             link: false,
             error: false
-          }
+          },
+          {
+            record: { id: 'report_id4', reportedDate: 200 },
+            recipient: 'recipient 3',
+            task: 'task3',
+            state: 'pending',
+            stateHistory: undefined,
+            content: 'sms4',
+            due: 300,
+            link: false,
+            error: false
+          },
+          {
+            record: { id: 'report_id5', reportedDate: 200 },
+            recipient: 'recipient 3',
+            task: 'task3',
+            state: 'pending',
+            stateHistory: undefined,
+            content: 'sms4',
+            due: 300,
+            link: false,
+            error: false
+          },
+          {
+            record: { id: 'report_id6', reportedDate: 200 },
+            recipient: 'recipient 3',
+            task: 'task3',
+            state: 'pending',
+            stateHistory: undefined,
+            content: 'sms4',
+            due: 300,
+            link: false,
+            error: false
+          },
         ]);
       });
     });

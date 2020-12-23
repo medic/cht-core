@@ -32,68 +32,47 @@ angular.module('services').factory('MessageQueue',
     'use strict';
     'ngInject';
 
-    const findSummary = function(summaries, message) {
+    const findSummary = (summaries, message) => {
       if (!message.sms || !message.sms.to) {
         return;
       }
 
-      const summary = summaries.rows.find(function(summary) {
-        return summary.value && summary.value.phone === message.sms.to;
-      });
+      const summary = summaries.rows.find((summary) => summary.value && summary.value.phone === message.sms.to);
 
       return summary && summary.value;
     };
 
-    const findPatientUuid = function(contactsByReference, message) {
-      const patient = contactsByReference.rows.find(function(row) {
-        return row.key[1] === message.context.patient_id;
-      });
-
+    const findPatientUuid = (contactsByReference, message) => {
+      const patient = contactsByReference.rows.find((row) => row.key[1] === message.context.patient_id);
       return patient && patient.id || message.context.patient_uuid;
     };
 
-    const findPlaceUuid = function(contactsByReference, message) {
-      const patient = contactsByReference.rows.find(function(row) {
-        return row.key[1] === message.context.patient_id;
-      });
-
-      return patient && patient.id || message.context.patient_uuid;
+    const findPlaceUuid = (contactsByReference, message) => {
+      const place = contactsByReference.rows.find((row) => row.key[1] === message.context.place_id);
+      return place && place.id || message.context.place_uuid;
     };
 
-    const findRegistrations = function(registrations, message, shortcodeField = 'patient_id') {
+    const findRegistrations = (registrations, message, shortcodeField = 'patient_id') => {
       return registrations
-        .filter(function(row) {
-          return row.key === message.context[shortcodeField];
-        })
-        .map(function(row) {
-          return row.doc;
-        });
+        .filter((row) => row.key === message.context[shortcodeField])
+        .map((row) => row.doc);
     };
 
-    const findContactById = function(hydratedContacts, contactId) {
-      const contact = hydratedContacts.find(function(hydratedContact) {
-        return hydratedContact.id === contactId;
-      });
-
+    const findContactById = (hydratedContacts, contactId) => {
+      const contact = hydratedContacts.find((hydratedContact) => hydratedContact.id === contactId);
       return contact && contact.doc;
     };
 
-    const getValidRegistrations = function(registrations, settings) {
-      return registrations.rows.filter(function(row) {
-        return MessageQueueUtils.registrations.isValidRegistration(row.doc, settings);
-      });
+    const getValidRegistrations = (registrations, settings) => {
+      return registrations.rows.filter((row) => MessageQueueUtils.registrations.isValidRegistration(row.doc, settings));
     };
 
-    const compactUnique = function(array) {
-      return array.filter(function(item, idx, self) {
-        return item && self.indexOf(item) === idx;
-      });
+    const compactUnique = (array) => {
+      return array.filter((item, idx, self) => item && self.indexOf(item) === idx);
     };
 
-    const getRecipients = function(messages) {
-      const phoneNumbers = compactUnique(messages.map(function(row) {
-        return row.sms && row.sms.to;
-      }));
+    const getRecipients = (messages) => {
+      const phoneNumbers = compactUnique(messages.map((row) => row.sms && row.sms.to));
 
       if (!phoneNumbers.length) {
         return messages;
@@ -101,15 +80,12 @@ angular.module('services').factory('MessageQueue',
 
       return DB({ remote: true })
         .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
-        .then(function(contactsByPhone) {
-          const ids = contactsByPhone.rows.map(function(row) {
-            return row.id;
-          });
-
+        .then((contactsByPhone) => {
+          const ids = contactsByPhone.rows.map((row) => row.id);
           return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
         })
-        .then(function(summaries) {
-          messages.forEach(function(message) {
+        .then((summaries) => {
+          messages.forEach((message) => {
             message.recipient = findSummary(summaries, message);
           });
 
@@ -117,9 +93,9 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    const getSubjectsAndRegistrations = function(messages, settings) {
-      const shortcodes = compactUnique(messages.reduce(function(shortcodes, message) {
-        if (!message.sms) {
+    const getSubjectsAndRegistrations = (messages, settings) => {
+      const shortcodes = compactUnique(messages.reduce((shortcodes, message) => {
+        if (message.sms) {
           // don't process items which already have generated messages
           return shortcodes;
         }
@@ -131,19 +107,17 @@ angular.module('services').factory('MessageQueue',
         return Promise.resolve(messages);
       }
 
-      const referenceKeys = shortcodes.map(function(shortcode) {
-        return [ 'shortcode', shortcode ];
-      });
+      const referenceKeys = shortcodes.map((shortcode) => [ 'shortcode', shortcode ]);
 
       return $q
         .all([
           DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
           DB({ remote: true }).query('medic-client/registered_patients', { keys: shortcodes, include_docs: true }),
         ])
-        .then(function([contactsByReference, registrations]) {
+        .then(([contactsByReference, registrations]) => {
           registrations = getValidRegistrations(registrations, settings);
 
-          messages.forEach(function(message) {
+          messages.forEach((message) => {
             message.context.patient_uuid = findPatientUuid(contactsByReference, message);
             message.context.place_uuid = findPlaceUuid(contactsByReference, message);
             message.context.registrations = findRegistrations(registrations, message, 'patient_id');
@@ -154,11 +128,15 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    const hydrateContacts = function(messages) {
+    const hydrateContacts = (messages) => {
       let contactIds = [];
-      messages.forEach(function(message) {
+      messages.forEach((message) => {
         if (!message.sms) {
-          contactIds.push(message.context.patient_uuid, message.doc.contact && message.doc.contact._id);
+          contactIds.push(
+            message.context.patient_uuid,
+            message.doc.contact && message.doc.contact._id,
+            message.context.place_uuid
+          );
         }
       });
       contactIds = compactUnique(contactIds);
@@ -168,8 +146,8 @@ angular.module('services').factory('MessageQueue',
 
       return MessageQueueUtils.lineage
         .fetchLineageByIds(contactIds)
-        .then(function(docList) {
-          const hydratedDocs = docList.map(function(docs) {
+        .then((docList) => {
+          const hydratedDocs = docList.map((docs) => {
             const doc = docs.shift();
             return {
               id: doc._id,
@@ -177,7 +155,7 @@ angular.module('services').factory('MessageQueue',
             };
           });
 
-          messages.forEach(function(message) {
+          messages.forEach((message) => {
             message.context.patient = findContactById(hydratedDocs, message.context.patient_uuid);
             message.context.place = findContactById(hydratedDocs, message.context.place_uuid);
             message.doc.contact = findContactById(hydratedDocs, message.doc.contact && message.doc.contact._id);
@@ -187,12 +165,10 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    const generateScheduledMessages = function(messages, settings) {
-      const translate = function(key, locale) {
-        return $translate.instant(key, null, 'no-interpolation', locale, null);
-      };
+    const generateScheduledMessages = (messages, settings) => {
+      const translate = (key, locale) => $translate.instant(key, null, 'no-interpolation', locale, null);
 
-      messages.forEach(function(message) {
+      messages.forEach((message) => {
         if (message.sms) {
           return;
         }
@@ -215,7 +191,7 @@ angular.module('services').factory('MessageQueue',
       return messages;
     };
 
-    const getTaskDisplayName = function(task) {
+    const getTaskDisplayName = (task) => {
       if (task.translation_key) {
         return $translate.instant(task.translation_key, { group: task.group });
       }
@@ -223,8 +199,8 @@ angular.module('services').factory('MessageQueue',
       return task.type && task.type + (task.group ? ':' + task.group : '' ) || false;
     };
 
-    const formatMessages = function(messages) {
-      return messages.map(function(message) {
+    const formatMessages = (messages) => {
+      return messages.map((message) => {
         return {
           record: {
             id: message.doc._id,
@@ -242,7 +218,7 @@ angular.module('services').factory('MessageQueue',
       });
     };
 
-    const getParams = function(tab, skip, limit, descending) {
+    const getParams = (tab, skip, limit, descending) => {
       const list = {
         limit: limit || 25,
         skip: skip || 0,
@@ -295,23 +271,23 @@ angular.module('services').factory('MessageQueue',
     };
 
     return {
-      loadTranslations: function() {
+      loadTranslations: () => {
         return Languages()
-          .then(function(languages) {
-            return languages && $q.all(languages.map(function(language) {
+          .then((languages) => {
+            return languages && $q.all(languages.map((language) => {
               return language &&
                      language.code &&
                      language.code !== 'en' &&
                      $translate('admin.message.queue', {}, null, 'admin.message.queue', language.code);
             }));
           })
-          .catch(function(err) {
+          .catch((err) => {
             $log.error('Error fetching languages', err);
             throw(err);
           });
       },
 
-      query: function(tab, skip, limit, descending) {
+      query: (tab, skip, limit, descending) => {
         const params = getParams(tab, skip, limit, descending);
         return $q
           .all([
@@ -319,9 +295,8 @@ angular.module('services').factory('MessageQueue',
             DB({ remote: true }).query('medic-admin/message_queue', params.list),
             DB({ remote: true }).query('medic-admin/message_queue', params.count)
           ])
-          .then(function(results) {
-            const settings = results[0];
-            const messages = results[1].rows.map(function(row) {
+          .then(([settings, messagesList, messagesCount]) => {
+            const messages = messagesList.rows.map((row) => {
               const extras = {
                 doc: row.doc,
                 context: {
@@ -335,17 +310,14 @@ angular.module('services').factory('MessageQueue',
 
             return getSubjectsAndRegistrations(messages, settings)
               .then(hydrateContacts)
-              .then(function(messages) {
-                return generateScheduledMessages(messages, settings);
-              })
+              .then((messages) => generateScheduledMessages(messages, settings))
               .then(getRecipients)
-              .then(function(messages) {
+              .then((messages) => {
                 return {
                   messages: formatMessages(messages),
-                  total: results[2].rows.length ? results[2].rows[0].value : 0
+                  total: messagesCount.rows.length ? messagesCount.rows[0].value : 0
                 };
               });
-
           });
       }
     };
