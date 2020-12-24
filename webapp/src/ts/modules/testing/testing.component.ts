@@ -83,7 +83,7 @@ export class TestingComponent implements OnInit {
     Purger
       .purge(localDb, userCtx)
       .on('progress', progress => console.info('Purge progress', progress))
-      .catch(err => console.error('Error attempting to purge', err))
+      .catch(err => console.error('Error attempting to purge:', err))
       .then(() => this.purging = false);
   }
 

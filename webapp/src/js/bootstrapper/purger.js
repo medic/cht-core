@@ -7,6 +7,11 @@ const META_BATCHES = 10; // purge 10 * 100 documents on every startup
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
 const purgeFetch = (url) => {
+  if (!opts) {
+    alert('Purge is not enabled.\nCheck that purge\'s options are set and user have the correct roles assigned.');
+    return Promise.reject('Purge\'s options are missing.');
+  }
+
   return fetch(url, { headers: opts.remote_headers, credentials: 'same-origin' })
     .then(res => res.json())
     .then(res => {
