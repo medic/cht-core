@@ -1,0 +1,28 @@
+FROM alpine:3.10.2
+
+RUN apk add --update --no-cache \
+  build-base \
+  nodejs-current \
+  curl \
+  npm \
+  tzdata \
+  libxslt \
+  openssl \
+  git \
+  bash \ 
+  jq
+
+WORKDIR /app
+
+COPY ./shared-libs ./shared-libs
+COPY ./api ./api
+
+COPY ./api/src/public/ /app/api/build/public/
+
+RUN cd api && npm install --verbose --global
+
+RUN npm install -g horticulturalist
+
+EXPOSE 5988
+
+ENTRYPOINT ["/bin/bash", "/app/api/docker-entrypoint.sh"]
