@@ -39,7 +39,18 @@ export class ContactSaveService {
     }, null);
   }
 
-  private prepareSubmittedDocsForSave(original, submitted) {
+  private prepareSubmittedDocsForSave(original, submitted, type) {
+    if (original) {
+      _defaults(submitted.doc, original);
+    } else if (this.contactTypesService.isHardcodedType(type)) {
+      // default hierarchy - maintain backwards compatibility
+      submitted.doc.type = type;
+    } else {
+      // configured hierarchy
+      submitted.doc.type = 'contact';
+      submitted.doc.contact_type = type;
+    }
+
     const doc = this.prepare(submitted.doc);
 
     return this
@@ -90,6 +101,42 @@ export class ContactSaveService {
     return this.CONTACT_FIELD_NAMES.includes(name) ? this.extractLineageService.extract(value) : value;
   }
 
+  private prepareNewSibling(doc, fieldName, siblings) {
+    const preparedSibling = this.prepare(siblings[fieldName]);
+
+    // by default all siblings are "person" types but can be overridden
+    // by specifying the type and contact_type in the form
+    if (!preparedSibling.type) {
+      preparedSibling.type = 'person';
+    }
+
+    if (preparedSibling.parent === 'PARENT') {
+      delete preparedSibling.parent;
+      // Cloning to avoid the circular references
+      doc[fieldName] = { ...preparedSibling };
+      // Because we're assigning the actual doc reference, the dbService.get.get
+      // to attach the full parent to the doc will also attach it here.
+      preparedSibling.parent = doc;
+    } else {
+      doc[fieldName] = this.extractIfRequired(fieldName, preparedSibling);
+    }
+
+    return preparedSibling;
+  }
+
+  private getContact(doc, fieldName, contactId) {
+    return this.dbService
+      .get()
+      .get(contactId)
+      .then((dbFieldValue) => {
+        // In a correctly configured form one of these will be the
+        // parent. This must happen before we attempt to run
+        // ExtractLineage on any siblings or repeats, otherwise they
+        // will extract an incomplete lineage
+        doc[fieldName] = this.extractIfRequired(fieldName, dbFieldValue);
+      });
+  }
+
   // Mutates the passed doc to attach prepared siblings, and returns all
   // prepared siblings to be persisted.
   // This will (on a correctly configured form) attach the full parent to
@@ -111,41 +158,12 @@ export class ContactSaveService {
         return;
       }
       if (value === 'NEW') {
-        const preparedSibling = this.prepare(siblings[fieldName]);
-
-        // by default all siblings are "person" types but can be overridden
-        // by specifying the type and contact_type in the form
-        if (!preparedSibling.type) {
-          preparedSibling.type = 'person';
-        }
-
-        if (preparedSibling.parent === 'PARENT') {
-          delete preparedSibling.parent;
-          // Cloning to avoid the circular references
-          doc[fieldName] = { ...preparedSibling };
-          // Because we're assigning the actual doc reference, the dbService.get.get
-          // to attach the full parent to the doc will also attach it here.
-          preparedSibling.parent = doc;
-        } else {
-          doc[fieldName] = this.extractIfRequired(fieldName, preparedSibling);
-        }
-
+        const preparedSibling = this.prepareNewSibling(doc, fieldName, siblings);
         preparedSiblings.push(preparedSibling);
       } else if (original?.[fieldName]?._id === value) {
         doc[fieldName] = original[fieldName];
       } else {
-        promiseChain = promiseChain.then(() => {
-          return this.dbService
-            .get()
-            .get(value)
-            .then((dbFieldValue) => {
-              // In a correctly configured form one of these will be the
-              // parent. This must happen before we attempt to run
-              // ExtractLineage on any siblings or repeats, otherwise they
-              // will extract an incomplete lineage
-              doc[fieldName] = this.extractIfRequired(fieldName, dbFieldValue);
-            });
-        });
+        promiseChain = promiseChain.then(() => this.getContact(doc, fieldName, value));
       }
     });
 
@@ -158,17 +176,7 @@ export class ContactSaveService {
       .then(() => docId ? this.dbService.get().get(docId) : null)
       .then(original => {
         const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
-        if (original) {
-          _defaults(submitted.doc, original);
-        } else if (this.contactTypesService.isHardcodedType(type)) {
-          // default hierarchy - maintain backwards compatibility
-          submitted.doc.type = type;
-        } else {
-          // configured hierarchy
-          submitted.doc.type = 'contact';
-          submitted.doc.contact_type = type;
-        }
-        return this.prepareSubmittedDocsForSave(original, submitted);
+        return this.prepareSubmittedDocsForSave(original, submitted, type);
       })
       .then((preparedDocs) => {
         const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);

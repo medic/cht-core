@@ -186,41 +186,43 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     let formId;
     let titleKey;
     const typeId = contact?.contact_type || contact?.type || this.routeSnapshot.params?.type;
-    return this.contactTypesService.get(typeId).then(type => {
-      if (!type) {
-        console.error(`Unknown contact type "${typeId}"`);
-        return;
-      }
+    return this.contactTypesService
+      .get(typeId)
+      .then(type => {
+        if (!type) {
+          console.error(`Unknown contact type "${typeId}"`);
+          return;
+        }
 
-      if (contact) { // editing
-        this.contact = contact;
-        this.contactId = contact._id;
-        titleKey = type.edit_key;
-        formId = type.edit_form || type.create_form;
-      } else { // adding
-        this.contact = {
-          type: 'contact',
-          contact_type: this.routeSnapshot.params.type,
-          parent: this.routeSnapshot.params.parent_id
-        };
-        this.contactId = null;
-        formId = type.create_form;
-        titleKey = type.create_key;
-      }
+        if (contact) { // editing
+          this.contact = contact;
+          this.contactId = contact._id;
+          titleKey = type.edit_key;
+          formId = type.edit_form || type.create_form;
+        } else { // adding
+          this.contact = {
+            type: 'contact',
+            contact_type: this.routeSnapshot.params?.type,
+            parent: this.routeSnapshot.params?.parent_id
+          };
+          this.contactId = null;
+          formId = type.create_form;
+          titleKey = type.create_key;
+        }
 
-      this.translationsLoadedSubscription?.unsubscribe();
-      this.translationsLoadedSubscription = this.store
-        .select(Selectors.getTranslationsLoaded)
-        .subscribe((loaded) => {
-          if (loaded) {
-            this.translateHelperService
-              .get(titleKey)
-              .then((title) => this.globalActions.setTitle(title));
-          }
-        });
+        this.translationsLoadedSubscription?.unsubscribe();
+        this.translationsLoadedSubscription = this.store
+          .select(Selectors.getTranslationsLoaded)
+          .subscribe((loaded) => {
+            if (loaded) {
+              this.translateHelperService
+                .get(titleKey)
+                .then((title) => this.globalActions.setTitle(title));
+            }
+          });
 
-      return formId;
-    });
+        return formId;
+      });
   }
 
   private markFormEdited() {
