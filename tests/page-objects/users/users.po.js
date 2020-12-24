@@ -6,7 +6,7 @@ const getAddUserButton = () => {
 
 const waitPageToLoad = () => {
   const EC = protractor.ExpectedConditions;
-  browser.wait(EC.textToBePresentInElement(element.all(by.css('.col-xs-2.ng-binding')).first(), 'admin'),12000);
+  browser.wait(EC.textToBePresentInElement(element.all(by.css('.col-xs-2.ng-binding')).first(), 'admin'),30000);
 };
 
 module.exports = {
