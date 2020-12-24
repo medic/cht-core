@@ -1,0 +1,21 @@
+FROM alpine:3.10.2
+
+RUN apk add --update --no-cache \
+  build-base \
+  nodejs-current \
+  curl \
+  npm \
+  tzdata \
+  libxslt \
+  git
+
+WORKDIR /app
+
+COPY ./sentinel ./sentinel
+
+RUN cd sentinel && npm ci --global
+COPY ./shared-libs ./sentinel/node_modules/@medic
+
+ENV NODE_PATH=/app/sentinel/node_modules
+
+ENTRYPOINT export COUCH_URL="http://medic-sentinel:$(cat /opt/couchdb/etc/local.d/passwd/medic-sentinel)@haproxy:5984/medic" && node /app/sentinel/server.js

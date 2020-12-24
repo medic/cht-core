@@ -14,12 +14,12 @@ RUN apk add --update --no-cache \
 
 WORKDIR /app
 
-COPY ./shared-libs ./shared-libs
 COPY ./api ./api
 
 COPY ./api/src/public/ /app/api/build/public/
 
-RUN cd api && npm install --verbose --global
+RUN cd api && npm ci --verbose --global
+COPY ./shared-libs ./api/node_modules/@medic
 
 RUN npm install -g horticulturalist
 
