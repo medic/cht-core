@@ -215,7 +215,7 @@ They live in [tests](tests). Run them with grunt: `grunt e2e`. Docker is require
 
 ## Integration tests
 
-[Travis](https://travis-ci.org/medic/medic) runs `grunt ci` every time some new code is pushed to github.
+[Travis](https://travis-ci.org/medic/medic) runs `grunt ci-e2e` every time some new code is pushed to github.
 
 ## Build documentation
 
