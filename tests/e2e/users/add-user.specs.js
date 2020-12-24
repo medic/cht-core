@@ -11,6 +11,7 @@ describe('Add user  : ', () => {
   beforeEach(utils.beforeEach);
   beforeAll(() => {
     browser.sleep(10000);//random sleep until travis gets better
+    helper.waitForAppToLoad();
     browser.get(utils.getAdminBaseUrl() + 'users');
   });
   afterAll(done =>
@@ -28,8 +29,8 @@ describe('Add user  : ', () => {
     addUserModal.submit();
     addUserModal.waitForFormToDisappear();
     helper.waitUntilReady(usersPage.getUsersList());
-    expect(helper.isTextDisplayed(addedUser)).toBe(true);
-    expect(helper.isTextDisplayed(fullName)).toBe(true);
+    usersPage.waitPageToLoad();
+    usersPage.expectUser(addedUser, fullName);
   });
 
   it('should reject passwords shorter than 8 characters', () => {

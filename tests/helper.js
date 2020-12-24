@@ -270,7 +270,7 @@ module.exports = {
   waitForAppToLoad: (timeout=20000) => {
     const loadingStatus = element(by.css('.loading-status'));
     handleUpdateModal();
-    return browser.wait(EC.presenceOf(loadingStatus), timeout);
+    return browser.wait(EC.textToBePresentInElement(loadingStatus, 'No messages found'), timeout);
   },
 
   handleUpdateModal,
