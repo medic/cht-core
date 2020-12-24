@@ -76,6 +76,11 @@ export class TestingComponent implements OnInit {
   }
 
   purge() {
+    if (this.sessionService.isOnlineOnly()) {
+      console.debug('Purge feature is not available for Admin or online users.');
+      return;
+    }
+
     this.purging = true;
     const localDb = this.dbService.get({ remote: false });
     const userCtx = this.sessionService.userCtx();
