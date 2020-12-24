@@ -5,6 +5,7 @@
  *
  *   - persist setting to a cookie
  *   - put PouchDB in debug mode
+ *   - display console.debug() output throughout the app (See Feedback Service).
  *
  * Note: When debugging, make sure to enable the logs by selecting 'verbose' and 'info' options
  * in the console of the browser's developer tools.
@@ -17,7 +18,7 @@ import { CookieService } from 'ngx-cookie-service';
   providedIn: 'root'
 })
 export class DebugService {
-  readonly cookieName = 'medic-webapp-debug'
+  readonly cookieName = 'medic-webapp-debug';
 
   constructor(private cookieService: CookieService) { }
 

@@ -5,6 +5,7 @@ import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { environment } from '@mm-environments/environment';
+import { DebugService } from '@mm-services/debug.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ export class FeedbackService {
     private dbService:DbService,
     private sessionService:SessionService,
     private versionService:VersionService,
+    private debugService: DebugService
   ) {
   }
 
@@ -74,9 +76,10 @@ export class FeedbackService {
     });
 
     const debugOriginal = this.options.console.debug;
+    const isDebugEnabled = this.debugService.get();
     this.options.console.debug = (...args) => {
-      // only log debug messages in development settings
-      if (!environment.production) {
+      // only log debug messages in development settings or when manually enabled from Testing page
+      if (isDebugEnabled || !environment.production) {
         debugOriginal.apply(this.options.console, args);
       }
     };
