@@ -267,8 +267,9 @@ module.exports = {
     );
   },
 
-  waitForAppToLoad: (timeout=20000) => {
+  waitForAppToLoad: (timeout=20000,sleep = 5000) => {
     const loadingStatus = element(by.css('.loading-status'));
+    browser.sleep(sleep);//at least a second for page to stabilize. Longer on travis
     handleUpdateModal();
     return browser.wait(EC.textToBePresentInElement(loadingStatus, 'No messages found'), timeout);
   },

@@ -8,17 +8,6 @@ const fullName='Full Tester';
 
 
 describe('Add user  : ', () => {
-  let originalTimeout;
-
-  beforeEach(function() {
-    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000; //travis takes way too long
-  });
-
-  afterEach(function() {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-  });
-  
   afterAll(done =>
     utils.request(`/_users/${addedUser}`)
       .then(doc => utils.request({
@@ -29,14 +18,14 @@ describe('Add user  : ', () => {
       .then(() => utils.afterEach(done)));
 
   it('should add user with valid password', () => {
-    helper.waitForAppToLoad(50000);
+    helper.waitForAppToLoad();
     browser.get(utils.getAdminBaseUrl() + 'users');
     usersPage.openAddUserModal();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
     addUserModal.waitForFormToDisappear();
     helper.waitUntilReady(usersPage.getUsersList());
-    usersPage.waitPageToLoad();
+    usersPage.waitPageToLoad(5000);
     usersPage.expectUser(addedUser, fullName);
   });
 

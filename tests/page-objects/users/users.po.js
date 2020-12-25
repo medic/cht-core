@@ -4,9 +4,9 @@ const getAddUserButton = () => {
   return element(by.id('add-user'));
 };
 
-const waitPageToLoad = () => {
+const waitPageToLoad = (timeout=12000) => {
   const EC = protractor.ExpectedConditions;
-  browser.wait(EC.textToBePresentInElement(element.all(by.css('.col-xs-2.ng-binding')).first(), 'admin'),30000);
+  browser.wait(EC.textToBePresentInElement(element.all(by.css('.col-xs-2.ng-binding')).first(), 'admin'),timeout);
 };
 
 module.exports = {

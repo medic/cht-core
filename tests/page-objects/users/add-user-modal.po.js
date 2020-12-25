@@ -70,7 +70,7 @@ module.exports = {
     const description=element.all(by.css('.help-block.ng-scope')).first();
     const EC = protractor.ExpectedConditions;
     const text = 'This is what you will use to log in to the app.';
-    browser.wait(EC.textToBePresentInElement(description, text), 10000);
+    browser.wait(EC.textToBePresentInElement(description, text), 20000);
     helper.getTextFromElement(description).then(text =>
       expect(text).toBe('This is what you will use to log in to the app.'))
       .catch(error => error);
