@@ -75,7 +75,7 @@ module.exports = {
     // helper.getTextFromElement(description).then(text =>
     //   expect(text).toBe('This is what you will use to log in to the app.'))
     //   .catch(error => error);
-    //browser.wait(helper.isTextDisplayed('This is what you will use to log in to the app.'),20000);
+    browser.wait(helper.isTextDisplayed('This is what you will use to log in to the app.'),30000);
     helper.waitUntilReady(getUsernameField());
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
