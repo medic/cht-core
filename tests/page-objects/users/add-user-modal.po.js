@@ -57,7 +57,7 @@ module.exports = {
         .catch(() => {
           return true;
         });
-    }, 40000);
+    }, 60000);
   },
 
   cancel: () => {
@@ -67,6 +67,7 @@ module.exports = {
 
   fillForm: (username, fullName, password, confirmPass=password) => {
     helper.waitUntilReady(getSubmitButton());
+    browser.sleep(5000);
     const description=element.all(by.css('.help-block.ng-scope')).first();
     const EC = protractor.ExpectedConditions;
     const text = 'This is what you will use to log in to the app.';
