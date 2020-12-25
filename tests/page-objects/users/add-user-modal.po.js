@@ -68,13 +68,14 @@ module.exports = {
   fillForm: (username, fullName, password, confirmPass=password) => {
     helper.waitUntilReady(getSubmitButton());
     browser.sleep(5000);
-    const description=element.all(by.css('.help-block.ng-scope')).first();
-    const EC = protractor.ExpectedConditions;
-    const text = 'This is what you will use to log in to the app.';
-    browser.wait(EC.textToBePresentInElement(description, text), 40000);
-    helper.getTextFromElement(description).then(text =>
-      expect(text).toBe('This is what you will use to log in to the app.'))
-      .catch(error => error);
+    // const description=element.all(by.css('.help-block.ng-scope')).first();
+    // const EC = protractor.ExpectedConditions;
+    // const text = 'This is what you will use to log in to the app.';
+    // browser.wait(EC.textToBePresentInElement(description, text), 40000);
+    // helper.getTextFromElement(description).then(text =>
+    //   expect(text).toBe('This is what you will use to log in to the app.'))
+    //   .catch(error => error);
+    //browser.wait(helper.isTextDisplayed('This is what you will use to log in to the app.'),20000);
     helper.waitUntilReady(getUsernameField());
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
