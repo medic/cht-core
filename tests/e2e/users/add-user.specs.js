@@ -8,6 +8,16 @@ const fullName='Full Tester';
 
 
 describe('Add user  : ', () => {
+  let originalTimeout;
+
+  beforeEach(function() {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;//travis slow
+  });
+
+  afterEach(function() {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+  });
   afterAll(done =>
     utils.request(`/_users/${addedUser}`)
       .then(doc => utils.request({
