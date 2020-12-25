@@ -29,9 +29,8 @@ export const routes: Routes = [
         component: ContactsDeceasedComponent,
       },
       {
-        path: 'add',
+        path: 'add/:type',
         component: ContactsEditComponent,
-        data: { name: 'contact.add' },
         canDeactivate: [ContactAddRouteGuardProvider],
       },
       {
@@ -44,7 +43,6 @@ export const routes: Routes = [
         component: ContactsEditComponent,
         canDeactivate: [ContactAddRouteGuardProvider],
       }
-
     ],
   },
 ];
