@@ -25,7 +25,7 @@ describe('Add user  : ', () => {
     addUserModal.submit();
     addUserModal.waitForFormToDisappear();
     helper.waitUntilReady(usersPage.getUsersList());
-    usersPage.waitPageToLoad(5000);
+    usersPage.waitPageToLoad();
     usersPage.expectUser(addedUser, fullName);
   });
 

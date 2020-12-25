@@ -1,10 +1,11 @@
 const helper = require('../../helper');
+const utils = require('../../utils');
 
 const getAddUserButton = () => {
   return element(by.id('add-user'));
 };
 
-const waitPageToLoad = (timeout=12000) => {
+const waitPageToLoad = (timeout=20000) => {
   const EC = protractor.ExpectedConditions;
   browser.wait(EC.textToBePresentInElement(element.all(by.css('.col-xs-2.ng-binding')).first(), 'admin'),timeout);
 };
@@ -29,6 +30,8 @@ module.exports = {
   },
 
   openAddUserModal: () => {
+    waitPageToLoad();
+    browser.get(utils.getAdminBaseUrl() + 'users');
     waitPageToLoad();
     helper.waitElementToBeClickable(getAddUserButton());
     helper.clickElement(getAddUserButton());
