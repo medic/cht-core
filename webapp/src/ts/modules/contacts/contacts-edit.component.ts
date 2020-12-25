@@ -125,7 +125,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         this.router.navigate(['/contacts']);
       } else {
         const parentContactId = this.routeSnapshot.params.id || this.routeSnapshot.params.parent_id;
-        this.router.navigate(['/contacts', parentContactId]);
+        if (parentContactId) {
+          this.router.navigate(['/contacts', parentContactId]);
+        } else {
+          this.router.navigate(['/contacts']);
+        }
       }
     });
   }
@@ -203,7 +207,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           this.contact = {
             type: 'contact',
             contact_type: this.routeSnapshot.params?.type,
-            parent: this.routeSnapshot.params?.parent_id
+            parent: this.routeSnapshot.params?.parent_id || '',
           };
           this.contactId = null;
           formId = type.create_form;
