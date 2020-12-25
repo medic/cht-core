@@ -224,7 +224,7 @@ describe('ContactsEdit component', () => {
       expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
         '#contact-form',
         { _id: 'random_create', the: 'form' },
-        { random: { type: 'contact', contact_type: 'random', parent: undefined } },
+        { random: { type: 'contact', contact_type: 'random', parent: '' } },
       ]);
 
       routeSnapshot = { params: { type: 'other' } };
@@ -239,7 +239,7 @@ describe('ContactsEdit component', () => {
       expect(enketoService.renderContactForm.args[1]).to.deep.include.ordered.members([
         '#contact-form',
         { _id: 'other_create' },
-        { other: { type: 'contact', contact_type: 'other', parent: undefined } },
+        { other: { type: 'contact', contact_type: 'other', parent: '' } },
       ]);
     }));
   });
@@ -346,7 +346,7 @@ describe('ContactsEdit component', () => {
         expect(enketoService.renderContactForm.args[0]).to.deep.include.ordered.members([
           '#contact-form',
           { _id: 'district_create_form_id', the: 'form' },
-          { district_hospital: { type: 'contact', contact_type: 'district_hospital', parent: undefined } },
+          { district_hospital: { type: 'contact', contact_type: 'district_hospital', parent: '' } },
         ]);
         expect(component.contentError).to.equal(false);
       });
