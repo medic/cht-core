@@ -42,7 +42,7 @@ const getCancelButton = () => {
   return element(by.className('btn cancel'));
 };
 
-const waitForTranslation = (timeout = 20000) => {
+const waitForTranslation = (timeout = 50000) => {
   const description=element.all(by.css('.help-block.ng-scope')).first();
   const EC = protractor.ExpectedConditions;
   const usernameHelp = 'This is what you will use to log in to the app.';
