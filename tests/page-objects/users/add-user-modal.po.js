@@ -42,14 +42,14 @@ const getCancelButton = () => {
   return element(by.className('btn cancel'));
 };
 
-const waitForTranslation= () => {
+const waitForTranslation = (timeout = 20000) => {
   const description=element.all(by.css('.help-block.ng-scope')).first();
   const EC = protractor.ExpectedConditions;
   const usernameHelp = 'This is what you will use to log in to the app.';
   return browser
     .wait(
-      EC.presenceOf(description),
-      12000,
+      EC.textToBePresentInElement(description, usernameHelp),
+      timeout,
       'Element taking too long to appear in the DOM.Let us retry'
     )
     .then(() => {
@@ -119,5 +119,7 @@ module.exports = {
     return  helper.getTextFromElement(contactSelector).then(text =>
       expect(text).toContain('required'));
   },
+
+  waitForTranslation,
 
 };

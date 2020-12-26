@@ -31,6 +31,7 @@ describe('Add user  : ', () => {
     helper.waitForAppToLoad();
     browser.get(utils.getAdminBaseUrl() + 'users');
     usersPage.openAddUserModal();
+    addUserModal.waitForTranslation();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
     addUserModal.waitForFormToDisappear();
@@ -41,6 +42,7 @@ describe('Add user  : ', () => {
 
   it('should reject passwords shorter than 8 characters', () => {
     usersPage.openAddUserModal();
+    addUserModal.waitForTranslation();
     addUserModal.fillForm('user0', 'Not Saved', 'short');
     addUserModal.submit();
     addUserModal.expectErrorMessagePassword('The password must be at least 8 characters long.');
@@ -49,6 +51,7 @@ describe('Add user  : ', () => {
 
   it('should reject weak passwords', () => {
     usersPage.openAddUserModal();
+    addUserModal.waitForTranslation();
     addUserModal.fillForm('user0', 'Not Saved', 'weakPassword');
     addUserModal.submit();
     addUserModal.expectErrorMessagePassword('The password is too easy to guess.');
@@ -57,6 +60,7 @@ describe('Add user  : ', () => {
 
   it('should reject non-matching passwords', () => {
     usersPage.openAddUserModal();
+    addUserModal.waitForTranslation();
     addUserModal.fillForm('user0', 'Not Saved', '%4wbbygxkgdwvdwT65', 'otherpass');
     addUserModal.submit();
     addUserModal.expectErrorMessagePassword('Passwords must match');
@@ -65,6 +69,7 @@ describe('Add user  : ', () => {
 
   it('should require password', () => {
     usersPage.openAddUserModal();
+    addUserModal.waitForTranslation();
     addUserModal.fillForm('user0', 'Not Saved', '');
     addUserModal.submit();
     addUserModal.expectErrorMessagePassword('required');
@@ -73,6 +78,7 @@ describe('Add user  : ', () => {
 
   it('should require username',  () => {
     usersPage.openAddUserModal();
+    addUserModal.waitForTranslation();
     addUserModal.fillForm('', 'Not Saved', '%4wbbygxkgdwvdwT65');
     addUserModal.submit();
     addUserModal.expectErrorMessageUserName('required');
@@ -81,6 +87,7 @@ describe('Add user  : ', () => {
 
   it('should require place and contact for restricted user', () => {
     usersPage.openAddUserModal();
+    addUserModal.waitForTranslation();
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
     helper.selectDropdownByValue(element(by.id('role')), 'string:district_admin');
     addUserModal.submit();
