@@ -42,6 +42,27 @@ const getCancelButton = () => {
   return element(by.className('btn cancel'));
 };
 
+const waitForTranslation= () => {
+  const description=element.all(by.css('.help-block.ng-scope')).first();
+  const EC = protractor.ExpectedConditions;
+  const usernameHelp = 'This is what you will use to log in to the app.';
+  return browser
+    .wait(
+      EC.presenceOf(description),
+      12000,
+      'Element taking too long to appear in the DOM.Let us retry'
+    )
+    .then(() => {
+      return description.getText().then(text => {
+        if(text === 'user.username.help'){
+          console.log('form not yet translated... ' + text);
+          return browser.sleep(10000);
+        }
+        expect(text).toBe(usernameHelp);
+      });
+    });
+};
+
 module.exports = {
   submit:  () => {
     helper.waitUntilReady(getSubmitButton());
@@ -67,20 +88,7 @@ module.exports = {
 
   fillForm: (username, fullName, password, confirmPass=password) => {
     helper.waitUntilReady(getSubmitButton());
-    browser.sleep(10000);
-    const description=element.all(by.css('.help-block.ng-scope')).first();
-    const EC = protractor.ExpectedConditions;
-    const usernameHelp = 'This is what you will use to log in to the app.';
-    helper.getTextFromElement(description).then(text =>{
-      if(text === 'user.username.help'){
-        console.log('form not yet translated...');
-        browser.wait(EC.textToBePresentInElement(description, usernameHelp), 20000,
-          'Form not translated');
-      }}).catch(error => error);
-
-    // expect(text).toBe('This is what you will use to log in to the app.'))
-    // .catch(error => error);
-    //browser.wait(helper.isTextDisplayed('This is what you will use to log in to the app.'),30000);
+    waitForTranslation();
     helper.waitUntilReady(getUsernameField());
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
