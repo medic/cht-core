@@ -1,4 +1,4 @@
-FROM alpine:3.10.2
+FROM alpine:3.12.3
 
 RUN apk add --update --no-cache \
   build-base \
@@ -18,7 +18,7 @@ COPY ./api ./api
 
 COPY ./api/src/public/ /app/api/build/public/
 
-RUN cd api && npm ci --verbose --global
+RUN cd api && npm ci --verbose #--global
 COPY ./shared-libs ./api/node_modules/@medic
 
 RUN npm install -g horticulturalist

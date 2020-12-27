@@ -1,0 +1,97 @@
+version: '3.7'
+
+## Usage
+## export COUCHDB_USER=admin && export COUCHDB_PASSWORD=admin123
+## docker-compose up 
+## cntrl+c to exit
+## docker-compose down
+## docker volume rm medic-data medic-couchconfig
+
+## docker-compose up
+## http://localhost
+
+services:
+
+  couchdb:
+    container_name: medic-couchdb
+    image: medicmobile/couchdb:2.3.1-test12
+    environment:
+      - COUCHDB_USER=${COUCHDB_USER}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+    # https://hub.docker.com/_/couchdb
+    volumes:
+      - medic-data:/opt/couchdb/data
+      - medic-couchconfig:/opt/couchdb/etc/local.d
+    networks:
+      - medic-net
+
+  medic-api:
+    container_name: medic-api
+    image: medicmobile/medic-api:3.10.0-test6
+    environment:
+      COUCHDB_SERVICE_NAME: couchdb
+      COUCH_NODE_NAME: "couchdb@127.0.0.1"
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      HORTI_BOOTSTRAP_VERSION: 3.10.0
+      NODE_ENV: production
+      HAPROXY_SVC: haproxy
+    #volumes:
+    #  - medic-couchconfig:/opt/couchdb/etc/local.d
+    networks:
+      - medic-net
+    depends_on:
+      - haproxy
+
+ # medic-sentinel:
+ #   container_name: medic-sentinel
+ #   image: medicmobile/medic-sentinel:3.10.0-test4
+ #   environment:
+ #     COUCHDB_SERVICE_NAME: couchdb
+ #     COUCH_NODE_NAME: "couchdb@127.0.0.1"
+ #     COUCHDB_USER: ${COUCHDB_USER}
+ #     COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+ #     HAPROXY_SVC: haproxy
+ #     API_SVC_NAME: medic-api
+    #volumes:
+    #  - medic-couchconfig:/opt/couchdb/etc/local.d
+ #   networks:
+ #     - medic-net
+ #   depends_on:
+ #     - medic-api
+ #   restart: unless-stopped
+
+  haproxy:
+    container_name: haproxy
+    image: medicmobile/haproxy:rc-1.17
+    environment:
+      HA_PASSWORD: ${COUCHDB_PASSWORD}
+      COUCHDB_HOST: couchdb
+    networks:
+      - medic-net
+    depends_on:
+      - couchdb
+    restart: unless-stopped
+
+  nginx:
+    container_name: nginx
+    image: medicmobile/nginx:test14
+    environment:
+      DOCKER_NETWORK_NAME: haproxy
+    networks:
+      - medic-net
+    depends_on:
+      - medic-api
+    ports:
+      - 80:80
+      - 443:443
+
+volumes:
+  medic-data:
+    name: medic-data
+  medic-couchconfig:
+    name: medic-couchconfig
+
+networks:
+  medic-net:
+    name: medic-net

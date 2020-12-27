@@ -39,9 +39,9 @@ is_existing_user()
   local user="$1"
   shift 1
 
-  local userdoc=$(curl -X GET http://$COUCHDB_USER:$(cat /opt/couchdb/etc/local.d/passwd/$COUCHDB_USER)@$COUCHDB_SERVICE_NAME:5985/_users/org.couchdb.user:$user | jq '._id?')
+  local userdoc=$(curl -X GET http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985/_users/org.couchdb.user:$user | jq '._id?')
 
-  if [ "$userdoc" = \"org.couchdb.user:medic-api\" ]; then
+  if [ "$userdoc" = \"org.couchdb.user:$user\" ]; then
     return 0
   else
     return 1
@@ -140,7 +140,7 @@ create_couchdb_admin()
 
   # generate password and create user
   local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;)
-  curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985/_node/couchdb@127.0.0.1/_config/admins/$user -d '"$passwd"'
+  curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985/_node/couchdb@127.0.0.1/_config/admins/$user -d '"'"$passwd"'"'
   mkdir -p /srv/storage/$user/passwd
   echo "$passwd" > /srv/storage/$user/passwd/$user
 
@@ -182,8 +182,6 @@ create_system_databases()
 
 postinstall()
 {
-  wait_for_couchdb
-
   info 'Creating system databases' &&
   create_system_databases \
     || fatal 'Failed to create one or more system databases'
@@ -213,11 +211,12 @@ postinstall()
   fi
 
   info 'New CouchDB Administrative User: medic'
-  info "New CouchDB Administrative Password: `read_password medic`"
+  #info "New CouchDB Administrative Password: `read_password medic`"
 
   info 'CouchDB first run setup successful'
 }
 
+wait_for_couchdb
 if is_setup_needed; then
     info 'Running CouchDB Setup'
     postinstall "$@"
