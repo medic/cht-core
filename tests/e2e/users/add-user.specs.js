@@ -4,7 +4,7 @@ const helper = require('../../helper');
 const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
 const addedUser = 'fulltester' + new Date().getTime();
-const fullName = 'Bede Ngaruko';
+const fullName = 'Full Tester';
 const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
 describe('Add user  : ', () => {
