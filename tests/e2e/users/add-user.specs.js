@@ -3,7 +3,7 @@ const usersPage = require('../../page-objects/users/users.po.js');
 const helper = require('../../helper');
 const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
-const addedUser = 'fulltester' + new Date().getTime();
+const addedUser = 'fulltester';
 const fullName = 'Full Tester';
 const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
@@ -31,7 +31,7 @@ describe('Add user  : ', () => {
           return true;
         });
     }, 2000);
-    helper.waitForAngularComplete();
+    browser.waitForAngular();
     expect(helper.isTextDisplayed(addedUser)).toBe(true);
     expect(helper.isTextDisplayed(fullName)).toBe(true);
   });
