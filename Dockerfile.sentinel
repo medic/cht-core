@@ -1,4 +1,4 @@
-FROM alpine:3.10.2
+FROM alpine:3.12.3
 
 RUN apk add --update --no-cache \
   build-base \
@@ -7,15 +7,17 @@ RUN apk add --update --no-cache \
   npm \
   tzdata \
   libxslt \
+  bash \
+  jq    \
   git
 
 WORKDIR /app
 
 COPY ./sentinel ./sentinel
 
-RUN cd sentinel && npm ci --global
+RUN cd sentinel && npm ci --verbose
 COPY ./shared-libs ./sentinel/node_modules/@medic
 
 ENV NODE_PATH=/app/sentinel/node_modules
 
-ENTRYPOINT export COUCH_URL="http://medic-sentinel:$(cat /opt/couchdb/etc/local.d/passwd/medic-sentinel)@haproxy:5984/medic" && node /app/sentinel/server.js
+ENTRYPOINT ["/bin/bash", "/app/sentinel/docker-entrypoint.sh"]

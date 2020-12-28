@@ -15,7 +15,7 @@ process
     process.exit(1);
   });
 
-const module.export.waitForApi = () =>
+const waitForApi = () =>
   new Promise(resolve => {
     //
     // This waits forever, with no escape hatch, becayse there is no way currently

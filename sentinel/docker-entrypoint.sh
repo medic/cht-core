@@ -1,8 +1,39 @@
 #!/bin/bash
 
+info()
+{
+    echo "Info: $*"
+}
+
+warn()
+{
+    echo "Warning: $*"
+}
+
+fatal()
+{
+    echo "Fatal: $*"
+}
+
 wait_for_api()
 {
-    node -p "require('./server.js').waitForApi()"
+    # Can't seem to import the waitForApi from server.js. Essentially we are going to do the same thing in bash.
+  local n=20
+
+  while [ "$n" -gt 0 ]; do
+    curl "http://$API_SVC_NAME:5988/setup/poll" &>/dev/null
+    [ "$?" -eq 0 ] && return 0
+    sleep 10
+    info "Waiting for API to be Ready..."
+    n=$[$n-1]
+  done
+
+  return 1
+}
+
+get_couchdb_url()
+{
+  echo "http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985"
 }
 
 is_setup_needed()
@@ -13,9 +44,11 @@ is_setup_needed()
 is_existing_user()
 {
   local user="$1"
+  local url="`get_couchdb_url`"
+  local id="org.couchdb.user:$user"
   shift 1
 
-  local userdoc=$(curl -X GET http://$user:$(cat /srv/storage/$user/passwd/$user)@$COUCHDB_SERVICE_NAME:5985/_users/org.couchdb.user:$user | jq '._id?')
+  local userdoc=$(curl -X GET $url/_users/$id | jq '._id?')
 
   if [ "$userdoc" = \"org.couchdb.user:$user\" ]; then
     return 0
@@ -49,17 +82,15 @@ create_couchdb_put()
 create_couchdb_admin()
 {
   local user="$1"
-#  local passwd="$2"
-  shift 2
+  local url="`get_couchdb_url`"
 
   # generate password and create user
-  local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;)
-  curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985/_node/couchdb@127.0.0.1/_config/admins/$user -d '"$passwd"'
+  local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${2:-32};)
+  curl -X PUT $url/_node/couchdb@127.0.0.1/_config/admins/$user -d '"'"$passwd"'"'
   mkdir -p /srv/storage/$user/passwd
   echo "$passwd" > /srv/storage/$user/passwd/$user
 
   # Create user document for administrator
-  local url="`get_couchdb_url`" &&
   local id="org.couchdb.user:$user" &&
   \
   local doc="{
@@ -88,20 +119,16 @@ postinstall()
     fatal "Failed to create one or more service accounts"
   fi
 
-  if [ "$?" -ne 0 ]; then
-    fatal "Failed to create interactive admin account"
-  fi
-
   info 'New CouchDB Administrative User: medic-sentinel'
 
   info 'Medic-Sentinel first run setup successful'
 }
 
+wait_for_api
 if is_setup_needed; then
     info 'Setting up Medic-Sentinel..'
     postinstall "$@"
 fi
 
-wait_for_api
 export COUCH_URL=http://medic-sentinel:$(cat /srv/storage/medic-sentinel/passwd/medic-sentinel)@$HAPROXY_SVC:5984/medic
 node /app/sentinel/server.js
