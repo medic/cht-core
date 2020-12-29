@@ -247,7 +247,7 @@ describe('Purging on login', () => {
 
   const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
-  it('Logging in as a restricted user with configured purge rules should not download purged docs', () => {
+  it('Logging in as a restricted user with configured purge rules should not download purged docs', async () => {
     utils.resetBrowser();
     commonElements.goToLoginPage();
     loginPage.login(restrictedUserName, restrictedPass);
@@ -258,7 +258,7 @@ describe('Purging on login', () => {
 
     let purgeDate;
 
-    return getPurgeLog()
+    return await getPurgeLog()
       .then(result => {
         // purge ran but after initial replication, nothing to purge
         chai.expect(result._rev).to.equal('0-1');
@@ -272,31 +272,31 @@ describe('Purging on login', () => {
         });
         purgeDate = result.date;
       })
-      .then(() => {
+      .then(async() => {
         utils.resetBrowser();
         commonElements.calm();
         browser.waitForAngular();
-        return getPurgeLog();
+        return await getPurgeLog();
       })
       .then(result => {
         // purge didn't run again on next refresh
         chai.expect(result._rev).to.equal('0-1');
         chai.expect(result.date).to.equal(purgeDate);
       })
-      .then(() => {
+      .then(async() => {
         browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
         commonElements.sync();
         commonElements.goToReports();
         reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
 
-        browser.wait(() => {
+        browser.wait(async() => {
           let seq;
           const purgeSettings = {
             fn: purgeFn.toString(),
             text_expression: 'every 1 seconds',
             run_every_days: '0'
           };
-          return utils.revertSettings(true)
+          return await utils.revertSettings(true)
             .then(() => sentinelUtils.getCurrentSeq())
             .then(result => seq = result)
             .then(() => utils.updateSettings({ purge: purgeSettings}, true))
@@ -308,7 +308,7 @@ describe('Purging on login', () => {
         commonElements.sync();
         utils.refreshToGetNewSettings();
         commonElements.calm();
-        return getPurgeLog();
+        return await getPurgeLog();
       })
       .then(result => {
         // purge ran again and it purged the bad form
