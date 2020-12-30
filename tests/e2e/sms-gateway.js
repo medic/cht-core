@@ -158,11 +158,11 @@ describe('sms-gateway api', () => {
 
     it('- shows content', async () => {
       //LHS
-      smsGatewayPo.showMessageList();
-      smsGatewayPo.expectMessage('+64271234567', 'hello');
+      await smsGatewayPo.showMessageList();
+      await smsGatewayPo.expectMessage('+64271234567', 'hello');
       // RHS
-      smsGatewayPo.showMessageDetails();
-      smsGatewayPo.expectMessageDetails('+64271234567', 'hello', 'received');
+      await smsGatewayPo.showMessageDetails();
+      await smsGatewayPo.expectMessageDetails('+64271234567', 'hello', 'received');
 
     });
   });
@@ -200,15 +200,15 @@ describe('sms-gateway api', () => {
         .catch(done.fail);
     });
 
-    it('- shows content', () => {
+    it('- shows content', async() => {
 
       smsGatewayPo.showReport();
       
       // tasks
-      expect(smsGatewayPo.sentTaskState()).toBe('sent');
-      expect(smsGatewayPo.deliveredTaskState()).toBe('delivered');
-      expect(smsGatewayPo.scheduledTaskState()).toBe('scheduled');
-      expect(smsGatewayPo.failedTaskState()).toBe('failed');
+      expect(await smsGatewayPo.sentTaskState()).toBe('sent');
+      expect(await smsGatewayPo.deliveredTaskState()).toBe('delivered');
+      expect(await smsGatewayPo.scheduledTaskState()).toBe('scheduled');
+      expect(await smsGatewayPo.failedTaskState()).toBe('failed');
     });
   });
 
@@ -246,7 +246,7 @@ describe('sms-gateway api', () => {
         .catch(done.fail);
     });
 
-    it('- returns list and updates state', () => {
+    it('- returns list and updates state', async() => {
       // TEMP: This is a flaky test, because sometimes there are more messages
       //       than the 2 that we expect there to be. Outputting so when it
       //       flakes we can see which messages they are and work out where
@@ -277,14 +277,14 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].to).toBe(messageTo2);
       expect(response.messages[1].content).toBe(messageContent2);
 
-      smsGatewayPo.showReport();
+      await smsGatewayPo.showReport();
 
       browser.waitForAngular();
       // tasks
-      expect(smsGatewayPo.feedbackState()).toBe('forwarded to gateway');
+      expect(await smsGatewayPo.feedbackState()).toBe('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(smsGatewayPo.messageState()).toBe('forwarded to gateway');
+      expect(await smsGatewayPo.messageState()).toBe('forwarded to gateway');
     });
   });
 });
