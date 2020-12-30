@@ -1,5 +1,4 @@
 const utils = require('../utils');
-const commonElements = require('../page-objects/common/common.po.js');
 const helper = require('../helper');
 const smsGatewayPo = require('../page-objects/messages/sms-gateway.po');
 
@@ -158,9 +157,9 @@ describe('sms-gateway api', () => {
     afterEach(helper.handleUpdateModal);
 
     it('- shows content', async () => {
-      
-       smsGatewayPo.showMessageList();
-       smsGatewayPo.expectMessage('+64271234567', 'hello');
+      //LHS
+      smsGatewayPo.showMessageList();
+      smsGatewayPo.expectMessage('+64271234567', 'hello');
       // RHS
       smsGatewayPo.showMessageDetails();
       smsGatewayPo.expectMessageDetails('+64271234567', 'hello', 'received');
@@ -202,47 +201,14 @@ describe('sms-gateway api', () => {
     });
 
     it('- shows content', () => {
-      commonElements.goToReports();
-      helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
-      helper.clickElement(
-        element(by.css('#reports-list li:first-child .heading'))
-      );
-      helper.waitElementToPresent(
-        element(by.css('#reports-content .body .item-summary .icon'))
-      );
-       browser.waitForAngular();
+
+      smsGatewayPo.showReport();
       
       // tasks
-      const sentTaskState = helper.getTextFromElement(
-        element(
-          by.css('#reports-content .details > ul .task-list .task-state .state')
-        )
-      );
-      const deliveredTaskState = helper.getTextFromElement(
-        element(
-          by.css(
-            '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'
-          )
-        )
-      );
-      const scheduledTaskState = helper.getTextFromElement(
-        element(
-          by.css(
-            '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state'
-          )
-        )
-      );
-      const failedTaskState = helper.getTextFromElement(
-        element(
-          by.css(
-            '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state'
-          )
-        )
-      );
-      expect(sentTaskState).toBe('sent');
-      expect(deliveredTaskState).toBe('delivered');
-      expect(scheduledTaskState).toBe('scheduled');
-      expect(failedTaskState).toBe('failed');
+      expect(smsGatewayPo.sentTaskState()).toBe('sent');
+      expect(smsGatewayPo.deliveredTaskState()).toBe('delivered');
+      expect(smsGatewayPo.scheduledTaskState()).toBe('scheduled');
+      expect(smsGatewayPo.failedTaskState()).toBe('failed');
     });
   });
 
@@ -311,35 +277,14 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].to).toBe(messageTo2);
       expect(response.messages[1].content).toBe(messageContent2);
 
-      commonElements.goToReports();
-      helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
-
-      helper.clickElement(
-        element(by.css('#reports-list li:first-child .heading'))
-      );
-      helper.waitElementToPresent(
-        element(by.css('#reports-content .body .item-summary .icon'))
-      );
+      smsGatewayPo.showReport();
 
       browser.waitForAngular();
       // tasks
-      // State for messageId1 has been updated from pending to forwarded-to-gateway.
-      const feedback = element(
-        by.css('#reports-content .details > ul .task-list .task-state .state')
-      );
-      helper.waitUntilReady(feedback);
-      expect(helper.getTextFromElement(feedback)).toBe('forwarded to gateway');
+      expect(smsGatewayPo.feedbackState()).toBe('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(
-        helper.getTextFromElement(
-          element(
-            by.css(
-              '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'
-            )
-          )
-        )
-      ).toBe('forwarded to gateway');
+      expect(smsGatewayPo.messageState()).toBe('forwarded to gateway');
     });
   });
 });
