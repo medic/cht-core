@@ -18,7 +18,7 @@ COPY ./api ./api
 
 COPY ./api/src/public/ /app/api/build/public/
 
-RUN cd api && npm ci --verbose #--global
+RUN cd api && npm ci --verbose
 COPY ./shared-libs ./api/node_modules/@medic
 
 RUN npm install -g horticulturalist

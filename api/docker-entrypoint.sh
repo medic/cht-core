@@ -15,6 +15,11 @@ fatal()
     echo "Fatal: $*"
 }
 
+get_couchdb_url()
+{
+  echo "http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985"
+}
+
 wait_for_couchdb()
 {
   local n=15
@@ -37,66 +42,22 @@ is_setup_needed()
 is_existing_user()
 {
   local user="$1"
+  local url="`get_couchdb_url`"
+  local id="org.couchdb.user:$user"
   shift 1
 
-  local userdoc=$(curl -X GET http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985/_users/org.couchdb.user:$user | jq '._id?')
+  local userdoc=$(curl -X GET $url/_users/$id | jq '._id?')
 
   if [ "$userdoc" = \"org.couchdb.user:$user\" ]; then
+    if [ ! -f /srv/storage/$user/passwd/$user ]; then
+      create_couchdb_admin "$user"
+      return 1
+    fi
     return 0
   else
     return 1
   fi
 }
-
-get_couchdb_url()
-{
-  echo "http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985"
-}
-
-#get_password_directory()
-# {
-#  mkdir -p "/opt/couchdb/etc/local.d/passwd"
-#  echo "/opt/couchdb/etc/local.d/passwd"
-#}
-
-#get_user_password_file()
-# {
-#  local user="$1"
-# shift 1
-#
-#  echo "`get_password_directory`/$user"
-#}
-
-#read_password()
-# {
-#  local user="$1"
-#  shift 1
-#
-#  cat "`get_user_password_file "$user"`"
-#}
-
-#write_password()
-# {
-#  local passwd="$1"
-#  local passwd_file="$2"
-#  shift 2
-#
-  # Fix me: this shows up in `ps`
-#  echo "$passwd" > "$passwd_file"
-#}
-
-#generate_random_password()
-# {
-#  local file="$1"
-#  local bytes="$2"
-#  shift 1
-#
-#  if [ -z "$bytes" ]; then
-#    bytes='8'
-#  fi
-#
-#  openssl rand -hex -out "$file" "$bytes"
-#} 
 
 create_couchdb_put()
 {
@@ -110,13 +71,6 @@ create_couchdb_put()
     cmd='echo'
   fi
 
-  # Authenticate if needed
-  #if [ "$should_auth" ]; then
-  #  echo -n 'user = "admin:' &&
-  #  cat "`get_password_directory`/admin" &&
-  #  echo '"'
-  #fi
-
   # Send JSON-encoded string payload if provided
   if [ "$#" -gt 1 ]; then
     echo -n 'data = "\"' &&
@@ -128,24 +82,15 @@ create_couchdb_put()
 create_couchdb_admin()
 {
   local user="$1"
-#  local passwd="$2"
-  shift 2
-
-  # Authorize if admin exists
-  local should_auth=''
-
-  if is_existing_user 'admin' && [ "$user" != 'admin' ]; then
-    should_auth='t'
-  fi
+  local url="`get_couchdb_url`"
 
   # generate password and create user
-  local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;)
-  curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985/_node/couchdb@127.0.0.1/_config/admins/$user -d '"'"$passwd"'"'
+  local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${4:-32};)
+  curl -X PUT $url/_node/couchdb@127.0.0.1/_config/admins/$user -d '"'"$passwd"'"'
   mkdir -p /srv/storage/$user/passwd
   echo "$passwd" > /srv/storage/$user/passwd/$user
 
   # Create user document for administrator
-  local url="`get_couchdb_url`" &&
   local id="org.couchdb.user:$user" &&
   \
   local doc="{
@@ -166,7 +111,8 @@ create_couchdb_admin()
 
 perform_couchdb_lockdown()
 {
-  curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SERVICE_NAME:5985/_node/couchdb@127.0.0.1/_config/chttpd/require_valid_user -d '"true"'
+  local url="`get_couchdb_url`"
+  curl -X PUT $url/_node/couchdb@127.0.0.1/_config/chttpd/require_valid_user -d '"true"'
 }
 
 create_system_databases()
@@ -195,10 +141,7 @@ postinstall()
 
   info 'Creating CouchDB service accounts'
 
-  create_couchdb_admin 'medic-api' &&
-  #create_couchdb_admin 'medic-couch2pg' &&
-  #create_couchdb_admin 'medic-sentinel' &&
-  #create_couchdb_admin 'horticulturalist'
+  create_couchdb_admin 'medic-api'
 
   if [ "$?" -ne 0 ]; then
     fatal "Failed to create one or more service accounts"
@@ -211,7 +154,7 @@ postinstall()
   fi
 
   info 'New CouchDB Administrative User: medic'
-  #info "New CouchDB Administrative Password: `read_password medic`"
+  info "New Medic CouchDB Administrative User Password: $(cat /srv/storage/medic/passwd/medic)"
 
   info 'CouchDB first run setup successful'
 }
@@ -225,9 +168,7 @@ fi
 export COUCH_URL=http://medic-api:$(cat /srv/storage/medic-api/passwd/medic-api)@$HAPROXY_SVC:5984/medic
 export NODE_PATH=/app/api/node_modules
 
-# Let's hit couchdb and if we retrieve a value for app version, then do nothing. This prevents
-# the environment variable from re-installing after an upgrade if a value is still present in the Compose file.
-# horti needs to be its own container
+# This needs to be cleaned up. We are trying to cover two scenarios: initial bootup that installs via horti, and avoid re-install on restart
 already_installed=$(curl -X GET http://medic-api:$(cat /srv/storage/medic-api/passwd/medic-api)@$HAPROXY_SVC:5984/medic/_design/medic | jq '.build_info.version')
 if [ "$already_installed" = null ]; then 
   horti --medic-os --install=$HORTI_BOOTSTRAP_VERSION --no-daemon
