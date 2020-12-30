@@ -26,6 +26,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
+import { TourService } from '@mm-services/tour.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -90,6 +91,7 @@ describe('Contacts component', () => {
             })
           }},
           { provide: SessionService, useValue: { isDbAdmin: sinon.stub().returns(false) } },
+          { provide: TourService, useValue: { startIfNeeded: sinon.stub() } },
           { provide: AuthService, useValue: { has: sinon.stub().resolves(false) } },
           { provide: ContactTypesService, useValue: {
             getChildren: sinon.stub().resolves([
