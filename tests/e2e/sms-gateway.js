@@ -138,6 +138,7 @@ describe('sms-gateway api', () => {
   };
 
   describe('- gateway submits new WT sms messages', () => {
+    beforeAll( async() => await helper.waitForAppToLoad());
     beforeEach(done => {
       const body = {
         messages: [
@@ -163,7 +164,7 @@ describe('sms-gateway api', () => {
       helper.waitElementToPresent(
         element(by.css('#message-list li:first-child'))
       );
-      helper.waitForAngularComplete();
+     browser.waitForAngular();
       helper.waitElementToBeVisible(
         element(by.css('#message-list li:first-child'))
       );
@@ -192,7 +193,7 @@ describe('sms-gateway api', () => {
           by.css('#message-content li.incoming:first-child .data p:first-child')
         )
       );
-      helper.waitForAngularComplete();
+     browser.waitForAngular();
       const messageHeader = helper.getTextFromElement(
         element(by.css('#message-header .name'))
       );
@@ -256,7 +257,7 @@ describe('sms-gateway api', () => {
       helper.waitElementToPresent(
         element(by.css('#reports-content .body .item-summary .icon'))
       );
-      helper.waitForAngularComplete();
+     browser.waitForAngular();
 
       // tasks
       const sentTaskState = helper.getTextFromElement(
@@ -367,7 +368,7 @@ describe('sms-gateway api', () => {
         element(by.css('#reports-content .body .item-summary .icon'))
       );
 
-      helper.waitForAngularComplete();
+     browser.waitForAngular();
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
       const feedback = element(
