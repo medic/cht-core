@@ -14,14 +14,14 @@ services:
 
   couchdb:
     container_name: medic-couchdb
-    image: medicmobile/couchdb:2.3.1-test13
+    image: medicmobile/couchdb:2.3.1-test14
     environment:
       - COUCHDB_USER=${COUCHDB_USER}
       - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
     # https://hub.docker.com/_/couchdb
     volumes:
-      - medic-data:/opt/couchdb/data
-      - medic-couchconfig:/opt/couchdb/etc/local.d
+      - medic-data:/opt/couchdb/data/
+      - medic-couchconfig:/opt/couchdb/etc/local.d/passwd
     networks:
       - medic-net
 
@@ -36,8 +36,6 @@ services:
       HORTI_BOOTSTRAP_VERSION: 3.10.0
       NODE_ENV: production
       HAPROXY_SVC: haproxy
-    #volumes:
-    #  - medic-couchconfig:/opt/couchdb/etc/local.d
     networks:
       - medic-net
     depends_on:
@@ -54,8 +52,22 @@ services:
       HAPROXY_SVC: haproxy
       API_SVC_NAME: medic-api
       NODE_ENV: production
-    #volumes:
-    #  - medic-couchconfig:/opt/couchdb/etc/local.d
+    networks:
+      - medic-net
+    depends_on:
+      - medic-api
+    restart: unless-stopped
+
+  horticulturalist:
+    container_name: horticulturalist
+    image: medicmobile/horticulturalist:master-123020-8
+    environment:
+      COUCHDB_SERVICE_NAME: couchdb
+      COUCH_NODE_NAME: "couchdb@127.0.0.1"
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+      HAPROXY_SVC: haproxy
+      API_SVC_NAME: medic-api
     networks:
       - medic-net
     depends_on:
