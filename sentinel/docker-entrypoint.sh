@@ -50,7 +50,7 @@ is_existing_user()
 
   local userdoc=$(curl -X GET $url/_users/$id | jq '._id?')
 
-  if [ "$userdoc" = \"org.couchdb.user:$user\" ]; then
+  if [ "$userdoc" = \"org.couchdb.user:$user\" -a -f /srv/storage/$user/passwd/$user ]; then
     return 0
   else
     return 1
@@ -85,7 +85,7 @@ create_couchdb_admin()
   local url="`get_couchdb_url`"
 
   # generate password and create user
-  local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${2:-32};)
+  local passwd=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${4:-32};)
   curl -X PUT $url/_node/couchdb@127.0.0.1/_config/admins/$user -d '"'"$passwd"'"'
   mkdir -p /srv/storage/$user/passwd
   echo "$passwd" > /srv/storage/$user/passwd/$user
