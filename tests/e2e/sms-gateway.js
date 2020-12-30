@@ -1,6 +1,7 @@
 const utils = require('../utils');
 const commonElements = require('../page-objects/common/common.po.js');
 const helper = require('../helper');
+const smsGatewayPo = require('../page-objects/messages/sms-gateway.po');
 
 const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
 const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
@@ -156,62 +157,14 @@ describe('sms-gateway api', () => {
     });
     afterEach(helper.handleUpdateModal);
 
-    it('- shows content', () => {
-      utils.resetBrowser();
-      helper.clickElement(element(by.id('messages-tab')));
-
-      // LHS
-      helper.waitElementToPresent(
-        element(by.css('#message-list li:first-child'))
-      );
-      browser.waitForAngular();
-      helper.waitElementToBeVisible(
-        element(by.css('#message-list li:first-child'))
-      );
-      expect(
-        helper.getTextFromElement(
-          element(by.css('#message-list li:first-child .heading h4'))
-        )
-      ).toBe('+64271234567');
-      expect(
-        helper.getTextFromElement(
-          element(by.css('#message-list li:first-child .summary p'))
-        )
-      ).toBe('hello');
-
+    it('- shows content', async () => {
+      
+       smsGatewayPo.showMessageList();
+       smsGatewayPo.expectMessage('+64271234567', 'hello');
       // RHS
-      helper.clickElement(
-        element(by.css('#message-list li:first-child .summary'))
-      );
-      helper.waitElementToBeVisible(
-        element(
-          by.css('#message-content li.incoming:first-child .data p:first-child')
-        )
-      );
-      helper.waitElementToPresent(
-        element(
-          by.css('#message-content li.incoming:first-child .data p:first-child')
-        )
-      );
-      browser.waitForAngular();
-      const messageHeader = helper.getTextFromElement(
-        element(by.css('#message-header .name'))
-      );
-      const messageText = helper.getTextFromElement(
-        element(
-          by.css('#message-content li.incoming:first-child .data p:first-child')
-        )
-      );
-      const messageStatus = helper.getTextFromElement(
-        element(
-          by.css(
-            '#message-content li.incoming:first-child .data .state.received'
-          )
-        )
-      );
-      expect(messageHeader).toBe('+64271234567');
-      expect(messageText).toBe('hello');
-      expect(messageStatus).toBe('received');
+      smsGatewayPo.showMessageDetails();
+      smsGatewayPo.expectMessageDetails('+64271234567', 'hello', 'received');
+
     });
   });
 
@@ -257,8 +210,8 @@ describe('sms-gateway api', () => {
       helper.waitElementToPresent(
         element(by.css('#reports-content .body .item-summary .icon'))
       );
-      browser.waitForAngular();
-
+       browser.waitForAngular();
+      
       // tasks
       const sentTaskState = helper.getTextFromElement(
         element(
