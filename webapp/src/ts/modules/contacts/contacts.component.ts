@@ -21,6 +21,7 @@ import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
+import { TourService } from '@mm-services/tour.service';
 
 const PAGE_SIZE = 50;
 
@@ -71,6 +72,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private simprintsService: SimprintsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
+    private tourService: TourService,
     private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -160,7 +162,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.appending = false;
         console.error('Error searching for contacts', err);
       });
-      
+
+    this.tourService.startIfNeeded(this.route.snapshot);
   }
 
   ngOnDestroy() {
