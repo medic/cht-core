@@ -8,20 +8,20 @@
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>How many breaths per minute?</value>
           </text>
-          <text id="/child_assessment/breathing/breathing_timer:label">
-            <value>Press timer and count the number of breaths for a full 60 seconds</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_73:label">
+          <text id="/child_assessment/breathing/breathing_note1:label">
             <value>The child does not have fast breathing</value>
           </text>
-          <text id="/child_assessment/breathing/generated_note_name_74:label">
+          <text id="/child_assessment/breathing/breathing_note2:label">
             <value>The child has fast breathing</value>
           </text>
-          <text id="/child_assessment/breathing/generated_note_name_75:label">
+          <text id="/child_assessment/breathing/breathing_note3:label">
             <value>This person does not have fast breathing</value>
           </text>
-          <text id="/child_assessment/breathing/generated_note_name_76:label">
+          <text id="/child_assessment/breathing/breathing_note4:label">
             <value>This person has fast breathing</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_timer:label">
+            <value>Press timer and count the number of breaths for a full 60 seconds</value>
           </text>
           <text id="/child_assessment/breathing:label">
             <value>Breathing</value>
@@ -348,7 +348,7 @@
             <value>Malaria</value>
           </text>
           <text id="/child_assessment/malnutrition/generated_note_name_87:label">
-            <value>Use your MUAC strap to take the childs MUAC</value>
+            <value>Use your MUAC strap to take the child's MUAC</value>
           </text>
           <text id="/child_assessment/malnutrition/malnutrition_muac_color/green:label">
             <value>Green</value>
@@ -374,21 +374,24 @@
           <text id="/child_assessment/malnutrition:label">
             <value>Malnutrition</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_1:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_1:label">
             <value>Help the caregiver give the first dose now.</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_2:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_2:label">
             <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_3:label">
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_3:label">
             <value>Advise caregiver not to give any drugs to the child for this condition:Cough medicines may contain harmful ingredients, and are expensive</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_4:label">
-            <value>Advice caregiver to go to health facility or if not possible return if the child:
- does not eat, or drink, breastfeed, 
- develops fast breathing/difficult breathing or
- has blood in the stool or 
- any sign that the child is getting sicker</value>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_4:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+does not eat, or drink, breastfeed, 
+develops fast breathing/difficult breathing or 
+has blood in the stool or 
+any sign that the child is getting sicker</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_5:label">
+            <value>Advice caregiver on use of a bednet (ITN)</value>
           </text>
           <text id="/child_assessment/summary/cough_treatement_1:label">
             <value>Soothe the throat and relieve the cough with a safe remedy warm fluids, lemon tea, tea with honey, or breast milk.</value>
@@ -396,218 +399,326 @@
           <text id="/child_assessment/summary/cough_treatement_2:label">
             <value>Soothe the throat and relieve the cough with breastfeeding only.</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_1:label">
-            <value>TBD Diarrhea ORS</value>
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1:label">
+            <value>Help the caregiver give the child ORS solution in front of you until child is no longer thirsty</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_2:label">
-            <value>TBD Diarrhea ORS</value>
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2:label">
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding"</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_3:label">
-            <value>TBD Diarrhea Zinc</value>
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3:label">
+            <value>Give caregiver 4 packets of half litre (500ml sachet) ORS to take home</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_4:label">
-            <value>TBD Diarrhea Zinc</value>
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+does not eat, or drink, breastfeed, 
+develops fast breathing/difficult breathing or 
+has blood in the stool or 
+any sign that the child is getting sicker</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_1:label">
-            <value>TBD Diarrhea ORS Treat with {{Treatment}}
-{{Dose}}
-{{after every loose stool}
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5:label">
+            <value>Show the caregiver how to prepare the ORS solution</value>
+          </text>
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6:label">
+            <value>Help caregiver to give first dose now</value>
+          </text>
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7:label">
+            <value>Advice caregiver on use of a bednet (ITN)</value>
+          </text>
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_2:label">
+            <value>For Children not on exclusive breastfeeding advice caregiver to: 
+&lt;p&gt;&amp;nbsp;&amp;nbsp;1. Breast feed more frequently and for longer periods at each feeding&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&amp;nbsp;2. Continue giving extra fluids until diarrhea stops&lt;/p&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1:label">
+            <value>Encourage caregiver to give small sips of ORS frequently from a cup. If the child vomits, wait for 10 minutes, then continue giving fluids, but more slowly. If the child can take more, encourage the caregiver to continue giving.</value>
+          </text>
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2:label">
+            <value>Emphasize that it is important to give the Zinc for the full ten days,even if the Diarrhea stops.</value>
+          </text>
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_1:label">
+            <value>Treat with ORS 
+5 to 10 tablespoonfuls : at least 1/2 cup 
+after every loose stool
 Total 4 sachets</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_2:label">
-            <value>TBD Diarrhea ORS Treat with {{Treatment}}
-{{Dose}}
-{{ after every loose stool}}
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_2:label">
+            <value>Treat with ORS 
+10 to 20 tablespoonfuls:at least 1/2 cup 
+after every loose stool 
 Total 4 sachets</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_3:label">
-            <value>TBD Diarrhea Zinc Treat with {{Treatment}}
-{{Dose}}
-{{1 times a day}}
-For {{10 days}}
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_1:label">
+            <value>Treat with Zinc 
+1/2 tablet 
+1 times a day 
+For 10 days 
 Total 5 tabs</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_4:label">
-            <value>TBD Diarrhea Zinc Treat with {{Treatment}}
-{{1 tablet}}
-{{1 times a day}}
-For {{10 days}}
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_2:label">
+            <value>Treat with Zinc 
+1 tablet 
+1 times a day 
+For 10 days 
 Total 10 tabs</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_1:label">
-            <value>TBD Fever Paracetamol</value>
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1:label">
+            <value>Help the caregiver give the first dose now</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_2:label">
-            <value>TBD Fever Paracetamol</value>
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+does not eat, or drink, breastfeed, 
+develops fast breathing/difficult breathing or 
+has blood in the stool or 
+any sign that the child is getting sicker</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_1:label">
-            <value>TBD Fever Paracetamol Treat with {{Treatment}}
-{{Dose}}
-{{3 times a day}}
-For {{5 days}}
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3:label">
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
+          </text>
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4:label">
+            <value>Advice caregiver on use of a bednet (ITN)</value>
+          </text>
+          <text id="/child_assessment/summary/fever_treatement_para_1:label">
+            <value>Treat with Paracetamol 500mg 
+1/4 tablet 
+3 times a day 
+For 5 days 
 Total 5 tabs</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_2:label">
-            <value>TBD Fever Paracetamol Treat with {{Treatment}}
-{{Dose}}
-{{3 times a day}}
-For {{5 days}}
+          <text id="/child_assessment/summary/fever_treatement_para_2:label">
+            <value>Treat with Paracetamol 500mg 
+1/4 tablet 
+3 times a day 
+For 5 days 
 Total 5 tabs</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_100:label">
-            <value>The patient has skin rash</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_101:label">
-            <value>Refer child to a health facility for malaria test</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_102:label">
-            <value>The child has fast breathing</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_103:label">
-            <value>This person has fast breathing</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_104:label">
-            <value>Sick child</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_105:label">
-            <value>Diagnosis(es)&lt;i class="fa fa-info-circle"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_106:label">
-            <value>Cough</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_107:label">
-            <value>Diarrhea</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_108:label">
-            <value>Malaria</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_109:label">
-            <value>Refer urgently to Health facility&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_111:label">
+          <text id="/child_assessment/summary/generated_note_name_113:label">
             <value>Treatment&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_130:label">
-            <value>Important Instructions treatment&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/child_assessment/summary/generated_note_name_151:label">
+          <text id="/child_assessment/summary/generated_note_name_203:label">
             <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_152:label">
+          <text id="/child_assessment/summary/generated_note_name_204:label">
             <value>Ask to see <output value=" /child_assessment/patient_name "/> again in 3 days and 6 days in follow up visits even if they improve</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_93:label">
-            <value>Patient Assessment&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_1:label">
+            <value>Help the caregiver give the first dose now.</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_94:label">
-            <value>Be sure you submit to complete this action</value>
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_2:label">
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_95:label">
-            <value>Patient Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
+          <text id="/child_assessment/summary/malaria_instruct_al_5:label">
+            <value>Advice caregiver on use of a bednet (ITN)</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_96:label">
-            <value><output value=" /child_assessment/patient_name "/></value>
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3:label">
+            <value>Advise caregiver to give 2nd dose after 8 hrs and to give dose twice daily for 2 more days</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_97:label">
-            <value><output value=" /child_assessment/inputs/contact/sex "/></value>
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+does not eat, or drink, breastfeed, 
+develops fast breathing/difficult breathing or 
+has blood in the stool or 
+any sign that the child is getting sicker</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_98:label">
-            <value><output value=" /child_assessment/patient_age_in_years "/> years <output value=" /child_assessment/patient_age_in_months "/> months</value>
+          <text id="/child_assessment/summary/malaria_instruct_para_5:label">
+            <value>Help the caregiver give the first dose now.</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_99:label">
-            <value>Signs &amp; Symptoms&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/child_assessment/summary/malaria_instruct_1:label">
-            <value>TBD Malaria AL</value>
-          </text>
-          <text id="/child_assessment/summary/malaria_instruct_2:label">
-            <value>TBD Malaria AL</value>
-          </text>
-          <text id="/child_assessment/summary/malaria_instruct_3:label">
-            <value>TBD Malaria AL</value>
-          </text>
-          <text id="/child_assessment/summary/malaria_instruct_4:label">
-            <value>TBD Malaria Paracetamol</value>
-          </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:jr:constraintMsg">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:label">
-            <value>TBD Malaria Paracetamol</value>
+          <text id="/child_assessment/summary/malaria_instruct_para_6:label">
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_1:label">
-            <value>TBD Malaria AL Treat with {{Treatment}}
-{{Dose}}
-{{2 times a day}}
-For {{3 days}}
+          <text id="/child_assessment/summary/malaria_treatement_al_1:label">
+            <value>Treat with AL 
+-1/2 tablet 
+2 times a day 
+For 3 days 
 Total 3 tabs</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_2:label">
-            <value>TBD Malaria AL Treat with {{Treatment}}
-{{Dose}}
-{{2 times a day}}
-For {{3 days}}
+          <text id="/child_assessment/summary/malaria_treatement_al_2:label">
+            <value>Treat with AL 
+1 tablet 
+2 times a day 
+For 3 days 
 Total 6 tabs</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_3:label">
-            <value>TBD Malaria AL Treat with {{Treatment}}
-{{Dose}}
-{{2 times a day}}
-For {{3 days}}
+          <text id="/child_assessment/summary/malaria_treatement_al_3:label">
+            <value>Treat with AL 
+2 tablets 
+2 times a day 
+For 3 days 
 Total 12 tabs</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_4:label">
-            <value>TBD Malaria Paracetamol Treat with {{Treatment}}
-{{Dose}}
-{{3 times a day}}
-For {{5 days}}
+          <text id="/child_assessment/summary/malaria_treatement_para_4:label">
+            <value>Treat with Paracetamol 500mg
+1/4 tablet
+3 times a day
+For 5 days
 Total 5 tabs</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_5:label">
-            <value>TBD Malaria Paracetamol Treat with {{Treatment}}
-{{Dose}}
-{{3 times a day}}
-For {{5 days}}
+          <text id="/child_assessment/summary/malaria_treatement_para_5:label">
+            <value>Treat with Paracetamol 500mg
+1/4 tablet
+3 times a day
+For 5 days
 Total 5 tabs</value>
           </text>
-          <text id="/child_assessment/summary/mauc_instruct_1:label">
-            <value>TBD MUAC</value>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1:label">
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+does not eat, or drink, breastfeed, 
+develops fast breathing/difficult breathing or
+has blood in the stool or 
+any sign that the child is getting sicker</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3:label">
+            <value>Advice caregiver on use of a bednet (ITN)</value>
           </text>
           <text id="/child_assessment/summary/mauc_treatement_1:label">
             <value>Counsel care giver on Feeding or Refer for supplementary feeding program, if available</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_1:label">
-            <value>TBD Pneumonia Amoxicillin tablet</value>
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1:label">
+            <value>Help the caregiver give the first dose now</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_2:label">
-            <value>TBD Pneumonia Amoxicillin tablet</value>
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2:label">
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_3:label">
-            <value>TBD Pneumonia Amoxicillin syrup</value>
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3:label">
+            <value>Advice caregiver on use of a bednet (ITN)</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_4:label">
-            <value>TBD Pneumonia Amoxicillin syrup</value>
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4:label">
+            <value>Help the caregiver give the first dose now</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_1:label">
-            <value>TBD Pneumonia Amoxicillin tablet DOSE HERE</value>
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+does not eat, or drink, breastfeed, 
+develops fast breathing/difficult breathing or 
+has blood in the stool or 
+any sign that the child is getting sicker</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_2:label">
-            <value>TBD Pneumonia Amoxicillin tablet DOSE HERE</value>
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6:label">
+            <value>Advice caregiver on use of a bednet (ITN)</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_3:label">
-            <value>TBD Pneumonia Amoxicillin syrup DOSE HERE</value>
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_1:label">
+            <value>Treat with Amoxicillin tablet 250mg 
+1 tablet 
+2 times a day 
+For 5 days 
+Total 10 tabs</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_4:label">
-            <value>TBD Pneumonia Amoxicillin syrup DOSE HERE</value>
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_2:label">
+            <value>Treat with Amoxicillin tablet 250mg 
+2 tablets 
+2 times a day 
+For 5 days 
+Total 20 tabs</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/no:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_3:label">
+            <value>Treat with Amoxicillin syrup-125mg/5mls or 1 teaspoonful 
+1 tablespoon 
+2 times a day 
+For 5 days 
+Total 5 tabs</value>
+          </text>
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_4:label">
+            <value>Treat with Amoxicillin syrup - 125mg/5mls or 1 teaspoonful 
+2 tablespoons 
+2 times a day 
+For 5 days 
+Total 5 tabs</value>
+          </text>
+          <text id="/child_assessment/summary/summary_age:label">
+            <value><output value=" /child_assessment/patient_age_in_years "/> years <output value=" /child_assessment/patient_age_in_months "/> months</value>
+          </text>
+          <text id="/child_assessment/summary/summary_assess:label">
+            <value>Patient Assessment&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_cough:label">
+            <value>Cough</value>
+          </text>
+          <text id="/child_assessment/summary/summary_detrails:label">
+            <value>Patient Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diag:label">
+            <value>Diagnosis(es)&lt;i class="fa fa-info-circle"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diarrhea:label">
+            <value>Diarrhea</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath1:label">
+            <value>The child has fast breathing</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath2:label">
+            <value>This person has fast breathing</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr2:label">
+            <value>Important Instructions&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr3:label">
+            <value>Important Instructions&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label">
+            <value>Explain why the sick needs to go to the health facility</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2:label">
+            <value>For any sick person who can drink, advice to give more fluids and continue feeding or breastfeeding.</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3:label">
+            <value>Advice to keep the person warm if they does not feel hot on touch.</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4:label">
+            <value>If the sick has fever, give first dose of Paracetamol and ask the care giver to remove extra clothing.</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5:label">
+            <value>If convulsing now, show care giver how to position the 
+person. Do not put any object in the mouth.</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6:label">
+            <value>Support transportation and help solve other difficulties in referral.</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1:label">
+            <value>Important Instructions&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria:label">
+            <value>Malaria</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria_test:label">
+            <value>Refer child to a health facility for malaria test</value>
+          </text>
+          <text id="/child_assessment/summary/summary_name:label">
+            <value><output value=" /child_assessment/patient_name "/></value>
+          </text>
+          <text id="/child_assessment/summary/summary_rash:label">
+            <value>The patient has skin rash</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer:label">
+            <value>Refer urgently to Health facility&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/no:label">
             <value>No</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/yes:label">
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer:label">
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm:label">
             <value>Have you referred <output value=" /child_assessment/patient_name "/> to the health facility?</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sex:label">
+            <value><output value=" /child_assessment/inputs/contact/sex "/></value>
+          </text>
+          <text id="/child_assessment/summary/summary_sick:label">
+            <value>Sick child</value>
+          </text>
+          <text id="/child_assessment/summary/summary_submit:label">
+            <value>Be sure you submit to complete this action</value>
+          </text>
+          <text id="/child_assessment/summary/summary_symp:label">
+            <value>Signs &amp; Symptoms&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/two_mo_instruct_1:label">
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
           </text>
           <text id="/child_assessment/two_mo_assessment/two_mo_referred/no:label">
             <value>No</value>
@@ -632,19 +743,19 @@ Total 5 tabs</value>
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/breathing/breathing_note1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note4:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/breathing/breathing_timer:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_73:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_74:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_75:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_76:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/breathing:label">
@@ -1049,16 +1160,25 @@ Total 5 tabs</value>
           <text id="/child_assessment/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_1:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_2:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_3:label">
+          <text id="/child_assessment/summary/cough_instruct_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_4:label">
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/cough_treatement_1:label">
@@ -1067,177 +1187,282 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/cough_treatement_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_100:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_101:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_102:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_103:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_104:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_105:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_106:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_107:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_108:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_109:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_111:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_130:label">
+          <text id="/child_assessment/summary/fever_treatement_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_151:label">
+          <text id="/child_assessment/summary/fever_treatement_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_152:label">
+          <text id="/child_assessment/summary/generated_note_name_113:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_93:label">
+          <text id="/child_assessment/summary/generated_note_name_203:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_94:label">
+          <text id="/child_assessment/summary/generated_note_name_204:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_95:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_96:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_97:label">
+          <text id="/child_assessment/summary/malaria_instruct:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_98:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_99:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_1:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_2:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_3:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_4:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:jr:constraintMsg">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:jr:constraintMsg">
             <value>selected(<output value=" /child_assessment/data/__receive_malaria_treatment "/>,'yes') and
 <output value=" /child_assessment/patient_age_in_months "/> &gt;= 2 and
 <output value=" /child_assessment/patient_age_in_months "/> &lt;= 12</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_1:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_2:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_3:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_4:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_5:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/mauc_instruct_1:label">
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/mauc_treatement_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/no:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/yes:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_age:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_assess:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_cough:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_detrails:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diag:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diarrhea:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria_test:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_rash:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sex:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sick:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_submit:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_symp:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/two_mo_instruct_1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary:label">
@@ -1266,19 +1491,19 @@ Total 5 tabs</value>
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/breathing/breathing_note1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note4:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/breathing/breathing_timer:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_73:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_74:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_75:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_76:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/breathing:label">
@@ -1683,16 +1908,25 @@ Total 5 tabs</value>
           <text id="/child_assessment/patient_name:label">
             <value>../inputs/contact/name</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_1:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_2:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_3:label">
+          <text id="/child_assessment/summary/cough_instruct_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_4:label">
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/cough_treatement_1:label">
@@ -1701,175 +1935,280 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/cough_treatement_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_100:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_101:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_102:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_103:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_104:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_105:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_106:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_107:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_108:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_109:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_111:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_130:label">
+          <text id="/child_assessment/summary/fever_treatement_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_151:label">
+          <text id="/child_assessment/summary/fever_treatement_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_152:label">
+          <text id="/child_assessment/summary/generated_note_name_113:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_93:label">
+          <text id="/child_assessment/summary/generated_note_name_203:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_94:label">
+          <text id="/child_assessment/summary/generated_note_name_204:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_95:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_96:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_97:label">
+          <text id="/child_assessment/summary/malaria_instruct:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_98:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_99:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_1:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_2:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_3:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_4:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:jr:constraintMsg">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_1:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_2:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_3:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_4:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_5:label">
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/mauc_instruct_1:label">
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/mauc_treatement_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/no:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/yes:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_age:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_assess:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_cough:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_detrails:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diag:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diarrhea:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria_test:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_rash:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sex:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sick:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_submit:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_symp:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/two_mo_instruct_1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary:label">
@@ -1898,19 +2237,19 @@ Total 5 tabs</value>
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/breathing/breathing_note1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note4:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/breathing/breathing_timer:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_73:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_74:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_75:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_76:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/breathing:label">
@@ -2315,16 +2654,25 @@ Total 5 tabs</value>
           <text id="/child_assessment/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_1:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_2:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_3:label">
+          <text id="/child_assessment/summary/cough_instruct_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_4:label">
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/cough_treatement_1:label">
@@ -2333,175 +2681,280 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/cough_treatement_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_100:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_101:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_102:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_103:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_104:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_105:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_106:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_107:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_108:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_109:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_111:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_130:label">
+          <text id="/child_assessment/summary/fever_treatement_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_151:label">
+          <text id="/child_assessment/summary/fever_treatement_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_152:label">
+          <text id="/child_assessment/summary/generated_note_name_113:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_93:label">
+          <text id="/child_assessment/summary/generated_note_name_203:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_94:label">
+          <text id="/child_assessment/summary/generated_note_name_204:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_95:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_96:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_97:label">
+          <text id="/child_assessment/summary/malaria_instruct:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_98:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_99:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_1:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_2:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_3:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_4:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:jr:constraintMsg">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_1:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_2:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_3:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_4:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_5:label">
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/mauc_instruct_1:label">
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/mauc_treatement_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/no:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/yes:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_age:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_assess:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_cough:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_detrails:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diag:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diarrhea:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria_test:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_rash:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sex:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sick:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_submit:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_symp:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/two_mo_instruct_1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary:label">
@@ -2530,19 +2983,19 @@ Total 5 tabs</value>
           <text id="/child_assessment/breathing/breathing_count:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/breathing/breathing_note1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/breathing/breathing_note4:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/breathing/breathing_timer:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_73:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_74:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_75:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/breathing/generated_note_name_76:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/breathing:label">
@@ -2947,16 +3400,25 @@ Total 5 tabs</value>
           <text id="/child_assessment/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_1:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_2:label">
+          <text id="/child_assessment/summary/cough_instruct_g1/cough_instruct_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_3:label">
+          <text id="/child_assessment/summary/cough_instruct_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/cough_instruct_4:label">
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2/cough_instruct_5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/cough_instruct_g2:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/cough_treatement_1:label">
@@ -2965,175 +3427,280 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/cough_treatement_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_instruct_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_3:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/diarrhea_treatement_4:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_ors_g2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_instruct_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_1:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/fever_treatement_2:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_100:label">
+          <text id="/child_assessment/summary/diarrhea_instruct_zinc_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_101:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_102:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_ors_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_103:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_104:label">
+          <text id="/child_assessment/summary/diarrhea_treatement_zinc_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_105:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_106:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_107:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_108:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_109:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_111:label">
+          <text id="/child_assessment/summary/fever_instruct_para_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_130:label">
+          <text id="/child_assessment/summary/fever_treatement_para_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_151:label">
+          <text id="/child_assessment/summary/fever_treatement_para_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_152:label">
+          <text id="/child_assessment/summary/generated_note_name_113:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_93:label">
+          <text id="/child_assessment/summary/generated_note_name_203:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_94:label">
+          <text id="/child_assessment/summary/generated_note_name_204:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_95:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_96:label">
+          <text id="/child_assessment/summary/malaria_instruct/malaria_instruct_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_97:label">
+          <text id="/child_assessment/summary/malaria_instruct:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_98:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/generated_note_name_99:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_1:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_2:label">
+          <text id="/child_assessment/summary/malaria_instruct_al_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_3:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_4:label">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:jr:constraintMsg">
+          <text id="/child_assessment/summary/malaria_instruct_para_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_instruct_5:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_1:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_2:label">
+          <text id="/child_assessment/summary/malaria_treatement_al_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_3:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_4:label">
+          <text id="/child_assessment/summary/malaria_treatement_para_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/malaria_treatement_5:label">
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/mauc_instruct_1:label">
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/mauc_instruct_g1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/mauc_treatement_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_instruct_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_1:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_2:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_3:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/pneumonia_treatement_4:label">
+          <text id="/child_assessment/summary/pneumonia_instruct_amox_gr2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/no:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_1:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer/yes:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_2:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_refer:label">
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/pneumonia_treatement_amox_4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_age:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_assess:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_cough:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_detrails:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diag:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_diarrhea:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_fast_breath2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_imp_instr_g1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_malaria_test:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_rash:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr/summary_refer_confirm:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_refer_gr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sex:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_sick:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_submit:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_symp:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/two_mo_instruct_1:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary:label">
@@ -3160,7 +3727,7 @@ Total 5 tabs</value>
         </translation>
       </itext>
       <instance>
-        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2020-12-15_21-22">
+        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2020-12-16_19-49">
           <inputs>
             <meta>
               <location>
@@ -3232,10 +3799,10 @@ Total 5 tabs</value>
           <breathing>
             <breathing_timer/>
             <breathing_count/>
-            <generated_note_name_73/>
-            <generated_note_name_74/>
-            <generated_note_name_75/>
-            <generated_note_name_76/>
+            <breathing_note1/>
+            <breathing_note2/>
+            <breathing_note3/>
+            <breathing_note4/>
           </breathing>
           <diarrhea>
             <diarrhea_yes_no/>
@@ -3249,66 +3816,118 @@ Total 5 tabs</value>
             <malnutrition_swollen_feet/>
           </malnutrition>
           <summary tag="hidden">
-            <generated_note_name_93/>
-            <generated_note_name_94/>
-            <generated_note_name_95/>
-            <generated_note_name_96/>
-            <generated_note_name_97/>
-            <generated_note_name_98/>
-            <generated_note_name_99/>
-            <generated_note_name_100/>
-            <generated_note_name_101/>
-            <generated_note_name_102/>
-            <generated_note_name_103/>
-            <generated_note_name_104/>
-            <generated_note_name_105/>
-            <generated_note_name_106/>
-            <generated_note_name_107/>
-            <generated_note_name_108/>
-            <generated_note_name_109/>
-            <summary_refer/>
-            <generated_note_name_111/>
+            <summary_assess/>
+            <summary_submit/>
+            <summary_detrails/>
+            <summary_name/>
+            <summary_sex/>
+            <summary_age/>
+            <summary_symp/>
+            <summary_rash/>
+            <summary_malaria_test/>
+            <summary_fast_breath1/>
+            <summary_fast_breath2/>
+            <summary_sick/>
+            <summary_diag/>
+            <summary_cough/>
+            <summary_diarrhea/>
+            <summary_malaria/>
+            <summary_refer_gr>
+              <summary_refer/>
+              <summary_refer_confirm/>
+            </summary_refer_gr>
+            <generated_note_name_113/>
             <cough_treatement_1/>
             <cough_treatement_2/>
             <mauc_treatement_1/>
-            <malaria_treatement_1/>
-            <malaria_treatement_2/>
-            <malaria_treatement_3/>
-            <malaria_treatement_4/>
-            <malaria_treatement_5/>
-            <fever_treatement_1/>
-            <fever_treatement_2/>
-            <diarrhea_treatement_1/>
-            <diarrhea_treatement_2/>
-            <diarrhea_treatement_3/>
-            <diarrhea_treatement_4/>
-            <pneumonia_treatement_1/>
-            <pneumonia_treatement_2/>
-            <pneumonia_treatement_3/>
-            <pneumonia_treatement_4/>
-            <generated_note_name_130/>
-            <cough_instruct_1/>
-            <cough_instruct_2/>
-            <cough_instruct_3/>
-            <cough_instruct_4/>
-            <mauc_instruct_1/>
-            <malaria_instruct_1/>
-            <malaria_instruct_2/>
-            <malaria_instruct_3/>
-            <malaria_instruct_4/>
-            <malaria_instruct_5/>
-            <fever_instruct_1/>
-            <fever_instruct_2/>
-            <diarrhea_instruct_1/>
-            <diarrhea_instruct_2/>
-            <diarrhea_instruct_3/>
-            <diarrhea_instruct_4/>
-            <pneumonia_instruct_1/>
-            <pneumonia_instruct_2/>
-            <pneumonia_instruct_3/>
-            <pneumonia_instruct_4/>
-            <generated_note_name_151/>
-            <generated_note_name_152/>
+            <malaria_treatement_al_1/>
+            <malaria_treatement_al_2/>
+            <malaria_treatement_al_3/>
+            <malaria_treatement_para_4/>
+            <malaria_treatement_para_5/>
+            <fever_treatement_para_1/>
+            <fever_treatement_para_2/>
+            <diarrhea_treatement_ors_1/>
+            <diarrhea_treatement_ors_2/>
+            <diarrhea_treatement_zinc_1/>
+            <diarrhea_treatement_zinc_2/>
+            <pneumonia_treatement_amox_1/>
+            <pneumonia_treatement_amox_2/>
+            <pneumonia_treatement_amox_3/>
+            <pneumonia_treatement_amox_4/>
+            <summary_imp_instr_g1>
+              <summary_imp_instr1/>
+              <summary_danger_signs1/>
+              <summary_danger_signs2/>
+              <summary_danger_signs3/>
+              <summary_danger_signs4/>
+              <summary_danger_signs5/>
+              <summary_danger_signs6/>
+            </summary_imp_instr_g1>
+            <summary_imp_instr2/>
+            <two_mo_instruct_1/>
+            <summary_imp_instr3/>
+            <cough_instruct_g1>
+              <cough_instruct_1/>
+              <cough_instruct_2/>
+            </cough_instruct_g1>
+            <cough_instruct_g2>
+              <cough_instruct_3/>
+              <cough_instruct_4/>
+              <cough_instruct_5/>
+            </cough_instruct_g2>
+            <mauc_instruct_g1>
+              <mauc_instruct_1/>
+              <mauc_instruct_2/>
+              <mauc_instruct_3/>
+            </mauc_instruct_g1>
+            <malaria_instruct>
+              <malaria_instruct_al_1/>
+              <malaria_instruct_al_2/>
+            </malaria_instruct>
+            <malaria_instruct_al_gr1>
+              <malaria_instruct_al_3/>
+              <malaria_instruct_al_4/>
+            </malaria_instruct_al_gr1>
+            <malaria_instruct_al_5/>
+            <malaria_instruct_para_5/>
+            <malaria_instruct_para_6/>
+            <fever_instruct_para_gr1>
+              <fever_instruct_para_1/>
+              <fever_instruct_para_2/>
+            </fever_instruct_para_gr1>
+            <fever_instruct_para_gr2>
+              <fever_instruct_para_3/>
+              <fever_instruct_para_4/>
+            </fever_instruct_para_gr2>
+            <diarrhea_instruct_ors_g1>
+              <diarrhea_instruct_ors_1/>
+              <diarrhea_instruct_ors_2/>
+            </diarrhea_instruct_ors_g1>
+            <diarrhea_instruct_ors_g2>
+              <diarrhea_instruct_ors_3/>
+              <diarrhea_instruct_ors_4/>
+              <diarrhea_instruct_ors_5/>
+              <diarrhea_instruct_ors_6/>
+              <diarrhea_instruct_ors_7/>
+            </diarrhea_instruct_ors_g2>
+            <diarrhea_instruct_zinc_gr1>
+              <diarrhea_instruct_zinc_1/>
+              <diarrhea_instruct_zinc_2/>
+            </diarrhea_instruct_zinc_gr1>
+            <diarrhea_instruct_zinc_2/>
+            <pneumonia_instruct_amox_gr1>
+              <pneumonia_instruct_amox_1/>
+              <pneumonia_instruct_amox_2/>
+              <pneumonia_instruct_amox_3/>
+            </pneumonia_instruct_amox_gr1>
+            <pneumonia_instruct_amox_gr2>
+              <pneumonia_instruct_amox_4/>
+              <pneumonia_instruct_amox_5/>
+              <pneumonia_instruct_amox_6/>
+            </pneumonia_instruct_amox_gr2>
+            <generated_note_name_203/>
+            <generated_note_name_204/>
           </summary>
           <data tag="hidden">
             <__danger_signs_without_fever/>
@@ -3384,10 +4003,10 @@ not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required=
       <bind nodeset="/child_assessment/breathing" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
       <bind nodeset="/child_assessment/breathing/breathing_timer" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/breathing/breathing_count" required="true()" type="int"/>
-      <bind nodeset="/child_assessment/breathing/generated_note_name_73" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and selected( /child_assessment/data/__fast_breathing_child , 'no')" type="string"/>
-      <bind nodeset="/child_assessment/breathing/generated_note_name_74" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and selected( /child_assessment/data/__fast_breathing_child , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/breathing/generated_note_name_75" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and  /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &lt;= 24" type="string"/>
-      <bind nodeset="/child_assessment/breathing/generated_note_name_76" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and  /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &gt; 24" type="string"/>
+      <bind nodeset="/child_assessment/breathing/breathing_note1" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and selected( /child_assessment/data/__fast_breathing_child , 'no')" type="string"/>
+      <bind nodeset="/child_assessment/breathing/breathing_note2" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and selected( /child_assessment/data/__fast_breathing_child , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/breathing/breathing_note3" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and  /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &lt;= 24" type="string"/>
+      <bind nodeset="/child_assessment/breathing/breathing_note4" readonly="true()" relevant=" /child_assessment/breathing/breathing_count  &gt; 0 and  /child_assessment/patient_age_in_years  &gt; 5 and  /child_assessment/breathing/breathing_count  &gt; 24" type="string"/>
       <bind nodeset="/child_assessment/diarrhea" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
       <bind nodeset="/child_assessment/diarrhea/diarrhea_yes_no" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/diarrhea/diarrhea_last" relevant="selected( /child_assessment/diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
@@ -3397,28 +4016,31 @@ not(selected( /child_assessment/malaria/malaria_fever_length , '14'))" required=
       <bind nodeset="/child_assessment/malnutrition/generated_note_name_87" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/malnutrition/malnutrition_muac_color" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/malnutrition/malnutrition_swollen_feet" required="true()" type="select1"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_93" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_94" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_95" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_96" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_97" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_98" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_99" readonly="true()" relevant="selected( /child_assessment/data/__show_signs_symptoms , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_100" readonly="true()" relevant="selected( /child_assessment/malaria/malaria_fever_rash , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_101" readonly="true()" relevant="selected( /child_assessment/malaria/malaria_referred , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_102" readonly="true()" relevant="selected( /child_assessment/data/__fast_breathing_child , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_103" readonly="true()" relevant="selected( /child_assessment/data/__fast_breathing_person , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_104" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_105" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_106" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes') and
+      <bind nodeset="/child_assessment/summary/summary_assess" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_submit" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_detrails" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_name" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_sex" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_age" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_symp" readonly="true()" relevant="selected( /child_assessment/data/__show_signs_symptoms , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_rash" readonly="true()" relevant="selected( /child_assessment/malaria/malaria_fever_rash , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_malaria_test" readonly="true()" relevant="selected( /child_assessment/malaria/malaria_referred , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_fast_breath1" readonly="true()" relevant="selected( /child_assessment/data/__fast_breathing_child , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_fast_breath2" readonly="true()" relevant="selected( /child_assessment/data/__fast_breathing_person , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_sick" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_diag" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_cough" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes') and
 selected( /child_assessment/cough/cough_yes_no , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_107" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes') and
+      <bind nodeset="/child_assessment/summary/summary_diarrhea" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes') and
 selected( /child_assessment/diarrhea/diarrhea_yes_no , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_108" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes') and
+      <bind nodeset="/child_assessment/summary/summary_malaria" readonly="true()" relevant="selected( /child_assessment/data/__show_diagnosis , 'yes') and
 selected( /child_assessment/malaria/malaria_results , 'positive')" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_109" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'yes')" type="string"/>
-      <bind nodeset="/child_assessment/summary/summary_refer" relevant="selected( /child_assessment/data/__any_danger , 'yes')" required="true()" type="select1"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_111" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_refer_gr" relevant="selected( /child_assessment/data/__any_danger , 'yes') or 
+selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')"/>
+      <bind nodeset="/child_assessment/summary/summary_refer_gr/summary_refer" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_refer_gr/summary_refer_confirm" required="true()" type="select1"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_113" readonly="true()" relevant=" /child_assessment/patient_age_in_months  &gt; 2 and 
+selected( /child_assessment/data/__any_danger , 'no')" type="string"/>
       <bind nodeset="/child_assessment/summary/cough_treatement_1" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
 not(selected( /child_assessment/cough/cough_time , '14')) and
  /child_assessment/patient_age_in_months  &gt; 6 and 
@@ -3430,116 +4052,145 @@ not(selected( /child_assessment/cough/cough_time , '14')) and
       <bind nodeset="/child_assessment/summary/mauc_treatement_1" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
 selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
  /child_assessment/patient_age_in_months  &gt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_treatement_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+      <bind nodeset="/child_assessment/summary/malaria_treatement_al_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
- /child_assessment/patient_age_in_months  &lt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_treatement_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+ /child_assessment/patient_age_in_months  &lt;= 5" type="string"/>
+      <bind nodeset="/child_assessment/summary/malaria_treatement_al_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 6 and
  /child_assessment/patient_age_in_months  &lt;= 36" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_treatement_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+      <bind nodeset="/child_assessment/summary/malaria_treatement_al_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_years  &gt;= 3 and
  /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_treatement_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+      <bind nodeset="/child_assessment/summary/malaria_treatement_para_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
  /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_treatement_5" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/malaria_treatement_para_5" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment , 'yes') and
  /child_assessment/patient_age_in_years  &gt;= 1 and
  /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/fever_treatement_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
+      <bind nodeset="/child_assessment/summary/fever_treatement_para_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
  /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/fever_treatement_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
+      <bind nodeset="/child_assessment/summary/fever_treatement_para_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
  /child_assessment/patient_age_in_years  &gt;= 1 and
  /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_treatement_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/diarrhea_treatement_ors_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
  /child_assessment/patient_age_in_months  &lt; 24" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_treatement_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/diarrhea_treatement_ors_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
  /child_assessment/patient_age_in_months  &gt;= 24" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_treatement_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/diarrhea_treatement_zinc_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
  /child_assessment/patient_age_in_months  &lt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_treatement_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/diarrhea_treatement_zinc_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
  /child_assessment/patient_age_in_months  &gt; 6 and
  /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_treatement_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/pneumonia_treatement_amox_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
  /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_treatement_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/pneumonia_treatement_amox_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
  /child_assessment/patient_age_in_years  &gt; 1 and
  /child_assessment/patient_age_in_years  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_treatement_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/pneumonia_treatement_amox_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
  /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_treatement_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/pneumonia_treatement_amox_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
  /child_assessment/patient_age_in_years  &gt; 1 and
  /child_assessment/patient_age_in_years  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_130" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no')" type="string"/>
-      <bind nodeset="/child_assessment/summary/cough_instruct_1" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1" relevant=" /child_assessment/patient_age_in_months  &gt; 2 and 
+selected( /child_assessment/data/__any_danger , 'yes')"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr2" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/two_mo_instruct_1" readonly="true()" relevant="selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_imp_instr3" readonly="true()" relevant=" /child_assessment/patient_age_in_months  &gt; 2 and 
+selected( /child_assessment/data/__any_danger , 'no')" type="string"/>
+      <bind nodeset="/child_assessment/summary/cough_instruct_g1" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
 not(selected( /child_assessment/cough/cough_time , '14')) and
  /child_assessment/patient_age_in_months  &gt; 6 and 
- /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/cough_instruct_2" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
-not(selected( /child_assessment/cough/cough_time , '14')) and
- /child_assessment/patient_age_in_months  &gt; 6 and 
- /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/cough_instruct_3" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
+ /child_assessment/patient_age_in_years  &lt;= 5"/>
+      <bind nodeset="/child_assessment/summary/cough_instruct_g1/cough_instruct_1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/cough_instruct_g1/cough_instruct_2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/cough_instruct_g2" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
 not(selected( /child_assessment/cough/cough_time , '14')) and
  /child_assessment/patient_age_in_months  &gt; 2 and 
- /child_assessment/patient_age_in_months  &lt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/cough_instruct_4" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
-not(selected( /child_assessment/cough/cough_time , '14')) and
- /child_assessment/patient_age_in_months  &gt; 2 and 
- /child_assessment/patient_age_in_months  &lt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/mauc_instruct_1" readonly="true()" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
+ /child_assessment/patient_age_in_months  &lt;= 6"/>
+      <bind nodeset="/child_assessment/summary/cough_instruct_g2/cough_instruct_3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/cough_instruct_g2/cough_instruct_4" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/cough_instruct_g2/cough_instruct_5" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/mauc_instruct_g1" relevant="selected( /child_assessment/data/__any_danger , 'no') and 
 selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
- /child_assessment/patient_age_in_months  &gt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_instruct_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+ /child_assessment/patient_age_in_months  &gt;= 6"/>
+      <bind nodeset="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
- /child_assessment/patient_age_in_months  &lt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_instruct_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+ /child_assessment/patient_age_in_months  &lt;= 5"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct/malaria_instruct_al_1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct/malaria_instruct_al_2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct_al_gr1" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 6 and
- /child_assessment/patient_age_in_months  &lt;= 36" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_instruct_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+ /child_assessment/patient_age_in_months  &lt;= 36"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct_al_5" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_years  &gt;= 3 and
- /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/malaria_instruct_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
+ /child_assessment/patient_age_in_years  &lt; 6" type="string"/>
+      <bind nodeset="/child_assessment/summary/malaria_instruct_para_5" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
  /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind jr:constraintMsg="jr:itext('/child_assessment/summary/malaria_instruct_5:jr:constraintMsg')" nodeset="/child_assessment/summary/malaria_instruct_5" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment , 'yes') and
+      <bind jr:constraintMsg="jr:itext('/child_assessment/summary/malaria_instruct_para_6:jr:constraintMsg')" nodeset="/child_assessment/summary/malaria_instruct_para_6" readonly="true()" relevant="selected( /child_assessment/data/__receive_malaria_treatment , 'yes') and
  /child_assessment/patient_age_in_years  &gt;= 1 and
  /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/fever_instruct_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
+      <bind nodeset="/child_assessment/summary/fever_instruct_para_gr1" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
- /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/fever_instruct_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
+ /child_assessment/patient_age_in_months  &lt;= 12"/>
+      <bind nodeset="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/fever_instruct_para_gr2" relevant="selected( /child_assessment/data/__receive_fever_treatment ,'yes') and
  /child_assessment/patient_age_in_years  &gt;= 1 and
+ /child_assessment/patient_age_in_years  &lt;= 5"/>
+      <bind nodeset="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g1" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+ /child_assessment/patient_age_in_months  &gt;= 2 and
+ /child_assessment/patient_age_in_months  &lt;= 24"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g2" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+ /child_assessment/patient_age_in_months  &gt; 24"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_zinc_gr1" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+ /child_assessment/patient_age_in_months  &gt; 2 and
+ /child_assessment/patient_age_in_months  &lt;= 6"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/diarrhea_instruct_zinc_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+ /child_assessment/patient_age_in_months  &gt; 6 and
  /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_instruct_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr1" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
  /child_assessment/patient_age_in_months  &gt;= 2 and
- /child_assessment/patient_age_in_months  &lt;= 24" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_instruct_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
- /child_assessment/patient_age_in_months  &gt;= 24" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_instruct_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
- /child_assessment/patient_age_in_months  &gt;= 2 and
- /child_assessment/patient_age_in_months  &lt;= 6" type="string"/>
-      <bind nodeset="/child_assessment/summary/diarrhea_instruct_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_diarrhea_treatment , 'yes') and
- /child_assessment/patient_age_in_months  &gt;= 6 and
- /child_assessment/patient_age_in_years  &lt;= 5" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_instruct_1" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
- /child_assessment/patient_age_in_months  &gt;= 2 and
- /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_instruct_2" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
+ /child_assessment/patient_age_in_months  &lt;= 12"/>
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr2" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
  /child_assessment/patient_age_in_years  &gt; 1 and
- /child_assessment/patient_age_in_years  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_instruct_3" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
- /child_assessment/patient_age_in_months  &gt;= 2 and
- /child_assessment/patient_age_in_months  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/pneumonia_instruct_4" readonly="true()" relevant="selected( /child_assessment/data/__receive_pneumonia_treatment , 'yes') and
- /child_assessment/patient_age_in_years  &gt; 1 and
- /child_assessment/patient_age_in_years  &lt;= 12" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_151" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/generated_note_name_152" readonly="true()" type="string"/>
+ /child_assessment/patient_age_in_years  &lt;= 12"/>
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_203" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/generated_note_name_204" readonly="true()" type="string"/>
       <bind calculate="if(
  selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes') or 
  selected( /child_assessment/danger_signs_screening/danger_signs_sleepy , 'yes') or
@@ -3568,7 +4219,6 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
  ,&quot;yes&quot;, &quot;no&quot;
  )" nodeset="/child_assessment/data/__fast_breathing_person" type="string"/>
       <bind calculate="if(
- selected( /child_assessment/data/__danger_signs_with_fever , 'yes') or
  selected( /child_assessment/malaria/malaria_fever_length , '7') or
  selected( /child_assessment/malaria/malaria_fever_length , '14') or
  selected( /child_assessment/malaria/malaria_results , 'not_done') or
@@ -3598,6 +4248,7 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
  )" nodeset="/child_assessment/data/__receive_malaria_treatment" type="string"/>
       <bind calculate="if(
  selected( /child_assessment/data/__any_danger , 'no') and 
+  /child_assessment/malaria/malaria_fever_length  &gt; 0 and
   /child_assessment/malaria/malaria_fever_length  &lt; 7 and
  not(selected( /child_assessment/malaria/malaria_results , 'positive'))
  ,&quot;yes&quot;, &quot;no&quot;
@@ -3944,17 +4595,17 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
       <input ref="/child_assessment/breathing/breathing_count">
         <label ref="jr:itext('/child_assessment/breathing/breathing_count:label')"/>
       </input>
-      <input ref="/child_assessment/breathing/generated_note_name_73">
-        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_73:label')"/>
+      <input ref="/child_assessment/breathing/breathing_note1">
+        <label ref="jr:itext('/child_assessment/breathing/breathing_note1:label')"/>
       </input>
-      <input ref="/child_assessment/breathing/generated_note_name_74">
-        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_74:label')"/>
+      <input ref="/child_assessment/breathing/breathing_note2">
+        <label ref="jr:itext('/child_assessment/breathing/breathing_note2:label')"/>
       </input>
-      <input ref="/child_assessment/breathing/generated_note_name_75">
-        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_75:label')"/>
+      <input ref="/child_assessment/breathing/breathing_note3">
+        <label ref="jr:itext('/child_assessment/breathing/breathing_note3:label')"/>
       </input>
-      <input ref="/child_assessment/breathing/generated_note_name_76">
-        <label ref="jr:itext('/child_assessment/breathing/generated_note_name_76:label')"/>
+      <input ref="/child_assessment/breathing/breathing_note4">
+        <label ref="jr:itext('/child_assessment/breathing/breathing_note4:label')"/>
       </input>
     </group>
     <group appearance="field-list" ref="/child_assessment/diarrhea">
@@ -4053,70 +4704,72 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
       </select1>
     </group>
     <group appearance="field-list summary" ref="/child_assessment/summary">
-      <input appearance="h1 yellow" ref="/child_assessment/summary/generated_note_name_93">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_93:label')"/>
+      <input appearance="h1 yellow" ref="/child_assessment/summary/summary_assess">
+        <label ref="jr:itext('/child_assessment/summary/summary_assess:label')"/>
       </input>
-      <input appearance="h2" ref="/child_assessment/summary/generated_note_name_94">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_94:label')"/>
+      <input appearance="h2" ref="/child_assessment/summary/summary_submit">
+        <label ref="jr:itext('/child_assessment/summary/summary_submit:label')"/>
       </input>
-      <input appearance="h1 green" ref="/child_assessment/summary/generated_note_name_95">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_95:label')"/>
+      <input appearance="h1 green" ref="/child_assessment/summary/summary_detrails">
+        <label ref="jr:itext('/child_assessment/summary/summary_detrails:label')"/>
       </input>
-      <input appearance="center" ref="/child_assessment/summary/generated_note_name_96">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_96:label')"/>
+      <input appearance="center" ref="/child_assessment/summary/summary_name">
+        <label ref="jr:itext('/child_assessment/summary/summary_name:label')"/>
       </input>
-      <input appearance="center" ref="/child_assessment/summary/generated_note_name_97">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_97:label')"/>
+      <input appearance="center" ref="/child_assessment/summary/summary_sex">
+        <label ref="jr:itext('/child_assessment/summary/summary_sex:label')"/>
       </input>
-      <input appearance="center" ref="/child_assessment/summary/generated_note_name_98">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_98:label')"/>
+      <input appearance="center" ref="/child_assessment/summary/summary_age">
+        <label ref="jr:itext('/child_assessment/summary/summary_age:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/child_assessment/summary/generated_note_name_99">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_99:label')"/>
+      <input appearance="h1 blue" ref="/child_assessment/summary/summary_symp">
+        <label ref="jr:itext('/child_assessment/summary/summary_symp:label')"/>
       </input>
-      <input ref="/child_assessment/summary/generated_note_name_100">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_100:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_rash">
+        <label ref="jr:itext('/child_assessment/summary/summary_rash:label')"/>
       </input>
-      <input ref="/child_assessment/summary/generated_note_name_101">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_101:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_malaria_test">
+        <label ref="jr:itext('/child_assessment/summary/summary_malaria_test:label')"/>
       </input>
-      <input ref="/child_assessment/summary/generated_note_name_102">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_102:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_fast_breath1">
+        <label ref="jr:itext('/child_assessment/summary/summary_fast_breath1:label')"/>
       </input>
-      <input ref="/child_assessment/summary/generated_note_name_103">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_103:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_fast_breath2">
+        <label ref="jr:itext('/child_assessment/summary/summary_fast_breath2:label')"/>
       </input>
-      <input ref="/child_assessment/summary/generated_note_name_104">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_104:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_sick">
+        <label ref="jr:itext('/child_assessment/summary/summary_sick:label')"/>
       </input>
-      <input appearance="h1 green" ref="/child_assessment/summary/generated_note_name_105">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_105:label')"/>
+      <input appearance="h1 green" ref="/child_assessment/summary/summary_diag">
+        <label ref="jr:itext('/child_assessment/summary/summary_diag:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/generated_note_name_106">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_106:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_cough">
+        <label ref="jr:itext('/child_assessment/summary/summary_cough:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/generated_note_name_107">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_107:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_diarrhea">
+        <label ref="jr:itext('/child_assessment/summary/summary_diarrhea:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/generated_note_name_108">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_108:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/summary_malaria">
+        <label ref="jr:itext('/child_assessment/summary/summary_malaria:label')"/>
       </input>
-      <input appearance="h1 red" ref="/child_assessment/summary/generated_note_name_109">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_109:label')"/>
-      </input>
-      <select1 ref="/child_assessment/summary/summary_refer">
-        <label ref="jr:itext('/child_assessment/summary/summary_refer:label')"/>
-        <item>
-          <label ref="jr:itext('/child_assessment/summary/summary_refer/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/child_assessment/summary/summary_refer/no:label')"/>
-          <value>no</value>
-        </item>
-      </select1>
-      <input appearance="h1 blue" ref="/child_assessment/summary/generated_note_name_111">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_111:label')"/>
+      <group appearance="field-list" ref="/child_assessment/summary/summary_refer_gr">
+        <input appearance="h1 red" ref="/child_assessment/summary/summary_refer_gr/summary_refer">
+          <label ref="jr:itext('/child_assessment/summary/summary_refer_gr/summary_refer:label')"/>
+        </input>
+        <select1 ref="/child_assessment/summary/summary_refer_gr/summary_refer_confirm">
+          <label ref="jr:itext('/child_assessment/summary/summary_refer_gr/summary_refer_confirm:label')"/>
+          <item>
+            <label ref="jr:itext('/child_assessment/summary/summary_refer_gr/summary_refer_confirm/yes:label')"/>
+            <value>yes</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/child_assessment/summary/summary_refer_gr/summary_refer_confirm/no:label')"/>
+            <value>no</value>
+          </item>
+        </select1>
+      </group>
+      <input appearance="h1 blue" ref="/child_assessment/summary/generated_note_name_113">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_113:label')"/>
       </input>
       <input appearance="li" ref="/child_assessment/summary/cough_treatement_1">
         <label ref="jr:itext('/child_assessment/summary/cough_treatement_1:label')"/>
@@ -4127,119 +4780,217 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
       <input appearance="li" ref="/child_assessment/summary/mauc_treatement_1">
         <label ref="jr:itext('/child_assessment/summary/mauc_treatement_1:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_1">
-        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_1:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_al_1">
+        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_al_1:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_2">
-        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_2:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_al_2">
+        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_al_2:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_3">
-        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_3:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_al_3">
+        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_al_3:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_4">
-        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_4:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_para_4">
+        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_para_4:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_5">
-        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_5:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/malaria_treatement_para_5">
+        <label ref="jr:itext('/child_assessment/summary/malaria_treatement_para_5:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/fever_treatement_1">
-        <label ref="jr:itext('/child_assessment/summary/fever_treatement_1:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/fever_treatement_para_1">
+        <label ref="jr:itext('/child_assessment/summary/fever_treatement_para_1:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/fever_treatement_2">
-        <label ref="jr:itext('/child_assessment/summary/fever_treatement_2:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/fever_treatement_para_2">
+        <label ref="jr:itext('/child_assessment/summary/fever_treatement_para_2:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_1">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_1:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_ors_1">
+        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_ors_1:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_2">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_2:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_ors_2">
+        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_ors_2:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_3">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_3:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_zinc_1">
+        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_zinc_1:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_4">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_4:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/diarrhea_treatement_zinc_2">
+        <label ref="jr:itext('/child_assessment/summary/diarrhea_treatement_zinc_2:label')"/>
       </input>
-      <input ref="/child_assessment/summary/pneumonia_treatement_1">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_1:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/pneumonia_treatement_amox_1">
+        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_amox_1:label')"/>
       </input>
-      <input ref="/child_assessment/summary/pneumonia_treatement_2">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_2:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/pneumonia_treatement_amox_2">
+        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_amox_2:label')"/>
       </input>
-      <input ref="/child_assessment/summary/pneumonia_treatement_3">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_3:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/pneumonia_treatement_amox_3">
+        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_amox_3:label')"/>
       </input>
-      <input ref="/child_assessment/summary/pneumonia_treatement_4">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_4:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/pneumonia_treatement_amox_4">
+        <label ref="jr:itext('/child_assessment/summary/pneumonia_treatement_amox_4:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/child_assessment/summary/generated_note_name_130">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_130:label')"/>
+      <group appearance="field-list" ref="/child_assessment/summary/summary_imp_instr_g1">
+        <input appearance="h1 blue" ref="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1">
+          <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1">
+          <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2">
+          <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3">
+          <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs3:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4">
+          <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs4:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5">
+          <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs5:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6">
+          <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs6:label')"/>
+        </input>
+      </group>
+      <input appearance="h1 blue" ref="/child_assessment/summary/summary_imp_instr2">
+        <label ref="jr:itext('/child_assessment/summary/summary_imp_instr2:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/cough_instruct_1">
-        <label ref="jr:itext('/child_assessment/summary/cough_instruct_1:label')"/>
+      <input ref="/child_assessment/summary/two_mo_instruct_1">
+        <label ref="jr:itext('/child_assessment/summary/two_mo_instruct_1:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/cough_instruct_2">
-        <label ref="jr:itext('/child_assessment/summary/cough_instruct_2:label')"/>
+      <input appearance="h1 blue" ref="/child_assessment/summary/summary_imp_instr3">
+        <label ref="jr:itext('/child_assessment/summary/summary_imp_instr3:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/cough_instruct_3">
-        <label ref="jr:itext('/child_assessment/summary/cough_instruct_3:label')"/>
+      <group appearance="field-list" ref="/child_assessment/summary/cough_instruct_g1">
+        <input appearance="li" ref="/child_assessment/summary/cough_instruct_g1/cough_instruct_1">
+          <label ref="jr:itext('/child_assessment/summary/cough_instruct_g1/cough_instruct_1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/cough_instruct_g1/cough_instruct_2">
+          <label ref="jr:itext('/child_assessment/summary/cough_instruct_g1/cough_instruct_2:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/cough_instruct_g2">
+        <input appearance="li" ref="/child_assessment/summary/cough_instruct_g2/cough_instruct_3">
+          <label ref="jr:itext('/child_assessment/summary/cough_instruct_g2/cough_instruct_3:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/cough_instruct_g2/cough_instruct_4">
+          <label ref="jr:itext('/child_assessment/summary/cough_instruct_g2/cough_instruct_4:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/cough_instruct_g2/cough_instruct_5">
+          <label ref="jr:itext('/child_assessment/summary/cough_instruct_g2/cough_instruct_5:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/mauc_instruct_g1">
+        <input appearance="li" ref="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1">
+          <label ref="jr:itext('/child_assessment/summary/mauc_instruct_g1/mauc_instruct_1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2">
+          <label ref="jr:itext('/child_assessment/summary/mauc_instruct_g1/mauc_instruct_2:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3">
+          <label ref="jr:itext('/child_assessment/summary/mauc_instruct_g1/mauc_instruct_3:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/malaria_instruct">
+        <input appearance="li" ref="/child_assessment/summary/malaria_instruct/malaria_instruct_al_1">
+          <label ref="jr:itext('/child_assessment/summary/malaria_instruct/malaria_instruct_al_1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/malaria_instruct/malaria_instruct_al_2">
+          <label ref="jr:itext('/child_assessment/summary/malaria_instruct/malaria_instruct_al_2:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/malaria_instruct_al_gr1">
+        <input appearance="li" ref="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3">
+          <label ref="jr:itext('/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_3:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4">
+          <label ref="jr:itext('/child_assessment/summary/malaria_instruct_al_gr1/malaria_instruct_al_4:label')"/>
+        </input>
+      </group>
+      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_al_5">
+        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_al_5:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/cough_instruct_4">
-        <label ref="jr:itext('/child_assessment/summary/cough_instruct_4:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_para_5">
+        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_para_5:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/mauc_instruct_1">
-        <label ref="jr:itext('/child_assessment/summary/mauc_instruct_1:label')"/>
+      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_para_6">
+        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_para_6:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_1">
-        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_1:label')"/>
+      <group appearance="field-list" ref="/child_assessment/summary/fever_instruct_para_gr1">
+        <input appearance="li" ref="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1">
+          <label ref="jr:itext('/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2">
+          <label ref="jr:itext('/child_assessment/summary/fever_instruct_para_gr1/fever_instruct_para_2:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/fever_instruct_para_gr2">
+        <input appearance="li" ref="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3">
+          <label ref="jr:itext('/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_3:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4">
+          <label ref="jr:itext('/child_assessment/summary/fever_instruct_para_gr2/fever_instruct_para_4:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/diarrhea_instruct_ors_g1">
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_ors_g1/diarrhea_instruct_ors_2:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/diarrhea_instruct_ors_g2">
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_3:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_4:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_5:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_6:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_ors_g2/diarrhea_instruct_ors_7:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/diarrhea_instruct_zinc_gr1">
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2">
+          <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_zinc_gr1/diarrhea_instruct_zinc_2:label')"/>
+        </input>
+      </group>
+      <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_zinc_2">
+        <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_zinc_2:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_2">
-        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_2:label')"/>
+      <group appearance="field-list" ref="/child_assessment/summary/pneumonia_instruct_amox_gr1">
+        <input appearance="li" ref="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1">
+          <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_1:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2">
+          <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_2:label')"/>
+        </input>
+        <input appearance="li" ref="/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3">
+          <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_amox_gr1/pneumonia_instruct_amox_3:label')"/>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/child_assessment/summary/pneumonia_instruct_amox_gr2">
+        <input ref="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4">
+          <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_4:label')"/>
+        </input>
+        <input ref="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5">
+          <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_5:label')"/>
+        </input>
+        <input ref="/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6">
+          <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_amox_gr2/pneumonia_instruct_amox_6:label')"/>
+        </input>
+      </group>
+      <input appearance="h1 lime" ref="/child_assessment/summary/generated_note_name_203">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_203:label')"/>
       </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_3">
-        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_3:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_4">
-        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_4:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/malaria_instruct_5">
-        <label ref="jr:itext('/child_assessment/summary/malaria_instruct_5:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/fever_instruct_1">
-        <label ref="jr:itext('/child_assessment/summary/fever_instruct_1:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/fever_instruct_2">
-        <label ref="jr:itext('/child_assessment/summary/fever_instruct_2:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_1">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_1:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_2">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_2:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_3">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_3:label')"/>
-      </input>
-      <input appearance="li" ref="/child_assessment/summary/diarrhea_instruct_4">
-        <label ref="jr:itext('/child_assessment/summary/diarrhea_instruct_4:label')"/>
-      </input>
-      <input ref="/child_assessment/summary/pneumonia_instruct_1">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_1:label')"/>
-      </input>
-      <input ref="/child_assessment/summary/pneumonia_instruct_2">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_2:label')"/>
-      </input>
-      <input ref="/child_assessment/summary/pneumonia_instruct_3">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_3:label')"/>
-      </input>
-      <input ref="/child_assessment/summary/pneumonia_instruct_4">
-        <label ref="jr:itext('/child_assessment/summary/pneumonia_instruct_4:label')"/>
-      </input>
-      <input appearance="h1 lime" ref="/child_assessment/summary/generated_note_name_151">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_151:label')"/>
-      </input>
-      <input ref="/child_assessment/summary/generated_note_name_152">
-        <label ref="jr:itext('/child_assessment/summary/generated_note_name_152:label')"/>
+      <input ref="/child_assessment/summary/generated_note_name_204">
+        <label ref="jr:itext('/child_assessment/summary/generated_note_name_204:label')"/>
       </input>
     </group>
     <group appearance="hidden" ref="/child_assessment/data"/>
