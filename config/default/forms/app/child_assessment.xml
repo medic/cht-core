@@ -630,7 +630,7 @@ For 5 days
 Total 5 tabs</value>
           </text>
           <text id="/child_assessment/summary/summary_age:label">
-            <value><output value=" /child_assessment/patient_age_in_years "/> years <output value=" /child_assessment/patient_age_in_months "/> months</value>
+            <value><output value=" /child_assessment/data/__display_age "/></value>
           </text>
           <text id="/child_assessment/summary/summary_assess:label">
             <value>Patient Assessment&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
@@ -897,6 +897,9 @@ person. Do not put any object in the mouth.</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/data/__danger_signs_without_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__display_age:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/data/__fast_breathing_child:label">
@@ -1647,6 +1650,9 @@ person. Do not put any object in the mouth.</value>
           <text id="/child_assessment/data/__danger_signs_without_fever:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/data/__display_age:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/data/__fast_breathing_child:label">
             <value>-</value>
           </text>
@@ -2391,6 +2397,9 @@ person. Do not put any object in the mouth.</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/data/__danger_signs_without_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/data/__display_age:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/data/__fast_breathing_child:label">
@@ -3139,6 +3148,9 @@ person. Do not put any object in the mouth.</value>
           <text id="/child_assessment/data/__danger_signs_without_fever:label">
             <value>-</value>
           </text>
+          <text id="/child_assessment/data/__display_age:label">
+            <value>-</value>
+          </text>
           <text id="/child_assessment/data/__fast_breathing_child:label">
             <value>-</value>
           </text>
@@ -3727,7 +3739,7 @@ person. Do not put any object in the mouth.</value>
         </translation>
       </itext>
       <instance>
-        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2020-12-16_19-49">
+        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2021-01-04_15-49">
           <inputs>
             <meta>
               <location>
@@ -3942,6 +3954,7 @@ person. Do not put any object in the mouth.</value>
             <__receive_pneumonia_treatment/>
             <__show_diagnosis/>
             <__show_signs_symptoms/>
+            <__display_age/>
           </data>
           <meta tag="hidden">
             <instanceID/>
@@ -4256,8 +4269,7 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
       <bind calculate="if(
  selected( /child_assessment/data/__any_danger , 'no') and 
   /child_assessment/diarrhea/diarrhea_last  &lt; 14 and
- selected( /child_assessment/diarrhea/diarrhea_blood , 'no') and
- not(selected( /child_assessment/malaria/malaria_results , 'positive'))
+ selected( /child_assessment/diarrhea/diarrhea_blood , 'no')
  ,&quot;yes&quot;, &quot;no&quot;
  )" nodeset="/child_assessment/data/__receive_diarrhea_treatment" type="string"/>
       <bind calculate="if(
@@ -4286,6 +4298,11 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
  selected( /child_assessment/two_mo_assessment/two_mo_referred , 'yes')
  ,&quot;yes&quot;, &quot;no&quot;
  )" nodeset="/child_assessment/data/__show_signs_symptoms" type="string"/>
+      <bind calculate="if(../../patient_age_in_days &lt; 31, 
+concat(../../patient_age_in_days, ' days old'),
+if(../../patient_age_in_months &lt; 12, 
+concat(../../patient_age_in_months, ' months old'), 
+concat(../../patient_age_in_years, ' years old')))" nodeset="/child_assessment/data/__display_age" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/child_assessment/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -4829,7 +4846,7 @@ selected( /child_assessment/malnutrition/malnutrition_muac_color , 'yellow') and
         <input appearance="h1 blue" ref="/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1">
           <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_imp_instr1:label')"/>
         </input>
-        <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1">
+        <input appearance="li li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1">
           <label ref="jr:itext('/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label')"/>
         </input>
         <input appearance="li" ref="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2">

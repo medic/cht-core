@@ -668,95 +668,95 @@
           <text id="/immunization_and_growth/rota_virus_group:label">
             <value>Rota Virus Vaccine</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_159:label">
+          <text id="/immunization_and_growth/summary/generated_note_name_162:label">
             <value>Summary Page&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_160:label">
+          <text id="/immunization_and_growth/summary/generated_note_name_163:label">
             <value>Click the Submit button at the bottom of the form.</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_161:label">
+          <text id="/immunization_and_growth/summary/generated_note_name_164:label">
             <value>Immunization and Growth monitoring&lt;i class="fa fa-calendar-check-o"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_162:label">
+          <text id="/immunization_and_growth/summary/generated_note_name_165:label">
             <value>Baby's Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_163:label">
+          <text id="/immunization_and_growth/summary/generated_note_name_166:label">
             <value><output value=" /immunization_and_growth/patient_name "/></value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_164:label">
-            <value><output value=" /immunization_and_growth/patient_age_in_years "/> years <output value=" /immunization_and_growth/patient_age_in_months "/> months</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_165:label">
-            <value>Visit Findings&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_166:label">
-            <value>Immunization visit attended</value>
-          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_167:label">
-            <value>Immunization visit not attended</value>
+            <value><output value=" /immunization_and_growth/data/__display_age "/></value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_168:label">
-            <value>Vaccines&lt;i class="fa fa-child"&gt;&lt;/i&gt;</value>
+            <value>Visit Findings&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_169:label">
-            <value>BCG received</value>
+            <value>Immunization visit attended</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_170:label">
-            <value>Oral Polio Vaccine received</value>
+            <value>Immunization visit not attended</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_171:label">
-            <value>RotaVirus vaccine received</value>
+            <value>Vaccines&lt;i class="fa fa-child"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_172:label">
-            <value>Pneumococcal vaccine received</value>
+            <value>BCG received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_173:label">
-            <value>Pentavalent vaccine received</value>
+            <value>Oral Polio Vaccine received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_174:label">
-            <value>Inactivated Polio Vaccine (IPV) received</value>
+            <value>RotaVirus vaccine received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_175:label">
-            <value>Measles vaccine received</value>
+            <value>Pneumococcal vaccine received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_176:label">
-            <value>Yellow fever vaccine received</value>
+            <value>Pentavalent vaccine received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_177:label">
-            <value>Vitamin A received</value>
+            <value>Inactivated Polio Vaccine (IPV) received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_178:label">
-            <value>Growth monitoring&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
+            <value>Measles vaccine received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_179:label">
-            <value><output value=" /immunization_and_growth/growth_monitoring/growth_monitoring_weight "/> kg</value>
+            <value>Yellow fever vaccine received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_180:label">
-            <value><output value=" /immunization_and_growth/growth_monitoring/growth_monitoring_height "/> cm</value>
+            <value>Vitamin A received</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_181:label">
-            <value>Referral&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
+            <value>Growth monitoring&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_182:label">
-            <value>Refer immediately the patient to the health facility for a child development visit</value>
+            <value><output value=" /immunization_and_growth/growth_monitoring/growth_monitoring_weight "/> kg</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_183:label">
-            <value>Refer immediately the patient to the health facility as a danger sign has been reported</value>
+            <value><output value=" /immunization_and_growth/growth_monitoring/growth_monitoring_height "/> cm</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_184:label">
-            <value>Refer or accompany the patient to the health facility</value>
+            <value>Referral&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_185:label">
-            <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
+            <value>Refer immediately the patient to the health facility for a child development visit</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_186:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be in 3 days after <output value=" /immunization_and_growth/next_appointment/next_appointment_date "/></value></text>
+            <value>Refer immediately the patient to the health facility as a danger sign has been reported</value>
+          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_187:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be in 1 day after <output value=" /immunization_and_growth/developmental_milestones/developmental_next_assignment_date "/></value></text>
+            <value>Refer or accompany the patient to the health facility</value>
+          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_188:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be in 1 day after <output value=" /immunization_and_growth/developmental_milestones/developmental_next_assignment_date "/></value></text>
+            <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
+          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_189:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be 3 days after <output value=" /immunization_and_growth/missed_vaccine_details/missed_vaccine_date "/></value></text>
+            <value>1 The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be in 3 days after <output value=" /immunization_and_growth/next_appointment/next_appointment_date "/> calc: <output value=" /immunization_and_growth/data/__next_apt "/></value></text>
+          <text id="/immunization_and_growth/summary/generated_note_name_190:label">
+            <value>2 The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be 1 day after <output value=" /immunization_and_growth/developmental_milestones/developmental_next_assignment_date "/> calc: <output value=" /immunization_and_growth/data/__developmental_apt_date "/></value></text>
+          <text id="/immunization_and_growth/summary/generated_note_name_191:label">
+            <value>3 The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be 1 day after <output value=" /immunization_and_growth/developmental_milestones/developmental_next_assignment_date "/> calc: <output value=" /immunization_and_growth/data/__developmental_apt_date "/></value></text>
+          <text id="/immunization_and_growth/summary/generated_note_name_192:label">
+            <value>4 The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be 3 days after <output value=" /immunization_and_growth/missed_vaccine_details/missed_vaccine_date "/> calc: <output value=" /immunization_and_growth/data/__missed_vaccine_apt_date "/></value></text>
           <text id="/immunization_and_growth/vaccines_group/attend_clinic/no:label">
             <value>No</value>
           </text>
@@ -930,7 +930,16 @@
           <text id="/immunization_and_growth/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/data/__has_danger_sign:label">
+          <text id="/immunization_and_growth/data/__developmental_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__display_age:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__missed_vaccine_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__next_apt:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/data:label">
@@ -1503,15 +1512,6 @@
           <text id="/immunization_and_growth/rota_virus_group:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_159:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_160:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_161:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_162:label">
             <value>-</value>
           </text>
@@ -1594,6 +1594,15 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_189:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_190:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_191:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_192:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary:label">
@@ -1772,7 +1781,16 @@
           <text id="/immunization_and_growth/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/data/__has_danger_sign:label">
+          <text id="/immunization_and_growth/data/__developmental_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__display_age:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__missed_vaccine_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__next_apt:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/data:label">
@@ -2345,15 +2363,6 @@
           <text id="/immunization_and_growth/rota_virus_group:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_159:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_160:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_161:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_162:label">
             <value>-</value>
           </text>
@@ -2436,6 +2445,15 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_189:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_190:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_191:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_192:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary:label">
@@ -2614,7 +2632,16 @@
           <text id="/immunization_and_growth/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/data/__has_danger_sign:label">
+          <text id="/immunization_and_growth/data/__developmental_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__display_age:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__missed_vaccine_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__next_apt:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/data:label">
@@ -3187,15 +3214,6 @@
           <text id="/immunization_and_growth/rota_virus_group:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_159:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_160:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_161:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_162:label">
             <value>-</value>
           </text>
@@ -3278,6 +3296,15 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary/generated_note_name_189:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_190:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_191:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_192:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary:label">
@@ -3456,7 +3483,16 @@
           <text id="/immunization_and_growth/danger_signs:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/data/__has_danger_sign:label">
+          <text id="/immunization_and_growth/data/__developmental_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__display_age:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__missed_vaccine_apt_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/data/__next_apt:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/data:label">
@@ -4029,15 +4065,6 @@
           <text id="/immunization_and_growth/rota_virus_group:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_159:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_160:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/generated_note_name_161:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/summary/generated_note_name_162:label">
             <value>-</value>
           </text>
@@ -4122,6 +4149,15 @@
           <text id="/immunization_and_growth/summary/generated_note_name_189:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_190:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_191:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/summary/generated_note_name_192:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/summary:label">
             <value>-</value>
           </text>
@@ -4191,7 +4227,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2020-12-16_19-49">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-04_15-53">
           <inputs>
             <meta>
               <location>
@@ -4330,12 +4366,12 @@
             <danger_signs_other_text/>
           </danger_signs>
           <data tag="hidden">
-            <__has_danger_sign/>
+            <__display_age/>
+            <__developmental_apt_date/>
+            <__missed_vaccine_apt_date/>
+            <__next_apt/>
           </data>
           <summary tag="hidden">
-            <generated_note_name_159/>
-            <generated_note_name_160/>
-            <generated_note_name_161/>
             <generated_note_name_162/>
             <generated_note_name_163/>
             <generated_note_name_164/>
@@ -4364,6 +4400,9 @@
             <generated_note_name_187/>
             <generated_note_name_188/>
             <generated_note_name_189/>
+            <generated_note_name_190/>
+            <generated_note_name_191/>
+            <generated_note_name_192/>
           </summary>
           <meta tag="hidden">
             <instanceID/>
@@ -4482,30 +4521,37 @@ selected( /immunization_and_growth/developmental_milestones/developmental_talk ,
       <bind nodeset="/immunization_and_growth/danger_signs/danger_signs_cold_hot" required="true()" type="select1"/>
       <bind nodeset="/immunization_and_growth/danger_signs/danger_signs_other" required="true()" type="select1"/>
       <bind jr:constraintMsg="jr:itext('/immunization_and_growth/danger_signs/danger_signs_other_text:jr:constraintMsg')" nodeset="/immunization_and_growth/danger_signs/danger_signs_other_text" relevant="selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" required="true()" type="string"/>
-      <bind calculate="1" nodeset="/immunization_and_growth/data/__has_danger_sign" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_159" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_160" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_161" readonly="true()" type="string"/>
+      <bind calculate="if( /immunization_and_growth/patient_age_in_days  &lt; 31, 
+concat( /immunization_and_growth/patient_age_in_days , ' days old'),
+if( /immunization_and_growth/patient_age_in_months  &lt; 12, 
+concat( /immunization_and_growth/patient_age_in_months , ' months old'), 
+concat( /immunization_and_growth/patient_age_in_years , ' years old')))" nodeset="/immunization_and_growth/data/__display_age" type="string"/>
+      <bind calculate="format-date-time(date-time(floor(decimal-date-time( /immunization_and_growth/developmental_milestones/developmental_next_assignment_date )) + 3), &quot;%Y-%m-%d&quot;)" nodeset="/immunization_and_growth/data/__developmental_apt_date" relevant="selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes')" type="string"/>
+      <bind calculate="format-date-time(date-time(floor(decimal-date-time( /immunization_and_growth/missed_vaccine_details/missed_vaccine_date )) + 3), &quot;%Y-%m-%d&quot;)" nodeset="/immunization_and_growth/data/__missed_vaccine_apt_date" relevant="selected( /immunization_and_growth/missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_refer')" type="string"/>
+      <bind calculate="format-date-time(date-time(floor(decimal-date-time( /immunization_and_growth/next_appointment/next_appointment_date )) + 3), &quot;%Y-%m-%d&quot;)" nodeset="/immunization_and_growth/data/__next_apt" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
       <bind nodeset="/immunization_and_growth/summary/generated_note_name_162" readonly="true()" type="string"/>
       <bind nodeset="/immunization_and_growth/summary/generated_note_name_163" readonly="true()" type="string"/>
       <bind nodeset="/immunization_and_growth/summary/generated_note_name_164" readonly="true()" type="string"/>
       <bind nodeset="/immunization_and_growth/summary/generated_note_name_165" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_166" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_167" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'no')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_168" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_169" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'bcg') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_170" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'oral_polio') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_171" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'rotavirus') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_172" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'pneumococcal') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_173" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'pentavalent') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_174" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'inactivated_polio') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_175" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'measles') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_176" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'yellow_fever') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_177" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'vitamin_a') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_178" readonly="true()" relevant="selected( /immunization_and_growth/growth_monitoring/growth_monitoring_weighed , 'yes') or selected( /immunization_and_growth/growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_179" readonly="true()" relevant="selected( /immunization_and_growth/growth_monitoring/growth_monitoring_weighed , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_180" readonly="true()" relevant="selected( /immunization_and_growth/growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_181" readonly="true()" relevant="selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes') or 
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_166" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_167" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_168" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_169" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_170" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'no')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_171" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_172" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'bcg') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_173" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'oral_polio') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_174" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'rotavirus') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_175" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'pneumococcal') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_176" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'pentavalent') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_177" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'inactivated_polio') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_178" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'measles') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_179" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'yellow_fever') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_180" readonly="true()" relevant="selected( /immunization_and_growth/clinic_group/vaccines , 'vitamin_a') and selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_181" readonly="true()" relevant="selected( /immunization_and_growth/growth_monitoring/growth_monitoring_weighed , 'yes') or selected( /immunization_and_growth/growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_182" readonly="true()" relevant="selected( /immunization_and_growth/growth_monitoring/growth_monitoring_weighed , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_183" readonly="true()" relevant="selected( /immunization_and_growth/growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_184" readonly="true()" relevant="selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes') or 
 selected( /immunization_and_growth/danger_signs/danger_signs_breastfeeding , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_breath , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_active , 'yes') or
@@ -4513,15 +4559,15 @@ selected( /immunization_and_growth/danger_signs/danger_signs_yellow , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_cold_hot , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes') or
 selected( /immunization_and_growth/missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_refer')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_182" readonly="true()" relevant="selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_183" readonly="true()" relevant="selected( /immunization_and_growth/danger_signs/danger_signs_breastfeeding , 'yes') or
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_185" readonly="true()" relevant="selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_186" readonly="true()" relevant="selected( /immunization_and_growth/danger_signs/danger_signs_breastfeeding , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_breath , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_active , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_yellow , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_cold_hot , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_184" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_refer')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_185" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes') or 
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_187" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_refer')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_188" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes') or 
 selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes') or
 selected( /immunization_and_growth/missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_refer') or
 selected( /immunization_and_growth/danger_signs/danger_signs_breastfeeding , 'yes') or
@@ -4530,15 +4576,15 @@ selected( /immunization_and_growth/danger_signs/danger_signs_active , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_yellow , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_cold_hot , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_186" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_187" readonly="true()" relevant="selected( /immunization_and_growth/danger_signs/danger_signs_breastfeeding , 'yes') or
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_189" readonly="true()" relevant="selected( /immunization_and_growth/vaccines_group/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_190" readonly="true()" relevant="selected( /immunization_and_growth/danger_signs/danger_signs_breastfeeding , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_breath , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_active , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_yellow , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_cold_hot , 'yes') or
 selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_188" readonly="true()" relevant="selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/generated_note_name_189" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_refer')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_191" readonly="true()" relevant="selected( /immunization_and_growth/developmental_milestones/developmental_refer , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/generated_note_name_192" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_refer')" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/immunization_and_growth/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -5243,25 +5289,16 @@ selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" typ
     </group>
     <group appearance="hidden" ref="/immunization_and_growth/data"/>
     <group appearance="field-list summary" ref="/immunization_and_growth/summary">
-      <input appearance="h1 yellow" ref="/immunization_and_growth/summary/generated_note_name_159">
-        <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_159:label')"/>
-      </input>
-      <input appearance="h2" ref="/immunization_and_growth/summary/generated_note_name_160">
-        <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_160:label')"/>
-      </input>
-      <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_161">
-        <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_161:label')"/>
-      </input>
-      <input appearance="h1 green" ref="/immunization_and_growth/summary/generated_note_name_162">
+      <input appearance="h1 yellow" ref="/immunization_and_growth/summary/generated_note_name_162">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_162:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_163">
+      <input appearance="h2" ref="/immunization_and_growth/summary/generated_note_name_163">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_163:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_164">
+      <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_164">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_164:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_165">
+      <input appearance="h1 green" ref="/immunization_and_growth/summary/generated_note_name_165">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_165:label')"/>
       </input>
       <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_166">
@@ -5273,13 +5310,13 @@ selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" typ
       <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_168">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_168:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_169">
+      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_169">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_169:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_170">
+      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_170">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_170:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_171">
+      <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_171">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_171:label')"/>
       </input>
       <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_172">
@@ -5300,28 +5337,28 @@ selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" typ
       <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_177">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_177:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_178">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_178">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_178:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_179">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_179">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_179:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_180">
+      <input appearance="li" ref="/immunization_and_growth/summary/generated_note_name_180">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_180:label')"/>
       </input>
-      <input appearance="h1 red" ref="/immunization_and_growth/summary/generated_note_name_181">
+      <input appearance="h1 blue" ref="/immunization_and_growth/summary/generated_note_name_181">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_181:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_182">
+      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_182">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_182:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_183">
+      <input appearance="center" ref="/immunization_and_growth/summary/generated_note_name_183">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_183:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_184">
+      <input appearance="h1 red" ref="/immunization_and_growth/summary/generated_note_name_184">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_184:label')"/>
       </input>
-      <input appearance="h1 lime" ref="/immunization_and_growth/summary/generated_note_name_185">
+      <input ref="/immunization_and_growth/summary/generated_note_name_185">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_185:label')"/>
       </input>
       <input ref="/immunization_and_growth/summary/generated_note_name_186">
@@ -5330,11 +5367,20 @@ selected( /immunization_and_growth/danger_signs/danger_signs_other , 'yes')" typ
       <input ref="/immunization_and_growth/summary/generated_note_name_187">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_187:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary/generated_note_name_188">
+      <input appearance="h1 lime" ref="/immunization_and_growth/summary/generated_note_name_188">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_188:label')"/>
       </input>
       <input ref="/immunization_and_growth/summary/generated_note_name_189">
         <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_189:label')"/>
+      </input>
+      <input ref="/immunization_and_growth/summary/generated_note_name_190">
+        <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_190:label')"/>
+      </input>
+      <input ref="/immunization_and_growth/summary/generated_note_name_191">
+        <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_191:label')"/>
+      </input>
+      <input ref="/immunization_and_growth/summary/generated_note_name_192">
+        <label ref="jr:itext('/immunization_and_growth/summary/generated_note_name_192:label')"/>
       </input>
     </group>
   </h:body>
