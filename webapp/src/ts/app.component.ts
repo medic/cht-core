@@ -1,6 +1,6 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -74,12 +74,12 @@ export class AppComponent implements OnInit {
 
   currentTab = '';
   showContent;
-  privacyPolicyAccepted = true;
-  showPrivacyPolicy = false;
+  privacyPolicyAccepted;
+  showPrivacyPolicy;
   selectMode;
   minimalTabs;
   adminUrl;
-  canLogOut = false;
+  canLogOut;
   replicationStatus;
   androidAppVersion;
   nonContactForms;
@@ -104,7 +104,6 @@ export class AppComponent implements OnInit {
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
-    private changeDetectorRef:ChangeDetectorRef,
     private countMessageService:CountMessageService,
     private privacyPoliciesService:PrivacyPoliciesService,
     private routeSnapshotService:RouteSnapshotService,
@@ -352,6 +351,7 @@ export class AppComponent implements OnInit {
     });
   }
 
+  private watchTranslationsChanges() {
     this.changesService.subscribe({
       key: 'translations',
       filter: change => TranslationDocsMatcherProvider.test(change.id),
@@ -414,15 +414,16 @@ export class AppComponent implements OnInit {
       showPrivacyPolicy,
       selectMode,
     ]) => {
-      this.replicationStatus = replicationStatus;
-      this.androidAppVersion = androidAppVersion;
-      this.currentTab = currentTab;
-      this.minimalTabs = minimalTabs;
-      this.showContent = showContent;
-      this.showPrivacyPolicy = showPrivacyPolicy;
-      this.privacyPolicyAccepted = privacyPolicyAccepted;
-      this.selectMode = selectMode;
-      this.changeDetectorRef.detectChanges();
+      setTimeout(() => {
+        this.replicationStatus = replicationStatus;
+        this.androidAppVersion = androidAppVersion;
+        this.currentTab = currentTab;
+        this.minimalTabs = minimalTabs;
+        this.showContent = showContent;
+        this.showPrivacyPolicy = showPrivacyPolicy;
+        this.privacyPolicyAccepted = privacyPolicyAccepted;
+        this.selectMode = selectMode;
+      });
     });
   }
 
