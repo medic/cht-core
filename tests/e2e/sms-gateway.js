@@ -203,7 +203,7 @@ describe('sms-gateway api', () => {
     it('- shows content', async () => {
 
       smsGatewayPo.showReport();
-      
+
       // tasks
       expect(await smsGatewayPo.sentTaskState()).toMatch('sent');
       expect(await smsGatewayPo.deliveredTaskState()).toMatch('delivered');
