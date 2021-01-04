@@ -8,7 +8,7 @@
 >
   <span class="fa fa-list-alt"></span>
   <ul>
-    <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="dropdownFilter?.selected.has(form)">
+    <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="dropdownFilter?.selected.has(form) || false">
       <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="dropdownFilter?.toggle(form)">
         {{form.title || form.code}}
       </a>
