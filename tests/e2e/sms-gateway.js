@@ -138,7 +138,7 @@ describe('sms-gateway api', () => {
   };
 
   describe('- gateway submits new WT sms messages', () => {
-    beforeAll( async() => await helper.waitForAppToLoad(12000,10000));
+    beforeAll( async () => await helper.waitForAppToLoad(12000,10000));
     beforeEach(done => {
       const body = {
         messages: [
@@ -200,7 +200,7 @@ describe('sms-gateway api', () => {
         .catch(done.fail);
     });
 
-    it('- shows content', async() => {
+    it('- shows content', async () => {
 
       smsGatewayPo.showReport();
 
@@ -246,7 +246,7 @@ describe('sms-gateway api', () => {
         .catch(done.fail);
     });
 
-    it('- returns list and updates state', async() => {
+    it('- returns list and updates state', async () => {
       // TEMP: This is a flaky test, because sometimes there are more messages
       //       than the 2 that we expect there to be. Outputting so when it
       //       flakes we can see which messages they are and work out where
