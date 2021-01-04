@@ -51,11 +51,6 @@ module.exports = {
     return list.all(by.css('li[data-record-id="' + uuid + '"]'));
   },
   filterByDate: (startDate, endDate) => {
-    let clear = '';
-    for (let i = 0; i < 20; i++) {
-      clear += protractor.Key.BACK_SPACE;
-    }
-
     dateFilter.click();
     datePickerStart.click().sendKeys(clear + startDate.format('MM/DD/YYYY'));
     datePickerEnd.click().sendKeys(clear + endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
