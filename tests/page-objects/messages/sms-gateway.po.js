@@ -108,7 +108,6 @@ module.exports = {
     return await helper.waitElementToPresent(
       element(by.css('#reports-content .body .item-summary .icon'))
     );
-    browser.waitForAngular();
   },
 
   sentTaskState : async() => await getTaskState(sentTask),
