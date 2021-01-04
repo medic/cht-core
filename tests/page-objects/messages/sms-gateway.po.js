@@ -19,6 +19,9 @@ const feedback = element(
   by.css('#reports-content .details > ul .task-list .task-state .state')
 );
 
+const incomingData = element(by.css('#message-content li.incoming:first-child .data p:first-child'));
+
+
  
 // scheduled tasks
 // State for messageId2 is still forwarded-to-gateway
@@ -32,7 +35,7 @@ const getTaskState = element => {
 
 module.exports = {
   
-  showMessageList : async() => {
+  showMessageList : async () => {
     utils.resetBrowser();
     helper.clickElement(element(by.id('messages-tab')));
   
@@ -41,7 +44,7 @@ module.exports = {
       element(by.css('#message-list li:first-child'))
     );
     browser.waitForAngular();
-    return await helper.waitElementToBeVisible(
+    await helper.waitElementToBeVisible(
       element(by.css('#message-list li:first-child'))
     );
   }, 
@@ -59,22 +62,13 @@ module.exports = {
     ).toBe(summary);
   },
 
-  showMessageDetails: async() => {
+  showMessageDetails: async () => {
     // RHS
     helper.clickElement(
       element(by.css('#message-list li:first-child .summary'))
     );
-    helper.waitElementToBeVisible(
-      element(
-        by.css('#message-content li.incoming:first-child .data p:first-child')
-      )
-    );
-    return await helper.waitElementToPresent(
-      element(
-        by.css('#message-content li.incoming:first-child .data p:first-child')
-      )
-    );
-      
+    helper.waitElementToBeVisible(incomingData);
+    return await helper.waitElementToPresent(incomingData);      
   },
 
   expectMessageDetails: async(header, text, status) => {
@@ -82,11 +76,7 @@ module.exports = {
     const messageHeader = helper.getTextFromElement(
       element(by.css('#message-header .name'))
     );
-    const messageText = helper.getTextFromElement(
-      element(
-        by.css('#message-content li.incoming:first-child .data p:first-child')
-      )
-    );
+    const messageText = helper.getTextFromElement(incomingData);
     const messageStatus = helper.getTextFromElement(
       element(
         by.css(
@@ -99,27 +89,27 @@ module.exports = {
     await expect(messageStatus).toMatch(status);
   },
 
-  showReport : async() => {
+  showReport : async () => {
     commonElements.goToReports();
     await helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
     helper.clickElement(
       element(by.css('#reports-list li:first-child .heading'))
     );
-    return await helper.waitElementToPresent(
+    await helper.waitElementToPresent(
       element(by.css('#reports-content .body .item-summary .icon'))
     );
   },
 
-  sentTaskState : async() => await getTaskState(sentTask),
+  sentTaskState : async () => await getTaskState(sentTask),
   
-  deliveredTaskState : async() => await getTaskState(deliveredTask),
+  deliveredTaskState : async () => await getTaskState(deliveredTask),
   
-  scheduledTaskState : async() => await getTaskState(scheduledTask),
+  scheduledTaskState : async () => await getTaskState(scheduledTask),
 
-  failedTaskState : async() => await getTaskState(failedTask),
+  failedTaskState : async () => await getTaskState(failedTask),
 
-  feedbackState : async() => await getTaskState(feedback),
+  feedbackState : async () => await getTaskState(feedback),
 
-  messageState : async() => await getTaskState(message2State),
+  messageState : async () => await getTaskState(message2State),
 
 };
