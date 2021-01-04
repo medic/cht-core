@@ -25,15 +25,12 @@ module.exports = {
   listLoader: () => element(by.css(`${reportListID} .loader`)),
   list: () => element(by.css(reportListID)),
   reportByUUID: uuid => module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]')),
-  formNameNoSubject: formNameNoSubject,
-  subjectName: subjectName,
-  summaryFormName: summaryFormName,
-  submitterName: submitterName,
-  submitterPhone: submitterPhone,
-  allReports: allReports,
-  firstReport: firstReport,
-  listLoader: listLoader,
-  list: list,
+  reportSummary: () => element(by.css('#reports-content .item-summary')),
+  formNameNoSubject: () => module.exports.reportSummary().element(by.css('mm-sender + div')),
+  subjectName: () => module.exports.reportSummary().element(by.css('.subject .name')),
+  summaryFormName: () => module.exports.reportSummary().element(by.css('.subject + div')),
+  submitterName: () => module.exports.reportSummary().element(by.css('.sender .name')),
+  submitterPhone: () => module.exports.reportSummary().element(by.css('.sender .phone')),
   subject: async reportElement =>  {
     return reportElement.element(by.css('.content .heading h4 span'));
   },
@@ -48,12 +45,12 @@ module.exports = {
     return report;
   },
   reportByUUID: uuid => {
-    return list.all(by.css('li[data-record-id="' + uuid + '"]'));
+    return module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]'));
   },
   filterByDate: (startDate, endDate) => {
     dateFilter.click();
-    datePickerStart.click().sendKeys(clear + startDate.format('MM/DD/YYYY'));
-    datePickerEnd.click().sendKeys(clear + endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
+    datePickerStart.click().clear().sendKeys(startDate.format('MM/DD/YYYY'));
+    datePickerEnd.click().clear().sendKeys( endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
   },
   expectReportsToExist: uuids => {

@@ -22,6 +22,7 @@ const baseConfig = {
     e2e: [
       'tests/e2e/login/login.specs.js',
       '**/report-date-filter.js',
+      'tests/e2e/reports-subject.js',
       '**/sentinel/queue.spec.js',
       '**/docs-by-replication-key-view.js',
       '**/api/routing.js',
