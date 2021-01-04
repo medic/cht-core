@@ -11,13 +11,7 @@ const dateFilter = element(by.css('#date-filter'));
 const reportListID = '#reports-list';
 
 //Right hand side elements
-const reportSummary = element(by.css('#reports-content .item-summary')); 
-const submitterPhone = reportSummary.element(by.css('.sender .phone'));
-const submitterName =  reportSummary.element(by.css('.sender .name'));
-const subjectName = reportSummary.element(by.css('.subject .name'));
-const summaryFormName = reportSummary.element(by.css('.subject + div'));
-const formNameNoSubject = reportSummary.element(by.css('mm-sender + div'));
-
+const reportSummary = element(by.css('#reports-content .item-summary'));
 
 module.exports = {
   allReports: () => element.all(by.css(`${reportListID} li`)),
