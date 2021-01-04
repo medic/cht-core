@@ -138,7 +138,7 @@ describe('sms-gateway api', () => {
   };
 
   describe('- gateway submits new WT sms messages', () => {
-    beforeAll( async() => await helper.waitForAppToLoad());
+    beforeAll( async() => await helper.waitForAppToLoad(12000,10000));
     beforeEach(done => {
       const body = {
         messages: [
@@ -203,7 +203,7 @@ describe('sms-gateway api', () => {
     it('- shows content', async() => {
 
       smsGatewayPo.showReport();
-      
+
       // tasks
       expect(await smsGatewayPo.sentTaskState()).toMatch('sent');
       expect(await smsGatewayPo.deliveredTaskState()).toMatch('delivered');
