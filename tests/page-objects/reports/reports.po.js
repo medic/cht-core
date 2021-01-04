@@ -38,9 +38,6 @@ module.exports = {
     await helper.waitElementToPresent(reportSummary, 3000);
     return report;
   },
-  reportByUUID: uuid => {
-    return module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]'));
-  },
   filterByDate: (startDate, endDate) => {
     dateFilter.click();
     datePickerStart.click().clear().sendKeys(startDate.format('MM/DD/YYYY'));
