@@ -205,10 +205,10 @@ describe('sms-gateway api', () => {
       smsGatewayPo.showReport();
       
       // tasks
-      expect(await smsGatewayPo.sentTaskState()).toBe('sent');
-      expect(await smsGatewayPo.deliveredTaskState()).toBe('delivered');
-      expect(await smsGatewayPo.scheduledTaskState()).toBe('scheduled');
-      expect(await smsGatewayPo.failedTaskState()).toBe('failed');
+      expect(await smsGatewayPo.sentTaskState()).toMatch('sent');
+      expect(await smsGatewayPo.deliveredTaskState()).toMatch('delivered');
+      expect(await smsGatewayPo.scheduledTaskState()).toMatch('scheduled');
+      expect(await smsGatewayPo.failedTaskState()).toMatch('failed');
     });
   });
 
@@ -281,10 +281,10 @@ describe('sms-gateway api', () => {
 
       browser.waitForAngular();
       // tasks
-      expect(await smsGatewayPo.feedbackState()).toBe('forwarded to gateway');
+      expect(await smsGatewayPo.feedbackState()).toMatch('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(await smsGatewayPo.messageState()).toBe('forwarded to gateway');
+      expect(await smsGatewayPo.messageState()).toMatch('forwarded to gateway');
     });
   });
 });
