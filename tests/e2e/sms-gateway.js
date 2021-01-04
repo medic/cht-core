@@ -281,10 +281,10 @@ describe('sms-gateway api', () => {
 
       browser.waitForAngular();
       // tasks
-      expect(await smsGatewayPo.feedbackState()).toMatch('forwarded to gateway');
+      expect(await smsGatewayPo.feedbackState()).toMatch('forwarded');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(await smsGatewayPo.messageState()).toMatch('forwarded to gateway');
+      expect(await smsGatewayPo.messageState()).toMatch('forwarded');
     });
   });
 });

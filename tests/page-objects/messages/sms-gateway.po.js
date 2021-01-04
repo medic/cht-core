@@ -96,7 +96,7 @@ module.exports = {
     );
     await expect(messageHeader).toBe(header);
     await expect(messageText).toBe(text);
-    await expect(messageStatus).toBe(status);
+    await expect(messageStatus).toMatch(status);
   },
 
   showReport : async() => {
