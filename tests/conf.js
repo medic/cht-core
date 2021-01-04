@@ -20,6 +20,7 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js', 
     e2e: [
+      'tests/e2e/login/login.specs.js',
       '**/report-date-filter.js',
       '**/sentinel/queue.spec.js',
       '**/docs-by-replication-key-view.js',
@@ -30,7 +31,8 @@ const baseConfig = {
       '**/send-message.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
-    ]
+      'tests/e2e/reports-subject.js',
+    ],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
