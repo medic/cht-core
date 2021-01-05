@@ -146,13 +146,16 @@ describe('Contacts effects', () => {
     });
 
     it('should catch loadChildren errors', fakeAsync(() => {
-      contactViewModelGeneratorService.loadChildren.rejects({ error: 'we have a problem'});
+      const consoleErrorMock = sinon.stub(console, 'error');
+      contactViewModelGeneratorService.loadChildren.rejects({ error: 'we have a problem' });
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
       effects.setSelectedContact.subscribe();
       flush();
 
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error fetching children');
     }));
   });
 
@@ -166,6 +169,7 @@ describe('Contacts effects', () => {
     });
 
     it('should catch loadReports errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       contactViewModelGeneratorService.loadReports.rejects({ error: 'we have a problem'});
       actions$ = of(ContactActionList.receiveSelectedContactChildren([]));
       effects.receiveSelectedContactReports.subscribe();
@@ -173,6 +177,8 @@ describe('Contacts effects', () => {
 
       expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading reports');
     }));
 
     it('should call the receiveSelectedContactReports action', fakeAsync(() => {
@@ -215,6 +221,7 @@ describe('Contacts effects', () => {
     }));
 
     it('should catch contactSummaryService errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       contactSummaryService.get.rejects({ error: 'we have a problem'});
       actions$ = of(ContactActionList.receiveSelectedContactReports([]));
       effects.updateSelectedContactSummary.subscribe();
@@ -222,6 +229,8 @@ describe('Contacts effects', () => {
 
       expect(contactSummaryService.get.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading summary');
     }));
   });
 
@@ -236,6 +245,7 @@ describe('Contacts effects', () => {
     }));
 
     it('should catch targetAggregateService errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       targetAggregateService.getCurrentTargetDoc.rejects({ error: 'we have a problem'});
       actions$ = of(ContactActionList.updateSelectedContactSummary({}));
@@ -244,6 +254,8 @@ describe('Contacts effects', () => {
 
       expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading target doc');
     }));
   });
 });

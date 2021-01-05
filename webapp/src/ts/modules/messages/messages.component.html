@@ -12,6 +12,7 @@
         <li class="content-row"
           [routerLink]="['/messages', msg.type + ':' + msg.key]"
           routerLinkActive="selected"
+          attr.test-id="{{ msg.key }}"
           *ngFor="let msg of conversations; trackBy: listTrackBy"
           [ngClass]="{
             'unread': !msg.read
