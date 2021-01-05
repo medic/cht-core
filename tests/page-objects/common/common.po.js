@@ -92,9 +92,9 @@ module.exports = {
     browser.get(utils.getAdminBaseUrl());
   },
 
-  goToLoginPage: () => {
-    browser.manage().deleteAllCookies();
-    browser.driver.get(utils.getLoginUrl());
+  goToLoginPage: async () => {
+    await browser.manage().deleteAllCookies();
+    await browser.driver.get(utils.getLoginUrl());
   },
 
   goToMessages: () => {

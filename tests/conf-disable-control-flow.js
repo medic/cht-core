@@ -66,8 +66,8 @@ const baseConfig = {
     });
   },
   onPrepare: async () => {
-    // jasmine.getEnv().addReporter(utils.specReporter);
-    // jasmine.getEnv().addReporter(utils.reporter);
+    jasmine.getEnv().addReporter(utils.specReporter);
+    jasmine.getEnv().addReporter(utils.reporter);
     browser.waitForAngularEnabled(false);
 
     // wait for startup to complete

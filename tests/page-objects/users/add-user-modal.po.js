@@ -50,7 +50,7 @@ module.exports = {
   },
 
   fillForm: async (username, fullName, password) => {
-    await helper.waitUntilReady(getSubmitButton()); // wait for form to load
+    await helper.waitUntilReady(await getSubmitButton()); // wait for form to load
     await getUsernameField().sendKeys(username);
     await getFullNameField().sendKeys(fullName);
     await getEmailField().sendKeys('bede@mobile.org');

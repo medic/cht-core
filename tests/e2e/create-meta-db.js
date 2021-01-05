@@ -21,9 +21,9 @@ const options = {
 
 describe('Create user meta db : ', () => {
 
-  afterAll(done => {
-    commonElements.goToLoginPage();
-    loginPage.login(auth.username, auth.password);
+  afterAll(async done => {
+    await commonElements.goToLoginPage();
+    await loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.request(`/_users/org.couchdb.user:${userName}`)
         .then(doc => utils.request({
@@ -54,23 +54,21 @@ describe('Create user meta db : ', () => {
     const doc = { _id: userName };
     const postData = doc;
 
-    await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
+    try {
+      await utils.requestOnTestMetaDb(_.defaults({
         method: 'POST',
         body: postData
       }, options));
-    });
-
-    await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
+      
+      const response = await utils.requestOnTestMetaDb(_.defaults({
         path: '/_changes'
-      }, options)).then(response => {
-        const changes = response.results;
-        const ids = _.map(changes, 'id').sort();
-        expect(ids[1]).toEqual(doc._id);
-        return true;
-      });
-    });
-  });
+      }, options))
+      const changes = response.results;
+      const ids = _.map(changes, 'id').sort();
+      expect(ids[1]).toEqual(doc._id);
 
+    } catch (err){
+      throw new Error(err);
+    }
+  });
 });
