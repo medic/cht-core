@@ -32,6 +32,7 @@ const baseConfig = {
       '**/common.specs.js',
       '**/content-security-policy.js',
       'e2e/navigation/*.js',
+      '**/send-message.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
       'tests/e2e/create-meta-db.js',
