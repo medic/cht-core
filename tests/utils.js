@@ -21,7 +21,7 @@ let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = (options, { debug } = {}) => {
+const request = async (options, { debug } = {}) => {
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -48,13 +48,23 @@ const request = (options, { debug } = {}) => {
   };
 
   const deferred = protractor.promise.defer();
-  rpn(options)
-    .then((resp) => deferred.fulfill(resp))
-    .catch(err => {
-      err.responseBody = err.response && err.response.body;
-      deferred.reject(err);
-    });
-  return deferred.promise;
+
+  try {
+    return await rpn(options);
+  } catch(err) {
+    err.responseBody = err.response && err.response.body;
+    throw new Error(err); 
+  }
+  
+
+
+//   rpn(options)
+//     .then((resp) => deferred.fulfill(resp))
+//     .catch(err => {
+//       err.responseBody = err.response && err.response.body;
+//       deferred.reject(err);
+//     });
+//   return deferred.promise;
 };
 
 // Update both ddocs, to avoid instability in tests.
