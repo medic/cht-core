@@ -248,7 +248,7 @@ describe('Purging on login', () => {
   const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
   it('Logging in as a restricted user with configured purge rules should not download purged docs', async () => {
-    utils.resetBrowser();
+    await utils.resetBrowser();
     commonElements.goToLoginPage();
     loginPage.login(restrictedUserName, restrictedPass);
     commonElements.calm();
@@ -256,77 +256,67 @@ describe('Purging on login', () => {
     reports.expectReportsToExist([goodFormId]);
     reports.expectReportsToNotExist([badFormId]);
 
-    let purgeDate;
+    let result = await getPurgeLog();
+    // purge ran but after initial replication, nothing to purge
+    chai.expect(result._rev).to.equal('0-1');
+    chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
+    chai.expect(result.history.length).to.equal(1);
+    chai.expect(result.count).to.equal(0);
+    chai.expect(result.history[0]).to.deep.equal({
+      count: 0,
+      roles: result.roles,
+      date: result.date
+    });
+    const purgeDate = result.date;
+    
+    await utils.resetBrowser();
+    commonElements.calm();
+    await browser.waitForAngular();
+    result = await getPurgeLog();
 
-    return await getPurgeLog()
-      .then(result => {
-        // purge ran but after initial replication, nothing to purge
-        chai.expect(result._rev).to.equal('0-1');
-        chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
-        chai.expect(result.history.length).to.equal(1);
-        chai.expect(result.count).to.equal(0);
-        chai.expect(result.history[0]).to.deep.equal({
-          count: 0,
-          roles: result.roles,
-          date: result.date
-        });
-        purgeDate = result.date;
-      })
-      .then(async() => {
-        utils.resetBrowser();
-        commonElements.calm();
-        browser.waitForAngular();
-        return await getPurgeLog();
-      })
-      .then(result => {
-        // purge didn't run again on next refresh
-        chai.expect(result._rev).to.equal('0-1');
-        chai.expect(result.date).to.equal(purgeDate);
-      })
-      .then(async() => {
-        browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
-        commonElements.sync();
-        commonElements.goToReports();
-        reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
+    // purge didn't run again on next refresh
+    chai.expect(result._rev).to.equal('0-1');
+    chai.expect(result.date).to.equal(purgeDate);
 
-        browser.wait(async() => {
-          let seq;
-          const purgeSettings = {
-            fn: purgeFn.toString(),
-            text_expression: 'every 1 seconds',
-            run_every_days: '0'
-          };
-          return await utils.revertSettings(true)
-            .then(() => sentinelUtils.getCurrentSeq())
-            .then(result => seq = result)
-            .then(() => utils.updateSettings({ purge: purgeSettings}, true))
-            .then(() => restartSentinel())
-            .then(() => sentinelUtils.waitForPurgeCompletion(seq))
-            .then(() => true);
-        });
-        // get new settings that say to purge on every boot!
-        commonElements.sync();
-        utils.refreshToGetNewSettings();
-        commonElements.calm();
-        return await getPurgeLog();
-      })
-      .then(result => {
-        // purge ran again and it purged the bad form
-        chai.expect(result._rev).to.equal('0-2');
-        chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
-        chai.expect(result.history.length).to.equal(2);
-        chai.expect(result.count).to.equal(1);
-        chai.expect(result.history[1].date).to.equal(purgeDate);
-        chai.expect(result.history[0]).to.deep.equal({
-          count: 1,
-          roles: result.roles,
-          date: result.date
-        });
-      })
-      .then(() => {
-        commonElements.goToReports();
-        reports.expectReportsToExist([goodFormId, goodFormId2]);
-        reports.expectReportsToNotExist([badFormId, badFormId2]);
-      });
+    await browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
+    commonElements.sync();
+    commonElements.goToReports();
+    reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
+
+    await browser.wait(async() => {
+      let seq;
+      const purgeSettings = {
+        fn: purgeFn.toString(),
+        text_expression: 'every 1 seconds',
+        run_every_days: '0'
+      };
+      return await utils.revertSettings(true)
+        .then(() => sentinelUtils.getCurrentSeq())
+        .then(result => seq = result)
+        .then(() => utils.updateSettings({ purge: purgeSettings}, true))
+        .then(() => restartSentinel())
+        .then(() => sentinelUtils.waitForPurgeCompletion(seq))
+        .then(() => true);
+    });
+    // get new settings that say to purge on every boot!
+    commonElements.sync();
+    await utils.refreshToGetNewSettings();
+    commonElements.calm();
+
+    result = await getPurgeLog();
+    // purge ran again and it purged the bad form
+    chai.expect(result._rev).to.equal('0-2');
+    chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
+    chai.expect(result.history.length).to.equal(2);
+    chai.expect(result.count).to.equal(1);
+    chai.expect(result.history[1].date).to.equal(purgeDate);
+    chai.expect(result.history[0]).to.deep.equal({
+      count: 1,
+      roles: result.roles,
+      date: result.date
+    });
+    commonElements.goToReports();
+    reports.expectReportsToExist([goodFormId, goodFormId2]);
+    reports.expectReportsToNotExist([badFormId, badFormId2]);
   });
 });
