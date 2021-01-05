@@ -18,26 +18,31 @@ import { CookieService } from 'ngx-cookie-service';
   providedIn: 'root'
 })
 export class DebugService {
-  readonly cookieName = 'medic-webapp-debug';
+  private readonly cookieName = 'medic-webapp-debug';
+  private isDebugEnabled = null;
 
-  constructor(private cookieService: CookieService) { }
-
-  get() {
-    return !!this.cookieService.get(this.cookieName);
+  constructor(private cookieService: CookieService) {
+    this.isDebugEnabled = !!this.cookieService.get(this.cookieName);
   }
 
-  set(bool:boolean) {
+  get() {
+    return this.isDebugEnabled;
+  }
+
+  set(enableDebug:boolean) {
     const db = window.PouchDB;
 
-    if (bool) {
+    if (enableDebug) {
       db.debug.enable('*');
-      this.cookieService.set(this.cookieName, bool.toString(), 360, '/');
+      this.cookieService.set(this.cookieName, enableDebug.toString(), 360, '/');
+      this.isDebugEnabled = true;
       console.debug('Debug mode on');
       return;
     }
 
     db.debug.disable();
     this.cookieService.delete(this.cookieName, '/');
+    this.isDebugEnabled = false;
     console.debug('Debug mode off');
   }
 }

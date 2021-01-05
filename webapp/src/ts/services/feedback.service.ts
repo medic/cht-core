@@ -76,10 +76,9 @@ export class FeedbackService {
     });
 
     const debugOriginal = this.options.console.debug;
-    const isDebugEnabled = this.debugService.get();
     this.options.console.debug = (...args) => {
       // only log debug messages in development settings or when manually enabled from Testing page
-      if (isDebugEnabled || !environment.production) {
+      if (this.debugService.get() || !environment.production) {
         debugOriginal.apply(this.options.console, args);
       }
     };
