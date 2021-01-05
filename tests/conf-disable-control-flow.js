@@ -7,6 +7,7 @@ const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
 
+
 const chai = require('chai');
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
