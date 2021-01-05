@@ -47,24 +47,14 @@ const request = async (options, { debug } = {}) => {
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  const deferred = protractor.promise.defer();
-
-  try {
-    return await rpn(options);
-  } catch(err) {
-    err.responseBody = err.response && err.response.body;
-    throw new Error(err); 
-  }
-  
-
-
-//   rpn(options)
-//     .then((resp) => deferred.fulfill(resp))
-//     .catch(err => {
-//       err.responseBody = err.response && err.response.body;
-//       deferred.reject(err);
-//     });
-//   return deferred.promise;
+  return new Promise(function(resolve,reject){
+    rpn(options)
+    .then((resp) => resolve(resp))
+    .catch(err => {
+      err.responseBody = err.response && err.response.body;
+      reject(err);
+    });
+  })
 };
 
 // Update both ddocs, to avoid instability in tests.
