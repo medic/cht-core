@@ -21,6 +21,8 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     mobile:'mobile/**/*.js',
     e2e: [
+      'tests/e2e/login/login.specs.js',
+      '**/report-date-filter.js',
       '**/sentinel/queue.spec.js',
       '**/report-date-filter.js',
       '**/login.spec.js',
@@ -32,7 +34,8 @@ const baseConfig = {
       'e2e/navigation/*.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
-    ],
+      'tests/e2e/create-meta-db.js',
+    ]
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',

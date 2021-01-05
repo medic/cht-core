@@ -29,11 +29,12 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 
 module.exports = {
-  calm: () => {
-    const bootstrapperSelector = by.css('.bootstrap-layer');
-    helper.waitElementToPresent(element(bootstrapperSelector));
-    helper.waitElementToDisappear(bootstrapperSelector);
-    helper.waitUntilReady(messagesTab);
+  calm: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReady(medicLogo);
   },
 
   checkAbout: () => {
@@ -82,12 +83,12 @@ module.exports = {
   },
 
   goToAnalytics: () => {
-    analyticsTab.click();
-    helper.waitForAngularComplete();
+    analyticsLink.click();
+    helper.waitUntilReady(medicLogo);
   },
 
   goToConfiguration: () => {
-    helper.waitForAngularComplete();
+    helper.waitUntilReady(medicLogo);
     browser.get(utils.getAdminBaseUrl());
   },
 
@@ -98,12 +99,13 @@ module.exports = {
 
   goToMessages: () => {
     browser.get(utils.getBaseUrl() + 'messages/');
-    helper.waitForAngularComplete();
+    helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('message-list')));
   },
 
   goToPeople: async () => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
+    await helper.waitUntilReady(medicLogo);
     await helper.waitUntilReady(element(by.id('contacts-list')));
   },
 
@@ -132,11 +134,12 @@ module.exports = {
 
   goToTasks: () => {
     browser.get(utils.getBaseUrl() + 'tasks/');
+    helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('tasks-list')));
   },
 
   isAt: list => {
-    helper.waitForAngularComplete();
+    helper.waitUntilReady(medicLogo);
     return element(by.id(list)).isPresent();
   },
 

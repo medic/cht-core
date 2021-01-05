@@ -24,10 +24,10 @@ module.exports = {
     helper.waitUntilReady(getAddUserButton());
   },
 
-  openAddUserModal: () => {
-    browser.get(utils.getAdminBaseUrl() + 'users');
-    helper.waitElementToBeClickable(getAddUserButton());
-    getAddUserButton().click();
+  openAddUserModal: async () => {
+    await browser.get(utils.getAdminBaseUrl() + 'users');
+    await helper.waitElementToBeClickable(getAddUserButton());
+    await getAddUserButton().click();
   },
 
   getUsersList: () => {

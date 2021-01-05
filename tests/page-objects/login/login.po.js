@@ -21,15 +21,15 @@ const changeLocale = locale => {
 };
 
 module.exports = {
-  login: (username, password, shouldFail, locale) => {
-    helper.waitUntilReady(getUsernameField());
-    getUsernameField().clear();
-    getPasswordField().clear();
-    getUsernameField().sendKeys(username);
-    getPasswordField().sendKeys(password);
-    changeLocale(locale);
-    getLoginButton().click();
-    browser.waitForAngular();
+  login: async (username, password, shouldFail, locale) => {
+    await helper.waitUntilReady(getUsernameField());
+    await getUsernameField().clear();
+    await getPasswordField().clear();
+    await getUsernameField().sendKeys(username);
+    await getPasswordField().sendKeys(password);
+    await changeLocale(locale);
+    await getLoginButton().click();
+    await browser.waitForAngular();
     if (shouldFail) {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
