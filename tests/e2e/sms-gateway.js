@@ -139,11 +139,11 @@ describe('sms-gateway api', () => {
 
   describe('- gateway submits new WT sms messages', () => {
     let originalTimeout;
-    beforeAll( async () => {
-      //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow  and failedon Travis
+    beforeEach( async () => {
+      //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow  and fail on Travis
       originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-      await helper.waitForAppToLoad(20000,20000);
+      await helper.waitForAppToLoad(30000,20000);
     });
 
     afterAll(function() {
@@ -168,6 +168,7 @@ describe('sms-gateway api', () => {
     afterEach(helper.handleUpdateModal);
 
     it('- shows content', async () => {
+      await helper.waitForAppToLoad();
       //LHS
       await smsGatewayPo.showMessageList();
       await smsGatewayPo.expectMessage('+64271234567', 'hello');
