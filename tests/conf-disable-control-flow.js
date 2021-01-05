@@ -55,9 +55,9 @@ const baseConfig = {
       utils.reporter.afterLaunch();
     });
 
-    // return new Promise(function(resolve) {
-    //   utils.reporter.beforeLaunch(resolve);
-    // });
+    return new Promise(function(resolve) {
+      utils.reporter.beforeLaunch(resolve);
+    });
   },
   afterLaunch: function(exitCode) {
     return new Promise(function(resolve) {

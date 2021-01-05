@@ -544,9 +544,9 @@ module.exports = {
   },
 
   //check for the update modal before
-  beforeEach: () => {
-    if (element(by.css('#update-available')).isPresent()) {
-      $('body').sendKeys(protractor.Key.ENTER);
+  beforeEach: async () => {
+    if (await element(by.css('#update-available')).isPresent()) {
+      await $('body').sendKeys(protractor.Key.ENTER);
     }
   },
 
@@ -707,9 +707,9 @@ module.exports = {
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
 
-  closeTour: () => {
-    element.all(by.css('.modal-dialog a.cancel')).each(elm => {
-      elm.click();
+  closeTour: async () => {
+    await element.all(by.css('.modal-dialog a.cancel')).each(async elm => {
+      await elm.click();
     });
   },
 

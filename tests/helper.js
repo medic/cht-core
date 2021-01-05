@@ -261,10 +261,10 @@ module.exports = {
     }, 10000);
   },
 
-  waitUntilReady: elm => {
+  waitUntilReady: async elm => {
     return (
-      browser.wait(() => elm.isPresent(), 10000, 'Element not present in 10 seconds' + elm.locator()) &&
-      browser.wait(() => elm.isDisplayed(), 12000, 'Element not displayed in 12 seconds' + elm.locator())
+      await browser.wait(async () => await elm.isPresent(), 10000, 'Element not present in 10 seconds' + elm.locator()) &&
+      await browser.wait(async () => await elm.isDisplayed(), 12000, 'Element not displayed in 12 seconds' + elm.locator())
     );
   },
   handleUpdateModal,
