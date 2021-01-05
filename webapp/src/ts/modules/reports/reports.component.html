@@ -18,7 +18,7 @@
             [attr.data-record-id]="report._id"
             [class.selected] = "report.selected"
             [class.unread]="!report.read"
-            (click)="toggleSelected(report)"
+            (click)="toggleSelected(report, $event)"
             class="content-row">
           <a [routerLink]="['/reports', report._id]">
             <div><input type="checkbox" [checked]="report.selected"></div>
