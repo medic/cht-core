@@ -426,8 +426,43 @@ describe('TasksContentComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
     });
 
-    it('should work with action of type "contact"', () => {
-      // todo once the feature is migrated
+    it('should work with action of type "contact"', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      const action = { type: 'contact', content: { parent_id: 'district_hospital_uuid', type: 'c_type' } };
+      await component.performAction(action);
+
+      expect(xmlFormsService.get.callCount).to.equal(0);
+      expect(enketoService.render.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'district_hospital_uuid', 'add', 'c_type']]);
+    });
+
+    it('should work with action of type "contact" without parent', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      const action = { type: 'contact', content: { type: 'c_type' } };
+      await component.performAction(action);
+
+      expect(xmlFormsService.get.callCount).to.equal(0);
+      expect(enketoService.render.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', 'c_type']]);
+    });
+
+    it('should work with action of type "contact" without parent or type', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      const action = { type: 'contact' };
+      await component.performAction(action);
+
+      expect(xmlFormsService.get.callCount).to.equal(0);
+      expect(enketoService.render.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', '']]);
     });
 
     it('should render form when action type is report', async () => {
