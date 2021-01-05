@@ -32,12 +32,12 @@
         >
         </mm-content-row>-->
         <li *ngFor="let report of reportsList; trackBy: listTrackBy"
-            [attr.data-record-id]="report.id"
+            [attr.data-record-id]="report._id"
             [class.selected] = "report.selected"
             [class.unread]="!report.read"
-            (click)="toggleSelected(report)"
+            (click)="toggleSelected(report, $event)"
             class="content-row">
-          <a>
+          <a [routerLink]="['/reports', report._id]">
             <div><input type="checkbox" [checked]="report.selected"></div>
             <div *ngIf="report.icon" class="icon" [innerHTML]="report.icon | resourceIcon"></div>
             <div class="content">

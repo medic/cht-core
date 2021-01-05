@@ -280,7 +280,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleSelected(report) {
+  toggleSelected(report, event) {
+    event.stopPropagation();
+
     if (!report?._id) {
       return;
     }
