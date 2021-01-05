@@ -38,6 +38,7 @@ before_install:
     fi
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
+  - echo "$DOCKER_PASSWORD" | docker login -u "communityhealthtoolkit" --password-stdin
   - ./scripts/travis/couch-start
   - sudo apt-get install xsltproc
 
@@ -46,7 +47,6 @@ install:
   - mkdir tests/logs
 
 before_script:
-  - echo "$DOCKER_PASSWORD" | docker login -u "communityhealthtoolkit" --password-stdin
   - nvm use $NODE_VERSION
   - ./scripts/travis/npm-init
   - npm install -g grunt-cli
