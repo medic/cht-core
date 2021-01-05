@@ -31,11 +31,9 @@ const baseConfig = {
       '**/send-message.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
+      'tests/e2e/create-meta-db.js',
       '**/purge.spec.js',
     ],
-
-      'tests/e2e/create-meta-db.js',
-    ]
 
     // performance: 'performance/**/*.js'
   },
