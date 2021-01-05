@@ -58,12 +58,4 @@ export class ContentRowListItemComponent {
   @Input() primary;
   @Input() visits;
   @Input() statusIcon;
-
-  constructor() {
-    console.log('contructing!!!', this.id);
-  }
-
-  ngAfterViewInit() {
-    console.log('inited', this.id);
-  }
 }

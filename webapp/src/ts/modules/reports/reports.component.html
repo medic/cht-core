@@ -14,7 +14,7 @@
         <span *ngIf="selectedReports?.length !== 1" translate="select.mode.count.plural" [translateParams]="{ number: selectedReports?.length || 0 }"></span>
       </div>
       <ul [hidden]="loading && !appending">
-        <mm-content-row
+        <!--<mm-content-row
           *ngFor="let report of reportsList; trackBy: listTrackBy"
           [id]="report._id"
           (click)="toggleSelected(report)"
@@ -30,7 +30,42 @@
           [unread]="!report.read"
           [selected]="report.selected"
         >
-        </mm-content-row>
+        </mm-content-row>-->
+        <li *ngFor="let report of reportsList; trackBy: listTrackBy"
+            [attr.data-record-id]="report.id"
+            [class.selected] = "report.selected"
+            [class.unread]="!report.read"
+            (click)="toggleSelected(report)"
+            class="content-row">
+          <a>
+            <div><input type="checkbox" [checked]="report.selected"></div>
+            <div *ngIf="report.icon" class="icon" [innerHTML]="report.icon | resourceIcon"></div>
+            <div class="content">
+              <div class="heading">
+                <h4>
+                  <span>{{report.heading}}</span>
+                </h4>
+                <div class="date">
+                  <span [innerHTML]="report.reported_date | relativeDate"></span>
+                </div>
+              </div>
+
+              <div *ngIf="report.summary" class="summary">
+                <p>{{report.summary}}</p>
+
+                <div *ngIf="(!report.valid || report.verified !== undefined)" class="status">
+                  <span [class.verified]="report.valid && report.verified" [class.error]="!(report.valid && report.verified)" class="verification-badge">
+                    <report-verify-valid-icon *ngIf="report.valid && report.verified"></report-verify-valid-icon>
+                    <report-verify-invalid-icon *ngIf="!(report.valid && report.verified)"></report-verify-invalid-icon>
+                  </span>
+
+                </div>
+              </div>
+
+              <div *ngIf="report.lineage?.length" class="detail" [innerHTML]="report.lineage | lineage"></div>
+            </div>
+          </a>
+        </li>
       </ul>
       <p *ngIf="error" class="alert alert-danger" role="alert">
         <span *ngIf="errorSyntax">

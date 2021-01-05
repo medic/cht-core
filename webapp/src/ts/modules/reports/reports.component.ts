@@ -1,5 +1,13 @@
 import { find as _find, assignIn as _assignIn } from 'lodash-es';
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  ComponentFactoryResolver,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewContainerRef
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
@@ -16,6 +24,7 @@ import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 
 const PAGE_SIZE = 50;
 
@@ -31,7 +40,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private listContains;
 
   reportsList;
-  filteredReportsList;
   selectedReports;
   forms;
   error;
@@ -42,7 +50,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   filters:any = {};
   hasReports;
   selectMode;
-  filtered;
   verifyingReport;
   showContent;
   enketoEdited;
@@ -60,6 +67,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
+    private componentFactoryResolver:ComponentFactoryResolver,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -67,7 +75,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('initing');
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getReportsList),
       this.store.select(Selectors.getSelectedReports),
@@ -118,6 +125,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         return change.doc && change.doc.form || this.listContains(change.id);
       },
     });
+
     this.subscription.add(dbSubscription);
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
@@ -196,7 +204,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
         updatedReports = this.prepareReports(updatedReports);
 
         this.reportsActions.updateReportsList(updatedReports);
-        console.log('update reports!');
 
         this.moreItems = updatedReports.length >= options.limit;
         this.hasReports = !!updatedReports.length;
