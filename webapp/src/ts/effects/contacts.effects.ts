@@ -41,9 +41,12 @@ export class ContactsEffects {
         }
         return from(this.contactViewModelGeneratorService.getContact(id, { getChildPlaces: true, merge: false })).pipe(
           map(model => this.contactsActions.setSelectedContact(model)),
-          catchError(error => {
+          catchError((error) => {
+            if (error.code === 404 && !silent) {
+              this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
+            }
             console.error('Error selecting contact', error);
-            return of(this.globalActions.unsetSelected());
+            return of(this.globalActions.unsetSelected(), this.contactsActions.setSelectedContact(null));
           }),
         );
       }),
