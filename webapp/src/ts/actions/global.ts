@@ -18,6 +18,7 @@ export const Actions = {
   setLeftActionBar: createSingleValueAction('SET_LEFT_ACTION_BAR', 'left'),
   setRightActionBar: createSingleValueAction('SET_RIGHT_ACTION_BAR', 'right'),
   setRightActionBarVerified: createSingleValueAction('SET_ACTION_BAR_RIGHT_VERIFIED', 'verified'),
+  updateRightActionBar: createSingleValueAction('UPDATE_RIGHT_ACTION_BAR', 'right'),
   clearFilters: createAction('CLEAR_FILTERS'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
@@ -171,6 +172,10 @@ export class GlobalActions {
 
   setRightActionBarVerified(verified) {
     return this.store.dispatch(Actions.setRightActionBarVerified(verified));
+  }
+
+  updateRightActionBar(value) {
+    return this.store.dispatch(Actions.updateRightActionBar(value));
   }
 
   clearRightActionBar() {

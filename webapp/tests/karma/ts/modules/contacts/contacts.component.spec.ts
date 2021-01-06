@@ -27,6 +27,10 @@ import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filte
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { TourService } from '@mm-services/tour.service';
+import { ExportService } from '@mm-services/export.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -42,9 +46,62 @@ describe('Contacts component', () => {
   let authService;
   let contactTypesService;
   let scrollLoaderCallback;
+  let scrollLoaderProvider;
   let contactListContains;
+  let simprintsService;
+  let tourService;
+  let exportService;
+  let xmlFormsService;
+  let translateFromService;
+  let modalService;
 
   beforeEach(async(() => {
+    searchService = { search: sinon.stub().resolves([]) };
+    settingsService = { get: sinon.stub().resolves([]) };
+    sessionService = {
+      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false)
+    };
+    tourService = { startIfNeeded: sinon.stub() };
+    authService = { has: sinon.stub().resolves(false) };
+    changesService = {
+      subscribe: sinon.stub().resolves(of({}))
+    };
+    userSettingsService = {
+      get: sinon.stub().resolves({ facility_id: 'district-id' })
+    };
+    getDataRecordsService = {
+      get: sinon.stub().resolves({
+        _id: 'district-id',
+        name: 'My District',
+        type: 'district_hospital'
+      })
+    };
+    contactTypesService = {
+      getChildren: sinon.stub().resolves([
+        {
+          id: 'childType',
+          icon: 'icon'
+        }
+      ]),
+      getAll: sinon.stub().resolves([]),
+      includes: sinon.stub()
+    };
+    scrollLoaderProvider = {
+      init: (callback) => {
+        scrollLoaderCallback = callback;
+      }
+    };
+    contactListContains;
+    simprintsService = {
+      enabled: sinon.stub().resolves([]),
+      identify: sinon.stub().resolves([])
+    };
+    exportService = { export: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub() };
+    translateFromService = { get: sinon.stub() };
+    modalService = { show: sinon.stub().resolves() };
+
     contactListContains = sinon.stub();
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
@@ -52,9 +109,7 @@ describe('Contacts component', () => {
       { selector: Selectors.getIsAdmin, value: false },
       { selector: Selectors.contactListContains, value: contactListContains },
     ];
-    const changesServiceMock = {
-      subscribe: sinon.stub().resolves(of({}))
-    };
+
     return TestBed
       .configureTestingModule({
         imports: [
@@ -73,39 +128,21 @@ describe('Contacts component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: changesServiceMock },
-          { provide: SearchService, useValue: { search: sinon.stub().resolves([]) } },
-          { provide: SimprintsService, useValue: {
-            enabled: sinon.stub().resolves([]),
-            identify: sinon.stub().resolves([])
-          }},
-          { provide: SettingsService, useValue: { get: sinon.stub().resolves([]) } },
-          { provide: UserSettingsService, useValue: {
-            get: sinon.stub().resolves({ facility_id: 'district-id' })
-          }},
-          { provide: GetDataRecordsService, useValue: {
-            get: sinon.stub().resolves({
-              _id: 'district-id',
-              name: 'My District',
-              type: 'district_hospital'
-            })
-          }},
-          { provide: SessionService, useValue: { isDbAdmin: sinon.stub().returns(false) } },
-          { provide: TourService, useValue: { startIfNeeded: sinon.stub() } },
-          { provide: AuthService, useValue: { has: sinon.stub().resolves(false) } },
-          { provide: ContactTypesService, useValue: {
-            getChildren: sinon.stub().resolves([
-              {
-                id: 'childType',
-                icon: 'icon'
-              }
-            ]),
-            getAll: sinon.stub().resolves([]),
-            includes: sinon.stub()
-          }},
-          { provide: ScrollLoaderProvider, useValue: { init: (callback) => {
-            scrollLoaderCallback = callback;
-          } }},
+          { provide: ChangesService, useValue: changesService },
+          { provide: SearchService, useValue: searchService },
+          { provide: SimprintsService, useValue: simprintsService },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: GetDataRecordsService, useValue: getDataRecordsService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: TourService, useValue: tourService },
+          { provide: AuthService, useValue: authService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
+          { provide: ExportService, useValue: exportService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: TranslateFromService, useValue: translateFromService },
+          { provide: ModalService, useValue: modalService },
         ]
       })
       .compileComponents().then(() => {
@@ -113,14 +150,6 @@ describe('Contacts component', () => {
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
         fixture.detectChanges();
-        changesService = TestBed.inject(ChangesService);
-        searchService = TestBed.inject(SearchService);
-        settingsService = TestBed.inject(SettingsService);
-        userSettingsService = TestBed.inject(UserSettingsService);
-        getDataRecordsService = TestBed.inject(GetDataRecordsService);
-        sessionService = TestBed.inject(SessionService);
-        authService = TestBed.inject(AuthService);
-        contactTypesService = TestBed.inject(ContactTypesService);
       });
   }));
 
@@ -141,7 +170,7 @@ describe('Contacts component', () => {
 
     expect(searchService.search.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(2);
+    expect(spySubscriptionsAdd.callCount).to.equal(4);
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {

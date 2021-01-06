@@ -174,4 +174,14 @@ describe('Global Reducer', () => {
     state = globalReducer(state, Actions.setRightActionBarVerified(false));
     expect(state).to.deep.equal({ actionBar: { right: { some: 'fields', verified: false } } });
   });
+
+  it('should update right action bar', () => {
+    const right = { field: 'a', settings: 'b' };
+    state = globalReducer(state, Actions.setRightActionBar(right));
+    expect(state).to.deep.equal({ actionBar: { right } });
+
+    const change = { other: 'e' };
+    state = globalReducer(state, Actions.updateRightActionBar(change));
+    expect(state).to.deep.equal({ actionBar: { right: { field: 'a', settings: 'b', other: 'e' } } });
+  });
 });

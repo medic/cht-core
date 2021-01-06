@@ -493,16 +493,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private openContactMutedModal(form) {
-    const routeData = { id: this.selectedContact._id, formId: form.code };
-
     if (!form.showUnmuteModal) {
-      this.router.navigate(['contacts', 'report', routeData]);
+      this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]);
       return;
     }
 
     this.modalService
       .show(ContactsMutedComponent)
-      .then(() => this.router.navigate(['contacts', 'report', routeData]))
+      .then(() => this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]))
       .catch(() => {});
   }
 
@@ -535,12 +533,13 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
 
         const allowedChildTypesBySelectedContact = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
-        this.globalActions.setRightActionBar({
+        this.globalActions.updateRightActionBar({
           childTypes: this.getModelsFromChildTypes(allowedChildTypesBySelectedContact)
         });
       }
     );
     this.subscription.add(contactFormsSubscription);
+
     return contactFormsSubscription;
   }
 
@@ -576,7 +575,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
           })
           .sort((a, b) => a.title?.localeCompare(b.title));
 
-        this.globalActions.setRightActionBar({ relevantForms: formSummaries });
+        this.globalActions.updateRightActionBar({ relevantForms: formSummaries });
       }
     );
     this.subscription.add(contactListSubscription);

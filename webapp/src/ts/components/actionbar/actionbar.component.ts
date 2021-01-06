@@ -1,4 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -32,6 +33,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private modalService: ModalService,
+    private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -132,19 +134,10 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   }
 
   navigateToContactAdd(type, parentId, from?) {
-    /*const data = {
-      type: type,
-      parent_id: parentId,
-      from: from
-    };*/
-    // ToDo navigate to contact.add and send data
+    this.router.navigate(['/contacts', parentId, 'add', type, { queryParams: { from } }]);
   }
 
   navigateToContactEdit(selectedContact) {
-    /*const data = {
-      id: selectedContact._id
-    };*/
-    // ToDo navigate to contact.edit and send data
+    this.router.navigate(['/contacts', selectedContact._id, 'edit']);
   }
-
 }
