@@ -268,7 +268,7 @@ describe('Purging on login', () => {
       date: result.date
     });
     const purgeDate = result.date;
-    
+
     await utils.resetBrowser();
     commonElements.calm();
     await browser.waitForAngular();
@@ -277,27 +277,23 @@ describe('Purging on login', () => {
     // purge didn't run again on next refresh
     chai.expect(result._rev).to.equal('0-1');
     chai.expect(result.date).to.equal(purgeDate);
+    await utils.saveDocs(subsequentReports);
 
-    await browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
+    //await browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
     commonElements.sync();
     commonElements.goToReports();
     reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
 
-    await browser.wait(async() => {
-      let seq;
-      const purgeSettings = {
-        fn: purgeFn.toString(),
-        text_expression: 'every 1 seconds',
-        run_every_days: '0'
-      };
-      return await utils.revertSettings(true)
-        .then(() => sentinelUtils.getCurrentSeq())
-        .then(result => seq = result)
-        .then(() => utils.updateSettings({ purge: purgeSettings}, true))
-        .then(() => restartSentinel())
-        .then(() => sentinelUtils.waitForPurgeCompletion(seq))
-        .then(() => true);
-    });
+    const purgeSettings = {
+      fn: purgeFn.toString(),
+      text_expression: 'every 1 seconds',
+      run_every_days: '0'
+    };
+    await utils.revertSettings(true);
+    const seq = await sentinelUtils.getCurrentSeq();
+    await utils.updateSettings({ purge: purgeSettings}, true);
+    await restartSentinel();
+    await sentinelUtils.waitForPurgeCompletion(seq);
     // get new settings that say to purge on every boot!
     commonElements.sync();
     await utils.refreshToGetNewSettings();
