@@ -1,5 +1,7 @@
 #!/bin/bash -eu
 
+#testing the pull by using a private repo
+docker pull communityhealthtoolkit/medic_mobile:1
 # start couchdb 2.x docker instance
 docker run -d -p 5984:5984 --name couch couchdb:2
 echo "Starting CouchDB 2.x"
