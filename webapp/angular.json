@@ -46,6 +46,12 @@
           },
           "configurations": {
             "development": {
+              "fileReplacements": [
+                {
+                  "replace": "src/ts/environments/environment.ts",
+                  "with": "src/ts/environments/environment.prod.ts"
+                }
+              ],
               "deleteOutputPath": false,
               "outputHashing": "none",
               "sourceMap": true,

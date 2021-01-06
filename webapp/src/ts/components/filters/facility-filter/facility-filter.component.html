@@ -26,7 +26,7 @@
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
         [ngTemplateOutlet]="facilityTemplate"
-        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: dropdownFilter?.selected.has(facility) || false, facilityDepth: facilityDepth + 1 }">
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: false, facilityDepth: facilityDepth + 1 }">
       </ng-container>
     </ul>
   </li>

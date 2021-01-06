@@ -6,7 +6,7 @@ const USER_DB_SUFFIX = 'user';
 const META_DB_SUFFIX = 'meta';
 const USERS_DB_SUFFIX = 'users';
 
-import { Injectable } from '@angular/core';
+import { ApplicationRef, Injectable, NgZone } from '@angular/core';
 
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
@@ -18,10 +18,42 @@ import { POUCHDB_OPTIONS } from '../constants';
 export class DbService {
   private cache = {};
   private isOnlineOnly;
+  private readonly POUCHDB_METHODS = {
+    destroy: this.zonePromise.bind(this),
+    put: this.zonePromise.bind(this),
+    post: this.zonePromise.bind(this),
+    get: this.zonePromise.bind(this),
+    remove: this.zonePromise.bind(this),
+    bulkDocs: this.zonePromise.bind(this),
+    bulkGet: this.zonePromise.bind(this),
+    allDocs: this.zonePromise.bind(this),
+    putAttachment: this.zonePromise.bind(this),
+    getAttachment: this.zonePromise.bind(this),
+    removeAttachment: this.zonePromise.bind(this),
+    query: this.zonePromise.bind(this),
+    viewCleanup: this.zonePromise.bind(this),
+    info: this.zonePromise.bind(this),
+    compact: this.zonePromise.bind(this),
+    revsDiff: this.zonePromise.bind(this),
+    //changes: 'eventEmitter',
+    //sync: 'eventEmitter',
+    //replicate: 'replicate'
+  };
+
+  private zonePromise(fn, method, db) {
+    return (...args) => {
+      const result = this.ngZone.runOutsideAngular(() => {
+        const res = fn.apply(db, args);
+        return res;
+      });
+      return result;
+    };
+  }
 
   constructor(
     private sessionService:SessionService,
     private locationService:LocationService,
+    private ngZone:NgZone,
   ) {
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
 
@@ -75,10 +107,21 @@ export class DbService {
     return clone;
   }
 
+  private wrapMethods(db) {
+    for (const method in this.POUCHDB_METHODS) {
+      if (this.POUCHDB_METHODS[method]) {
+        db[method] = this.POUCHDB_METHODS[method](db[method], method, db);
+      }
+    }
+    return db;
+  }
+
   get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
     const name = this.getDbName(remote, meta, usersMeta);
     if (!this.cache[name]) {
-      this.cache[name] = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
+      const db = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
+      this.cache[name] = this.wrapMethods(db);
+      //this.cache[name] = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
     }
     return this.cache[name];
   }

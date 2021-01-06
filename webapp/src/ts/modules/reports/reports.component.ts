@@ -1,12 +1,9 @@
 import { find as _find, assignIn as _assignIn } from 'lodash-es';
 import {
   Component,
-  ComponentFactoryResolver,
   NgZone,
   OnDestroy,
   OnInit,
-  ViewChild,
-  ViewContainerRef
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -24,7 +21,6 @@ import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 
 const PAGE_SIZE = 50;
 
@@ -67,7 +63,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
-    private componentFactoryResolver:ComponentFactoryResolver,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);

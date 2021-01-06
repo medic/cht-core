@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import * as _ from 'lodash-es';
 import * as moment from 'moment';
 import * as Search from '@medic/search';
@@ -29,6 +29,7 @@ export class SearchService {
     private sessionService:SessionService,
     private getDataRecordsService:GetDataRecordsService,
     private searchFactoryService:SearchFactoryService,
+    private ngZone:NgZone,
     //private telemetry todo
   ) {
     this.searchFactory = this.searchFactoryService.get(this.dbService);
@@ -120,12 +121,18 @@ export class SearchService {
   }
 
   search(type, filters, options:any = {}, extensions:any = {}, docIds?) {
-    console.debug('Doing Search', type, filters, options, extensions);
+    return this.ngZone.runOutsideAngular(() => this._search(type, filters, options, extensions, docIds));
+  }
+
+  private _search(type, filters, options:any = {}, extensions:any = {}, docIds?) {
+    console.error('Doing Search', type, filters, options, extensions);
 
     _.defaults(options, {
       limit: 50,
       skip: 0
     });
+    console.error(options);
+    const t = new Date().getTime();
 
     if (!options.force && this.debounce(type, filters, options)) {
       return Promise.resolve([]);
@@ -144,6 +151,9 @@ export class SearchService {
         //   search:contacts:types                      <-- default viewing of contact list
         //Telemetry.record(telemetryKey, timing);
 
+        console.log('got search results');
+        console.log(new Date().getTime() - t);
+
         if (docIds && docIds.length) {
           docIds.forEach((docId) => {
             if (searchResults.docIds.indexOf(docId) === -1) {
@@ -154,8 +164,14 @@ export class SearchService {
         const dataRecordsPromise = this.getDataRecordsService.get(searchResults.docIds, options);
 
         if (!extensions.displayLastVisitedDate) {
-          return dataRecordsPromise;
+          return dataRecordsPromise.then(result => {
+            console.log('got all data records now');
+            console.log(new Date().getTime() - t);
+
+            return result;
+          });
         }
+
 
         const lastVisitedDatePromise = this.getLastVisitedDates(
           searchResults.docIds,
@@ -179,6 +195,9 @@ export class SearchService {
                 relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
               }
             });
+
+            console.log('got all data records');
+            console.log(new Date().getTime() - t);
 
             return dataRecords;
           });
