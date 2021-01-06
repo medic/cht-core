@@ -12,7 +12,17 @@ function handleUpdateModal() {
   }
 }
 
+function deprecated(name, replacement) {
+  console.warn('!!!!!!!!');
+  console.warn(`The function ${name} has been deprecated`);
+  if (replacement) {
+    console.warn(`Use function ${replacement} instead`);
+  }
+  console.warn('!!!!!!!!');
+}
+
 module.exports = {
+  deprecated: deprecated,
   clickElement: element => {
     handleUpdateModal();
     return browser
