@@ -45,7 +45,9 @@ elif [ ! -z "$CHT_DOMAIN" ]; then
     elif [ ! -f /etc/nginx/private/cert.pem -a ! -f /etc/nginx/private/key.pem ]; then
         mkdir -p /etc/nginx/private
         curl https://get.acme.sh | sh
-        /root/.acme.sh/acme.sh --issue -d ${CHT_DOMAIN} --standalone
+        if [ ! -d /root/.acme.sh/${CHT_DOMAIN} ]; then
+            /root/.acme.sh/acme.sh --issue -d ${CHT_DOMAIN} --standalone
+        fi
         /root/.acme.sh/acme.sh --install-cert -d ${CHT_DOMAIN} \
             --key-file /etc/nginx/private/key.pem \
             --fullchain-file /etc/nginx/private/cert.pem
