@@ -21,13 +21,13 @@ services:
     # https://hub.docker.com/_/couchdb
     volumes:
       - medic-data:/opt/couchdb/data/
-      - medic-couchconfig:/opt/couchdb/etc/local.d/passwd
+      - medic-couchconfig:/opt/couchdb/etc/local.d/
     networks:
       - medic-net
 
   medic-api:
     container_name: medic-api
-    image: medicmobile/medic-api:3.10.0-test11
+    image: medicmobile/medic-api:3.10.0-010520-test3
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -43,7 +43,7 @@ services:
 
   medic-sentinel:
     container_name: medic-sentinel
-    image: medicmobile/medic-sentinel:3.10.0-test10
+    image: medicmobile/medic-sentinel:3.10.0-010520-test1
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -60,7 +60,7 @@ services:
 
   horticulturalist:
     container_name: horticulturalist
-    image: medicmobile/horticulturalist:master-123020-8
+    image: medicmobile/horticulturalist:dockerize-123120-3
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -88,10 +88,14 @@ services:
     restart: unless-stopped
 
   nginx:
-    container_name: nginx
-    image: medicmobile/nginx:test14
+    container_name: medic-nginx
+    image: medicmobile/nginx:3.10.0-slim-01052021-11
     environment:
-      DOCKER_NETWORK_NAME: haproxy
+      CHT_DOMAIN: 
+    #volumes:
+    #  - medic-ssl:/root/.acme.sh/
+    #  - ./ssl-certificate-key.pem:/etc/nginx/private/key.pem
+    #  - ./ssl-certificate.pem:/etc/nginx/private/cert.pem
     networks:
       - medic-net
     depends_on:
@@ -105,6 +109,8 @@ volumes:
     name: medic-data
   medic-couchconfig:
     name: medic-couchconfig
+  medic-ssl:
+    name: medic-ssl
 
 networks:
   medic-net:

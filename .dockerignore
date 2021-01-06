@@ -1,0 +1,5 @@
+api/tests/
+sentinel/tests/
+admin/tests/
+webapp/tests/
+tests/
