@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { isEqual as _isEqual } from 'lodash-es';
 
 import { ContactsActions } from '@mm-actions/contacts';
 import { GlobalActions } from '@mm-actions/global';
@@ -100,11 +101,11 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
 
   private subscribeToRoute() {
     const routeSubscription = this.route.params.subscribe((params) => {
-      // if (_isEqual(this.routeSnapshot.params, params)) {
-      //   // the 1st time we load the form, we must wait for the view to be initialized
-      //   // if we don't skip, it will result in the form being loaded twice
-      //   return;
-      // }
+      if (_isEqual(this.routeSnapshot.params, params)) {
+        // the 1st time we load the form, we must wait for the view to be initialized
+        // if we don't skip, it will result in the form being loaded twice
+        return;
+      }
       this.routeSnapshot = this.route.snapshot;
       this.contactId = params.id;
       this.formId = params.formId;
