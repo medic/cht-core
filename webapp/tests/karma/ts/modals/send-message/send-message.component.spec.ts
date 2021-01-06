@@ -12,6 +12,7 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { FormatProvider } from '@mm-providers/format.provider';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 
 describe('SendMessageComponent', () => {
   let component: SendMessageComponent;
@@ -39,6 +40,7 @@ describe('SendMessageComponent', () => {
         ],
         declarations: [
           SendMessageComponent,
+          MmModal,
         ],
         providers: [
           { provide: BsModalRef, useValue: bdModalRef },

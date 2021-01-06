@@ -14,26 +14,23 @@
         <accordion-group [isOpen]="true">
           <div class="panel-heading" role="tab" id="modem-setup-heading" accordion-heading>
             <h4 class="panel-title">
-              <a>
-                <span class="count">
-                  <span class="number">1</span>
-                  <i class="fa fa-check"></i>
-                </span><span translate>setup.modem.title</span>
-                <span class="value"></span>
-              </a>
+              <span class="count">
+                <span class="number">1</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span translate>setup.modem.title</span>
+              <span class="value"></span>
             </h4>
           </div>
           <div id="modem-setup-content" class="modem-setup-content panel-collapse">
-            <div class="panel-body">
-              <p translate>setup.modem.description</p>
-              <label for="default-country-code-setup" translate>Default country code</label>
-              <p translate>Default country code help</p>
-              <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
-              </select>
-              <label for="gateway-number-setup" translate>Gateway number</label>
-              <p translate>Gateway number help</p>
-              <input [(ngModel)]="model.gatewayNumber" id="gateway-number-setup" name="gateway-number" type="text"/>
-            </div>
+            <p translate>setup.modem.description</p>
+            <label for="default-country-code-setup" translate>Default country code</label>
+            <p translate>Default country code help</p>
+            <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
+            </select>
+            <label for="gateway-number-setup" translate>Gateway number</label>
+            <p translate>Gateway number help</p>
+            <input [(ngModel)]="model.gatewayNumber" id="gateway-number-setup" name="gateway-number" type="text"/>
           </div>
         </accordion-group>
       </div>
@@ -43,25 +40,22 @@
         <accordion-group>
           <div class="panel-heading" role="tab" id="primary-contact-heading" accordion-heading>
             <h4 class="panel-title">
-              <a>
-                <span class="count">
-                  <span class="number">2</span>
-                  <i class="fa fa-check"></i>
-                </span><span translate>setup.contact.title</span>
-                <span class="value"></span>
-              </a>
+              <span class="count">
+                <span class="number">2</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span translate>setup.contact.title</span>
+              <span class="value"></span>
             </h4>
           </div>
           <div id="primary-contact-content" class="primary-contact-content panel-collapse">
-            <div class="panel-body">
-              <p translate>setup.contact.description</p>
-              <p class="horizontal-options">
-                <a href="#" class="icon contact-pregnant" data-value="patient" translate>Pregnant patient</a>
-                <a href="#" class="icon contact-chw" data-value="chw" translate>Community health worker</a>
-                <a href="#" class="icon contact-nurse" data-value="nurse" translate>Facility nurse</a>
-              </p>
-              <p translate>setup.contact.help</p>
-            </div>
+            <p translate>setup.contact.description</p>
+            <p class="horizontal-options">
+              <a href="#" class="icon contact-pregnant" data-value="patient" translate>Pregnant patient</a>
+              <a href="#" class="icon contact-chw" data-value="chw" translate>Community health worker</a>
+              <a href="#" class="icon contact-nurse" data-value="nurse" translate>Facility nurse</a>
+            </p>
+            <p translate>setup.contact.help</p>
           </div>
         </accordion-group>
       </div>
@@ -71,32 +65,28 @@
         <accordion-group>
           <div class="panel-heading" role="tab" id="language-preference-heading" accordion-heading>
             <h4 class="panel-title">
-              <a>
-                <span class="count">
-                  <span class="number">3</span>
-                  <i class="fa fa-check"></i>
-                </span><span translate>setup.language.title</span>
-                <span class="value"></span>
-              </a>
+              <span class="count">
+                <span class="number">3</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span translate>setup.language.title</span>
+              <span class="value"></span>
             </h4>
           </div>
           <div id="language-preference-content" class="language-preference-content panel-collapse">
-            <div class="panel-body">
-              <span translate>setup.language.outgoing.subtitle</span>
-              <p class="horizontal-options locale-outgoing">
-                <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
-                  <span class="rectangle">{{ language.name }}</span>
-                </a>
-              </p>
-              <span translate>setup.language.subtitle</span>
-              <p class="horizontal-options locale">
-                <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
-                  <span class="rectangle">{{ language.name }}</span>
-                </a>
-              </p>
-  
-              <p translate>setup.language.description</p>
-            </div>
+            <span translate>setup.language.outgoing.subtitle</span>
+            <p class="horizontal-options locale-outgoing">
+              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
+                <span class="rectangle">{{ language.name }}</span>
+              </a>
+            </p>
+            <span translate>setup.language.subtitle</span>
+            <p class="horizontal-options locale">
+              <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
+                <span class="rectangle">{{ language.name }}</span>
+              </a>
+            </p>
+            <p translate>setup.language.description</p>
           </div>
         </accordion-group>
       </div>
@@ -106,30 +96,27 @@
         <accordion-group>
           <div class="panel-heading" role="tab" id="registration-form-heading" accordion-heading>
             <h4 class="panel-title">
-              <a>
-                <span class="count">
-                  <span class="number">4</span>
-                  <i class="fa fa-check"></i>
-                </span><span translate>setup.registration.title</span>
-                <span class="value"></span>
-              </a>
+              <span class="count">
+                <span class="number">4</span>
+                <i class="fa fa-check"></i>
+              </span>
+              <span translate>setup.registration.title</span>
+              <span class="value"></span>
             </h4>
           </div>
           <div id="registration-form-content" class="registration-form-content panel-collapse">
-            <div class="panel-body">
-              <p translate>setup.registration.description</p>
-              <p class="horizontal-options">
-                <a href="#" data-value="true">
-                  <span class="circle"><i class="fa fa-check"></i></span>
-                  <span class="description" translate>with.lmp</span>
-                </a>
-                <a href="#" data-value="false">
-                  <span class="circle"><i class="fa fa-check"></i></span>
-                  <span class="description" translate>without.lmp</span>
-                </a>
-              </p>
-              <p translate>setup.registration.help</p>
-            </div>
+            <p translate>setup.registration.description</p>
+            <p class="horizontal-options">
+              <a href="#" data-value="true">
+                <span class="circle"><i class="fa fa-check"></i></span>
+                <span class="description" translate>with.lmp</span>
+              </a>
+              <a href="#" data-value="false">
+                <span class="circle"><i class="fa fa-check"></i></span>
+                <span class="description" translate>without.lmp</span>
+              </a>
+            </p>
+            <p translate>setup.registration.help</p>
           </div>
         </accordion-group>
       </div>

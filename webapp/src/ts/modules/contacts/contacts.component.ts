@@ -21,6 +21,7 @@ import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
+import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
@@ -39,7 +40,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
   private listContains;
 
   contactsList;
-  selectedContact;
   settings;
   userSettings;
   loading = false;
@@ -54,6 +54,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   isAdmin;
   childPlaces;
   childTypesBySelectedContact = [];
+  allowedChildPlaces = [];
   lastVisitedDateExtras;
   visitCountSettings;
   defaultSortDirection = 'alpha';
@@ -61,7 +62,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   additionalListItem = false;
   simprintsEnabled;
   enketoEdited;
-  allowedChildPlaces = [];
+  selectedContact;
 
   constructor(
     private store: Store,
@@ -79,6 +80,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private simprintsService: SimprintsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
+    private tourService: TourService,
     private router: Router,
     private exportService: ExportService,
     private xmlFormsService: XmlFormsService,
@@ -171,11 +173,13 @@ export class ContactsComponent implements OnInit, OnDestroy{
         console.error('Error searching for contacts', err);
       });
 
+    this.tourService.startIfNeeded(this.route.snapshot);
     this.subscribeToSelectedContact();
   }
 
   ngOnDestroy() {
     this.contactsActions.resetContactsList();
+    this.contactsActions.clearSelection();
     this.subscription.unsubscribe();
     this.globalActions.clearFilters();
   }
@@ -361,7 +365,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
           const homeIndex = _findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
           });
-          this.additionalListItem = 
+          this.additionalListItem =
             !this.filters.search &&
             !this.filters.simprintsIdentities &&
             (this.additionalListItem || !this.appending) &&
@@ -376,7 +380,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
               !this.filters.search &&
               !this.filters.simprintsIdentities
             ) {
-              
+
               updatedContacts.unshift(this.usersHomePlace);
             }
             if (this.filters.simprintsIdentities) {

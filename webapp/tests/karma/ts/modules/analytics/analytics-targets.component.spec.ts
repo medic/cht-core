@@ -105,6 +105,7 @@ describe('AnalyticsTargetsComponent', () => {
   it('should catch rules engine errors', fakeAsync(() => {
     sinon.reset();
     rulesEngineService.isEnabled.rejects({ some: 'err' });
+    const consoleErrorMock = sinon.stub(console, 'error');
 
     component.ngOnInit();
     tick(50);
@@ -114,5 +115,7 @@ describe('AnalyticsTargetsComponent', () => {
     expect(component.targetsDisabled).to.equal(false);
     expect(component.targets).to.deep.equal([]);
     expect(component.loading).to.equal(false);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Error getting targets');
   }));
 });

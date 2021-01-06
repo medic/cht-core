@@ -385,12 +385,16 @@ describe('ResourceIcons service', () => {
     });
 
     it('should throw on error', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       get.rejects({ err: 'omg' });
       const service = getService();
       return service
         .getDocResources('id')
         .then(() => assert.fail('Should have thrown'))
-        .catch(err => expect(err).to.deep.equal({ err: 'omg' }));
+        .catch(err => {
+          expect(err).to.deep.equal({ err: 'omg' });
+          expect(consoleErrorMock.args[0][0]).to.equal('Error updating icons');
+        });
     });
   });
 });

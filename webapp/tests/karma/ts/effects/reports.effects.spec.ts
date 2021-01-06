@@ -145,6 +145,7 @@ describe('Reports effects', () => {
       const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
       const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const consoleErrorMock = sinon.stub(console, 'error');
       reportViewModelGeneratorService.get.rejects({ some: 'error' });
 
       await effects.selectReport.toPromise();
@@ -155,6 +156,8 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.args[0]).to.deep.equal(['report']);
       expect(setSelected.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error selecting report');
     });
   });
 
@@ -366,7 +369,8 @@ describe('Reports effects', () => {
       expect(updateUnreadCount.callCount).to.equal(0);
     });
 
-    it('should catch markread service errors', () => {
+    it('should catch markread service errors', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       markReadService.markAsRead.rejects({ some: 'error' });
       const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');
       store.overrideSelector(Selectors.getListReport, { _id: 'my_report' });
@@ -377,6 +381,9 @@ describe('Reports effects', () => {
       expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'my_report', read: true }]]);
       expect(updateReportsList.callCount).to.equal(1);
       expect(updateReportsList.args[0]).to.deep.equal([[{ _id: 'my_report', read: true }]]);
+      await Promise.resolve();  // wait markReadService.markAsRead stub to fail
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error marking read');
     });
 
     it('should mark read even if report is not found in list', () => {
@@ -518,6 +525,7 @@ describe('Reports effects', () => {
     }));
 
     it('should catch db get errors', fakeAsync(async() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const report = {
         _id: 'report',
         verified: 'something',
@@ -539,6 +547,8 @@ describe('Reports effects', () => {
         sendTo: undefined,
         verifyingReport: false,
       });
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error fetching contact for action bar');
     }));
 
     it('openSendMessageModal function should open correct modal', () => {
@@ -714,6 +724,7 @@ describe('Reports effects', () => {
     }));
 
     it('should catch search errors', async(async() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       searchService.search.rejects({ error: 'boom' });
       store.overrideSelector(Selectors.getFilters, { filter: true });
 
@@ -729,6 +740,9 @@ describe('Reports effects', () => {
       expect(setSelectedReports.callCount).to.equal(0);
       expect(settingSelected.callCount).to.deep.equal(0);
       expect(setRightActionBar.callCount).to.equal(0);
+      await Promise.resolve();  // wait search service rejection to be catch
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error selecting all');
     }));
   });
 
@@ -917,6 +931,7 @@ describe('Reports effects', () => {
     }));
 
     it('should catch db put errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const selectedReports = [{ _id: 'report', doc: { _id: 'report' } }];
       authService.has.resolves(true);
       store.overrideSelector(Selectors.getSelectedReports, selectedReports);
@@ -931,6 +946,8 @@ describe('Reports effects', () => {
 
       expect(dbService.get.callCount).to.equal(1);
       expect(dbService.put.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error verifying message');
     }));
 
     const scenarios = [

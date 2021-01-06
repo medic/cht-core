@@ -10,7 +10,6 @@ const initialState = {
   filters: {},
   loadingSelectedChildren: false,
   loadingSelectedContacts: false,
-  // loadingSelectedReports: false,
   loadingSummary: false,
 };
 
@@ -93,7 +92,7 @@ const receiveSelectedContactChildren = (state, children) => {
   return {
     ...state,
     loadingSelectedChildren: false,
-    selected: Object.assign({}, state.selected, { children }),
+    selected: { ...state.selected, children },
   };
 };
 
@@ -101,7 +100,7 @@ const receiveSelectedContactReports = (state, reports) => {
   return {
     ...state,
     loadingSelectedReports: false,
-    selected: Object.assign({}, state.selected, { reports }),
+    selected: { ...state.selected, reports },
   };
 };
 
@@ -109,10 +108,10 @@ const setSelectedContact = (state, selected) => {
   return { ...state, selected };
 };
 
-const updateSelectedContact = (state, summary) => {
+const updateSelectedContactSummary = (state, summary) => {
   return {
     ...state,
-    selected: Object.assign({}, state.selected, { summary }),
+    selected: { ...state.selected, summary },
   };
 };
 
@@ -120,38 +119,31 @@ const updateSelectedContactsTasks = (state, tasks) => {
   const taskCounts = {};
   tasks.forEach(task => {
     const childId = task.emission.forId;
-    if (taskCounts[childId]) {
-      taskCounts[childId] = taskCounts[childId] + 1;
-    } else {
-      taskCounts[childId] = 1;
-    }
+    taskCounts[childId] = taskCounts[childId] ? taskCounts[childId] + 1 : 1;
   });
-  const children = state.selected.children.map(group => {
+  const children = state.selected?.children?.map(group => {
     const contacts = group.contacts.map(child => {
-      return Object.assign({}, child, { taskCount: taskCounts[child.id] });
+      return { ...child, taskCount: taskCounts[child.id] };
     });
     return { ...group, contacts };
   });
   const mappedTasks = tasks.map(doc => doc.emission);
-  return Object.assign({}, state, {
-    selected: Object.assign({}, state.selected, { tasks: mappedTasks, children })
-  });
+  return { ...state, selected: { ...state.selected, tasks: mappedTasks, children }};
 };
 
 const receiveSelectedContactTargetDoc = (state, targetDoc) => {
   return {
     ...state,
-    selected: Object.assign({}, state.selected, { targetDoc }),
+    selected: { ...state.selected, targetDoc },
   };
 };
 
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
-  on(Actions.setSelectedContacts, (state, { payload: { selected } }) => ({ ...state, selected })),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
   on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),
-  on(Actions.setSelected, (state, { payload: { selected } }) => setSelectedContact(state, selected)),
+  on(Actions.setSelectedContact, (state, { payload: { selected } }) => setSelectedContact(state, selected)),
   on(Actions.setLoadingSelectedContact, (state) => setLoadingSelectedContact(state)),
   on(Actions.setContactsLoadingSummary, (state, { payload: { value }}) => setContactsLoadingSummary(state, value)),
   on(Actions.receiveSelectedContactChildren, (state, { payload: { children }}) => {
@@ -160,7 +152,9 @@ const _contactsReducer = createReducer(
   on(Actions.receiveSelectedContactReports, (state, { payload: { reports }}) => {
     return receiveSelectedContactReports(state, reports);
   }),
-  on(Actions.updateSelectedContact, (state, { payload: { summary }}) => updateSelectedContact(state, summary)),
+  on(Actions.updateSelectedContactSummary, (state, { payload: { summary }}) => {
+    return updateSelectedContactSummary(state, summary);
+  }),
   on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks)),
   on(Actions.receiveSelectedContactTargetDoc, (state, { payload: { targetDoc }}) => {
     return receiveSelectedContactTargetDoc(state, targetDoc);

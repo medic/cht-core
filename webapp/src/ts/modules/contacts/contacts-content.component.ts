@@ -41,6 +41,18 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.subscribeToStore();
+    this.subscribeToRoute();
+    this.subscribeToChanges();
+    this.setReportsTimeWindowMonths(3);
+    this.setTasksTimeWindowWeeks(1);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getLoadingSelectedContactChildren),
@@ -56,6 +68,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
+      if (this.selectedContact !== selectedContact) {
+        this.setReportsTimeWindowMonths(3);
+        this.setTasksTimeWindowWeeks(1);
+      }
       this.selectedContact = selectedContact;
       this.selectedContactChildren = selectedContactChildren;
       this.loadingContent = loadingContent;
@@ -64,7 +80,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.contactsLoadingSummary = contactsLoadingSummary;
     });
     this.subscription.add(reduxSubscription);
+  }
 
+  subscribeToRoute() {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
@@ -75,7 +93,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.globalActions.unsetSelected();
       }
     });
+    this.subscription.add(routeSubscription);
+  }
 
+  subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
       filter: (change) => {
@@ -84,24 +105,17 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
                this.contactChangeFilterService.isRelevantReport(change, this.selectedContact);
       },
       callback: (change) => {
-        if (
-          this.contactChangeFilterService.matchContact(change, this.selectedContact) &&
-          this.contactChangeFilterService.isDeleted(change)) {
+        const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
+        const contactDeleted = this.contactChangeFilterService.isDeleted(change);
+
+        if (matchedContact && contactDeleted) {
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
           return this.router.navigate([`/contacts/${parentId}`]);
         }
         return this.contactsActions.selectContact(change.id, { silent: true });
       }
     });
-
-    this.subscription.add(routeSubscription);
     this.subscription.add(changesSubscription);
-    this.setReportsTimeWindowMonths(3);
-    this.setTasksTimeWindowWeeks(1);
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
   setReportsTimeWindowMonths(months?) {
@@ -110,8 +124,11 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   filteredReports() {
-    const reports = this.selectedContact.reports;
-    return reports.filter((report) => !this.reportStartDate || this.reportStartDate.isBefore(report.reported_date));
+    const reports = this.selectedContact?.reports;
+    if (reports) {
+      return reports.filter((report) => !this.reportStartDate || this.reportStartDate.isBefore(report.reported_date));
+    }
+    return [];
   }
 
   filteredTasks() {

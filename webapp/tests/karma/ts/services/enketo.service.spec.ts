@@ -1,4 +1,4 @@
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -131,6 +131,7 @@ describe('Enketo service', () => {
     Search = sinon.stub();
     LineageModelGenerator = { contact: sinon.stub() };
     window.EnketoForm = EnketoForm;
+    window.URL.createObjectURL = createObjectURL;
     EnketoForm.returns({
       init: enketoInit,
       langs: { setAll: () => {} },
@@ -243,7 +244,7 @@ describe('Enketo service', () => {
       });
     });
 
-    it('replaces img src with obj urls', fakeAsync(() => {
+    it('replaces img src with obj urls', async() => {
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
@@ -255,21 +256,20 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
-      service.render(wrapper, mockEnketoDoc('myform')).then(() => {
-        // need to wait for async get attachment to complete
-        tick();
-        const img = wrapper.find('img').first();
-        expect(img.css('visibility')).to.satisfy(val => {
-          // different browsers return different values but both are equivalent
-          return val === '' || val === 'visible';
-        });
-        expect(enketoInit.callCount).to.equal(1);
-        expect(createObjectURL.callCount).to.equal(1);
-        expect(createObjectURL.args[0][0]).to.equal('myobjblob');
-      }).catch(err => assert.fail(err));
-    }));
+      await service.render(wrapper, mockEnketoDoc('myform'));
+      await Promise.resolve();  // need to wait for async get attachment to complete
+      const img = wrapper.find('img').first();
+      expect(img.css('visibility')).to.satisfy(val => {
+        // different browsers return different values but both are equivalent
+        return val === '' || val === 'visible';
+      });
+      expect(enketoInit.callCount).to.equal(1);
+      expect(createObjectURL.callCount).to.equal(1);
+      expect(createObjectURL.args[0][0]).to.equal('myobjblob');
+    });
 
     it('leaves img wrapped and hides loader if failed to load', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
@@ -290,6 +290,8 @@ describe('Enketo service', () => {
         expect(loader.is(':hidden')).to.equal(true);
         expect(enketoInit.callCount).to.equal(1);
         expect(createObjectURL.callCount).to.equal(0);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error fetching media file');
       });
     });
 
@@ -463,6 +465,7 @@ describe('Enketo service', () => {
     });
 
     it('ContactSummary receives empty lineage if contact doc is missing', () => {
+      const consoleWarnMock = sinon.stub(console, 'warn');
       LineageModelGenerator.contact.rejects({ code: 404 });
 
       UserContact.resolves({
@@ -491,6 +494,8 @@ describe('Enketo service', () => {
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][2].length).to.equal(0);
+        expect(consoleWarnMock.callCount).to.equal(1);
+        expect(consoleWarnMock.args[0][0].startsWith('Enketo failed to get lineage of contact')).to.be.true;
       });
     });
   });

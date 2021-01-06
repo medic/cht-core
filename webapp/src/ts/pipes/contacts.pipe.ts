@@ -10,6 +10,9 @@ export class FilterReportsPipe implements PipeTransform {
   constructor(){}
 
   transform(reports, reportStartDate) {
+    if (!reports) {
+      return [];
+    }
     return reports.filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
   }
 }

@@ -81,7 +81,10 @@ describe('PipesService', () => {
     });
 
     it('should return nothing when missing pipe', () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       expect(service.transform('pipe', 'value')).to.equal('value');
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Invalid pipe');
     });
 
     it('should call pipe and return value', () => {

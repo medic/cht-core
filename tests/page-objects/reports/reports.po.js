@@ -3,8 +3,29 @@ const helper = require('../../helper');
 const itemSummary = '#reports-content .report-body .item-summary';
 const reportBody = '#reports-content .report-body';
 const reportBodyDetails = '#reports-content .report-body .details';
+const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_start"]'));
+const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
+const dateFilter = element(by.css('#date-filter'));
+const reportListID = '#reports-list';
+
 
 module.exports = {
+  allReports: () => element.all(by.css(`${reportListID} li`)),
+  firstReport: () => element(by.css(`${reportListID} li:first-child`)),
+  listLoader: () => element(by.css(`${reportListID} .loader`)),
+  list: () => element(by.css(reportListID)),
+  reportByUUID: uuid => module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]')),
+  filterByDate: (startDate, endDate) => {
+    let clear = '';
+    for (let i = 0; i < 20; i++) {
+      clear += protractor.Key.BACK_SPACE;
+    }
+
+    dateFilter.click();
+    datePickerStart.click().sendKeys(clear + startDate.format('MM/DD/YYYY'));
+    datePickerEnd.click().sendKeys(clear + endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
+    element(by.css('#freetext')).click(); // blur the datepicker
+  },
   expectReportsToExist: uuids => {
     browser.wait(
       () => element(by.css('#reports-list li:first-child')).isPresent(),
