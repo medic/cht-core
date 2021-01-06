@@ -138,18 +138,9 @@ describe('sms-gateway api', () => {
   };
 
   describe('- gateway submits new WT sms messages', () => {
-    let originalTimeout;
     beforeEach( async () => {
-      //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow  and fail on Travis
-      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-      await helper.waitForAppToLoad(30000,20000);
+      await helper.waitForAppToLoad();
     });
-
-    afterAll(function() {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    });
-
     beforeEach(done => {
       const body = {
         messages: [

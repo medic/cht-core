@@ -44,7 +44,7 @@ module.exports = {
       element(by.css('#message-list li:first-child'))
     );
     browser.waitForAngular();
-    await helper.waitElementToBeVisible(
+    helper.waitElementToBeVisible(
       element(by.css('#message-list li:first-child'))
     );
   }, 
@@ -67,8 +67,7 @@ module.exports = {
     helper.clickElement(
       element(by.css('#message-list li:first-child .summary'))
     );
-    helper.waitElementToBeVisible(incomingData);
-    return await helper.waitElementToPresent(incomingData);      
+    helper.waitElementToBeVisible(incomingData);  
   },
 
   expectMessageDetails: async(header, text, status) => {
@@ -95,7 +94,7 @@ module.exports = {
     helper.clickElement(
       element(by.css('#reports-list li:first-child .heading'))
     );
-    await helper.waitElementToPresent(
+    helper.waitElementToPresent(
       element(by.css('#reports-content .body .item-summary .icon'))
     );
   },
