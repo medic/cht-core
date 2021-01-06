@@ -7,6 +7,7 @@ const loginPage = require('../page-objects/login/login.po.js');
 const addUserModal = require('../page-objects/users/add-user-modal.po.js');
 const constants = require('../constants');
 const { browser } = require('protractor');
+const helper = require('../helper');
 const dbName = constants.DB_NAME;
 
 const userName = 'fulltester' + new Date().getTime();
@@ -49,6 +50,7 @@ describe('Create user meta db : ', () => {
     await browser.waitForAngular();
     await commonElements.goToLoginPage();
     await loginPage.login(userName, password, false);
+    await browser.get(utils.getBaseUrl());
     await commonElements.calm();
 
     const doc = { _id: userName };
