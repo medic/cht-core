@@ -60,9 +60,7 @@ describe('Create user meta db : ', () => {
         body: postData
       }, options));
       
-      const response = await utils.requestOnTestMetaDb(_.defaults({
-        path: '/_changes'
-      }, options))
+      const response = await utils.requestOnTestMetaDb(_.defaults({path: '/_changes'}, options));
       const changes = response.results;
       const ids = _.map(changes, 'id').sort();
       expect(ids[1]).toEqual(doc._id);

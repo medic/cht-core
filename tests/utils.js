@@ -49,12 +49,12 @@ const request = async (options, { debug } = {}) => {
 
   return new Promise(function(resolve,reject){
     rpn(options)
-    .then((resp) => resolve(resp))
-    .catch(err => {
-      err.responseBody = err.response && err.response.body;
-      reject(err);
-    });
-  })
+      .then((resp) => resolve(resp))
+      .catch(err => {
+        err.responseBody = err.response && err.response.body;
+        reject(err);
+      });
+  });
 };
 
 // Update both ddocs, to avoid instability in tests.
@@ -340,7 +340,7 @@ module.exports = {
     captureOnlyFailedSpecs: true,
     reportOnlyFailedSpecs: false,
     showQuickLinks: true,
-    dest: 'tests/results',
+    dest: `tests/results/${new Date().toISOString()}`,
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
       return currentSpec.fullName

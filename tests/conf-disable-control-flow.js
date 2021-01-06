@@ -22,16 +22,7 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      '**/login.spec.js',
-      '**/report-date-filter.js',
-      '**/sentinel/queue.spec.js',
-      '**/docs-by-replication-key-view.js',
-      '**/api/routing.js',
-      '**/infodocs.js',
-      '**/common.specs.js',
-      '**/content-security-policy.js',
-      '**/message_duplicates.spec.js',
-      '**/api/server.js',
+      'e2e/create-meta-db.js',
     ],
     // performance: 'performance/**/*.js'
   },
@@ -115,7 +106,7 @@ const prepServices = async () => {
   }
 
   await listenForApi();
-  await runAndLog('Settings setup', setupSettings)
+  await runAndLog('Settings setup', setupSettings);
   await runAndLog('User contact doc setup', utils.setUserContactDoc);
   return apiReady;
 };
@@ -126,25 +117,17 @@ const apiRetry = () => {
       resolve(listenForApi());
     }, 1000);
   });
-}
+};
 
 const listenForApi = async () => {
   console.log('Checking API');
   try {
     const result =  await utils.request({ path: '/api/info' });
     return result;
-  } catch {
+  } catch(err) {
     console.log('API check failed, trying again in 1 second');
     await apiRetry();
   }
-  // return utils.request({ path: '/api/info' }).catch(() => {
-  //   console.log('API check failed, trying again in 1 second');
-  //   return new Promise(resolve => {
-  //     setTimeout(() => {
-  //       resolve(listenForApi());
-  //     }, 1000);
-  //   });
-  // });
 };
 
 const getLoginUrl = () => {
