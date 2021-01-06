@@ -731,95 +731,95 @@
           <text id="/immunization_and_growth/inputs:label">
             <value>Patient</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_01:label">
-            <value>Summary Page&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_02:label">
-            <value>Click the Submit button at the bottom of the form.</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_03:label">
-            <value>Immunization and Growth monitoring&lt;i class="fa fa-calendar-check-o"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_04:label">
-            <value>Baby's Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_05:label">
-            <value><output value=" /immunization_and_growth/patient_name "/></value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_06:label">
+          <text id="/immunization_and_growth/summary/summary_age:label">
             <value><output value=" /immunization_and_growth/display_age "/></value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_07:label">
-            <value>Visit Findings&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_08:label">
+          <text id="/immunization_and_growth/summary/summary_attended:label">
             <value>Immunization visit attended</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_09:label">
-            <value>Immunization visit not attended</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_10:label">
-            <value>Vaccines&lt;i class="fa fa-child"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_11:label">
+          <text id="/immunization_and_growth/summary/summary_bcg:label">
             <value>BCG received</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_12:label">
-            <value>Oral Polio Vaccine received</value>
+          <text id="/immunization_and_growth/summary/summary_details:label">
+            <value>Baby's Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_13:label">
-            <value>RotaVirus vaccine received</value>
+          <text id="/immunization_and_growth/summary/summary_findings:label">
+            <value>Visit Findings&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_14:label">
-            <value>Pneumococcal vaccine received</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_15:label">
-            <value>Pentavalent vaccine received</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_16:label">
-            <value>Inactivated Polio Vaccine (IPV) received</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_17:label">
-            <value>Measles vaccine received</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_18:label">
-            <value>Yellow fever vaccine received</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_19:label">
-            <value>Vitamin A received</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_20:label">
-            <value>Growth monitoring&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_21:label">
-            <value><output value=" /immunization_and_growth/g_growth_monitoring/growth_monitoring_weight "/> kg</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_22:label">
-            <value><output value=" /immunization_and_growth/g_growth_monitoring/growth_monitoring_height "/> cm</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_23:label">
-            <value>Referral&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_24:label">
-            <value>Refer immediately the patient to the health facility for a child development visit</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_25:label">
-            <value>Refer immediately the patient to the health facility as a danger sign has been reported</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_26:label">
-            <value>Refer or accompany the patient to the health facility</value>
-          </text>
-          <text id="/immunization_and_growth/summary_00/summary_27:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up1:label">
+            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/next_apt "/></value></text>
+          <text id="/immunization_and_growth/summary/summary_follow_up2:label">
+            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/tomorrow_apt "/></value></text>
+          <text id="/immunization_and_growth/summary/summary_follow_up3:label">
+            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/developmental_apt_date "/></value></text>
+          <text id="/immunization_and_growth/summary/summary_follow_up4:label">
+            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/missed_vaccine_apt_date "/></value></text>
+          <text id="/immunization_and_growth/summary/summary_follow_up:label">
             <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_28:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/next_apt "/></value></text>
-          <text id="/immunization_and_growth/summary_00/summary_29:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/tomorrow_apt "/></value></text>
-          <text id="/immunization_and_growth/summary_00/summary_30:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/developmental_apt_date "/></value></text>
-          <text id="/immunization_and_growth/summary_00/summary_31:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/missed_vaccine_apt_date "/></value></text>
+          <text id="/immunization_and_growth/summary/summary_grow_mon:label">
+            <value>Growth monitoring&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_height:label">
+            <value><output value=" /immunization_and_growth/g_growth_monitoring/growth_monitoring_height "/> cm</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_ipv:label">
+            <value>Inactivated Polio Vaccine (IPV) received</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_measles:label">
+            <value>Measles vaccine received</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_name:label">
+            <value><output value=" /immunization_and_growth/patient_name "/></value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_not_attended:label">
+            <value>Immunization visit not attended</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_opv:label">
+            <value>Oral Polio Vaccine received</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_penta:label">
+            <value>Pentavalent vaccine received</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_pheum:label">
+            <value>Pneumococcal vaccine received</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_referral1:label">
+            <value>Refer immediately the patient to the health facility for a child development visit</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_referral2:label">
+            <value>Refer immediately the patient to the health facility as a danger sign has been reported</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_referral3:label">
+            <value>Refer or accompany the patient to the health facility</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_referral:label">
+            <value>Referral&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_roto:label">
+            <value>RotaVirus vaccine received</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_submit1:label">
+            <value>Summary Page&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_submit2:label">
+            <value>Click the Submit button at the bottom of the form.</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_title:label">
+            <value>Immunization and Growth monitoring&lt;i class="fa fa-calendar-check-o"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_vaccines:label">
+            <value>Vaccines&lt;i class="fa fa-child"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_vit_a:label">
+            <value>Vitamin A received</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_weight:label">
+            <value><output value=" /immunization_and_growth/g_growth_monitoring/growth_monitoring_weight "/> kg</value>
+          </text>
+          <text id="/immunization_and_growth/summary/summary_yellow:label">
+            <value>Yellow fever vaccine received</value>
+          </text>
         </translation>
         <translation lang="fr">
           <text id="/immunization_and_growth/any_danger:label">
@@ -1584,100 +1584,100 @@
           <text id="/immunization_and_growth/patient_name:label">
             <value>../inputs/contact/name</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_01:label">
+          <text id="/immunization_and_growth/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_02:label">
+          <text id="/immunization_and_growth/summary/summary_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_03:label">
+          <text id="/immunization_and_growth/summary/summary_bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_04:label">
+          <text id="/immunization_and_growth/summary/summary_details:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_05:label">
+          <text id="/immunization_and_growth/summary/summary_findings:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_06:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_07:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_08:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_09:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up4:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_10:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_11:label">
+          <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_12:label">
+          <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_13:label">
+          <text id="/immunization_and_growth/summary/summary_ipv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_14:label">
+          <text id="/immunization_and_growth/summary/summary_measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_15:label">
+          <text id="/immunization_and_growth/summary/summary_name:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_16:label">
+          <text id="/immunization_and_growth/summary/summary_not_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_17:label">
+          <text id="/immunization_and_growth/summary/summary_opv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_18:label">
+          <text id="/immunization_and_growth/summary/summary_penta:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_19:label">
+          <text id="/immunization_and_growth/summary/summary_pheum:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_20:label">
+          <text id="/immunization_and_growth/summary/summary_referral1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_21:label">
+          <text id="/immunization_and_growth/summary/summary_referral2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_22:label">
+          <text id="/immunization_and_growth/summary/summary_referral3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_23:label">
+          <text id="/immunization_and_growth/summary/summary_referral:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_24:label">
+          <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_25:label">
+          <text id="/immunization_and_growth/summary/summary_submit1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_26:label">
+          <text id="/immunization_and_growth/summary/summary_submit2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_27:label">
+          <text id="/immunization_and_growth/summary/summary_title:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_28:label">
+          <text id="/immunization_and_growth/summary/summary_vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_29:label">
+          <text id="/immunization_and_growth/summary/summary_vit_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_30:label">
+          <text id="/immunization_and_growth/summary/summary_weight:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_31:label">
+          <text id="/immunization_and_growth/summary/summary_yellow:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00:label">
+          <text id="/immunization_and_growth/summary:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/tomorrow_apt:label">
@@ -2447,100 +2447,100 @@
           <text id="/immunization_and_growth/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_01:label">
+          <text id="/immunization_and_growth/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_02:label">
+          <text id="/immunization_and_growth/summary/summary_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_03:label">
+          <text id="/immunization_and_growth/summary/summary_bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_04:label">
+          <text id="/immunization_and_growth/summary/summary_details:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_05:label">
+          <text id="/immunization_and_growth/summary/summary_findings:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_06:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_07:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_08:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_09:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up4:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_10:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_11:label">
+          <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_12:label">
+          <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_13:label">
+          <text id="/immunization_and_growth/summary/summary_ipv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_14:label">
+          <text id="/immunization_and_growth/summary/summary_measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_15:label">
+          <text id="/immunization_and_growth/summary/summary_name:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_16:label">
+          <text id="/immunization_and_growth/summary/summary_not_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_17:label">
+          <text id="/immunization_and_growth/summary/summary_opv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_18:label">
+          <text id="/immunization_and_growth/summary/summary_penta:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_19:label">
+          <text id="/immunization_and_growth/summary/summary_pheum:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_20:label">
+          <text id="/immunization_and_growth/summary/summary_referral1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_21:label">
+          <text id="/immunization_and_growth/summary/summary_referral2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_22:label">
+          <text id="/immunization_and_growth/summary/summary_referral3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_23:label">
+          <text id="/immunization_and_growth/summary/summary_referral:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_24:label">
+          <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_25:label">
+          <text id="/immunization_and_growth/summary/summary_submit1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_26:label">
+          <text id="/immunization_and_growth/summary/summary_submit2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_27:label">
+          <text id="/immunization_and_growth/summary/summary_title:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_28:label">
+          <text id="/immunization_and_growth/summary/summary_vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_29:label">
+          <text id="/immunization_and_growth/summary/summary_vit_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_30:label">
+          <text id="/immunization_and_growth/summary/summary_weight:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_31:label">
+          <text id="/immunization_and_growth/summary/summary_yellow:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00:label">
+          <text id="/immunization_and_growth/summary:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/tomorrow_apt:label">
@@ -3310,100 +3310,100 @@
           <text id="/immunization_and_growth/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_01:label">
+          <text id="/immunization_and_growth/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_02:label">
+          <text id="/immunization_and_growth/summary/summary_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_03:label">
+          <text id="/immunization_and_growth/summary/summary_bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_04:label">
+          <text id="/immunization_and_growth/summary/summary_details:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_05:label">
+          <text id="/immunization_and_growth/summary/summary_findings:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_06:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_07:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_08:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_09:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up4:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_10:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_11:label">
+          <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_12:label">
+          <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_13:label">
+          <text id="/immunization_and_growth/summary/summary_ipv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_14:label">
+          <text id="/immunization_and_growth/summary/summary_measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_15:label">
+          <text id="/immunization_and_growth/summary/summary_name:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_16:label">
+          <text id="/immunization_and_growth/summary/summary_not_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_17:label">
+          <text id="/immunization_and_growth/summary/summary_opv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_18:label">
+          <text id="/immunization_and_growth/summary/summary_penta:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_19:label">
+          <text id="/immunization_and_growth/summary/summary_pheum:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_20:label">
+          <text id="/immunization_and_growth/summary/summary_referral1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_21:label">
+          <text id="/immunization_and_growth/summary/summary_referral2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_22:label">
+          <text id="/immunization_and_growth/summary/summary_referral3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_23:label">
+          <text id="/immunization_and_growth/summary/summary_referral:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_24:label">
+          <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_25:label">
+          <text id="/immunization_and_growth/summary/summary_submit1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_26:label">
+          <text id="/immunization_and_growth/summary/summary_submit2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_27:label">
+          <text id="/immunization_and_growth/summary/summary_title:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_28:label">
+          <text id="/immunization_and_growth/summary/summary_vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_29:label">
+          <text id="/immunization_and_growth/summary/summary_vit_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_30:label">
+          <text id="/immunization_and_growth/summary/summary_weight:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_31:label">
+          <text id="/immunization_and_growth/summary/summary_yellow:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00:label">
+          <text id="/immunization_and_growth/summary:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/tomorrow_apt:label">
@@ -4173,100 +4173,100 @@
           <text id="/immunization_and_growth/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_01:label">
+          <text id="/immunization_and_growth/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_02:label">
+          <text id="/immunization_and_growth/summary/summary_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_03:label">
+          <text id="/immunization_and_growth/summary/summary_bcg:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_04:label">
+          <text id="/immunization_and_growth/summary/summary_details:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_05:label">
+          <text id="/immunization_and_growth/summary/summary_findings:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_06:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_07:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_08:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_09:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up4:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_10:label">
+          <text id="/immunization_and_growth/summary/summary_follow_up:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_11:label">
+          <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_12:label">
+          <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_13:label">
+          <text id="/immunization_and_growth/summary/summary_ipv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_14:label">
+          <text id="/immunization_and_growth/summary/summary_measles:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_15:label">
+          <text id="/immunization_and_growth/summary/summary_name:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_16:label">
+          <text id="/immunization_and_growth/summary/summary_not_attended:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_17:label">
+          <text id="/immunization_and_growth/summary/summary_opv:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_18:label">
+          <text id="/immunization_and_growth/summary/summary_penta:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_19:label">
+          <text id="/immunization_and_growth/summary/summary_pheum:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_20:label">
+          <text id="/immunization_and_growth/summary/summary_referral1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_21:label">
+          <text id="/immunization_and_growth/summary/summary_referral2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_22:label">
+          <text id="/immunization_and_growth/summary/summary_referral3:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_23:label">
+          <text id="/immunization_and_growth/summary/summary_referral:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_24:label">
+          <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_25:label">
+          <text id="/immunization_and_growth/summary/summary_submit1:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_26:label">
+          <text id="/immunization_and_growth/summary/summary_submit2:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_27:label">
+          <text id="/immunization_and_growth/summary/summary_title:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_28:label">
+          <text id="/immunization_and_growth/summary/summary_vaccines:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_29:label">
+          <text id="/immunization_and_growth/summary/summary_vit_a:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_30:label">
+          <text id="/immunization_and_growth/summary/summary_weight:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00/summary_31:label">
+          <text id="/immunization_and_growth/summary/summary_yellow:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary_00:label">
+          <text id="/immunization_and_growth/summary:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/tomorrow_apt:label">
@@ -4275,7 +4275,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-06_13-56">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-06_14-02">
           <inputs>
             <meta>
               <location>
@@ -4421,39 +4421,39 @@
             <danger_signs_other/>
             <danger_signs_other_text/>
           </g_danger_signs>
-          <summary_00 tag="hidden">
-            <summary_01/>
-            <summary_02/>
-            <summary_03/>
-            <summary_04/>
-            <summary_05/>
-            <summary_06/>
-            <summary_07/>
-            <summary_08/>
-            <summary_09/>
-            <summary_10/>
-            <summary_11/>
-            <summary_12/>
-            <summary_13/>
-            <summary_14/>
-            <summary_15/>
-            <summary_16/>
-            <summary_17/>
-            <summary_18/>
-            <summary_19/>
-            <summary_20/>
-            <summary_21/>
-            <summary_22/>
-            <summary_23/>
-            <summary_24/>
-            <summary_25/>
-            <summary_26/>
-            <summary_27/>
-            <summary_28/>
-            <summary_29/>
-            <summary_30/>
-            <summary_31/>
-          </summary_00>
+          <summary tag="hidden">
+            <summary_submit1/>
+            <summary_submit2/>
+            <summary_title/>
+            <summary_details/>
+            <summary_name/>
+            <summary_age/>
+            <summary_findings/>
+            <summary_attended/>
+            <summary_not_attended/>
+            <summary_vaccines/>
+            <summary_bcg/>
+            <summary_opv/>
+            <summary_roto/>
+            <summary_pheum/>
+            <summary_penta/>
+            <summary_ipv/>
+            <summary_measles/>
+            <summary_yellow/>
+            <summary_vit_a/>
+            <summary_grow_mon/>
+            <summary_weight/>
+            <summary_height/>
+            <summary_referral/>
+            <summary_referral1/>
+            <summary_referral2/>
+            <summary_referral3/>
+            <summary_follow_up/>
+            <summary_follow_up1/>
+            <summary_follow_up2/>
+            <summary_follow_up3/>
+            <summary_follow_up4/>
+          </summary>
           <data tag="hidden"/>
           <meta tag="hidden">
             <instanceID/>
@@ -4601,40 +4601,40 @@ selected( /immunization_and_growth/g_developmental_milestones/developmental_talk
       <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot" required="true()" type="select1"/>
       <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_other" required="true()" type="select1"/>
       <bind jr:constraintMsg="jr:itext('/immunization_and_growth/g_danger_signs/danger_signs_other_text:jr:constraintMsg')" nodeset="/immunization_and_growth/g_danger_signs/danger_signs_other_text" relevant="selected( /immunization_and_growth/g_danger_signs/danger_signs_other , 'yes')" required="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_01" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_02" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_03" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_04" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_05" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_06" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_07" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_08" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_09" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'no')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_10" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_11" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'bcg') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_12" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'oral_polio') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_13" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'rotavirus') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_14" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'pneumococcal') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_15" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'pentavalent') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_16" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'inactivated_polio') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_17" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'measles') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_18" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'yellow_fever') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_19" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'vitamin_a') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_20" readonly="true()" relevant="selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed , 'yes') or selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_21" readonly="true()" relevant="selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_22" readonly="true()" relevant="selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_23" readonly="true()" relevant="selected( /immunization_and_growth/needs_referral , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_24" readonly="true()" relevant="selected( /immunization_and_growth/g_developmental_milestones/developmental_refer , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_25" readonly="true()" relevant="selected( /immunization_and_growth/any_danger , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_26" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_27" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes') or
+      <bind nodeset="/immunization_and_growth/summary/summary_submit1" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_submit2" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_title" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_details" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_name" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_age" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_findings" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_attended" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_not_attended" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'no')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_vaccines" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_bcg" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'bcg') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_opv" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'oral_polio') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_roto" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'rotavirus') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_pheum" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'pneumococcal') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_penta" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'pentavalent') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_ipv" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'inactivated_polio') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_measles" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'measles') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_yellow" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'yellow_fever') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_vit_a" readonly="true()" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'vitamin_a') and selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_grow_mon" readonly="true()" relevant="selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed , 'yes') or selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_weight" readonly="true()" relevant="selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_height" readonly="true()" relevant="selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_measured , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_referral" readonly="true()" relevant="selected( /immunization_and_growth/needs_referral , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_referral1" readonly="true()" relevant="selected( /immunization_and_growth/g_developmental_milestones/developmental_refer , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_referral2" readonly="true()" relevant="selected( /immunization_and_growth/any_danger , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_referral3" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_follow_up" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes') or
 selected( /immunization_and_growth/any_danger , 'yes') or
 selected( /immunization_and_growth/g_developmental_milestones/developmental_refer , 'yes') or
 selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_28" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_29" readonly="true()" relevant="selected( /immunization_and_growth/any_danger , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_30" readonly="true()" relevant="selected( /immunization_and_growth/g_developmental_milestones/developmental_refer , 'yes')" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary_00/summary_31" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_follow_up1" readonly="true()" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_follow_up2" readonly="true()" relevant="selected( /immunization_and_growth/any_danger , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_follow_up3" readonly="true()" relevant="selected( /immunization_and_growth/g_developmental_milestones/developmental_refer , 'yes')" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_follow_up4" readonly="true()" relevant="selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/immunization_and_growth/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -5337,99 +5337,99 @@ selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
         <label ref="jr:itext('/immunization_and_growth/g_danger_signs/danger_signs_other_text:label')"/>
       </input>
     </group>
-    <group appearance="field-list summary" ref="/immunization_and_growth/summary_00">
-      <input appearance="h1 yellow" ref="/immunization_and_growth/summary_00/summary_01">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_01:label')"/>
+    <group appearance="field-list summary" ref="/immunization_and_growth/summary">
+      <input appearance="h1 yellow" ref="/immunization_and_growth/summary/summary_submit1">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_submit1:label')"/>
       </input>
-      <input appearance="h2" ref="/immunization_and_growth/summary_00/summary_02">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_02:label')"/>
+      <input appearance="h2" ref="/immunization_and_growth/summary/summary_submit2">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_submit2:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/immunization_and_growth/summary_00/summary_03">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_03:label')"/>
+      <input appearance="h1 blue" ref="/immunization_and_growth/summary/summary_title">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_title:label')"/>
       </input>
-      <input appearance="h1 green" ref="/immunization_and_growth/summary_00/summary_04">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_04:label')"/>
+      <input appearance="h1 green" ref="/immunization_and_growth/summary/summary_details">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_details:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary_00/summary_05">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_05:label')"/>
+      <input appearance="center" ref="/immunization_and_growth/summary/summary_name">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_name:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary_00/summary_06">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_06:label')"/>
+      <input appearance="center" ref="/immunization_and_growth/summary/summary_age">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_age:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/immunization_and_growth/summary_00/summary_07">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_07:label')"/>
+      <input appearance="h1 blue" ref="/immunization_and_growth/summary/summary_findings">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_findings:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary_00/summary_08">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_08:label')"/>
+      <input appearance="center" ref="/immunization_and_growth/summary/summary_attended">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_attended:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary_00/summary_09">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_09:label')"/>
+      <input appearance="center" ref="/immunization_and_growth/summary/summary_not_attended">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_not_attended:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/immunization_and_growth/summary_00/summary_10">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_10:label')"/>
+      <input appearance="h1 blue" ref="/immunization_and_growth/summary/summary_vaccines">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_vaccines:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_11">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_11:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_bcg">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_bcg:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_12">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_12:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_opv">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_opv:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_13">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_13:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_roto">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_roto:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_14">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_14:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_pheum">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_pheum:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_15">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_15:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_penta">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_penta:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_16">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_16:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_ipv">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_ipv:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_17">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_17:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_measles">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_measles:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_18">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_18:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_yellow">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_yellow:label')"/>
       </input>
-      <input appearance="li" ref="/immunization_and_growth/summary_00/summary_19">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_19:label')"/>
+      <input appearance="li" ref="/immunization_and_growth/summary/summary_vit_a">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_vit_a:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/immunization_and_growth/summary_00/summary_20">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_20:label')"/>
+      <input appearance="h1 blue" ref="/immunization_and_growth/summary/summary_grow_mon">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_grow_mon:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary_00/summary_21">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_21:label')"/>
+      <input appearance="center" ref="/immunization_and_growth/summary/summary_weight">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_weight:label')"/>
       </input>
-      <input appearance="center" ref="/immunization_and_growth/summary_00/summary_22">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_22:label')"/>
+      <input appearance="center" ref="/immunization_and_growth/summary/summary_height">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_height:label')"/>
       </input>
-      <input appearance="h1 red" ref="/immunization_and_growth/summary_00/summary_23">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_23:label')"/>
+      <input appearance="h1 red" ref="/immunization_and_growth/summary/summary_referral">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_referral:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary_00/summary_24">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_24:label')"/>
+      <input ref="/immunization_and_growth/summary/summary_referral1">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_referral1:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary_00/summary_25">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_25:label')"/>
+      <input ref="/immunization_and_growth/summary/summary_referral2">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_referral2:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary_00/summary_26">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_26:label')"/>
+      <input ref="/immunization_and_growth/summary/summary_referral3">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_referral3:label')"/>
       </input>
-      <input appearance="h1 lime" ref="/immunization_and_growth/summary_00/summary_27">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_27:label')"/>
+      <input appearance="h1 lime" ref="/immunization_and_growth/summary/summary_follow_up">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_follow_up:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary_00/summary_28">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_28:label')"/>
+      <input ref="/immunization_and_growth/summary/summary_follow_up1">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_follow_up1:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary_00/summary_29">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_29:label')"/>
+      <input ref="/immunization_and_growth/summary/summary_follow_up2">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_follow_up2:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary_00/summary_30">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_30:label')"/>
+      <input ref="/immunization_and_growth/summary/summary_follow_up3">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_follow_up3:label')"/>
       </input>
-      <input ref="/immunization_and_growth/summary_00/summary_31">
-        <label ref="jr:itext('/immunization_and_growth/summary_00/summary_31:label')"/>
+      <input ref="/immunization_and_growth/summary/summary_follow_up4">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_follow_up4:label')"/>
       </input>
     </group>
     <group appearance="hidden" ref="/immunization_and_growth/data"/>
