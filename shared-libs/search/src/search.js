@@ -127,6 +127,8 @@ module.exports = function(Promise, DB) {
       return Promise.reject(err);
     }
 
+    console.error(JSON.stringify(requests));
+
     return getRows(type, requests, options, cacheQueryResults)
       .then(function(results) {
         if (cacheQueryResults) {
