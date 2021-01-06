@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.component';
 import { ContactsActions } from '@mm-actions/contacts';
@@ -54,6 +55,9 @@ describe('Contacts content component', () => {
 
     return TestBed
       .configureTestingModule({
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        ],
         declarations: [ ContactsContentComponent, ResourceIconPipe, FilterReportsPipe ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

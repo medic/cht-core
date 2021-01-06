@@ -1,4 +1,4 @@
-<span class="input-group freetext-filter" [class.only-filter]="currentTab === 'contacts'">
+<span class="input-group freetext-filter">
   <input id="freetext" class="form-control" [(ngModel)]="inputText" type="text" [class.disabled]="disabled" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
   <span class="input-group-btn">
     <button id="search" class="btn btn-default" type="button" [class.disabled]="disabled" (click)="applyFilter()">
