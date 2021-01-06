@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
@@ -26,6 +27,8 @@ export class AboutComponent implements OnInit, OnDestroy {
   remoteRev;
   dbInfo;
   url;
+  doorTimeout;
+  knockCount = 0;
 
   constructor(
     private dbService: DbService,
@@ -34,6 +37,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private versionService: VersionService,
     private translateService: TranslateService,
+    private router: Router
   ) {
   }
 
@@ -48,9 +52,9 @@ export class AboutComponent implements OnInit, OnDestroy {
     this.subscription.add(reduxSubscription);
 
     this.userCtx = this.sessionService.userCtx();
-    this.resourceIconsService.getDocResources('partners').then(partners => {
-      this.partners = partners;
-    });
+    this.resourceIconsService
+      .getDocResources('partners')
+      .then(partners => this.partners = partners);
 
     this.versionService
       .getLocal()
@@ -75,11 +79,10 @@ export class AboutComponent implements OnInit, OnDestroy {
       this.dataUsageUpdate = setInterval(this.updateAndroidDataUsage, 2000);
     }
 
-    this.dbService.get()
+    this.dbService
+      .get()
       .info()
-      .then((result) => {
-        this.dbInfo = result;
-      })
+      .then((result) => this.dbInfo = result)
       .catch((err) => {
         console.error('Failed to fetch DB info', err);
       });
@@ -98,62 +101,16 @@ export class AboutComponent implements OnInit, OnDestroy {
     window.location.reload(false);
   }
 
-  // todo testing!
   secretDoor() {
+    if (this.doorTimeout) {
+      clearTimeout(this.doorTimeout);
+    }
 
+    if (this.knockCount++ >= 5) {
+      this.router.navigate(['/testing']);
+      return;
+    }
+
+    this.doorTimeout = setTimeout(() => this.knockCount = 0, 1000);
   }
 }
-/*
-angular.module('inboxControllers').controller('AboutCtrl',
-  function (
-    $interval,
-    $log,
-    $ngRedux,
-    $scope,
-    $state,
-    $timeout,
-    $translate,
-    $window,
-    DB,
-    ResourceIconsService,
-    Selectors,
-    SessionService,
-    VersionService
-  ) {
-    'use strict';
-    'ngInject';
-
-    const ctrl = this;
-    const mapStateToTarget = state => ({
-      androidAppVersion: Selectors.getAndroidAppVersion(state),
-      replicationStatus: Selectors.getReplicationStatus(state)
-    });
-
-    const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
-
-
-
-
-    ctrl.knockCount = 0;
-    ctrl.secretDoor = () => {
-      if (ctrl.doorTimeout) {
-        $timeout.cancel(ctrl.doorTimeout);
-      }
-      if (ctrl.knockCount++ >= 5) {
-        $state.go('testing');
-      } else {
-        ctrl.doorTimeout = $timeout(() => {
-          ctrl.knockCount = 0;
-        }, 1000);
-      }
-    };
-
-
-
-
-
-
-    $scope.$on('$destroy', unsubscribe);
-  }
-);
-*/
