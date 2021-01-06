@@ -7,7 +7,6 @@ const loginPage = require('../page-objects/login/login.po.js');
 const addUserModal = require('../page-objects/users/add-user-modal.po.js');
 const constants = require('../constants');
 const { browser } = require('protractor');
-const helper = require('../helper');
 const dbName = constants.DB_NAME;
 
 const userName = 'fulltester' + new Date().getTime();
