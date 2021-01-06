@@ -46,7 +46,8 @@ export class ContactsEffects {
               this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
             }
             console.error('Error selecting contact', error);
-            return of(this.globalActions.unsetSelected(), this.contactsActions.setSelectedContact(null));
+            this.globalActions.unsetSelected();
+            return of(this.contactsActions.setSelectedContact(null));
           }),
         );
       }),
