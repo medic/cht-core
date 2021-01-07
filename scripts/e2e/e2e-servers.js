@@ -72,7 +72,7 @@ const stopServer = (serviceName) => new Promise(res => {
     pid.on('exit', res);
   } else {
     processes[serviceName] && processes[serviceName].kill();
-    res();
+    processes[serviceName].on('close', res());
   }
 }).then(() => {
   delete processes[serviceName];
