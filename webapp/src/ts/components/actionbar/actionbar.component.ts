@@ -134,7 +134,12 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   }
 
   navigateToContactAdd(type, parentId, from?) {
-    this.router.navigate(['/contacts', parentId, 'add', type, { queryParams: { from } }]);
+    if (parentId) {
+      this.router.navigate(['/contacts', parentId, 'add', type], { queryParams: { from } });
+      return;
+    }
+
+    this.router.navigate(['/contacts', 'add', type], { queryParams: { from } });
   }
 
   navigateToContactEdit(selectedContact) {

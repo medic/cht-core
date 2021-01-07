@@ -27,6 +27,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -475,7 +476,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
           sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
           canDelete: !!this.selectedContact?.children?.every(group => !group.contacts?.length),
           canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id === this.selectedContact?.doc?._id,
-          openContactMutedModal: (event, form) => this.openContactMutedModal(form)
+          openContactMutedModal: (event, form) => this.openContactMutedModal(form),
+          openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
         });
 
         if (subscriptionSelectedContactForms) {
@@ -501,6 +503,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.modalService
       .show(ContactsMutedComponent)
       .then(() => this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]))
+      .catch(() => {});
+  }
+
+  private openSendMessageModal(sendTo) {
+    this.modalService
+      .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
       .catch(() => {});
   }
 
@@ -536,6 +544,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.globalActions.updateRightActionBar({
           childTypes: this.getModelsFromChildTypes(allowedChildTypesBySelectedContact)
         });
+        this.setLeftActionBar();
       }
     );
     this.subscription.add(contactFormsSubscription);

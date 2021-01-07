@@ -217,7 +217,7 @@
           <a *ngIf="actionBar?.right?.sendTo"
              mmAuth="can_view_call_action"
              class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-             href="tel:{{ actionBar?.right?.sendTo?.phone }}"
+             [attr.href]="'tel:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
              [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-phone"></span>
@@ -226,7 +226,7 @@
           <a *ngIf="actionBar?.right?.sendTo"
             mmAuth="can_view_message_action"
             class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-            href="sms:{{ actionBar?.right?.sendTo?.phone }}"
+             [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-envelope"></span>
@@ -235,8 +235,9 @@
           <a *ngIf="actionBar?.right?.sendTo"
             mmAuth="can_view_message_action"
             class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
-             [attr.data-send-to]="actionBar?.right?.sendTo?._id"
+            [attr.data-send-to]="actionBar?.right?.sendTo?._id"
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+            (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
           >
             <span class="fa fa-envelope"></span>
             <p translate>Send Message</p>
@@ -252,7 +253,7 @@
 
           <a mmAuth="can_delete_contacts"
             class="mm-icon mm-icon-inverse mm-icon-caption"
-            (click)="deleteDoc(selectedContactDoc)"
+            (click)="deleteDoc(selectedContactDoc.doc)"
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
           >
             <span class="fa fa-trash-o"></span>
