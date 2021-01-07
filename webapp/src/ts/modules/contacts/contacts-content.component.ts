@@ -90,6 +90,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
         $('.tooltip').remove();
       } else {
+        this.contactsActions.setSelectedContact(null);
         this.globalActions.unsetSelected();
       }
     });
