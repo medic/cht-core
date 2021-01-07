@@ -7,12 +7,12 @@
   <span class="fa fa-circle-o"></span>
   <ul>
     <li role="presentation" class="dropdown-header" translate>status.review.title</li>
-    <li role="presentation" *ngFor="let status of statuses.verified" [class.selected]="false">
+    <li role="presentation" *ngFor="let status of statuses.verified" [class.selected]="dropdownFilter?.selected.has(status) || false">
       <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="dropdownFilter?.toggle(status)" translate>status.review.{{status}}</a>
     </li>
 
     <li role="presentation" class="dropdown-header" translate>status.sms.title</li>
-    <li role="presentation" *ngFor="let status of statuses.valid" [class.selected]="false">
+    <li role="presentation" *ngFor="let status of statuses.valid" [class.selected]="dropdownFilter?.selected.has(status) || false">
       <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="dropdownFilter?.toggle(status)" translate>status.sms.{{status}}</a>
     </li>
   </ul>

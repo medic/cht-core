@@ -1,4 +1,3 @@
-import { isMobile } from '@mm-providers/responsive.provider';
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';

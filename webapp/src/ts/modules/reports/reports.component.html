@@ -17,7 +17,7 @@
         <!--<mm-content-row
           *ngFor="let report of reportsList; trackBy: listTrackBy"
           [id]="report._id"
-          (click)="toggleSelected(report)"
+          (click)="toggleSelected(report, $event)"
           [icon]="report.icon"
           [heading]="report.heading"
           [date]="report.reported_date"

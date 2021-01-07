@@ -23,14 +23,14 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
   @Output() onOpen:EventEmitter<any> = new EventEmitter();
 
   selected = new Set();
-  computedLabel;
+  filterLabel;
 
   constructor(private translateService:TranslateService) {
     this.apply = _debounce(this.apply, 200);
   }
 
   ngOnInit() {
-    this.computedLabel = this.getLabel();
+    this.filterLabel = this.getLabel();
   }
 
   onOpenChange(open) {
@@ -64,7 +64,7 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
   }
 
   private apply() {
-    this.computedLabel = this.getLabel();
+    this.filterLabel = this.getLabel();
     this.applyFilter.emit(Array.from(this.selected));
   }
 
