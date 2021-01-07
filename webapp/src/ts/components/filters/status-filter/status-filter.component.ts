@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -28,7 +28,6 @@ export class StatusFilterComponent implements AbstractFilter {
 
   constructor(
     private store: Store,
-    private cd: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
   }
