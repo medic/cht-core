@@ -49,7 +49,7 @@ module.exports = {
     );
   }, 
 
-  expectMessage: async(heading, summary) => {
+  expectMessage: async (heading, summary) => {
     await expect(
       helper.getTextFromElement(
         element(by.css('#message-list li:first-child .heading h4'))
@@ -70,7 +70,7 @@ module.exports = {
     helper.waitElementToBeVisible(incomingData);  
   },
 
-  expectMessageDetails: async(header, text, status) => {
+  expectMessageDetails: async (header, text, status) => {
     browser.waitForAngular();
     const messageHeader = helper.getTextFromElement(
       element(by.css('#message-header .name'))
