@@ -138,12 +138,13 @@ export class DbService {
   }
 
   private wrapMethods(db) {
+    const wrappedDb = { ...db };
     for (const method in this.POUCHDB_METHODS) {
       if (this.POUCHDB_METHODS[method]) {
-        db[method] = this.POUCHDB_METHODS[method](db[method], db);
+        wrappedDb[method] = this.POUCHDB_METHODS[method](db[method], db);
       }
     }
-    return db;
+    return wrappedDb;
   }
 
   get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
@@ -151,7 +152,6 @@ export class DbService {
     if (!this.cache[name]) {
       const db = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
       this.cache[name] = this.wrapMethods(db);
-      //this.cache[name] = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
     }
     return this.cache[name];
   }

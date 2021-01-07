@@ -1,6 +1,7 @@
 import { TestBed, async, tick, fakeAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { NgZone } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -13,13 +14,15 @@ describe('Db Service', () => {
   let originalPouchDB;
   let pouchDB;
   let pouchResponse;
+  let runOutsideAngular;
+  let runInsideAngular;
 
   const getService = () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: LocationService, useValue: locationService },
-      ]
+      ],
     });
 
     service = TestBed.inject(DbService);
@@ -36,10 +39,34 @@ describe('Db Service', () => {
     originalPouchDB = window.PouchDB;
     pouchResponse = {
       id: 'hello',
+      destroy: sinon.stub(),
+      put: sinon.stub(),
+      post: sinon.stub(),
+      get: sinon.stub(),
+      remove: sinon.stub(),
+      bulkDocs: sinon.stub(),
+      bulkGet: sinon.stub(),
+      allDocs: sinon.stub(),
+      putAttachment: sinon.stub(),
+      getAttachment: sinon.stub(),
+      removeAttachment: sinon.stub(),
+      query: sinon.stub(),
       viewCleanup: sinon.stub(),
+      info: sinon.stub(),
+      compact: sinon.stub(),
+      revsDiff: sinon.stub(),
+      changes: sinon.stub(),
+      sync: sinon.stub(),
+      replicate: {
+        from: sinon.stub(),
+        to: sinon.stub(),
+      },
     };
     pouchDB = sinon.stub().returns(pouchResponse);
     window.PouchDB = pouchDB;
+
+    runOutsideAngular = sinon.stub(NgZone.prototype, 'runOutsideAngular').callsArg(0);
+    runInsideAngular = sinon.stub(NgZone.prototype, 'run').callsArg(0);
   }));
 
   afterEach(() => {

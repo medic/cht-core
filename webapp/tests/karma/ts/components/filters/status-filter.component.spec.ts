@@ -50,13 +50,6 @@ describe('Status Filter Component', () => {
     expect(component).to.exist;
   });
 
-  it('allStatuses should list all statuses', () => {
-    expect(component.allStatuses()).to.have.members([
-      'valid', 'invalid',
-      'unverified', 'errors', 'correct',
-    ]);
-  });
-
   it('clear should clear dropdown filter', () => {
     const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
     component.clear();
