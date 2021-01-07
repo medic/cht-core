@@ -27,6 +27,7 @@ export const routes: Routes = [
       {
         path: ':id/deceased',
         component: ContactsDeceasedComponent,
+        data: { name: 'contacts.deceased' },
       },
       {
         path: 'add/:type',
