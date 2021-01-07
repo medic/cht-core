@@ -163,7 +163,7 @@ describe('About Component', () => {
       expect(component.knockCount).to.equal(6);
     });
 
-    it('should set zero the knock count after 1 min from the last knock', () => {
+    it('should set zero the knock count after 1 second from the last knock', () => {
       component.knockCount = 4;
 
       component.secretDoor();

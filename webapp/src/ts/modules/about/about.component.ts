@@ -89,6 +89,7 @@ export class AboutComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    clearTimeout(this.doorTimeout);
     clearInterval(this.dataUsageUpdate);
     this.subscription.unsubscribe();
   }
