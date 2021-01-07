@@ -1,7 +1,7 @@
 <div class="row filters"></div>
 
 <div class="inner">
-  <div class="col-sm-12 page about" ui-view="content">
+  <div class="col-sm-12 page about">
     <div>
       <h3 translate>reload.app</h3>
       <a (click)="reload()" class="btn btn-primary" translate>Reload</a>
@@ -78,7 +78,7 @@
       </dl>
     </div>
 
-    <div *ngIf="partners && partners.length" class="partners">
+    <div *ngIf="partners?.length" class="partners">
       <h3 translate>partner.supporting</h3>
       <ul class="list-inline">
         <li *ngFor="let partner in partners">
