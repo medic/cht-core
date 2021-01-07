@@ -145,12 +145,13 @@ export class DbService {
   }
 
   private wrapMethods(db) {
+    const wrappedDb = { ...db };
     for (const method in this.POUCHDB_METHODS) {
       if (this.POUCHDB_METHODS[method]) {
-        db[method] = this.POUCHDB_METHODS[method](db[method], db);
+        wrappedDb[method] = this.POUCHDB_METHODS[method](db[method], db);
       }
     }
-    return db;
+    return wrappedDb;
   }
 
   get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
