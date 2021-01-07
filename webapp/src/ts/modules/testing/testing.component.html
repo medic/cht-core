@@ -1,0 +1,47 @@
+<div class="row filters"></div>
+
+<div class="inner">
+  <div class="col-sm-12 page testing">
+
+    <div>
+      <h3 translate>testing.title</h3>
+      <p translate>testing.description</p>
+    </div>
+
+    <div>
+      <h3 translate>debug.mode</h3>
+      <p translate>debug.mode.description</p>
+      <a *ngIf="!debugEnabled" (click)="enableDebug()" class="btn btn-primary" translate>Enable</a>
+      <a *ngIf="debugEnabled" (click)="disableDebug()" class="btn btn-primary" translate>Disable</a>
+    </div>
+
+    <div>
+      <h3 translate>purge.title</h3>
+      <p translate>purge.description</p>
+      <a (click)="purge()" class="btn btn-primary" translate>Start</a>
+      <div class="loader inline small" *ngIf="purging"></div>
+    </div>
+
+    <div>
+      <h3 translate>wipe.device.title</h3>
+      <p translate>wipe.device.description</p>
+      <a (click)="wipe()" class="btn btn-danger" translate>Start</a>
+      <div class="loader inline small" *ngIf="wiping"></div>
+    </div>
+
+    <div>
+      <h3 translate>generate.feedback.title</h3>
+      <p translate>generate.feedback.description</p>
+      <div class="row">
+        <div class="col-lg-3 col-sm-6">
+          <input type="number" class="form-control" [(ngModel)]="amountFeedbackDocs">
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <a (click)="generateFeedback()" class="btn btn-danger" translate>Start</a>
+          <div class="loader inline small" *ngIf="generatingFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
