@@ -96,6 +96,24 @@ describe('Contacts effects', () => {
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
     });
+
+    it('should handle missing contacts', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
+      const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const setSelectedContact = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+      contactViewModelGeneratorService.getContact.rejects({ code: 404, error: 'not found'});
+      actions$ = of(ContactActionList.selectContact({ id: 'contactid', silent: false }));
+      effects.selectContact.subscribe();
+      flush();
+
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error selecting contact');
+      expect(setSnackbarContent.callCount).to.equal(1);
+      expect(unsetSelected.callCount).to.equal(1);
+      expect(setSelectedContact.callCount).to.equal(1);
+      expect(setSelectedContact.args[0][0]).to.equal(null);
+    }));
   });
 
   describe('setSelected', () => {
