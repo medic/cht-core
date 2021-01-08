@@ -138,6 +138,13 @@ const receiveSelectedContactTargetDoc = (state, targetDoc) => {
   };
 };
 
+const setUsersHomePlaceId = (state, usersHomePlaceId) => {
+  return {
+    ...state,
+    usersHomePlaceId,
+  };
+};
+
 const _contactsReducer = createReducer(
   initialState,
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
@@ -158,6 +165,9 @@ const _contactsReducer = createReducer(
   on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks)),
   on(Actions.receiveSelectedContactTargetDoc, (state, { payload: { targetDoc }}) => {
     return receiveSelectedContactTargetDoc(state, targetDoc);
+  }),
+  on(Actions.setUsersHomePlaceId, (state, { payload: { usersHomePlaceId }}) => {
+    return setUsersHomePlaceId(state, usersHomePlaceId);
   }),
 );
 

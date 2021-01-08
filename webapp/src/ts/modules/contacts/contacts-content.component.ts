@@ -9,6 +9,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Component({
   selector: 'contacts-content',
@@ -28,6 +29,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   reportsTimeWindowMonths;
   taskEndDate;
   tasksTimeWindowWeeks;
+  usersHomePlaceId;
 
   constructor(
     private store: Store,
@@ -35,12 +37,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private router: Router,
     private changesService: ChangesService,
     private contactChangeFilterService: ContactChangeFilterService,
+    private userSettingsService: UserSettingsService,
   ){
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
   }
 
   ngOnInit() {
+    this.getHomePlaceId();
     this.subscribeToStore();
     this.subscribeToRoute();
     this.subscribeToChanges();
@@ -50,6 +54,21 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  getHomePlaceId() {
+    this.userSettingsService
+      .get()
+      .then((user:any) => {
+        this.usersHomePlaceId = user?.facility_id;
+        if (this.usersHomePlaceId) {
+          this.contactsActions.setUsersHomePlaceId(this.usersHomePlaceId);
+          this.contactsActions.selectContact(this.usersHomePlaceId);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching user settings', err);
+      });
   }
 
   subscribeToStore() {

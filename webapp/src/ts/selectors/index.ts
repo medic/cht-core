@@ -92,6 +92,7 @@ export const Selectors = {
     (contactsState) => contactsState.loadingSelectedReports
   ),
   getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.loadingSummary),
+  getUsersHomePlaceId: createSelector(getContactsState, (contactsState) => contactsState.usersHomePlaceId),
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 

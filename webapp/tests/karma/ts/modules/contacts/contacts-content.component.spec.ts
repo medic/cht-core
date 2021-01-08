@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
@@ -14,6 +14,7 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { FilterReportsPipe } from '@mm-pipes/contacts.pipe';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -24,6 +25,7 @@ describe('Contacts content component', () => {
   let changesService;
   let contactChangeFilterService;
   let selectedContact;
+  let userSettingsService;
 
 
   beforeEach(async(() => {
@@ -52,6 +54,7 @@ describe('Contacts content component', () => {
       isRelevantReport: sinon.stub(),
       isDeleted: sinon.stub(),
     };
+    userSettingsService = { get: sinon.stub().resolves() };
 
     return TestBed
       .configureTestingModule({
@@ -67,6 +70,7 @@ describe('Contacts content component', () => {
           { provide: ResourceIconsService, useValue: { getImg: sinon.stub() } },
           { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
           { provide: ChangesService, useValue: changesService },
+          { provide: UserSettingsService, useValue: userSettingsService },
         ]
       })
       .compileComponents()
@@ -82,9 +86,22 @@ describe('Contacts content component', () => {
     sinon.restore();
   });
 
-  it('should create ReportsContentComponent', () => {
+  it('should create ContactsContentComponent', () => {
     expect(component).to.exist;
   });
+
+  it(`should set and select the user's home place`, fakeAsync(() => {
+    const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+    const setUsersHomePlaceId = sinon.stub(ContactsActions.prototype, 'setUsersHomePlaceId');
+    userSettingsService.get.resolves({ facility_id: 'homeplace' });
+    component.ngOnInit();
+    flush();
+
+    expect(selectContact.callCount).to.equal(1);
+    expect(selectContact.args[0][0]).to.equal('homeplace');
+    expect(setUsersHomePlaceId.callCount).to.equal(1);
+    expect(setUsersHomePlaceId.args[0][0]).to.equal('homeplace');
+  }));
 
   describe('Change feed process', () => {
     let change;
