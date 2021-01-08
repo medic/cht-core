@@ -14,10 +14,6 @@ jobs:
   build:
     name: Compile the app 
     runs-on: ubuntu-18.04
-  
-    strategy:
-      matrix:
-        node-version: [12.x]
 
     steps: 
     # - name: Login to Docker Hub
@@ -39,10 +35,10 @@ jobs:
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 12.x
     - name: Couch Start
       run: ./scripts/travis/couch-start
     - name: Create logs directory
@@ -55,7 +51,7 @@ jobs:
       run: ./scripts/travis/couch-config
     - name: Grunt CI-Compile
       run: |
-        node --stack_size=10000 `which grunt` ci-compile
+        node --stack_size=10000 `which grunt` ci-compile-github
     - name: Publish
       run: |
         node --stack_size=10000 `which grunt` publish-for-testing
@@ -63,8 +59,41 @@ jobs:
         npm install
         node ./publish.js
       if: ${{ github.event_name != 'pull_request' }}
-        
   
+  default-config-tests:
+    name: Default Config Testst
+    runs-on: ubuntu-18.04
+
+    steps: 
+    - uses: actions/checkout@v2
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - name: Grunt Install
+      run: npm install -g grunt-cli
+    - name: NPM 
+      run: npm ci
+    - name: Run Tests
+      run: node --stack_size=10000 `which grunt` exec:test-config-default
+
+  standard-config-tests:
+    name: Standard Config Testst
+    runs-on: ubuntu-18.04
+
+    steps: 
+    - uses: actions/checkout@v2
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - name: Grunt Install
+      run: npm install -g grunt-cli
+    - name: NPM 
+      run: npm ci
+    - name: Run Tests
+      run: node --stack_size=10000 `which grunt` exec:test-config-standard
+
   test-e2e:
     needs: build
     name: e2e Tests for Node version ${{ matrix.node-version }}
@@ -84,6 +113,13 @@ jobs:
       run: |
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "TEST_SUITE=integration" >> $GITHUB_ENV
+    - name: Set UPLOARD_URL var
+      run: |
+        if [[ -z "$UPLOAD_URL" ]]; then
+          echo "UPLOAD_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
+        fi
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1

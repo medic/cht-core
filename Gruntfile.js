@@ -1023,6 +1023,15 @@ module.exports = function(grunt) {
     'exec:test-config-standard'
   ]);
 
+  grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
+    'exec:check-version',
+    'install-dependencies',
+    'static-analysis',
+    'build',
+    'mochaTest:api-integration',
+    'unit'
+  ]);
+
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
     'exec:e2e-servers',
