@@ -30,6 +30,7 @@ jobs:
         if [[ -z "$UPLOAD_URL" ]]; then
           echo "UPLOAD_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
           echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
         fi
     - name: Get branch name
       uses: nelonoel/branch-name@v1.0.1
@@ -44,16 +45,12 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Couch Start
       run: ./scripts/travis/couch-start
-    # - name: xsltprox install
-    #   run: sudo apt-get install xsltproc
     - name: Create logs directory
       run: mkdir tests/logs
     - name: npm CI
       run: npm ci
     - name: Grunt Install
       run: npm install -g grunt-cli
-    # - name: Horti Install
-    #   run: npm install -g horticulturalist
     - name: Configure Couch
       run: ./scripts/travis/couch-config
     - name: Grunt CI-Compile
@@ -65,6 +62,7 @@ jobs:
         cd scripts/travis
         npm install
         node ./publish.js
+      if: ${{ github.event_name != 'pull_request' }}
         
   
   test-e2e:
