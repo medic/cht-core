@@ -1,4 +1,4 @@
-import { async, TestBed, ComponentFixture, fakeAsync, flush } from '@angular/core/testing';
+import { async, TestBed, ComponentFixture, fakeAsync, tick, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -31,6 +31,7 @@ import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -54,6 +55,7 @@ describe('Contacts component', () => {
   let xmlFormsService;
   let translateFromService;
   let modalService;
+  let globalActions;
 
   beforeEach(async(() => {
     searchService = { search: sinon.stub().resolves([]) };
@@ -99,16 +101,28 @@ describe('Contacts component', () => {
     };
     exportService = { export: sinon.stub() };
     xmlFormsService = { subscribe: sinon.stub() };
-    translateFromService = { get: sinon.stub() };
+    translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
 
     contactListContains = sinon.stub();
+    const selectedContact =  {
+      type: { person: true },
+      doc: { phone: '123', muted: true },
+      summary: { context: 'test' }
+    };
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getFilters, value: {} },
       { selector: Selectors.getIsAdmin, value: false },
       { selector: Selectors.contactListContains, value: contactListContains },
+      { selector: Selectors.getSelectedContact, value: selectedContact },
     ];
+
+    globalActions = {
+      setLeftActionBar: sinon.spy(GlobalActions.prototype, 'setLeftActionBar'),
+      setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
+      updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar')
+    };
 
     return TestBed
       .configureTestingModule({
@@ -170,7 +184,7 @@ describe('Contacts component', () => {
 
     expect(searchService.search.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(4);
+    expect(spySubscriptionsAdd.callCount).to.equal(5);
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
@@ -181,74 +195,143 @@ describe('Contacts component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  // TODO: Migrate these tests
-  // describe('sets left actionBar', () => {
-  //   it('when user has facility_id', () => {
-  //     const ctrl = createController();
-  //     return ctrl
-  //       .getSetupPromiseForTesting()
-  //       .then(() => {
-  //         assert(ctrl.setLeftActionBar.called, 'left actionBar should be set');
-  //         const actionBarArgs = ctrl.setLeftActionBar.getCall(0).args[0];
-  //         assert.equal(actionBarArgs.userFacilityId, district._id);
-  //       });
-  //   });
+  describe('Action bar', () => {
+    it('should initialise action bar', fakeAsync(() => {
+      tick();
 
-  //   it(`when user doesn't have facility_id`, () => {
-  //     userSettings = KarmaUtils.promiseService(null, {});
-  //     getDataRecords = KarmaUtils.promiseService();
-  //     const ctrl = createController();
-  //     return ctrl
-  //       .getSetupPromiseForTesting()
-  //       .then(() => {
-  //         assert(ctrl.setLeftActionBar.called);
-  //       });
-  //   });
+      expect(globalActions.setLeftActionBar.callCount).to.equal(1);
+      expect(globalActions.setLeftActionBar.args[0][0].childPlaces.length).to.equal(0);
+      expect(globalActions.setLeftActionBar.args[0][0].hasResults).to.equal(false);
+      expect(globalActions.setLeftActionBar.args[0][0].userFacilityId).to.equal('district-id');
+      expect(globalActions.setLeftActionBar.args[0][0].exportFn).to.be.a('function');
 
-  //   it('should filter contact types to allowed ones', () => {
-  //     contactTypes.getChildren.resolves([
-  //       {
-  //         id: 'type1',
-  //         create_form: 'form:contact:create:type1',
-  //       },
-  //       {
-  //         id: 'type2',
-  //         create_form: 'form:contact:create:type2',
-  //       },
-  //       {
-  //         id: 'type3',
-  //         create_form: 'form:contact:create:type3',
-  //       },
-  //     ]);
-  //     const forms = [
-  //       { _id: 'form:contact:create:type3' },
-  //       { _id: 'form:contact:create:type2' },
-  //     ];
-  //     xmlForms.listen.callsArgWith(2, null, forms);
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+      expect(globalActions.setRightActionBar.args[0][0].openContactMutedModal).to.be.a('function');
+      expect(globalActions.setRightActionBar.args[0][0].openSendMessageModal).to.be.a('function');
+      expect(globalActions.setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
+      expect(globalActions.setRightActionBar.args[0][0].sendTo).to.deep.equal({ phone: '123', muted: true });
+    }));
 
-  //     const ctrl = createController();
-  //     return ctrl
-  //       .getSetupPromiseForTesting()
-  //       .then(() => {
-  //         assert.equal(xmlForms.listen.callCount, 1);
-  //         assert.deepEqual(xmlForms.listen.args[0][1], { contactForms: true });
-  //         assert.deepEqual(ctrl.setLeftActionBar.args[0][0].childPlaces, [
-  //           {
-  //             id: 'type2',
-  //             create_form: 'form:contact:create:type2',
-  //           },
-  //           {
-  //             id: 'type3',
-  //             create_form: 'form:contact:create:type3',
-  //           },
-  //         ]);
+    it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
+      sinon.resetHistory();
+      contactTypesService.getChildren.resolves([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      const forms = [
+        { _id: 'form:contact:create:type3' },
+        { _id: 'form:contact:create:type2' },
+      ];
 
-  //         //search still searches with all types
-  //         assert.deepEqual(searchService.args[0][1], { types: { selected: ['type1', 'type2', 'type3'] } });
-  //       });
-  //   });
+      component.ngOnInit();
+      flush();
 
-  // });
+      expect(xmlFormsService.subscribe.callCount).to.equal(3);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactForms');
+      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
+
+      xmlFormsService.subscribe.args[0][2](null, forms);
+
+      expect(globalActions.setLeftActionBar.callCount).to.equal(2);
+      expect(globalActions.setLeftActionBar.args[1][0].childPlaces).to.have.deep.members([
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        childTypes: [
+          {
+            menu_icon: 'fa-building',
+            menu_key: 'Add place',
+            permission: 'can_create_places',
+            types: [
+              {
+                create_form: 'form:contact:create:type2',
+                id: 'type2'
+              },
+              {
+                create_form: 'form:contact:create:type3',
+                id: 'type3'
+              }
+            ]
+          }
+        ]
+      });
+    }));
+
+    it('should filter contact types to allowed ones from selected contact forms', fakeAsync(() => {
+      sinon.resetHistory();
+      contactTypesService.getChildren.resolves([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      const forms = [
+        { _id: 'form:contact:create:type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:contact:create:type2', title: 'Type 2', internalId: 2, icon: 'b' },
+      ];
+
+      component.ngOnInit();
+      flush();
+      component.selectedContact.summary = { context: 'test' };
+      fixture.detectChanges();
+
+      expect(xmlFormsService.subscribe.callCount).to.equal(3);
+      expect(xmlFormsService.subscribe.args[1][0]).to.equal('ContactList');
+      expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
+        contactForms: false,
+        contactSummary: 'test',
+        doc: { phone: '123', muted: true }
+      });
+
+      xmlFormsService.subscribe.args[1][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        relevantForms: [
+          {
+            code: 2,
+            icon: 'b',
+            showUnmuteModal: true,
+            title: 'Type 2',
+          },
+          {
+            code: 3,
+            icon: 'a',
+            showUnmuteModal: true,
+            title: 'Type 3',
+          }
+        ]
+      });
+    }));
+  });
 
   describe('Search', () => {
     it('Puts the home place at the top of the list', fakeAsync(() => {
@@ -306,7 +389,8 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
-      expect(contactTypesService.getChildren.args[0].length).to.equal(0);
+      expect(contactTypesService.getChildren.callCount).to.equal(2);
+      expect(contactTypesService.getChildren.args[1].length).to.equal(0);
       expect(searchService.search.args[0][1]).to.deep.equal(
         {
           types: { selected: ['childType'] },
