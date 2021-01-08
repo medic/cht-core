@@ -25,13 +25,13 @@ describe('Create user meta db : ', () => {
     await commonElements.goToLoginPage();
     await loginPage.login(auth.username, auth.password);
     return Promise.all([
-      utils.request(`/_users/org.couchdb.user:${userName}`)
-        .then(doc => utils.request({
+      utils.requestNative(`/_users/org.couchdb.user:${userName}`)
+        .then(doc => utils.requestNative({
           path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
           method: 'DELETE'
         })),
       utils.revertDb(),
-      utils.request({
+      utils.requestNative({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'
       })
@@ -40,7 +40,7 @@ describe('Create user meta db : ', () => {
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(utils.afterEach);
+  afterEach(utils.afterEachNative);
 
   it('should allow a new user to read/write from meta db', async () => {
     await usersPage.openAddUserModal();
@@ -56,12 +56,12 @@ describe('Create user meta db : ', () => {
     const postData = doc;
 
     try {
-      await utils.requestOnTestMetaDb(_.defaults({
+      await utils.requestOnTestMetaDbNative(_.defaults({
         method: 'POST',
         body: postData
       }, options));
       
-      const response = await utils.requestOnTestMetaDb(_.defaults({path: '/_changes'}, options));
+      const response = await utils.requestOnTestMetaDbNative(_.defaults({path: '/_changes'}, options));
       const changes = response.results;
       const ids = _.map(changes, 'id').sort();
       expect(ids[1]).toEqual(doc._id);

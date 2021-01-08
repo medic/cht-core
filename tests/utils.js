@@ -21,7 +21,7 @@ let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = async (options, { debug } = {}) => {
+const requestNative = async (options, { debug } = {}) => {
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -55,6 +55,42 @@ const request = async (options, { debug } = {}) => {
         reject(err);
       });
   });
+};
+
+const request = (options, { debug } = {}) => {
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
+  if (!options.noAuth) {
+    options.auth = options.auth || auth;
+  }
+  options.uri = options.uri || `http://${constants.API_HOST}:${options.port || constants.API_PORT}${options.path}`;
+  options.json = options.json === undefined ? true : options.json;
+
+  if (debug) {
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log(JSON.stringify(options, null, 2));
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('!!!!!!!REQUEST!!!!!!!');
+  }
+
+  options.transform = (body, response, resolveWithFullResponse) => {
+    // we might get a json response for a non-json request.
+    const contentType = response.headers['content-type'];
+    if (contentType && contentType.startsWith('application/json') && !options.json) {
+      response.body = JSON.parse(response.body);
+    }
+    // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
+    return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
+  };
+
+  const deferred = protractor.promise.defer();
+  rpn(options)
+    .then((resp) => deferred.fulfill(resp))
+    .catch(err => {
+      err.responseBody = err.response && err.response.body;
+      deferred.reject(err);
+    });
+  return deferred.promise;
 };
 
 // Update both ddocs, to avoid instability in tests.
@@ -93,6 +129,20 @@ const revertSettings = () => {
     return Promise.resolve(false);
   }
   return request({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: originalSettings,
+  }).then(() => {
+    originalSettings = null;
+    return true;
+  });
+};
+
+const revertSettingsNative = () => {
+  if (!originalSettings) {
+    return Promise.resolve(false);
+  }
+  return requestNative({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
@@ -234,9 +284,40 @@ const setUserContactDoc = () => {
     }));
 };
 
+const setUserContactDocNative = () => {
+  const {
+    DB_NAME: dbName,
+    USER_CONTACT_ID: docId,
+    DEFAULT_USER_CONTACT_DOC: defaultDoc
+  } = constants;
+
+  return module.exports.getDoc(docId)
+    .catch(() => ({}))
+    .then(existing => {
+      const rev = _.pick(existing, '_rev');
+      return Object.assign(defaultDoc, rev);
+    })
+    .then(newDoc => requestNative({
+      path: `/${dbName}/${docId}`,
+      body: newDoc,
+      method: 'PUT',
+    }));
+};
+
 
 const revertDb = (except, ignoreRefresh) => {
   return revertSettings().then(needsRefresh => {
+    return deleteAll(except).then(() => {
+      // only need to refresh if the settings were changed
+      if (!ignoreRefresh && needsRefresh) {
+        return refreshToGetNewSettings();
+      }
+    }).then(setUserContactDoc);
+  });
+};
+
+const revertDbNative = (except, ignoreRefresh) => {
+  return revertSettingsNative().then(needsRefresh => {
     return deleteAll(except).then(() => {
       // only need to refresh if the settings were changed
       if (!ignoreRefresh && needsRefresh) {
@@ -330,7 +411,7 @@ const getDefaultSettings = () => {
 module.exports = {
   db: db,
   sentinelDb: sentinel,
-
+  requestNative:requestNative,
   request: request,
 
   reporter: new htmlScreenshotReporter({
@@ -371,6 +452,20 @@ module.exports = {
     return request(options, { debug });
   },
 
+  requestOnTestDbNative: (options, debug) => {
+    if (typeof options === 'string') {
+      options = {
+        path: options,
+      };
+    }
+
+    const pathAndReqType = `${options.path}${options.method}`;
+    if (pathAndReqType !== '/GET') {
+      options.path = '/' + constants.DB_NAME + (options.path || '');
+    }
+    return requestNative(options, { debug });
+  },
+
   requestOnTestMetaDb: (options, debug) => {
     if (typeof options === 'string') {
       options = {
@@ -379,6 +474,16 @@ module.exports = {
     }
     options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
     return request(options, { debug: debug });
+  },
+
+  requestOnTestMetaDbNative: (options, debug) => {
+    if (typeof options === 'string') {
+      options = {
+        path: options,
+      };
+    }
+    options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
+    return requestNative(options, { debug: debug });
   },
 
   requestOnMedicDb: (options, debug ) => {
@@ -391,6 +496,18 @@ module.exports = {
 
   saveDoc: doc => {
     return module.exports.requestOnTestDb({
+      path: '/', // so audit picks this up
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': JSON.stringify(doc).length,
+      },
+      body: doc,
+    });
+  },
+
+  saveDocNative: doc => {
+    return module.exports.requestOnTestDbNative({
       path: '/', // so audit picks this up
       method: 'POST',
       headers: {
@@ -418,6 +535,13 @@ module.exports = {
 
   getDoc: id => {
     return module.exports.requestOnTestDb({
+      path: `/${id}`,
+      method: 'GET',
+    });
+  },
+
+  getDocNative: id => {
+    return module.exports.requestOnTestDbNative({
       path: `/${id}`,
       method: 'GET',
     });
@@ -470,6 +594,7 @@ module.exports = {
    * Sets the document referenced by the user's org.couchdb.user document to a default value
    */
   setUserContactDoc,
+  setUserContactDocNative,
 
   /**
    * Update settings and refresh if required
@@ -519,6 +644,22 @@ module.exports = {
    */
   afterEach: done => {
     return revertDb()
+      .then(() => {
+        if (done) {
+          done();
+        }
+      })
+      .catch(err => {
+        if (done) {
+          done.fail(err);
+        } else {
+          throw err;
+        }
+      });
+  },
+
+  afterEachNative: done => {
+    return revertDbNative()
       .then(() => {
         if (done) {
           done();
