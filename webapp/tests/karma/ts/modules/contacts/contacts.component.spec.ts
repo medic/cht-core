@@ -1,4 +1,4 @@
-import { async, TestBed, ComponentFixture, fakeAsync, tick, flush } from '@angular/core/testing';
+import { async, TestBed, ComponentFixture, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -197,7 +197,7 @@ describe('Contacts component', () => {
 
   describe('Action bar', () => {
     it('should initialise action bar', fakeAsync(() => {
-      tick();
+      flush();
 
       expect(globalActions.setLeftActionBar.callCount).to.equal(1);
       expect(globalActions.setLeftActionBar.args[0][0].childPlaces.length).to.equal(0);
