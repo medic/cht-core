@@ -747,13 +747,13 @@
             <value>Visit Findings&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_and_growth/summary/summary_follow_up1:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/next_apt "/></value></text>
+            <value>The next immunization follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/next_apt "/></value></text>
           <text id="/immunization_and_growth/summary/summary_follow_up2:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/tomorrow_apt "/></value></text>
+            <value>The next referral follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/tomorrow_apt "/></value></text>
           <text id="/immunization_and_growth/summary/summary_follow_up3:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/developmental_apt_date "/></value></text>
+            <value>The next child development follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/developmental_apt_date "/></value></text>
           <text id="/immunization_and_growth/summary/summary_follow_up4:label">
-            <value>The next follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/missed_vaccine_apt_date "/></value></text>
+            <value>The next referral follow up visit for <output value=" /immunization_and_growth/patient_name "/> will be on <output value=" /immunization_and_growth/missed_vaccine_apt_date "/></value></text>
           <text id="/immunization_and_growth/summary/summary_follow_up:label">
             <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
           </text>
@@ -4275,7 +4275,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-06_14-02">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-08_13-53">
           <inputs>
             <meta>
               <location>

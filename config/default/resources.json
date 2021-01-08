@@ -28,5 +28,12 @@
     "medic-district-hospital": "medic-health-center.svg",
     "medic-health-center": "medic-chw-area.svg",
     "medic-person": "medic-person.svg",
-    "draft-icon": "draft.icon.svg"
+    "draft-icon": "draft.icon.svg",
+    "icon-child-growth": "icon-child-growth.svg",
+    "icon-people-children": "icon-people-children.svg",
+    "icon-followup-general": "icon-followup-general.svg",
+    "icon-form-general": "icon-form-general.svg",
+    "icon-healthcare-assessment": "icon-healthcare-assessment.svg",
+    "icon-child-nutrition": "icon-child-nutrition.svg",
+    "icon-healthcare-immunization": "icon-healthcare-immunization.svg"
 }

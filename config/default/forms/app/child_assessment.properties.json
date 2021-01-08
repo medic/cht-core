@@ -1,6 +1,6 @@
 {
   "title": "Child assessment",
-  "icon": "draft-icon",
+  "icon": "icon-healthcare-assessment",
   "context": {
     "person": true,
     "place": false,

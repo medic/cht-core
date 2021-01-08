@@ -1,6 +1,6 @@
 {
   "title": "Child referral follow up",
-  "icon": "draft-icon",
+  "icon": "icon-followup-general",
   "context": {
     "person": true,
     "place": false,

@@ -1,6 +1,6 @@
 {
   "title": "Child development follow up",
-  "icon": "draft-icon",
+  "icon": "icon-child-growth",
   "context": {
     "person": true,
     "place": false,

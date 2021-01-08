@@ -1,6 +1,6 @@
 {
-  "title": "Child treatment follow up",
-  "icon": "icon-form-general",
+  "title": "Child assessment!!",
+  "icon": "draft-icon",
   "context": {
     "person": true,
     "place": false,

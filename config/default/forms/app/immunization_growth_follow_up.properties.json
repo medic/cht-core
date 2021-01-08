@@ -1,6 +1,6 @@
 {
   "title": "Immunization and growth follow up",
-  "icon": "draft-icon",
+  "icon": "icon-people-children",
   "context": {
     "person": true,
     "place": false,

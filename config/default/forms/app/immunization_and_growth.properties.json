@@ -1,6 +1,6 @@
 {
   "title": "Immunization and growth",
-  "icon": "draft-icon",
+  "icon": "icon-healthcare-immunization",
   "context": {
     "person": true,
     "place": false,

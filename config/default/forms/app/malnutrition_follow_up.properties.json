@@ -1,6 +1,6 @@
 {
   "title": "Malnutrition follow up",
-  "icon": "draft-icon",
+  "icon": "icon-child-nutrition",
   "context": {
     "person": true,
     "place": false,
