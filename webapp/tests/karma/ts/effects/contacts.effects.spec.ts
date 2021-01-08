@@ -67,6 +67,14 @@ describe('Contacts effects', () => {
   });
 
   describe('selectContact', () => {
+    let setLoadingSelectedContact;
+    let setContactsLoadingSummary;
+
+    beforeEach(() => {
+      setLoadingSelectedContact = sinon.stub(ContactsActions.prototype, 'setLoadingSelectedContact');
+      setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
+    });
+
     it('should skip when no provided id', async (() => {
       actions$ = of(ContactActionList.selectContact({  }));
       effects.selectContact.subscribe();
@@ -84,6 +92,9 @@ describe('Contacts effects', () => {
 
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
+      expect(setLoadingSelectedContact.callCount).to.equal(1);
+      expect(setContactsLoadingSummary.callCount).to.equal(1);
+      expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
     });
 
     it('should load the contact when silent', async () => {
@@ -149,12 +160,9 @@ describe('Contacts effects', () => {
       effects.setSelectedContact.subscribe();
 
       expect(settingSelected.callCount).to.equal(1);
-      expect(setLoadingSelectedContact.callCount).to.equal(1);
-      expect(setContactsLoadingSummary.callCount).to.equal(1);
       expect(clearCancelCallback.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(settingSelected.args[0][0]).to.equal(false);
-      expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
       expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal(
         { _id: 'contactid', doc: { _id: 'contactid' } }
       );

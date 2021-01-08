@@ -38,6 +38,8 @@ export class ContactsEffects {
       exhaustMap(({ payload: { id, silent } }) => {
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
+          this.contactsActions.setLoadingSelectedContact();
+          this.contactsActions.setContactsLoadingSummary(true);
         }
         return from(this.contactViewModelGeneratorService.getContact(id, { getChildPlaces: true, merge: false })).pipe(
           map(model => this.contactsActions.setSelectedContact(model)),
@@ -66,8 +68,6 @@ export class ContactsEffects {
         }
         const refreshing = previousSelectedContact?.doc?._id === selected.id;
         this.globalActions.settingSelected(refreshing);
-        this.contactsActions.setLoadingSelectedContact();
-        this.contactsActions.setContactsLoadingSummary(true);
         this.globalActions.clearCancelCallback();
         const options = { getChildPlaces: true };
         const title = (selected.type && selected.type.name_key) || 'contact.profile';
