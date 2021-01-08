@@ -67,6 +67,14 @@ describe('Contacts effects', () => {
   });
 
   describe('selectContact', () => {
+    let setLoadingSelectedContact;
+    let setContactsLoadingSummary;
+
+    beforeEach(() => {
+      setLoadingSelectedContact = sinon.stub(ContactsActions.prototype, 'setLoadingSelectedContact');
+      setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
+    });
+
     it('should skip when no provided id', async (() => {
       actions$ = of(ContactActionList.selectContact({  }));
       effects.selectContact.subscribe();
@@ -84,6 +92,9 @@ describe('Contacts effects', () => {
 
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
+      expect(setLoadingSelectedContact.callCount).to.equal(1);
+      expect(setContactsLoadingSummary.callCount).to.equal(1);
+      expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
     });
 
     it('should load the contact when silent', async () => {
@@ -96,6 +107,24 @@ describe('Contacts effects', () => {
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
     });
+
+    it('should handle missing contacts', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
+      const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const setSelectedContact = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+      contactViewModelGeneratorService.getContact.rejects({ code: 404, error: 'not found'});
+      actions$ = of(ContactActionList.selectContact({ id: 'contactid', silent: false }));
+      effects.selectContact.subscribe();
+      flush();
+
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error selecting contact');
+      expect(setSnackbarContent.callCount).to.equal(1);
+      expect(unsetSelected.callCount).to.equal(1);
+      expect(setSelectedContact.callCount).to.equal(1);
+      expect(setSelectedContact.args[0][0]).to.equal(null);
+    }));
   });
 
   describe('setSelected', () => {
@@ -131,12 +160,9 @@ describe('Contacts effects', () => {
       effects.setSelectedContact.subscribe();
 
       expect(settingSelected.callCount).to.equal(1);
-      expect(setLoadingSelectedContact.callCount).to.equal(1);
-      expect(setContactsLoadingSummary.callCount).to.equal(1);
       expect(clearCancelCallback.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(settingSelected.args[0][0]).to.equal(false);
-      expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
       expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal(
         { _id: 'contactid', doc: { _id: 'contactid' } }
       );
@@ -146,13 +172,16 @@ describe('Contacts effects', () => {
     });
 
     it('should catch loadChildren errors', fakeAsync(() => {
-      contactViewModelGeneratorService.loadChildren.rejects({ error: 'we have a problem'});
+      const consoleErrorMock = sinon.stub(console, 'error');
+      contactViewModelGeneratorService.loadChildren.rejects({ error: 'we have a problem' });
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
       effects.setSelectedContact.subscribe();
       flush();
 
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error fetching children');
     }));
   });
 
@@ -166,6 +195,7 @@ describe('Contacts effects', () => {
     });
 
     it('should catch loadReports errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       contactViewModelGeneratorService.loadReports.rejects({ error: 'we have a problem'});
       actions$ = of(ContactActionList.receiveSelectedContactChildren([]));
       effects.receiveSelectedContactReports.subscribe();
@@ -173,6 +203,8 @@ describe('Contacts effects', () => {
 
       expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading reports');
     }));
 
     it('should call the receiveSelectedContactReports action', fakeAsync(() => {
@@ -215,6 +247,7 @@ describe('Contacts effects', () => {
     }));
 
     it('should catch contactSummaryService errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       contactSummaryService.get.rejects({ error: 'we have a problem'});
       actions$ = of(ContactActionList.receiveSelectedContactReports([]));
       effects.updateSelectedContactSummary.subscribe();
@@ -222,6 +255,8 @@ describe('Contacts effects', () => {
 
       expect(contactSummaryService.get.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading summary');
     }));
   });
 
@@ -236,6 +271,7 @@ describe('Contacts effects', () => {
     }));
 
     it('should catch targetAggregateService errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       targetAggregateService.getCurrentTargetDoc.rejects({ error: 'we have a problem'});
       actions$ = of(ContactActionList.updateSelectedContactSummary({}));
@@ -244,6 +280,8 @@ describe('Contacts effects', () => {
 
       expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading target doc');
     }));
   });
 });

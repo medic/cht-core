@@ -38,7 +38,7 @@
                 <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
                 <div>
                   <label translate *ngIf="field.label">{{field.label}}</label>
-                  <p *ngIf="field.translate" translate>{{field.value}}</p>
+                  <p *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
                   <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
                   <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
                 </div>
@@ -58,8 +58,8 @@
                   <div class="cell">
                     <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
                     <div>
-                      <label translate  *ngIf="field.label">{{field.label}}</label>
-                      <p *ngIf="field.translate" translate>{{field.value}}</p>
+                      <label translate *ngIf="field.label">{{field.label}}</label>
+                      <p *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
                       <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
                       <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
                     </div>
@@ -83,7 +83,7 @@
           <ng-container *ngFor="let child of group.contacts" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
-              [route]="['/', 'contacts', child.id]"
+              [route]="['/', 'contacts', child.doc._id]"
               [heading]="child.doc.name"
               [summary]="''"
               [primaryContact]="child.isPrimaryContact"

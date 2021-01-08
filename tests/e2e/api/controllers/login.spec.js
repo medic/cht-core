@@ -60,7 +60,7 @@ const setupTokenLoginSettings = (configureAppUrl = false) => {
     settings.app_url = utils.getOrigin();
   }
   return utils
-    .updateSettings(settings, 'api')
+    .updateSettings(settings)
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
 

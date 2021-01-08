@@ -148,10 +148,10 @@ export class EnketoTranslationService {
    * result.siblings: more documents at the same level. These docs are docs
    *   that must link to the main doc, but the main doc must also link to them,
    *   for example the main doc may be a place, and a CHW a sibling.
-   *   see: contacts-edit.js:saveSiblings
+   *   see: contacts-edit.component.ts:saveSiblings
    * result.repeats: documents from repeat nodes. These docs are simple docs
    *   that we wish to save independently of the main document.
-   *   see: contacts-edit.js:saveRepeated
+   *   see: contacts-edit.component.ts:saveRepeated
    */
   contactRecordToJs(record) {
     const root = $.parseXML(record).firstChild;

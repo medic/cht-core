@@ -4,6 +4,8 @@ import { RouteGuardProvider } from '../../providers/route-guard.provider';
 import { ContactsComponent } from './contacts.component';
 import { ContactsContentComponent } from './contacts-content.component';
 import { ContactsDeceasedComponent } from './contacts-deceased.component';
+import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
+import { ContactAddRouteGuardProvider } from '@mm-modules/contacts/contact-route-guard.provider';
 
 export const routes: Routes = [
   {
@@ -25,6 +27,22 @@ export const routes: Routes = [
       {
         path: ':id/deceased',
         component: ContactsDeceasedComponent,
+        data: { name: 'contacts.deceased' },
+      },
+      {
+        path: 'add/:type',
+        component: ContactsEditComponent,
+        canDeactivate: [ContactAddRouteGuardProvider],
+      },
+      {
+        path: ':parent_id/add/:type',
+        component: ContactsEditComponent,
+        canDeactivate: [ContactAddRouteGuardProvider],
+      },
+      {
+        path: ':id/edit',
+        component: ContactsEditComponent,
+        canDeactivate: [ContactAddRouteGuardProvider],
       }
     ],
   },

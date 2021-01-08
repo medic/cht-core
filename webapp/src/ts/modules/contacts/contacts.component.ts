@@ -344,7 +344,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
           const homeIndex = _.findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
           });
-          this.additionalListItem = 
+          this.additionalListItem =
             !this.filters.search &&
             !this.filters.simprintsIdentities &&
             (this.additionalListItem || !this.appending) &&
@@ -359,7 +359,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
               !this.filters.search &&
               !this.filters.simprintsIdentities
             ) {
-              
+
               updatedContacts.unshift(this.usersHomePlace);
             }
             if (this.filters.simprintsIdentities) {
