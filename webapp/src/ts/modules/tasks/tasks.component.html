@@ -9,7 +9,7 @@
 
     <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
       <ul *ngIf="!error && hasTasks">
-        <mm-content-row
+        <!--<mm-content-row
           *ngFor="let task of tasksList; trackBy: listTrackBy"
           [id]="task._id"
           [route]="['/', 'tasks', task._id]"
@@ -23,16 +23,42 @@
           [showStatus]="false"
           [selected]="task._id === selectedTask?._id"
         >
-        </mm-content-row>
+        </mm-content-row>-->
+        <li *ngFor="let task of tasksList; trackBy: listTrackBy"
+            [attr.data-record-id]="task._id"
+            [class.selected] = "task._id === selectedTask?._id"
+            [class.overdue]="task.overdue"
+            class="content-row"
+        >
+          <a [routerLink]="['/', 'tasks', task._id]">
+            <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
+            <div class="content">
+              <div class="heading">
+                <h4>
+                  <span>{{task.contact?.name || ''}}</span>
+                </h4>
+                <div class="date">
+                  <span [innerHTML]="task.date | taskDueDate"></span>
+                </div>
+              </div>
+
+              <div *ngIf="task.title" class="summary">
+                <p>{{task.title}}</p>
+              </div>
+
+              <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
+            </div>
+          </a>
+        </li>
       </ul>
 
       <p *ngIf="error" class="alert alert-danger" role="alert">
-        <span translate>Error fetching tasks</span>
-        <a class="btn btn-link" (click)="refreshTaskList()" translate>Reload</a>
+        <span>{{'Error fetching tasks' | translate}}</span>
+        <a class="btn btn-link" (click)="refreshTaskList()">{{'Reload' | translate}}</a>
       </p>
-      <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled" translate>No tasks found</p>
-      <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled" translate>task.list.complete</p>
-      <p class="loading-status" *ngIf="tasksDisabled" translate>tasks.disabled</p>
+      <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
+      <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
+      <p class="loading-status" *ngIf="tasksDisabled">{{'tasks.disabled' | translate}}</p>
       <div class="loader" *ngIf="loading && !tasksDisabled && !error"></div>
     </div>
 

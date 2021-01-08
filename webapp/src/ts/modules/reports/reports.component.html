@@ -14,23 +14,6 @@
         <span *ngIf="selectedReports?.length !== 1" translate="select.mode.count.plural" [translateParams]="{ number: selectedReports?.length || 0 }"></span>
       </div>
       <ul [hidden]="loading && !appending">
-        <!--<mm-content-row
-          *ngFor="let report of reportsList; trackBy: listTrackBy"
-          [id]="report._id"
-          (click)="toggleSelected(report, $event)"
-          [icon]="report.icon"
-          [heading]="report.heading"
-          [date]="report.reported_date"
-          [summary]="report.summary"
-          [showStatus]="true"
-          [valid]="report.valid"
-          [verified]="report.verified"
-          [statusIcon]="report.statusIcon"
-          [lineage]="report.lineage"
-          [unread]="!report.read"
-          [selected]="report.selected"
-        >
-        </mm-content-row>-->
         <li *ngFor="let report of reportsList; trackBy: listTrackBy"
             [attr.data-record-id]="report._id"
             [class.selected] = "report.selected"
