@@ -35,6 +35,8 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 export class ContactsComponent implements OnInit, OnDestroy{
   private readonly PAGE_SIZE = 50;
   private subscription: Subscription = new Subscription();
+  private subscriptionSelectedContactForms;
+  private subscriptionAllContactForms;
   private globalActions;
   private contactsActions;
   private servicesActions;
@@ -164,7 +166,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
           }
         };
 
-        this.setLeftActionBar();
+        this.subscribeToAllContactXmlForms();
         return this.search();
       })
       .catch((err) => {
@@ -461,10 +463,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private subscribeToSelectedContact() {
-    let subscriptionSelectedContactForms;
-    let subscriptionAllContactForms;
-    // Intention: this code will only run when the selected contact changes
-    // and not when other store data changes.
     const subscription = this.store
       .select(Selectors.getSelectedContact)
       .subscribe((selected) => {
@@ -480,16 +478,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
           openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
         });
 
-        if (subscriptionSelectedContactForms) {
-          subscriptionSelectedContactForms.unsubscribe();
-        }
-
-        if (subscriptionAllContactForms) {
-          subscriptionAllContactForms.unsubscribe();
-        }
-
-        subscriptionAllContactForms = this.subscribeToAllContactXmlForms();
-        subscriptionSelectedContactForms = this.subscribeToSelectedContactXmlForms();
+        this.subscribeToAllContactXmlForms();
+        this.subscribeToSelectedContactXmlForms();
       });
     this.subscription.add(subscription);
   }
@@ -529,7 +519,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private subscribeToAllContactXmlForms() {
-    const contactFormsSubscription = this.xmlFormsService.subscribe(
+    if (this.subscriptionAllContactForms) {
+      this.subscriptionAllContactForms.unsubscribe();
+    }
+
+    this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
       'ContactForms',
       { contactForms: true },
       (error, forms) => {
@@ -539,17 +533,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
         }
 
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
-
+        this.setLeftActionBar();
         const allowedChildTypesBySelectedContact = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
         this.globalActions.updateRightActionBar({
           childTypes: this.getModelsFromChildTypes(allowedChildTypesBySelectedContact)
         });
-        this.setLeftActionBar();
       }
     );
-    this.subscription.add(contactFormsSubscription);
-
-    return contactFormsSubscription;
+    this.subscription.add(this.subscriptionAllContactForms);
   }
 
   private subscribeToSelectedContactXmlForms() {
@@ -557,7 +548,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
       return;
     }
 
-    const contactListSubscription = this.xmlFormsService.subscribe(
+    if (this.subscriptionSelectedContactForms) {
+      this.subscriptionSelectedContactForms.unsubscribe();
+    }
+
+    this.subscriptionSelectedContactForms = this.xmlFormsService.subscribe(
       'ContactList',
       {
         doc: this.selectedContact.doc,
@@ -587,9 +582,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.globalActions.updateRightActionBar({ relevantForms: formSummaries });
       }
     );
-    this.subscription.add(contactListSubscription);
-
-    return contactListSubscription;
+    this.subscription.add(this.subscriptionSelectedContactForms);
   }
 
   private filterAllowedChildType(forms, childTypes) {
