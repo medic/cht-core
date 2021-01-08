@@ -30,7 +30,7 @@ describe('Create user meta db : ', () => {
           path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
           method: 'DELETE'
         })),
-      utils.revertDb(),
+      utils.revertDbNative(),
       utils.requestNative({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'

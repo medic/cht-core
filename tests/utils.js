@@ -58,6 +58,7 @@ const requestNative = async (options, { debug } = {}) => {
 };
 
 const request = (options, { debug } = {}) => {
+  deprecated('utils.request', 'utils.requestNative');
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -125,6 +126,7 @@ const updateSettings = updates => {
 };
 
 const revertSettings = () => {
+  deprecated('utils.revertSettings', 'utils.revertSettingsNative');
   if (!originalSettings) {
     return Promise.resolve(false);
   }
@@ -155,6 +157,7 @@ const revertSettingsNative = () => {
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 
 const deleteAll = (except = []) => {
+  deprecated('utils.deleteAll', 'utils.deleteAllNative');
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
     doc => PERMANENT_TYPES.includes(doc.type),
@@ -237,6 +240,89 @@ const deleteAll = (except = []) => {
     });
 };
 
+const deleteAllNative = (except = []) => {
+  // Generate a list of functions to filter documents over
+  const ignorables = except.concat(
+    doc => PERMANENT_TYPES.includes(doc.type),
+    'service-worker-meta',
+    constants.USER_CONTACT_ID,
+    'migration-log',
+    'resources',
+    'branding',
+    'partners',
+    'settings',
+    /^form:contact:/,
+    /^_design/
+  );
+  const ignoreFns = [];
+  const ignoreStrings = [];
+  const ignoreRegex = [];
+  ignorables.forEach(i => {
+    if (typeof i === 'function') {
+      ignoreFns.push(i);
+    } else if (typeof i === 'object') {
+      ignoreRegex.push(i);
+    } else {
+      ignoreStrings.push(i);
+    }
+  });
+
+  ignoreFns.push(doc => ignoreStrings.includes(doc._id));
+  ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
+
+  // Get, filter and delete documents
+  return module.exports
+    .requestOnTestDbNative({
+      path: '/_all_docs?include_docs=true',
+      method: 'GET',
+    })
+    .then(({ rows }) =>
+      rows
+        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .map(({ doc }) => {
+          doc._deleted = true;
+          doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
+          return doc;
+        })
+    )
+    .then(toDelete => {
+      const ids = toDelete.map(doc => doc._id);
+      if (e2eDebug) {
+        console.log(`Deleting docs and infodocs: ${ids}`);
+      }
+      const infoIds = ids.map(id => `${id}-info`);
+      return Promise.all([
+        module.exports
+          .requestOnTestDbNative({
+            path: '/_bulk_docs',
+            method: 'POST',
+            body: { docs: toDelete },
+          })
+          .then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted docs: ${JSON.stringify(response)}`);
+            }
+          }),
+        module.exports.sentinelDb.allDocs({keys: infoIds})
+          .then(results => {
+            const deletes = results.rows
+              .filter(row => row.value) // Not already deleted
+              .map(({id, value}) => ({
+                _id: id,
+                _rev: value.rev,
+                _deleted: true
+              }));
+
+            return module.exports.sentinelDb.bulkDocs(deletes);
+          }).then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+            }
+          })
+      ]);
+    });
+};
+
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
@@ -265,6 +351,7 @@ const refreshToGetNewSettings = () => {
 };
 
 const setUserContactDoc = () => {
+  deprecated('utils.setUserContactDoc', 'utils.setUserContactDocNative');
   const {
     DB_NAME: dbName,
     USER_CONTACT_ID: docId,
@@ -291,7 +378,7 @@ const setUserContactDocNative = () => {
     DEFAULT_USER_CONTACT_DOC: defaultDoc
   } = constants;
 
-  return module.exports.getDoc(docId)
+  return module.exports.getDocNative(docId)
     .catch(() => ({}))
     .then(existing => {
       const rev = _.pick(existing, '_rev');
@@ -306,6 +393,7 @@ const setUserContactDocNative = () => {
 
 
 const revertDb = (except, ignoreRefresh) => {
+  deprecated('utils.revertDb', 'utils.revertDbNative');
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
       // only need to refresh if the settings were changed
@@ -318,12 +406,12 @@ const revertDb = (except, ignoreRefresh) => {
 
 const revertDbNative = (except, ignoreRefresh) => {
   return revertSettingsNative().then(needsRefresh => {
-    return deleteAll(except).then(() => {
+    return deleteAllNative(except).then(() => {
       // only need to refresh if the settings were changed
       if (!ignoreRefresh && needsRefresh) {
         return refreshToGetNewSettings();
       }
-    }).then(setUserContactDoc);
+    }).then(setUserContactDocNative);
   });
 };
 
@@ -408,7 +496,16 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
+function deprecated(name, replacement) {
+  let msg = `The function ${name} has been deprecated.`;
+  if (replacement) {
+    msg = `${msg} Replace by ${replacement}`;
+  }
+  console.warn(msg);
+}
+
 module.exports = {
+  deprecated,
   db: db,
   sentinelDb: sentinel,
   requestNative:requestNative,
@@ -534,7 +631,8 @@ module.exports = {
       }),
 
   getDoc: id => {
-    return module.exports.requestOnTestDb({
+    deprecated('utils.getDoc', 'utils.getDocNative');
+    return module.exports.requestOnTestDbNative({
       path: `/${id}`,
       method: 'GET',
     });
@@ -689,6 +787,7 @@ module.exports = {
    * @return     {Promise}  promise
    */
   revertDb: revertDb,
+  revertDbNative,
 
   resetBrowser: () => {
     return browser.driver
