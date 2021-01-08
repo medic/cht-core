@@ -42,20 +42,20 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Couch Start
-      run: ./scripts/travis/couch-start
-    - name: xsltprox install
-      run: sudo apt-get install xsltproc
+    # - name: Couch Start
+    #   run: ./scripts/travis/couch-start
+    # - name: xsltprox install
+    #   run: sudo apt-get install xsltproc
     - name: Create logs directory
       run: mkdir tests/logs
     - name: npm CI
       run: npm ci
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: Horti Install
-      run: npm install -g horticulturalist
-    - name: Configure Couch
-      run: ./scripts/travis/couch-config
+    # - name: Horti Install
+    #   run: npm install -g horticulturalist
+    # - name: Configure Couch
+    #   run: ./scripts/travis/couch-config
     - name: Grunt CI-Compile
       run: |
         node --stack_size=10000 `which grunt` ci-compile
@@ -131,4 +131,4 @@ jobs:
       with:
         name: Results Logs ${{ matrix.node-version }}
         path: tests/logs
-      if: ${{ always() }
+      if: ${{ always() }}
