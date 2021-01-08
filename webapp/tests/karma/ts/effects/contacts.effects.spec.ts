@@ -183,6 +183,26 @@ describe('Contacts effects', () => {
       expect(consoleErrorMock.callCount).to.equal(1);
       expect(consoleErrorMock.args[0][0]).to.equal('Error fetching children');
     }));
+
+    it('should not load children if home place selected', fakeAsync(() => {
+      store.overrideSelector(Selectors.getUsersHomePlaceId, 'contactid');
+      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
+      effects.setSelectedContact.subscribe();
+      flush();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: false});
+    }));
+
+    it('should load children if selected contact is not home place', fakeAsync(() => {
+      store.overrideSelector(Selectors.getUsersHomePlaceId, 'homleplace');
+      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
+      effects.setSelectedContact.subscribe();
+      flush();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: true});
+    }));
   });
 
   describe('receiveSelectedContactReports', () => {
