@@ -22,12 +22,12 @@ get_couchdb_url()
 
 wait_for_couchdb()
 {
-  local n=15
+  local n=60
 
   while [ "$n" -gt 0 ]; do
     curl "`get_couchdb_url`" &>/dev/null
     [ "$?" -eq 0 ] && return 0
-    sleep 1
+    sleep 3
     n=$[$n-1]
   done
 
@@ -71,7 +71,6 @@ create_couchdb_put()
     cmd='echo'
   fi
 
-  # Send JSON-encoded string payload if provided
   if [ "$#" -gt 1 ]; then
     echo -n 'data = "\"' &&
     "$cmd" "$payload" &&

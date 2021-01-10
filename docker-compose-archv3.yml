@@ -2,13 +2,13 @@ version: '3.7'
 
 ## Usage
 ## export COUCHDB_USER=admin && export COUCHDB_PASSWORD=admin123
-## docker-compose up 
+## docker-compose up -f docker-compose-archv3.yml
 ## cntrl+c to exit
 ## docker-compose down
 ## docker volume rm medic-data medic-couchconfig
 
 ## docker-compose up
-## http://localhost
+## https://localhost
 
 services:
 
@@ -27,7 +27,7 @@ services:
 
   medic-api:
     container_name: medic-api
-    image: medicmobile/medic-api:3.10.0-010520-test3
+    image: medicmobile/medic-api:3.10.0-010520-test4
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -43,7 +43,7 @@ services:
 
   medic-sentinel:
     container_name: medic-sentinel
-    image: medicmobile/medic-sentinel:3.10.0-010520-test1
+    image: medicmobile/medic-sentinel:3.10.0-011020-test1
     environment:
       COUCHDB_SERVICE_NAME: couchdb
       COUCH_NODE_NAME: "couchdb@127.0.0.1"
@@ -79,7 +79,7 @@ services:
     image: medicmobile/haproxy:rc-1.18
     environment:
       COUCHDB_USER: ${COUCHDB_USER}
-      COUCHDB_PASSWRD: ${COUCHDB_PASSWORD}
+      COUCHDB_PASSWoRD: ${COUCHDB_PASSWORD}
       COUCHDB_HOST: couchdb
     networks:
       - medic-net
@@ -92,8 +92,8 @@ services:
     image: medicmobile/nginx:3.10.0-slim-01052021-11
     environment:
       CHT_DOMAIN: 
-    #volumes:
-    #  - medic-ssl:/root/.acme.sh/
+    volumes:
+      - medic-ssl:/root/.acme.sh/
     #  - ./ssl-certificate-key.pem:/etc/nginx/private/key.pem
     #  - ./ssl-certificate.pem:/etc/nginx/private/cert.pem
     networks:
