@@ -157,6 +157,7 @@ describe('sms-gateway api', () => {
     afterEach(helper.handleUpdateModal);
 
     it('- shows content', async () => {
+      await helper.waitForAppToLoad();
       //LHS
       await smsGatewayPo.showMessageList();
       await smsGatewayPo.expectMessage('+64271234567', 'hello');

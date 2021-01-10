@@ -33,6 +33,7 @@ const initialState = {
   unreadCount: {},
   version: null,
   snackbarContent: null,
+  translationsLoaded: false,
 };
 
 
@@ -136,6 +137,7 @@ const _globalReducer = createReducer(
   on(Actions.updateUnreadCount, (state, { payload: { unreadCount } }) => {
     return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
   }),
+  on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
 );
 
 export const globalReducer = (state, action) => {
