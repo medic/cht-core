@@ -18,7 +18,7 @@ process
 const waitForApi = () =>
   new Promise(resolve => {
     //
-    // This waits forever, with no escape hatch, becayse there is no way currently
+    // This waits forever, with no escape hatch, because there is no way currently
     // to know what API is doing, and migrations could legitimately take days
     //
     //

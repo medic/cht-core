@@ -9,6 +9,7 @@ RUN apk add --update --no-cache \
   libxslt \
   bash \
   jq    \
+  netcat-openbsd \
   git
 
 WORKDIR /app

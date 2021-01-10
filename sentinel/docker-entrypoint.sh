@@ -17,16 +17,19 @@ fatal()
 
 wait_for_api()
 {
-    # Can't seem to import the waitForApi from server.js. Essentially we are going to do the same thing in bash.
-  local n=20
+    # Can't seem to import the waitForApi from server.js. Essentially, we need to do the same thing: 
+    # Migrations could take days, and there is no way to know what API is doing
 
-  while [ "$n" -gt 0 ]; do
-    curl "http://$API_SVC_NAME:5988/setup/poll" &>/dev/null
-    [ "$?" -eq 0 ] && return 0
-    sleep 10
-    info "Waiting for API to be Ready..."
-    n=$[$n-1]
-  done
+  until nc -z $API_SVC_NAME 5988; do sleep 10 && info "Waiting for API to be Ready..."; done
+#  local n=20
+
+#  while [ "$n" -gt 0 ]; do
+#    curl "http://$API_SVC_NAME:5988/setup/poll" &>/dev/null
+#    [ "$?" -eq 0 ] && return 0
+#    sleep 10
+#    info "Waiting for API to be Ready..."
+#    n=$[$n-1]
+#  done
 
   return 1
 }
@@ -71,7 +74,6 @@ create_couchdb_put()
     cmd='echo'
   fi
 
-  # Send JSON-encoded string payload if provided
   if [ "$#" -gt 1 ]; then
     echo -n 'data = "\"' &&
     "$cmd" "$payload" &&
