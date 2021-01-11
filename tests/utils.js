@@ -778,10 +778,6 @@ module.exports = {
 
   //check for the update modal before
   beforeEach: async () => {
-<<<<<<< HEAD
-    console.log('before each');
-=======
->>>>>>> replace utils with deprecated methods
     if (await element(by.css('#update-available')).isPresent()) {
       await $('body').sendKeys(protractor.Key.ENTER);
     }
