@@ -496,15 +496,13 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
-const deprecated = (name, replacement) => {
+function deprecated(name, replacement) {
   let msg = `The function ${name} has been deprecated.`;
   if (replacement) {
     msg = `${msg} Replace by ${replacement}`;
   }
-  if (process.env.DEBUG) {
-    console.warn(msg);
-  }
-};
+  console.warn(msg);
+}
 
 module.exports = {
   deprecated,
@@ -520,7 +518,7 @@ module.exports = {
     captureOnlyFailedSpecs: true,
     reportOnlyFailedSpecs: false,
     showQuickLinks: true,
-    dest: `tests/results/`,
+    dest: `tests/results/${new Date().toISOString()}`,
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
       return currentSpec.fullName
@@ -777,7 +775,6 @@ module.exports = {
 
   //check for the update modal before
   beforeEach: async () => {
-    console.log('before each');
     if (await element(by.css('#update-available')).isPresent()) {
       await $('body').sendKeys(protractor.Key.ENTER);
     }
