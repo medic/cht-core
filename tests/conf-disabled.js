@@ -22,7 +22,16 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      'e2e/create-meta-db.js',
+      '**/login.spec.js',
+      '**/report-date-filter.js',
+      '**/sentinel/queue.spec.js',
+      '**/docs-by-replication-key-view.js',
+      '**/api/routing.js',
+      '**/infodocs.js',
+      '**/common.specs.js',
+      '**/content-security-policy.js',
+      '**/message_duplicates.spec.js',
+      '**/api/server.js',
     ],
     // performance: 'performance/**/*.js'
   },
@@ -97,17 +106,17 @@ const prepServices = async () => {
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
     // that the service processes get restarted with their logs separated and pointing to the
     // correct logs for testing
-    await listenForApi();
-    console.log('Horti booted API, rebooting under our logging structure');
-    apiReady = await request.post('http://localhost:31337/all/restart');
+    apiReady = listenForApi()
+      .then(() => console.log('Horti booted API, rebooting under our logging structure'))
+      .then(() => request.post('http://localhost:31337/all/restart'));
   } else {
     // Locally we just need to start them and can do so straight away
     apiReady = await request.post('http://localhost:31337/all/start');
   }
 
   await listenForApi();
-  await runAndLog('Settings setup', setupSettings);
-  await runAndLog('User contact doc setup', utils.setUserContactDocNative);
+  await runAndLog('Settings setup', setupSettings)
+  await runAndLog('User contact doc setup', utils.setUserContactDoc);
   return apiReady;
 };
 
@@ -117,18 +126,26 @@ const apiRetry = () => {
       resolve(listenForApi());
     }, 1000);
   });
-};
+}
 
 const listenForApi = async () => {
   console.log('Checking API');
   try {
-    const result =  await utils.requestNative({ path: '/api/info' });
+    const result =  await utils.request({ path: '/api/info' });
     return result;
   } catch(err) {
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
     await apiRetry();
   }
+  // return utils.request({ path: '/api/info' }).catch(() => {
+  //   console.log('API check failed, trying again in 1 second');
+  //   return new Promise(resolve => {
+  //     setTimeout(() => {
+  //       resolve(listenForApi());
+  //     }, 1000);
+  //   });
+  // });
 };
 
 const getLoginUrl = () => {
@@ -157,7 +174,7 @@ const setupSettings = () => {
   const defaultAppSettings = utils.getDefaultSettings();
   defaultAppSettings.transitions = {};
 
-  return utils.requestNative({
+  return utils.request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: defaultAppSettings
@@ -166,11 +183,11 @@ const setupSettings = () => {
 
 const setupUser = () => {
   return utils
-    .getDocNative('org.couchdb.user:' + auth.username)
+    .getDoc('org.couchdb.user:' + auth.username)
     .then(doc => {
       doc.contact_id = constants.USER_CONTACT_ID;
       doc.language = 'en';
-      return utils.saveDocNative(doc);
+      return utils.saveDoc(doc);
     })
     .then(() => utils.refreshToGetNewSettings())
     .then(() => utils.closeTour());
