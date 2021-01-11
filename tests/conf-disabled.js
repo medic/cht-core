@@ -116,7 +116,7 @@ const prepServices = async () => {
 
   await listenForApi();
   await runAndLog('Settings setup', setupSettings)
-  await runAndLog('User contact doc setup', utils.setUserContactDoc);
+  await runAndLog('User contact doc setup', utils.setUserContactDocNative);
   return apiReady;
 };
 
@@ -131,7 +131,7 @@ const apiRetry = () => {
 const listenForApi = async () => {
   console.log('Checking API');
   try {
-    const result =  await utils.request({ path: '/api/info' });
+    const result =  await utils.requestNative({ path: '/api/info' });
     return result;
   } catch(err) {
     console.log('API check failed, trying again in 1 second');
@@ -166,7 +166,7 @@ const setupSettings = () => {
   const defaultAppSettings = utils.getDefaultSettings();
   defaultAppSettings.transitions = {};
 
-  return utils.request({
+  return utils.requestNative({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: defaultAppSettings
@@ -175,7 +175,7 @@ const setupSettings = () => {
 
 const setupUser = () => {
   return utils
-    .getDoc('org.couchdb.user:' + auth.username)
+    .getDocNative('org.couchdb.user:' + auth.username)
     .then(doc => {
       doc.contact_id = constants.USER_CONTACT_ID;
       doc.language = 'en';

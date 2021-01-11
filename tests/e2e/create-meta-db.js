@@ -21,16 +21,16 @@ const options = {
 
 describe('Create user meta db : ', () => {
 
-  afterAll(async done => {
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
+  afterAll(done => {
+    await commonElements.goToLoginPage();
+    await loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.requestNative(`/_users/org.couchdb.user:${userName}`)
-        .then(doc => utils.requestNative({
+        .then(doc => utils.request({
           path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
           method: 'DELETE'
         })),
-      utils.revertDbNative(),
+      utils.revertDb(),
       utils.requestNative({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'
