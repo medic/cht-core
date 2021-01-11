@@ -56,7 +56,7 @@ module.exports = {
   },
 
   fillForm: async (username, fullName, password) => {
-    utils.deprecated('fillForm', 'fillFormNative')
+    utils.deprecated('fillForm', 'fillFormNative');
     await helper.waitUntilReady(getSubmitButton()); // wait for form to load
     await getUsernameField().sendKeys(username);
     await getFullNameField().sendKeys(fullName);
