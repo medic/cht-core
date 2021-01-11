@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { AuthService } from '@mm-services/auth.service';
@@ -24,6 +24,7 @@ export class XmlFormsService {
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
     private parseProvider:ParseProvider,
+    private ngZone:NgZone,
   ) {
     this.init = this.getForms();
 
@@ -86,6 +87,10 @@ export class XmlFormsService {
   }
 
   private filterAll(forms, options) {
+    return this.ngZone.runOutsideAngular(() => this._filterAll(forms, options));
+  }
+
+  private _filterAll(forms, options) {
     return this.userContactService.get().then(user => {
       // clone the forms list so we don't affect future filtering
       forms = forms.slice();

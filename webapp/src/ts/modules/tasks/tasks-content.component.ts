@@ -218,7 +218,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;
-        if (formDoc.translation_key) {
+        if (formDoc?.translation_key) {
           this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
         } else {
           this.globalActions.setTitle(this.translateFromService.get(formDoc.title));

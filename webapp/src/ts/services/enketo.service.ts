@@ -413,6 +413,12 @@ export class EnketoService {
   }
 
   render(selector, form, instanceData, editedListener, valuechangeListener) {
+    return this.ngZone.runOutsideAngular(() => {
+      return this._render(selector, form, instanceData, editedListener, valuechangeListener);
+    });
+  }
+
+  private _render(selector, form, instanceData, editedListener, valuechangeListener) {
     return Promise
       .all([
         this.inited,
@@ -630,11 +636,14 @@ export class EnketoService {
 
         $('form.or').trigger('beforesave');
 
-        if (docId) {
-          return this.update(docId);
-        }
-        return this.create(formInternalId);
-      })
+        return this.ngZone.runOutsideAngular(() => this._save(formInternalId, form, geoHandle, docId));
+      });
+  }
+
+  private _save(formInternalId, form, geoHandle, docId?) {
+    const promise = docId ? this.update(docId) : this.create(formInternalId);
+
+    return promise
       .then((doc) => {
         return this.xmlToDocs(doc, form.getDataStr({ irrelevant: false }));
       })

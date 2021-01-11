@@ -2,7 +2,6 @@ import {
   Component,
   EventEmitter,
   OnDestroy,
-  ChangeDetectorRef,
   Output,
   ViewChild,
   Input,
@@ -41,7 +40,6 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   constructor(
     private store:Store,
-    private cd: ChangeDetectorRef,
     private placeHierarchyService:PlaceHierarchyService,
     private translateService:TranslateService,
   ) {

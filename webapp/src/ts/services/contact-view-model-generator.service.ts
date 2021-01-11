@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import {
   groupBy as _groupBy,
@@ -37,16 +37,17 @@ import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 })
 export class ContactViewModelGeneratorService {
   constructor(
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private dbService: DbService,
-    private contactTypesService: ContactTypesService,
-    private translateService: TranslateService,
-    private searchService: SearchService,
-    private contactMutedService: ContactMutedService,
-    private getDataRecordsService: GetDataRecordsService,
+    private lineageModelGeneratorService:LineageModelGeneratorService,
+    private dbService:DbService,
+    private contactTypesService:ContactTypesService,
+    private translateService:TranslateService,
+    private searchService:SearchService,
+    private contactMutedService:ContactMutedService,
+    private getDataRecordsService:GetDataRecordsService,
+    private ngZone:NgZone,
   ){}
 
-  private primaryContactComparator (lhs, rhs){
+  private primaryContactComparator (lhs, rhs) {
     if (lhs.isPrimaryContact) {
       return -1;
     }
@@ -128,9 +129,9 @@ export class ContactViewModelGeneratorService {
     model.isPrimaryContact = immediateParent?.contact?._id === model.doc._id;
   }
 
-  private setMutedState = modelToMute => {
+  private setMutedState(modelToMute) {
     modelToMute.doc.muted = this.contactMutedService.getMuted(modelToMute.doc, modelToMute.lineage);
-  };
+  }
 
   // muted state is inherited, but only set when online via Sentinel transition
   private setChildrenMutedState(model, children) {
@@ -140,9 +141,9 @@ export class ContactViewModelGeneratorService {
     return children;
   }
 
-  private groupChildrenByType = children => {
+  private groupChildrenByType(children) {
     return _groupBy(children, child => child.doc.contact_type || child.doc.type);
-  };
+  }
 
   private addPrimaryContact(doc, children) {
     const contactId = doc && doc.contact && doc.contact._id;
@@ -240,6 +241,10 @@ export class ContactViewModelGeneratorService {
   }
 
   loadChildren(model, options?) {
+    return this.ngZone.runOutsideAngular(() => this._loadChildren(model, options));
+  }
+
+  private _loadChildren(model, options?) {
     const newModel = { ...model, children: [] };
     return this.contactTypesService
       .getAll()
@@ -312,7 +317,11 @@ export class ContactViewModelGeneratorService {
       });
   }
 
-  loadReports(model, forms) {
+  loadReports(mode, forms) {
+    return this.ngZone.runOutsideAngular(() => this._loadReports(mode, forms));
+  }
+
+  private _loadReports(model, forms) {
     const contacts = [ model.doc ];
     model.children.forEach(group => {
       if (group.type && group.type.person) {
@@ -335,15 +344,16 @@ export class ContactViewModelGeneratorService {
   }
 
   getContact(id, options?) {
+    return this.ngZone.runOutsideAngular(() => this._getContact(id, options));
+  }
+
+  private _getContact(id, options?) {
     return Promise
       .all([
         this.contactTypesService.getAll(),
         this.lineageModelGeneratorService.contact(id, options)
       ])
-      .then((results) => {
-        const types = results[0];
-        const model = results[1];
-
+      .then(([types, model]) => {
         this.setType(model, types);
         this.setPrimaryContact(model);
         this.setMutedState(model);

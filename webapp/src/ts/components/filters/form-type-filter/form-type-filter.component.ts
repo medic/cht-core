@@ -2,7 +2,6 @@ import {
   Component,
   EventEmitter,
   OnDestroy,
-  ChangeDetectorRef,
   Output,
   ViewChild,
   Input,
@@ -36,7 +35,6 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
   constructor(
     private store:Store,
-    private cd: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
   }
