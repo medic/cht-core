@@ -43,9 +43,7 @@ export class DbService {
   };
 
   private outOfZonePromise(fn, db) {
-    return (...args) => {
-      return this.ngZone.runOutsideAngular(() => fn.apply(db, args));
-    };
+    return (...args) => this.ngZone.runOutsideAngular(() => fn.apply(db, args));
   }
 
   private outOfZoneEventEmitter(fn, db) {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { isString } from 'lodash-es';
 
 import { FormatDataRecordService } from '@mm-services/format-data-record.service';
@@ -27,10 +27,15 @@ export class ReportViewModelGeneratorService {
     private getSubjectSummariesService:GetSubjectSummariesService,
     private getSummariesService:GetSummariesService,
     private lineageModelGeneratorService:LineageModelGeneratorService,
+    private ngZone:NgZone,
   ) {
   }
 
   get(report) {
+    return this.ngZone.runOutsideAngular(() => this._get(report));
+  }
+
+  private _get(report) {
     const id = isString(report) ? report : report._id;
     return this.lineageModelGeneratorService
       .report(id)
