@@ -72,7 +72,7 @@ module.exports = {
       .wait(
         EC.presenceOf(element),
         12000,
-        'Element taking too long to appear in the DOM.Let us retry'
+        'Element taking too long to appear in the DOM.Let us retry' + element.locator()
       )
       .then(() => {
         return element.getText().then(val => {
@@ -85,7 +85,7 @@ module.exports = {
           .wait(
             EC.visibilityOf(element),
             12000,
-            'Element taking too long to appear in the DOM. Giving up!'
+            'Element taking too long to appear in the DOM. Giving up!' + element.locator()
           )
           .then(() => {
             return element.getText().then(val => {
@@ -220,12 +220,12 @@ module.exports = {
 
   waitElementToBeVisible: (elm, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(EC.visibilityOf(elm), timeout);
+    browser.wait(EC.visibilityOf(elm), timeout, 'waitElementToBeVisible timed out looking for ' + elm.locator());
   },
 
   waitElementToBeClickable: (elm, timeout) => {
     timeout = timeout || 15000;
-    return browser.wait(EC.elementToBeClickable(elm), timeout);
+    return browser.wait(EC.elementToBeClickable(elm), timeout, 'waitElementToBeClickable timed out looking for '  + elm.locator());
   },
 
   waitElementToDisappear: (locator, timeout) => {
@@ -234,7 +234,7 @@ module.exports = {
       return element(locator)
         .isDisplayed()
         .then(presenceOfElement => !presenceOfElement);
-    }, timeout);
+    }, timeout, 'waitElementToDisappear timed out looking for '  + elm.locator());
   },
 
   waitElementToPresent: (elm, timeout) => {
