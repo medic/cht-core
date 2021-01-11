@@ -21,16 +21,16 @@ const options = {
 
 describe('Create user meta db : ', () => {
 
-  afterAll(done => {
+  afterAll(async done => {
     await commonElements.goToLoginPage();
     await loginPage.login(auth.username, auth.password);
     return Promise.all([
       utils.requestNative(`/_users/org.couchdb.user:${userName}`)
-        .then(doc => utils.request({
+        .then(doc => utils.requestNative({
           path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
           method: 'DELETE'
         })),
-      utils.revertDb(),
+      utils.revertDbNative(),
       utils.requestNative({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'
@@ -40,7 +40,7 @@ describe('Create user meta db : ', () => {
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(utils.afterEach);
+  afterEach(utils.afterEachNative);
 
   it('should allow a new user to read/write from meta db', async () => {
     await usersPage.openAddUserModal();
@@ -49,7 +49,7 @@ describe('Create user meta db : ', () => {
     await browser.waitForAngular();
     await commonElements.goToLoginPage();
     await loginPage.login(userName, password, false);
-    await commonElements.calm();
+    await commonElements.calmNative();
 
     const doc = { _id: userName };
     const postData = doc;
