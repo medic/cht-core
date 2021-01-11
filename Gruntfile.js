@@ -997,6 +997,12 @@ module.exports = function(grunt) {
     'exec:clean-test-database',
   ]);
 
+  grunt.registerTask('e2e-disabled', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
+    'protractor:e2e-disable-control-flow',
+    'exec:clean-test-database',
+  ]);
+
   grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
     'e2e-deploy',
     'protractor:e2e-tests-debug',
