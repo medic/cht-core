@@ -1136,8 +1136,4 @@ module.exports = function(grunt) {
   grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
     'jsdoc'
   ]);
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> added grunt changes, script changes and the conf file for disabled control flow
