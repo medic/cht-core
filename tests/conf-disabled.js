@@ -22,8 +22,16 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      'e2e/create-meta-db.js',
-      'e2e/login/login.specs.js'
+      '**/login.spec.js',
+      '**/report-date-filter.js',
+      '**/sentinel/queue.spec.js',
+      '**/docs-by-replication-key-view.js',
+      '**/api/routing.js',
+      '**/infodocs.js',
+      '**/common.specs.js',
+      '**/content-security-policy.js',
+      '**/message_duplicates.spec.js',
+      '**/api/server.js',
     ],
     // performance: 'performance/**/*.js'
   },
@@ -35,10 +43,14 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
+<<<<<<< HEAD
       args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
       prefs: {
         intl: { accept_languages: 'en-US' },
       },
+=======
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
     }
   },
   jasmineNodeOpts: {
@@ -101,17 +113,28 @@ const prepServices = async () => {
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
     // that the service processes get restarted with their logs separated and pointing to the
     // correct logs for testing
+<<<<<<< HEAD
     await listenForApi();
     console.log('Horti booted API, rebooting under our logging structure');
     apiReady = await request.post('http://localhost:31337/all/restart');
+=======
+    apiReady = listenForApi()
+      .then(() => console.log('Horti booted API, rebooting under our logging structure'))
+      .then(() => request.post('http://localhost:31337/all/restart'));
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
   } else {
     // Locally we just need to start them and can do so straight away
     apiReady = await request.post('http://localhost:31337/all/start');
   }
 
   await listenForApi();
+<<<<<<< HEAD
   await runAndLog('Settings setup', setupSettings);
   await runAndLog('User contact doc setup', utils.setUserContactDocNative);
+=======
+  await runAndLog('Settings setup', setupSettings)
+  await runAndLog('User contact doc setup', utils.setUserContactDoc);
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
   return apiReady;
 };
 
@@ -121,18 +144,37 @@ const apiRetry = () => {
       resolve(listenForApi());
     }, 1000);
   });
+<<<<<<< HEAD
 };
+=======
+}
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
 
 const listenForApi = async () => {
   console.log('Checking API');
   try {
+<<<<<<< HEAD
     const result =  await utils.requestNative({ path: '/api/info' });
+=======
+    const result =  await utils.request({ path: '/api/info' });
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
     return result;
   } catch(err) {
     console.log('API check failed, trying again in 1 second');
     console.log(err.message);
     await apiRetry();
   }
+<<<<<<< HEAD
+=======
+  // return utils.request({ path: '/api/info' }).catch(() => {
+  //   console.log('API check failed, trying again in 1 second');
+  //   return new Promise(resolve => {
+  //     setTimeout(() => {
+  //       resolve(listenForApi());
+  //     }, 1000);
+  //   });
+  // });
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
 };
 
 const getLoginUrl = () => {
@@ -161,7 +203,11 @@ const setupSettings = () => {
   const defaultAppSettings = utils.getDefaultSettings();
   defaultAppSettings.transitions = {};
 
+<<<<<<< HEAD
   return utils.requestNative({
+=======
+  return utils.request({
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: defaultAppSettings
@@ -170,11 +216,19 @@ const setupSettings = () => {
 
 const setupUser = () => {
   return utils
+<<<<<<< HEAD
     .getDocNative('org.couchdb.user:' + auth.username)
     .then(doc => {
       doc.contact_id = constants.USER_CONTACT_ID;
       doc.language = 'en';
       return utils.saveDocNative(doc);
+=======
+    .getDoc('org.couchdb.user:' + auth.username)
+    .then(doc => {
+      doc.contact_id = constants.USER_CONTACT_ID;
+      doc.language = 'en';
+      return utils.saveDoc(doc);
+>>>>>>> added grunt changes, script changes and the conf file for disabled control flow
     })
     .then(() => utils.refreshToGetNewSettings())
     .then(() => utils.closeTour());
