@@ -61,19 +61,23 @@ export class ContactsEffects {
       ofType(ContactActionList.setSelectedContact),
       withLatestFrom(
         this.store.pipe(select(Selectors.getSelectedContact)),
-        this.store.pipe(select(Selectors.getUsersHomePlaceId)),
+        this.store.pipe(select(Selectors.getUserFacilityId)),
       ),
-      exhaustMap(([{ payload: { selected } }, previousSelectedContact, usersHomePlaceId]) => {
+      exhaustMap(([{ payload: { selected } }, previousSelectedContact, userFacilityId]) => {
         if (!selected) {
           return []; // return an empty stream if there is no selected contact
         }
+
         const refreshing = previousSelectedContact?.doc?._id === selected?.doc?._id ;
         this.globalActions.settingSelected(refreshing);
         this.globalActions.clearCancelCallback();
-        const getChildPlaces = !usersHomePlaceId || usersHomePlaceId !== selected?.doc?._id;
+
+        const getChildPlaces = userFacilityId !== selected?.doc?._id;
         const options = { getChildPlaces };
+
         const title = (selected.type && selected.type.name_key) || 'contact.profile';
         this.globalActions.setTitle(this.translateService.instant(title));
+        
         return from(this.contactViewModelGeneratorService.loadChildren(previousSelectedContact, options)).pipe(
           map(children => {
             return this.contactsActions.receiveSelectedContactChildren(children);

@@ -33,6 +33,7 @@ export const Selectors = {
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
   getUnreadCount: createSelector(getGlobalState, (globalState) => globalState.unreadCount),
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
+  getUserFacilityId: createSelector(getGlobalState, (globalState) => globalState.userFacilityId),
 
   // enketo
   getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
@@ -92,7 +93,6 @@ export const Selectors = {
     (contactsState) => contactsState.loadingSelectedReports
   ),
   getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.loadingSummary),
-  getUsersHomePlaceId: createSelector(getContactsState, (contactsState) => contactsState.usersHomePlaceId),
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 

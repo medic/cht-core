@@ -9,7 +9,6 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Component({
   selector: 'contacts-content',
@@ -29,7 +28,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   reportsTimeWindowMonths;
   taskEndDate;
   tasksTimeWindowWeeks;
-  usersHomePlaceId;
+  userFacilityId;
 
   constructor(
     private store: Store,
@@ -37,38 +36,34 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private router: Router,
     private changesService: ChangesService,
     private contactChangeFilterService: ContactChangeFilterService,
-    private userSettingsService: UserSettingsService,
   ){
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
   }
 
   ngOnInit() {
-    this.getHomePlaceId();
     this.subscribeToStore();
     this.subscribeToRoute();
     this.subscribeToChanges();
     this.setReportsTimeWindowMonths(3);
     this.setTasksTimeWindowWeeks(1);
+    this.getUserFacility();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
-  getHomePlaceId() {
-    this.userSettingsService
-      .get()
-      .then((user:any) => {
-        this.usersHomePlaceId = user?.facility_id;
-        if (this.usersHomePlaceId) {
-          this.contactsActions.setUsersHomePlaceId(this.usersHomePlaceId);
-          this.contactsActions.selectContact(this.usersHomePlaceId);
+  getUserFacility() {
+    const facilitySubscription = combineLatest(
+      this.store.select(Selectors.getUserFacilityId))
+      .subscribe(([userFacilityId]) => {
+        this.userFacilityId = userFacilityId;
+        if (this.userFacilityId && !this.route.snapshot.params.id) {
+          this.contactsActions.selectContact(this.userFacilityId);
         }
-      })
-      .catch((err) => {
-        console.error('Error fetching user settings', err);
       });
+    this.subscription.add(facilitySubscription);
   }
 
   subscribeToStore() {
@@ -78,7 +73,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
-      this.store.select(Selectors.getContactsLoadingSummary),
+      this.store.select(Selectors.getContactsLoadingSummary), 
     ).subscribe(([
       selectedContact,
       selectedContactChildren,

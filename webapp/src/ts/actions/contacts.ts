@@ -14,7 +14,6 @@ export const Actions = {
   updateSelectedContactSummary: createSingleValueAction('UPDATE_SELECTED_CONTACT_SUMMARY', 'summary'),
   updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
   receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
-  setUsersHomePlaceId:createSingleValueAction('SET_USERS_HOME_PLACE_ID', 'usersHomePlaceId'),
 };
 
 export class ContactsActions {
@@ -72,9 +71,6 @@ export class ContactsActions {
 
   receiveSelectedContactTargetDoc(targetDoc) {
     return this.store.dispatch(Actions.receiveSelectedContactTargetDoc(targetDoc));
-  } 
-  setUsersHomePlaceId(usersHomePlaceId) {
-    return this.store.dispatch(Actions.setUsersHomePlaceId(usersHomePlaceId));
   }
 
   // const translateTitle = (key, label) => {
