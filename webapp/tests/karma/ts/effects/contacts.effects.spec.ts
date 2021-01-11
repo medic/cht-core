@@ -185,7 +185,7 @@ describe('Contacts effects', () => {
     }));
 
     it('should not load children if home place selected', fakeAsync(() => {
-      store.overrideSelector(Selectors.getUsersHomePlaceId, 'contactid');
+      store.overrideSelector(Selectors.getUserFacilityId, 'contactid');
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
       effects.setSelectedContact.subscribe();
       flush();
@@ -195,7 +195,7 @@ describe('Contacts effects', () => {
     }));
 
     it('should load children if selected contact is not home place', fakeAsync(() => {
-      store.overrideSelector(Selectors.getUsersHomePlaceId, 'homleplace');
+      store.overrideSelector(Selectors.getUserFacilityId, 'homleplace');
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
       effects.setSelectedContact.subscribe();
       flush();

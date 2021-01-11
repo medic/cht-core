@@ -72,7 +72,7 @@ export class ContactsEffects {
         this.globalActions.settingSelected(refreshing);
         this.globalActions.clearCancelCallback();
 
-        const getChildPlaces = userFacilityId !== selected?.doc?._id;
+        const getChildPlaces = !userFacilityId || userFacilityId !== selected?.doc?._id;
         const options = { getChildPlaces };
 
         const title = (selected.type && selected.type.name_key) || 'contact.profile';
