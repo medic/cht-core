@@ -106,9 +106,11 @@ module.exports = {
   },
 
   goToLoginPageNative: async () => {
+    console.log('go to login');
     await browser.manage().deleteAllCookies();
     await browser.driver.get(await utils.getLoginUrl());
     await browser.driver.get(await utils.getLoginUrl());
+    console.log('go to login fin');
   },
 
   goToMessages: () => {
