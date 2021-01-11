@@ -138,14 +138,6 @@ const listenForApi = async () => {
     console.log(err.message);
     await apiRetry();
   }
-  // return utils.request({ path: '/api/info' }).catch(() => {
-  //   console.log('API check failed, trying again in 1 second');
-  //   return new Promise(resolve => {
-  //     setTimeout(() => {
-  //       resolve(listenForApi());
-  //     }, 1000);
-  //   });
-  // });
 };
 
 const getLoginUrl = () => {
