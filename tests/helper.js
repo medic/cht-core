@@ -268,7 +268,7 @@ module.exports = {
     );
   },
   waitUntilReadyNative: elm => {
-    return  browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+    return  browser.wait(EC.visibilityOf(elm), 10000, 'Element not present in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
 };
