@@ -22,7 +22,7 @@ const changeLocale = locale => {
 
 module.exports = {
   login: async (username, password, shouldFail, locale) => {
-    await helper.waitUntilReadyNative(getUsernameField());
+    await helper.waitUntilReady(getUsernameField());
     await getUsernameField().clear();
     await getPasswordField().clear();
     await getUsernameField().sendKeys(username);
@@ -35,7 +35,8 @@ module.exports = {
     }
   },
   loginNative: async (username, password, shouldFail, locale) => {
-    await helper.waitUntilReadyNative(getUsernameField());
+    console.log('login native');
+    await helper.waitUntilReadyNative(await getUsernameField());
     await getUsernameField().clear();
     await getPasswordField().clear();
     await getUsernameField().sendKeys(username);

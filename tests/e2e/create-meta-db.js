@@ -51,11 +51,13 @@ describe('Create user meta db : ', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(userName, password, false);
     await commonElements.calmNative();
+    console.log('calmed');
 
     const doc = { _id: userName };
     const postData = doc;
 
     await browser.wait(() => {
+      console.log('first request');
       return utils.requestOnTestMetaDbNative(_.defaults({
         method: 'POST',
         body: postData
@@ -63,6 +65,7 @@ describe('Create user meta db : ', () => {
     });
 
     await browser.wait(() => {
+      console.log('second request');
       return utils.requestOnTestMetaDbNative(_.defaults({
         path: '/_changes'
       }, options)).then(response => {
