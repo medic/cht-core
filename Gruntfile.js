@@ -473,15 +473,6 @@ module.exports = function(grunt) {
         ].join('&& '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
-<<<<<<< HEAD
-=======
-      'sleep': {
-        cmd: [
-          'sleep 30',
-        ].join('&& '),
-        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
-      },
->>>>>>> added grunt changes, script changes and the conf file for disabled control flow
       'clean-test-database': {
         cmd: [
           'docker stop e2e-couchdb'
@@ -519,6 +510,10 @@ module.exports = function(grunt) {
           './node_modules/.bin/webdriver-manager update && ' +
           './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
+      },
+      'kill-e2e-servers': {
+        cmd: 'lsof -ti tcp:4988 | xargs kill & lsof -ti tcp:31337 | xargs kill',
+        exitCodes: [0, 123]
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
@@ -977,16 +972,15 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:kill-e2e-servers',
     'e2e-deploy',
     'protractor:e2e-tests',
-<<<<<<< HEAD
   ]);
 
   grunt.registerTask('e2e-disabled', 'Deploy app for testing and run e2e tests', [
-=======
     'exec:wait_for_api_down',
     'exec:sleep',
->>>>>>> added grunt changes, script changes and the conf file for disabled control flow
+    'exec:kill-e2e-servers',
     'e2e-deploy',
     'protractor:e2e-disable-control-flow',
     'exec:clean-test-database',
@@ -1076,6 +1070,7 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-tests',
     'exec:wait_for_api_down',
+    'exec:kill-e2e-servers',
     // Adding a wait to ensure the api port opens and process closes 
     'exec:sleep',
     'exec:e2e-servers',
