@@ -741,6 +741,7 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: done => {
+    
     return revertDb()
       .then(() => {
         if (done) {
@@ -796,7 +797,7 @@ module.exports = {
       .then(() => {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
-        }, 10000);
+        }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
 
