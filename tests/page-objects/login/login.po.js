@@ -1,4 +1,5 @@
 const helper = require('../../helper');
+const utils = require('../../utils');
 
 const incorrectCredentialsText =
   'Incorrect user name or password. Please try again.';
@@ -22,6 +23,7 @@ const changeLocale = locale => {
 
 module.exports = {
   login: async (username, password, shouldFail, locale) => {
+    utils.deprecated('login','loginNative');
     await helper.waitUntilReady(await getUsernameField());
     await getUsernameField().clear();
     await getPasswordField().clear();
@@ -34,4 +36,17 @@ module.exports = {
       expect(await helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
   },
+  loginNative: async (username, password, shouldFail, locale) => {
+    await helper.waitUntilReady(await getUsernameField());
+    await getUsernameField().clear();
+    await getPasswordField().clear();
+    await getUsernameField().sendKeys(username);
+    await getPasswordField().sendKeys(password);
+    await changeLocale(locale);
+    await getLoginButton().click();
+    await browser.waitForAngular();
+    if (shouldFail) {
+      expect(await helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
+    }
+  }
 };

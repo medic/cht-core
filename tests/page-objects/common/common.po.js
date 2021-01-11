@@ -30,11 +30,20 @@ const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 
 module.exports = {
   calm: async () => {
+    utils.deprecated('calm','calmNative');
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
     // await helper.waitElementToDisappear(bootstrapperSelector);
     await helper.waitUntilReady(medicLogo);
+  },
+
+  calmNative: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReadyNative(medicLogo);
   },
 
   checkAbout: () => {
@@ -92,7 +101,13 @@ module.exports = {
     browser.get(utils.getAdminBaseUrl());
   },
 
-  goToLoginPage: async () => {
+  goToLoginPage: () => {
+    utils.deprecated('goToLoginPage','goToLoginPageNative');
+    browser.manage().deleteAllCookies();
+    browser.driver.get(utils.getLoginUrl());
+  },
+
+  goToLoginPageNative: async () => {
     await browser.manage().deleteAllCookies();
     await browser.driver.get(utils.getLoginUrl());
   },

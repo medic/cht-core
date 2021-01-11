@@ -1,4 +1,5 @@
 const fs = require('fs');
+const utils = require('./utils');
 const EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
@@ -261,6 +262,13 @@ module.exports = {
     }, 10000);
   },
   waitUntilReady: elm => {
+    utils.deprecated('waitUntilReady','waitUntilReadyNative');
+    return (
+      browser.wait(() => elm.isPresent(), 10000) &&
+      browser.wait(() => elm.isDisplayed(), 12000)
+    );
+  },
+  waitUntilReadyNative: elm => {
     return  browser.wait(EC.visibilityOf(elm), 10000, 'Element not present in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
