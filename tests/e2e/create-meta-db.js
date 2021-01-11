@@ -22,16 +22,16 @@ const options = {
 describe('Create user meta db : ', () => {
 
   afterAll(done => {
-    commonElements.goToLoginPage();
-    loginPage.login(auth.username, auth.password);
+    await commonElements.goToLoginPage();
+    await loginPage.login(auth.username, auth.password);
     return Promise.all([
-      utils.request(`/_users/org.couchdb.user:${userName}`)
+      utils.requestNative(`/_users/org.couchdb.user:${userName}`)
         .then(doc => utils.request({
           path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
           method: 'DELETE'
         })),
       utils.revertDb(),
-      utils.request({
+      utils.requestNative({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'
       })
@@ -55,14 +55,14 @@ describe('Create user meta db : ', () => {
     const postData = doc;
 
     await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
+      return utils.requestOnTestMetaDbNative(_.defaults({
         method: 'POST',
         body: postData
       }, options));
     });
 
     await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
+      return utils.requestOnTestMetaDbNative(_.defaults({
         path: '/_changes'
       }, options)).then(response => {
         const changes = response.results;
