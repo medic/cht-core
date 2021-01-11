@@ -22,7 +22,7 @@ const options = {
 describe('Create user meta db : ', () => {
 
   afterAll(async done => {
-    await commonElements.goToLoginPage();
+    await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
     return Promise.all([
       utils.requestNative(`/_users/org.couchdb.user:${userName}`)
@@ -43,18 +43,22 @@ describe('Create user meta db : ', () => {
   afterEach(utils.afterEachNative);
 
   it('should allow a new user to read/write from meta db', async () => {
+    console.log('in test');
     await usersPage.openAddUserModal();
     await addUserModal.fillForm(userName, fullName, password);
     await addUserModal.submit();
     await browser.waitForAngular();
-    await commonElements.goToLoginPage();
-    await loginPage.login(userName, password, false);
+    await commonElements.goToLoginPageNative();
+    console.log('login');
+    await loginPage.loginNative(userName, password, false);
     await commonElements.calmNative();
+    console.log('calmed');
 
     const doc = { _id: userName };
     const postData = doc;
 
     await browser.wait(() => {
+      console.log('first request');
       return utils.requestOnTestMetaDbNative(_.defaults({
         method: 'POST',
         body: postData
@@ -62,6 +66,7 @@ describe('Create user meta db : ', () => {
     });
 
     await browser.wait(() => {
+      console.log('second request');
       return utils.requestOnTestMetaDbNative(_.defaults({
         path: '/_changes'
       }, options)).then(response => {
