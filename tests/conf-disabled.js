@@ -106,7 +106,7 @@ const prepServices = async () => {
   }
 
   await listenForApi();
-  await runAndLog('Settings setup', setupSettings)
+  await runAndLog('Settings setup', setupSettings);
   await runAndLog('User contact doc setup', utils.setUserContactDocNative);
   return apiReady;
 };
@@ -117,7 +117,7 @@ const apiRetry = () => {
       resolve(listenForApi());
     }, 1000);
   });
-}
+};
 
 const listenForApi = async () => {
   console.log('Checking API');
