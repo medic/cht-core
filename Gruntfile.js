@@ -979,10 +979,12 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:kill-e2e-servers',
     'e2e-deploy',
     'protractor:e2e-tests',
     'exec:wait_for_api_down',
     'exec:sleep',
+    'exec:kill-e2e-servers',
     'e2e-deploy',
     'protractor:e2e-disable-control-flow',
     'exec:clean-test-database',
@@ -1072,6 +1074,7 @@ module.exports = function(grunt) {
     'exec:e2e-servers',
     'protractor:e2e-tests',
     'exec:wait_for_api_down',
+    'exec:kill-e2e-servers',
     // Adding a wait to ensure the api port opens and process closes 
     'exec:sleep',
     'exec:e2e-servers',
