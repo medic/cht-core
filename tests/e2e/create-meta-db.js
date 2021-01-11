@@ -23,7 +23,7 @@ describe('Create user meta db : ', () => {
 
   afterAll(async done => {
     await commonElements.goToLoginPage();
-    await loginPage.login(auth.username, auth.password);
+    await loginPage.loginNative(auth.username, auth.password);
     return Promise.all([
       utils.requestNative(`/_users/org.couchdb.user:${userName}`)
         .then(doc => utils.requestNative({
