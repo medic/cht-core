@@ -117,7 +117,7 @@ const apiRetry = () => {
       resolve(listenForApi());
     }, 1000);
   });
-}
+};
 
 const listenForApi = async () => {
   console.log('Checking API');
