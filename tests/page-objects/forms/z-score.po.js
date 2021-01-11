@@ -147,9 +147,9 @@ module.exports = {
     utils.seedTestData(done, userContactDoc, docs);
   },
 
-  load: () => {
-    common.goToReports();
-    browser.wait(() => {
+  load: async () => {
+    await common.goToReportsNative();
+    await browser.wait(() => {
       return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
     }, 10000);
 
@@ -168,11 +168,11 @@ module.exports = {
     }, 10000);
   },
 
-  submit: () => {
-    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
-    helper.waitElementToBeClickable(submitButton);
-    submitButton.click();
-    helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+  submit: async () => {
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    await helper.waitElementToBeClickable(submitButton);
+    await submitButton.click();
+    await helper.waitElementToBeVisible(element(by.css('div#reports-content')));
   },
 
   reset: () => {

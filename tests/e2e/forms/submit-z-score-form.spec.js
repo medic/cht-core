@@ -63,28 +63,28 @@ describe('Submit Z-Score form', () => {
     expect(ZScoreForm.getWeightForHeight()).toEqual('4');
   });
 
-  it('saves z-score values', () => {
-    ZScoreForm.load();
+  it('saves z-score values', async () => {
+    await ZScoreForm.load();
 
-    ZScoreForm.setPatient({ sex: 'female', height: 45.1, weight: 3, age: 2 });
-    browser.sleep(100);
+    await ZScoreForm.setPatient({ sex: 'female', height: 45.1, weight: 3, age: 2 });
+    await browser.sleep(100);
 
-    expect(ZScoreForm.getHeightForAge()).toEqual('-2.346895074946466');
-    expect(ZScoreForm.getWeightForAge()).toEqual('-0.4708520179372194');
-    expect(ZScoreForm.getWeightForHeight()).toEqual('2.0387096774193547');
+    expect(await ZScoreForm.getHeightForAge()).toEqual('-2.346895074946466');
+    expect(await ZScoreForm.getWeightForAge()).toEqual('-0.4708520179372194');
+    expect(await ZScoreForm.getWeightForHeight()).toEqual('2.0387096774193547');
 
-    ZScoreForm.submit();
+    await ZScoreForm.submit();
 
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(1) p')))).toEqual('45.1');
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(2) p')))).toEqual('3');
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(3) p')))).toEqual('female');
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(4) p')))).toEqual('2');
+    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(1) p')))).toEqual('45.1');
+    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(2) p')))).toEqual('3');
+    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(3) p')))).toEqual('female');
+    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(4) p')))).toEqual('2');
 
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(5) p'))))
+    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(5) p'))))
       .toEqual('2.0387096774193547');
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(6) p'))))
+    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(6) p'))))
       .toEqual('-0.4708520179372194');
-    expect(helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(7) p'))))
+    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(7) p'))))
       .toEqual('-2.346895074946466');
   });
 });
