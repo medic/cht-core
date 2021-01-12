@@ -97,9 +97,9 @@ const prepServices = async () => {
     // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
     // that the service processes get restarted with their logs separated and pointing to the
     // correct logs for testing
-    apiReady = listenForApi()
-      .then(() => console.log('Horti booted API, rebooting under our logging structure'))
-      .then(() => request.post('http://localhost:31337/all/restart'));
+    await listenForApi();
+    console.log('Horti booted API, rebooting under our logging structure');
+    apiReady = await request.post('http://localhost:31337/all/restart');
   } else {
     // Locally we just need to start them and can do so straight away
     apiReady = await request.post('http://localhost:31337/all/start');
