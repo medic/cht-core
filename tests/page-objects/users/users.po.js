@@ -25,8 +25,6 @@ module.exports = {
   },
 
   openAddUserModal: () => {
-    const EC = protractor.ExpectedConditions;
-    browser.wait(EC.textToBePresentInElementValue($('.loading-status'), 'No messages found'), 20000);
     browser.get(utils.getAdminBaseUrl() + 'users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
@@ -36,7 +34,7 @@ module.exports = {
     helper.waitUntilReady(getAddUserButton());
     return element.all(by.repeater('user in users'));
   },
-  
+
   expectUser: (number,name,fullname) => {
     helper.waitUntilReady(getAddUserButton());
     helper.waitUntilReady(element(by.css('.container-fluid')));

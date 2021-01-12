@@ -15,7 +15,7 @@ const waitForLoaderToDisappear = () => {
 };
 
 describe('Add user  : ', () => {
-
+  beforeEach(utils.beforeEach);
   afterAll(done =>
     utils.request(`/_users/${addedUser}`)
       .then(doc => utils.request({
@@ -25,8 +25,9 @@ describe('Add user  : ', () => {
       .catch(() => {}) // If this fails we don't care
       .then(() => utils.afterEach(done)));
 
-  fit('should add user with valid password', () => {
-    //browser.sleep(10000);
+  it('should add user with valid password', () => {
+    helper.handleUpdateModal();
+    waitForLoaderToDisappear();
     usersPage.openAddUserModal();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
