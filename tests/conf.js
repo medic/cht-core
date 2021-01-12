@@ -33,7 +33,7 @@ const baseConfig = {
       '**/message_duplicates.spec.js',
       '**/api/server.js',
       'tests/e2e/reports-subject.js',
-       'tests/e2e/create-meta-db.js',
+      'tests/e2e/create-meta-db.js',
     ],
     // performance: 'performance/**/*.js'
   },
