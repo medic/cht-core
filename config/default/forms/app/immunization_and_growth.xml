@@ -719,6 +719,9 @@
           <text id="/immunization_and_growth/inputs/contact/patient_id:label">
             <value>Medic ID</value>
           </text>
+          <text id="/immunization_and_growth/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
           <text id="/immunization_and_growth/inputs/contact:label">
             <value>Contact</value>
           </text>
@@ -1548,6 +1551,9 @@
           <text id="/immunization_and_growth/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/inputs/contact:label">
             <value>-</value>
           </text>
@@ -1579,6 +1585,9 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/patient_id:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_name:label">
@@ -2411,6 +2420,9 @@
           <text id="/immunization_and_growth/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/inputs/contact:label">
             <value>-</value>
           </text>
@@ -2442,6 +2454,9 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/patient_id:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_name:label">
@@ -3274,6 +3289,9 @@
           <text id="/immunization_and_growth/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/inputs/contact:label">
             <value>-</value>
           </text>
@@ -3305,6 +3323,9 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/patient_id:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_name:label">
@@ -4137,6 +4158,9 @@
           <text id="/immunization_and_growth/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/inputs/contact:label">
             <value>-</value>
           </text>
@@ -4168,6 +4192,9 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/patient_id:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/patient_name:label">
@@ -4275,7 +4302,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-11_15-10">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-12_14-43">
           <inputs>
             <meta>
               <location>
@@ -4289,8 +4316,9 @@
             <source_id/>
             <contact>
               <_id/>
-              <date_of_birth>0</date_of_birth>
               <patient_id/>
+              <date_of_birth>0</date_of_birth>
+              <sex/>
               <name/>
               <parent>
                 <_id/>
@@ -4305,7 +4333,6 @@
               </parent>
             </contact>
           </inputs>
-          <patient_name/>
           <patient_age_in_years tag="hidden">0</patient_age_in_years>
           <patient_age_in_months tag="hidden">0</patient_age_in_months>
           <patient_age_in_days tag="hidden"/>
@@ -4316,7 +4343,9 @@
           <tomorrow_apt/>
           <developmental_apt_date/>
           <missed_vaccine_apt/>
+          <patient_name/>
           <missed_vaccine_apt_date/>
+          <patient_id/>
           <g_vaccines>
             <attend_clinic/>
           </g_vaccines>
@@ -4465,15 +4494,15 @@
       <bind nodeset="/immunization_and_growth/inputs/source" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/source_id" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/_id" type="db:person"/>
-      <bind nodeset="/immunization_and_growth/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/immunization_and_growth/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/immunization_and_growth/inputs/contact/sex" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/name" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/parent/_id" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/parent/name" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/immunization_and_growth/inputs/contact/parent/parent/parent/_id" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/immunization_and_growth/patient_name" type="string"/>
       <bind calculate="floor( difference-in-months(  /immunization_and_growth/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/immunization_and_growth/patient_age_in_years" type="string"/>
       <bind calculate="difference-in-months(  /immunization_and_growth/inputs/contact/date_of_birth , today() )" nodeset="/immunization_and_growth/patient_age_in_months" type="string"/>
       <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /immunization_and_growth/inputs/contact/date_of_birth ) )" nodeset="/immunization_and_growth/patient_age_in_days" type="string"/>
@@ -4505,7 +4534,9 @@ concat( /immunization_and_growth/patient_age_in_years , ' years old')))" nodeset
  selected( /immunization_and_growth/g_missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_accompany')
  ,&quot;yes&quot;, &quot;no&quot;
  )" nodeset="/immunization_and_growth/missed_vaccine_apt" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/immunization_and_growth/patient_name" type="string"/>
       <bind calculate="format-date-time(date-time(floor(decimal-date-time( /immunization_and_growth/g_missed_vaccine_details/missed_vaccine_date )) + 3), &quot;%Y-%m-%d&quot;)" nodeset="/immunization_and_growth/missed_vaccine_apt_date" relevant="selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/immunization_and_growth/patient_id" type="string"/>
       <bind nodeset="/immunization_and_growth/g_vaccines/attend_clinic" required="true()" type="select1"/>
       <bind nodeset="/immunization_and_growth/g_clinic/vaccines" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')" required="true()" type="select"/>
       <bind nodeset="/immunization_and_growth/g_bch" relevant="selected( /immunization_and_growth/g_clinic/vaccines , 'bcg')"/>
@@ -4643,7 +4674,7 @@ selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
       <label ref="jr:itext('/immunization_and_growth/inputs:label')"/>
       <group ref="/immunization_and_growth/inputs/contact">
         <label ref="jr:itext('/immunization_and_growth/inputs/contact:label')"/>
-        <input appearance="db-object" ref="/immunization_and_growth/inputs/contact/_id">
+        <input ref="/immunization_and_growth/inputs/contact/_id">
           <label ref="jr:itext('/immunization_and_growth/inputs/contact/_id:label')"/>
           <hint ref="jr:itext('/immunization_and_growth/inputs/contact/_id:hint')"/>
         </input>

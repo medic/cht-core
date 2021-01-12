@@ -51,17 +51,23 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
 module.exports = [
 
   // MNCH Immunization and Growth follow up for Deworming
-  // todo - this doesn't seem to work
+  // todo - fix todos, figure better testing to verify works as expected
   {
     name: 'immunization_growth_follow_up',
     icon: 'icon-people-children',
-    title: 'task.immunization_growth_follow_up',
+    title: 'immunization growth follow up - deworming', // todo - finalize title
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
     appliesIf: function(contact, report) {
-      console.log(JSON.stringify(report.fields)); // todo remove debug
-      console.log(JSON.stringify(report.fields.deworm_next_date)); // todo remove debug
-      return report && report.fields.deworm_next_date && parseInt(report.fields.deworm_next_date)  > 0;
+      if(report && report.fields.g_deworming) {
+        console.log(
+          'report.fields.g_deworming.deworm_next_date: ' +
+          JSON.stringify(report.fields.g_deworming.deworm_next_date)); // todo remove debug
+        console.log('parseInt(report.fields.g_deworming.deworm_next_date): ' +
+          parseInt(report.fields.g_deworming.deworm_next_date)
+        ); // todo remove debug. parseInt() evals a date to 2021 (year).  That the right check?
+      }
+      return report && report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
     },
     actions: [
       {

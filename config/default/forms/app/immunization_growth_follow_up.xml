@@ -148,6 +148,9 @@
           <text id="/immunization_growth_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/immunization_growth_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_growth_follow_up/patient_name:label">
             <value>../inputs/contact/name</value>
           </text>
@@ -220,6 +223,9 @@
             <value>-</value>
           </text>
           <text id="/immunization_growth_follow_up/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/patient_id:label">
             <value>-</value>
           </text>
           <text id="/immunization_growth_follow_up/patient_name:label">
@@ -296,6 +302,9 @@
           <text id="/immunization_growth_follow_up/inputs:label">
             <value>./source = 'user'</value>
           </text>
+          <text id="/immunization_growth_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_growth_follow_up/patient_name:label">
             <value>-</value>
           </text>
@@ -370,13 +379,16 @@
           <text id="/immunization_growth_follow_up/inputs:label">
             <value>field-list</value>
           </text>
+          <text id="/immunization_growth_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_growth_follow_up/patient_name:label">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <immunization_growth_follow_up delimiter="#" id="immunization_growth_follow_up" prefix="J1!immunization_growth_follow_up!" version="2021-01-11_16-19">
+        <immunization_growth_follow_up delimiter="#" id="immunization_growth_follow_up" prefix="J1!immunization_growth_follow_up!" version="2021-01-12_15-39">
           <inputs>
             <meta>
               <location>
@@ -405,6 +417,7 @@
               </parent>
             </contact>
           </inputs>
+          <patient_id/>
           <patient_name/>
           <group_assessment>
             <location/>
@@ -427,6 +440,7 @@
       <bind nodeset="/immunization_growth_follow_up/inputs/contact/parent/parent/name" type="string"/>
       <bind nodeset="/immunization_growth_follow_up/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/immunization_growth_follow_up/inputs/contact/parent/parent/parent/_id" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/immunization_growth_follow_up/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/immunization_growth_follow_up/patient_name" type="string"/>
       <bind nodeset="/immunization_growth_follow_up/group_assessment/location" required="true()" type="select1"/>
       <bind nodeset="/immunization_growth_follow_up/group_assessment/clinic" required="true()" type="select1"/>
