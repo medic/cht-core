@@ -26,6 +26,7 @@ angular.module('inboxControllers').controller('AboutCtrl',
     const unsubscribe = $ngRedux.connect(mapStateToTarget)(ctrl);
 
     ctrl.userCtx = Session.userCtx();
+    ctrl.url = $window.location.hostname;
 
     ResourceIcons.getDocResources('partners').then(partners => {
       ctrl.partners = partners;

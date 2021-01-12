@@ -37,6 +37,7 @@ describe('AboutCtrl controller', () => {
         $interval: $interval,
         $log: { error: sinon.stub() },
         $scope: scope,
+        $window: { location: { hostname: 'server.medic.io' } },
         DB: sinon.stub().returns(DB),
         Session,
         ResourceIcons,
@@ -60,6 +61,7 @@ describe('AboutCtrl controller', () => {
         chai.expect(ctrl.version).to.equal('3.5.0');
         chai.expect(ctrl.localRev).to.equal('12');
         chai.expect(ctrl.remoteRev).to.equal('15');
+        chai.expect(ctrl.url).to.equal('server.medic.io');
       });
     });
   });
