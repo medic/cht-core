@@ -56,7 +56,6 @@ describe('Create user meta db : ', () => {
     const postData = doc;
 
     await browser.wait(() => {
-      console.log('first request');
       return utils.requestOnTestMetaDbNative(_.defaults({
         method: 'POST',
         body: postData
@@ -64,7 +63,6 @@ describe('Create user meta db : ', () => {
     });
 
     await browser.wait(() => {
-      console.log('second request');
       return utils.requestOnTestMetaDbNative(_.defaults({
         path: '/_changes'
       }, options)).then(response => {
