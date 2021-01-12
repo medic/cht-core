@@ -6,6 +6,13 @@ const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 const addedUser = 'fulltester';
 const fullName = 'Full Tester';
 const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
+const waitForLoaderToDisappear = () => {
+  try {
+    helper.waitElementToDisappear(by.css('.loader'));
+  } catch(err) {
+    // element can go stale
+  }
+};
 
 describe('Add user  : ', () => {
 
@@ -18,10 +25,12 @@ describe('Add user  : ', () => {
       .catch(() => {}) // If this fails we don't care
       .then(() => utils.afterEach(done)));
 
-  it('should add user with valid password', () => {
+  fit('should add user with valid password', () => {
+    //browser.sleep(10000);
     usersPage.openAddUserModal();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
+    waitForLoaderToDisappear();
     browser.wait(() => {
       return element(by.css('#edit-user-profile')).isDisplayed()
         .then(isDisplayed => {
@@ -30,10 +39,8 @@ describe('Add user  : ', () => {
         .catch(() => {
           return true;
         });
-    }, 2000);
-    browser.waitForAngular();
-    expect(helper.isTextDisplayed(addedUser)).toBe(true);
-    expect(helper.isTextDisplayed(fullName)).toBe(true);
+    }, 3000);
+    usersPage.expectUser(1,addedUser, fullName);
   });
 
   it('should reject passwords shorter than 8 characters', () => {
