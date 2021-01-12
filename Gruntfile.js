@@ -1070,9 +1070,10 @@ module.exports = function(grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-tests',
-    'exec:wait_for_api_down',
-    // Adding a wait to ensure the api port opens and process closes 
-    'exec:sleep',
+  ]);
+
+  grunt.registerTask('ci-e2e-disabled', 'Run e2e tests for CI', [
+    'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-disable-control-flow',
   ]);
