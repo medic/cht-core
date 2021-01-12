@@ -973,7 +973,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
-    'exec:kill-e2e-servers',
     'e2e-deploy',
     'protractor:e2e-tests',
   ]);
