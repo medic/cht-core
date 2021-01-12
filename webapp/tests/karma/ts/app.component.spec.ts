@@ -1,8 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { of, Subject } from 'rxjs';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from '../../../src/ts/app.component';
@@ -34,6 +35,8 @@ import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-wat
 import { GlobalActions } from '@mm-actions/global';
 import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
+import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
+import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 
 describe('AppComponent', () => {
   let getComponent;
@@ -64,6 +67,8 @@ describe('AppComponent', () => {
   let unreadRecordsService;
   let setLanguageService;
   let translateService;
+  let modalService;
+  let databaseConnectionMonitorService;
   // End Services
 
   let globalActions;
@@ -89,6 +94,10 @@ describe('AppComponent', () => {
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
+    modalService = { show: sinon.stub().resolves() };
+    databaseConnectionMonitorService = {
+      listenForDatabaseClosed: sinon.stub().returns(of())
+    };
     recurringProcessManagerService = {
       startUpdateRelativeDate: sinon.stub(),
       startUpdateReadDocsCount: sinon.stub(),
@@ -146,7 +155,7 @@ describe('AppComponent', () => {
         { provide: ChangesService, useValue: changesService },
         { provide: UpdateServiceWorkerService, useValue: {} },
         { provide: LocationService, useValue: locationService },
-        { provide: ModalService, useValue: {} },
+        { provide: ModalService, useValue: modalService },
         { provide: FeedbackService, useValue: feedbackService },
         { provide: FormatDateService, useValue: formatDateService },
         { provide: XmlFormsService, useValue: xmlFormsService },
@@ -162,6 +171,7 @@ describe('AppComponent', () => {
         { provide: RulesEngineService, useValue: rulesEngineService },
         { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
         { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
+        { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
       ]
     });
 
@@ -312,6 +322,19 @@ describe('AppComponent', () => {
     expect(resourceIconsService.getAppTitle.callCount).to.equal(1);
     expect(document.title).to.equal('My App');
   });
+
+  it('should watch the database connection and show database closed modal', fakeAsync(async () => {
+    const observable = new Subject();
+    databaseConnectionMonitorService.listenForDatabaseClosed.returns(observable);
+
+    await getComponent();
+    observable.next(true);
+    tick();
+
+    expect(databaseConnectionMonitorService.listenForDatabaseClosed.callCount).to.equal(1);
+    expect(modalService.show.callCount).to.equal(1);
+    expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
+  }));
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {

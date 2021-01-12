@@ -74,7 +74,7 @@ export class ContactsEffects {
         this.globalActions.clearCancelCallback();
 
         const routeSnapshot = this.routeSnapshotService.get();
-        const deceasedTitle = routeSnapshot.data.name === 'contacts.deceased'
+        const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
           ? this.translateService.instant('contact.deceased.title') : null;
         const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
         this.globalActions.setTitle(this.translateService.instant(title));
