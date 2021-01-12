@@ -51,7 +51,6 @@ describe('Create user meta db : ', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(userName, password, false);
     await commonElements.calmNative();
-    console.log('calmed');
 
     const doc = { _id: userName };
     const postData = doc;
