@@ -511,10 +511,6 @@ module.exports = function(grunt) {
           './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
-      'kill-e2e-servers': {
-        cmd: 'lsof -ti tcp:4988 | xargs kill & lsof -ti tcp:31337 | xargs kill',
-        exitCodes: [0, 123]
-      },
       'check-env-vars':
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
@@ -972,7 +968,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
-    'exec:kill-e2e-servers',
     'e2e-deploy',
     'protractor:e2e-tests',
   ]);
