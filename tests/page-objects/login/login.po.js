@@ -35,7 +35,6 @@ module.exports = {
     }
   },
   loginNative: async (username, password, shouldFail, locale) => {
-    console.log('login native');
     await helper.waitUntilReadyNative(await getUsernameField());
     await getUsernameField().clear();
     await getPasswordField().clear();
