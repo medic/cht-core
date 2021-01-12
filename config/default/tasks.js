@@ -50,6 +50,38 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
 
 module.exports = [
 
+  // MNCH Immunization and Growth follow up for Deworming
+  // todo - this doesn't seem to work
+  {
+    name: 'immunization_growth_follow_up',
+    icon: 'icon-people-children',
+    title: 'task.immunization_growth_follow_up',
+    appliesTo: 'reports',
+    appliesToType: ['immunization_and_growth'],
+    appliesIf: function(contact, report) {
+      console.log(JSON.stringify(report.fields)); // todo remove debug
+      console.log(JSON.stringify(report.fields.deworm_next_date)); // todo remove debug
+      return report && report.fields.deworm_next_date && parseInt(report.fields.deworm_next_date)  > 0;
+    },
+    actions: [
+      {
+        type: 'report',
+        form: 'immunization_growth_follow_up'
+      }
+    ],
+    events: [
+      {
+        id: 'deworm_next_date_is_set', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        days: 0,
+        start: 3,
+        end: 7 // todo - get correct end days
+      }
+    ],
+    resolvedIf: function(contact, report, event, dueDate) {
+      return isFormArraySubmittedInWindow(contact.reports, ['immunization_growth_follow_up'], dueDate, event, null, report._id);
+    }
+  },
+
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
   {
     name: 'anc.pregnancy_home_visit.known_lmp',
@@ -122,7 +154,7 @@ module.exports = [
     },
 
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
+      //(refused or migrated) and cleared tasks
       if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
       const endTime = addDays(dueDate, event.end + 1).getTime();
@@ -159,7 +191,7 @@ module.exports = [
       return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
+      //(refused or migrated) and cleared tasks
       if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
       const endTime = addDays(dueDate, event.end + 1).getTime();
@@ -198,7 +230,7 @@ module.exports = [
       //miscarriage or abortion
       if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) { return true; }
 
-      //(refused or migrated) and cleared tasks 
+      //(refused or migrated) and cleared tasks
       if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
       const endTime = addDays(dueDate, event.end + 1).getTime();
@@ -232,7 +264,7 @@ module.exports = [
       return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
+      //(refused or migrated) and cleared tasks
       if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself;
       const endTime = addDays(dueDate, event.end + 1).getTime();
@@ -311,7 +343,7 @@ module.exports = [
       return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
+      //(refused or migrated) and cleared tasks
       if (isPregnancyTaskMuted(contact)) { return true; }
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
       //reported_date + 1 so that source ds_follow_up does not resolve itself
