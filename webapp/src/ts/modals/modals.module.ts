@@ -13,6 +13,7 @@ import { GuidedSetupComponent } from './guided-setup/guided-setup.component';
 import { SendMessageComponent } from './send-message/send-message.component';
 import { DeleteDocConfirmComponent } from './delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from './edit-user/update-password.component';
+import { ConfirmPasswordUpdatedComponent } from './edit-user/confirm-password-updated.component';
 import { EditUserSettingsComponent } from './edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 import { TourSelectComponent } from './tour/tour-select.component';
@@ -35,6 +36,7 @@ import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expi
     SendMessageComponent,
     DeleteDocConfirmComponent,
     UpdatePasswordComponent,
+    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TourSelectComponent,
@@ -58,6 +60,7 @@ import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expi
     LogoutConfirmComponent,
     FeedbackComponent,
     UpdatePasswordComponent,
+    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TourSelectComponent,
