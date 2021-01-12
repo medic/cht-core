@@ -29,11 +29,12 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 
 module.exports = {
-  calm: () => {
-    const bootstrapperSelector = by.css('.bootstrap-layer');
-    helper.waitElementToPresent(element(bootstrapperSelector));
-    helper.waitElementToDisappear(bootstrapperSelector);
-    helper.waitUntilReady(medicLogo);
+  calm: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReady(medicLogo);
   },
 
   checkAbout: () => {
@@ -127,6 +128,7 @@ module.exports = {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
+      browser.waitForAngular();
     }
   },
 

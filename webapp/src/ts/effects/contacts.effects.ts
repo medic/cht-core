@@ -38,12 +38,18 @@ export class ContactsEffects {
       exhaustMap(({ payload: { id, silent } }) => {
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
+          this.contactsActions.setLoadingSelectedContact();
+          this.contactsActions.setContactsLoadingSummary(true);
         }
         return from(this.contactViewModelGeneratorService.getContact(id, { getChildPlaces: true, merge: false })).pipe(
           map(model => this.contactsActions.setSelectedContact(model)),
-          catchError(error => {
+          catchError((error) => {
+            if (error.code === 404 && !silent) {
+              this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
+            }
             console.error('Error selecting contact', error);
-            return of(this.globalActions.unsetSelected());
+            this.globalActions.unsetSelected();
+            return of(this.contactsActions.setSelectedContact(null));
           }),
         );
       }),
@@ -62,8 +68,6 @@ export class ContactsEffects {
         }
         const refreshing = previousSelectedContact?.doc?._id === selected.id;
         this.globalActions.settingSelected(refreshing);
-        this.contactsActions.setLoadingSelectedContact();
-        this.contactsActions.setContactsLoadingSummary(true);
         this.globalActions.clearCancelCallback();
         const options = { getChildPlaces: true };
         const title = (selected.type && selected.type.name_key) || 'contact.profile';
