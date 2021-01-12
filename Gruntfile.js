@@ -474,12 +474,6 @@ module.exports = function(grunt) {
         ].join('&& '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
-      'sleep': {
-        cmd: [
-          'sleep 30',
-        ].join('&& '),
-        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
-      },
       'clean-test-database': {
         cmd: [
           'docker stop e2e-couchdb'
@@ -979,15 +973,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
-    'exec:kill-e2e-servers',
     'e2e-deploy',
     'protractor:e2e-tests',
-    'exec:wait_for_api_down',
-    'exec:sleep',
-    'exec:kill-e2e-servers',
-    'e2e-deploy',
-    'protractor:e2e-disable-control-flow',
-    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('e2e-disabled', 'Deploy app for testing and run e2e tests', [

@@ -26,8 +26,7 @@ const processes = {};
 
 const startServer = (serviceName, append) => new Promise((resolve, reject) => {
   try {
-    const logName = `tests/logs/${serviceName}.${new Date().toISOString()}.e2e.log`;
-    const logStream = fs.createWriteStream(logName, { flags: append ? 'a' : 'w' });
+    fs.createWriteStream(`tests/logs/${serviceName}.e2e.log`, { flags: append ? 'a' : 'w' });
 
     let server;
     if (constants.IS_TRAVIS) {
