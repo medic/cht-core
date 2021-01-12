@@ -29,7 +29,7 @@ describe('Add user  : ', () => {
 
   it('should add user with valid password', () => {
     helper.handleUpdateModal();
-    usersPage.waitForPageToLoad();
+    // usersPage.waitForPageToLoad();
     usersPage.openAddUserModal();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
