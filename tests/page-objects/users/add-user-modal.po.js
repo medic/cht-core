@@ -38,6 +38,13 @@ const getCancelButton = () => {
   return element(by.className('btn cancel'));
 };
 
+const waitForTranslations = (timeout =1000) => {
+  helper.handleUpdateModal();
+  const helpText = element.all(by.css('.help-block.ng-scope')).first();
+  helper.getTextFromElement(helpText, timeout).then(text => 
+    expect(text).toBe('This is what you will use to log in to the app.')).catch();
+};
+
 module.exports = {
   submit: () => {
     helper.waitUntilReady(getSubmitButton());
@@ -50,6 +57,7 @@ module.exports = {
   },
 
   fillForm: (username, fullName, password) => {
+    waitForTranslations();
     helper.waitUntilReady(getSubmitButton()); // wait for form to load
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);

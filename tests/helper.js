@@ -67,7 +67,7 @@ module.exports = {
       });
   },
 
-  getTextFromElement: element => {
+  getTextFromElement: (element,sleep=1000) => {
     return browser
       .wait(
         EC.presenceOf(element),
@@ -80,7 +80,9 @@ module.exports = {
         });
       })
       .catch(() => {
-        browser.sleep(1000);
+        handleUpdateModal();
+        browser.sleep(sleep);
+        handleUpdateModal();
         return browser
           .wait(
             EC.visibilityOf(element),

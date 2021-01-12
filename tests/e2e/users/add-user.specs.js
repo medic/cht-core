@@ -7,9 +7,11 @@ const addedUser = 'fulltester';
 const fullName = 'Full Tester';
 const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 const waitForLoaderToDisappear = () => {
+  helper.handleUpdateModal();
   try {
-    helper.waitElementToDisappear(by.css('.loader'));
+    helper.waitElementToDisappear(by.css('.loader'), 20000);
   } catch(err) {
+    helper.handleUpdateModal();
     // element can go stale
   }
 };
@@ -27,7 +29,7 @@ describe('Add user  : ', () => {
 
   it('should add user with valid password', () => {
     helper.handleUpdateModal();
-    waitForLoaderToDisappear();
+    usersPage.waitForPageToLoad();
     usersPage.openAddUserModal();
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
@@ -46,6 +48,7 @@ describe('Add user  : ', () => {
 
   it('should reject passwords shorter than 8 characters', () => {
     usersPage.openAddUserModal();
+    //usersPage.waitForTranslations();
     addUserModal.fillForm('user0', 'Not Saved', 'short');
     addUserModal.submit();
     expect(errorMessagePassword.getText()).toBe('The password must be at least 8 characters long.');

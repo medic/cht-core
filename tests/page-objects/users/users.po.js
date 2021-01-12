@@ -25,9 +25,17 @@ module.exports = {
   },
 
   openAddUserModal: () => {
+    helper.handleUpdateModal();
     browser.get(utils.getAdminBaseUrl() + 'users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
+  },
+  
+  waitForPageToLoad: (timeout =1000) => {
+    helper.handleUpdateModal();
+    helper.getTextFromElement(element(by.css('.loading-status')), timeout)
+      .then(text =>expect(text).toBe('No messages found')).catch();
+    browser.get(utils.getAdminBaseUrl() + 'users');
   },
 
   getUsersList: () => {
