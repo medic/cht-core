@@ -142,6 +142,18 @@ describe('ContactViewModelGenerator service', () => {
         .then(waitForModelToLoad);
     };
 
+    it('model returns the correct keys', () => {
+      return runPlaceTest([childContactPerson, childPlace]).then(model => {
+        assert.equal(model.children[0].contacts.length, 1);
+        expect(Object.keys(model)).to.have.members(
+          ['_id', 'doc', 'lineage', 'type', 'isPrimaryContact', 'children', 'reports']
+        );
+        expect(Object.keys(model.doc)).to.have.members(
+          ['_id', 'type', 'contact', 'muted']
+        );
+      });
+    });
+
     it('child places and persons get displayed separately', () => {
       return runPlaceTest([childContactPerson, childPlace]).then(model => {
         assert.equal(model.children[0].contacts.length, 1);
@@ -347,6 +359,18 @@ describe('ContactViewModelGenerator service', () => {
     };
 
     describe('isPrimaryContact flag', () => {
+
+      it('model returns the correct keys', () => {
+        return runPersonTest(doc).then(model => {
+          console.log(Object.keys(model.doc));
+          expect(Object.keys(model)).to.have.members(
+            ['_id', 'doc', 'lineage', 'type', 'isPrimaryContact',]
+          );
+          expect(Object.keys(model.doc)).to.have.members(
+            ['_id', 'name', 'type', 'parent', 'muted']
+          );
+        });
+      });
 
       it('if selected doc is primary contact, the isPrimaryContact flag should be true', () => {
         return runPersonTest(doc).then(model => {

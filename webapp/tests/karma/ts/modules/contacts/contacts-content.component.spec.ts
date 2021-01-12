@@ -43,7 +43,7 @@ describe('Contacts content component', () => {
       { selector: Selectors.getLoadingSelectedContactReports, value: false },
       { selector: Selectors.getContactsLoadingSummary, value: false },
     ];
-    activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
+    activatedRoute = { params: of({ id: 'load contact' }), snapshot: { params: { id: 'load contact'} } };
     router = { navigate: sinon.stub() };
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     contactChangeFilterService = {
@@ -86,24 +86,26 @@ describe('Contacts content component', () => {
     expect(component).to.exist;
   });
 
-  it(`should set and select the user's home place`, fakeAsync(() => {
+  it(`should not load the user's home place when a param id is set`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
     store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
     component.ngOnInit();
     flush();
 
     expect(selectContact.callCount).to.equal(1);
-    expect(selectContact.args[0][0]).to.equal('homeplace');
+    expect(selectContact.args[0][0]).to.equal('load contact');
   }));
 
-  it(`should not load the user's home place when a param id is set`, fakeAsync(() => {
+  it(`should load the user's home place when a param id not set`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
     store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
-    activatedRoute.snapshot.params.id = 'new contact';
+    activatedRoute.params = of({});
+    activatedRoute.snapshot.params = {};
     component.ngOnInit();
     flush();
 
-    expect(selectContact.callCount).to.equal(0);
+    expect(selectContact.callCount).to.equal(1);
+    expect(selectContact.args[0][0]).to.equal('homeplace');
   }));
 
   describe('Change feed process', () => {

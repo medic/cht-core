@@ -156,6 +156,7 @@ describe('Contacts effects', () => {
 
     it('should call the right actions actions if a contact is selelected', () => {
       store.overrideSelector(Selectors.getSelectedContact, { _id: 'contactid', doc: { _id: 'contactid' } });
+      store.overrideSelector(Selectors.getUserFacilityId, 'homleplace');
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
       effects.setSelectedContact.subscribe();
 
