@@ -454,7 +454,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   private setLeftActionBar() {
     this.globalActions.setLeftActionBar({
       hasResults: this.hasContacts,
-      userFacilityId: this.usersHomePlace && this.usersHomePlace._id,
+      userFacilityId: this.usersHomePlace?._id,
       childPlaces: this.allowedChildPlaces?.sort((a, b) => a.id.localeCompare(b.id)),
       exportFn: () => {
         this.exportService.export('contacts', this.filters, { humanReadable: true });
@@ -473,8 +473,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
           relevantForms: [], // This disables the "New Action" button in action bar until forms load
           sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
           canDelete: !!this.selectedContact?.children?.every(group => !group.contacts?.length),
-          canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id === this.selectedContact?.doc?._id,
-          openContactMutedModal: (event, form) => this.openContactMutedModal(form),
+          canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
+          openContactMutedModal: (form) => this.openContactMutedModal(form),
           openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
         });
 
@@ -565,8 +565,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
           return;
         }
 
+        if (!forms) {
+          return;
+        }
+
         const formSummaries = forms
-          ?.map(xForm => {
+          .map(xForm => {
             const title = xForm.translation_key ?
               this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
             const isUnmute = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));

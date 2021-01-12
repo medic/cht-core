@@ -175,7 +175,7 @@
             </a>
             <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
               <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms" [attr.id]="form.id">
-                <a (click)="actionBar.right.openContactMutedModal($event, form)">
+                <a (click)="actionBar.right.openContactMutedModal(form)">
                   <span [innerHTML]="form.icon | resourceIcon"></span>
                   <span class="content">{{ form.title }}</span>
                 </a>
@@ -226,7 +226,7 @@
           <a *ngIf="actionBar?.right?.sendTo"
             mmAuth="can_view_message_action"
             class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-             [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+            [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-envelope"></span>

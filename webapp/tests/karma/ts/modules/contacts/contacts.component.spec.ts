@@ -207,11 +207,46 @@ describe('Contacts component', () => {
 
       expect(globalActions.setRightActionBar.callCount).to.equal(1);
       expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
-      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
       expect(globalActions.setRightActionBar.args[0][0].openContactMutedModal).to.be.a('function');
       expect(globalActions.setRightActionBar.args[0][0].openSendMessageModal).to.be.a('function');
       expect(globalActions.setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
       expect(globalActions.setRightActionBar.args[0][0].sendTo).to.deep.equal({ phone: '123', muted: true });
+    }));
+
+    it('should enable edit and delete in the right action bar', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isAdmin.returns(true);
+      store.overrideSelector(Selectors.getSelectedContact, {
+        type: { person: true },
+        doc: { phone: '11', muted: true },
+        summary: { context: 'test' },
+        children: [
+          { _id: '1', contacts: [] },
+          { _id: '2' }
+        ]
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(true);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+    }));
+
+    it('should disable edit when user isnt admin and facility is its home place ', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isAdmin.returns(false);
+      userSettingsService.get.resolves({ facility_id: '999' });
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
     }));
 
     it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
