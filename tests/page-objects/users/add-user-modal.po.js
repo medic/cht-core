@@ -38,11 +38,15 @@ const getCancelButton = () => {
   return element(by.className('btn cancel'));
 };
 
-const waitForTranslations = (timeout =1000) => {
+const waitForTranslations = (timeout =10000) => {
   helper.handleUpdateModal();
+  const EC = protractor.ExpectedConditions;
   const helpText = element.all(by.css('.help-block.ng-scope')).first();
-  helper.getTextFromElement(helpText, timeout).then(text => 
-    expect(text).toBe('This is what you will use to log in to the app.')).catch();
+  helper.getTextFromElement(helpText, timeout).then(text =>{
+    if (text === 'user.username.help'){
+      browser.wait(EC.textToBePresentInElement(helpText, 'This is what you will use to log in to the app.'), 5000);
+    }
+  }).catch(error => error);
 };
 
 module.exports = {
