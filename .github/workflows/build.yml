@@ -21,7 +21,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Set UPLOARD_URL var
+    - name: Set MARKET_URL var
       run: |
         if [[ -z "$MARKET_URL" ]]; then
           echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV

@@ -144,7 +144,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/${STAGING_SERVER}`,
+            dest: `${MARKET_URL}/${STAGING_SERVER}`,
           },
         ],
       },
@@ -152,7 +152,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/${BUILDS_SERVER}`,
+            dest: `${MARKET_URL}/${BUILDS_SERVER}`,
           },
         ],
       }
