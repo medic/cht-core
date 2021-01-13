@@ -108,6 +108,19 @@ describe('Contacts content component', () => {
     expect(selectContact.args[0][0]).to.equal('homeplace');
   }));
 
+  it(`should not load the user's home place when on mobile`, fakeAsync(() => {
+    const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    window.jQuery = sinon.stub();
+    window.jQuery.withArgs('#mobile-detection').returns({ css: () => 'inline' });
+    activatedRoute.params = of({});
+    activatedRoute.snapshot.params = {};
+    component.ngOnInit();
+    flush();
+
+    expect(selectContact.callCount).to.equal(0);
+  }));
+
   describe('Change feed process', () => {
     let change;
 

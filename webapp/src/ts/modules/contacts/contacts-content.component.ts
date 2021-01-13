@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 import * as moment from 'moment';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -9,6 +10,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { isMobile } from '@mm-providers/responsive.provider';
 
 @Component({
   selector: 'contacts-content',
@@ -28,7 +30,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   reportsTimeWindowMonths;
   taskEndDate;
   tasksTimeWindowWeeks;
-  userFacilityId;
 
   constructor(
     private store: Store,
@@ -55,15 +56,13 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   getUserFacility() {
-    const facilitySubscription = combineLatest(
-      this.store.select(Selectors.getUserFacilityId))
-      .subscribe(([userFacilityId]) => {
-        this.userFacilityId = userFacilityId;
-        if (this.userFacilityId && !this.route.snapshot.params.id) {
-          this.contactsActions.selectContact(this.userFacilityId);
+    this.store.select(Selectors.getUserFacilityId)
+      .pipe(first(id  => id!== null))
+      .subscribe((userFacilityId) => {
+        if (userFacilityId && !this.route.snapshot.params.id && !isMobile()) {
+          this.contactsActions.selectContact(userFacilityId);
         }
       });
-    this.subscription.add(facilitySubscription);
   }
 
   subscribeToStore() {
