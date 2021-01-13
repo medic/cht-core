@@ -31,11 +31,10 @@ module.exports = {
     getAddUserButton().click();
   },
   
-  waitForPageToLoad: (timeout =1000) => {
+  waitForPageToLoad: (timeout =10000) => {
     helper.handleUpdateModal();
     helper.getTextFromElement(element(by.css('.loading-status')), timeout)
       .then(text =>expect(text).toBe('No messages found')).catch();
-    browser.get(utils.getAdminBaseUrl() + 'users');
   },
 
   getUsersList: () => {
