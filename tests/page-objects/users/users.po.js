@@ -1,6 +1,5 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
-const addUserModalPo = require('./add-user-modal.po');
 
 const getAddUserButton = () => {
   return element(by.id('add-user'));
