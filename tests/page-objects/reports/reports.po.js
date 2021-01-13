@@ -6,6 +6,9 @@ const reportBodyDetails = '#reports-content .report-body .details';
 const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_start"]'));
 const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
 const dateFilter = element(by.css('#date-filter'));
+const reportListID = '#reports-list';
+const submitReport = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+const firstForm = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'));
 
 const reportListID = '#reports-list';
 
