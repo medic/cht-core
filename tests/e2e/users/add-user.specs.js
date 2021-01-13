@@ -51,7 +51,7 @@ describe('Add user  : ', () => {
     //usersPage.waitForTranslations();
     addUserModal.fillForm('user0', 'Not Saved', 'short');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toBe('The password must be at least 8 characters long.');
+    addUserModal.expectErrorMessage(errorMessagePassword,'The password must be at least 8 characters long.');
     element(by.css('button.cancel.close')).click();
   });
 
@@ -59,7 +59,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', 'weakPassword');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toContain('The password is too easy to guess.');
+    addUserModal.expectErrorMessage(errorMessagePassword,'The password is too easy to guess.');
     element(by.css('button.cancel.close')).click();
   });
 
@@ -68,7 +68,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('user0', 'Not Saved', '%4wbbygxkgdwvdwT65');
     element(by.id('edit-password-confirm')).sendKeys('abc');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toMatch('Passwords must match');
+    addUserModal.expectErrorMessage(errorMessagePassword,'Passwords must match');
     element(by.css('button.cancel.close')).click();
   });
 
@@ -76,7 +76,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', '');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toContain('required');
+    addUserModal.expectErrorMessage(errorMessagePassword, 'required');
     element(by.css('button.cancel.close')).click();
   });
 
@@ -86,7 +86,7 @@ describe('Add user  : ', () => {
     addUserModal.submit();
     const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
     helper.waitUntilReady(errorMessageUserName);
-    expect(errorMessageUserName.getText()).toContain('required');
+    addUserModal.expectErrorMessage(errorMessageUserName,'required');
     element(by.css('button.cancel.close')).click();
   });
 
@@ -95,8 +95,8 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
     helper.selectDropdownByValue(element(by.id('role')), 'string:district_admin');
     addUserModal.submit();
-    expect(element(by.css('#facilitySelect ~ .help-block')).getText()).toContain('required');
-    expect(element(by.css('#contactSelect ~ .help-block')).getText()).toContain('required');
+    addUserModal.expectErrorMessage(element(by.css('#facilitySelect ~ .help-block')),'required');
+    addUserModal.expectErrorMessage(element(by.css('#contactSelect ~ .help-block')), 'required');
     element(by.css('button.cancel.close')).click();
   });
 });

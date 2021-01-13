@@ -37,6 +37,7 @@ const getSubmitButton = () => {
 const getCancelButton = () => {
   return element(by.className('btn cancel'));
 };
+const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
 const waitForTranslations = (timeout =10000) => {
   helper.handleUpdateModal();
@@ -74,13 +75,15 @@ module.exports = {
     getConfirmPasswordField().sendKeys(password);
   },
 
-  expectErrorMessage :(element, message) => {
+  expectErrorMessage :(element =errorMessagePassword, message) => {
     const EC = protractor.ExpectedConditions;
     helper.getTextFromElement(element, 12000).then(text =>{
       if (text === ''){
         console.log('waiting for translation ...');
         browser.wait(EC.textToBePresentInElement(element, message), 5000);
       }
+      expect(text).toMatch(message);
     }).catch(error => error);
+
   },
 };
