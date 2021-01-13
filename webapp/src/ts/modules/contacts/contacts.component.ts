@@ -3,7 +3,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { groupBy as _groupBy, findIndex as _findIndex } from 'lodash-es';
+import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
@@ -24,10 +24,6 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { TranslateFromService } from '@mm-services/translate-from.service';
-import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
-import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 @Component({
   templateUrl: './contacts.component.html'
@@ -35,16 +31,12 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 export class ContactsComponent implements OnInit, OnDestroy{
   private readonly PAGE_SIZE = 50;
   private subscription: Subscription = new Subscription();
-  private subscriptionSelectedContactForms;
-  private subscriptionAllContactForms;
   private globalActions;
   private contactsActions;
   private servicesActions;
   private listContains;
 
   contactsList;
-  settings;
-  userSettings;
   loading = false;
   error;
   appending;
@@ -56,7 +48,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
   contactTypes;
   isAdmin;
   childPlaces;
-  childTypesBySelectedContact = [];
   allowedChildPlaces = [];
   lastVisitedDateExtras;
   visitCountSettings;
@@ -74,7 +65,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private translateService: TranslateService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
-    private userSettingsService:UserSettingsService,
+    private userSettingsService: UserSettingsService,
     private getDataRecordsService: GetDataRecordsService,
     private sessionService: SessionService,
     private authService: AuthService,
@@ -87,8 +78,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private router: Router,
     private exportService: ExportService,
     private xmlFormsService: XmlFormsService,
-    private translateFromService: TranslateFromService,
-    private modalService: ModalService
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -101,12 +90,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
       this.store.select(Selectors.getContactsList),
       this.store.select(Selectors.getIsAdmin),
       this.store.select(Selectors.getFilters),
-      this.store.select(Selectors.contactListContains)
-    ).subscribe(([contactsList, isAdmin, filters, listContains]) => {
+      this.store.select(Selectors.contactListContains),
+      this.store.select(Selectors.getSelectedContact),
+    ).subscribe(([contactsList, isAdmin, filters, listContains, selectedContact]) => {
       this.contactsList = contactsList;
       this.isAdmin = isAdmin;
       this.filters = filters;
       this.listContains = listContains;
+      this.selectedContact = selectedContact;
     });
     this.subscription.add(reduxSubscription);
 
@@ -148,12 +139,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.contactTypesService.getAll()
       ])
       .then(([homePlaceSummary, viewLastVisitedDate, settings, contactTypes]) => {
-        this.settings = settings;
         this.usersHomePlace = homePlaceSummary;
         this.lastVisitedDateExtras = viewLastVisitedDate;
-        this.visitCountSettings = this.UHCSettings.getVisitCountSettings(this.settings);
-        if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(this.settings)) {
-          this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(this.settings);
+        this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
+        if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+          this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
         }
         this.contactTypes = contactTypes;
         return this.getChildren();
@@ -177,7 +167,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
       });
 
     this.tourService.startIfNeeded(this.route.snapshot);
-    this.subscribeToSelectedContact();
   }
 
   ngOnDestroy() {
@@ -205,9 +194,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
     return this.userSettingsService
       .get()
       .then((userSettings:any) => {
-        this.userSettings = userSettings;
-        if (this.userSettings.facility_id) {
-          return this.getDataRecordsService.get(this.userSettings.facility_id);
+        if (userSettings.facility_id) {
+          return this.getDataRecordsService.get(userSettings.facility_id);
         }
       })
       .then((summary) => {
@@ -277,11 +265,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     });
   }
 
-  private getChildren(parent?) {
-    if (parent) {
-      return this.contactTypesService.getChildren(parent);
-    }
-
+  private getChildren() {
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
       const homeType = this.usersHomePlace.contact_type || this.usersHomePlace.type;
@@ -421,7 +405,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   search() {
-    if(this.filters.search && !this.enketoEdited) {
+    if (this.filters.search && !this.enketoEdited) {
       this.router.navigate(['contacts']);
       this.contactsActions.clearSelection();
     }
@@ -441,10 +425,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   simprintsIdentify() {
     this.loading = true;
-    this.simprintsService.identify().then((identities) => {
-      this.filters.simprintsIdentities = identities;
-      this.search();
-    });
+    this.simprintsService
+      .identify()
+      .then((identities) => {
+        this.filters.simprintsIdentities = identities;
+        this.search();
+      });
   }
 
   listTrackBy(index, contact) {
@@ -462,68 +448,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
     });
   }
 
-  private subscribeToSelectedContact() {
-    const subscription = this.store
-      .select(Selectors.getSelectedContact)
-      .subscribe((selected) => {
-        this.selectedContact = selected;
-        this.setChildTypesBySelectedContact();
-
-        this.globalActions.setRightActionBar({
-          relevantForms: [], // This disables the "New Action" button in action bar until forms load
-          sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
-          canDelete: !!this.selectedContact?.children?.every(group => !group.contacts?.length),
-          canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
-          openContactMutedModal: (form) => this.openContactMutedModal(form),
-          openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
-        });
-
-        this.subscribeToAllContactXmlForms();
-        this.subscribeToSelectedContactXmlForms();
-      });
-    this.subscription.add(subscription);
-  }
-
-  private openContactMutedModal(form) {
-    if (!form.showUnmuteModal) {
-      this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]);
-      return;
-    }
-
-    this.modalService
-      .show(ContactsMutedComponent)
-      .then(() => this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]))
-      .catch(() => {});
-  }
-
-  private openSendMessageModal(sendTo) {
-    this.modalService
-      .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-      .catch(() => {});
-  }
-
-  private async setChildTypesBySelectedContact() {
-    if (!this.selectedContact) {
-      this.childTypesBySelectedContact = [];
-      return;
-    }
-
-    if (!this.selectedContact.type) {
-      const type = this.selectedContact.doc?.contact_type || this.selectedContact.doc?.type;
-      console.error(`Unknown contact type "${type}" for contact "${this.selectedContact.doc?._id}"`);
-      this.childTypesBySelectedContact = [];
-      return;
-    }
-
-    this.childTypesBySelectedContact = await this.getChildren(this.selectedContact.type.id);
-  }
-
   private subscribeToAllContactXmlForms() {
-    if (this.subscriptionAllContactForms) {
-      this.subscriptionAllContactForms.unsubscribe();
-    }
-
-    this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
+    const subscription = this.xmlFormsService.subscribe(
       'ContactForms',
       { contactForms: true },
       (error, forms) => {
@@ -534,59 +460,9 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
         this.setLeftActionBar();
-        const allowedChildTypesBySelectedContact = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
-        this.globalActions.updateRightActionBar({
-          childTypes: this.getModelsFromChildTypes(allowedChildTypesBySelectedContact)
-        });
       }
     );
-    this.subscription.add(this.subscriptionAllContactForms);
-  }
-
-  private subscribeToSelectedContactXmlForms() {
-    if (!this.selectedContact) {
-      return;
-    }
-
-    if (this.subscriptionSelectedContactForms) {
-      this.subscriptionSelectedContactForms.unsubscribe();
-    }
-
-    this.subscriptionSelectedContactForms = this.xmlFormsService.subscribe(
-      'ContactList',
-      {
-        doc: this.selectedContact.doc,
-        contactSummary: this.selectedContact.summary?.context,
-        contactForms: false,
-      },
-      (error, forms) => {
-        if (error) {
-          console.error('Error fetching relevant forms', error);
-          return;
-        }
-
-        if (!forms) {
-          return;
-        }
-
-        const formSummaries = forms
-          .map(xForm => {
-            const title = xForm.translation_key ?
-              this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
-            const isUnmute = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));
-            return {
-              code: xForm.internalId,
-              title: title,
-              icon: xForm.icon,
-              showUnmuteModal: this.selectedContact.doc?.muted && !isUnmute
-            };
-          })
-          .sort((a, b) => a.title?.localeCompare(b.title));
-
-        this.globalActions.updateRightActionBar({ relevantForms: formSummaries });
-      }
-    );
-    this.subscription.add(this.subscriptionSelectedContactForms);
+    this.subscription.add(subscription);
   }
 
   private filterAllowedChildType(forms, childTypes) {
@@ -599,28 +475,4 @@ export class ContactsComponent implements OnInit, OnDestroy{
       .sort((a, b) => a.id?.localeCompare(b.id));
   }
 
-  private getModelsFromChildTypes(childTypes) {
-    const grouped = _groupBy(childTypes, type => type.person ? 'persons' : 'places');
-    const models = [];
-
-    if (grouped.places) {
-      models.push({
-        menu_key: 'Add place',
-        menu_icon: 'fa-building',
-        permission: 'can_create_places',
-        types: grouped.places
-      });
-    }
-
-    if (grouped.persons) {
-      models.push({
-        menu_key: 'Add person',
-        menu_icon: 'fa-user',
-        permission: 'can_create_people',
-        types: grouped.persons
-      });
-    }
-
-    return models;
-  }
 }

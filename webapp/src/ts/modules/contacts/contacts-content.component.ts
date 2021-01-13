@@ -3,12 +3,23 @@ import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import * as moment from 'moment';
+import { groupBy as _groupBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { TranslateService } from '@ngx-translate/core';
+import { TranslateFromService } from '@mm-services/translate-from.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { SessionService } from '@mm-services/session.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 @Component({
   selector: 'contacts-content',
@@ -16,6 +27,8 @@ import { ContactChangeFilterService } from '@mm-services/contact-change-filter.s
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
+  private subscriptionSelectedContactForms;
+  private subscriptionAllContactForms;
   private globalActions;
   private contactsActions;
   loadingContent;
@@ -28,6 +41,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   reportsTimeWindowMonths;
   taskEndDate;
   tasksTimeWindowWeeks;
+  userSettings;
+  settings;
+  childTypesBySelectedContact = [];
 
   constructor(
     private store: Store,
@@ -35,6 +51,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private router: Router,
     private changesService: ChangesService,
     private contactChangeFilterService: ContactChangeFilterService,
+    private translateService: TranslateService,
+    private translateFromService: TranslateFromService,
+    private xmlFormsService: XmlFormsService,
+    private modalService: ModalService,
+    private contactTypesService: ContactTypesService,
+    private settingsService: SettingsService,
+    private sessionService: SessionService,
+    private userSettingsService: UserSettingsService,
   ){
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -71,6 +95,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       if (this.selectedContact !== selectedContact) {
         this.setReportsTimeWindowMonths(3);
         this.setTasksTimeWindowWeeks(1);
+        this.setRightActionBar();
       }
       this.selectedContact = selectedContact;
       this.selectedContactChildren = selectedContactChildren;
@@ -140,5 +165,187 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   setTasksTimeWindowWeeks(weeks?) {
     this.tasksTimeWindowWeeks = weeks;
     this.taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
+  }
+
+  private setRightActionBar() {
+    this.setChildTypesBySelectedContact();
+    this.getUserSettings();
+    this.getSettings();
+
+    this.globalActions.setRightActionBar({
+      relevantForms: [], // This disables the "New Action" button in action bar until forms load
+      sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
+      canDelete: !!this.selectedContact?.children?.every(group => !group.contacts?.length),
+      canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
+      openContactMutedModal: (form) => this.openContactMutedModal(form),
+      openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
+    });
+
+    this.subscribeToAllContactXmlForms();
+    this.subscribeToSelectedContactXmlForms();
+  }
+
+  private async getUserSettings() {
+    if (this.userSettings) {
+      return;
+    }
+    try{
+      this.userSettings = await this.userSettingsService.get();
+    } catch (e) {
+      console.error('Error fetching user settings', e);
+    }
+  }
+
+  private async getSettings() {
+    if (this.settings) {
+      return;
+    }
+    try{
+      this.settings = await this.settingsService.get();
+    } catch (e) {
+      console.error('Error fetching settings', e);
+    }
+  }
+
+  private async setChildTypesBySelectedContact() {
+    if (!this.selectedContact) {
+      this.childTypesBySelectedContact = [];
+      return;
+    }
+
+    if (!this.selectedContact.type) {
+      const type = this.selectedContact.doc?.contact_type || this.selectedContact.doc?.type;
+      console.error(`Unknown contact type "${type}" for contact "${this.selectedContact.doc?._id}"`);
+      this.childTypesBySelectedContact = [];
+      return;
+    }
+
+    try {
+      this.childTypesBySelectedContact = await this.contactTypesService.getChildren(this.selectedContact.type.id);
+    } catch (e) {
+      console.error('Error fetching contact child types', e);
+    }
+  }
+
+  private subscribeToAllContactXmlForms() {
+    if (this.subscriptionAllContactForms) {
+      this.subscriptionAllContactForms.unsubscribe();
+    }
+
+    this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
+      'ContactForms',
+      { contactForms: true },
+      (error, forms) => {
+        if (error) {
+          console.error('Error fetching allowed contact forms', error);
+          return;
+        }
+
+        const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
+        this.globalActions.updateRightActionBar({
+          childTypes: this.getModelsFromChildTypes(allowedChildTypes)
+        });
+      }
+    );
+    this.subscription.add(this.subscriptionAllContactForms);
+  }
+
+  private subscribeToSelectedContactXmlForms() {
+    if (!this.selectedContact) {
+      return;
+    }
+
+    if (this.subscriptionSelectedContactForms) {
+      this.subscriptionSelectedContactForms.unsubscribe();
+    }
+
+    this.subscriptionSelectedContactForms = this.xmlFormsService.subscribe(
+      'ContactList',
+      {
+        doc: this.selectedContact.doc,
+        contactSummary: this.selectedContact.summary?.context,
+        contactForms: false,
+      },
+      (error, forms) => {
+        if (error) {
+          console.error('Error fetching relevant forms', error);
+          return;
+        }
+
+        if (!forms) {
+          return;
+        }
+
+        const formSummaries = forms
+          .map(xForm => {
+            const title = xForm.translation_key ?
+              this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
+            const isUnmute = !!(xForm.internalId && this.settings?.muting?.unmute_forms?.includes(xForm.internalId));
+            return {
+              code: xForm.internalId,
+              title: title,
+              icon: xForm.icon,
+              showUnmuteModal: this.selectedContact.doc?.muted && !isUnmute
+            };
+          })
+          .sort((a, b) => a.title?.localeCompare(b.title));
+
+        this.globalActions.updateRightActionBar({ relevantForms: formSummaries });
+      }
+    );
+    this.subscription.add(this.subscriptionSelectedContactForms);
+  }
+
+  private filterAllowedChildType(forms, childTypes) {
+    if (!childTypes) {
+      return;
+    }
+
+    return childTypes
+      .filter(contactType => forms?.find(form => form._id === contactType.create_form))
+      .sort((a, b) => a.id?.localeCompare(b.id));
+  }
+
+  private getModelsFromChildTypes(childTypes) {
+    const grouped = _groupBy(childTypes, type => type.person ? 'persons' : 'places');
+    const models = [];
+
+    if (grouped.places) {
+      models.push({
+        menu_key: 'Add place',
+        menu_icon: 'fa-building',
+        permission: 'can_create_places',
+        types: grouped.places
+      });
+    }
+
+    if (grouped.persons) {
+      models.push({
+        menu_key: 'Add person',
+        menu_icon: 'fa-user',
+        permission: 'can_create_people',
+        types: grouped.persons
+      });
+    }
+
+    return models;
+  }
+
+  private openContactMutedModal(form) {
+    if (!form.showUnmuteModal) {
+      this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]);
+      return;
+    }
+
+    this.modalService
+      .show(ContactsMutedComponent)
+      .then(() => this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]))
+      .catch(() => {});
+  }
+
+  private openSendMessageModal(sendTo) {
+    this.modalService
+      .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
+      .catch(() => {});
   }
 }
