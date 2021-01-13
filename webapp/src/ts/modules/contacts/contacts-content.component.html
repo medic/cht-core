@@ -74,9 +74,9 @@
       <div class="card children" *ngFor="let group of selectedContact?.children">
         <div class="action-header cell">
           <div class="col-xs-10">
-            <h3 translate>{{group.type.group_key}}</h3>
+            <h3 translate>{{group?.type?.group_key}}</h3>
           </div>
-          <div *ngIf="group.type.person" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+          <div *ngIf="group.type && group.type.person" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
         </div>
 
         <ul>
