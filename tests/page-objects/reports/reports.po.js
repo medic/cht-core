@@ -7,9 +7,13 @@ const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_
 const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
 const dateFilter = element(by.css('#date-filter'));
 const reportListID = '#reports-list';
+const submitReport = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+const firstForm = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'));
 
 
 module.exports = {
+  firstForm,
+  submitReport,
   allReports: () => element.all(by.css(`${reportListID} li`)),
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
   listLoader: () => element(by.css(`${reportListID} .loader`)),

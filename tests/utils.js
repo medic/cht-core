@@ -723,6 +723,7 @@ module.exports = {
     }),
 
   seedTestData: (done, userContactDoc, documents) => {
+    deprecated('seedTestData', 'seedTestDataNative');
     protractor.promise
       .all(documents.map(module.exports.saveDoc))
       .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
@@ -734,6 +735,20 @@ module.exports = {
       })
       .then(done)
       .catch(done.fail);
+  },
+
+  seedTestDataNative: async (userContactDoc, documents) => {
+    try {
+      documents.forEach(async doc => await module.exports.saveDocNative(doc));
+    } catch (err) {
+      console.log('error saving docs');
+    }
+    
+    const existingContactDoc = await module.exports.getDocNative(constants.USER_CONTACT_ID);
+    if (userContactDoc) {
+      Object.assign(existingContactDoc, userContactDoc);
+      await module.exports.saveDocNative(existingContactDoc);
+    }
   },
 
   /**
