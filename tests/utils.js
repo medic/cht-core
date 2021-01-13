@@ -496,24 +496,16 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
-<<<<<<< HEAD
+
 const deprecated = (name, replacement) => {
-=======
-function deprecated(name, replacement) {
->>>>>>> replace utils with deprecated methods
   let msg = `The function ${name} has been deprecated.`;
   if (replacement) {
     msg = `${msg} Replace by ${replacement}`;
   }
-<<<<<<< HEAD
   if (process.env.DEBUG) {
     console.warn(msg);
   }
 };
-=======
-  console.warn(msg);
-}
->>>>>>> replace utils with deprecated methods
 
 module.exports = {
   deprecated,
@@ -529,11 +521,7 @@ module.exports = {
     captureOnlyFailedSpecs: true,
     reportOnlyFailedSpecs: false,
     showQuickLinks: true,
-<<<<<<< HEAD
     dest: `tests/results/`,
-=======
-    dest: `tests/results/${new Date().toISOString()}`,
->>>>>>> replace utils with deprecated methods
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
       return currentSpec.fullName
