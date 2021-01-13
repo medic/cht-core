@@ -12,6 +12,8 @@ const firstForm = element(by.css('.action-container .general-actions .dropup.ope
 const reportListID = '#reports-list';
 
 module.exports = {
+  firstForm,
+  submitReport,
   allReports: () => element.all(by.css(`${reportListID} li`)),
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
   listLoader: () => element(by.css(`${reportListID} .loader`)),
