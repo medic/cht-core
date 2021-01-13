@@ -20,9 +20,8 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      '**/login.spec.js',
+      'e2e/login/login.specs.js',
       '**/report-date-filter.js',
-      'tests/e2e/reports-subject.js',
       '**/sentinel/queue.spec.js',
       '**/docs-by-replication-key-view.js',
       '**/api/routing.js',
@@ -32,8 +31,8 @@ const baseConfig = {
       '**/send-message.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
-      'tests/e2e/reports-subject.js',
-      'tests/e2e/create-meta-db.js',
+      'e2e/reports-subject.js',
+      'e2e/create-meta-db.js',
     ],
     // performance: 'performance/**/*.js'
   },
