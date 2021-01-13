@@ -9,21 +9,6 @@
 
     <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
       <ul *ngIf="!error && hasTasks">
-        <!--<mm-content-row
-          *ngFor="let task of tasksList; trackBy: listTrackBy"
-          [id]="task._id"
-          [route]="['/', 'tasks', task._id]"
-          [date]="task.date"
-          [overdue]="task.overdue"
-          [icon]="task.icon"
-          [heading]="task.contact?.name || ''"
-          [summary]="task.title"
-          [warning]="task.priorityLabel"
-          dateFormat="taskDueDate"
-          [showStatus]="false"
-          [selected]="task._id === selectedTask?._id"
-        >
-        </mm-content-row>-->
         <li *ngFor="let task of tasksList; trackBy: listTrackBy"
             [attr.data-record-id]="task._id"
             [class.selected] = "task._id === selectedTask?._id"

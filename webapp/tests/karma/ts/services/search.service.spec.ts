@@ -8,6 +8,7 @@ import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SessionService } from '@mm-services/session.service';
 import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Search service', () => {
   let service:SearchService;
@@ -30,7 +31,7 @@ describe('Search service', () => {
         { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
         { provide: SessionService, useValue: session },
         { provide: SearchFactoryService, useValue: { get: () => searchStub } },
-        // todo add telemetry
+        { provide: TelemetryService, useValue: { record: sinon.stub() }},
       ],
     });
     service = TestBed.inject(SearchService);

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import * as moment from 'moment';
 import { isString as _isString } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
@@ -20,17 +20,18 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 export class TargetAggregatesService {
 
   constructor(
-    private uhcSettingsService: UHCSettingsService,
-    private dbService: DbService,
-    private translateService: TranslateService,
-    private translateFromService: TranslateFromService,
-    private searchService: SearchService,
-    private getDataRecordsService: GetDataRecordsService,
-    private userSettingsService: UserSettingsService,
-    private contactTypesService: ContactTypesService,
-    private authService: AuthService,
-    private settingsService: SettingsService,
-    private calendarIntervalService: CalendarIntervalService
+    private uhcSettingsService:UHCSettingsService,
+    private dbService:DbService,
+    private translateService:TranslateService,
+    private translateFromService:TranslateFromService,
+    private searchService:SearchService,
+    private getDataRecordsService:GetDataRecordsService,
+    private userSettingsService:UserSettingsService,
+    private contactTypesService:ContactTypesService,
+    private authService:AuthService,
+    private settingsService:SettingsService,
+    private calendarIntervalService:CalendarIntervalService,
+    private ngZone:NgZone,
   ) { }
 
   /**
@@ -275,6 +276,10 @@ export class TargetAggregatesService {
   }
 
   getAggregates() {
+    return this.ngZone.runOutsideAngular(() => this._getAggregates());
+  }
+
+  private _getAggregates() {
     return this.settingsService
       .get()
       .then(settings => {

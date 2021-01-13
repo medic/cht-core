@@ -134,6 +134,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.loadForm();
   }
 
+  private loadForm() {
+    return this.ngZone.runOutsideAngular(() => this._loadForm());
+  }
+
   private _loadForm() {
     return this
       .getSelected()
@@ -157,10 +161,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         this.setError(err);
         console.error('Error setting selected doc', err);
       });
-  }
-
-  private loadForm() {
-    return this.ngZone.runOutsideAngular(() => this._loadForm());
   }
 
   private renderAttachmentPreviews(model) {

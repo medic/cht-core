@@ -7,6 +7,7 @@ import * as CalendarInterval from '@medic/calendar-interval';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
@@ -29,8 +30,8 @@ export class SearchService {
     private sessionService:SessionService,
     private getDataRecordsService:GetDataRecordsService,
     private searchFactoryService:SearchFactoryService,
+    private telemetryService:TelemetryService,
     private ngZone:NgZone,
-    //private telemetry todo
   ) {
     this.searchFactory = this.searchFactoryService.get(this.dbService);
   }
@@ -125,34 +126,29 @@ export class SearchService {
   }
 
   private _search(type, filters, options:any = {}, extensions:any = {}, docIds?) {
-    console.error('Doing Search', type, filters, options, extensions);
+    console.debug('Doing Search', type, filters, options, extensions);
 
     _.defaults(options, {
       limit: 50,
       skip: 0
     });
-    console.error(options);
-    const t = new Date().getTime();
 
     if (!options.force && this.debounce(type, filters, options)) {
       return Promise.resolve([]);
     }
-    //const before = performance.now();
+    const before = performance.now();
     return this
       .searchFactory(type, filters, options, extensions)
       .then((searchResults) => {
-        //const timing = performance.now() - before;
-        //const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
-        //const telemetryKey = ['search', type, ...filterKeys].join(':');
+        const timing = performance.now() - before;
+        const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
+        const telemetryKey = ['search', type, ...filterKeys].join(':');
         // Will end up with entries like:
         //   search:reports:search                      <-- text search of reports
         //   search:reports:date:search:valid:verified  <-- maximum selected search of reports with text search
         //   search:contacts:search                     <-- text search of contacts
         //   search:contacts:types                      <-- default viewing of contact list
-        //Telemetry.record(telemetryKey, timing);
-
-        console.log('got search results');
-        console.log(new Date().getTime() - t);
+        this.telemetryService.record(telemetryKey, timing);
 
         if (docIds && docIds.length) {
           docIds.forEach((docId) => {
@@ -164,12 +160,7 @@ export class SearchService {
         const dataRecordsPromise = this.getDataRecordsService.get(searchResults.docIds, options);
 
         if (!extensions.displayLastVisitedDate) {
-          return dataRecordsPromise.then(result => {
-            console.log('got all data records now');
-            console.log(new Date().getTime() - t);
-
-            return result;
-          });
+          return dataRecordsPromise;
         }
 
 
@@ -195,9 +186,6 @@ export class SearchService {
                 relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
               }
             });
-
-            console.log('got all data records');
-            console.log(new Date().getTime() - t);
 
             return dataRecords;
           });
