@@ -455,7 +455,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.globalActions.setLeftActionBar({
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
-      childPlaces: this.allowedChildPlaces?.sort((a, b) => a.id.localeCompare(b.id)),
+      childPlaces: this.allowedChildPlaces,
       exportFn: () => {
         this.exportService.export('contacts', this.filters, { humanReadable: true });
       }
@@ -590,7 +590,13 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private filterAllowedChildType(forms, childTypes) {
-    return childTypes?.filter(contactType => forms?.find(form => form._id === contactType.create_form));
+    if (!childTypes) {
+      return;
+    }
+
+    return childTypes
+      .filter(contactType => forms?.find(form => form._id === contactType.create_form))
+      .sort((a, b) => a.id?.localeCompare(b.id));
   }
 
   private getModelsFromChildTypes(childTypes) {
@@ -602,7 +608,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         menu_key: 'Add place',
         menu_icon: 'fa-building',
         permission: 'can_create_places',
-        types: grouped.places.sort((a, b) => a.id.localeCompare(b.id))
+        types: grouped.places
       });
     }
 
@@ -611,7 +617,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         menu_key: 'Add person',
         menu_icon: 'fa-user',
         permission: 'can_create_people',
-        types: grouped.persons.sort((a, b) => a.id.localeCompare(b.id))
+        types: grouped.persons
       });
     }
 

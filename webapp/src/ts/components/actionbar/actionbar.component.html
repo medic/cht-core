@@ -55,20 +55,22 @@
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
         <div class="actions dropup" mmAuth [mmAuthAny]="[ isAdmin, actionBar?.left?.childPlaces && 'can_create_places' ]">
           <a *ngIf="actionBar?.left?.childPlaces?.length > 1"
-             mmAuth="can_create_places"
-             class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
-             data-toggle="dropdown"
+            mmAuth="can_create_places"
+            class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
+            data-toggle="dropdown"
           >
             <span class="fa fa-plus"></span>
             <p translate>Add place</p>
           </a>
 
           <ul *ngIf="actionBar?.left?.childPlaces?.length > 1"
-              mmAuth="can_create_places"
-              class="dropdown-menu mm-dropdown-menu with-icon"
+            mmAuth="can_create_places"
+            class="dropdown-menu mm-dropdown-menu with-icon"
           >
             <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
-              <a (click)="navigateToContactAdd(child.id, actionBar.left.userFacilityId, 'list')">
+              <a [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', child.id] : ['/', 'contacts', 'add', child.id]"
+                [queryParams]="{ from: 'list' }"
+              >
                 <span [innerHTML]="child.icon | resourceIcon"></span>
                 <span class="content" translate>{{ child.create_key }}</span>
               </a>
@@ -76,9 +78,10 @@
           </ul>
 
           <a *ngIf="actionBar?.left?.childPlaces?.length === 1"
-             mmAuth="can_create_places"
-             class="mm-icon mm-icon-inverse mm-icon-caption"
-             (click)="navigateToContactAdd(actionBar.left.childPlaces[0]?.id, actionBar.left.userFacilityId, 'list')"
+            mmAuth="can_create_places"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
+            [queryParams]="{ from: 'list' }"
           >
             <span class="fa-stack">
               <i [innerHTML]="actionBar.left.childPlaces[0].icon | resourceIcon"></i>
@@ -88,9 +91,9 @@
           </a>
 
           <a *ngIf="isAdmin"
-             class="mm-icon mm-icon-inverse mm-icon-caption"
-             (click)="actionBar?.left?.exportFn()"
-             [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            (click)="actionBar?.left?.exportFn()"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
           >
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
@@ -194,7 +197,7 @@
               </a>
               <ul class="dropdown-menu mm-dropdown-menu with-icon">
                 <li *ngFor="let type of group.types; trackBy: trackById">
-                  <a (click)="navigateToContactAdd(type.id, selectedContactDoc._id)">
+                  <a [routerLink]="selectedContactDoc._id ? ['/', 'contacts', selectedContactDoc._id, 'add', type.id] : ['/', 'contacts', 'add', type.id]">
                     <span [innerHTML]="type.icon | resourceIcon"></span>
                     <span class="content" translate>{{ type.create_key }}</span>
                   </a>
@@ -203,8 +206,8 @@
             </ng-container>
 
             <a *ngIf="group.types?.length === 1"
-               class="mm-icon mm-icon-inverse mm-icon-caption"
-               (click)="navigateToContactAdd(group.types[0]?.id, selectedContactDoc._id)"
+              class="mm-icon mm-icon-inverse mm-icon-caption"
+              [routerLink]="selectedContactDoc._id ? ['/', 'contacts', selectedContactDoc._id, 'add', group.types[0]?.id] : ['/', 'contacts', 'add', group.types[0]?.id]"
             >
               <span class="fa-stack">
                 <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
@@ -215,10 +218,10 @@
           </span>
 
           <a *ngIf="actionBar?.right?.sendTo"
-             mmAuth="can_view_call_action"
-             class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
-             [attr.href]="'tel:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
-             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+            mmAuth="can_view_call_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+            [attr.href]="'tel:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-phone"></span>
             <p translate>call</p>
@@ -244,8 +247,8 @@
           </a>
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption"
-             (click)="navigateToContactEdit(selectedContactDoc)"
-             [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
+            [routerLink]="['/', 'contacts', selectedContactDoc._id, 'edit']"
+            [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
           >
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
