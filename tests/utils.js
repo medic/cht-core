@@ -496,13 +496,13 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
-function deprecated(name, replacement) {
+const deprecated = (name, replacement) => {
   let msg = `The function ${name} has been deprecated.`;
   if (replacement) {
     msg = `${msg} Replace by ${replacement}`;
   }
   console.warn(msg);
-}
+};
 
 module.exports = {
   deprecated,
