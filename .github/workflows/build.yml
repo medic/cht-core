@@ -226,7 +226,10 @@ jobs:
       run: node --stack_size=10000 `which grunt` ci-e2e-disabled
     - name: Dump Couch logs
       run: docker logs couch > tests/logs/couch.log 2>&1
+<<<<<<< HEAD
       if: ${{ always() }}
+=======
+>>>>>>> merging tests results into 1 result, ptting async/await on login, remove the timestamp on the html since the reports are all separate
     - name: Archive test results folder
       uses: actions/upload-artifact@v2
       with:
@@ -234,4 +237,8 @@ jobs:
         path: |
           tests/results
           tests/logs
+<<<<<<< HEAD
       if: ${{ failure() }}
+=======
+      if: ${{ always() }}
+>>>>>>> merging tests results into 1 result, ptting async/await on login, remove the timestamp on the html since the reports are all separate
