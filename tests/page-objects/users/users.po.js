@@ -1,8 +1,26 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
+const addUserModalPo = require('./add-user-modal.po');
 
 const getAddUserButton = () => {
   return element(by.id('add-user'));
+};
+
+const waitForTranslations = (timeout =10000) => {
+  helper.handleUpdateModal();
+  const EC = protractor.ExpectedConditions;
+  const helpText = element.all(by.css('.help-block.ng-scope')).first();
+  helper.getTextFromElement(helpText, timeout).then(text =>{
+    if (text === 'user.username.help'){
+      console.log('not translated...', text);
+      //browser.refresh();
+      console.log('waiting for translation ...');
+      browser.wait(EC.textToBePresentInElement(helpText, 'This is what you will use to log in to the app.'), 10000);
+      
+    }
+    console.log('got text ...', text);
+    
+  }).catch(error => console.log('translations taking too long...', error));
 };
 
 module.exports = {
@@ -29,6 +47,7 @@ module.exports = {
     browser.get(utils.getAdminBaseUrl() + 'users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
+    waitForTranslations();
   },
   
   waitForPageToLoad: (timeout =10000) => {

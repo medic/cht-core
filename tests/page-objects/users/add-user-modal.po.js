@@ -1,3 +1,4 @@
+const { browser } = require('protractor');
 const helper = require('../../helper');
 
 const getUsernameField = () => {
@@ -44,7 +45,8 @@ const waitForTranslations = (timeout =10000) => {
   const helpText = element.all(by.css('.help-block.ng-scope')).first();
   helper.getTextFromElement(helpText, timeout).then(text =>{
     if (text === 'user.username.help'){
-      console.log('empty...', text);
+      console.log('not translated...', text);
+      browser.refresh();
       console.log('waiting for translation ...');
       browser.wait(EC.textToBePresentInElement(helpText, 'This is what you will use to log in to the app.'), 10000);
       
@@ -55,6 +57,7 @@ const waitForTranslations = (timeout =10000) => {
 };
 
 module.exports = {
+  waitForTranslations,
   submit: () => {
     helper.waitUntilReady(getSubmitButton());
     getSubmitButton().click();
@@ -66,7 +69,7 @@ module.exports = {
   },
 
   fillForm: (username, fullName, password) => {
-    waitForTranslations();
+    //waitForTranslations();
     helper.waitUntilReady(getSubmitButton()); // wait for form to load
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
