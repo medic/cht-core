@@ -518,7 +518,7 @@ module.exports = {
     captureOnlyFailedSpecs: true,
     reportOnlyFailedSpecs: false,
     showQuickLinks: true,
-    dest: `tests/results/${new Date().toISOString()}`,
+    dest: `tests/results/`,
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
       return currentSpec.fullName

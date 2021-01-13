@@ -156,17 +156,13 @@ jobs:
       run: node --stack_size=10000 `which grunt` ci-e2e
     - name: Dump Couch logs
       run: docker logs couch > tests/logs/couch.log 2>&1
-    - name: Archive test results folder
+    - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: Results Artifact ${{ matrix.node-version }}
-        path: tests/results
-      if: ${{ always() }}
-    - name: Archive test logs folder
-      uses: actions/upload-artifact@v2
-      with:
-        name: Results Logs ${{ matrix.node-version }}
-        path: tests/logs
+        name: Results Artifact ${{ matrix.node-version }} with control flow
+        path: |
+          tests/results
+          tests/logs
       if: ${{ always() }}
 
   test-e2e-disabled:
@@ -232,12 +228,8 @@ jobs:
     - name: Archive test results folder
       uses: actions/upload-artifact@v2
       with:
-        name: Results Artifact ${{ matrix.node-version }}
-        path: tests/results
-      if: ${{ always() }}
-    - name: Archive test logs folder
-      uses: actions/upload-artifact@v2
-      with:
-        name: Results Logs ${{ matrix.node-version }}
-        path: tests/logs
+        name: Results Artifact ${{ matrix.node-version }} without control flow
+        path: |
+          tests/results
+          tests/logs
       if: ${{ always() }}
