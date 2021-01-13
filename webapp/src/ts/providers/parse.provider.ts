@@ -138,8 +138,8 @@ class ASTCompiler {
     this.pipeNameVsIsPureMap = pipeNameVsIsPureMap;
   }
 
-  createVar(name?) {
-    const v = `v${name || this.vIdx++}`;
+  createVar() {
+    const v = `v${this.vIdx++}`;
     this.declarations.push(v);
     return v;
   }
