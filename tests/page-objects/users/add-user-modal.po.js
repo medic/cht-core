@@ -45,9 +45,9 @@ const waitForTranslations = (timeout =10000) => {
   helper.getTextFromElement(helpText, timeout).then(text =>{
     if (text === 'user.username.help'){
       console.log('waiting for translation ...');
-      browser.wait(EC.textToBePresentInElement(helpText, 'Thisis what you will use to log in to the app.'), 5000);
+      browser.wait(EC.textToBePresentInElement(helpText, 'Thisis what you will use to log in to the app.'), 10000);
     }
-  }).catch(error => error);
+  }).catch(error => console.log('translations taking too long...', error));
 };
 
 module.exports = {
@@ -72,5 +72,15 @@ module.exports = {
     helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
     getPasswordField().sendKeys(password);
     getConfirmPasswordField().sendKeys(password);
-  }
+  },
+
+  expectErrorMessage :(element, message) => {
+    const EC = protractor.ExpectedConditions;
+    helper.getTextFromElement(element, 12000).then(text =>{
+      if (text === ''){
+        console.log('waiting for translation ...');
+        browser.wait(EC.textToBePresentInElement(element, message), 5000);
+      }
+    }).catch(error => error);
+  },
 };
