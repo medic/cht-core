@@ -37,7 +37,6 @@ const getSubmitButton = () => {
 const getCancelButton = () => {
   return element(by.className('btn cancel'));
 };
-const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
 const waitForTranslations = (timeout =10000) => {
   helper.handleUpdateModal();
@@ -45,9 +44,13 @@ const waitForTranslations = (timeout =10000) => {
   const helpText = element.all(by.css('.help-block.ng-scope')).first();
   helper.getTextFromElement(helpText, timeout).then(text =>{
     if (text === 'user.username.help'){
+      console.log('empty...', text);
       console.log('waiting for translation ...');
-      browser.wait(EC.textToBePresentInElement(helpText, 'Thisis what you will use to log in to the app.'), 10000);
+      browser.wait(EC.textToBePresentInElement(helpText, 'This is what you will use to log in to the app.'), 10000);
+      
     }
+    console.log('got text ...', text);
+    
   }).catch(error => console.log('translations taking too long...', error));
 };
 
@@ -75,12 +78,12 @@ module.exports = {
     getConfirmPasswordField().sendKeys(password);
   },
 
-  expectErrorMessage :(element =errorMessagePassword, message) => {
+  expectErrorMessage :(element, message) => {
     const EC = protractor.ExpectedConditions;
     helper.getTextFromElement(element, 12000).then(text =>{
       if (text === ''){
         console.log('waiting for translation ...');
-        browser.wait(EC.textToBePresentInElement(element, message), 5000);
+        browser.wait(EC.textToBePresentInElement(element, message), 10000);
       }
       expect(text).toMatch(message);
     }).catch(error => error);
