@@ -22,7 +22,7 @@ describe('server', () => {
   });
 
   describe('response compression', () => {
-    afterAll(utils.afterEach);
+    afterAll(utils.afterEachNative);
 
     const requestWrapper = (options) => {
       _.defaults(options, {
@@ -109,7 +109,7 @@ describe('server', () => {
 
     it('compresses compressible CouchDB doc attachments (text/plain)', () => {
       return utils
-        .getDoc('sample_doc')
+        .getDocNative('sample_doc')
         .then(doc => {
           const options = {
             uri: '/sample_doc/attach?rev=' + doc._rev,
@@ -137,7 +137,7 @@ describe('server', () => {
                   '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
       return utils
-        .getDoc('sample_doc2')
+        .getDocNative('sample_doc2')
         .then(doc => {
           const options = {
             uri: '/sample_doc2/attach?rev=' + doc._rev,
@@ -165,7 +165,7 @@ describe('server', () => {
                   '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
       return utils
-        .getDoc('sample_doc2')
+        .getDocNative('sample_doc2')
         .then(doc => {
           const options = {
             uri: '/sample_doc2/attach?rev=' + doc._rev,
