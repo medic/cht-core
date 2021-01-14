@@ -55,9 +55,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  getUserFacility() {
+  private getUserFacility() {
     this.store.select(Selectors.getUserFacilityId)
-      .pipe(first(id  => id!== null))
+      .pipe(first(id => id !== null))
       .subscribe((userFacilityId) => {
         if (userFacilityId && !this.route.snapshot.params.id && !isMobile()) {
           this.contactsActions.selectContact(userFacilityId);
@@ -65,7 +65,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       });
   }
 
-  subscribeToStore() {
+  private subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getLoadingSelectedContactChildren),
@@ -95,7 +95,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(reduxSubscription);
   }
 
-  subscribeToRoute() {
+  private subscribeToRoute() {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
@@ -109,7 +109,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(routeSubscription);
   }
 
-  subscribeToChanges() {
+  private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
       filter: (change) => {
