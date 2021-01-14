@@ -1063,18 +1063,6 @@ module.exports = function(grunt) {
     'protractor:e2e-disable-control-flow',
   ]);
 
-  grunt.registerTask('ci-e2e-disabled', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'exec:e2e-servers',
-    'protractor:e2e-disable-control-flow',
-  ]);
-
-  grunt.registerTask('ci-e2e-disabled', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'exec:e2e-servers',
-    'protractor:e2e-disable-control-flow',
-  ]);
-
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
     'exec:e2e-servers',
