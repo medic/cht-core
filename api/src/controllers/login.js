@@ -118,7 +118,8 @@ const render = (page, req, branding, extras = {}) => {
         },
         extras
       );
-      logger.info(options);
+      logger.info(options.defaultLocale);
+      logger.info(options.translations);
       return template(options);
     })
     .catch(err => {
