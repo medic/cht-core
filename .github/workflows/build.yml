@@ -156,6 +156,7 @@ jobs:
       run: node --stack_size=10000 `which grunt` ci-e2e
     - name: Dump Couch logs
       run: docker logs couch > tests/logs/couch.log 2>&1
+      if: ${{ always() }}
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
@@ -225,6 +226,7 @@ jobs:
       run: node --stack_size=10000 `which grunt` ci-e2e-disabled
     - name: Dump Couch logs
       run: docker logs couch > tests/logs/couch.log 2>&1
+      if: ${{ always() }}
     - name: Archive test results folder
       uses: actions/upload-artifact@v2
       with:
