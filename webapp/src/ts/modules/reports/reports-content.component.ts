@@ -72,11 +72,13 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
         const isSelected = this.selectedReports &&
           this.selectedReports.length &&
           _.some(this.selectedReports, (item) => item._id === change.id);
-        return isSelected;
+        // When submitting new report that gets updated immediately by Sentinel,
+        // we might be in a situation where we receive the change before the report was fully selected
+        const isMatchingRouteParam = this.route.snapshot.params?.id === change.id;
+        return isSelected || isMatchingRouteParam;
       },
       callback: (change) => {
         if (change.deleted) {
-          // everything here is todo
           if (this.selectMode) {
             this.reportsActions.removeSelectedReport(change.id);
           } else {

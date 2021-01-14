@@ -88,6 +88,10 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
 
   clear(apply=true) {
     this.selected.clear();
-    apply && this.apply();
+    if (apply) {
+      return this.apply();
+    }
+
+    this.filterLabel = this.getLabel();
   }
 }
