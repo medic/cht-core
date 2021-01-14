@@ -29,8 +29,6 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
 import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { TranslateFromService } from '@mm-services/translate-from.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Contacts component', () => {
@@ -53,16 +51,13 @@ describe('Contacts component', () => {
   let tourService;
   let exportService;
   let xmlFormsService;
-  let translateFromService;
-  let modalService;
   let globalActions;
 
   beforeEach(async(() => {
     searchService = { search: sinon.stub().resolves([]) };
     settingsService = { get: sinon.stub().resolves([]) };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
-      isAdmin: sinon.stub().returns(false)
+      isDbAdmin: sinon.stub().returns(false)
     };
     tourService = { startIfNeeded: sinon.stub() };
     authService = { has: sinon.stub().resolves(false) };
@@ -94,21 +89,17 @@ describe('Contacts component', () => {
         scrollLoaderCallback = callback;
       }
     };
-    contactListContains;
     simprintsService = {
       enabled: sinon.stub().resolves([]),
       identify: sinon.stub().resolves([])
     };
     exportService = { export: sinon.stub() };
     xmlFormsService = { subscribe: sinon.stub() };
-    translateFromService = { get: sinon.stub().returnsArg(0) };
-    modalService = { show: sinon.stub().resolves() };
 
     contactListContains = sinon.stub();
     const selectedContact =  {
       type: { person: true },
-      doc: { phone: '123', muted: true },
-      summary: { context: 'test' }
+      doc: { phone: '123'},
     };
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
@@ -120,8 +111,7 @@ describe('Contacts component', () => {
 
     globalActions = {
       setLeftActionBar: sinon.spy(GlobalActions.prototype, 'setLeftActionBar'),
-      setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
-      updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar')
+      updateLeftActionBar: sinon.spy(GlobalActions.prototype, 'updateLeftActionBar')
     };
 
     return TestBed
@@ -155,8 +145,6 @@ describe('Contacts component', () => {
           { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
           { provide: ExportService, useValue: exportService },
           { provide: XmlFormsService, useValue: xmlFormsService },
-          { provide: TranslateFromService, useValue: translateFromService },
-          { provide: ModalService, useValue: modalService },
         ]
       })
       .compileComponents().then(() => {
@@ -184,7 +172,7 @@ describe('Contacts component', () => {
 
     expect(searchService.search.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(5);
+    expect(spySubscriptionsAdd.callCount).to.equal(2);
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
@@ -204,49 +192,6 @@ describe('Contacts component', () => {
       expect(globalActions.setLeftActionBar.args[0][0].hasResults).to.equal(false);
       expect(globalActions.setLeftActionBar.args[0][0].userFacilityId).to.equal('district-id');
       expect(globalActions.setLeftActionBar.args[0][0].exportFn).to.be.a('function');
-
-      expect(globalActions.setRightActionBar.callCount).to.equal(1);
-      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
-      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
-      expect(globalActions.setRightActionBar.args[0][0].openContactMutedModal).to.be.a('function');
-      expect(globalActions.setRightActionBar.args[0][0].openSendMessageModal).to.be.a('function');
-      expect(globalActions.setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
-      expect(globalActions.setRightActionBar.args[0][0].sendTo).to.deep.equal({ phone: '123', muted: true });
-    }));
-
-    it('should enable edit and delete in the right action bar', fakeAsync(() => {
-      sinon.resetHistory();
-      sessionService.isAdmin.returns(true);
-      store.overrideSelector(Selectors.getSelectedContact, {
-        type: { person: true },
-        doc: { phone: '11', muted: true },
-        summary: { context: 'test' },
-        children: [
-          { _id: '1', contacts: [] },
-          { _id: '2' }
-        ]
-      });
-      store.refreshState();
-      fixture.detectChanges();
-
-      flush();
-
-      expect(globalActions.setRightActionBar.callCount).to.equal(1);
-      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(true);
-      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
-    }));
-
-    it('should disable edit when user isnt admin and facility is its home place ', fakeAsync(() => {
-      sinon.resetHistory();
-      sessionService.isAdmin.returns(false);
-      userSettingsService.get.resolves({ facility_id: '999' });
-
-      component.ngOnInit();
-      flush();
-
-      expect(globalActions.setRightActionBar.callCount).to.equal(1);
-      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
-      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
     }));
 
     it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
@@ -273,14 +218,14 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
-      expect(xmlFormsService.subscribe.callCount).to.equal(3);
+      expect(xmlFormsService.subscribe.callCount).to.equal(1);
       expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactForms');
       expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
 
       xmlFormsService.subscribe.args[0][2](null, forms);
 
-      expect(globalActions.setLeftActionBar.callCount).to.equal(2);
-      expect(globalActions.setLeftActionBar.args[1][0].childPlaces).to.have.deep.members([
+      expect(globalActions.updateLeftActionBar.callCount).to.equal(1);
+      expect(globalActions.updateLeftActionBar.args[0][0].childPlaces).to.have.deep.members([
         {
           id: 'type2',
           create_form: 'form:contact:create:type2',
@@ -290,81 +235,6 @@ describe('Contacts component', () => {
           create_form: 'form:contact:create:type3',
         },
       ]);
-      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
-      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
-        childTypes: [
-          {
-            menu_icon: 'fa-building',
-            menu_key: 'Add place',
-            permission: 'can_create_places',
-            types: [
-              {
-                create_form: 'form:contact:create:type2',
-                id: 'type2'
-              },
-              {
-                create_form: 'form:contact:create:type3',
-                id: 'type3'
-              }
-            ]
-          }
-        ]
-      });
-    }));
-
-    it('should filter contact types to allowed ones from selected contact forms', fakeAsync(() => {
-      sinon.resetHistory();
-      contactTypesService.getChildren.resolves([
-        {
-          id: 'type1',
-          create_form: 'form:contact:create:type1',
-        },
-        {
-          id: 'type2',
-          create_form: 'form:contact:create:type2',
-        },
-        {
-          id: 'type3',
-          create_form: 'form:contact:create:type3',
-        },
-      ]);
-      const forms = [
-        { _id: 'form:contact:create:type3', title: 'Type 3', internalId: 3, icon: 'a' },
-        { _id: 'form:contact:create:type2', title: 'Type 2', internalId: 2, icon: 'b' },
-      ];
-
-      component.ngOnInit();
-      flush();
-      component.selectedContact.summary = { context: 'test' };
-      fixture.detectChanges();
-
-      expect(xmlFormsService.subscribe.callCount).to.equal(3);
-      expect(xmlFormsService.subscribe.args[1][0]).to.equal('ContactList');
-      expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
-        contactForms: false,
-        contactSummary: 'test',
-        doc: { phone: '123', muted: true }
-      });
-
-      xmlFormsService.subscribe.args[1][2](null, forms);
-
-      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
-      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
-        relevantForms: [
-          {
-            code: 2,
-            icon: 'b',
-            showUnmuteModal: true,
-            title: 'Type 2',
-          },
-          {
-            code: 3,
-            icon: 'a',
-            showUnmuteModal: true,
-            title: 'Type 3',
-          }
-        ]
-      });
     }));
   });
 
@@ -424,8 +294,8 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
-      expect(contactTypesService.getChildren.callCount).to.equal(2);
-      expect(contactTypesService.getChildren.args[1].length).to.equal(0);
+      expect(contactTypesService.getChildren.callCount).to.equal(1);
+      expect(contactTypesService.getChildren.args[0].length).to.equal(0);
       expect(searchService.search.args[0][1]).to.deep.equal(
         {
           types: { selected: ['childType'] },

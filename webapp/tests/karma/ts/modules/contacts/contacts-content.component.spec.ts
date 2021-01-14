@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
@@ -14,6 +14,14 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { FilterReportsPipe } from '@mm-pipes/contacts.pipe';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { GlobalActions } from '@mm-actions/global';
+import { SettingsService } from '@mm-services/settings.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { SessionService } from '@mm-services/session.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -24,27 +32,17 @@ describe('Contacts content component', () => {
   let changesService;
   let contactChangeFilterService;
   let selectedContact;
+  let xmlFormsService;
+  let translateFromService;
+  let modalService;
+  let globalActions;
+  let settingsService;
+  let userSettingsService;
+  let sessionService;
+  let contactTypesService;
 
 
   beforeEach(async(() => {
-    selectedContact = {
-      doc: {},
-      type: {},
-      summary: {},
-      children: [],
-      tasks: [],
-      reports: []
-    };
-    const mockedSelectors = [
-      { selector: Selectors.getSelectedContact, value: selectedContact },
-      { selector: Selectors.getLoadingSelectedContactChildren, value: false },
-      { selector: Selectors.getForms, value: [] },
-      { selector: Selectors.getLoadingContent, value: false },
-      { selector: Selectors.getLoadingSelectedContactReports, value: false },
-      { selector: Selectors.getContactsLoadingSummary, value: false },
-    ];
-    activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
-    router = { navigate: sinon.stub() };
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     contactChangeFilterService = {
       matchContact: sinon.stub(),
@@ -52,6 +50,54 @@ describe('Contacts content component', () => {
       isRelevantReport: sinon.stub(),
       isDeleted: sinon.stub(),
     };
+    settingsService = { get: sinon.stub().resolves([]) };
+    xmlFormsService = { subscribe: sinon.stub() };
+    translateFromService = { get: sinon.stub().returnsArg(0) };
+    modalService = { show: sinon.stub().resolves() };
+    sessionService = {
+      isDbAdmin: sinon.stub().returns(false),
+      isAdmin: sinon.stub().returns(false)
+    };
+    changesService = {
+      subscribe: sinon.stub().resolves(of({}))
+    };
+    userSettingsService = {
+      get: sinon.stub().resolves({ facility_id: 'district-id' })
+    };
+    contactTypesService = {
+      getChildren: sinon.stub().resolves([
+        {
+          id: 'childType',
+          icon: 'icon'
+        }
+      ]),
+      getAll: sinon.stub().resolves([]),
+      includes: sinon.stub()
+    };
+    globalActions = {
+      setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
+      updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar')
+    };
+
+    selectedContact = {
+      doc: { phone: '123', muted: true },
+      type: { person: true },
+      summary: { context: 'test' },
+      children: [],
+      tasks: [],
+      reports: []
+    };
+    const mockedSelectors = [
+      { selector: Selectors.getSelectedContact, value: selectedContact },
+      { selector: Selectors.getForms, value: [] },
+      { selector: Selectors.getLoadingContent, value: false },
+      { selector: Selectors.getLoadingSelectedContactReports, value: false },
+      { selector: Selectors.getContactsLoadingSummary, value: false },
+      { selector: Selectors.getSelectedContactDoc, value: selectedContact.doc },
+      { selector: Selectors.getSelectedContactChildren, value: null },
+    ];
+    activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
+    router = { navigate: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -67,6 +113,14 @@ describe('Contacts content component', () => {
           { provide: ResourceIconsService, useValue: { getImg: sinon.stub() } },
           { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
           { provide: ChangesService, useValue: changesService },
+          { provide: ChangesService, useValue: changesService },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: TranslateFromService, useValue: translateFromService },
+          { provide: ModalService, useValue: modalService },
         ]
       })
       .compileComponents()
@@ -191,6 +245,165 @@ describe('Contacts content component', () => {
       expect(contactChangeFilterService.isRelevantReport.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(0);
     });
+  });
+
+  describe('Action bar', () => {
+    it('should initialise action bar', fakeAsync(() => {
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].openContactMutedModal).to.be.a('function');
+      expect(globalActions.setRightActionBar.args[0][0].openSendMessageModal).to.be.a('function');
+      expect(globalActions.setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
+      expect(globalActions.setRightActionBar.args[0][0].sendTo).to.deep.equal({ phone: '123', muted: true });
+    }));
+
+    it('should enable edit and delete in the right action bar', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isAdmin.returns(true);
+      store.overrideSelector(Selectors.getSelectedContactChildren, {
+        type: { person: true },
+        doc: { phone: '11', muted: true },
+        summary: { context: 'test' },
+        children: [
+          { _id: '1', contacts: [], type: {} },
+          { _id: '2', type: {} }
+        ]
+      });
+      store.overrideSelector(Selectors.getSelectedContactDoc, { phone: '11', muted: true });
+      store.overrideSelector(Selectors.getSelectedContactChildren, [
+        { _id: '1', contacts: [], type: {} },
+        { _id: '2', type: {} }
+      ]);
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(true);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+    }));
+
+    it('should disable edit when user isnt admin and facility is its home place ', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isAdmin.returns(false);
+      userSettingsService.get.resolves({ facility_id: '999' });
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+    }));
+
+    it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
+      sinon.resetHistory();
+      contactTypesService.getChildren.resolves([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      const forms = [
+        { _id: 'form:contact:create:type3' },
+        { _id: 'form:contact:create:type2' },
+      ];
+
+      component.ngOnInit();
+      flush();
+
+      expect(xmlFormsService.subscribe.callCount).to.equal(2);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactForms');
+      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
+
+      xmlFormsService.subscribe.args[0][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        childTypes: [
+          {
+            menu_icon: 'fa-building',
+            menu_key: 'Add place',
+            permission: 'can_create_places',
+            types: [
+              {
+                create_form: 'form:contact:create:type2',
+                id: 'type2'
+              },
+              {
+                create_form: 'form:contact:create:type3',
+                id: 'type3'
+              }
+            ]
+          }
+        ]
+      });
+    }));
+
+    it('should filter contact types to allowed ones from selected contact forms', fakeAsync(() => {
+      sinon.resetHistory();
+      contactTypesService.getChildren.resolves([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      const forms = [
+        { _id: 'form:contact:create:type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:contact:create:type2', title: 'Type 2', internalId: 2, icon: 'b' },
+      ];
+
+      component.ngOnInit();
+      flush();
+
+      expect(xmlFormsService.subscribe.callCount).to.equal(2);
+      expect(xmlFormsService.subscribe.args[1][0]).to.equal('ContactList');
+      expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
+        contactForms: false,
+        contactSummary: 'test',
+        doc: { phone: '123', muted: true }
+      });
+
+      xmlFormsService.subscribe.args[1][2](null, forms);
+
+      expect(globalActions.updateRightActionBar.callCount).to.equal(1);
+      expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
+        relevantForms: [
+          {
+            code: 2,
+            icon: 'b',
+            showUnmuteModal: true,
+            title: 'Type 2',
+          },
+          {
+            code: 3,
+            icon: 'a',
+            showUnmuteModal: true,
+            title: 'Type 3',
+          }
+        ]
+      });
+    }));
   });
 
 });
