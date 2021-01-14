@@ -163,7 +163,7 @@ jobs:
         path: |
           tests/results
           tests/logs
-      if: ${{ always() }}
+      if: ${{ failure() }}
 
   test-e2e-disabled:
     needs: build
@@ -232,4 +232,4 @@ jobs:
         path: |
           tests/results
           tests/logs
-      if: ${{ always() }}
+      if: ${{ failure() }}
