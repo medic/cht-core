@@ -501,7 +501,9 @@ const deprecated = (name, replacement) => {
   if (replacement) {
     msg = `${msg} Replace by ${replacement}`;
   }
-  console.warn(msg);
+  if (process.env.DEBUG) {
+    console.warn(msg);
+  }
 };
 
 module.exports = {
