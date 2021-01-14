@@ -2,6 +2,7 @@ const helper = require('../../helper');
 const utils = require('../../utils');
 const { browser, element } = require('protractor');
 
+
 const medicLogo = element(by.className('logo-full'));
 const genericSubmitButton = element(by.css('.btn.btn-primary'));
 const genericCancelBtn = element(by.css('.modal .btn.cancel'));
@@ -95,6 +96,12 @@ module.exports = {
     helper.waitUntilReady(medicLogo);
   },
 
+  goToAnalyticsNative: async () => {
+    await analyticsLink.click();
+    await helper.waitUntilReady(medicLogo);
+  },
+
+
   goToConfiguration: () => {
     helper.waitUntilReady(medicLogo);
     browser.get(utils.getAdminBaseUrl());
@@ -112,18 +119,33 @@ module.exports = {
   },
 
   goToMessages: () => {
+    utils.deprecated('common.po.goToMessages', 'commmon.po.goToMessagesNative');
     browser.get(utils.getBaseUrl() + 'messages/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('message-list')));
   },
 
+  goToMessagesNative: async () => {
+    await browser.get(utils.getBaseUrl() + 'messages/');
+    await helper.waitUntilReady(medicLogo);
+    await helper.waitUntilReady(element(by.id('message-list')));
+  },
+
   goToPeople: async () => {
+    utils.deprecated('common.po.goToPeople', 'commmon.po.goToPeopleNative');
+    await browser.get(utils.getBaseUrl() + 'contacts/');
+    await helper.waitUntilReady(medicLogo);
+    await helper.waitUntilReady(element(by.id('contacts-list')));
+  },
+
+  goToPeopleNative: async () => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
     await helper.waitUntilReady(medicLogo);
     await helper.waitUntilReady(element(by.id('contacts-list')));
   },
 
   goToReports: refresh => {
+    utils.deprecated('common.po.goToReports', 'commmon.po.goToReportsNative');
     browser.get(utils.getBaseUrl() + 'reports/');
     helper.waitElementToPresent(
       element(
@@ -146,15 +168,51 @@ module.exports = {
     }
   },
 
+  goToReportsNative: async (refresh) => {
+    await browser.get(utils.getBaseUrl() + 'reports/');
+    helper.waitElementToPresent(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    helper.waitElementToBeClickable(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    helper.waitElementToBeVisible(element(by.id('reports-list')));
+    if (refresh) {
+      await browser.refresh();
+    } else {
+      // A trick to trigger a list refresh.
+      // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
+      await element(by.css('.reset-filter')).click();
+      browser.waitForAngular();
+    }
+  },
+
   goToTasks: () => {
+    utils.deprecated('common.po.goToTasks', 'commmon.po.goToTasksNative');
     browser.get(utils.getBaseUrl() + 'tasks/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('tasks-list')));
   },
 
+  goToTasksNative: async () => {
+    await browser.get(utils.getBaseUrl() + 'tasks/');
+    await helper.waitUntilReady(medicLogo);
+    await helper.waitUntilReady(element(by.id('tasks-list')));
+  },
+
   isAt: list => {
+    utils.deprecated('common.po.isAt', 'commmon.po.isAtNative');
     helper.waitUntilReady(medicLogo);
     return element(by.id(list)).isPresent();
+  },
+
+  isAtNative: async (locator) => {
+    await helper.waitUntilReady(medicLogo);
+    return await element(by.css(locator)).isPresent();
   },
 
   logout: () => {
@@ -173,7 +231,7 @@ module.exports = {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
   },
-  
+
   expectDisplayDate:() => {
     expect(displayTime.isPresent()).toBeTruthy();
   },

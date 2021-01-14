@@ -23,6 +23,7 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     e2e: [
       'e2e/create-meta-db.js',
+      '**/common.specs.js',
     ],
     // performance: 'performance/**/*.js'
   },
