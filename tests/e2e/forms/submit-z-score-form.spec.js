@@ -17,11 +17,11 @@ const userContactDoc = {
   }
 };
 
+
+
 describe('Submit Z-Score form', () => {
-  beforeAll(done => {
-    Promise.resolve()
-      .then(() => ZScoreForm.configureForm(userContactDoc, done))
-      .catch(done.fail);
+  beforeAll(async () => {
+    await ZScoreForm.configureForm(userContactDoc);
   });
 
   afterEach(done => {
@@ -29,38 +29,38 @@ describe('Submit Z-Score form', () => {
     done();
   });
 
-  afterAll(utils.afterEach);
+  afterAll(utils.afterEachNative);
 
-  it('Autofills zscore fields with correct values', () => {
-    ZScoreForm.load();
+  it('Autofills zscore fields with correct values', async () => {
+    await ZScoreForm.load();
 
-    ZScoreForm.setPatient({ sex: 'female', height: 45, weight: 2, age: 0 });
-    browser.sleep(100);
+    await ZScoreForm.setPatient({ sex: 'female', height: 45, weight: 2, age: 0 });
+    await browser.sleep(100);
 
-    expect(ZScoreForm.getHeightForAge()).toEqual('-2.226638023630504');
-    expect(ZScoreForm.getWeightForAge()).toEqual('-3.091160220994475');
-    expect(ZScoreForm.getWeightForHeight()).toEqual('-2.402439024390243');
+    expect(await ZScoreForm.getHeightForAge()).toEqual('-2.226638023630504');
+    expect(await ZScoreForm.getWeightForAge()).toEqual('-3.091160220994475');
+    expect(await ZScoreForm.getWeightForHeight()).toEqual('-2.402439024390243');
 
-    ZScoreForm.setPatient({ sex: 'male', height: 45, weight: 2, age: 0 });
-    browser.sleep(100);
+    await ZScoreForm.setPatient({ sex: 'male', height: 45, weight: 2, age: 0 });
+    await browser.sleep(100);
 
-    expect(ZScoreForm.getHeightForAge()).toEqual('-2.5800316957210767');
-    expect(ZScoreForm.getWeightForAge()).toEqual('-3.211081794195251');
-    expect(ZScoreForm.getWeightForHeight()).toEqual('-2.259036144578314');
+    expect(await ZScoreForm.getHeightForAge()).toEqual('-2.5800316957210767');
+    expect(await ZScoreForm.getWeightForAge()).toEqual('-3.211081794195251');
+    expect(await ZScoreForm.getWeightForHeight()).toEqual('-2.259036144578314');
 
-    ZScoreForm.setPatient({ sex: 'female', height: 45.2, weight: 5, age: 1 });
-    browser.sleep(100);
+    await ZScoreForm.setPatient({ sex: 'female', height: 45.2, weight: 5, age: 1 });
+    await browser.sleep(100);
 
-    expect(ZScoreForm.getHeightForAge()).toEqual('-2.206434316353886');
-    expect(ZScoreForm.getWeightForAge()).toEqual('3.323129251700681');
-    expect(ZScoreForm.getWeightForHeight()).toEqual('4');
+    expect(await ZScoreForm.getHeightForAge()).toEqual('-2.206434316353886');
+    expect(await ZScoreForm.getWeightForAge()).toEqual('3.323129251700681');
+    expect(await ZScoreForm.getWeightForHeight()).toEqual('4');
 
-    ZScoreForm.setPatient({ sex: 'male', height: 45.2, weight: 5, age: 1 });
-    browser.sleep(100);
+    await ZScoreForm.setPatient({ sex: 'male', height: 45.2, weight: 5, age: 1 });
+    await browser.sleep(100);
 
-    expect(ZScoreForm.getHeightForAge()).toEqual('-2.5651715039577816');
-    expect(ZScoreForm.getWeightForAge()).toEqual('2.9789983844911148');
-    expect(ZScoreForm.getWeightForHeight()).toEqual('4');
+    expect(await ZScoreForm.getHeightForAge()).toEqual('-2.5651715039577816');
+    expect(await ZScoreForm.getWeightForAge()).toEqual('2.9789983844911148');
+    expect(await ZScoreForm.getWeightForHeight()).toEqual('4');
   });
 
   it('saves z-score values', async () => {
