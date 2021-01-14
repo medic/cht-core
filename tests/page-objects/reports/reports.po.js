@@ -7,15 +7,7 @@ const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_
 const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
 const dateFilter = element(by.css('#date-filter'));
 
-// Left hand side list elements
 const reportListID = '#reports-list';
-const list = element(by.css(reportListID));
-const listLoader =  element(by.css(`${reportListID} .loader`));
-const firstReport = element(by.css(`${reportListID} li:first-child`));
-const allReports = element.all(by.css(`${reportListID} li`));
-
-//Right hand side elements
-const reportSummary = element(by.css('#reports-content .item-summary'));
 
 module.exports = {
   allReports: () => element.all(by.css(`${reportListID} li`)),
@@ -39,7 +31,7 @@ module.exports = {
     const report = module.exports.reportByUUID(uuid).first();
     await helper.waitElementToBeClickable(report);
     await helper.clickElement(report);
-    await helper.waitElementToPresent(reportSummary, 3000);
+    await helper.waitElementToPresent(module.exports.reportSummary(), 3000);
     return report;
   },
   filterByDate: (startDate, endDate) => {
