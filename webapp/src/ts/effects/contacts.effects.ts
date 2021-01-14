@@ -62,9 +62,10 @@ export class ContactsEffects {
     return this.actions$.pipe(
       ofType(ContactActionList.setSelectedContact),
       withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact))
+        this.store.pipe(select(Selectors.getSelectedContact)),
+        this.store.pipe(select(Selectors.getUserFacilityId)),
       ),
-      exhaustMap(([{ payload: { selected } }, previousSelectedContact]) => {
+      exhaustMap(([{ payload: { selected } }, previousSelectedContact, userFacilityId]) => {
         if (!selected) {
           return []; // return an empty stream if there is no selected contact
         }
@@ -79,7 +80,8 @@ export class ContactsEffects {
         const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
         this.globalActions.setTitle(this.translateService.instant(title));
 
-        const options = { getChildPlaces: true };
+        const getChildPlaces = userFacilityId !== selected?.doc?._id;
+        const options = { getChildPlaces };
         return from(this.contactViewModelGeneratorService.loadChildren(previousSelectedContact, options)).pipe(
           map(children => {
             return this.contactsActions.receiveSelectedContactChildren(children);
