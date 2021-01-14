@@ -4,7 +4,6 @@ import { Store } from '@ngrx/store';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
-import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
@@ -15,7 +14,6 @@ import { ChangesService } from '@mm-services/changes.service';
 })
 export class ContactsDeceasedComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
-  private globalActions;
   private contactsActions;
   loadingContent;
   selectedContact;
@@ -27,7 +25,6 @@ export class ContactsDeceasedComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
   ){
-    this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
   }
 
@@ -82,6 +79,5 @@ export class ContactsDeceasedComponent implements OnInit, OnDestroy {
 
   selectContact(id, silent?) {
     this.contactsActions.selectContact(id, silent);
-    this.globalActions.setTitle(this.translateService.instant('contact.deceased.title'));
   }
 }

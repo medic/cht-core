@@ -10,7 +10,7 @@ const {
   TRAVIS_BRANCH,
   COUCH_URL,
   COUCH_NODE_NAME,
-  UPLOAD_URL,
+  MARKET_URL,
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
@@ -144,7 +144,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/${STAGING_SERVER}`,
+            dest: `${MARKET_URL}/${STAGING_SERVER}`,
           },
         ],
       },
@@ -152,7 +152,7 @@ module.exports = function(grunt) {
         files: [
           {
             src: 'build/ddocs/medic.json',
-            dest: `${UPLOAD_URL}/${BUILDS_SERVER}`,
+            dest: `${MARKET_URL}/${BUILDS_SERVER}`,
           },
         ],
       }
@@ -1021,6 +1021,15 @@ module.exports = function(grunt) {
     'unit',
     'exec:test-config-default',
     'exec:test-config-standard'
+  ]);
+
+  grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
+    'exec:check-version',
+    'install-dependencies',
+    'static-analysis',
+    'build',
+    'mochaTest:api-integration',
+    'unit'
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
