@@ -86,6 +86,31 @@ describe('Contacts content component', () => {
     expect(component).to.exist;
   });
 
+  describe('load the user home place on mobile', () => {
+    let original;
+
+    beforeEach(() => {
+      original = window.jQuery;
+    });
+
+    afterEach(() => {
+      window.jQuery = original;
+    });
+
+    it(`should not load the user's home place when on mobile`, fakeAsync(() => {
+      const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+      store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+      window.jQuery = sinon.stub();
+      window.jQuery.withArgs('#mobile-detection').returns({ css: () => 'inline' });
+      activatedRoute.params = of({});
+      activatedRoute.snapshot.params = {};
+      component.ngOnInit();
+      flush();
+  
+      expect(selectContact.callCount).to.equal(0);
+    }));
+  });
+
   it(`should not load the user's home place when a param id is set`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
     store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
@@ -106,19 +131,6 @@ describe('Contacts content component', () => {
 
     expect(selectContact.callCount).to.equal(1);
     expect(selectContact.args[0][0]).to.equal('homeplace');
-  }));
-
-  it(`should not load the user's home place when on mobile`, fakeAsync(() => {
-    const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
-    window.jQuery = sinon.stub();
-    window.jQuery.withArgs('#mobile-detection').returns({ css: () => 'inline' });
-    activatedRoute.params = of({});
-    activatedRoute.snapshot.params = {};
-    component.ngOnInit();
-    flush();
-
-    expect(selectContact.callCount).to.equal(0);
   }));
 
   describe('Change feed process', () => {
