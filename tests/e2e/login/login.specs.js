@@ -13,17 +13,17 @@ describe('Login tests : ', () => {
 
   it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
     await commonElements.goToLoginPageNative();
-    await loginPage.login(wrongUsername, '', true);
+    await loginPage.loginNative(wrongUsername, '', true);
   });
 
   it('should try to sign in with blank username and password and verify that credentials were incorrect', async () => {
     await commonElements.goToLoginPageNative();
-    await loginPage.login('', '', true);
+    await loginPage.loginNative('', '', true);
   });
 
   it('should try to sign in and verify that credentials were incorrect', async () => {
     await commonElements.goToLoginPageNative();
-    await loginPage.login(wrongUsername, wrongPassword, true);
-    await loginPage.login(auth.username, auth.password);
+    await loginPage.loginNative(wrongUsername, wrongPassword, true);
+    await loginPage.loginNative(auth.username, auth.password);
   });
 });
