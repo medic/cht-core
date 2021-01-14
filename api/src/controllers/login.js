@@ -119,6 +119,10 @@ const render = (page, req, branding, extras = {}) => {
         extras
       );
       return template(options);
+    })
+    .catch(err => {
+      logger.error('Error getting best: %o', err);
+      return;
     });
 };
 
