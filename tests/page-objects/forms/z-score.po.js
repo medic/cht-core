@@ -133,18 +133,19 @@ const docs = [
     charts: charts
   }];
 
-const clearAndFill = (el, value) => {
-  return el.clear().then(() => el.sendKeys(value));
+const clearAndFill = async (el, value) => {
+  await el.clear()
+  await el.sendKeys(value);
 };
 
-const clickAndGetValue = el => {
-  el.click();
-  return el.getAttribute('value');
+const clickAndGetValue = async el => {
+  await el.click();
+  return await el.getAttribute('value');
 };
 
 module.exports = {
-  configureForm: (userContactDoc, done) => {
-    utils.seedTestData(done, userContactDoc, docs);
+  configureForm: async (userContactDoc) => {
+    await utils.seedTestDataNative(userContactDoc, docs);
   },
 
   load: async () => {
@@ -153,17 +154,18 @@ module.exports = {
       return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
     }, 10000);
 
-    browser.sleep(1000); // let the refresh work here - #3691
+    await browser.sleep(1000); // let the refresh work here - #3691
 
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
-    browser.wait(() => {
+    await browser.wait(() => {
       return addButton.isPresent();
     }, 10000);
-    helper.clickElement(addButton);
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
+    await helper.clickElement(addButton);
+    const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'))
+    await helper.clickElement(form);
 
-    browser.wait(() => {
+    await browser.wait(() => {
       return element(by.css('[name="/data/my_sex"][value="female"]')).isPresent();
     }, 10000);
   },
@@ -179,19 +181,19 @@ module.exports = {
     element(by.css('.icon.icon-refresh')).click();
   },
 
-  setHeight: height => clearAndFill(element(by.css(`[name="/data/my_height"]`)), height),
-  setWeight: weight => clearAndFill(element(by.css(`[name="/data/my_weight"]`)), weight),
-  setAge: age => clearAndFill(element(by.css(`[name="/data/my_age"]`)), age),
-  setSex: sex => element(by.css(`[name="/data/my_sex"][value="${sex}"]`)).click(),
+  setHeight: async height => await clearAndFill(element(by.css(`[name="/data/my_height"]`)), height),
+  setWeight: async weight => await clearAndFill(element(by.css(`[name="/data/my_weight"]`)), weight),
+  setAge: async age => await clearAndFill(element(by.css(`[name="/data/my_age"]`)), age),
+  setSex: async sex => await element(by.css(`[name="/data/my_sex"][value="${sex}"]`)).click(),
 
-  setPatient: patient => {
-    module.exports.setSex(patient.sex);
-    module.exports.setAge(patient.age);
-    module.exports.setHeight(patient.height);
-    module.exports.setWeight(patient.weight);
+  setPatient: async patient => {
+    await module.exports.setSex(patient.sex);
+    await module.exports.setAge(patient.age);
+    await module.exports.setHeight(patient.height);
+    await module.exports.setWeight(patient.weight);
   },
 
-  getHeightForAge: () => clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
-  getWeightForAge: () => clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
-  getWeightForHeight: () => clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
+  getHeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
+  getWeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
+  getWeightForHeight: async () => await clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
 };
