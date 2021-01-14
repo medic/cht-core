@@ -118,13 +118,7 @@ const render = (page, req, branding, extras = {}) => {
         },
         extras
       );
-      logger.info(options.defaultLocale);
-      logger.info(options.translations);
       return template(options);
-    })
-    .catch(err => {
-      logger.error('Error getting best: %o', err);
-      return;
     });
 };
 
