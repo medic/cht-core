@@ -13,19 +13,22 @@ describe('Login tests : ', () => {
 
   it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
     await commonElements.goToLoginPage();
-    browser.sleep(10000);
+    await browser.sleep(10000);
+    await browser.refresh();
     await loginPage.login(wrongUsername, '', true);
   });
 
   it('should try to sign in with blank username and password and verify that credentials were incorrect', async () => {
     await commonElements.goToLoginPage();
-    browser.sleep(10000);
+    await browser.sleep(10000);
+    await browser.refresh();
     await loginPage.login('', '', true);
   });
 
   it('should try to sign in and verify that credentials were incorrect', async () => {
     await commonElements.goToLoginPage();
-    browser.sleep(10000);
+    await browser.sleep(10000);
+    await browser.refresh();
     await loginPage.login(wrongUsername, wrongPassword, true);
     await loginPage.login(auth.username, auth.password);
   });
