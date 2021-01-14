@@ -7,28 +7,22 @@ describe('Login tests : ', () => {
   const wrongPassword = 'fakepass';
 
   it('should have a title', async () => {
-    await commonElements.goToLoginPage();
+    await commonElements.goToLoginPageNative();
     expect(await browser.getTitle()).toEqual('Medic Mobile');
   });
 
   it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
-    await commonElements.goToLoginPage();
-    await browser.sleep(10000);
-    await browser.refresh();
+    await commonElements.goToLoginPageNative();
     await loginPage.login(wrongUsername, '', true);
   });
 
   it('should try to sign in with blank username and password and verify that credentials were incorrect', async () => {
-    await commonElements.goToLoginPage();
-    await browser.sleep(10000);
-    await browser.refresh();
+    await commonElements.goToLoginPageNative();
     await loginPage.login('', '', true);
   });
 
   it('should try to sign in and verify that credentials were incorrect', async () => {
-    await commonElements.goToLoginPage();
-    await browser.sleep(10000);
-    await browser.refresh();
+    await commonElements.goToLoginPageNative();
     await loginPage.login(wrongUsername, wrongPassword, true);
     await loginPage.login(auth.username, auth.password);
   });
