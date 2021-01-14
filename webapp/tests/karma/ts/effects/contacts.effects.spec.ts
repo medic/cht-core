@@ -16,6 +16,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -26,13 +27,14 @@ describe('Contacts effects', () => {
   let store;
   let targetAggregateService;
   let tasksForContactService;
+  let routeSnapshotService;
 
   beforeEach(async() => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
       { selector: Selectors.getSelectedContact, value: {} }
     ];
-
+    routeSnapshotService = { get: sinon.stub().returns({ data: { name: 'contacts.detail' }}) };
     contactViewModelGeneratorService = {
       getContact: sinon.stub().resolves(),
       loadChildren: sinon.stub().resolves(),
@@ -55,6 +57,7 @@ describe('Contacts effects', () => {
         { provide: ContactSummaryService, useValue: contactSummaryService },
         { provide: TargetAggregatesService, useValue: targetAggregateService },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: RouteSnapshotService, useValue: routeSnapshotService },
       ]
     });
 
@@ -127,12 +130,13 @@ describe('Contacts effects', () => {
     }));
   });
 
-  describe('setSelected', () => {
+  describe('setSelectedContact', () => {
     let settingSelected;
     let setLoadingSelectedContact;
     let setContactsLoadingSummary;
     let clearCancelCallback;
     let unsetSelected;
+    let setTitle;
 
     beforeEach(() => {
       settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
@@ -140,9 +144,10 @@ describe('Contacts effects', () => {
       setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
       clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      setTitle = sinon.stub(GlobalActions.prototype, 'setTitle');
     });
 
-    it('should not call other actions if no contact is selelected', () => {
+    it('should not call other actions if no contact is selected', () => {
       store.overrideSelector(Selectors.getSelectedContact, null);
       actions$ = of(ContactActionList.setSelectedContact(null));
       effects.setSelectedContact.subscribe();
@@ -154,7 +159,7 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
     });
 
-    it('should call the right actions actions if a contact is selelected', () => {
+    it('should call the right actions actions if a contact is selected', () => {
       store.overrideSelector(Selectors.getSelectedContact, { _id: 'contactid', doc: { _id: 'contactid' } });
       store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
@@ -204,6 +209,38 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: true});
     }));
+    
+    describe('set title', () => {
+      it('should set contact profile title', () => {
+        routeSnapshotService.get.returns({ data: { name: 'contacts.detail' }});
+
+        actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
+        effects.setSelectedContact.subscribe();
+
+        expect(setTitle.callCount).to.equal(1);
+        expect(setTitle.args[0][0]).to.equal('contact.profile');
+      });
+
+      it('should set contact type title', () => {
+        routeSnapshotService.get.returns({ data: { name: 'contacts.detail' }});
+
+        actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', type: { name_key: 'new_type' } }));
+        effects.setSelectedContact.subscribe();
+
+        expect(setTitle.callCount).to.equal(1);
+        expect(setTitle.args[0][0]).to.equal('new_type');
+      });
+
+      it('should set contact decease title', () => {
+        routeSnapshotService.get.returns({ data: { name: 'contacts.deceased' }});
+
+        actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
+        effects.setSelectedContact.subscribe();
+
+        expect(setTitle.callCount).to.equal(1);
+        expect(setTitle.args[0][0]).to.equal('contact.deceased.title');
+      });
+    });
   });
 
   describe('receiveSelectedContactReports', () => {

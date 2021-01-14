@@ -36,6 +36,8 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
+import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
+import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -113,6 +115,7 @@ export class AppComponent implements OnInit {
     private rulesEngineService:RulesEngineService,
     private recurringProcessManagerService:RecurringProcessManagerService,
     private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
+    private databaseConnectionMonitorService: DatabaseConnectionMonitorService
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -260,6 +263,7 @@ export class AppComponent implements OnInit {
     this.watchUserContextChanges();
     this.watchTranslationsChanges();
     this.watchDBSyncStatus();
+    this.watchDatabaseConnection();
     this.setAppTitle();
     this.setupAndroidVersion();
     this.requestPersistentStorage();
@@ -362,6 +366,18 @@ export class AppComponent implements OnInit {
         }
       },
     });
+  }
+
+  private watchDatabaseConnection() {
+    this.databaseConnectionMonitorService
+      .listenForDatabaseClosed()
+      .subscribe(() => {
+        this.modalService
+          .show(DatabaseClosedComponent)
+          .catch(() => {});
+
+        // ToDo: closeDropdowns();
+      });
   }
 
   private subscribeToStore() {
@@ -477,7 +493,7 @@ export class AppComponent implements OnInit {
           this.showUpdateReady();
         }, TWO_HOURS);
       });
-    //closeDropdowns();
+    // ToDo closeDropdowns();
   }
 
   private checkPrivacyPolicy() {
@@ -558,7 +574,6 @@ export class AppComponent implements OnInit {
     CheckDate,
     CountMessages,
 
-    DatabaseConnectionMonitor,
     Debug,
     Feedback,
     JsonForms,
@@ -635,13 +650,6 @@ export class AppComponent implements OnInit {
     Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
     delete $window.startupTimes;
 
-    if ($window.location.href.indexOf('localhost') !== -1) {
-      Debug.set(Debug.get()); // Initialize with cookie
-    } else {
-      // Disable debug for everything but localhost
-      Debug.set(false);
-    }
-
     ctrl.dbWarmedUp = true;
 
     LiveListConfig();
@@ -686,22 +694,6 @@ export class AppComponent implements OnInit {
         $log.error('Error loading language', err);
       });
 
-    $('body').on('click', '.send-message', function(event) {
-      const target = $(event.target).closest('.send-message');
-      if (target.hasClass('mm-icon-disabled')) {
-        return;
-      }
-      event.preventDefault();
-      Modal({
-        templateUrl: 'templates/modals/send_message.html',
-        controller: 'SendMessageCtrl',
-        controllerAs: 'sendMessageCtrl',
-        model: {
-          to: target.attr('data-send-to'),
-        },
-      });
-    });
-
     $('body').on('mouseenter', '.relative-date, .autoreply', function() {
       if ($(this).data('tooltipLoaded') !== true) {
         $(this)
@@ -722,14 +714,6 @@ export class AppComponent implements OnInit {
       }
     });
 
-    $('body').on('click', '#message-content .message-body', function(e) {
-      const elem = $(e.target).closest('.message-body');
-      if (!elem.is('.selected')) {
-        $('#message-content .selected').removeClass('selected');
-        elem.addClass('selected');
-      }
-    });
-
     // close select2 dropdowns in the background
     const closeDropdowns = function() {
       $('select.select2-hidden-accessible').each(function() {
@@ -746,35 +730,6 @@ export class AppComponent implements OnInit {
     // close all select2 menus on navigation
     // https://github.com/medic/medic/issues/2927
     $transitions.onStart({}, closeDropdowns);
-
-    const dbClosedDeregister = $rootScope.$on('databaseClosedEvent', function () {
-      Modal({
-        templateUrl: 'templates/modals/database_closed.html',
-        controller: 'ReloadingModalCtrl',
-        controllerAs: 'reloadingModalCtrl',
-      });
-      closeDropdowns();
-    });
-    DatabaseConnectionMonitor.listenForDatabaseClosed();
-
-    const showUpdateReady = function() {
-      Modal({
-        templateUrl: 'templates/modals/version_update.html',
-        controller: 'ReloadingModalCtrl',
-        controllerAs: 'reloadingModalCtrl',
-      }).catch(function() {
-        $log.debug('Delaying update');
-        $timeout(function() {
-          $log.debug('Displaying delayed update ready dialog');
-          showUpdateReady();
-        }, 2 * 60 * 60 * 1000);
-      });
-      closeDropdowns();
-    };
-
-    $scope.$on('$destroy', function() {
-      dbClosedDeregister();
-    });
 
   });
 })();*/
