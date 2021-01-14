@@ -44,7 +44,7 @@ const baseConfig = {
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
       args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
-      intl: { accept_languages: "en-US" }
+      intl: { accept_languages: 'en-US' }
     }
   },
   jasmineNodeOpts: {
