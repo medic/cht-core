@@ -213,7 +213,6 @@ describe('date pipes rendering', () => {
   let fixture;
   let relativeDate;
   let formatDate;
-  let sanitizer;
   let translate;
 
   const override = async(template, { task=undefined, date=undefined }={}) => {
@@ -244,7 +243,6 @@ describe('date pipes rendering', () => {
       instant: sinon.stub().returnsArg(0),
       get: sinon.stub().callsFake(arg => of([arg])),
     };
-    sanitizer = { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) };
 
     TestBed
       .configureTestingModule({
@@ -252,7 +250,6 @@ describe('date pipes rendering', () => {
           { provide: RelativeDateService, useValue: relativeDate },
           { provide: FormatDateService, useValue: formatDate },
           { provide: TranslateService, useValue: translate },
-          { provide: DomSanitizer, useValue: sanitizer },
         ],
         declarations: [
           AgePipe,

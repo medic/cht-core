@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import { Store } from '@ngrx/store';
@@ -47,6 +47,7 @@ export class EnketoService {
     private xmlFormsService:XmlFormsService,
     private zScoreService:ZScoreService,
     private translateService:TranslateService,
+    private ngZone:NgZone,
   ) {
     this.inited = this.init();
     this.servicesActions = new ServicesActions(this.store);
@@ -371,13 +372,13 @@ export class EnketoService {
 
   private registerEditedListener($selector, listener) {
     if (listener) {
-      $selector.on('edited.enketo', listener);
+      $selector.on('edited.enketo', () => this.ngZone.run(() => listener()));
     }
   }
 
   private registerValuechangeListener($selector, listener) {
     if (listener) {
-      $selector.on('valuechange.enketo', listener);
+      $selector.on('valuechange.enketo', () => this.ngZone.run(() => listener()));
     }
   }
 

@@ -2,8 +2,9 @@ import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { TranslateService } from '@ngx-translate/core';
-import { SettingsService } from './settings.service';
-import { UserSettingsService } from './user-settings.service';
+
+import { SettingsService } from '@mm-services/settings.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 const localeCookieKey = 'locale';
 

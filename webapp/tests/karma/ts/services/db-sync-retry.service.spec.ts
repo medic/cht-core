@@ -42,18 +42,20 @@ describe('DBSyncRetry service', () => {
       expect(!!result).to.equal(false);
     });
 
-    it('should catch 404s', () => {
+    it('should catch 404s', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       medicLocalDb.get.rejects({ status: 404 });
       metaLocalDb.get.rejects({ status: 404 });
-      return service.retryForbiddenFailure({ id: 'some_uuid' }).then(result => {
-        expect(medicLocalDb.get.callCount).to.equal(1);
-        expect(medicLocalDb.get.args[0]).to.deep.equal(['some_uuid', { revs: true }]);
-        expect(metaLocalDb.get.callCount).to.equal(1);
-        expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/some_uuid']);
-        expect(medicLocalDb.put.callCount).to.equal(0);
-        expect(metaLocalDb.put.callCount).to.equal(0);
-        expect(!!result).to.equal(false);
-      });
+      const result = await service.retryForbiddenFailure({ id: 'some_uuid' });
+      expect(medicLocalDb.get.callCount).to.equal(1);
+      expect(medicLocalDb.get.args[0]).to.deep.equal(['some_uuid', { revs: true }]);
+      expect(metaLocalDb.get.callCount).to.equal(1);
+      expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/some_uuid']);
+      expect(medicLocalDb.put.callCount).to.equal(0);
+      expect(metaLocalDb.put.callCount).to.equal(0);
+      expect(!!result).to.equal(false);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error when retrying replication for forbidden doc');
     });
 
     it('should account for no _revisions property', () => {
@@ -317,7 +319,8 @@ describe('DBSyncRetry service', () => {
       });
     });
 
-    it('should catch db put errors', () => {
+    it('should catch db put errors', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
       const doc = {
         _id: 'the_id',
         _rev: '4-rev',
@@ -339,19 +342,20 @@ describe('DBSyncRetry service', () => {
       metaLocalDb.get.resolves(localDoc);
       medicLocalDb.put.rejects({ err: 'boom' });
 
-      return service.retryForbiddenFailure({ id: 'the_id' }).then(result => {
-        expect(medicLocalDb.get.callCount).to.equal(1);
-        expect(medicLocalDb.get.args[0]).to.deep.equal(['the_id', { revs: true }]);
-        expect(metaLocalDb.get.callCount).to.equal(1);
-        expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/the_id']);
-        expect(medicLocalDb.put.callCount).to.equal(1);
-        expect(medicLocalDb.put.args[0]).to.deep.equal([{
-          _id: 'the_id',
-          _rev: '4-rev',
-        }]);
-        expect(metaLocalDb.put.callCount).to.equal(0);
-        expect(!!result).to.equal(false);
-      });
+      const result = await service.retryForbiddenFailure({ id: 'the_id' });
+      expect(medicLocalDb.get.callCount).to.equal(1);
+      expect(medicLocalDb.get.args[0]).to.deep.equal(['the_id', { revs: true }]);
+      expect(metaLocalDb.get.callCount).to.equal(1);
+      expect(metaLocalDb.get.args[0]).to.deep.equal(['_local/the_id']);
+      expect(medicLocalDb.put.callCount).to.equal(1);
+      expect(medicLocalDb.put.args[0]).to.deep.equal([{
+        _id: 'the_id',
+        _rev: '4-rev',
+      }]);
+      expect(metaLocalDb.put.callCount).to.equal(0);
+      expect(!!result).to.equal(false);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error when retrying replication for forbidden doc');
     });
   });
 });

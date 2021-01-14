@@ -2,12 +2,16 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 import { GlobalActions } from '@mm-actions/global';
 import { expect } from 'chai';
 import sinon from 'sinon';
+
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
+import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
+import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 
 describe('Reports Filters Component', () => {
   let component: ContactsFiltersComponent;
@@ -19,11 +23,14 @@ describe('Reports Filters Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
+          FormsModule,
         ],
         declarations: [
           ContactsFiltersComponent,
           FreetextFilterComponent,
-          SimprintsFilterComponent
+          ResetFiltersComponent,
+          SimprintsFilterComponent,
+          SortFilterComponent,
         ],
         providers: [
           provideMockStore(),

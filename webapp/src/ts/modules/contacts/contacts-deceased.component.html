@@ -24,7 +24,7 @@
               <ng-container *ngFor="let child of group.contacts">
                 <mm-content-row *ngIf="child.deceased"
                   [id]="child.doc._id"
-                  [route]="['contacts']"
+                  [route]="['/', 'contacts', child.id]"
                   [heading]="child.doc.name"
                   [dob]="child.doc.date_of_birth"
                   [dod]="child.doc.date_of_death"

@@ -5,11 +5,11 @@ import * as taskUtils from '@medic/task-utils';
 import * as phoneNumber from '@medic/phone-number';
 import { Store } from '@ngrx/store';
 
-import { DbService } from './db.service';
-import { MarkReadService } from './mark-read.service';
-import { SettingsService } from './settings.service';
-import { UserSettingsService } from './user-settings.service';
-import { ExtractLineageService } from './extract-lineage.service';
+import { DbService } from '@mm-services/db.service';
+import { MarkReadService } from '@mm-services/mark-read.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ServicesActions } from '@mm-actions/services.ts';
 
 @Injectable({

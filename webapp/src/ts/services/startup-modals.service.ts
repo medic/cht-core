@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 
-import { TourService } from './tour.service';
-import { UpdateUserService } from './update-user.service';
-import { SessionService } from './session.service';
+import { TourService } from '@mm-services/tour.service';
+import { UpdateUserService } from '@mm-services/update-user.service';
+import { SessionService } from '@mm-services/session.service';
 import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
-import { SettingsService } from './settings.service';
-import { UserSettingsService } from './user-settings.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdateSettingsService } from '@mm-services/update-settings.service';
 import { WelcomeComponent } from '@mm-modals/welcome/welcome.component';
 

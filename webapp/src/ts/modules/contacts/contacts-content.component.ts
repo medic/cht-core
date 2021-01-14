@@ -68,6 +68,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
+      if (this.selectedContact !== selectedContact) {
+        this.setReportsTimeWindowMonths(3);
+        this.setTasksTimeWindowWeeks(1);
+      }
       this.selectedContact = selectedContact;
       this.selectedContactChildren = selectedContactChildren;
       this.loadingContent = loadingContent;
@@ -103,7 +107,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
-        
         if (matchedContact && contactDeleted) {
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
           return this.router.navigate([`/contacts/${parentId}`]);

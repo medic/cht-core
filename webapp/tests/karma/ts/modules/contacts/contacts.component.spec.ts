@@ -1,10 +1,12 @@
 import { async, TestBed, ComponentFixture, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { of } from 'rxjs';
+
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
@@ -18,10 +20,17 @@ import { AuthService } from '@mm-services/auth.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
+import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
+import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
+import { NavigationComponent } from '@mm-components/navigation/navigation.component';
+import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
+import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
+import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
+import { TourService } from '@mm-services/tour.service';
 
 describe('Contacts component', () => {
   let searchResults;
-  let component; ContactsComponent;
+  let component;
   let store: MockStore;
   let fixture: ComponentFixture<ContactsComponent>;
   let changesService;
@@ -50,10 +59,17 @@ describe('Contacts component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
+          RouterTestingModule,
+          FormsModule,
         ],
         declarations: [
-          ContactsComponent
+          ContactsComponent,
+          ContactsFiltersComponent,
+          FreetextFilterComponent,
+          NavigationComponent,
+          SimprintsFilterComponent,
+          ResetFiltersComponent,
+          SortFilterComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -75,6 +91,7 @@ describe('Contacts component', () => {
             })
           }},
           { provide: SessionService, useValue: { isDbAdmin: sinon.stub().returns(false) } },
+          { provide: TourService, useValue: { startIfNeeded: sinon.stub() } },
           { provide: AuthService, useValue: { has: sinon.stub().resolves(false) } },
           { provide: ContactTypesService, useValue: {
             getChildren: sinon.stub().resolves([

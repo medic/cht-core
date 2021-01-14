@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
-import { DbService } from './db.service';
+
+import { DbService } from '@mm-services/db.service';
 
 const MAX_REPLICATION_RETRY_COUNT = 3;
 

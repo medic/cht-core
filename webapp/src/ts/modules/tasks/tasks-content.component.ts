@@ -270,8 +270,12 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     if (action.type === 'contact') {
-      // todo once contacts are migrated and we know how the new route looks like
-      // $state.go('contacts.addChild', action.content);
+      if (action.content?.parent_id) {
+        this.router.navigate(['/contacts', action.content.parent_id, 'add', action.content.type || '']);
+      } else {
+        this.router.navigate(['/contacts', 'add', action.content?.type || '']);
+      }
+
     }
   }
 

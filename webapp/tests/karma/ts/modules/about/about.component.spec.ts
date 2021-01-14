@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -20,6 +21,7 @@ describe('About Component', () => {
   let sessionService;
   let versionService;
   let dbInfo;
+  let router;
 
   beforeEach(async(() => {
     const mockedSelectors = [
@@ -36,6 +38,7 @@ describe('About Component', () => {
     dbService = { get: sinon.stub().returns({ info: dbInfo }) };
     resourceIconsService = { getDocResources: sinon.stub().resolves() };
     sessionService = { userCtx: sinon.stub().returns('userctx') };
+    router = { navigate: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -52,6 +55,7 @@ describe('About Component', () => {
           { provide: SessionService, useValue: sessionService },
           { provide: VersionService, useValue: versionService },
           { provide: DbService, useValue: dbService },
+          { provide: Router, useValue: router }
         ]
       })
       .compileComponents()
@@ -78,7 +82,7 @@ describe('About Component', () => {
     expect(spySubscriptionsAdd.callCount).to.equal(1);
   });
 
-  it('initializes data', async(async () => {
+  it('should initializes data', async(async () => {
     dbInfo.resolves({ some: 'info' });
     sessionService.userCtx.returns('session info');
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
@@ -96,7 +100,7 @@ describe('About Component', () => {
     expect(component.remoteRev).to.equal('15');
   }));
 
-  it ('display partner logo if it exists', async(async () => {
+  it ('should display partner logo if it exists', async(async () => {
     resourceIconsService.getDocResources.resolves(['Medic Mobile']);
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
@@ -114,5 +118,70 @@ describe('About Component', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+  });
+
+  describe('secretDoor()', () => {
+    let clock;
+    let setTimeoutStub;
+    let clearTimeoutStub;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      setTimeoutStub = sinon.stub(clock, 'setTimeout').callThrough();
+      clearTimeoutStub = sinon.stub(clock, 'clearTimeout').callThrough();
+    });
+
+    afterEach(() => {
+      clock && clock.restore();
+    });
+
+    it('should clear timeout', () => {
+      component.secretDoor();
+
+      expect(clearTimeoutStub.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
+      expect(setTimeoutStub.callCount).to.equal(1);
+      expect(component.knockCount).to.equal(1);
+
+      component.secretDoor();
+
+      expect(clearTimeoutStub.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(0);
+      expect(setTimeoutStub.callCount).to.equal(2);
+      expect(component.knockCount).to.equal(2);
+    });
+
+    it('should navigate to testing page when knock count reach limit', () => {
+      component.knockCount = 5;
+
+      component.secretDoor();
+
+      expect(clearTimeoutStub.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.have.deep.members([['/testing']]);
+      expect(setTimeoutStub.callCount).to.equal(0);
+      expect(component.knockCount).to.equal(6);
+    });
+
+    it('should set zero the knock count after 1 second from the last knock', () => {
+      component.knockCount = 4;
+
+      component.secretDoor();
+
+      expect(clearTimeoutStub.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(0);
+      expect(setTimeoutStub.callCount).to.equal(1);
+      expect(component.knockCount).to.equal(5);
+
+      clock.tick(1000);
+      expect(component.knockCount).to.equal(0);
+
+      component.secretDoor();
+
+      expect(clearTimeoutStub.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(0);
+      expect(setTimeoutStub.callCount).to.equal(2);
+      expect(component.knockCount).to.equal(1);
+    });
   });
 });

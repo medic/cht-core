@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { FormsModule } from '@angular/forms';
 
 import  { PipesModule } from '@mm-pipes/pipes.module';
@@ -23,6 +24,7 @@ import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { ContactsDeceasedComponent } from '@mm-modules/contacts/contacts-deceased.component';
 import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.component';
+import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
@@ -31,6 +33,8 @@ import { AnalyticsTargetAggregatesComponent } from './analytics/analytics-target
 import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-target-aggregates-detail.component';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
+import { ThemeComponent } from '@mm-modules/theme/theme.component';
+import { TestingComponent } from './testing/testing.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +53,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     ContactsFiltersComponent,
     ContactsDeceasedComponent,
     ContactsReportComponent,
+    ContactsEditComponent,
     MessagesContentComponent,
     PrivacyPolicyComponent,
     AnalyticsTargetsComponent,
@@ -57,6 +62,8 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     AnalyticsTargetAggregatesDetailComponent,
     TasksComponent,
     TasksContentComponent,
+    ThemeComponent,
+    TestingComponent,
   ],
   imports: [
     CommonModule,
@@ -66,6 +73,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
     ComponentsModule,
     BsDropdownModule,
     FormsModule,
+    AccordionModule,
   ],
   exports: [
     HomeComponent,
