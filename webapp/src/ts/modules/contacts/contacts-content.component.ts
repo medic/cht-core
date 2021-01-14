@@ -34,7 +34,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   loadingContent;
   selectedContact;
   contactsLoadingSummary;
-  selectedContactChildren;
   forms;
   loadingSelectedContactReports;
   reportStartDate;
@@ -44,6 +43,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   userSettings;
   settings;
   childTypesBySelectedContact = [];
+  canDeleteContact = false; // this disables the "Delete" button until children load
 
   constructor(
     private store: Store,
@@ -79,32 +79,45 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedContact),
-      this.store.select(Selectors.getLoadingSelectedContactChildren),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
       this.store.select(Selectors.getContactsLoadingSummary),
     ).subscribe(([
       selectedContact,
-      selectedContactChildren,
       forms,
       loadingContent,
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
-      if (this.selectedContact !== selectedContact) {
-        this.setReportsTimeWindowMonths(3);
-        this.setTasksTimeWindowWeeks(1);
-        this.setRightActionBar();
-      }
+      const newSelectedContact = this.selectedContact?._id !== selectedContact?._id;
       this.selectedContact = selectedContact;
-      this.selectedContactChildren = selectedContactChildren;
       this.loadingContent = loadingContent;
       this.forms = forms;
       this.loadingSelectedContactReports = loadingSelectedContactReports;
       this.contactsLoadingSummary = contactsLoadingSummary;
+
+      if (newSelectedContact) {
+        this.setReportsTimeWindowMonths(3);
+        this.setTasksTimeWindowWeeks(1);
+        this.setRightActionBar();
+      }
     });
     this.subscription.add(reduxSubscription);
+
+    const childrenSubscription = this.store
+      .select(Selectors.getSelectedContactChildren)
+      .subscribe((selectedContactChildren) => {
+        const canDelete = !!selectedContactChildren?.every(group => !group.contacts?.length);
+
+        if (this.canDeleteContact === canDelete) {
+          return;
+        }
+
+        this.canDeleteContact = canDelete;
+        this.globalActions.updateRightActionBar({ canDelete: this.canDeleteContact });
+      });
+    this.subscription.add(childrenSubscription);
   }
 
   subscribeToRoute() {
@@ -173,9 +186,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.getSettings();
 
     this.globalActions.setRightActionBar({
-      relevantForms: [], // This disables the "New Action" button in action bar until forms load
+      relevantForms: [], // This disables the "New Action" button until forms load
       sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
-      canDelete: !!this.selectedContact?.children?.every(group => !group.contacts?.length),
+      canDelete: this.canDeleteContact,
       canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
       openContactMutedModal: (form) => this.openContactMutedModal(form),
       openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
@@ -289,7 +302,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
             };
           })
           .sort((a, b) => a.title?.localeCompare(b.title));
-
         this.globalActions.updateRightActionBar({ relevantForms: formSummaries });
       }
     );

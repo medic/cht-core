@@ -98,6 +98,15 @@ const _globalReducer = createReducer(
       actionBar: { ...state.actionBar, left }
     };
   }),
+  on(Actions.updateLeftActionBar, (state, { payload: { left } }) => {
+    return {
+      ...state,
+      actionBar: {
+        ...state.actionBar,
+        left: { ...state.actionBar?.left, ...left },
+      },
+    };
+  }),
   on(Actions.setRightActionBar, (state, { payload: { right } }) => {
     return {
       ...state,

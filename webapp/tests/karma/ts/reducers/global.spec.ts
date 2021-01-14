@@ -132,6 +132,16 @@ describe('Global Reducer', () => {
     expect(globalReducer(state, Actions.setLeftActionBar(null))).to.deep.equal({ actionBar: { left: null } });
   });
 
+  it('should update left action bar', () => {
+    const left = { field: 'a', settings: 'b' };
+    state = globalReducer(state, Actions.setLeftActionBar(left));
+    expect(state).to.deep.equal({ actionBar: { left } });
+
+    const change = { other: 'e' };
+    state = globalReducer(state, Actions.updateLeftActionBar(change));
+    expect(state).to.deep.equal({ actionBar: { left: { field: 'a', settings: 'b', other: 'e' } } });
+  });
+
   it('should set correct enketo status', () => {
     state = globalReducer(state, Actions.setEnketoStatus({ edited: true }));
     expect(state).to.deep.equal({ enketoStatus: { edited: true } });

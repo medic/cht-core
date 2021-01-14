@@ -83,15 +83,13 @@ export const Selectors = {
     return (id) => contactsState.contactsById.has(id);
   }),
   getSelectedContact: createSelector(getContactsState, (contactsState) => contactsState.selected),
-  getLoadingSelectedContactChildren: createSelector(
-    getContactsState,
-    (contactsState) => contactsState.contacts
-  ),
+  getSelectedContactChildren: createSelector(getContactsState, (contactsState) => contactsState.selected?.children),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
     (contactsState) => contactsState.loadingSelectedReports
   ),
   getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.loadingSummary),
+
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 

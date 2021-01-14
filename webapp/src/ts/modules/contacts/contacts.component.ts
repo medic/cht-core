@@ -459,7 +459,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         }
 
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
-        this.setLeftActionBar();
+        this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
       }
     );
     this.subscription.add(subscription);
