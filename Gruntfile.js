@@ -463,12 +463,18 @@ module.exports = function(grunt) {
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
-          'sh scripts/e2e/wait_for_couch.sh 4984',
+          'sh scripts/e2e/wait_for_response_code.sh 4984 200 couch',
           `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
           'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
           // Useful for debugging etc, as it allows you to use Fauxton easily
           `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
         ].join('&& ')
+      },
+      'wait_for_api_down': {
+        cmd: [
+          'sh scripts/e2e/wait_for_response_code.sh 4988 000 api',
+        ].join('&& '),
+        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'clean-test-database': {
         cmd: [
@@ -753,14 +759,23 @@ module.exports = function(grunt) {
           }
         }
       },
+      'e2e-disable-control-flow': {
+        options: {
+          args: {
+            suite: 'e2e'
+          },
+          configFile: 'tests/conf-disabled.js'
+        }
+      },
       'e2e-tests-debug': {
         options: {
           configFile: 'tests/conf.js',
           args: {
-            capabilities: {
-              chromeOptions: {
-                args: [ 'window-size=1024,768' ]
-              }
+            suite: 'e2e'
+          },
+          capabilities: {
+            chromeOptions: {
+              args: ['window-size=1024,768']
             }
           }
         }
@@ -991,6 +1006,12 @@ module.exports = function(grunt) {
   ]);
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
+    'protractor:e2e-tests',
+  ]);
+
+  grunt.registerTask('e2e-disabled', 'Deploy app for testing and run e2e tests', [
+    'e2e-deploy',
+    'protractor:e2e-disable-control-flow',
     'protractor:e2e-web-tests',
     'protractor:e2e-mobile-tests',
     'exec:clean-test-database',
@@ -1086,6 +1107,12 @@ module.exports = function(grunt) {
     'protractor:e2e-mobile-tests',
   ]);
 
+  grunt.registerTask('ci-e2e-disabled', 'Run e2e tests for CI', [
+    'start-webdriver',
+    'exec:e2e-servers',
+    'protractor:e2e-disable-control-flow',
+  ]);
+
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
     'exec:e2e-servers',
@@ -1139,5 +1166,3 @@ module.exports = function(grunt) {
     'jsdoc'
   ]);
 };
-
-
