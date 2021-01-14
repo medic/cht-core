@@ -118,6 +118,7 @@ const render = (page, req, branding, extras = {}) => {
         },
         extras
       );
+      logger.info(options);
       return template(options);
     })
     .catch(err => {
