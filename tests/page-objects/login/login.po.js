@@ -46,31 +46,5 @@ module.exports = {
     if (shouldFail) {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
-  },
-  loginNative: async (username, password, shouldFail, locale) => {
-    await helper.waitUntilReadyNative(await getUsernameField());
-    await getUsernameField().clear();
-    await getPasswordField().clear();
-    await getUsernameField().sendKeys(username);
-    await getPasswordField().sendKeys(password);
-    await changeLocale(locale);
-    await getLoginButton().click();
-    await browser.waitForAngular();
-    if (shouldFail) {
-      expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
-    }
-  },
-  loginNative: async (username, password, shouldFail, locale) => {
-    await helper.waitUntilReadyNative(await getUsernameField());
-    await getUsernameField().clear();
-    await getPasswordField().clear();
-    await getUsernameField().sendKeys(username);
-    await getPasswordField().sendKeys(password);
-    await changeLocale(locale);
-    await getLoginButton().click();
-    await browser.waitForAngular();
-    if (shouldFail) {
-      expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
-    }
-  },
+  }
 };
