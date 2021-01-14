@@ -83,7 +83,14 @@ export const Selectors = {
     return (id) => contactsState.contactsById.has(id);
   }),
   getSelectedContact: createSelector(getContactsState, (contactsState) => contactsState.selected),
-  getSelectedContactChildren: createSelector(getContactsState, (contactsState) => contactsState.selected?.children),
+  getSelectedContactDoc: createSelector(
+    getContactsState,
+    (contactsState) => contactsState.selected?.doc
+  ),
+  getSelectedContactChildren: createSelector(
+    getContactsState,
+    (contactsState) => contactsState.selected?.children
+  ),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
     (contactsState) => contactsState.loadingSelectedReports

@@ -90,18 +90,15 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
-      const newSelectedContact = this.selectedContact?._id !== selectedContact?._id;
+      if (this.selectedContact !== selectedContact) {
+        this.setReportsTimeWindowMonths(3);
+        this.setTasksTimeWindowWeeks(1);
+      }
       this.selectedContact = selectedContact;
       this.loadingContent = loadingContent;
       this.forms = forms;
       this.loadingSelectedContactReports = loadingSelectedContactReports;
       this.contactsLoadingSummary = contactsLoadingSummary;
-
-      if (newSelectedContact) {
-        this.setReportsTimeWindowMonths(3);
-        this.setTasksTimeWindowWeeks(1);
-        this.setRightActionBar();
-      }
     });
     this.subscription.add(reduxSubscription);
 
@@ -118,6 +115,16 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.globalActions.updateRightActionBar({ canDelete: this.canDeleteContact });
       });
     this.subscription.add(childrenSubscription);
+
+    const contactDocSubscription = this.store
+      .select(Selectors.getSelectedContactDoc)
+      .subscribe((contactDoc) => {
+        if (!contactDoc) {
+          return;
+        }
+        this.setRightActionBar();
+      });
+    this.subscription.add(contactDocSubscription);
   }
 
   subscribeToRoute() {
