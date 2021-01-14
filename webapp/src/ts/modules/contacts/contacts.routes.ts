@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 
-import { RouteGuardProvider } from '../../providers/route-guard.provider';
-import { ContactsComponent } from './contacts.component';
-import { ContactsContentComponent } from './contacts-content.component';
-import { ContactsDeceasedComponent } from './contacts-deceased.component';
+import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
+import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
+import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.component';
+import { ContactsDeceasedComponent } from '@mm-modules/contacts/contacts-deceased.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { ContactAddRouteGuardProvider } from '@mm-modules/contacts/contact-route-guard.provider';
+import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.component';
 
 export const routes: Routes = [
   {
@@ -43,6 +44,10 @@ export const routes: Routes = [
         path: ':id/edit',
         component: ContactsEditComponent,
         canDeactivate: [ContactAddRouteGuardProvider],
+      },
+      {
+        path: '/:id/report/:formId',
+        component: ContactsReportComponent,
       }
     ],
   },
