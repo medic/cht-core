@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
@@ -43,7 +43,7 @@ describe('Contacts content component', () => {
       { selector: Selectors.getLoadingSelectedContactReports, value: false },
       { selector: Selectors.getContactsLoadingSummary, value: false },
     ];
-    activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
+    activatedRoute = { params: of({ id: 'load contact' }), snapshot: { params: { id: 'load contact'} } };
     router = { navigate: sinon.stub() };
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     contactChangeFilterService = {
@@ -82,9 +82,56 @@ describe('Contacts content component', () => {
     sinon.restore();
   });
 
-  it('should create ReportsContentComponent', () => {
+  it('should create ContactsContentComponent', () => {
     expect(component).to.exist;
   });
+
+  describe('load the user home place on mobile', () => {
+    let original;
+
+    beforeEach(() => {
+      original = window.jQuery;
+    });
+
+    afterEach(() => {
+      window.jQuery = original;
+    });
+
+    it(`should not load the user's home place when on mobile`, fakeAsync(() => {
+      const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+      store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+      window.jQuery = sinon.stub();
+      window.jQuery.withArgs('#mobile-detection').returns({ css: () => 'inline' });
+      activatedRoute.params = of({});
+      activatedRoute.snapshot.params = {};
+      component.ngOnInit();
+      flush();
+  
+      expect(selectContact.callCount).to.equal(0);
+    }));
+  });
+
+  it(`should not load the user's home place when a param id is set`, fakeAsync(() => {
+    const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    component.ngOnInit();
+    flush();
+
+    expect(selectContact.callCount).to.equal(1);
+    expect(selectContact.args[0][0]).to.equal('load contact');
+  }));
+
+  it(`should load the user's home place when a param id not set`, fakeAsync(() => {
+    const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    activatedRoute.params = of({});
+    activatedRoute.snapshot.params = {};
+    component.ngOnInit();
+    flush();
+
+    expect(selectContact.callCount).to.equal(1);
+    expect(selectContact.args[0][0]).to.equal('homeplace');
+  }));
 
   describe('Change feed process', () => {
     let change;

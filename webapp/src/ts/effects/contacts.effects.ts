@@ -12,6 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
+import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -26,6 +27,7 @@ export class ContactsEffects {
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
+    private routeSnapshotService: RouteSnapshotService,
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -60,18 +62,26 @@ export class ContactsEffects {
     return this.actions$.pipe(
       ofType(ContactActionList.setSelectedContact),
       withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact))
+        this.store.pipe(select(Selectors.getSelectedContact)),
+        this.store.pipe(select(Selectors.getUserFacilityId)),
       ),
-      exhaustMap(([{ payload: { selected } }, previousSelectedContact]) => {
+      exhaustMap(([{ payload: { selected } }, previousSelectedContact, userFacilityId]) => {
         if (!selected) {
           return []; // return an empty stream if there is no selected contact
         }
+
         const refreshing = previousSelectedContact?.doc?._id === selected.id;
         this.globalActions.settingSelected(refreshing);
         this.globalActions.clearCancelCallback();
-        const options = { getChildPlaces: true };
-        const title = (selected.type && selected.type.name_key) || 'contact.profile';
+
+        const routeSnapshot = this.routeSnapshotService.get();
+        const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
+          ? this.translateService.instant('contact.deceased.title') : null;
+        const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
         this.globalActions.setTitle(this.translateService.instant(title));
+
+        const getChildPlaces = userFacilityId !== selected?.doc?._id;
+        const options = { getChildPlaces };
         return from(this.contactViewModelGeneratorService.loadChildren(previousSelectedContact, options)).pipe(
           map(children => {
             return this.contactsActions.receiveSelectedContactChildren(children);

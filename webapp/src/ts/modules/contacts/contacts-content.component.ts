@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 import * as moment from 'moment';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -9,6 +10,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { isMobile } from '@mm-providers/responsive.provider';
 
 @Component({
   selector: 'contacts-content',
@@ -46,20 +48,31 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscribeToChanges();
     this.setReportsTimeWindowMonths(3);
     this.setTasksTimeWindowWeeks(1);
+    this.getUserFacility();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
-  subscribeToStore() {
+  private getUserFacility() {
+    this.store.select(Selectors.getUserFacilityId)
+      .pipe(first(id => id !== null))
+      .subscribe((userFacilityId) => {
+        if (userFacilityId && !this.route.snapshot.params.id && !isMobile()) {
+          this.contactsActions.selectContact(userFacilityId);
+        }
+      });
+  }
+
+  private subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getLoadingSelectedContactChildren),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
-      this.store.select(Selectors.getContactsLoadingSummary),
+      this.store.select(Selectors.getContactsLoadingSummary), 
     ).subscribe(([
       selectedContact,
       selectedContactChildren,
@@ -82,7 +95,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(reduxSubscription);
   }
 
-  subscribeToRoute() {
+  private subscribeToRoute() {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
@@ -96,7 +109,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(routeSubscription);
   }
 
-  subscribeToChanges() {
+  private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
       filter: (change) => {
