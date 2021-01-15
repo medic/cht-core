@@ -48,7 +48,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getShowActionBar),
       this.store.select(Selectors.getSelectedReportsDocs),
-      this.store.select(Selectors.getSelectedContact),
+      this.store.select(Selectors.getSelectedContactDoc),
     ).subscribe(([
       actionBar,
       currentTab,

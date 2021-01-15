@@ -197,7 +197,7 @@
               </a>
               <ul class="dropdown-menu mm-dropdown-menu with-icon">
                 <li *ngFor="let type of group.types; trackBy: trackById">
-                  <a [routerLink]="selectedContactDoc._id ? ['/', 'contacts', selectedContactDoc._id, 'add', type.id] : ['/', 'contacts', 'add', type.id]">
+                  <a [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', type.id]">
                     <span [innerHTML]="type.icon | resourceIcon"></span>
                     <span class="content" translate>{{ type.create_key }}</span>
                   </a>
@@ -207,7 +207,7 @@
 
             <a *ngIf="group.types?.length === 1"
               class="mm-icon mm-icon-inverse mm-icon-caption"
-              [routerLink]="selectedContactDoc._id ? ['/', 'contacts', selectedContactDoc._id, 'add', group.types[0]?.id] : ['/', 'contacts', 'add', group.types[0]?.id]"
+              [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', group.types[0]?.id]"
             >
               <span class="fa-stack">
                 <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
@@ -256,7 +256,7 @@
 
           <a mmAuth="can_delete_contacts"
             class="mm-icon mm-icon-inverse mm-icon-caption"
-            (click)="deleteDoc(selectedContactDoc.doc)"
+            (click)="deleteDoc(selectedContactDoc)"
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
           >
             <span class="fa fa-trash-o"></span>
