@@ -740,16 +740,11 @@ module.exports = {
   },
 
   seedTestDataNative: async (userContactDoc, documents) => {
-    try {
-      documents.forEach(async doc => await module.exports.saveDocNative(doc));
-    } catch (err) {
-      console.log('error saving docs');
-    }
-    
+    documents.forEach(async doc => await module.exports.saveDocNative(doc));
     const existingContactDoc = await module.exports.getDocNative(constants.USER_CONTACT_ID);
     if (userContactDoc) {
-      Object.assign(existingContactDoc, userContactDoc);
-      await module.exports.saveDocNative(existingContactDoc);
+      const mergedContact = { ...existingContactDoc, ...userContactDoc };
+      await module.exports.saveDocNative(mergedContact);
     }
   },
 
