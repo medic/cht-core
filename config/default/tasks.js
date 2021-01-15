@@ -67,7 +67,7 @@ module.exports = [
           parseInt(report.fields.g_deworming.deworm_next_date)
         ); // todo remove debug. parseInt() evals a date to 2021 (year).  That the right check?
       }
-      return report && report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
+      return report && report.fields && report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
     },
     actions: [
       {
