@@ -6,14 +6,14 @@ const _ = require('lodash');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
-    it('should require application/json Content-Type header', () => {
+    it('should require application/json Content-Type header', async () => {
       const opts = {
         method: 'POST',
         path: '/login',
         json: false
       };
 
-      return utils.requestOnTestDb(opts, true)
+      return await utils.requestOnTestDbNative(opts, true)
         .then(fail)
         .catch(e => {
           expect(e.responseBody).toBe('Content-Type must be application/json');
@@ -22,7 +22,7 @@ describe('server', () => {
   });
 
   describe('response compression', () => {
-    afterAll(utils.afterEach);
+    afterAll(utils.afterEachNative);
 
     const requestWrapper = (options) => {
       _.defaults(options, {
@@ -107,9 +107,9 @@ describe('server', () => {
       });
     });
 
-    it('compresses compressible CouchDB doc attachments (text/plain)', () => {
-      return utils
-        .getDoc('sample_doc')
+    it('compresses compressible CouchDB doc attachments (text/plain)', async () => {
+      return await utils
+        .getDocNative('sample_doc')
         .then(doc => {
           const options = {
             uri: '/sample_doc/attach?rev=' + doc._rev,
@@ -132,12 +132,12 @@ describe('server', () => {
         });
     });
 
-    it('compresses compressible CouchDB doc attachments (application/xml)', () => {
+    it('compresses compressible CouchDB doc attachments (application/xml)', async () => {
       const xml = '<contact><_id>689960f3-edc2-429b-92f7-96799b3db7d5</_id><patient_id>40599</patient_id>' +
                   '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
-      return utils
-        .getDoc('sample_doc2')
+      return await utils
+        .getDocNative('sample_doc2')
         .then(doc => {
           const options = {
             uri: '/sample_doc2/attach?rev=' + doc._rev,
@@ -160,12 +160,12 @@ describe('server', () => {
         });
     });
 
-    it('does not compress uncompressible CouchDB doc attachments (image/png)', () => {
+    it('does not compress uncompressible CouchDB doc attachments (image/png)', async () => {
       const png = '<contact><_id>689960f3-edc2-429b-92f7-96799b3db7d5</_id><patient_id>40599</patient_id>' +
                   '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
-      return utils
-        .getDoc('sample_doc2')
+      return await utils
+        .getDocNative('sample_doc2')
         .then(doc => {
           const options = {
             uri: '/sample_doc2/attach?rev=' + doc._rev,

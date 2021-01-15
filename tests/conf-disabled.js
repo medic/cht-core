@@ -22,8 +22,9 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      'e2e/create-meta-db.js',
-      'e2e/login/login.specs.js'
+      //'e2e/create-meta-db.js',
+      //'e2e/login/login.specs.js',
+      'e2e/api/server.js',
     ],
     // performance: 'performance/**/*.js'
   },
