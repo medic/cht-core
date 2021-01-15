@@ -12,7 +12,7 @@ Developers are actively using both Linux and MacOS, so both of those platforms a
 
 You will need to install the following:
 
-- [Node.js](https://nodejs.org) 8.11.x and above
+- [Node.js](https://nodejs.org) 8.11.x and above LTS release (designated with an even major version number)
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
 - [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). For simplicity we [recommend installing via docker](#couchdb-on-docker). If on a Mac, please note that installation via homebrew is **not** supported.
