@@ -51,22 +51,15 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
 module.exports = [
 
   // MNCH Immunization and Growth follow up for Deworming
-  // todo - fix todos, figure better testing to verify works as expected
+  // todo - fix todos, see why task seems orphaned
   {
     name: 'immunization_growth_follow_up',
     icon: 'icon-people-children',
     title: 'immunization growth follow up - deworming', // todo - finalize title
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
+    contactLabel: function(contact, report) { return report._id; }, // todo - remove debug
     appliesIf: function(contact, report) {
-      if(report && report.fields.g_deworming) {
-        console.log(
-          'report.fields.g_deworming.deworm_next_date: ' +
-          JSON.stringify(report.fields.g_deworming.deworm_next_date)); // todo remove debug
-        console.log('parseInt(report.fields.g_deworming.deworm_next_date): ' +
-          parseInt(report.fields.g_deworming.deworm_next_date)
-        ); // todo remove debug. parseInt() evals a date to 2021 (year).  That the right check?
-      }
       return report && report.fields && report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
     },
     actions: [
@@ -79,11 +72,11 @@ module.exports = [
       {
         id: 'deworm_next_date_is_set', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
         days: 0,
-        start: 3,
+        start: 3, // todo - confirm if this prevents task from being completed right after it's created
         end: 7 // todo - get correct end days
       }
     ],
-    resolvedIf: function(contact, report, event, dueDate) {
+    resolvedIf: function(contact, report, event, dueDate) { // todo - this dosn't seem to resolve task
       return isFormArraySubmittedInWindow(contact.reports, ['immunization_growth_follow_up'], dueDate, event, null, report._id);
     }
   },
