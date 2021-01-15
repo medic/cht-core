@@ -161,6 +161,7 @@ describe('Contacts effects', () => {
 
     it('should call the right actions actions if a contact is selected', () => {
       store.overrideSelector(Selectors.getSelectedContact, { _id: 'contactid', doc: { _id: 'contactid' } });
+      store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
       actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
       effects.setSelectedContact.subscribe();
 
@@ -189,6 +190,26 @@ describe('Contacts effects', () => {
       expect(consoleErrorMock.args[0][0]).to.equal('Error fetching children');
     }));
 
+    it('should not load children if home place selected', fakeAsync(() => {
+      store.overrideSelector(Selectors.getUserFacilityId, 'contactid');
+      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
+      effects.setSelectedContact.subscribe();
+      flush();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: false});
+    }));
+
+    it('should load children if selected contact is not home place', fakeAsync(() => {
+      store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
+      effects.setSelectedContact.subscribe();
+      flush();
+
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: true});
+    }));
+    
     describe('set title', () => {
       it('should set contact profile title', () => {
         routeSnapshotService.get.returns({ data: { name: 'contacts.detail' }});
