@@ -973,15 +973,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-disabled', 'Deploy app for testing and run e2e tests', [
-    'exec:wait_for_api_down',
-    'exec:sleep',
-    'exec:kill-e2e-servers',
-    'e2e-deploy',
-    'protractor:e2e-disable-control-flow',
-    'exec:clean-test-database',
-  ]);
-
-  grunt.registerTask('e2e-disabled', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-disable-control-flow',
     'exec:clean-test-database',
@@ -1064,18 +1055,6 @@ module.exports = function(grunt) {
     'start-webdriver',
     'exec:e2e-servers',
     'protractor:e2e-tests',
-  ]);
-
-  grunt.registerTask('ci-e2e-disabled', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'exec:e2e-servers',
-    'protractor:e2e-disable-control-flow',
-  ]);
-
-  grunt.registerTask('ci-e2e-disabled', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'exec:e2e-servers',
-    'protractor:e2e-disable-control-flow',
   ]);
 
   grunt.registerTask('ci-e2e-disabled', 'Run e2e tests for CI', [
