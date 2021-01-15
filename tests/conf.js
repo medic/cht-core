@@ -71,7 +71,7 @@ const baseConfig = {
   onPrepare: () => {
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);
-    // browser.waitForAngularEnabled(false);
+    browser.waitForAngularEnabled(false);
 
     // wait for startup to complete
     browser.driver.wait(prepServices(), 135 * 1000, 'API took too long to start up');
