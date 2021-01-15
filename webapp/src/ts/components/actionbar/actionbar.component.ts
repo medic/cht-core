@@ -1,5 +1,4 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -33,7 +32,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private modalService: ModalService,
-    private router: Router,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
