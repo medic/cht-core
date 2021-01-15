@@ -1,6 +1,7 @@
 const utils = require('../../utils');
 const helper = require('../../helper');
 const common = require('../common/common.po');
+const { element } = require('protractor');
 
 /* eslint-disable max-len */
 const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
@@ -134,7 +135,7 @@ const docs = [
   }];
 
 const clearAndFill = async (el, value) => {
-  await el.clear()
+  await el.clear();
   await el.sendKeys(value);
 };
 
@@ -162,7 +163,7 @@ module.exports = {
       return addButton.isPresent();
     }, 10000);
     await helper.clickElement(addButton);
-    const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'))
+    const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'));
     await helper.clickElement(form);
 
     await browser.wait(() => {
@@ -196,4 +197,5 @@ module.exports = {
   getHeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
   getWeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
   getWeightForHeight: async () => await clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
+  fieldByIndex: index => element(by.css(`#reports-content .details li:nth-child(${index}) p`)),
 };
