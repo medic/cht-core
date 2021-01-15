@@ -55,7 +55,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
   navigateBack() {
     const routeSnapshot = this.routeSnapshotService.get();
     if (routeSnapshot.data.name === 'contacts.deceased') {
-      // todo check if this works when we have migrated the contacts tabs
       return this.router.navigate(['/contacts', routeSnapshot.params.id]);
     }
 

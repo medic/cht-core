@@ -24,6 +24,7 @@ const baseConfig = {
     e2e: [
       'e2e/create-meta-db.js',
       '**/api/server.js',
+      'e2e/login/login.specs.js',
     ],
     // performance: 'performance/**/*.js'
   },
@@ -35,7 +36,10 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
+      prefs: {
+        intl: { accept_languages: 'en-US' },
+      },
     }
   },
   jasmineNodeOpts: {

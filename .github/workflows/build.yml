@@ -156,13 +156,78 @@ jobs:
       run: node --stack_size=10000 `which grunt` ci-e2e
     - name: Dump Couch logs
       run: docker logs couch > tests/logs/couch.log 2>&1
-    - name: Archive test results folder
+      if: ${{ always() }}
+    - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: Results Artifact ${{ matrix.node-version }}
-        path: tests/results
+        name: Results Artifact ${{ matrix.node-version }} with control flow
+        path: |
+          tests/results
+          tests/logs
+      if: ${{ failure() }}
+
+  test-e2e-disabled:
+    needs: build
+    name: Disabled control flow e2e Tests for Node version ${{ matrix.node-version }}
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
+    steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Set Travis Vars
+      run: |
+        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "TEST_SUITE=integration" >> $GITHUB_ENV
+    - name: Set UPLOARD_URL var
+      run: |
+        if [[ -z "$MARKET_URL" ]]; then
+          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
+          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
+          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
+        fi
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Couch Start
+      run: ./scripts/travis/couch-start
+    - name: xsltprox install
+      run: sudo apt-get install xsltproc
+    - name: Create logs directory
+      run: mkdir tests/logs
+    - name: npm CI
+      run: npm ci
+    - name: Grunt Install
+      run: npm install -g grunt-cli
+    - name: Horti Install
+      run: npm install -g horticulturalist
+    - name: Configure Couch
+      run: ./scripts/travis/couch-config
+    - name: Echo Vars
+      run: |
+        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
+        echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
+        echo "COUCH_URL=${COUCH_URL}"
+    - name: Curl Couch_url
+      run: curl ${COUCH_URL}
+    - name: horti setup
+      run: |    
+        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
+        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
+    - name: Test it!
+      run: node --stack_size=10000 `which grunt` ci-e2e-disabled
+    - name: Dump Couch logs
+      run: docker logs couch > tests/logs/couch.log 2>&1
       if: ${{ always() }}
-    - name: Archive test logs folder
+    - name: Archive test results folder
       uses: actions/upload-artifact@v2
       with:
         name: Results Logs ${{ matrix.node-version }}
@@ -241,3 +306,9 @@ jobs:
         name: Results Logs ${{ matrix.node-version }}
         path: tests/logs
       if: ${{ always() }}
+        name: Results Artifact ${{ matrix.node-version }} without control flow
+        path: |
+          tests/results
+          tests/logs
+      if: ${{ failure() }}
+

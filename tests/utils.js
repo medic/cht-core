@@ -501,7 +501,9 @@ const deprecated = (name, replacement) => {
   if (replacement) {
     msg = `${msg} Replace by ${replacement}`;
   }
-  console.warn(msg);
+  if (process.env.DEBUG) {
+    console.warn(msg);
+  }
 };
 
 module.exports = {
@@ -518,7 +520,6 @@ module.exports = {
     captureOnlyFailedSpecs: true,
     reportOnlyFailedSpecs: false,
     showQuickLinks: true,
-    dest: `tests/results/${new Date().toISOString()}`,
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
       return currentSpec.fullName
