@@ -34,7 +34,8 @@ const baseConfig = {
       '**/send-message.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
-    ]
+      'e2e/reports-subject.js'
+    ],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
