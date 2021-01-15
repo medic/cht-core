@@ -74,17 +74,16 @@ describe('Submit Z-Score form', () => {
     expect(await ZScoreForm.getWeightForHeight()).toEqual('2.0387096774193547');
 
     await ZScoreForm.submit();
+    
+    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(1))).toEqual('45.1');
+    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(2))).toEqual('3');
+    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(3))).toEqual('female');
+    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(4))).toEqual('2');
 
-    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(1) p')))).toEqual('45.1');
-    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(2) p')))).toEqual('3');
-    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(3) p')))).toEqual('female');
-    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(4) p')))).toEqual('2');
-
-    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(5) p'))))
-      .toEqual('2.0387096774193547');
-    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(6) p'))))
+    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(5))).toEqual('2.0387096774193547');
+    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(6)))
       .toEqual('-0.4708520179372194');
-    expect(await helper.getTextFromElement(element(by.css('#reports-content .details li:nth-child(7) p'))))
+    expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(7)))
       .toEqual('-2.346895074946466');
   });
 });

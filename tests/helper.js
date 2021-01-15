@@ -225,7 +225,8 @@ module.exports = {
 
   waitElementToBeClickable: (elm, timeout) => {
     timeout = timeout || 15000;
-    return browser.wait(EC.elementToBeClickable(elm), timeout, 'waitElementToBeClickable timed out looking for '  + elm.locator());
+    const msg = 'waitElementToBeClickable timed out looking for '  + elm.locator();
+    return browser.wait(EC.elementToBeClickable(elm), timeout, msg);
   },
 
   waitElementToDisappear: (locator, timeout) => {
@@ -234,7 +235,7 @@ module.exports = {
       return element(locator)
         .isDisplayed()
         .then(presenceOfElement => !presenceOfElement);
-    }, timeout, 'waitElementToDisappear timed out looking for '  + elm.locator());
+    }, timeout, 'waitElementToDisappear timed out looking for '  + locator);
   },
 
   waitElementToPresent: (elm, timeout) => {
