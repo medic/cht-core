@@ -135,11 +135,7 @@ const docs = [
   }];
 
 const clearAndFill = async (el, value) => {
-<<<<<<< HEAD
   await el.clear();
-=======
-  await el.clear()
->>>>>>> add async/await, refactor a bit using async/await
   await el.sendKeys(value);
 };
 
@@ -201,8 +197,5 @@ module.exports = {
   getHeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
   getWeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
   getWeightForHeight: async () => await clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
-<<<<<<< HEAD
   fieldByIndex: index => element(by.css(`#reports-content .details li:nth-child(${index}) p`)),
-=======
->>>>>>> add async/await, refactor a bit using async/await
 };
