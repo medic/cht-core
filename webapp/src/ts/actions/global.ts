@@ -37,6 +37,7 @@ export const Actions = {
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
+  setUserFacilityId:createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
 };
 
 export class GlobalActions {
@@ -225,5 +226,9 @@ export class GlobalActions {
 
   setTranslationsLoaded() {
     return this.store.dispatch(Actions.setTranslationsLoaded());
+  }
+
+  setUserFacilityId(userFacilityId) {
+    return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
   }
 }

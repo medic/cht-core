@@ -195,6 +195,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       .get()
       .then((userSettings:any) => {
         if (userSettings.facility_id) {
+          this.globalActions.setUserFacilityId(userSettings.facility_id);
           return this.getDataRecordsService.get(userSettings.facility_id);
         }
       })

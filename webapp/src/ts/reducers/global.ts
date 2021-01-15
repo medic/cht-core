@@ -34,6 +34,7 @@ const initialState = {
   version: null,
   snackbarContent: null,
   translationsLoaded: false,
+  userFacilityId: null,
 };
 
 
@@ -156,6 +157,9 @@ const _globalReducer = createReducer(
     return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
   }),
   on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
+  on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
+    return { ...state, userFacilityId };
+  }),
 );
 
 export const globalReducer = (state, action) => {

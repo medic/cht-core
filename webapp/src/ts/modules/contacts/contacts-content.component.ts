@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 import * as moment from 'moment';
 import { groupBy as _groupBy } from 'lodash-es';
 
@@ -10,6 +11,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
+import { isMobile } from '@mm-providers/responsive.provider';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -70,13 +72,24 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscribeToChanges();
     this.setReportsTimeWindowMonths(3);
     this.setTasksTimeWindowWeeks(1);
+    this.getUserFacility();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
-  subscribeToStore() {
+  private getUserFacility() {
+    this.store.select(Selectors.getUserFacilityId)
+      .pipe(first(id => id !== null))
+      .subscribe((userFacilityId) => {
+        if (userFacilityId && !this.route.snapshot.params.id && !isMobile()) {
+          this.contactsActions.selectContact(userFacilityId);
+        }
+      });
+  }
+
+  private subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getForms),
@@ -127,7 +140,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(contactDocSubscription);
   }
 
-  subscribeToRoute() {
+  private subscribeToRoute() {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
@@ -142,7 +155,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(routeSubscription);
   }
 
-  subscribeToChanges() {
+  private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
       filter: (change) => {
