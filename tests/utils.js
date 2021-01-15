@@ -743,7 +743,7 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: done => {
-    
+
     return revertDb()
       .then(() => {
         if (done) {
@@ -794,12 +794,24 @@ module.exports = {
   revertDbNative,
 
   resetBrowser: () => {
+    deprecated('utils.resetBrowser', 'utils.resetBrowserNative');
     return browser.driver
       .navigate()
       .refresh()
       .then(() => {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
+        }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
+      });
+  },
+
+  resetBrowserNative: async () => {
+    return await browser.driver
+      .navigate()
+      .refresh()
+      .then(() => {
+        return browser.wait(async () => {
+          return await element(by.css('#messages-tab')).isPresent();
         }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
