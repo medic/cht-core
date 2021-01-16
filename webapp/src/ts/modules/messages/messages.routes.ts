@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import { Routes, UrlSegment } from '@angular/router';
 
 import { RouteGuardProvider } from '@mm-providers/route-guard.provider';
 import { MessagesComponent } from './messages.component';
@@ -14,6 +14,19 @@ export const routes: Routes = [
       {
         path: '',
         component: MessagesContentComponent
+      },
+      {
+        matcher: (url: UrlSegment[]) => {
+          if (url[0]?.path?.indexOf(':') === -1) {
+            return {
+              consumed: url,
+              posParams: {
+                type_id: new UrlSegment('contact:' + url[0].path, {})
+              }
+            };
+          }
+        },
+        redirectTo: ':type_id'
       },
       {
         path: ':type_id',
