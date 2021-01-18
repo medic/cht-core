@@ -29,11 +29,20 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 
 module.exports = {
-  calm: () => {
-    const bootstrapperSelector = by.css('.bootstrap-layer');
-    helper.waitElementToPresent(element(bootstrapperSelector));
-    helper.waitElementToDisappear(bootstrapperSelector);
-    helper.waitUntilReady(medicLogo);
+  calm: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReady(medicLogo);
+  },
+
+  calmNative: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReadyNative(medicLogo);
   },
 
   checkAbout: () => {
@@ -94,6 +103,12 @@ module.exports = {
   goToLoginPage: () => {
     browser.manage().deleteAllCookies();
     browser.driver.get(utils.getLoginUrl());
+  },
+
+  goToLoginPageNative: async () => {
+    await browser.manage().deleteAllCookies();
+    await browser.driver.get(await utils.getLoginUrl());
+    await browser.driver.get(await utils.getLoginUrl());
   },
 
   goToMessages: () => {

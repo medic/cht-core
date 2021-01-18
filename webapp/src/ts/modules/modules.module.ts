@@ -23,6 +23,7 @@ import { ContactsComponent } from './contacts/contacts.component';
 import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.component';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { ContactsDeceasedComponent } from '@mm-modules/contacts/contacts-deceased.component';
+import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { MessagesContentComponent } from './messages/messages-content.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { AnalyticsTargetsComponent } from './analytics/analytics-targets.component';
@@ -32,6 +33,7 @@ import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 import { ThemeComponent } from '@mm-modules/theme/theme.component';
+import { TestingComponent } from './testing/testing.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +51,7 @@ import { ThemeComponent } from '@mm-modules/theme/theme.component';
     ContactsContentComponent,
     ContactsFiltersComponent,
     ContactsDeceasedComponent,
+    ContactsEditComponent,
     MessagesContentComponent,
     PrivacyPolicyComponent,
     AnalyticsTargetsComponent,
@@ -58,6 +61,7 @@ import { ThemeComponent } from '@mm-modules/theme/theme.component';
     TasksComponent,
     TasksContentComponent,
     ThemeComponent,
+    TestingComponent,
   ],
   imports: [
     CommonModule,

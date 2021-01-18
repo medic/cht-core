@@ -40,19 +40,17 @@ module.exports = {
     password.trim();
     helper.waitUntilReady(getAddUserButton());
   },
-
-  openAddUserModal: () => {
-    helper.handleUpdateModal();
-    browser.get(utils.getAdminBaseUrl() + 'users');
-    helper.waitElementToBeClickable(getAddUserButton());
-    getAddUserButton().click();
-    waitForTranslations();
-  },
   
   waitForPageToLoad: (timeout =10000) => {
     helper.handleUpdateModal();
     helper.getTextFromElement(element(by.css('.loading-status')), timeout)
       .then(text =>expect(text).toBe('No messages found')).catch();
+  },
+
+  openAddUserModal: async () => {
+    await browser.get(utils.getAdminBaseUrl() + 'users');
+    await helper.waitElementToBeClickable(getAddUserButton());
+    await getAddUserButton().click();
   },
 
   getUsersList: () => {

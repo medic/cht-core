@@ -20,17 +20,18 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      // '**/login.spec.js',
-      // '**/report-date-filter.js',
-      // '**/sentinel/queue.spec.js',
-      // '**/docs-by-replication-key-view.js',
-      // '**/api/routing.js',
-      // '**/infodocs.js',
-      // '**/common.specs.js',
-      // '**/content-security-policy.js',
-      // '**/message_duplicates.spec.js',
-      // '**/api/server.js',
       '**/add-user.specs.js',
+      '**/report-date-filter.js',
+      '**/sentinel/queue.spec.js',
+      '**/docs-by-replication-key-view.js',
+      '**/api/routing.js',
+      '**/infodocs.js',
+      '**/common.specs.js',
+      '**/content-security-policy.js',
+      '**/send-message.js',
+      '**/message_duplicates.spec.js',
+      '**/api/server.js',
+      'e2e/reports-subject.js',
     ],
     // performance: 'performance/**/*.js'
   },
@@ -42,7 +43,10 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu','--lang=en-US'],
+      prefs: {
+        intl: { accept_languages: 'en-US' },
+      },
     }
   },
   jasmineNodeOpts: {

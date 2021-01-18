@@ -34,6 +34,8 @@ export const Actions = {
   setLoadingSubActionbar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
+  setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
+  setUserFacilityId:createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
 };
 
 export class GlobalActions {
@@ -210,5 +212,13 @@ export class GlobalActions {
 
   updateUnreadCount(unreadCount) {
     return this.store.dispatch(Actions.updateUnreadCount(unreadCount));
+  }
+
+  setTranslationsLoaded() {
+    return this.store.dispatch(Actions.setTranslationsLoaded());
+  }
+
+  setUserFacilityId(userFacilityId) {
+    return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
   }
 }

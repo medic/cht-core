@@ -33,6 +33,8 @@ const initialState = {
   unreadCount: {},
   version: null,
   snackbarContent: null,
+  translationsLoaded: false,
+  userFacilityId: null,
 };
 
 
@@ -135,6 +137,10 @@ const _globalReducer = createReducer(
   }),
   on(Actions.updateUnreadCount, (state, { payload: { unreadCount } }) => {
     return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
+  }),
+  on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
+  on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
+    return { ...state, userFacilityId };
   }),
 );
 

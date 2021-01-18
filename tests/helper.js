@@ -265,9 +265,12 @@ module.exports = {
 
   waitUntilReady: elm => {
     return (
-      browser.wait(() => elm.isPresent(), 10000) &&
-      browser.wait(() => elm.isDisplayed(), 12000)
+      browser.wait(() => elm.isPresent(), 10000, 'Element not present in 10 seconds' + elm.locator()) &&
+      browser.wait(() => elm.isDisplayed(), 12000, 'Element not displayed in 12 seconds' + elm.locator())
     );
+  },
+  waitUntilReadyNative: elm => {
+    return  browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
 };

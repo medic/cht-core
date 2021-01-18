@@ -58,29 +58,16 @@ const waitForTranslations = (timeout =10000) => {
 
 module.exports = {
   waitForTranslations,
-  submit: () => {
-    helper.waitUntilReady(getSubmitButton());
-    getSubmitButton().click();
+  submit: async () => {
+    await helper.waitUntilReady(getSubmitButton());
+    await getSubmitButton().click();
   },
 
   cancel: () => {
     helper.waitUntilReady(getCancelButton());
     getCancelButton().click();
   },
-
-  fillForm: (username, fullName, password) => {
-    //waitForTranslations();
-    helper.waitUntilReady(getSubmitButton()); // wait for form to load
-    getUsernameField().sendKeys(username);
-    getFullNameField().sendKeys(fullName);
-    getEmailField().sendKeys('bede@mobile.org');
-    getPhoneField().sendKeys('0064212134566');
-    helper.selectDropdownByValue(getLanguageField(), 'en', 2);
-    helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
-    getPasswordField().sendKeys(password);
-    getConfirmPasswordField().sendKeys(password);
-  },
-
+  
   expectErrorMessage :(element, message) => {
     const EC = protractor.ExpectedConditions;
     helper.getTextFromElement(element, 12000).then(text =>{
@@ -92,4 +79,16 @@ module.exports = {
     }).catch(error => error);
 
   },
+
+  fillForm: async (username, fullName, password) => {
+    await helper.waitUntilReady(getSubmitButton()); // wait for form to load
+    await getUsernameField().sendKeys(username);
+    await getFullNameField().sendKeys(fullName);
+    await getEmailField().sendKeys('bede@mobile.org');
+    await getPhoneField().sendKeys('0064212134566');
+    await helper.selectDropdownByValue(getLanguageField(), 'en', 2);
+    await helper.selectDropdownByValue(getRoleField(), 'string:national_admin');
+    await getPasswordField().sendKeys(password);
+    await getConfirmPasswordField().sendKeys(password);
+  }
 };
