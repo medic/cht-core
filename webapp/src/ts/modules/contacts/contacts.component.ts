@@ -267,18 +267,20 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private getChildren() {
+    const filterChildPlaces = (children) => children.filter(child => !child.person);
+
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
       const homeType = this.usersHomePlace.contact_type || this.usersHomePlace.type;
       return this.contactTypesService
         .getChildren(homeType)
-        .then(children => children.filter(child => !child.person));
+        .then(filterChildPlaces);
     }
 
     if (this.isAdmin) {
       return this.contactTypesService
         .getChildren()
-        .then(children => children.filter(child => !child.person));
+        .then(filterChildPlaces);
     }
 
     return Promise.resolve([]);

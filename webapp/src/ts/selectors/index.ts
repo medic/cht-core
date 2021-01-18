@@ -124,38 +124,3 @@ export const Selectors = {
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
 };
-/*
-
-// Global
-
-
-// Analytics
-const getSelectedAnalytics = state => getAnalyticsState(state).selected;
-
-// Contacts
-const getContactsState = state => state.contacts;
-const getContactsLoadingSummary = state => getContactsState(state).loadingSummary;
-const getLoadingSelectedContactChildren = state => getContactsState(state).loadingSelectedChildren;
-const getLoadingSelectedContactReports = state => getContactsState(state).loadingSelectedReports;
-const getSelectedContact = state => getContactsState(state).selected;
-const getSelectedContactDoc = reselect.createSelector(
-  getSelectedContact,
-  selected => selected && selected.doc
-);
-
-
-
-angular.module('inboxServices').constant('Selectors', {
-  getGlobalState,
-  getAndroidAppVersion,
-
-  getSelectedAnalytics,
-
-  getContactsState,
-  getContactsLoadingSummary,
-  getLoadingSelectedContactChildren,
-  getLoadingSelectedContactReports,
-  getSelectedContact,
-  getSelectedContactDoc,
-});
-*/

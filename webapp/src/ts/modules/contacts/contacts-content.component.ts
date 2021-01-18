@@ -225,7 +225,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     return this.userSettingsService
       .get()
       .then(userSettings => this.userSettings = userSettings)
-      .catch(e => console.error('Error fetching user settings', e));
+      .catch(error => console.error('Error fetching user settings', error));
   }
 
   private setSettings() {
@@ -235,7 +235,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     return this.settingsService
       .get()
       .then(settings => this.settings = settings)
-      .catch(e => console.error('Error fetching settings', e));
+      .catch(error => console.error('Error fetching settings', error));
   }
 
   private async setChildTypesBySelectedContact() {
@@ -245,7 +245,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
 
     if (!this.selectedContact.type) {
-      const type = this.selectedContact.doc?.contact_type || this.selectedContact.doc?.type;
+      const type = this.contactTypesService.getTypeId(this.selectedContact.doc);
       console.error(`Unknown contact type "${type}" for contact "${this.selectedContact.doc?._id}"`);
       this.childTypesBySelectedContact = [];
       return;
@@ -254,7 +254,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     return this.contactTypesService
       .getChildren(this.selectedContact.type.id)
       .then(childTypes => this.childTypesBySelectedContact = childTypes)
-      .catch(e => console.error('Error fetching contact child types', e));
+      .catch(error => console.error('Error fetching contact child types', error));
   }
 
   private subscribeToAllContactXmlForms() {
@@ -263,7 +263,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
-      'ContactForms',
+      'ContactsReportsForms',
       { contactForms: true },
       (error, forms) => {
         if (error) {
@@ -290,7 +290,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptionSelectedContactForms = this.xmlFormsService.subscribe(
-      'ContactList',
+      'selectedContactForms',
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary?.context,

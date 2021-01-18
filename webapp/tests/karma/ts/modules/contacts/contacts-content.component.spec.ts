@@ -311,6 +311,22 @@ describe('Contacts content component', () => {
       });
     }));
 
+    it('should not initialise action bar when there is not selected contact', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContactChildren, undefined);
+      store.overrideSelector(Selectors.getSelectedContactDoc, undefined);
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(0);
+      expect(xmlFormsService.subscribe.callCount).to.equal(0);
+      expect(userSettingsService.get.callCount).to.equal(0);
+      expect(settingsService.get.callCount).to.equal(0);
+      expect(contactTypesService.getChildren.callCount).to.equal(0);
+    }));
+
     it('should enable edit and delete in the right action bar when admin user', fakeAsync(() => {
       sinon.resetHistory();
       sessionService.isAdmin.returns(true);
@@ -389,7 +405,7 @@ describe('Contacts content component', () => {
       flush();
 
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
-      expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactForms');
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactsReportsForms');
       expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
 
       xmlFormsService.subscribe.args[0][2](null, forms);
@@ -416,32 +432,32 @@ describe('Contacts content component', () => {
       });
     }));
 
-    it('should filter contact types to allowed ones from selected contact forms', fakeAsync(() => {
+    it('should set relevant report forms based on the selected contact', fakeAsync(() => {
       sinon.resetHistory();
       contactTypesService.getChildren.resolves([
         {
           id: 'type1',
-          create_form: 'form:contact:create:type1',
+          create_form: 'form:test_report:type1',
         },
         {
           id: 'type2',
-          create_form: 'form:contact:create:type2',
+          create_form: 'form:test_report:type2',
         },
         {
           id: 'type3',
-          create_form: 'form:contact:create:type3',
+          create_form: 'form:test_report:type3',
         },
       ]);
       const forms = [
-        { _id: 'form:contact:create:type3', title: 'Type 3', internalId: 3, icon: 'a' },
-        { _id: 'form:contact:create:type2', title: 'Type 2', internalId: 2, icon: 'b' },
+        { _id: 'form:test_report:type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:test_report:type2', title: 'Type 2', internalId: 2, icon: 'b' },
       ];
 
       component.ngOnInit();
       flush();
 
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
-      expect(xmlFormsService.subscribe.args[1][0]).to.equal('ContactList');
+      expect(xmlFormsService.subscribe.args[1][0]).to.equal('selectedContactForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
         contactForms: false,
         contactSummary: 'test',

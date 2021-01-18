@@ -235,6 +235,21 @@ describe('Contacts component', () => {
           create_form: 'form:contact:create:type3',
         },
       ]);
+      // Checking that childPlaces didn't changed after operations, because used in search feature.
+      expect(component.childPlaces).to.have.deep.members([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
     }));
   });
 
