@@ -268,7 +268,7 @@ module.exports = {
     );
   },
 
-  waitForAppToLoad: async(timeout=12000,sleep = 1000) => {
+  waitForAppToLoad: async (timeout=12000,sleep = 1000) => {
     const loadingStatus = element(by.css('.loading-status'));
     browser.sleep(sleep);//at least a second for page to stabilize. Longer on travis
     handleUpdateModal();
