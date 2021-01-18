@@ -2,13 +2,14 @@ import { TestBed, async, tick, fakeAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { NgZone } from '@angular/core';
-import { EventEmitter } from 'events';
-import inherits from 'inherits';
+import { v4 as uuidv4 } from 'uuid';
+window.PouchDB = require('pouchdb-browser').default;
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
 import * as assert from 'assert';
+import PouchDb from 'pouchdb-browser';
 
 describe('Db Service', () => {
   let service:DbService;
@@ -233,6 +234,7 @@ describe('Db Service', () => {
 
   describe('method wrapping', () => {
     beforeEach(() => {
+      window.PouchDB = originalPouchDB;
       // avoid the 2dbs being initialized at the startup
       // we're just using 1 set of stubs so the calls will be mirrored if requiring 2 dbs
       sessionService.isOnlineOnly.returns(true);
@@ -307,16 +309,17 @@ describe('Db Service', () => {
     for (const method in methods) {
       if (methods[method]) {
         it(`should stub ${method}`, fakeAsync(() => {
+          const stubbedMethod = sinon.stub(PouchDb.prototype, method);
           getService();
           const db = service.get();
 
-          expect(pouchResponse[method].callCount).to.equal(0);
+          expect(stubbedMethod.callCount).to.equal(0);
 
           methods[method].forEach((args) => {
             sinon.resetHistory();
             db[method](...args);
-            expect(pouchResponse[method].callCount).to.equal(1);
-            expect(pouchResponse[method].args[0]).to.deep.equal([args]);
+            expect(stubbedMethod.callCount).to.equal(1);
+            expect(stubbedMethod.args[0]).to.deep.equal([args]);
             expect(runOutsideAngular.callCount).to.equal(1);
           });
         }));
@@ -324,7 +327,7 @@ describe('Db Service', () => {
     }
 
     it('should work with a resolving promise', fakeAsync(async () => {
-      pouchResponse.get.resolves({ the: 'thing' });
+      sinon.stub(PouchDb.prototype, 'get').resolves({ the: 'thing' });
       getService();
       const db = service.get();
 
@@ -333,7 +336,7 @@ describe('Db Service', () => {
     }));
 
     it('should work with a rejecting promise', fakeAsync(async () => {
-      pouchResponse.get.rejects({ code: 404 });
+      sinon.stub(PouchDb.prototype, 'get').rejects({ code: 404 });
 
       getService();
       const db = service.get();
@@ -347,41 +350,53 @@ describe('Db Service', () => {
     }));
 
     describe('changes', () => {
-      let changes;
-      let changesResolve;
-      let changesReject;
-
       beforeEach(() => {
         // avoid the 2dbs being initialized at the startup
         // we're just using 1 set of stubs so the calls will be mirrored if requiring 2 dbs
         sessionService.isOnlineOnly.returns(true);
         sessionService.userCtx.returns({ name: 'mary' });
-        changes = new EventEmitter();
-
-        const promise = new Promise((resolve, reject) => {
-          changesReject = reject;
-          changesResolve = resolve;
-        });
-
-        changes.then = promise.then.bind(promise);
-        changes.catch = promise['catch'].bind(promise);
-
-        pouchResponse.changes.returns(changes);
       });
 
-      it('should call with correct params', fakeAsync(async () => {
+      it('should call with correct params', fakeAsync(() => {
         const options = { live: false, include_docs: false, since: '123' };
+        const changesSpy = sinon.spy(PouchDb.prototype, 'changes');
 
         getService();
         const db = service.get();
-        const result = db.changes(options);
-        changesResolve({ changes: []});
-        console.log(JSON.stringify(result, null, 2));
-        await result;
-        expect(result).to.deep.equal({ changes: []});
-        expect(runOutsideAngular.callCount).to.equal(1);
-        expect(pouchResponse.changes.callCount).to.equal(1);
-        expect(pouchResponse.changes.args[0]).to.deep.equal([options]);
+
+        // can't use await, changes doesn't return a promise
+        // it returns an event emitter with an attached `then` property!
+        // see https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-core/src/changes.js
+        return db.changes(options).then((result) => {
+          expect(result).to.deep.equal({ results: [], last_seq: '123'});
+          expect(runOutsideAngular.callCount).to.equal(1);
+          expect(changesSpy.callCount).to.equal(1);
+          expect(changesSpy.args[0]).to.deep.equal([options]);
+        });
+      }));
+
+      it('should return full results', fakeAsync(async () => {
+        const options = { live: false, include_docs: true };
+        const changesSpy = sinon.spy(PouchDb.prototype, 'changes');
+
+        getService();
+        const db = service.get();
+        await db.put({ _id: uuidv4() });
+        await db.put({ _id: uuidv4() });
+
+        const a = await db.allDocs();
+        console.log(a);
+        const nbrDocs = (await db.allDocs()).rows.length;
+
+        // can't use await, changes doesn't return a promise
+        // it returns an event emitter with an attached `then` property!
+        // see https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-core/src/changes.js
+        return db.changes(options).then((result) => {
+          expect(result.changes.length).to.equal(nbrDocs);
+          expect(runOutsideAngular.callCount).to.equal(1);
+          expect(changesSpy.callCount).to.equal(1);
+          expect(changesSpy.args[0]).to.deep.equal([options]);
+        });
       }));
     });
 

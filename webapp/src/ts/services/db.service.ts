@@ -53,6 +53,7 @@ export class DbService {
       const promisEmitter:any = new EventEmitter();
       const emitter = this.ngZone.runOutsideAngular(() => fn.apply(db, args));
       promisEmitter.then = emitter.then.bind(emitter);
+      promisEmitter.catch = emitter['catch'].bind(emitter);
 
       events.forEach(event => {
         emitter.on(event, (...args) => {
