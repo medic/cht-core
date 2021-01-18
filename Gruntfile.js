@@ -603,6 +603,9 @@ module.exports = function(grunt) {
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
+
+            // patch messageformat package.json so it uses the full source files (that we patch above) instead of minified file
+            'patch webapp/node_modules/messageformat/package.json < webapp/patches/messageformat-package-json.patch',
           ];
           return patches.join(' && ');
         },
