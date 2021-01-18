@@ -18,7 +18,7 @@ const baseConfig = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   //Enabling specs as they are working.
   suites: {
-    // e2e:'e2e/**/*.js', 
+    // e2e:'e2e/**/*.js',
     e2e: [
       'e2e/login/login.specs.js',
       '**/report-date-filter.js',
@@ -32,8 +32,8 @@ const baseConfig = {
       '**/message_duplicates.spec.js',
       '**/api/server.js',
       'e2e/create-meta-db.js',
-
-    ]
+      'e2e/reports-subject.js'
+    ],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
