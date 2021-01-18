@@ -19,8 +19,8 @@ describe('Db Service', () => {
   let originalPouchDB;
   let pouchDB;
   let pouchResponse;
-  //let runOutsideAngular;
-  //let runInsideAngular;
+  let runOutsideAngular;
+  let runInsideAngular;
 
   const getService = () => {
     TestBed.configureTestingModule({
