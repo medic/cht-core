@@ -61,11 +61,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
     this.resetFormError();
     this.form = null;
     this.loadingForm = true;
-    // this.clearRightActionBar();
     this.globalActions.setShowContent(true);
     this.setCancelCallback();
-
-    this.render(this.contactId, this.formId);
   }
 
   ngOnDestroy() {
@@ -89,19 +86,29 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
-      this.store.select(Selectors.getSelectedContact),
-    ).subscribe(([ enketoStatus, enketoSaving, enketoError, selectedContact]) => {
+    ).subscribe(([ enketoStatus, enketoSaving, enketoError]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
-      this.selectedContact = selectedContact;
     });
     this.subscription.add(reduxSubscription);
+
+    const selectedContact = this.store
+      .select(Selectors.getSelectedContact)
+      .subscribe((selectedContact) => {
+        if (this.selectedContact?._id !== selectedContact?._id) {
+          this.selectedContact = selectedContact;
+          if (this.formId) {
+            this.render(this.formId); // calling this from here to ensure this.selectedContact is set 
+          }
+        }
+      });
+    this.subscription.add(selectedContact);
   }
 
   private subscribeToRoute() {
     const routeSubscription = this.route.params.subscribe((params) => {
-      if (_isEqual(this.routeSnapshot.params, params)) {
+      if (_isEqual(this.routeSnapshot?.params, params)) {
         // the 1st time we load the form, we must wait for the view to be initialized
         // if we don't skip, it will result in the form being loaded twice
         return;
@@ -109,6 +116,9 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
       this.routeSnapshot = this.route.snapshot;
       this.contactId = params.id;
       this.formId = params.formId;
+      if(this.contactId) {
+        this.selectContact(this.contactId);
+      }
     });
     this.subscription.add(routeSubscription);
   }
@@ -132,24 +142,30 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
     this.globalActions.navigationCancel();
   }
 
-  render(contactId, formId) {
-    this.contactsActions.setSelectedContact(contactId, { merge: true })
-      .then(() => {
-        this.setCancelCallback();
-        return this.xmlFormsService.get(formId);
-      })
+  private selectContact(contactId) {
+    this.contactsActions.selectContact(contactId);
+  }
+
+  render(formId) {
+    this.setCancelCallback();
+    this.xmlFormsService.get(formId)
       .then((form) => {
+        this.globalActions.setEnketoEditedStatus(false);
+        this.globalActions.setTitle(this.translateFromService.get(form.title));
+
         const instanceData = {
           source: 'contact',
           contact: this.selectedContact.doc,
         };
-        this.globalActions.setEnketoEditedStatus(false);
-        this.globalActions.setTitle(this.translateFromService.get(form.title));
+        const markFormEdited = this.markFormEdited.bind(this);
+        const resetFormError = this.resetFormError.bind(this);
+
         return this.enketoService.render(
           '#contact-report',
-          form, instanceData,
-          this.markFormEdited,
-          this.resetFormError
+          form,
+          instanceData,
+          markFormEdited,
+          resetFormError
         );
       })
       .then((formInstance) => {
@@ -161,6 +177,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
         this.telemetryService.record(
           `enketo:contacts:${this.telemetryData.form}:add:render`,
           this.telemetryData.postRender - this.telemetryData.preRender);
+        // this.contentError = false;
       })
       .catch(err => {
         console.error('Error loading form', err);
