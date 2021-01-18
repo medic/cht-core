@@ -4,6 +4,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { isEqual as _isEqual } from 'lodash-es';
+import { first } from 'rxjs/operators';
 
 import { ContactsActions } from '@mm-actions/contacts';
 import { GlobalActions } from '@mm-actions/global';
@@ -63,6 +64,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
     this.loadingForm = true;
     this.globalActions.setShowContent(true);
     this.setCancelCallback();
+    this.subscribeToSelectedContact();
   }
 
   ngOnDestroy() {
@@ -81,6 +83,18 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
     }
   }
 
+  private subscribeToSelectedContact() {
+    this.store.select(Selectors.getSelectedContact)
+      .pipe(first(contact => contact !== null))
+      .subscribe((contact) => {
+        console.log('setting contact', contact);
+        this.selectedContact = contact;
+        if (this.formId) {
+          this.render(this.formId); // calling this from here to ensure this.selectedContact is set 
+        }
+      });
+  }
+
   private subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getEnketoStatus),
@@ -92,18 +106,6 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
       this.enketoError = enketoError;
     });
     this.subscription.add(reduxSubscription);
-
-    const selectedContact = this.store
-      .select(Selectors.getSelectedContact)
-      .subscribe((selectedContact) => {
-        if (this.selectedContact?._id !== selectedContact?._id) {
-          this.selectedContact = selectedContact;
-          if (this.formId) {
-            this.render(this.formId); // calling this from here to ensure this.selectedContact is set 
-          }
-        }
-      });
-    this.subscription.add(selectedContact);
   }
 
   private subscribeToRoute() {
@@ -128,7 +130,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
     if (this.routeSnapshot.params && (this.routeSnapshot.params.id || this.routeSnapshot.params.formId)) {
       this.globalActions.setCancelCallback(() => {
         if (this.routeSnapshot.params.id) {
-          this.router.navigate(['/contacts', this.routeSnapshot.params.idd]);
+          this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
         } else {
           this.router.navigate(['/contacts']);
         }
@@ -147,11 +149,11 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
   }
 
   render(formId) {
-    this.setCancelCallback();
     this.xmlFormsService.get(formId)
       .then((form) => {
         this.globalActions.setEnketoEditedStatus(false);
         this.globalActions.setTitle(this.translateFromService.get(form.title));
+        this.setCancelCallback();
 
         const instanceData = {
           source: 'contact',
@@ -177,7 +179,6 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
         this.telemetryService.record(
           `enketo:contacts:${this.telemetryData.form}:add:render`,
           this.telemetryData.postRender - this.telemetryData.preRender);
-        // this.contentError = false;
       })
       .catch(err => {
         console.error('Error loading form', err);
@@ -218,9 +219,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy{
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
         console.error('Error submitting form data: ', err);
-        // this.translateService.get('error.report.save').then((msg) => {
-        //   this.globalActions.setEnketoError(msg);
-        // });
+        this.globalActions.setEnketoError(this.translateService.get('error.report.save'));
       });
   }
 }
