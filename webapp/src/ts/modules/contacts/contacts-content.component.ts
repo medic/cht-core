@@ -200,10 +200,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
   }
 
-  private setRightActionBar() {
-    this.setChildTypesBySelectedContact();
-    this.getUserSettings();
-    this.getSettings();
+  private async setRightActionBar() {
+    await this.setChildTypesBySelectedContact();
+    await this.setUserSettings();
+    await this.setSettings();
 
     this.globalActions.setRightActionBar({
       relevantForms: [], // This disables the "New Action" button until forms load
@@ -218,26 +218,24 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscribeToSelectedContactXmlForms();
   }
 
-  private async getUserSettings() {
+  private setUserSettings() {
     if (this.userSettings) {
       return;
     }
-    try{
-      this.userSettings = await this.userSettingsService.get();
-    } catch (e) {
-      console.error('Error fetching user settings', e);
-    }
+    return this.userSettingsService
+      .get()
+      .then(userSettings => this.userSettings = userSettings)
+      .catch(e => console.error('Error fetching user settings', e));
   }
 
-  private async getSettings() {
+  private setSettings() {
     if (this.settings) {
       return;
     }
-    try{
-      this.settings = await this.settingsService.get();
-    } catch (e) {
-      console.error('Error fetching settings', e);
-    }
+    return this.settingsService
+      .get()
+      .then(settings => this.settings = settings)
+      .catch(e => console.error('Error fetching settings', e));
   }
 
   private async setChildTypesBySelectedContact() {
@@ -253,11 +251,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    try {
-      this.childTypesBySelectedContact = await this.contactTypesService.getChildren(this.selectedContact.type.id);
-    } catch (e) {
-      console.error('Error fetching contact child types', e);
-    }
+    return this.contactTypesService
+      .getChildren(this.selectedContact.type.id)
+      .then(childTypes => this.childTypesBySelectedContact = childTypes)
+      .catch(e => console.error('Error fetching contact child types', e));
   }
 
   private subscribeToAllContactXmlForms() {

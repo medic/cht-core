@@ -62,7 +62,7 @@ describe('Contacts content component', () => {
       subscribe: sinon.stub().resolves(of({}))
     };
     userSettingsService = {
-      get: sinon.stub().resolves({ facility_id: 'district-id' })
+      get: sinon.stub().resolves({ facility_id: 'district-123' })
     };
     contactTypesService = {
       getChildren: sinon.stub().resolves([
@@ -80,7 +80,7 @@ describe('Contacts content component', () => {
     };
 
     selectedContact = {
-      doc: { phone: '123', muted: true },
+      doc: { _id: 'district-123', phone: '123', muted: true },
       type: { person: true },
       summary: { context: 'test' },
       children: [],
@@ -304,10 +304,14 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.args[0][0].openContactMutedModal).to.be.a('function');
       expect(globalActions.setRightActionBar.args[0][0].openSendMessageModal).to.be.a('function');
       expect(globalActions.setRightActionBar.args[0][0].relevantForms.length).to.equal(0);
-      expect(globalActions.setRightActionBar.args[0][0].sendTo).to.deep.equal({ phone: '123', muted: true });
+      expect(globalActions.setRightActionBar.args[0][0].sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
     }));
 
-    it('should enable edit and delete in the right action bar', fakeAsync(() => {
+    it('should enable edit and delete in the right action bar when admin user', fakeAsync(() => {
       sinon.resetHistory();
       sessionService.isAdmin.returns(true);
       store.overrideSelector(Selectors.getSelectedContactChildren, {
@@ -334,10 +338,23 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
     }));
 
-    it('should disable edit when user isnt admin and facility is its home place ', fakeAsync(() => {
+    it('should disable edit when user is not admin and facility is home place ', fakeAsync(() => {
       sinon.resetHistory();
       sessionService.isAdmin.returns(false);
-      userSettingsService.get.resolves({ facility_id: '999' });
+      userSettingsService.get.resolves({ facility_id: 'district-123' });
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
+    }));
+
+    it('should enable edit when user is not admin and facility is not home place ', fakeAsync(() => {
+      sinon.resetHistory();
+      sessionService.isAdmin.returns(false);
+      component.userSettings = { facility_id: 'district-9' };
 
       component.ngOnInit();
       flush();
@@ -428,7 +445,7 @@ describe('Contacts content component', () => {
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
         contactForms: false,
         contactSummary: 'test',
-        doc: { phone: '123', muted: true }
+        doc: { _id: 'district-123', phone: '123', muted: true }
       });
 
       xmlFormsService.subscribe.args[1][2](null, forms);
