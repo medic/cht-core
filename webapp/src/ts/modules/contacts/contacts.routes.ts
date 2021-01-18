@@ -46,7 +46,7 @@ export const routes: Routes = [
         canDeactivate: [ContactAddRouteGuardProvider],
       },
       {
-        path: '/:id/report/:formId',
+        path: ':id/report/:formId',
         component: ContactsReportComponent,
       }
     ],
