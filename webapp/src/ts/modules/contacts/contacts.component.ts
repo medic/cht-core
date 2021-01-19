@@ -3,7 +3,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import * as _ from 'lodash-es';
+import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
@@ -22,13 +22,14 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { TourService } from '@mm-services/tour.service';
-
-const PAGE_SIZE = 50;
+import { ExportService } from '@mm-services/export.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 @Component({
   templateUrl: './contacts.component.html'
 })
 export class ContactsComponent implements OnInit, OnDestroy{
+  private readonly PAGE_SIZE = 50;
   private subscription: Subscription = new Subscription();
   private globalActions;
   private contactsActions;
@@ -47,6 +48,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   contactTypes;
   isAdmin;
   childPlaces;
+  allowedChildPlaces = [];
   lastVisitedDateExtras;
   visitCountSettings;
   defaultSortDirection = 'alpha';
@@ -63,7 +65,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private translateService: TranslateService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
-    private userSettingsService:UserSettingsService,
+    private userSettingsService: UserSettingsService,
     private getDataRecordsService: GetDataRecordsService,
     private sessionService: SessionService,
     private authService: AuthService,
@@ -74,6 +76,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private relativeDateService: RelativeDateService,
     private tourService: TourService,
     private router: Router,
+    private exportService: ExportService,
+    private xmlFormsService: XmlFormsService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -138,7 +142,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.usersHomePlace = homePlaceSummary;
         this.lastVisitedDateExtras = viewLastVisitedDate;
         this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
-        if(this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+        if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
           this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
         }
         this.contactTypes = contactTypes;
@@ -151,9 +155,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
             selected: this.childPlaces.map(type => type.id)
           }
         };
-        // TODO: Not migrated these yet
-        // updateAllowedChildPlaces();
-        // setActionBarData();
+
+        this.subscribeToAllContactXmlForms();
         return this.search();
       })
       .catch((err) => {
@@ -188,7 +191,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private getUserHomePlaceSummary() {
-    return this.userSettingsService.get()
+    return this.userSettingsService
+      .get()
       .then((userSettings:any) => {
         if (userSettings.facility_id) {
           this.globalActions.setUserFacilityId(userSettings.facility_id);
@@ -263,17 +267,23 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private getChildren() {
-    let p;
+    const filterChildPlaces = (children) => children.filter(child => !child.person);
+
     if (this.usersHomePlace) {
       // backwards compatibility with pre-flexible hierarchy users
       const homeType = this.usersHomePlace.contact_type || this.usersHomePlace.type;
-      p = this.contactTypesService.getChildren(homeType);
-    } else if (this.isAdmin) {
-      p = this.contactTypesService.getChildren();
-    } else {
-      return Promise.resolve([]);
+      return this.contactTypesService
+        .getChildren(homeType)
+        .then(filterChildPlaces);
     }
-    return p.then(children => children.filter(child => !child.person));
+
+    if (this.isAdmin) {
+      return this.contactTypesService
+        .getChildren()
+        .then(filterChildPlaces);
+    }
+
+    return Promise.resolve([]);
   }
 
   private initScroll() {
@@ -291,9 +301,9 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private query(opts?) {
-    const options = Object.assign({ limit: PAGE_SIZE }, opts);
-    if (options.limit < PAGE_SIZE) {
-      options.limit = PAGE_SIZE;
+    const options = Object.assign({ limit: this.PAGE_SIZE }, opts);
+    if (options.limit < this.PAGE_SIZE) {
+      options.limit = this.PAGE_SIZE;
     }
 
     if (!options.silent) {
@@ -342,7 +352,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
       .then((updatedContacts) => {
         // If you have a home place make sure its at the top
         if(this.usersHomePlace) {
-          const homeIndex = _.findIndex(updatedContacts, (contact:any) => {
+          const homeIndex = _findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
           });
           this.additionalListItem =
@@ -388,8 +398,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
         this.appending = false;
         this.error = false;
         this.initScroll();
-        // TODO: enable method below
-        // setActionBarData();
+        this.setLeftActionBar();
       })
       .catch(err => {
         this.error = true;
@@ -399,7 +408,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   search() {
-    if(this.filters.search && !this.enketoEdited) {
+    if (this.filters.search && !this.enketoEdited) {
       this.router.navigate(['contacts']);
       this.contactsActions.clearSelection();
     }
@@ -419,32 +428,54 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   simprintsIdentify() {
     this.loading = true;
-    this.simprintsService.identify().then((identities) => {
-      this.filters.simprintsIdentities = identities;
-      this.search();
-    });
+    this.simprintsService
+      .identify()
+      .then((identities) => {
+        this.filters.simprintsIdentities = identities;
+        this.search();
+      });
   }
 
   listTrackBy(index, contact) {
     return contact._id + contact._rev;
   }
 
-  // const setActionBarData = () => {
-  //   ctrl.setLeftActionBar({
-  //     hasResults: ctrl.hasContacts,
-  //     userFacilityId: usersHomePlace && usersHomePlace._id,
-  //     childPlaces: allowedChildPlaces,
-  //     exportFn: function() {
-  //       Export('contacts', ctrl.filters, { humanReadable: true });
-  //     },
-  //   });
-  // };
+  private setLeftActionBar() {
+    this.globalActions.setLeftActionBar({
+      hasResults: this.hasContacts,
+      userFacilityId: this.usersHomePlace?._id,
+      childPlaces: this.allowedChildPlaces,
+      exportFn: () => {
+        this.exportService.export('contacts', this.filters, { humanReadable: true });
+      }
+    });
+  }
 
-  // const updateAllowedChildPlaces = () => {
-  //   XmlForms.listen('ContactsListCtrl',{ contactForms: true }, (err, forms) => {
-  //     const allowCreateLink = contactType => forms && forms.find(form => form._id === contactType.create_form);
-  //     allowedChildPlaces = childPlaces.filter(allowCreateLink);
-  //     setActionBarData();
-  //   });
-  // };
+  private subscribeToAllContactXmlForms() {
+    const subscription = this.xmlFormsService.subscribe(
+      'ContactForms',
+      { contactForms: true },
+      (error, forms) => {
+        if (error) {
+          console.error('Error fetching allowed contact forms', error);
+          return;
+        }
+
+        this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
+        this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
+      }
+    );
+    this.subscription.add(subscription);
+  }
+
+  private filterAllowedChildType(forms, childTypes) {
+    if (!childTypes) {
+      return;
+    }
+
+    return childTypes
+      .filter(contactType => forms?.find(form => form._id === contactType.create_form))
+      .sort((a, b) => a.id?.localeCompare(b.id));
+  }
+
 }
