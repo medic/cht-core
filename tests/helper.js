@@ -267,7 +267,7 @@ module.exports = {
       browser.wait(() => elm.isDisplayed(), 12000, 'Element not displayed in 12 seconds' + elm.locator())
     );
   },
-
+  
   waitForAppToLoad: async (timeout=12000,sleep = 1000) => {
     const loadingStatus = element(by.css('.loading-status'));
     browser.sleep(sleep);//at least a second for page to stabilize. Longer on travis
@@ -275,5 +275,9 @@ module.exports = {
     return await browser.wait(EC.textToBePresentInElement(loadingStatus, 'No messages found'), timeout);
   },
   
+  waitUntilReadyNative: elm => {
+    return  browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+  },
+    
   handleUpdateModal,
 };

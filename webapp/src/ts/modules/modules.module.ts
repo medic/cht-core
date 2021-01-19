@@ -33,6 +33,7 @@ import { AnalyticsTargetAggregatesDetailComponent } from './analytics/analytics-
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 import { ThemeComponent } from '@mm-modules/theme/theme.component';
+import { TestingComponent } from './testing/testing.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import { ThemeComponent } from '@mm-modules/theme/theme.component';
     TasksComponent,
     TasksContentComponent,
     ThemeComponent,
+    TestingComponent,
   ],
   imports: [
     CommonModule,

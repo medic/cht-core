@@ -20,7 +20,6 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      'tests/e2e/login/login.specs.js',
       '**/report-date-filter.js',
       '**/sentinel/queue.spec.js',
       '**/docs-by-replication-key-view.js',
@@ -33,7 +32,9 @@ const baseConfig = {
       '**/api/server.js',
       'tests/e2e/create-meta-db.js',
       '**/sms-gateway.js',
-    ]
+      'e2e/reports-subject.js',
+    ],
+
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
@@ -44,7 +45,10 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu']
+      args: ['--window-size=1024,768', '--headless', '--disable-gpu','--lang=en-US'],
+      prefs: {
+        intl: { accept_languages: 'en-US' },
+      },
     }
   },
   jasmineNodeOpts: {
