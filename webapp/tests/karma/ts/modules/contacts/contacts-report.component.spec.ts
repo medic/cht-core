@@ -1,13 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { Subject } from 'rxjs';
 
 import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.component';
-import { ContactsActions } from '@mm-actions/contacts';
 import { GlobalActions } from '@mm-actions/global';
 import { EnketoService } from '@mm-services/enketo.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
@@ -15,6 +15,7 @@ import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 describe('contacts report component', () => {
   let component: ContactsReportComponent;
@@ -27,6 +28,8 @@ describe('contacts report component', () => {
   let translateFromService;
   let router;
   let route;
+  let lineageModelGeneratorService;
+  let routeSnapshot;
 
   beforeEach(() => {
     enketoService = {
@@ -34,13 +37,27 @@ describe('contacts report component', () => {
       save: sinon.stub(),
       render: sinon.stub().resolves(),
     };
-    xmlFormsService = { get: sinon.stub().resolves() };
+    xmlFormsService = { get: sinon.stub().resolves({ title: 'formTitle' }) };
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
     telemetryService = { record: sinon.stub() };
     translateFromService = { get: sinon.stub() };
     router = { navigate: sinon.stub() };
-    route = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
+    routeSnapshot = {
+      params: {
+        id: 'random-contact',
+        formId: 'pregnancy_danger_sign',
+      },
+      queryParams: {},
+    };
+    route = {
+      get snapshot() {
+        return routeSnapshot;
+      },
+      params: new Subject(),
+      queryParams: new Subject(),
+    };
+    lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: { doc: {} } }) };
     const mockedSelectors = [
       { selector: Selectors.getSelectedContact, value: {} },
       { selector: Selectors.getEnketoStatus, value: {} },
@@ -66,6 +83,7 @@ describe('contacts report component', () => {
           { provide: TranslateFromService, useValue: translateFromService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
+          { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         ]
       })
       .compileComponents()
@@ -80,7 +98,81 @@ describe('contacts report component', () => {
     sinon.restore();
   });
 
-  it.only('should create ContactsReportComponent', () => {
+  it('should create ContactsReportComponent', () => {
     expect(component).to.exist;
+  });
+
+  describe('cancelCallback', () => {
+    it('should redirect to the parent if param id is set', fakeAsync(() => {
+      let cancelCallback;
+      sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
+      routeSnapshot.params = { id: 'random-contact', formId: 'pregnancy_danger_sign' };
+
+      component.ngOnInit();
+      flush();
+      cancelCallback();
+
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'random-contact' ]]);
+    }));
+
+    it('should redirect to the contacts tab if param id is not set', fakeAsync(() => {
+      let cancelCallback;
+      sinon.stub(GlobalActions.prototype, 'setCancelCallback').callsFake(func => cancelCallback = func);
+      routeSnapshot.params = { formId: 'pregnancy_danger_sign' };
+
+      component.ngOnInit();
+      flush();
+      cancelCallback();
+
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts' ]]);
+    }));
+  });
+
+  describe('loading content', () => {
+    it('should initialize the component', fakeAsync(() => {
+      const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
+      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
+      component.ngOnInit();
+      flush();
+
+      expect(setShowContent.args).to.deep.equal([[true]]);
+      expect(unsetSelected.callCount).to.equal(1);
+      expect(settingSelected.callCount).to.equal(1);
+    }));
+
+    it('should unsubscribe and unload form on destroy', async () => {
+      const spy = sinon.spy(component.subscription, 'unsubscribe');
+      component.ngOnDestroy();
+      expect(spy.callCount).to.equal(1);
+      expect(enketoService.unload.callCount).to.equal(1);
+    });
+
+    it.only('should respond to url changes', fakeAsync(() => {
+      component.ngOnInit();
+      flush();
+
+      expect(xmlFormsService.get.callCount).to.equal(1);
+      expect(xmlFormsService.get.args[0][0]).to.equal('pregnancy_danger_sign');
+      expect(enketoService.render.callCount).to.equal(1);
+
+      routeSnapshot = {
+        params: {
+          id: 'random-contact',
+          formId: 'pregnancy_home_vist',
+        },
+        queryParams: {},
+      };
+      route.params.next({
+        id: 'random-contact',
+        formId: 'pregnancy_home_vist',
+      });
+      flush();
+      expect(enketoService.render.callCount).to.equal(2);
+      expect(xmlFormsService.get.callCount).to.equal(2);
+      expect(xmlFormsService.get.args[1][0]).to.equal('pregnancy_home_vist');
+    }));
   });
 });
