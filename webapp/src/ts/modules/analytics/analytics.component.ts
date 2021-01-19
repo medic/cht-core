@@ -60,7 +60,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
       .get()
       .then((modules) => {
         this.analyticsActions.setAnalyticsModules(modules);
-        if (this.route.snapshot.routeConfig?.path === 'analytics') {
+        if (this.route.snapshot.firstChild?.data?.tab === 'analytics') {
           if (modules.length === 1) {
             return this.router.navigate(modules[0].route);
           }

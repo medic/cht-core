@@ -38,7 +38,6 @@ describe('AnalyticsComponent', () => {
     };
     activatedRoute = {
       snapshot: {
-        routeConfig: { path: '' },
         firstChild: { data: {} }
       },
       url: {
@@ -106,7 +105,7 @@ describe('AnalyticsComponent', () => {
 
   it('should jump to child route if single module is present', fakeAsync(() => {
     sinon.reset();
-    activatedRoute.snapshot.routeConfig.path = 'analytics';
+    activatedRoute.snapshot.firstChild.data.tab = 'analytics';
     const navigateStub = sinon.stub(router, 'navigate');
     const analyticsModules = [{ id: 'targets', route: ['targets'] }];
     analyticsModulesService.get.resolves(analyticsModules);
@@ -124,7 +123,7 @@ describe('AnalyticsComponent', () => {
 
   it('should not jump to child route if multiple module are present', fakeAsync(() => {
     sinon.reset();
-    activatedRoute.snapshot.routeConfig.path = 'analytics';
+    activatedRoute.snapshot.firstChild.data.tab = 'analytics';
     const navigateStub = sinon.stub(router, 'navigate');
     const analyticsModules = [
       { id: 'target-aggregates', route: ['target-aggregates'] },
