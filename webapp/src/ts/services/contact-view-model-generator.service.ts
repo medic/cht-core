@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { 
-  groupBy as _groupBy, 
+import {
+  groupBy as _groupBy,
   partial as _partial,
-  find as _find, 
-  flattenDeep as _flattenDeep, 
-  map as _map 
+  find as _find,
+  flattenDeep as _flattenDeep,
+  map as _map
 } from 'lodash-es';
 
 import registrationUtils from '@medic/registration-utils';

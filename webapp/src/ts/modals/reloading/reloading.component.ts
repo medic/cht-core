@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {BsModalRef} from 'ngx-bootstrap/modal';
+import { Component } from '@angular/core';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 
@@ -7,7 +7,7 @@ import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
   selector: 'reloading-modal',
   templateUrl: './reloading.component.html'
 })
-export class ReloadingComponent  extends MmModalAbstract {
+export class ReloadingComponent extends MmModalAbstract {
   constructor(bsModalRef: BsModalRef) {
     super(bsModalRef);
   }

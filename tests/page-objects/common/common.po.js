@@ -36,6 +36,14 @@ module.exports = {
     helper.waitUntilReady(medicLogo);
   },
 
+  calmNative: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReadyNative(medicLogo);
+  },
+
   checkAbout: () => {
     openSubmenu('about');
     expect(genericSubmitButton.getText()).toEqual('Reload');
@@ -94,6 +102,12 @@ module.exports = {
   goToLoginPage: () => {
     browser.manage().deleteAllCookies();
     browser.driver.get(utils.getLoginUrl());
+  },
+
+  goToLoginPageNative: async () => {
+    await browser.manage().deleteAllCookies();
+    await browser.driver.get(await utils.getLoginUrl());
+    await browser.driver.get(await utils.getLoginUrl());
   },
 
   goToMessages: () => {
