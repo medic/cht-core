@@ -9,7 +9,6 @@ import { combineLatest } from 'rxjs';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { Selectors } from './selectors';
 import { GlobalActions } from '@mm-actions/global';
-import { TranslationLoaderService } from '@mm-services/translation-loader.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
@@ -38,6 +37,8 @@ import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expi
 import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
+import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
+import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -88,7 +89,6 @@ export class AppComponent implements OnInit {
     private dbSyncService:DBSyncService,
     private store:Store,
     private translateService:TranslateService,
-    private translationLoaderService:TranslationLoaderService,
     private languageService:LanguageService,
     private setLanguageService:SetLanguageService,
     private sessionService:SessionService,
@@ -115,7 +115,8 @@ export class AppComponent implements OnInit {
     private rulesEngineService:RulesEngineService,
     private recurringProcessManagerService:RecurringProcessManagerService,
     private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
-    private databaseConnectionMonitorService: DatabaseConnectionMonitorService
+    private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
+    private translateLocaleService:TranslateLocaleService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -348,8 +349,16 @@ export class AppComponent implements OnInit {
   private watchTranslationsChanges() {
     this.changesService.subscribe({
       key: 'inbox-translations',
-      filter: change => this.translationLoaderService.test(change.id),
-      callback: change => this.translateService.reloadLang(this.translationLoaderService.getCode(change.id)),
+      filter: change => TranslationDocsMatcherProvider.test(change.id),
+      callback: change => {
+        const locale = TranslationDocsMatcherProvider.getLocaleCode(change.id);
+        return this.languageService
+          .get()
+          .then(enabledLocale => {
+            const hotReload = enabledLocale === locale;
+            return this.translateLocaleService.reloadLang(locale, hotReload);
+          });
+      },
     });
   }
 

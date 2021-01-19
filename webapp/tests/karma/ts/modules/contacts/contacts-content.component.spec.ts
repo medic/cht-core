@@ -354,8 +354,8 @@ describe('Contacts content component', () => {
       });
       store.overrideSelector(Selectors.getSelectedContactDoc, { phone: '11', muted: true });
       store.overrideSelector(Selectors.getSelectedContactChildren, [
-        { _id: '1', contacts: [], type: {} },
-        { _id: '2', type: {} }
+        { contacts: [], type: { id: 'type1', person: true } },
+        { contact: [], type: { id: 'type2', person: false } },
       ]);
       store.refreshState();
       fixture.detectChanges();
@@ -413,6 +413,24 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
     }));
 
+    it('should enable delete when no selected contact has no children', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContactChildren, [
+        { contacts: [], type: { id: 'type1', person: true } },
+        { contact: [], type: { id: 'type2', person: false } },
+      ]);
+      component.userSettings = { facility_id: 'other-district' };
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
+      flush();
+
+      expect(globalActions.setRightActionBar.callCount).to.equal(1);
+      expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(true);
+      expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+    }));
+
     it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
       sinon.resetHistory();
       contactTypesService.getChildren.resolves([
@@ -438,7 +456,7 @@ describe('Contacts content component', () => {
       flush();
 
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
-      expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactsReportsForms');
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactChildrenForms');
       expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
 
       xmlFormsService.subscribe.args[0][2](null, forms);
@@ -468,8 +486,8 @@ describe('Contacts content component', () => {
     it('should set relevant report forms based on the selected contact', fakeAsync(() => {
       sinon.resetHistory();
       const forms = [
-        { _id: 'form:test_report:type3', title: 'Type 3', internalId: 3, icon: 'a' },
-        { _id: 'form:test_report:type2', title: 'Type 2', internalId: 2, icon: 'b' },
+        { _id: 'form:test_report_type3', title: 'Type 3', internalId: 3, icon: 'a' },
+        { _id: 'form:test_report_type2', title: 'Type 2', internalId: 2, icon: 'b' },
       ];
       store.overrideSelector(Selectors.getSelectedContact, {
         doc: { _id: 'district-123', phone: '123', muted: true },
@@ -486,7 +504,7 @@ describe('Contacts content component', () => {
       flush();
 
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
-      expect(xmlFormsService.subscribe.args[1][0]).to.equal('selectedContactForms');
+      expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
         contactForms: false,
         contactSummary: 'test',

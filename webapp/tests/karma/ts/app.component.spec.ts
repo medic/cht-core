@@ -8,7 +8,6 @@ import { provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from '../../../src/ts/app.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
-import { TranslationLoaderService } from '@mm-services/translation-loader.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -146,7 +145,6 @@ describe('AppComponent', () => {
         provideMockStore(),
         { provide: DBSyncService, useValue: dbSyncService },
         { provide: TranslateService, useValue: translateService },
-        { provide: TranslationLoaderService, useValue: {} },
         { provide: LanguageService, useValue: languageService },
         { provide: SetLanguageService, useValue: setLanguageService },
         { provide: SessionService, useValue: sessionService },

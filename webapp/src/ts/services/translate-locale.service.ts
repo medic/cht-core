@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { map, shareReplay, take } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +13,13 @@ export class TranslateLocaleService {
 
   private loadingTranslations = {};
 
+  private loadTranslations(locale) {
+    return this.translateService
+      .currentLoader
+      .getTranslation(locale)
+      .pipe(take(1));
+  }
+
   private getTranslation(locale) {
     if (this.translateService.translations[locale]) {
       return;
@@ -22,18 +29,11 @@ export class TranslateLocaleService {
       return;
     }
 
-    const loadingTranslations = this.translateService
-      .currentLoader
-      .getTranslation(locale)
-      .pipe(
-        shareReplay(1),
-        take(1)
-      );
+    const loadingTranslations = this.loadTranslations(locale);
     const translationsCompiled = loadingTranslations
       .pipe(
         map((res) => this.translateService.compiler.compileTranslations(res, locale)),
-        shareReplay(1),
-        take(1)
+        take(1),
       );
     translationsCompiled.subscribe((res) => {
       this.translateService.translations[locale] = res;
@@ -52,5 +52,27 @@ export class TranslateLocaleService {
     }
 
     return this.translateService.getParsedResult(this.translateService.translations[locale], key, params);
+  }
+
+  reloadLang(locale, hotReload = false) {
+    if (!this.translateService.translations[locale]) {
+      // don't "reload" languages we haven't already loaded
+      return;
+    }
+
+    if (!hotReload) {
+      // reloading "secondary" languages
+      this.translateService.resetLang(locale);
+      this.getTranslation(locale);
+      return;
+    }
+
+    // We're forced to use this methods to hot reload
+    // there are only 2 methods that emit `onTranslationChange`, this method being one of them
+    // the 2nd method implies setting a translation key
+    // https://github.com/ngx-translate/core/issues/874
+    this.loadTranslations(locale).subscribe(rawTranslations => {
+      this.translateService.setTranslation(locale, rawTranslations);
+    });
   }
 }
