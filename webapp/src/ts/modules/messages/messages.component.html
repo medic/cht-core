@@ -17,7 +17,7 @@
             'selected': msg.key === selectedConversation?.id
           }"
         >
-          <a [routerLink]="['/messages', msg.type + ':' + msg.key]">
+          <a [routerLink]="['/', 'messages', msg.type + ':' + msg.key]">
             <div class="content">
               <div class="heading">
                 <h4>{{msg.contact || msg.from || ('messages.unknown.sender' | translate)}}</h4>
