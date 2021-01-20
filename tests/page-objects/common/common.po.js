@@ -153,7 +153,9 @@ module.exports = {
   confirmDelete: async () => {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
-  }
+  },
+
+  openSubmenu: openSubmenu,
 };
 
 function openSubmenu(menuName) {
