@@ -2,6 +2,8 @@
   <div class="row">
     <div class="inner">
 
+      <!-- LEFT PANE -->
+
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'reports' && selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()">
@@ -50,36 +52,54 @@
         </div>
       </div>
 
-      <!-- TODO: migrate and test once contact is done
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
-        <div class="actions dropup" mmAuth="" [[mmAuthAny]]="[ isAdmin, actionBar?.left?.childPlaces && 'can_create_places' ]">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" *ngIf="actionBar?.left?.childPlaces?.length > 1" data-toggle="dropdown" mmAuth="can_create_places">
+        <div class="actions dropup" mmAuth [mmAuthAny]="[ isAdmin, actionBar?.left?.childPlaces && 'can_create_places' ]">
+          <a *ngIf="actionBar?.left?.childPlaces?.length > 1"
+            mmAuth="can_create_places"
+            class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
+            data-toggle="dropdown"
+          >
             <span class="fa fa-plus"></span>
             <p translate>Add place</p>
           </a>
-          <ul class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.left?.childPlaces?.length > 1" mmAuth="can_create_places">
-            TODO: sort actionBar.left.childPlaces by "id" !!
-            <li *ngFor="let child of actionBar.left.childPlaces; trackBy: child.id">
-              <a ui-sref="contacts.addChild({ type: child.id, parent_id: actionBar.left.userFacilityId, from: 'list' })">
+
+          <ul *ngIf="actionBar?.left?.childPlaces?.length > 1"
+            mmAuth="can_create_places"
+            class="dropdown-menu mm-dropdown-menu with-icon"
+          >
+            <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
+              <a [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', child.id] : ['/', 'contacts', 'add', child.id]"
+                [queryParams]="{ from: 'list' }"
+              >
                 <span [innerHTML]="child.icon | resourceIcon"></span>
                 <span class="content" translate>{{ child.create_key }}</span>
               </a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.left?.childPlaces?.length === 1" ui-sref="contacts.addChild({ type: actionBar.left.childPlaces[0].id, parent_id: actionBar.left.userFacilityId, from: 'list' })" mmAuth="can_create_places">
+
+          <a *ngIf="actionBar?.left?.childPlaces?.length === 1"
+            mmAuth="can_create_places"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
+            [queryParams]="{ from: 'list' }"
+          >
             <span class="fa-stack">
               <i [innerHTML]="actionBar.left.childPlaces[0].icon | resourceIcon"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p translate>{{ actionBar.left.childPlaces[0].create_key }}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin" (click)="actionBar?.left?.exportFn()" [ngClass]="{'mm-icon-disabled': !actionBar.left.hasResults}">
+
+          <a *ngIf="isAdmin"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            (click)="actionBar?.left?.exportFn()"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
+          >
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
           </a>
         </div>
       </div>
-      -->
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'messages'">
         <div class="actions dropup">
@@ -94,6 +114,7 @@
         </div>
       </div>
 
+      <!-- RIGHT PANE -->
 
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'reports'">
         <div *ngIf="selectMode">
@@ -148,79 +169,102 @@
         </div>
       </div>
 
-      <!-- TODO: migrate and test once contact is done
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'contacts'">
-        <div class="actions dropup" *ngIf="showActionBar && selectedContactDoc && !loadingContent && ('contacts.detail' | isState)">
-
+        <div class="actions dropup" *ngIf="showActionBar && selectedContactDoc && !loadingContent && snapshotData?.name === 'contacts.detail'">
           <span>
             <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
               <span class="fa fa-plus"></span>
               <p translate>action.report.add</p>
             </a>
-            <ul class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
-              TODO: Order actionBar.right.relevantForms by 'title'
-              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: form.code">
-                <a show-muted-modal to-state="contacts.report" to-state-params="{ id: selectedContactDoc._id, formId: form.code }">
+            <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
+              <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms" [attr.id]="form.id">
+                <a (click)="actionBar.right.openContactMutedModal(form)">
                   <span [innerHTML]="form.icon | resourceIcon"></span>
-                  <span class="content">{{form.title}}</span>
+                  <span class="content">{{ form.title }}</span>
                 </a>
               </li>
             </ul>
           </span>
 
-          <span *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{group.permission}}">
+          <span *ngFor="let group of actionBar?.right?.childTypes" mmAuth="{{ group.permission }}">
+            <ng-container *ngIf="group.types?.length > 1">
+              <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown">
+                <span class="fa-stack">
+                  <i class="fa {{ group.menu_icon }}"></i>
+                  <i class="fa fa-plus fa-stack-1x"></i>
+                </span>
+                <p translate>{{ group.menu_key }}</p>
+              </a>
+              <ul class="dropdown-menu mm-dropdown-menu with-icon">
+                <li *ngFor="let type of group.types; trackBy: trackById">
+                  <a [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', type.id]">
+                    <span [innerHTML]="type.icon | resourceIcon"></span>
+                    <span class="content" translate>{{ type.create_key }}</span>
+                  </a>
+                </li>
+              </ul>
+            </ng-container>
 
-            <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" *ngIf="group.types.length > 1">
-              <span class="fa-stack">
-                <i class="fa {{group.menu_icon}}"></i>
-                <i class="fa fa-plus fa-stack-1x"></i>
-              </span>
-              <p translate>{{group.menu_key}}</p>
-            </a>
-            <ul class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="group.types.length > 1">
-            TODO order group.types by 'id' !!
-              <li *ngFor="let type of group.types; trackBy: type.id">
-                <a ui-sref="contacts.addChild({ type: type.id, parent_id: actionBarCtrl.selectedContactDoc._id })">
-                  <span [innerHTML]="type.icon | resourceIcon"></span>
-                  <span class="content" translate>{{type.create_key}}</span>
-                </a>
-              </li>
-            </ul>
-
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="group.types.length === 1" ui-sref="contacts.addChild({ type: group.types[0].id, parent_id: selectedContactDoc._id })">
+            <a *ngIf="group.types?.length === 1"
+              class="mm-icon mm-icon-inverse mm-icon-caption"
+              [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', group.types[0]?.id]"
+            >
               <span class="fa-stack">
                 <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
                 <i class="fa fa-plus fa-stack-1x"></i>
               </span>
-              <p translate>{{group.types[0].create_key}}</p>
+              <p translate>{{ group.types[0]?.create_key }}</p>
             </a>
           </span>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar?.right?.sendTo?.phone}}" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}" *ngIf="actionBar?.right?.sendTo" mmAuth="can_view_call_action">
+          <a *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_view_call_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+            [attr.href]="'tel:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+          >
             <span class="fa fa-phone"></span>
             <p translate>call</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar?.right?.sendTo?.phone}}" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}" *ngIf="actionBar?.right?.sendTo" mmAuth="can_view_message_action">
+          <a *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_view_message_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption mobile-only"
+            [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+          >
             <span class="fa fa-envelope"></span>
             <p translate>Send Message</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar?.right?.sendTo?._id}}" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}" *ngIf="actionBar?.right?.sendTo" mmAuth="can_view_message_action">
+          <a *ngIf="actionBar?.right?.sendTo"
+            mmAuth="can_view_message_action"
+            class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
+            [attr.data-send-to]="actionBar?.right?.sendTo?._id"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
+            (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
+          >
             <span class="fa fa-envelope"></span>
             <p translate>Send Message</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: selectedContactDoc._id })" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption"
+            [routerLink]="['/', 'contacts', selectedContactDoc._id, 'edit']"
+            [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
+          >
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedContactDoc)" [ngClass]="{'mm-icon-disabled': !actionBar.right.canDelete}" mmAuth="can_delete_contacts">
+          <a mmAuth="can_delete_contacts"
+            class="mm-icon mm-icon-inverse mm-icon-caption"
+            (click)="deleteDoc(selectedContactDoc)"
+            [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
+          >
             <span class="fa fa-trash-o"></span>
             <p translate>Delete</p>
           </a>
         </div>
       </div>
--->
+
     </div>
   </div>
 </div>

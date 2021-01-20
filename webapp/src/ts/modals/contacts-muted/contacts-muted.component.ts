@@ -4,18 +4,22 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 
 @Component({
-  selector: 'reloading-modal',
-  templateUrl: './reloading.component.html'
+  selector: 'contacts-muted',
+  templateUrl: './contacts-muted.component.html'
 })
-export class ReloadingComponent extends MmModalAbstract {
+export class ContactsMutedComponent extends MmModalAbstract {
+  static id = 'contacts-muted-modal';
+
   constructor(bsModalRef: BsModalRef) {
     super(bsModalRef);
   }
 
-  static id = 'reloading-modal';
-
   submit() {
     this.close();
-    window.location.reload();
   }
+
+  closeModal() {
+    this.cancel();
+  }
+
 }

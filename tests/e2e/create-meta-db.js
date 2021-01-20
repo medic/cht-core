@@ -21,17 +21,17 @@ const options = {
 
 describe('Create user meta db : ', () => {
 
-  afterAll(done => {
-    commonElements.goToLoginPage();
-    loginPage.login(auth.username, auth.password);
+  afterAll(async done => {
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(auth.username, auth.password);
     return Promise.all([
-      utils.request(`/_users/org.couchdb.user:${userName}`)
-        .then(doc => utils.request({
+      utils.requestNative(`/_users/org.couchdb.user:${userName}`)
+        .then(doc => utils.requestNative({
           path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
           method: 'DELETE'
         })),
-      utils.revertDb(),
-      utils.request({
+      utils.revertDbNative(),
+      utils.requestNative({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'
       })
@@ -40,29 +40,30 @@ describe('Create user meta db : ', () => {
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(utils.afterEach);
+  afterEach(utils.afterEachNative);
 
   it('should allow a new user to read/write from meta db', async () => {
+    console.log('in test');
     await usersPage.openAddUserModal();
     await addUserModal.fillForm(userName, fullName, password);
     await addUserModal.submit();
     await browser.waitForAngular();
-    await commonElements.goToLoginPage();
-    await loginPage.login(userName, password, false);
-    await commonElements.calm();
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(userName, password, false);
+    await commonElements.calmNative();
 
     const doc = { _id: userName };
     const postData = doc;
 
     await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
+      return utils.requestOnTestMetaDbNative(_.defaults({
         method: 'POST',
         body: postData
       }, options));
     });
 
     await browser.wait(() => {
-      return utils.requestOnTestMetaDb(_.defaults({
+      return utils.requestOnTestMetaDbNative(_.defaults({
         path: '/_changes'
       }, options)).then(response => {
         const changes = response.results;
