@@ -133,14 +133,12 @@ describe('contacts report component', () => {
   describe('loading content', () => {
     it('should initialize the component', fakeAsync(() => {
       const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
-      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
+      const setCancelCallback = sinon.stub(GlobalActions.prototype, 'setCancelCallback');
       component.ngOnInit();
       flush();
 
       expect(setShowContent.args).to.deep.equal([[true]]);
-      expect(unsetSelected.callCount).to.equal(1);
-      expect(settingSelected.callCount).to.equal(1);
+      expect(setCancelCallback.callCount).to.equal(1);
     }));
 
     it('should unsubscribe and unload form on destroy', async () => {
@@ -209,9 +207,9 @@ describe('contacts report component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(enketoService.save.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0][0[0]]).to.equal('/contacts/random-contact');
+      expect(router.navigate.args[0][0][0]).to.equal('/contacts/random-contact');
       expect(telemetryService.record.callCount).to.equal(3);
-      expect(telemetryService.record.arges[2][0]).to.equal('enketo:contacts:pregnancy_danger_sign:add:save');
+      expect(telemetryService.record.args[2][0]).to.equal('enketo:contacts:pregnancy_danger_sign:add:save');
       expect(setEnketoError.callCount).to.equal(0);
       expect(setSnackbarContent.callCount).to.equal(1);
     }));
