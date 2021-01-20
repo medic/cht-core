@@ -151,17 +151,13 @@ module.exports = {
 
   load: async () => {
     await common.goToReportsNative();
-    await browser.wait(() => {
-      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
-    }, 10000);
+    await helper.waitUntilReadyNative(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
 
     await browser.sleep(1000); // let the refresh work here - #3691
 
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
-    await browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
+    await helper.waitUntilReadyNative(addButton);
     await helper.clickElement(addButton);
     const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'));
     await helper.clickElement(form);

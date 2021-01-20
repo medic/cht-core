@@ -149,7 +149,7 @@ module.exports = {
 
   goToReportsNative: async refresh => {
     await browser.get(utils.getBaseUrl() + 'reports/');
-    await helper.waitElementToPresent(
+    await helper.waitElementToPresentNative(
       element(
         by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
       )
@@ -165,7 +165,7 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      await element(by.css('.reset-filter')).click();
+      await helper.clickElement(element(by.css('.reset-filter')));
       await browser.waitForAngular();
     }
   },
