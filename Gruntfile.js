@@ -15,11 +15,15 @@ const {
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
 <<<<<<< HEAD
+<<<<<<< HEAD
   CI,
   WEBDRIVER_VERSION=88
 =======
   WEBDRIVER_VERSION=87
 >>>>>>> setting 87 chrome drive
+=======
+  WEBDRIVER_VERSION=88
+>>>>>>> set 88 max
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
