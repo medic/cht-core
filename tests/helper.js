@@ -225,7 +225,7 @@ module.exports = {
 
   waitElementToBeClickable: (elm, timeout) => {
     timeout = timeout || 15000;
-    const msg = 'waitElementToBeClickable timed out looking for '
+    const msg = 'waitElementToBeClickable timed out looking for ';
     if (elm.locator()){
       msg + elm.locator();
     } 
