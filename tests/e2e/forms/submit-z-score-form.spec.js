@@ -24,9 +24,8 @@ describe('Submit Z-Score form', () => {
     await ZScoreForm.configureForm(userContactDoc);
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
+  afterEach(async () => {
+    await utils.resetBrowser();
   });
 
   afterAll(utils.afterEachNative);

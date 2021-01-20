@@ -19,16 +19,17 @@ module.exports = {
       .wait(
         EC.elementToBeClickable(element),
         12000,
-        'Element taking too long to appear in the DOM'
+        'Element taking too long to appear in the DOM ' + element.locator()
       )
       .then(() => {
+        console.log('form clicking' + element.locator());
         element.click();
       })
       .catch(() => {
         browser.sleep(1000);
         handleUpdateModal();
         return browser
-          .wait(EC.elementToBeClickable(element), 12000)
+          .wait(EC.elementToBeClickable(element), 12000, 'element is ' + element.locator())
           .then(() => {
             element.click();
           });
@@ -246,6 +247,11 @@ module.exports = {
     browser.wait(() => elm.isPresent(), timeout);
   },
 
+  waitElementToPresentNative: async (elm, timeout) => {
+    timeout = timeout || 10000;
+    await browser.wait(async () => await elm.isPresent(), timeout);
+  },
+
   waitForAngularComplete: () => {
     return browser.wait(() => {
       console.warn('browser.AngularComplete() should be doing this. Start replacing and see if this is required');
@@ -272,7 +278,7 @@ module.exports = {
     );
   },
   waitUntilReadyNative: elm => {
-    return  browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+    return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
 };
