@@ -46,5 +46,5 @@ module.exports = {
     if (shouldFail) {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
-  },
+  }
 };
