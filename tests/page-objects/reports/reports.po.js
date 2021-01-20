@@ -6,13 +6,13 @@ const reportBodyDetails = '#reports-content .report-body .details';
 const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_start"]'));
 const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
 const dateFilter = element(by.css('#date-filter'));
-const submitReport = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));	
+const submitReport = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
 const firstForm = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'));
 
 const reportListID = '#reports-list';
 
 module.exports = {
-  firstForm,	
+  firstForm,
   submitReport,
   allReports: () => element.all(by.css(`${reportListID} li`)),
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
@@ -132,3 +132,4 @@ module.exports = {
     );
   },
 };
+
