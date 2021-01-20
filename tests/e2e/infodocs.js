@@ -10,10 +10,10 @@ const sUtils = require('./sentinel/utils');
 // process.
 //
 /* eslint-disable no-console */
-const delayedInfoDocsOf = ids => sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+const delayedInfoDocsOf = ids => sUtils.waitForSentinelNative(ids).then(() => sUtils.getInfoDocsNative(ids));
 
 describe('infodocs', () => {
-  afterEach(utils.afterEach);
+  afterEach(utils.afterEachNative);
 
   const singleDocTest = method => {
     const doc = {
@@ -25,7 +25,7 @@ describe('infodocs', () => {
     let deleteRev;
 
     // First write...
-    return utils.requestOnTestDb({
+    return utils.requestOnTestDbNative({
       path: path,
       method: method,
       headers: {
@@ -54,7 +54,7 @@ describe('infodocs', () => {
 
       // Second write with correct _rev...
 
-      return utils.requestOnTestDb({
+      return utils.requestOnTestDbNative({
         path: path,
         method: method,
         headers: {
@@ -77,7 +77,7 @@ describe('infodocs', () => {
       infoDoc = result;
 
       // Third write with the old _rev...
-      return utils.requestOnTestDb({
+      return utils.requestOnTestDbNative({
         path: path,
         method: method,
         headers: {
@@ -99,7 +99,7 @@ describe('infodocs', () => {
       doc._deleted = true;
       doc._rev = deleteRev;
 
-      return utils.requestOnTestDb({
+      return utils.requestOnTestDbNative({
         path: path,
         method: method,
         headers: {
@@ -135,7 +135,7 @@ describe('infodocs', () => {
 
       let infoDocs;
 
-      return utils.requestOnTestDb({
+      return utils.requestOnTestDbNative({
         path: '/_bulk_docs',
         method: 'POST',
         headers: {
@@ -169,7 +169,7 @@ describe('infodocs', () => {
         });
 
         // When we write docs for the second time...
-        return utils.requestOnTestDb({
+        return utils.requestOnTestDbNative({
           path: '/_bulk_docs',
           method: 'POST',
           headers: {
@@ -200,7 +200,7 @@ describe('infodocs', () => {
         // When we delete a doc...
         docs[1]._deleted = true;
 
-        return utils.requestOnTestDb({
+        return utils.requestOnTestDbNative({
           path: '/_bulk_docs',
           method: 'POST',
           headers: {
@@ -243,7 +243,7 @@ describe('infodocs', () => {
           testDoc.data = 'data changed';
 
           // Should be through api
-          return utils.saveDoc(testDoc);
+          return utils.saveDocNative(testDoc);
         })
         .then(() => delayedInfoDocsOf(testDoc._id))
         .then(([infodoc]) => {
@@ -290,7 +290,7 @@ describe('infodocs', () => {
           testDoc.data = 'data changed';
 
           // Should be through api
-          return utils.saveDoc(testDoc);
+          return utils.saveDocNative(testDoc);
         })
         .then(() => delayedInfoDocsOf(testDoc._id))
         .then(([infodoc]) => {

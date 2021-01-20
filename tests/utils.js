@@ -594,6 +594,7 @@ module.exports = {
   },
 
   saveDoc: doc => {
+    deprecated('utils.saveDoc', 'utils.saveDocNative');
     return module.exports.requestOnTestDb({
       path: '/', // so audit picks this up
       method: 'POST',
