@@ -14,8 +14,12 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
+<<<<<<< HEAD
   CI,
   WEBDRIVER_VERSION=88
+=======
+  WEBDRIVER_VERSION=87
+>>>>>>> setting 87 chrome drive
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
