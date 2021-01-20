@@ -8,6 +8,7 @@ env:
   BUILDS_SERVER: _couch/builds_testing
   STAGING_SERVER: _couch/builds
   MARKET_URL: ${{ secrets.MARKET_URL }}
+  WEBDRIVER_VERSION: 87
 
 
 jobs:
