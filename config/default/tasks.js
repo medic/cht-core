@@ -58,9 +58,9 @@ module.exports = [
     title: 'immunization growth follow up - deworming', // todo - finalize title
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
-    contactLabel: function(contact, report) { return report._id; }, // todo - remove debug
     appliesIf: function(contact, report) {
-      return report && report.fields && report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
+      // return report && report.fields && report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
+      return report && report.fields && report.fields.g_vaccines.attend_clinic  === 'no';
     },
     actions: [
       {
@@ -76,8 +76,12 @@ module.exports = [
         end: 7 // todo - get correct end days
       }
     ],
-    resolvedIf: function(contact, report, event, dueDate) { // todo - this dosn't seem to resolve task
-      return isFormArraySubmittedInWindow(contact.reports, ['immunization_growth_follow_up'], dueDate, event, null, report._id);
+    resolvedIf: function(contact, report, event, dueDate) { // todo - this doesn't seem to resolve task
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(
+        contact.reports, ['immunization_growth_follow_up'], startTime, endTime
+      );
     }
   },
 
