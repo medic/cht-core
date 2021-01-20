@@ -150,7 +150,7 @@ describe('contacts report component', () => {
       expect(enketoService.unload.callCount).to.equal(1);
     });
 
-    it.only('should respond to url changes', fakeAsync(() => {
+    it('should respond to url changes', fakeAsync(() => {
       component.ngOnInit();
       flush();
 
@@ -173,6 +173,47 @@ describe('contacts report component', () => {
       expect(enketoService.render.callCount).to.equal(2);
       expect(xmlFormsService.get.callCount).to.equal(2);
       expect(xmlFormsService.get.args[1][0]).to.equal('pregnancy_home_vist');
+    }));
+  });
+
+  describe('saving', () => {
+    it('should not save when already saving', async () => {
+      component.enketoSaving = true;
+      await component.save();
+
+      expect(enketoService.save.callCount).to.equal(0);
+    });
+
+    it('should catch save errors', fakeAsync(() => {
+      const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
+      const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      enketoService.save.rejects({ some: 'error' });
+      component.save();
+      flush();
+
+      expect(setEnketoSavingStatus.callCount).to.equal(2);
+      expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
+      expect(enketoService.save.callCount).to.equal(1);
+      expect(setEnketoError.callCount).to.equal(1);
+    }));
+
+    it('should call the right methods when saving with no errors', fakeAsync(() => {
+      const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
+      const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+      const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      enketoService.save.resolves({ docs: 'success' });
+      component.save();
+      flush();
+
+      expect(setEnketoSavingStatus.callCount).to.equal(2);
+      expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
+      expect(enketoService.save.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0][0[0]]).to.equal('/contacts/random-contact');
+      expect(telemetryService.record.callCount).to.equal(3);
+      expect(telemetryService.record.arges[2][0]).to.equal('enketo:contacts:pregnancy_danger_sign:add:save');
+      expect(setEnketoError.callCount).to.equal(0);
+      expect(setSnackbarContent.callCount).to.equal(1);
     }));
   });
 });
