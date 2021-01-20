@@ -516,9 +516,8 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          'cat node_modules/protractor/node_modules/webdriver-manager/built/config.json &&' +
-          './node_modules/.bin/webdriver-manager version &&' +
-          './node_modules/.bin/webdriver-manager update && ' +
+          'chrome_driver_version=$(sh scripts/e2e/chrome_driver_version.sh) &&' +
+          './node_modules/.bin/webdriver-manager update --versions.chrome $chrome_driver_version && ' +
           './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
