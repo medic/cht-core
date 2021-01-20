@@ -214,6 +214,7 @@ describe('Contacts content component', () => {
 
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(selectContact.callCount).to.equal(1);
+      expect(selectContact.args[0][0]).to.equal('load contact');
     });
 
     it('should redirect to parent when selected contact is deleted', () => {

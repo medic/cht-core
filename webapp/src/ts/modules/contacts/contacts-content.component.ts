@@ -171,7 +171,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
           return this.router.navigate([`/contacts/${parentId}`]);
         }
-        return this.contactsActions.selectContact(change.id, { silent: true });
+        return this.contactsActions.selectContact(this.route.snapshot.params.id, { silent: true });
       }
     });
     this.subscription.add(changesSubscription);
