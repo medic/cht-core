@@ -96,7 +96,7 @@ describe('Submit Enketo form', () => {
   afterEach(utils.afterEachNative);
 
   it('submits on reports tab', async () => {
-    await commonElements.goToReports();
+    await commonElements.goToReportsNative();
 
     await helper.waitElementToBeClickable(reportsPo.submitReport);
 
