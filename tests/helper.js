@@ -225,7 +225,7 @@ module.exports = {
 
   waitElementToBeClickable: (elm, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(EC.elementToBeClickable(elm), timeout);
+    return browser.wait(EC.elementToBeClickable(elm), timeout);
   },
 
   waitElementToDisappear: (locator, timeout) => {

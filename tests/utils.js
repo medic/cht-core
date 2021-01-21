@@ -743,6 +743,7 @@ module.exports = {
     }),
 
   seedTestData: (done, userContactDoc, documents) => {
+    deprecated('seedTestData', 'seedTestDataNative');
     protractor.promise
       .all(documents.map(module.exports.saveDoc))
       .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
@@ -754,6 +755,15 @@ module.exports = {
       })
       .then(done)
       .catch(done.fail);
+  },
+
+  seedTestDataNative: async (userContactDoc, documents) => {
+    documents.forEach(async doc => await module.exports.saveDocNative(doc));
+    const existingContactDoc = await module.exports.getDocNative(constants.USER_CONTACT_ID);
+    if (userContactDoc) {
+      const mergedContact = { ...existingContactDoc, ...userContactDoc };
+      await module.exports.saveDocNative(mergedContact);
+    }
   },
 
   /**
