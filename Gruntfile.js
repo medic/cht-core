@@ -14,7 +14,6 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
-  CI,
   WEBDRIVER_VERSION=88
 } = process.env;
 
