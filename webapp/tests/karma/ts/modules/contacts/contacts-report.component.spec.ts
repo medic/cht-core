@@ -143,6 +143,24 @@ describe('contacts report component', () => {
       expect(clearRightActionBar.callCount).to.equal(1);
     }));
 
+    it('should render with the right information', fakeAsync(() => {
+      component.ngOnInit();
+      flush();
+
+      expect(enketoService.render.callCount).to.equal(1);
+      console.log(enketoService.render.args[0][3]);
+      expect(enketoService.render.args[0][0]).to.equal('#contact-report');
+      expect(enketoService.render.args[0][1]).to.deep.equal({ title: 'formTitle' });
+      expect(enketoService.render.args[0][2]).to.deep.equal(
+        {
+          source: 'contact',
+          contact: {
+            doc: {}
+          }
+        }
+      );
+    }));
+
     it('should unsubscribe and unload form on destroy', async () => {
       const spy = sinon.spy(component.subscription, 'unsubscribe');
       component.ngOnDestroy();

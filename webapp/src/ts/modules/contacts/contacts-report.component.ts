@@ -122,7 +122,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
         const instanceData = {
           source: 'contact',
-          contact: this.selectedContact.doc,
+          contact: this.selectedContact,
         };
         const markFormEdited = this.markFormEdited.bind(this);
         const resetFormError = this.resetFormError.bind(this);
