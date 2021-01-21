@@ -14,6 +14,7 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
+  CI,
   WEBDRIVER_VERSION=88
 } = process.env;
 
@@ -507,6 +508,8 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
+          'if [ ! $CI ]; then ' + 
+          './node_modules/.bin/webdriver-manager update; fi && ' +
           './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
