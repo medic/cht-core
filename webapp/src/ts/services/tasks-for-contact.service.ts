@@ -15,9 +15,9 @@ export class TasksForContactService {
 
   private getIdsForTasks(model) {
     const contactIds = [];
-    if (!model.type.person && model.children) {
+    if (!model?.type?.person && model?.children) {
       model.children.forEach(child => {
-        if (child.type.person && child.contacts && child.contacts.length) {
+        if (child?.type?.person && child?.contacts && child?.contacts?.length) {
           contactIds.push(...child.contacts.map(contact => contact.id));
         }
       });
@@ -35,7 +35,7 @@ export class TasksForContactService {
         }
 
         // must be either a person type
-        if (type.person) {
+        if (type?.person) {
           return true;
         }
 
@@ -43,7 +43,7 @@ export class TasksForContactService {
         return this.contactTypesService
           .getAll()
           .then(types => {
-            const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type.id));
+            const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type?.id));
             return !hasChild;
           });
       })
