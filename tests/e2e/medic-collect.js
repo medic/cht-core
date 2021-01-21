@@ -36,32 +36,31 @@ describe('medic-collect', () => {
     ]));
 
   /*  afterAll(() =>
-    Promise.all([ 'form:my_app_form', 'form:my_collect_form' ].map(id =>
+    await Promise.all([ 'form:my_app_form', 'form:my_collect_form' ].map(id =>
       db.get(id)
         .then((doc) => db.remove(doc)))));*/
 
   describe('without User-Agent header', () => {
-    it('is prompted for auth details if not supplied', () => {
+    it('is prompted for auth details if not supplied', async () => {
       // when
-      return rawHttpRequest(
-        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
+      const res = await rawHttpRequest(
+            `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 Connection: close\r
 \r\n`
-      ).then(res => {
+        );
         // then
         assert.equal(res.statusCode, 401, JSON.stringify(res));
         assert.equal(
-          res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Mobile Web Services"',
-          JSON.stringify(res)
+            res.headers['WWW-Authenticate'],
+            'Basic realm="Medic Mobile Web Services"',
+            JSON.stringify(res)
         );
-      });
     });
 
-    it('can fetch a list of forms', () => {
+    it('can fetch a list of forms', async () => {
       // when
       return rawHttpRequest(
         `GET /api/v1/forms HTTP/1.1\r
@@ -91,43 +90,42 @@ Connection: close\r
   });
 
   describe('with User-Agent header', () => {
-    it('is prompted for auth details if not supplied', () => {
+    it('is prompted for auth details if not supplied', async () => {
       // when
-      return rawHttpRequest(
-        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
+      const res = await rawHttpRequest(
+            `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
 \r\n`
-      ).then(res => {
+        );
         // then
         assert.equal(res.statusCode, 401, JSON.stringify(res));
         assert.equal(
-          res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Mobile Web Services"',
-          JSON.stringify(res)
+            res.headers['WWW-Authenticate'],
+            'Basic realm="Medic Mobile Web Services"',
+            JSON.stringify(res)
         );
-      });
     });
 
-    it('can fetch a list of forms', () => {
+    it('can fetch a list of forms', async () => {
       // when
-      return rawHttpRequest(
-        `GET /api/v1/forms HTTP/1.1\r
+      const res = await rawHttpRequest(
+            `GET /api/v1/forms HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
 \r\n`
-      ).then(res => {
+        );
         // then
         assert.equal(res.statusCode, 200, JSON.stringify(res));
         assert.equal(
-          res.body,
-          `108\r
+            res.body,
+            `108\r
 <?xml version="1.0" encoding="UTF-8"?>
 <xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
@@ -136,14 +134,13 @@ Connection: close\r
   </xform>
 </xforms>\r
 0\r\n\r\n`,
-          JSON.stringify(res)
+            JSON.stringify(res)
         );
-      });
     });
   });
 });
 
-const rawHttpRequest = rawRequest => {
+const rawHttpRequest = async rawRequest => {
   return new Promise((resolve, reject) => {
     const api = net.connect(
       port,
@@ -174,15 +171,13 @@ const rawHttpRequest = rawRequest => {
   });
 };
 
-const saveFormToDb = doc => {
-  return Promise.resolve()
-    .then(() => db.put(doc))
-    .then(res => {
-      const xml = '<xform/>';
-      const body = Buffer.from(xml).toString('base64');
-      return db.putAttachment(doc._id, 'xml', res.rev, body, {
-        type: 'text/xml',
-        length: xml.length,
-      });
-    });
+const saveFormToDb = async doc => {
+  await Promise.resolve();
+  const res = await db.put(doc);
+  const xml = '<xform/>';
+  const body = Buffer.from(xml).toString('base64');
+  return await db.putAttachment(doc._id, 'xml', res.rev, body, {
+    type: 'text/xml',
+    length: xml.length,
+  });
 };
