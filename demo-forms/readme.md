@@ -6,11 +6,11 @@ These forms can be used to quickly test specific XForm features. For example, if
 
 ## Loading
 
-The forms can be loaded via the web admin GUI or through the command line using `medic-conf`.
+The forms can be loaded via the [web admin GUI](https://docs.communityhealthtoolkit.org/apps/features/admin/) or through the command line using `medic-conf`.
 
 ### Admin Web GUI
 
-1. Log into your CHT instance as an admin user. Go to the "App Management" section at `/admin/#/forms`
+1. Log into your CHT instance as an admin user. Go to the "App Forms" in "App Management" section at `/admin/#/forms`
 1. At the top of the page under "Upload app forms", under "XML" choose "Browse..." and find the XML of the form you want to add in the `demo-forms` directory (eg. `geopoint.xml`).
 1. Under "Meta" choose "Browse..." again and select `app-form.properties.json`
 1. Submit the new form by clicking "Upload".  You should see a brief spinner and the "Upload app forms" section will reset to being empty as you first found it.
