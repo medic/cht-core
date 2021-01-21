@@ -50,17 +50,21 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
 
 module.exports = [
 
-  // MNCH Immunization and Growth follow up for Deworming
-  // todo - fix todos, see why task seems orphaned
+  // MNCH Immunization and Growth follow up
   {
     name: 'immunization_growth_follow_up',
     icon: 'icon-people-children',
-    title: 'immunization growth follow up - deworming', // todo - finalize title
+    title: 'Immunization Growth Follow Up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
+    // todo -  get this to apply to all 5 scenarios in gdoc:
+    // https://docs.google.com/spreadsheets/d/1_V7tQsH5fO08PAOdfOUPElsSZVfMQO0vx7XLQqYizZ0/
     appliesIf: function(contact, report) {
-      // return report && report.fields && report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
-      return report && report.fields && report.fields.g_vaccines.attend_clinic  === 'no';
+      return report && report.fields &&
+        (
+          (report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0) ||
+          (report.fields.g_next_appointment && parseInt(report.fields.g_next_appointment.next_appointment_date)  > 0)
+        );
     },
     actions: [
       {
@@ -70,7 +74,7 @@ module.exports = [
     ],
     events: [
       {
-        id: 'deworm_next_date_is_set', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        id: 'immunization_growth_follow_up_is_set', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
         days: 0,
         start: 3, // todo - confirm if this prevents task from being completed right after it's created
         end: 7 // todo - get correct end days
