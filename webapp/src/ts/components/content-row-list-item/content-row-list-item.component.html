@@ -14,7 +14,7 @@
     <div class="content">
       <div class="heading">
         <h4>
-          <i *ngIf="primaryContact" class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
+          <i *ngIf="primaryContact" class="fa fa-star primary" title="{{'Primary contact' | translate}}"></i>
           <span [innerHTML]="heading | safeHtml"></span>
         </h4>
         <div class="date">

@@ -55,7 +55,7 @@ export class TasksForContactService {
       task.emission.overdue = dueDate.isBefore(moment());
     });
 
-    tasks.sort((a, b) => {	
+    tasks.sort((a, b) => {
       return a.emission.dueDate < b.emission.dueDate ? -1 : 1;	
     });
 

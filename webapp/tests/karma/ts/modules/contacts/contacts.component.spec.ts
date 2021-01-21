@@ -27,6 +27,9 @@ import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filte
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { TourService } from '@mm-services/tour.service';
+import { ExportService } from '@mm-services/export.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -42,19 +45,75 @@ describe('Contacts component', () => {
   let authService;
   let contactTypesService;
   let scrollLoaderCallback;
+  let scrollLoaderProvider;
   let contactListContains;
+  let simprintsService;
+  let tourService;
+  let exportService;
+  let xmlFormsService;
+  let globalActions;
 
   beforeEach(async(() => {
+    searchService = { search: sinon.stub().resolves([]) };
+    settingsService = { get: sinon.stub().resolves([]) };
+    sessionService = {
+      isDbAdmin: sinon.stub().returns(false)
+    };
+    tourService = { startIfNeeded: sinon.stub() };
+    authService = { has: sinon.stub().resolves(false) };
+    changesService = {
+      subscribe: sinon.stub().resolves(of({}))
+    };
+    userSettingsService = {
+      get: sinon.stub().resolves({ facility_id: 'district-id' })
+    };
+    getDataRecordsService = {
+      get: sinon.stub().resolves({
+        _id: 'district-id',
+        name: 'My District',
+        type: 'district_hospital'
+      })
+    };
+    contactTypesService = {
+      getChildren: sinon.stub().resolves([
+        {
+          id: 'childType',
+          icon: 'icon'
+        }
+      ]),
+      getAll: sinon.stub().resolves([]),
+      includes: sinon.stub()
+    };
+    scrollLoaderProvider = {
+      init: (callback) => {
+        scrollLoaderCallback = callback;
+      }
+    };
+    simprintsService = {
+      enabled: sinon.stub().resolves([]),
+      identify: sinon.stub().resolves([])
+    };
+    exportService = { export: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub() };
+
     contactListContains = sinon.stub();
+    const selectedContact =  {
+      type: { person: true },
+      doc: { phone: '123'},
+    };
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getFilters, value: {} },
       { selector: Selectors.getIsAdmin, value: false },
       { selector: Selectors.contactListContains, value: contactListContains },
+      { selector: Selectors.getSelectedContact, value: selectedContact },
     ];
-    const changesServiceMock = {
-      subscribe: sinon.stub().resolves(of({}))
+
+    globalActions = {
+      setLeftActionBar: sinon.spy(GlobalActions.prototype, 'setLeftActionBar'),
+      updateLeftActionBar: sinon.spy(GlobalActions.prototype, 'updateLeftActionBar')
     };
+
     return TestBed
       .configureTestingModule({
         imports: [
@@ -73,39 +132,19 @@ describe('Contacts component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: changesServiceMock },
-          { provide: SearchService, useValue: { search: sinon.stub().resolves([]) } },
-          { provide: SimprintsService, useValue: {
-            enabled: sinon.stub().resolves([]),
-            identify: sinon.stub().resolves([])
-          }},
-          { provide: SettingsService, useValue: { get: sinon.stub().resolves([]) } },
-          { provide: UserSettingsService, useValue: {
-            get: sinon.stub().resolves({ facility_id: 'district-id' })
-          }},
-          { provide: GetDataRecordsService, useValue: {
-            get: sinon.stub().resolves({
-              _id: 'district-id',
-              name: 'My District',
-              type: 'district_hospital'
-            })
-          }},
-          { provide: SessionService, useValue: { isDbAdmin: sinon.stub().returns(false) } },
-          { provide: TourService, useValue: { startIfNeeded: sinon.stub() } },
-          { provide: AuthService, useValue: { has: sinon.stub().resolves(false) } },
-          { provide: ContactTypesService, useValue: {
-            getChildren: sinon.stub().resolves([
-              {
-                id: 'childType',
-                icon: 'icon'
-              }
-            ]),
-            getAll: sinon.stub().resolves([]),
-            includes: sinon.stub()
-          }},
-          { provide: ScrollLoaderProvider, useValue: { init: (callback) => {
-            scrollLoaderCallback = callback;
-          } }},
+          { provide: ChangesService, useValue: changesService },
+          { provide: SearchService, useValue: searchService },
+          { provide: SimprintsService, useValue: simprintsService },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: GetDataRecordsService, useValue: getDataRecordsService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: TourService, useValue: tourService },
+          { provide: AuthService, useValue: authService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
+          { provide: ExportService, useValue: exportService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
         ]
       })
       .compileComponents().then(() => {
@@ -113,14 +152,6 @@ describe('Contacts component', () => {
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
         fixture.detectChanges();
-        changesService = TestBed.inject(ChangesService);
-        searchService = TestBed.inject(SearchService);
-        settingsService = TestBed.inject(SettingsService);
-        userSettingsService = TestBed.inject(UserSettingsService);
-        getDataRecordsService = TestBed.inject(GetDataRecordsService);
-        sessionService = TestBed.inject(SessionService);
-        authService = TestBed.inject(AuthService);
-        contactTypesService = TestBed.inject(ContactTypesService);
       });
   }));
 
@@ -152,74 +183,75 @@ describe('Contacts component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  // TODO: Migrate these tests
-  // describe('sets left actionBar', () => {
-  //   it('when user has facility_id', () => {
-  //     const ctrl = createController();
-  //     return ctrl
-  //       .getSetupPromiseForTesting()
-  //       .then(() => {
-  //         assert(ctrl.setLeftActionBar.called, 'left actionBar should be set');
-  //         const actionBarArgs = ctrl.setLeftActionBar.getCall(0).args[0];
-  //         assert.equal(actionBarArgs.userFacilityId, district._id);
-  //       });
-  //   });
+  describe('Action bar', () => {
+    it('should initialise action bar', fakeAsync(() => {
+      flush();
 
-  //   it(`when user doesn't have facility_id`, () => {
-  //     userSettings = KarmaUtils.promiseService(null, {});
-  //     getDataRecords = KarmaUtils.promiseService();
-  //     const ctrl = createController();
-  //     return ctrl
-  //       .getSetupPromiseForTesting()
-  //       .then(() => {
-  //         assert(ctrl.setLeftActionBar.called);
-  //       });
-  //   });
+      expect(globalActions.setLeftActionBar.callCount).to.equal(1);
+      expect(globalActions.setLeftActionBar.args[0][0].childPlaces.length).to.equal(0);
+      expect(globalActions.setLeftActionBar.args[0][0].hasResults).to.equal(false);
+      expect(globalActions.setLeftActionBar.args[0][0].userFacilityId).to.equal('district-id');
+      expect(globalActions.setLeftActionBar.args[0][0].exportFn).to.be.a('function');
+    }));
 
-  //   it('should filter contact types to allowed ones', () => {
-  //     contactTypes.getChildren.resolves([
-  //       {
-  //         id: 'type1',
-  //         create_form: 'form:contact:create:type1',
-  //       },
-  //       {
-  //         id: 'type2',
-  //         create_form: 'form:contact:create:type2',
-  //       },
-  //       {
-  //         id: 'type3',
-  //         create_form: 'form:contact:create:type3',
-  //       },
-  //     ]);
-  //     const forms = [
-  //       { _id: 'form:contact:create:type3' },
-  //       { _id: 'form:contact:create:type2' },
-  //     ];
-  //     xmlForms.listen.callsArgWith(2, null, forms);
+    it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
+      sinon.resetHistory();
+      contactTypesService.getChildren.resolves([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      const forms = [
+        { _id: 'form:contact:create:type3' },
+        { _id: 'form:contact:create:type2' },
+      ];
 
-  //     const ctrl = createController();
-  //     return ctrl
-  //       .getSetupPromiseForTesting()
-  //       .then(() => {
-  //         assert.equal(xmlForms.listen.callCount, 1);
-  //         assert.deepEqual(xmlForms.listen.args[0][1], { contactForms: true });
-  //         assert.deepEqual(ctrl.setLeftActionBar.args[0][0].childPlaces, [
-  //           {
-  //             id: 'type2',
-  //             create_form: 'form:contact:create:type2',
-  //           },
-  //           {
-  //             id: 'type3',
-  //             create_form: 'form:contact:create:type3',
-  //           },
-  //         ]);
+      component.ngOnInit();
+      flush();
 
-  //         //search still searches with all types
-  //         assert.deepEqual(searchService.args[0][1], { types: { selected: ['type1', 'type2', 'type3'] } });
-  //       });
-  //   });
+      expect(xmlFormsService.subscribe.callCount).to.equal(1);
+      expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactForms');
+      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
 
-  // });
+      xmlFormsService.subscribe.args[0][2](null, forms);
+
+      expect(globalActions.updateLeftActionBar.callCount).to.equal(1);
+      expect(globalActions.updateLeftActionBar.args[0][0].childPlaces).to.have.deep.members([
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+      // Checking that childPlaces didn't changed after operations, because used in search feature.
+      expect(component.childPlaces).to.have.deep.members([
+        {
+          id: 'type1',
+          create_form: 'form:contact:create:type1',
+        },
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+    }));
+  });
 
   describe('Search', () => {
     it('Puts the home place at the top of the list', fakeAsync(() => {
@@ -277,6 +309,7 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
+      expect(contactTypesService.getChildren.callCount).to.equal(1);
       expect(contactTypesService.getChildren.args[0].length).to.equal(0);
       expect(searchService.search.args[0][1]).to.deep.equal(
         {

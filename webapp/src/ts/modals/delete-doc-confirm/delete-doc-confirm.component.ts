@@ -52,16 +52,16 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
     this.subscriptions.unsubscribe();
   }
 
-  private getRouteName(url = '') {
+  private getRoute(url = '', doc) {
     const contacts = 'contacts';
     const reports = 'reports';
 
     if (url.includes(contacts)) {
-      return contacts;
+      return { name: contacts, parameter: doc?.parent?._id };
     }
 
     if (url.includes(reports)) {
-      return reports;
+      return { name: reports };
     }
   }
 
@@ -76,12 +76,12 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
       .put(doc)
       .then(() => {
         const text = this.translateService.instant('document.deleted');
-        const routeName = this.getRouteName(this.router.url);
+        const route = this.getRoute(this.router.url, doc);
         this.globalActions.setSnackbarContent(text);
         this.close();
 
-        if (!this.selectMode && routeName) {
-          this.router.navigate([routeName, '']);
+        if (!this.selectMode && route?.name) {
+          this.router.navigate([route.name, route.parameter || '']);
         }
       })
       .catch((err) => this.setError(err, 'Error deleting document'));

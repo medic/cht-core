@@ -24,6 +24,7 @@ import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
+import { ContactsMutedComponent } from './contacts-muted/contacts-muted.component';
 
 
 @NgModule({
@@ -47,6 +48,7 @@ import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-clo
     EditMessageGroupComponent,
     SessionExpiredComponent,
     DatabaseClosedComponent,
+    ContactsMutedComponent,
   ],
   imports: [
     CommonModule,
