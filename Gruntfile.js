@@ -507,7 +507,8 @@ module.exports = function(grunt) {
       'start-webdriver': {
         cmd:
           'mkdir -p tests/logs && ' +
-          'java -Djava.security.egd=file:///dev/./urandom -Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver -jar selenium-server-standalone.jar -port 4444 > tests/logs/webdriver.log & ' +
+          './node_modules/.bin/webdriver-manager update --versions.chrome=87.0.4280.88 && ' +
+          './node_modules/.bin/webdriver-manager start --versions.chrome=87.0.4280.88 > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
