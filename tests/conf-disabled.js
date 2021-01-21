@@ -25,7 +25,7 @@ const baseConfig = {
       'e2e/create-meta-db.js',
       'e2e/login/login.specs.js', 
       '**/docs-by-replication-key-view.js',
-      
+      'e2e/submit-enketo-form.js'
     ],
     // performance: 'performance/**/*.js'
   },
