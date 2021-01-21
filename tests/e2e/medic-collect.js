@@ -44,20 +44,20 @@ describe('medic-collect', () => {
     it('is prompted for auth details if not supplied', async () => {
       // when
       const res = await rawHttpRequest(
-            `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
+        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 Connection: close\r
 \r\n`
-        );
+      );
         // then
-        assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(
-            res.headers['WWW-Authenticate'],
-            'Basic realm="Medic Mobile Web Services"',
-            JSON.stringify(res)
-        );
+      assert.equal(res.statusCode, 401, JSON.stringify(res));
+      assert.equal(
+        res.headers['WWW-Authenticate'],
+        'Basic realm="Medic Mobile Web Services"',
+        JSON.stringify(res)
+      );
     });
 
     it('can fetch a list of forms', async () => {
@@ -93,39 +93,39 @@ Connection: close\r
     it('is prompted for auth details if not supplied', async () => {
       // when
       const res = await rawHttpRequest(
-            `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
+        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
 \r\n`
-        );
+      );
         // then
-        assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(
-            res.headers['WWW-Authenticate'],
-            'Basic realm="Medic Mobile Web Services"',
-            JSON.stringify(res)
-        );
+      assert.equal(res.statusCode, 401, JSON.stringify(res));
+      assert.equal(
+        res.headers['WWW-Authenticate'],
+        'Basic realm="Medic Mobile Web Services"',
+        JSON.stringify(res)
+      );
     });
 
     it('can fetch a list of forms', async () => {
       // when
       const res = await rawHttpRequest(
-            `GET /api/v1/forms HTTP/1.1\r
+        `GET /api/v1/forms HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
 \r\n`
-        );
+      );
         // then
-        assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(
-            res.body,
-            `108\r
+      assert.equal(res.statusCode, 200, JSON.stringify(res));
+      assert.equal(
+        res.body,
+        `108\r
 <?xml version="1.0" encoding="UTF-8"?>
 <xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
@@ -134,8 +134,8 @@ Connection: close\r
   </xform>
 </xforms>\r
 0\r\n\r\n`,
-            JSON.stringify(res)
-        );
+        JSON.stringify(res)
+      );
     });
   });
 });
