@@ -15,7 +15,7 @@ import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 
 describe('contacts report component', () => {
   let component: ContactsReportComponent;
@@ -28,7 +28,7 @@ describe('contacts report component', () => {
   let translateFromService;
   let router;
   let route;
-  let lineageModelGeneratorService;
+  let contactViewModelGeneratorService;
   let routeSnapshot;
 
   beforeEach(() => {
@@ -57,7 +57,7 @@ describe('contacts report component', () => {
       params: new Subject(),
       queryParams: new Subject(),
     };
-    lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: { doc: {} } }) };
+    contactViewModelGeneratorService = { getContact: sinon.stub().resolves({ doc: { doc: {} } }) };
     const mockedSelectors = [
       { selector: Selectors.getSelectedContact, value: {} },
       { selector: Selectors.getEnketoStatus, value: {} },
@@ -83,7 +83,7 @@ describe('contacts report component', () => {
           { provide: TranslateFromService, useValue: translateFromService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
-          { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+          { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
         ]
       })
       .compileComponents()
@@ -126,7 +126,7 @@ describe('contacts report component', () => {
       cancelCallback();
 
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts' ]]);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', '' ]]);
     }));
   });
 
@@ -134,11 +134,13 @@ describe('contacts report component', () => {
     it('should initialize the component', fakeAsync(() => {
       const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
       const setCancelCallback = sinon.stub(GlobalActions.prototype, 'setCancelCallback');
+      const clearRightActionBar = sinon.stub(GlobalActions.prototype, 'clearRightActionBar');
       component.ngOnInit();
       flush();
 
       expect(setShowContent.args).to.deep.equal([[true]]);
       expect(setCancelCallback.callCount).to.equal(1);
+      expect(clearRightActionBar.callCount).to.equal(1);
     }));
 
     it('should unsubscribe and unload form on destroy', async () => {
@@ -207,7 +209,8 @@ describe('contacts report component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(enketoService.save.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0][0][0]).to.equal('/contacts/random-contact');
+      expect(router.navigate.args[0][0][0]).to.equal('/contacts');
+      expect(router.navigate.args[0][0][1]).to.equal('random-contact');
       expect(telemetryService.record.callCount).to.equal(3);
       expect(telemetryService.record.args[2][0]).to.equal('enketo:contacts:pregnancy_danger_sign:add:save');
       expect(setEnketoError.callCount).to.equal(0);

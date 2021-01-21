@@ -5,10 +5,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { isEqual as _isEqual } from 'lodash-es';
 
+import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { EnketoService } from '@mm-services/enketo.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
-import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
@@ -26,6 +26,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   };
 
   subscription: Subscription = new Subscription();
+  enketoEdited
   enketoStatus;
   enketoSaving;
   enketoError;
@@ -34,6 +35,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   loadingForm;
   errorTranslationKey;
   contentError;
+  cancelCallback;
 
   constructor(
     private store: Store,
@@ -45,7 +47,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     private router: Router,
     private route: ActivatedRoute,
     private translateService: TranslateService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
   ){
     this.globalActions = new GlobalActions(store);
   }
@@ -60,6 +62,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     this.loadingForm = true;
     this.globalActions.setShowContent(true);
     this.setCancelCallback();
+    this.globalActions.clearRightActionBar();
   }
 
   ngOnDestroy() {
@@ -77,8 +80,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     if (!id) {
       return Promise.resolve();
     }
-    return this.lineageModelGeneratorService
-      .contact(id, { merge: true })
+    return this.contactViewModelGeneratorService
+      .getContact(id, { getChildPlaces: false, merge: true })
       .then((result) => result.doc);
   }
 
@@ -155,10 +158,14 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
-    ).subscribe(([ enketoStatus, enketoSaving, enketoError]) => {
+      this.store.select(Selectors.getEnketoEditedStatus),
+      this.store.select(Selectors.getCancelCallback),
+    ).subscribe(([ enketoStatus, enketoSaving, enketoError, enketoEdited, cancelCallback]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
+      this.enketoEdited = enketoEdited;
+      this.cancelCallback = cancelCallback;
     });
     this.subscription.add(reduxSubscription);
   }
@@ -179,23 +186,13 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       this.render();
     });
     this.subscription.add(routeSubscription);
-
-    const queryParamsSubscription = this.route.queryParams.subscribe(() => {
-      this.routeSnapshot = this.route.snapshot;
-      this.setCancelCallback();
-    });
-    this.subscription.add(queryParamsSubscription);
   }
 
   private setCancelCallback() {
     this.routeSnapshot = this.route.snapshot;
-    if (this.routeSnapshot.params && (this.routeSnapshot.params.id || this.routeSnapshot.params.formId)) {
+    if (this.routeSnapshot.params) {
       this.globalActions.setCancelCallback(() => {
-        if (this.routeSnapshot.params.id) {
-          this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
-        } else {
-          this.router.navigate(['/contacts']);
-        }
+        this.router.navigate(['/contacts', this.routeSnapshot?.params?.id || '']);
       });
     } else {
       this.globalActions.clearCancelCallback();
@@ -219,13 +216,14 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
-    this.enketoService.save(this.routeSnapshot.params.formId, this.form, this.geoHandle)
+    this.enketoService
+      .save(this.routeSnapshot.params.formId, this.form, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
         this.globalActions.setEnketoEditedStatus(false);
-        this.router.navigate([`/contacts/${this.routeSnapshot.params.id}`]);
+        this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
       })
       .then(() => {
         this.telemetryData.postSave = Date.now();
@@ -237,7 +235,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
         console.error('Error submitting form data: ', err);
-        this.globalActions.setEnketoError(this.translateService.get('error.report.save'));
+        this.globalActions.setEnketoError(this.translateService.instant('error.report.save'));
       });
   }
 }
