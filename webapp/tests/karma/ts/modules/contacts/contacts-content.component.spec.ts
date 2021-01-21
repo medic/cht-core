@@ -201,6 +201,7 @@ describe('Contacts content component', () => {
     });
 
     it('should update information when selected contact is updated', () => {
+      selectedContact._id = 'load contact';
       const changesFilter = changesService.subscribe.args[0][0].filter;
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
