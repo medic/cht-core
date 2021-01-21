@@ -509,7 +509,7 @@ module.exports = function(grunt) {
           'mkdir -p tests/logs && ' +
           'if [ ! $CI ]; then ' + 
           './node_modules/.bin/webdriver-manager update; fi && ' +
-          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
+          './node_modules/.bin/webdriver-manager start --out_dir $CHROMEWEBDRIVER > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'check-env-vars':
