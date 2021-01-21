@@ -14,7 +14,8 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
-  WEBDRIVER_VERSION=85
+  CI,
+  WEBDRIVER_VERSION=88
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
@@ -506,6 +507,13 @@ module.exports = function(grunt) {
       },
       'start-webdriver': {
         cmd:
+          'mkdir -p tests/logs && ' +
+          './node_modules/.bin/webdriver-manager update && ' +
+          './node_modules/.bin/webdriver-manager start & ' +
+          'until nc -z localhost 4444; do sleep 1; done',
+      },
+      'start-webdriver-ci': {
+        cmd:
           'scripts/e2e/start_webdriver.sh'
       },
       'check-env-vars':
@@ -950,10 +958,14 @@ module.exports = function(grunt) {
     'exec:pack-node-modules',
   ]);
 
-  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    'replace:webdriver-version',
-    'exec:start-webdriver',
-  ]);
+  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', function() {
+    grunt.task.run('replace:webdriver-version');
+    if (CI) {
+      grunt.task.run('exec:start-webdriver-ci');
+    } else {
+      grunt.task.run('exec:start-webdriver');
+    }
+  });
 
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
