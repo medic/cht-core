@@ -26,6 +26,8 @@ env:
     # AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved
     - secure: Xpx2330cO0bn0vuotwwZaLOcnez63osHpbD3T4khUOsUxiSsJPc1eE3kY7MEyau0Pfd+M0rL8ens447BdgO2NlAXfs/Ge5AlDK0ATQJcwoBKnO8ex3wPXCelCfYjR8NWB/xN8eSHKxgW0Hv0JDFa+ruofnGkElgGVzJL7ib8iUo=
     - secure: SZDBgH8YzCSTrbQuOFsa2VTVpFzuNTUIJmStFMVX/w304BDa2uwWnCnBTwFua7PoDQDJQt5sEbqldhHjTkkdxlLIeuDP8AGtqnFXPPpvrAyAK3VzEFfKn3W+CruG5aJ2+YqjY9lbVrXyw4LC5ywAyZzUgVqEru7usHcHxOkX7hE=
+    # Docker Env Var
+    - secure: EsA4CuIoXwu+Ha9uT9W3UNrrOAymtsC5Cr77+bPA1bw+qvnnGfHRQiizfQHHf0Ps8NoJhxMZPXukzSNMgbWeR32JxpBRpXT5f1PNIjVubUk5XzrYRvo7anwcMlSSbLi0N1YQ5nStbDSrZqR5/aShDQhYeqdTSK5yWTj4gZrJymw=
 
 before_install:
   # External contributors can't access the secured $UPLOAD_URL environment variable
@@ -36,6 +38,7 @@ before_install:
     fi
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
+  - echo "$DOCKER_PASSWORD" | docker login -u "communityhealthtoolkit" --password-stdin
   - ./scripts/travis/couch-start
   - sudo apt-get install xsltproc
 
