@@ -404,15 +404,13 @@ const revertDb = (except, ignoreRefresh) => {
   });
 };
 
-const revertDbNative = (except, ignoreRefresh) => {
-  return revertSettingsNative().then(needsRefresh => {
-    return deleteAllNative(except).then(() => {
-      // only need to refresh if the settings were changed
-      if (!ignoreRefresh && needsRefresh) {
-        return refreshToGetNewSettings();
-      }
-    }).then(setUserContactDocNative);
-  });
+const revertDbNative = async (except, ignoreRefresh) => {
+  let needsRefresh = revertSettingsNative();
+  await deleteAllNative(except);
+  if (!ignoreRefresh && needsRefresh) {
+    return refreshToGetNewSettings();
+  }
+  await setUserContactDocNative();
 };
 
 const deleteUsers = async (users, meta = false) => {
@@ -753,7 +751,6 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: done => {
-    
     return revertDb()
       .then(() => {
         if (done) {
@@ -769,20 +766,10 @@ module.exports = {
       });
   },
 
-  afterEachNative: done => {
-    return revertDbNative()
-      .then(() => {
-        if (done) {
-          done();
-        }
-      })
-      .catch(err => {
-        if (done) {
-          done.fail(err);
-        } else {
-          throw err;
-        }
-      });
+  afterEachNative: async () => {
+    console.log('aftereach 1');
+    await revertDbNative();
+    console.log('aftereach 2');
   },
 
   //check for the update modal before
