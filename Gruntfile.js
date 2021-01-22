@@ -14,7 +14,8 @@ const {
   STAGING_SERVER,
   BUILDS_SERVER,
   TRAVIS_BUILD_NUMBER,
-  WEBDRIVER_VERSION=85
+  CI,
+  WEBDRIVER_VERSION=88
 } = process.env;
 
 const releaseName = TRAVIS_TAG || TRAVIS_BRANCH || 'local-development';
@@ -514,6 +515,10 @@ module.exports = function(grunt) {
           './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
+      'start-webdriver-ci': {
+        cmd:
+          'scripts/e2e/start_webdriver.sh'
+      },
       'check-env-vars':
         'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
@@ -982,7 +987,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
     'replace:webdriver-version',
-    'exec:start-webdriver',
+    CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
   ]);
 
   // Test tasks
