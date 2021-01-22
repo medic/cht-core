@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class TranslationDocsMatcherProvider {
   private static DOC_ID_PREFIX = 'messages-';
-  private static translationsDocIdMatcher = new RegExp(`^${TranslationDocsMatcherProvider.DOC_ID_PREFIX}([a-zA-Z]+)$`);
+  private static translationsDocIdMatcher = new RegExp(`^${TranslationDocsMatcherProvider.DOC_ID_PREFIX}(.+)$`);
 
   static test(docId?) {
     return docId && this.translationsDocIdMatcher.test(docId);

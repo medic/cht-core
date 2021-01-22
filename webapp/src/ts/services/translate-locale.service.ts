@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { map, take } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +38,7 @@ export class TranslateLocaleService {
     translationsCompiled.subscribe((res) => {
       this.translateService.translations[locale] = res;
       this.translateService.addLangs(Object.keys(this.translateService.translations));
+      delete this.loadingTranslations[locale];
     });
     this.loadingTranslations[locale] = translationsCompiled;
   }
@@ -67,9 +68,9 @@ export class TranslateLocaleService {
       return;
     }
 
-    // We're forced to use this methods to hot reload
+    // We're forced to use this method to hot reload
     // there are only 2 methods that emit `onTranslationChange`, this method being one of them
-    // the 2nd method implies setting a translation key
+    // the 2nd method (set) is a poorer choice, as it requires setting a translation key + value
     // https://github.com/ngx-translate/core/issues/874
     this.loadTranslations(locale).subscribe(rawTranslations => {
       this.translateService.setTranslation(locale, rawTranslations);
