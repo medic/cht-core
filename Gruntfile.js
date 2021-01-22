@@ -193,6 +193,7 @@ module.exports = function(grunt) {
             'lodash/uniq': './webapp/node_modules/lodash/uniq',
             'lodash/uniqBy': './webapp/node_modules/lodash/uniqBy',
             'lodash/groupBy': './webapp/node_modules/lodash/groupBy',
+            'messageformat': './webapp/node_modules/messageformat/index.js',
           },
         },
       },
