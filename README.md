@@ -1,4 +1,5 @@
 # The Core Framework of the Community Health Toolkit (CHT)
+# TODO: REMOVE THIS CHANGE. JUST TESTING THE BUILD WITH SOMETHING HARMLESS.
 
 This is the repository of the CHT Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic Mobile.
 
