@@ -440,32 +440,6 @@ const deleteUsers = async (users, meta = false) => {
   }
 };
 
-const deleteUsersNative = async (users, meta = false) => {
-  const usernames = users.map(user => `org.couchdb.user:${user.username}`);
-  const userDocs = await requestNative({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
-  const medicDocs = await requestNative({ path: `/${constants.DB_NAME}/_all_docs`, method: 'POST', body: { keys: usernames}});
-  const toDelete = userDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
-    .filter(stub => stub);
-  const toDeleteMedic = medicDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
-    .filter(stub => stub);
-
-  
-  await  requestNative({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } });
-  await  requestNative({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } });
-  
-
-  if (!meta) {
-    return;
-  }
-
-  for (const user of users) {
-    await requestNative({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'DELETE' });
-  }
-};
-
-
 const createUsers = async (users, meta = false) => {
   const createUserOpts = {
     path: '/api/v1/users',
@@ -870,7 +844,6 @@ module.exports = {
   // @param {Boolean} meta - if true, deletes meta db-s as well, default true
   // @return {Promise}
   deleteUsers: deleteUsers,
-  deleteUsersNative,
 
   // Creates users - optionally also creating their meta dbs
   // @param {Array} users - list of users to be created
