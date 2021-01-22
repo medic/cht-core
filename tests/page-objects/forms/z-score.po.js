@@ -151,7 +151,7 @@ module.exports = {
 
   load: async () => {
     await common.goToReportsNative();
-    await helper.waitUntilReadyNative(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
+    helper.waitUntilReadyNative(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
 
     await browser.sleep(1000); // let the refresh work here - #3691
 
@@ -190,8 +190,8 @@ module.exports = {
     await module.exports.setWeight(patient.weight);
   },
 
-  getHeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
-  getWeightForAge: async () => await clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
-  getWeightForHeight: async () => await clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
+  getHeightForAge: async () => clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
+  getWeightForAge: async () => clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
+  getWeightForHeight: async () => clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
   fieldByIndex: index => element(by.css(`#reports-content .details li:nth-child(${index}) p`)),
 };

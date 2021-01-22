@@ -19,7 +19,7 @@ module.exports = {
       .wait(
         EC.elementToBeClickable(element),
         12000,
-        'Element taking too long to appear in the DOM ' + element.locator()
+        `Element taking too long to appear in the DOM ${element.locator()}`
       )
       .then(() => {
         element.click();
@@ -28,7 +28,7 @@ module.exports = {
         browser.sleep(1000);
         handleUpdateModal();
         return browser
-          .wait(EC.elementToBeClickable(element), 12000, 'element is ' + element.locator())
+          .wait(EC.elementToBeClickable(element), 12000, `element is ${element.locator()}`)
           .then(() => {
             element.click();
           });
@@ -72,7 +72,7 @@ module.exports = {
       .wait(
         EC.presenceOf(element),
         12000,
-        'Element taking too long to appear in the DOM.Let us retry' + element.locator()
+        `Element taking too long to appear in the DOM.Let us retry ${element.locator()}`
       )
       .then(() => {
         return element.getText().then(val => {
@@ -85,7 +85,7 @@ module.exports = {
           .wait(
             EC.visibilityOf(element),
             12000,
-            'Element taking too long to appear in the DOM. Giving up!' + element.locator()
+            `Element taking too long to appear in the DOM. Giving up! ${element.locator()}`
           )
           .then(() => {
             return element.getText().then(val => {
@@ -220,15 +220,12 @@ module.exports = {
 
   waitElementToBeVisible: (elm, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(EC.visibilityOf(elm), timeout, 'waitElementToBeVisible timed out looking for ' + elm.locator());
+    browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
   },
 
   waitElementToBeClickable: (elm, timeout) => {
     timeout = timeout || 15000;
-    const msg = 'waitElementToBeClickable timed out looking for ';
-    if (elm.locator()){
-      msg + elm.locator();
-    } 
+    const msg = `waitElementToBeClickable timed out looking for ${elm.locator()}`;
     return browser.wait(EC.elementToBeClickable(elm), timeout, msg);
   },
 
