@@ -38,7 +38,10 @@ before_install:
     fi
   - export PATH=$PATH:$HOME/.local/bin
   - export PATH=$HOME/.npm/bin:$PATH
-  - echo "$DOCKER_PASSWORD" | docker login -u "communityhealthtoolkit" --password-stdin
+  - |
+    if [[ ! -z "$DOCKER_PASSWORD" ]]; then
+      echo "$DOCKER_PASSWORD" | docker login -u "communityhealthtoolkit" --password-stdin
+    fi
   - ./scripts/travis/couch-start
   - sudo apt-get install xsltproc
 
