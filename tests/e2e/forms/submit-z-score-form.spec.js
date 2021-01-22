@@ -20,15 +20,10 @@ const userContactDoc = {
 
 
 describe('Submit Z-Score form', () => {
-  beforeAll(async () => {
-    await ZScoreForm.configureForm(userContactDoc);
-  });
+  beforeAll(async () => { await ZScoreForm.configureForm(userContactDoc); });
 
-  afterEach(async () => {
-    await utils.resetBrowser();
-  });
-
-  afterAll(utils.afterEachNative);
+  afterEach(async () =>{ await utils.resetBrowser(); });
+  afterAll(async () =>{ await utils.afterEachNative(); });
 
   it('Autofills zscore fields with correct values', async () => {
     await ZScoreForm.load();
