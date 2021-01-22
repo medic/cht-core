@@ -93,7 +93,9 @@ describe('Submit Enketo form', () => {
     await utils.seedTestDataNative(userContactDoc, docs);
   });
 
-  afterEach(utils.afterEachNative);
+  afterEach(async () => {
+    await utils.afterEachNative();
+  });
 
   it('submits on reports tab', async () => {
     await commonElements.goToReportsNative();
