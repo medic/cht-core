@@ -52,71 +52,113 @@ module.exports = [
 
   // MNCH Immunization and Growth follow up 3 days
   {
-    name: 'immunization_growth_follow_up_3',
+    name: 'immunization_growth_follow_up_missed_vaccine_date_3',
     icon: 'icon-people-children',
-    title: 'Immunization Growth Follow Up',
+    title: 'missed_vaccine_date Immunization Growth Follow Up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
+    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
     appliesIf: function(contact, report) {
+      // todo - use this form or a different one for "urgent referral"? "If any danger sign marked triggers an urgent referral follow up form that"
       return report && report.fields &&
-        (
-          // Trigger a immunization follow up form 3 days from the selected date
-          (report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0) ||
-          // Trigger a immunization follow up form 3 days from the selected date
-          (report.fields.g_next_appointment && parseInt(report.fields.g_next_appointment.next_appointment_date)  > 0) ||
-          // Trigger a immunization follow up form 3 days from the selected date
-          (report.fields.g_missed_vaccine_details && parseInt(report.fields.g_missed_vaccine_details.missed_vaccine_date)  > 0)
-          // If any danger sign marked triggers an urgent referral follow up form that shows up the next day of the reported day
-          // todo - use this form or a different one for "urgent referral"?
-        );
+        // Trigger a immunization follow up form 3 days from the selected date
+        report.fields.g_missed_vaccine_details && parseInt(report.fields.g_missed_vaccine_details.missed_vaccine_date)  > 0;
     },
-    actions: [
-      {
-        type: 'report',
-        form: 'immunization_growth_follow_up'
-      }
-    ],
     events: [
       {
-        id: 'immunization_growth_follow_up_is_set_3', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 0,
-        start: 3, // todo - set this to be 3 days after appliesIf criteria
-        end: 3, // todo - get correct end days
+        id: 'immunization_growth_follow_up_is_set_missed_vaccine_date_3', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        dueDate: function (event, contact, report) { return getDateISOLocal(getField(report, 'missed_vaccine_date')); },
+        start: 3, end: 3 // todo - get correct end and start days
       }
     ],
-    resolvedIf: function(contact, report, event, dueDate) { // todo - this doesn't seem to resolve task
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
-      const endTime = addDays(dueDate, event.end + 1).getTime();
+    resolvedIf: function(contact, report, event, dueDate) {
       return isFormArraySubmittedInWindow(
-        contact.reports, ['immunization_growth_follow_up'], startTime, endTime
+        contact.reports,
+        ['immunization_growth_follow_up'],
+        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
+        addDays(dueDate, event.end + 1).getTime()
       );
     }
   },
 
-  // MNCH Immunization and Growth follow up 7 days
+  // MNCH Immunization and Growth follow up deworm_next_date 3 days
   {
-    name: 'immunization_growth_follow_up_7',
+    name: 'immunization_growth_follow_up_deworm_next_date_3',
     icon: 'icon-people-children',
-    title: 'Immunization Growth Follow Up',
+    title: 'deworm_next_date Immunization Growth Follow Up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
+    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
+    appliesIf: function(contact, report) {
+      return report && report.fields &&
+        // Trigger a immunization follow up form 3 days from the selected date
+        report.fields.g_deworming && parseInt(report.fields.g_deworming.deworm_next_date)  > 0;
+    },
+    events: [
+      {
+        id: 'immunization_growth_follow_up_is_set_deworm_next_date_3', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        dueDate: function (event, contact, report) { return getDateISOLocal(getField(report, 'deworm_next_date')); },
+        start: 3, end: 3 // todo - get correct end and start days
+      }
+    ],
+    resolvedIf: function(contact, report, event, dueDate) {
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['immunization_growth_follow_up'],
+        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
+        addDays(dueDate, event.end + 1).getTime()
+      );
+    }
+  },
+
+  // MNCH Immunization and Growth follow up next_appointment_date 3 days
+  {
+    name: 'immunization_growth_follow_up_next_appointment_date_3',
+    icon: 'icon-people-children',
+    title: 'next_appointment_date Immunization Growth Follow Up',
+    appliesTo: 'reports',
+    appliesToType: ['immunization_and_growth'],
+    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
+    appliesIf: function(contact, report) {
+      return report && report.fields &&
+        // Trigger a immunization follow up form 3 days from the selected date
+        report.fields.g_next_appointment && parseInt(report.fields.g_next_appointment.next_appointment_date)  > 0;
+    },
+    events: [
+      {
+        id: 'immunization_growth_follow_up_is_set_next_appointment_date_3', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        dueDate: function (event, contact, report) { return getDateISOLocal(getField(report, 'next_appointment_date')); },
+        start: 3, end: 3 // todo - get correct end and start days
+      }
+    ],
+    resolvedIf: function(contact, report, event, dueDate) {
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['immunization_growth_follow_up'],
+        Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
+        addDays(dueDate, event.end + 1).getTime()
+      );
+    }
+  },
+
+  // MNCH Immunization and Growth follow up developmental_milestones 7 days
+  {
+    name: 'immunization_growth_follow_up_developmental_milestones',
+    icon: 'icon-people-children',
+    title: 'developmental_next_assignment_date Immunization Growth Follow Up',
+    appliesTo: 'reports',
+    appliesToType: ['immunization_and_growth'],
+    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
     appliesIf: function(contact, report) {
       return report && report.fields && report.fields.g_developmental_milestones &&
         // Trigger a child development referral follow up task 7days from the  selected date. The task should stay for 3 more days
         parseInt(report.fields.g_developmental_milestones.developmental_next_assignment_date)  > 0;
     },
-    actions: [
-      {
-        type: 'report',
-        form: 'immunization_growth_follow_up'
-      }
-    ],
     events: [
       {
-        id: 'immunization_growth_follow_up_is_set_7', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 0,
-        start: 7, // todo - set this to be 7 days after appliesIf criteria
-        end: 3, // todo - get correct end days
+        id: 'immunization_growth_follow_up_is_set_developmental_milestones_7', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        dueDate: function (event, contact, report) { return getDateISOLocal(getField(report, 'developmental_next_assignment_date')); },
+        start: 3, end: 3 // todo - get correct end and start days
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) { // todo - this doesn't seem to resolve task
