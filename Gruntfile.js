@@ -509,7 +509,7 @@ module.exports = function(grunt) {
         cmd:
           'mkdir -p tests/logs && ' +
           './node_modules/.bin/webdriver-manager update && ' +
-          './node_modules/.bin/webdriver-manager start & ' +
+          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
           'until nc -z localhost 4444; do sleep 1; done',
       },
       'start-webdriver-ci': {
@@ -958,14 +958,10 @@ module.exports = function(grunt) {
     'exec:pack-node-modules',
   ]);
 
-  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', function() {
-    grunt.task.run('replace:webdriver-version');
-    if (CI) {
-      grunt.task.run('exec:start-webdriver-ci');
-    } else {
-      grunt.task.run('exec:start-webdriver');
-    }
-  });
+  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
+    'replace:webdriver-version',
+    CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
+  ]);
 
   // Test tasks
   grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
