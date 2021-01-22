@@ -22,7 +22,6 @@ module.exports = {
         'Element taking too long to appear in the DOM ' + element.locator()
       )
       .then(() => {
-        console.log('form clicking' + element.locator());
         element.click();
       })
       .catch(() => {

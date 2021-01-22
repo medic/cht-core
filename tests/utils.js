@@ -767,9 +767,7 @@ module.exports = {
   },
 
   afterEachNative: async () => {
-    console.log('aftereach 1');
     await revertDbNative();
-    console.log('aftereach 2');
   },
 
   //check for the update modal before
