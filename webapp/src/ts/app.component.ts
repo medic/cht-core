@@ -265,8 +265,8 @@ export class AppComponent implements OnInit {
       .then(() => this.startRecurringProcesses());
 
     this.globalActions.setIsAdmin(this.sessionService.isAdmin());
-    this.watchChangesBranding();
-    this.watchChangesInboxDDoc();
+    this.watchBrandingChanges();
+    this.watchDDocChanges();
     this.watchUserContextChanges();
     this.watchTranslationsChanges();
     this.watchDBSyncStatus();
@@ -305,7 +305,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private watchChangesBranding() {
+  private watchBrandingChanges() {
     this.changesService.subscribe({
       key: 'branding-icon',
       filter: change => change.id === 'branding',
@@ -313,9 +313,9 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private watchChangesInboxDDoc() {
+  private watchDDocChanges() {
     this.changesService.subscribe({
-      key: 'inbox-ddoc',
+      key: 'ddoc',
       filter: (change) => {
         return (
           change.id === '_design/medic' ||
@@ -338,7 +338,7 @@ export class AppComponent implements OnInit {
   private watchUserContextChanges() {
     const userCtx = this.sessionService.userCtx();
     this.changesService.subscribe({
-      key: 'inbox-user-context',
+      key: 'user-context',
       filter: (change) => {
         return (
           userCtx &&
@@ -354,7 +354,7 @@ export class AppComponent implements OnInit {
 
   private watchTranslationsChanges() {
     this.changesService.subscribe({
-      key: 'inbox-translations',
+      key: 'translations',
       filter: change => TranslationDocsMatcherProvider.test(change.id),
       callback: change => {
         const locale = TranslationDocsMatcherProvider.getLocaleCode(change.id);
@@ -602,8 +602,6 @@ export class AppComponent implements OnInit {
     });
   }
 }
-
-
 
 /*  $window.startupTimes.angularBootstrapped = performance.now();
     Telemetry.record(
