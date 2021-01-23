@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-v3-medic-api
+  annotations:
+    medic-api.version: medicmobile/medic-api:3.10.0-010520-test3
+  labels:
+    cht.service: dev-medic-api
+    app: dev-v3
+  
+spec:
+  selector:
+    matchLabels:
+      cht.service: dev-v3-medic-api
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        medic-api.version: medicmobile/medic-api:3.10.0-010520-test3
+      labels:
+        cht.service: dev-v3-medic-api
+        app: dev-v3  
+    spec:
+      containers:
+      - name: medic-api
+        image: medicmobile/medic-api:3.10.0-010520-test3
+        envFrom:
+        - secretRef:
+            name: "secret-dev-v3-env"   
+        resources: {}
+      restartPolicy: Always
+status: {}

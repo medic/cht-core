@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-v3-medic-api
+spec:
+  selector:
+    cht.service: dev-v3-medic-api
+  type: NodePort
+  ports:
+  - name: medic-api-port
+    port: 80
+    targetPort: 5988
+    nodePort: 31000
