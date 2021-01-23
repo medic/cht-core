@@ -43,6 +43,9 @@ require('moment/locale/hi');
 require('moment/locale/id');
 require('moment/locale/ne');
 require('moment/locale/sw');
+require('./moment-locales/tl');
+require('./moment-locales/hil');
+require('./moment-locales/ceb');
 
 require('./services');
 require('./actions');
