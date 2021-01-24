@@ -45,7 +45,7 @@ describe('UserLogin service', () => {
     expect(res.request.body).to.deep.equal(data);
   });
 
-  it('should  return error call login backend service', () => {
+  it('should return error call login backend service', () => {
     const url = getUrl();
     const data = JSON.stringify({
       user: 'admin',

@@ -1,6 +1,5 @@
-import {Component} from '@angular/core';
-import {BsModalRef} from 'ngx-bootstrap/modal';
-
+import { Component } from '@angular/core';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 
 @Component({

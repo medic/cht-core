@@ -157,7 +157,7 @@ describe('UpdatePasswordComponent', () => {
     expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
   });
 
-  it('user is updated with password change', (done) => {
+  it('user is updated with password change', async () => {
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
     const loginData = JSON.stringify({
@@ -171,18 +171,16 @@ describe('UpdatePasswordComponent', () => {
     component.editUserModel.currentPassword = currentPassword;
     userLoginService.login.resolves({});
     component.updatePassword();
-    setTimeout(() => {
-      expect(translateHelperService.get.called).to.equal(false);
-      expect(component.errors).to.deep.equal({});
-      expect(updateUserService.update.called).to.equal(true);
-      expect(updateUserService.update.getCall(0).args[0]).to.equal('admin');
-      expect(updateUserService.update.getCall(0).args[1].password).to.equal(password);
-      expect(updateUserService.update.getCall(0).args[2]).to.equal('admin');
-      expect(updateUserService.update.getCall(0).args[3]).to.equal(currentPassword);
-      expect(userLoginService.login.called).to.equal(true);
-      expect(userLoginService.login.getCall(0).args[0]).to.equal(loginData);
-      done();
-    });
+    await Promise.resolve();
+    expect(translateHelperService.get.called).to.equal(false);
+    expect(component.errors).to.deep.equal({});
+    expect(updateUserService.update.called).to.equal(true);
+    expect(updateUserService.update.getCall(0).args[0]).to.equal('admin');
+    expect(updateUserService.update.getCall(0).args[1].password).to.equal(password);
+    expect(updateUserService.update.getCall(0).args[2]).to.equal('admin');
+    expect(updateUserService.update.getCall(0).args[3]).to.equal(currentPassword);
+    expect(userLoginService.login.called).to.equal(true);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(loginData);
   });
 
   it('should login user when password is correclty updated', (done) => {
@@ -214,7 +212,7 @@ describe('UpdatePasswordComponent', () => {
     });
   });
 
-  it('should not show updated password modal when login is not successful', (done) => {
+  it('should not show updated password modal when login is not successful', async () => {
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
     const loginData = JSON.stringify({
@@ -229,15 +227,13 @@ describe('UpdatePasswordComponent', () => {
     component.updatePassword();
     modalService.show.resolves({});
     userLoginService.login.rejects({status: 401});
-    setTimeout(() => {
-      expect(updateUserService.update.called).to.equal(true);
-      expect(userLoginService.login.called).to.equal(true);
-      expect(userLoginService.login.getCall(0).args[0]).to.equal(loginData);
-      expect(setFinished.callCount).to.equal(0);
-      expect(close.callCount).to.equal(0);
-      expect(modalService.show.callCount).to.equal(0);
-      done();
-    });
+    await Promise.resolve();
+    expect(updateUserService.update.called).to.equal(true);
+    expect(userLoginService.login.called).to.equal(true);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(loginData);
+    expect(setFinished.callCount).to.equal(0);
+    expect(close.callCount).to.equal(0);
+    expect(modalService.show.callCount).to.equal(0);
   });
 
   it('errors if current password is not provided', () => {
