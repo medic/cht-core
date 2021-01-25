@@ -162,7 +162,7 @@ module.exports = {
     const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'));
     await helper.clickElement(form);
 
-    return helper.waitUntilReadyNative(element(by.css('[name="/data/my_sex"][value="female"]')))
+    return helper.waitUntilReadyNative(element(by.css('[name="/data/my_sex"][value="female"]')));
   },
 
   submit: async () => {
