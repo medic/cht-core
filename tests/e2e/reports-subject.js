@@ -218,16 +218,16 @@ describe('Reports Summary', () => {
   };
 
   const testListLineage = (expected) => {
-    expected.forEach((parent, key) => {
-      expect(getElementText(element(by.css('#reports-list li .detail .lineage li:nth-child('+ (key + 1) +')'))))
+    expected.forEach(async (parent, key) => {
+      expect(await getElementText(element(by.css('#reports-list li .detail .lineage li:nth-child('+ (key + 1) +')'))))
         .toBe(parent);
     });
   };
 
   const testSummaryLineage = (expected) => {
-    expected.forEach((parent, key) => {
+    expected.forEach(async (parent, key) => {
       const css = '#reports-content .item-summary .position .lineage li:nth-child('+ (key + 1) +')';
-      expect(getElementText(element(by.css(css))))
+      expect(await getElementText(element(by.css(css))))
         .toBe(parent);
     });
   };
@@ -379,17 +379,17 @@ describe('Reports Summary', () => {
       await saveReport(REPORT);
       const report = await reportsTab.loadReport(REPORT._id);
       await waitForSentinel(REPORT._id);
-      expect(getElementText(await reportsTab.subject(report))).toBe('Unknown subject');
-      expect(getElementText(await reportsTab.formName(report))).toBe('REF_REF');
+      expect(await getElementText(await reportsTab.subject(report))).toBe('Unknown subject');
+      expect(await getElementText(await reportsTab.formName(report))).toBe('REF_REF');
       //shows subject lineage breadcrumbs
       testListLineage(['Bob Place', 'Health Center', 'District']);
 
       //RHS
-      expect(getElementText(await reportsTab.subjectName())).toBe('Unknown subject');
-      expect(getElementText(await reportsTab.summaryFormName())).toBe('REF_REF');
+      expect(await getElementText(await reportsTab.subjectName())).toBe('Unknown subject');
+      expect(await getElementText(await reportsTab.summaryFormName())).toBe('REF_REF');
       testSummaryLineage(['Bob Place', 'Health Center', 'District']);
-      expect(getElementText(await reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(getElementText(await reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await getElementText(await reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
+      expect(await getElementText(await reportsTab.submitterPhone())).toBe(CAROL.phone);
     });
 
     it('Concerning reports using patient name', async () => {

@@ -19,7 +19,7 @@ module.exports = {
       .wait(
         EC.elementToBeClickable(element),
         12000,
-        'Element taking too long to appear in the DOM'
+        `Element taking too long to appear in the DOM ${element.locator()}`
       )
       .then(() => {
         element.click();
@@ -28,7 +28,7 @@ module.exports = {
         browser.sleep(1000);
         handleUpdateModal();
         return browser
-          .wait(EC.elementToBeClickable(element), 12000)
+          .wait(EC.elementToBeClickable(element), 12000, `element is ${element.locator()}`)
           .then(() => {
             element.click();
           });
@@ -72,7 +72,7 @@ module.exports = {
       .wait(
         EC.presenceOf(element),
         12000,
-        'Element taking too long to appear in the DOM.Let us retry'
+        `Element taking too long to appear in the DOM.Let us retry ${element.locator()}`
       )
       .then(() => {
         return element.getText().then(val => {
@@ -85,7 +85,7 @@ module.exports = {
           .wait(
             EC.visibilityOf(element),
             12000,
-            'Element taking too long to appear in the DOM. Giving up!'
+            `Element taking too long to appear in the DOM. Giving up! ${element.locator()}`
           )
           .then(() => {
             return element.getText().then(val => {
@@ -220,12 +220,13 @@ module.exports = {
 
   waitElementToBeVisible: (elm, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(EC.visibilityOf(elm), timeout);
+    browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
   },
 
   waitElementToBeClickable: (elm, timeout) => {
     timeout = timeout || 15000;
-    return browser.wait(EC.elementToBeClickable(elm), timeout);
+    const msg = `waitElementToBeClickable timed out looking for ${elm.locator()}`;
+    return browser.wait(EC.elementToBeClickable(elm), timeout, msg);
   },
 
   waitElementToDisappear: (locator, timeout) => {
@@ -234,12 +235,17 @@ module.exports = {
       return element(locator)
         .isDisplayed()
         .then(presenceOfElement => !presenceOfElement);
-    }, timeout);
+    }, timeout, 'waitElementToDisappear timed out looking for '  + locator);
   },
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
     browser.wait(() => elm.isPresent(), timeout);
+  },
+
+  waitElementToPresentNative: async (elm, timeout) => {
+    timeout = timeout || 10000;
+    await browser.wait(async () => await elm.isPresent(), timeout);
   },
 
   waitForAngularComplete: () => {
@@ -268,7 +274,7 @@ module.exports = {
     );
   },
   waitUntilReadyNative: elm => {
-    return  browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+    return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
 };
