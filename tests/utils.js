@@ -141,7 +141,7 @@ const updateSettingsNative = async updates => {
       originalSettings[updatedField] = null;
     }
   });
-  await requestNative({
+  return requestNative({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: updates,
