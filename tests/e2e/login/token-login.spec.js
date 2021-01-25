@@ -93,6 +93,7 @@ describe('token login', () => {
     await setupTokenLoginSettings();
     await browser.driver.get(`${utils.getOrigin()}/medic/login/token`);
     await waitForLoaderToDisappear();
+    await helper.waitUntilReadyNative(loginPage.returnToLogin());
     expect(await helper.isTextDisplayed(MISSING)).toBe(true);
     expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
@@ -102,6 +103,7 @@ describe('token login', () => {
     await setupTokenLoginSettings();
     await browser.driver.get(getUrl('this is a random string'));
     await waitForLoaderToDisappear();
+    await helper.waitUntilReadyNative(loginPage.returnToLogin());
     expect(await helper.isTextDisplayed(INVALID)).toBe(true);
     expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
@@ -115,6 +117,7 @@ describe('token login', () => {
     await expireToken(userDoc);
     await browser.driver.get(url);
     await waitForLoaderToDisappear();
+    await helper.waitUntilReadyNative(loginPage.returnToLogin());
     expect(await helper.isTextDisplayed(EXPIRED)).toBe(true);
     expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
