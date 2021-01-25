@@ -27,8 +27,10 @@ const bugDescriptionField = element(by.css('.form-control'));
 const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
+const messagesList = element(by.id('message-list'));
 
 module.exports = {
+  messagesList,
   calm: async () => {
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
