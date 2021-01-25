@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 describe('ContactSummary service', () => {
 
@@ -12,9 +13,11 @@ describe('ContactSummary service', () => {
 
   let service;
   let Settings;
+  let feedbackService;
 
   beforeEach(() => {
     Settings = sinon.stub();
+    feedbackService = { submit: sinon.stub() };
     const pipesTransform = (name, value) => {
       if (name !== 'reversify') {
         throw new Error('unknown filter');
@@ -26,6 +29,7 @@ describe('ContactSummary service', () => {
       providers: [
         { provide: SettingsService, useValue: { get: Settings } },
         { provide: PipesService, useValue: { transform: pipesTransform } },
+        { provide: FeedbackService, useValue: feedbackService }
       ]
     });
     service = TestBed.inject(ContactSummaryService);
@@ -116,17 +120,21 @@ describe('ContactSummary service', () => {
   it('does crash when contact summary throws an error', () => {
     const consoleErrorMock = sinon.stub(console, 'error');
     const script = `return contact.some.field;`;
-
-    Settings.resolves({ contact_summary: script });
     const contact = {};
-    return service.get(contact)
-      .then(function() {
+    Settings.resolves({ contact_summary: script });
+
+    return service
+      .get(contact)
+      .then(() => {
         throw new Error('Expected error to be thrown');
       })
-      .catch(function(err) {
+      .catch((err) => {
         expect(err.message).to.equal('Configuration error');
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
+        expect(feedbackService.submit.callCount).to.equal(1);
+        expect(feedbackService.submit.args[0][0])
+          .to.equal('Configuration error in contact-summary function: Cannot read property \'field\' of undefined');
       });
   });
 
