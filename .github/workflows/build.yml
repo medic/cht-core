@@ -63,6 +63,7 @@ jobs:
       if: ${{ github.event_name != 'pull_request' }}
   
   default-config-tests:
+    needs: build
     name: Default Config Testst
     runs-on: ubuntu-18.04
 
@@ -80,6 +81,7 @@ jobs:
       run: node --stack_size=10000 `which grunt` exec:test-config-default
 
   standard-config-tests:
+    needs: build
     name: Standard Config Testst
     runs-on: ubuntu-18.04
 
