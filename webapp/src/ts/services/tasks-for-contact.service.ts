@@ -50,8 +50,7 @@ export class TasksForContactService {
             const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type?.id));
             return !hasChild;
           });
-      })
-      .catch(err => console.error('Error finding out if tasks are enabled', err));
+      });
   }
 
   private decorateAndSortTasks(tasks) {
@@ -79,7 +78,6 @@ export class TasksForContactService {
         return this.rulesEngineService
           .fetchTaskDocsFor(contactIds)
           .then(tasks => this.decorateAndSortTasks(tasks));
-      })
-      .catch(err => console.error('Failed to load tasks for contact', err));
+      });
   }
 }
