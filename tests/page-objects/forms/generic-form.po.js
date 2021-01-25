@@ -1,6 +1,12 @@
 const helper = require('../../helper');
+const nameField = element(by.css('#report-form form [name="/data/name"]'));
+const submitButton = element(by.css('#report-form .submit'));
+const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
 
 module.exports = {
+  submittedName,
+  submitButton,
+  nameField,
   editForm: () => {
     helper.waitForAngularComplete();
     const editFormBtn = element.all(
