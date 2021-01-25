@@ -1,5 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -20,6 +20,7 @@ import { ContactViewModelGeneratorService } from '@mm-services/contact-view-mode
 describe('contacts report component', () => {
   let component: ContactsReportComponent;
   let fixture: ComponentFixture<ContactsReportComponent>;
+  let store: MockStore;
   let enketoService;
   let geolocationService;
   let geoHandle;
@@ -90,6 +91,7 @@ describe('contacts report component', () => {
       .then(() => {
         fixture = TestBed.createComponent(ContactsReportComponent);
         component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   });
@@ -144,18 +146,25 @@ describe('contacts report component', () => {
     }));
 
     it('should render with the right information', fakeAsync(() => {
-      component.ngOnInit();
+      sinon.resetHistory();
+      contactViewModelGeneratorService.getContact.resolves({
+        doc: {
+          _id: 'test_id',
+          contact_type: 'test_type'
+        }
+      });
+      component.ngAfterViewInit();
       flush();
 
       expect(enketoService.render.callCount).to.equal(1);
-      console.log(enketoService.render.args[0][3]);
       expect(enketoService.render.args[0][0]).to.equal('#contact-report');
       expect(enketoService.render.args[0][1]).to.deep.equal({ title: 'formTitle' });
       expect(enketoService.render.args[0][2]).to.deep.equal(
         {
           source: 'contact',
           contact: {
-            doc: {}
+            _id: 'test_id',
+            contact_type: 'test_type'
           }
         }
       );
@@ -233,6 +242,23 @@ describe('contacts report component', () => {
       expect(telemetryService.record.args[2][0]).to.equal('enketo:contacts:pregnancy_danger_sign:add:save');
       expect(setEnketoError.callCount).to.equal(0);
       expect(setSnackbarContent.callCount).to.equal(1);
+    }));
+
+    it('should set a form error if form is invalid', fakeAsync(() => {
+      const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      enketoService.save.rejects({ error: 'form is invalid' });
+      component.save();
+      flush();
+
+      expect(setEnketoError.callCount).to.equal(1);
+
+      store.overrideSelector(Selectors.getEnketoError, true);
+      store.refreshState();
+      component.save();
+      flush();
+
+      expect(setEnketoError.callCount).to.equal(3);
+      expect(setEnketoError.args[1][0]).to.equal(null); //check error is reset
     }));
   });
 });

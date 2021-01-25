@@ -100,7 +100,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
   private resetFormError() {
     if (this.enketoError) {
-      this.globalActions.setEnketoError.setEnketoError(null);
+      this.globalActions.setEnketoError(null);
     }
   }
 
