@@ -132,10 +132,10 @@ const updateSettingsNative = async updates => {
   const settings = await requestNative({
     path: '/api/v1/settings',
     method: 'GET',
-  })
+  });
 
   originalSettings = settings;
-      // Make sure all updated fields are present in originalSettings, to enable reverting later.
+  // Make sure all updated fields are present in originalSettings, to enable reverting later.
   Object.keys(updates).forEach(updatedField => {
     if (!_.has(originalSettings, updatedField)) {
       originalSettings[updatedField] = null;
@@ -466,7 +466,8 @@ const deleteUsers = async (users, meta = false) => {
 const deleteUsersNative = async (users, meta = false) => {
   const usernames = users.map(user => `org.couchdb.user:${user.username}`);
   const userDocs = await requestNative({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
-  const medicDocs = await requestNative({ path: `/${constants.DB_NAME}/_all_docs`, method: 'POST', body: { keys: usernames}});
+  const opts = { path: `/${constants.DB_NAME}/_all_docs`, method: 'POST', body: { keys: usernames}};
+  const medicDocs = await requestNative(opts);
   const toDelete = userDocs.rows
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);

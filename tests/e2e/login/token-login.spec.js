@@ -110,10 +110,10 @@ describe('token login', () => {
   it('should display an error when token is expired', async () => {
     await setupTokenLoginSettings();
     const response = await createUser(user);
-    userDoc = await getUser(response.user.id);
-    const url = await getTokenUrl(userDoc)
-    await expireToken(userDoc)
-    await browser.driver.get(url)
+    const userDoc = await getUser(response.user.id);
+    const url = await getTokenUrl(userDoc);
+    await expireToken(userDoc);
+    await browser.driver.get(url);
     await waitForLoaderToDisappear();
     expect(await helper.isTextDisplayed(EXPIRED)).toBe(true);
     expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
@@ -123,9 +123,9 @@ describe('token login', () => {
   it('should log the user in when token is correct', async () => {
     await setupTokenLoginSettings();
     const response = await createUser(user);
-    userDoc = await getUser(response.user.id);
-    const url = await getTokenUrl(userDoc)
-    await browser.driver.get(url)
+    const userDoc = await getUser(response.user.id);
+    const url = await getTokenUrl(userDoc);
+    await browser.driver.get(url);
     await browser.waitForAngular();
     await helper.waitUntilReadyNative(commonElements.messagesList);
     expect(await commonElements.messagesList.isDisplayed()).toBe(true);
