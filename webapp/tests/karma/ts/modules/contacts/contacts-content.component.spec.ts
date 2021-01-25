@@ -413,7 +413,7 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
     }));
 
-    it('should enable delete when no selected contact has no children', fakeAsync(() => {
+    it('should enable delete when selected contact has no children', fakeAsync(() => {
       sinon.resetHistory();
       store.overrideSelector(Selectors.getSelectedContactChildren, [
         { contacts: [], type: { id: 'type1', person: true } },

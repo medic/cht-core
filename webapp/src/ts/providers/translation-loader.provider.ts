@@ -29,11 +29,11 @@ export class TranslationLoaderProvider implements TranslateLoader {
       });
     };
 
-    const translationsDoc = TranslationDocsMatcherProvider.getTranslationsDocId(locale);
+    const translationsDocId = TranslationDocsMatcherProvider.getTranslationsDocId(locale);
 
     const promise =  this.db
       .get()
-      .get(translationsDoc)
+      .get(translationsDocId)
       .then(doc => {
         const values = Object.assign(doc.generic || {}, doc.custom || {});
         if (testing) {
