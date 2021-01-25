@@ -27,10 +27,14 @@ export class TasksForContactService {
   }
 
   private areTasksEnabled(type) {
+    if (!type) {
+      return false;
+    }
+    
     return this.rulesEngineService
       .isEnabled()
       .then(isRulesEngineEnabled => {
-        if (!isRulesEngineEnabled || !type) {
+        if (!isRulesEngineEnabled) {
           return false;
         }
 
