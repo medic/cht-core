@@ -80,9 +80,9 @@ describe('Contacts content component', () => {
     };
 
     selectedContact = {
-      doc: { _id: 'district-123', phone: '123', muted: true },
-      type: { person: true },
-      summary: { context: 'test' },
+      doc: {},
+      type: {},
+      summary: {},
       children: [],
       tasks: [],
       reports: []
@@ -201,6 +201,7 @@ describe('Contacts content component', () => {
     });
 
     it('should update information when selected contact is updated', () => {
+      selectedContact._id = 'load contact';
       const changesFilter = changesService.subscribe.args[0][0].filter;
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
@@ -214,6 +215,7 @@ describe('Contacts content component', () => {
 
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(selectContact.callCount).to.equal(1);
+      expect(selectContact.args[0][0]).to.equal('load contact');
     });
 
     it('should redirect to parent when selected contact is deleted', () => {
@@ -296,6 +298,19 @@ describe('Contacts content component', () => {
 
   describe('Action bar', () => {
     it('should initialise action bar', fakeAsync(() => {
+      sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.ngOnInit();
       flush();
 
       expect(globalActions.setRightActionBar.callCount).to.equal(1);
@@ -330,7 +345,7 @@ describe('Contacts content component', () => {
     it('should enable edit and delete in the right action bar when admin user', fakeAsync(() => {
       sinon.resetHistory();
       sessionService.isAdmin.returns(true);
-      store.overrideSelector(Selectors.getSelectedContactChildren, {
+      store.overrideSelector(Selectors.getSelectedContact, {
         type: { person: true },
         doc: { phone: '11', muted: true },
         summary: { context: 'test' },
@@ -358,6 +373,16 @@ describe('Contacts content component', () => {
       sinon.resetHistory();
       sessionService.isAdmin.returns(false);
       userSettingsService.get.resolves({ facility_id: 'district-123' });
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
 
       component.ngOnInit();
       flush();
@@ -371,6 +396,16 @@ describe('Contacts content component', () => {
       sinon.resetHistory();
       sessionService.isAdmin.returns(false);
       component.userSettings = { facility_id: 'district-9' };
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
 
       component.ngOnInit();
       flush();
@@ -434,24 +469,20 @@ describe('Contacts content component', () => {
 
     it('should set relevant report forms based on the selected contact', fakeAsync(() => {
       sinon.resetHistory();
-      contactTypesService.getChildren.resolves([
-        {
-          id: 'type1',
-          create_form: 'form:test_report:type1',
-        },
-        {
-          id: 'type2',
-          create_form: 'form:test_report:type2',
-        },
-        {
-          id: 'type3',
-          create_form: 'form:test_report:type3',
-        },
-      ]);
       const forms = [
         { _id: 'form:test_report:type3', title: 'Type 3', internalId: 3, icon: 'a' },
         { _id: 'form:test_report:type2', title: 'Type 2', internalId: 2, icon: 'b' },
       ];
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
+      fixture.detectChanges();
 
       component.ngOnInit();
       flush();
