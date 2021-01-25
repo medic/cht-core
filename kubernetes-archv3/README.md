@@ -45,7 +45,7 @@ kubectl get nodes
  
  kubectl -n cht get pvc
 
- # check to see pod status. 
+ # check to see pod status. This will also output the pod identifiers, which look like "dev-v3-couchdb-85cdbd6b8f-cmm5q" and are used in other commands at the pod level.
   
   kubectl -n cht get pods
 
