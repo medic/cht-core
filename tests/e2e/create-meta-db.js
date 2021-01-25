@@ -39,11 +39,10 @@ describe('Create user meta db : ', () => {
       .then(() => done()).catch(done.fail);
   });
 
-  beforeEach(utils.beforeEach);
-  afterEach(utils.afterEachNative);
+  beforeEach(async () => { await utils.beforeEach(); });
+  afterEach(async () => { await utils.afterEachNative(); });
 
   it('should allow a new user to read/write from meta db', async () => {
-    console.log('in test');
     await usersPage.openAddUserModal();
     await addUserModal.fillForm(userName, fullName, password);
     await addUserModal.submit();
