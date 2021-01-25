@@ -11,7 +11,7 @@ To decode a secret you can run a command similar to the one below.
 
 `echo -n 'QWxhZGRpbjpvcGVuIHNlc2FtZQ==' | base64 --decode`
 
-You can deploy these files in you local Kubernetes set up from docker desktop on MACO or using a Kubernetes engine like microk8s or k3s on Linux.
+You can deploy these files in you local Kubernetes set up from docker desktop on MACOS or using a Kubernetes engine like microk8s or k3s on Linux.
 
 ## Steps to run this set up in a local Kubernetes set up. 
 
@@ -34,9 +34,9 @@ kubectl get nodes
 
 `kubectl create namespace cht`
 
-3. Deploy the resources using the deployment files. Be sure provide to correct path to the folder that contains your deployment files.
+3. Deploy the resources using the deployment files. Be sure provide to correct path to the directory that contains your deployment files. In this repo these files are located in the `kubernetes-archv3` directory.
 
-`kubectl apply -f path/to/k8s-arcv3/folder`
+`kubectl apply -f path/to/k8s-arcv3/directory`
 
  At first launch, the services will take some time to pull the necessary containers and to create the required volumes to run the cht instance. You will need to be a little patient till this is done. You can monitor the progress of the install through k8s commands some of which are listed below. 
 
