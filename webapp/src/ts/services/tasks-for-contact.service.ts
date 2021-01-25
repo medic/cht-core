@@ -17,7 +17,7 @@ export class TasksForContactService {
     const contactIds = [];
     if (!model?.type?.person && model?.children) {
       model.children.forEach(child => {
-        if (child?.type?.person && child?.contacts && child?.contacts?.length) {
+        if (child?.type?.person && child?.contacts?.length) {
           contactIds.push(...child.contacts.map(contact => contact.id));
         }
       });
@@ -30,7 +30,7 @@ export class TasksForContactService {
     return this.rulesEngineService
       .isEnabled()
       .then(isRulesEngineEnabled => {
-        if (!isRulesEngineEnabled) {
+        if (!isRulesEngineEnabled || !type) {
           return false;
         }
 
