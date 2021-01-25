@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { map, take, tap } from 'rxjs/operators';
+import { map, take, shareReplay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,10 @@ export class TranslateLocaleService {
     return this.translateService
       .currentLoader
       .getTranslation(locale)
-      .pipe(take(1));
+      .pipe(
+        shareReplay(1),
+        take(1)
+      );
   }
 
   private getTranslation(locale) {
@@ -33,6 +36,7 @@ export class TranslateLocaleService {
     const translationsCompiled = loadingTranslations
       .pipe(
         map((res) => this.translateService.compiler.compileTranslations(res, locale)),
+        shareReplay(1),
         take(1),
       );
     translationsCompiled.subscribe((res) => {
