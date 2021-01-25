@@ -16,7 +16,7 @@ export class AnalyticsModulesService {
     return {
       id: 'targets',
       label: 'analytics.targets',
-      route: 'analytics/targets',
+      route: ['/', 'analytics', 'targets'],
       available: () => {
         return settings.tasks &&
           settings.tasks.targets &&
@@ -29,7 +29,7 @@ export class AnalyticsModulesService {
     return {
       id: 'target-aggregates',
       label: 'analytics.target.aggregates',
-      route: 'analytics/target-aggregates',
+      route: ['/', 'analytics', 'target-aggregates'],
       available: () => {
         return settings.tasks &&
           settings.tasks.targets &&
