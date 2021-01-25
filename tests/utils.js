@@ -428,7 +428,7 @@ const revertDb = (except, ignoreRefresh) => {
 };
 
 const revertDbNative = async (except, ignoreRefresh) => {
-  const needsRefresh = revertSettingsNative();
+  const needsRefresh = await revertSettingsNative();
   await deleteAllNative(except);
   if (!ignoreRefresh && needsRefresh) {
     return refreshToGetNewSettings();

@@ -61,7 +61,7 @@ describe('token login', () => {
   afterAll(async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    return utils.revertDbNative();
+    await utils.revertDbNative();
   });
 
   const waitForLoaderToDisappear = async () => {
