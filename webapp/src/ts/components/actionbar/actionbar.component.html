@@ -238,7 +238,6 @@
           <a *ngIf="actionBar?.right?.sendTo"
             mmAuth="can_view_message_action"
             class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only"
-            [attr.data-send-to]="actionBar?.right?.sendTo?._id"
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
             (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
           >
