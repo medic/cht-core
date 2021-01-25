@@ -50,18 +50,19 @@ export class DbService {
     const events = ['change', 'paused', 'active', 'denied', 'complete', 'error'];
 
     return (...args) => {
-      const promisEmitter:any = new EventEmitter();
+      const promiseEmitter:any = new EventEmitter();
       const emitter = this.ngZone.runOutsideAngular(() => fn.apply(db, args));
-      promisEmitter.then = emitter.then.bind(emitter);
-      promisEmitter.catch = emitter['catch'].bind(emitter);
+      promiseEmitter.then = emitter.then.bind(emitter);
+      promiseEmitter.catch = emitter.catch.bind(emitter);
+      promiseEmitter.cancel = emitter.cancel.bind(emitter);
 
       events.forEach(event => {
         emitter.on(event, (...args) => {
-          this.ngZone.run(() => promisEmitter.emit(event, ...args));
+          this.ngZone.run(() => promiseEmitter.emit(event, ...args));
         });
       });
 
-      return promisEmitter;
+      return promiseEmitter;
     };
   }
 
