@@ -151,7 +151,7 @@ module.exports = {
 
   load: async () => {
     await common.goToReportsNative();
-    helper.waitUntilReadyNative(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
+    await helper.waitUntilReadyNative(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
 
     await browser.sleep(1000); // let the refresh work here - #3691
 
@@ -162,9 +162,7 @@ module.exports = {
     const form = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:last-child a'));
     await helper.clickElement(form);
 
-    await browser.wait(() => {
-      return element(by.css('[name="/data/my_sex"][value="female"]')).isPresent();
-    }, 10000);
+    return helper.waitUntilReadyNative(element(by.css('[name="/data/my_sex"][value="female"]')))
   },
 
   submit: async () => {
