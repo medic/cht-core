@@ -21,7 +21,44 @@ let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
+const requestNative = async (options, { debug } = {}) => {
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
+  if (!options.noAuth) {
+    options.auth = options.auth || auth;
+  }
+  options.uri = options.uri || `http://${constants.API_HOST}:${options.port || constants.API_PORT}${options.path}`;
+  options.json = options.json === undefined ? true : options.json;
+
+  if (debug) {
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log(JSON.stringify(options, null, 2));
+    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('!!!!!!!REQUEST!!!!!!!');
+  }
+
+  options.transform = (body, response, resolveWithFullResponse) => {
+    // we might get a json response for a non-json request.
+    const contentType = response.headers['content-type'];
+    if (contentType && contentType.startsWith('application/json') && !options.json) {
+      response.body = JSON.parse(response.body);
+    }
+    // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
+    return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
+  };
+
+  return new Promise(function(resolve,reject){
+    rpn(options)
+      .then((resp) => resolve(resp))
+      .catch(err => {
+        err.responseBody = err.response && err.response.body;
+        reject(err);
+      });
+  });
+};
+
 const request = (options, { debug } = {}) => {
+  deprecated('utils.request', 'utils.requestNative');
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -89,6 +126,7 @@ const updateSettings = updates => {
 };
 
 const revertSettings = () => {
+  deprecated('utils.revertSettings', 'utils.revertSettingsNative');
   if (!originalSettings) {
     return Promise.resolve(false);
   }
@@ -102,9 +140,24 @@ const revertSettings = () => {
   });
 };
 
+const revertSettingsNative = () => {
+  if (!originalSettings) {
+    return Promise.resolve(false);
+  }
+  return requestNative({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: originalSettings,
+  }).then(() => {
+    originalSettings = null;
+    return true;
+  });
+};
+
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 
 const deleteAll = (except = []) => {
+  deprecated('utils.deleteAll', 'utils.deleteAllNative');
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
     doc => PERMANENT_TYPES.includes(doc.type),
@@ -187,6 +240,89 @@ const deleteAll = (except = []) => {
     });
 };
 
+const deleteAllNative = (except = []) => {
+  // Generate a list of functions to filter documents over
+  const ignorables = except.concat(
+    doc => PERMANENT_TYPES.includes(doc.type),
+    'service-worker-meta',
+    constants.USER_CONTACT_ID,
+    'migration-log',
+    'resources',
+    'branding',
+    'partners',
+    'settings',
+    /^form:contact:/,
+    /^_design/
+  );
+  const ignoreFns = [];
+  const ignoreStrings = [];
+  const ignoreRegex = [];
+  ignorables.forEach(i => {
+    if (typeof i === 'function') {
+      ignoreFns.push(i);
+    } else if (typeof i === 'object') {
+      ignoreRegex.push(i);
+    } else {
+      ignoreStrings.push(i);
+    }
+  });
+
+  ignoreFns.push(doc => ignoreStrings.includes(doc._id));
+  ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
+
+  // Get, filter and delete documents
+  return module.exports
+    .requestOnTestDbNative({
+      path: '/_all_docs?include_docs=true',
+      method: 'GET',
+    })
+    .then(({ rows }) =>
+      rows
+        .filter(({ doc }) => !ignoreFns.find(fn => fn(doc)))
+        .map(({ doc }) => {
+          doc._deleted = true;
+          doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
+          return doc;
+        })
+    )
+    .then(toDelete => {
+      const ids = toDelete.map(doc => doc._id);
+      if (e2eDebug) {
+        console.log(`Deleting docs and infodocs: ${ids}`);
+      }
+      const infoIds = ids.map(id => `${id}-info`);
+      return Promise.all([
+        module.exports
+          .requestOnTestDbNative({
+            path: '/_bulk_docs',
+            method: 'POST',
+            body: { docs: toDelete },
+          })
+          .then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted docs: ${JSON.stringify(response)}`);
+            }
+          }),
+        module.exports.sentinelDb.allDocs({keys: infoIds})
+          .then(results => {
+            const deletes = results.rows
+              .filter(row => row.value) // Not already deleted
+              .map(({id, value}) => ({
+                _id: id,
+                _rev: value.rev,
+                _deleted: true
+              }));
+
+            return module.exports.sentinelDb.bulkDocs(deletes);
+          }).then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+            }
+          })
+      ]);
+    });
+};
+
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
@@ -215,6 +351,7 @@ const refreshToGetNewSettings = () => {
 };
 
 const setUserContactDoc = () => {
+  deprecated('utils.setUserContactDoc', 'utils.setUserContactDocNative');
   const {
     DB_NAME: dbName,
     USER_CONTACT_ID: docId,
@@ -234,8 +371,29 @@ const setUserContactDoc = () => {
     }));
 };
 
+const setUserContactDocNative = () => {
+  const {
+    DB_NAME: dbName,
+    USER_CONTACT_ID: docId,
+    DEFAULT_USER_CONTACT_DOC: defaultDoc
+  } = constants;
+
+  return module.exports.getDocNative(docId)
+    .catch(() => ({}))
+    .then(existing => {
+      const rev = _.pick(existing, '_rev');
+      return Object.assign(defaultDoc, rev);
+    })
+    .then(newDoc => requestNative({
+      path: `/${dbName}/${docId}`,
+      body: newDoc,
+      method: 'PUT',
+    }));
+};
+
 
 const revertDb = (except, ignoreRefresh) => {
+  deprecated('utils.revertDb', 'utils.revertDbNative');
   return revertSettings().then(needsRefresh => {
     return deleteAll(except).then(() => {
       // only need to refresh if the settings were changed
@@ -244,6 +402,15 @@ const revertDb = (except, ignoreRefresh) => {
       }
     }).then(setUserContactDoc);
   });
+};
+
+const revertDbNative = async (except, ignoreRefresh) => {
+  const needsRefresh = revertSettingsNative();
+  await deleteAllNative(except);
+  if (!ignoreRefresh && needsRefresh) {
+    return refreshToGetNewSettings();
+  }
+  await setUserContactDocNative();
 };
 
 const deleteUsers = async (users, meta = false) => {
@@ -327,10 +494,21 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
+const deprecated = (name, replacement) => {
+  let msg = `The function ${name} has been deprecated.`;
+  if (replacement) {
+    msg = `${msg} Replace by ${replacement}`;
+  }
+  if (process.env.DEBUG) {
+    console.warn(msg);
+  }
+};
+
 module.exports = {
+  deprecated,
   db: db,
   sentinelDb: sentinel,
-
+  requestNative:requestNative,
   request: request,
 
   reporter: new htmlScreenshotReporter({
@@ -340,7 +518,7 @@ module.exports = {
     captureOnlyFailedSpecs: true,
     reportOnlyFailedSpecs: false,
     showQuickLinks: true,
-    dest: 'tests/results',
+    dest: `tests/results/`,
     filename: 'report.html',
     pathBuilder: function(currentSpec) {
       return currentSpec.fullName
@@ -371,6 +549,20 @@ module.exports = {
     return request(options, { debug });
   },
 
+  requestOnTestDbNative: (options, debug) => {
+    if (typeof options === 'string') {
+      options = {
+        path: options,
+      };
+    }
+
+    const pathAndReqType = `${options.path}${options.method}`;
+    if (pathAndReqType !== '/GET') {
+      options.path = '/' + constants.DB_NAME + (options.path || '');
+    }
+    return requestNative(options, { debug });
+  },
+
   requestOnTestMetaDb: (options, debug) => {
     if (typeof options === 'string') {
       options = {
@@ -379,6 +571,16 @@ module.exports = {
     }
     options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
     return request(options, { debug: debug });
+  },
+
+  requestOnTestMetaDbNative: (options, debug) => {
+    if (typeof options === 'string') {
+      options = {
+        path: options,
+      };
+    }
+    options.path = `/${constants.DB_NAME}-user-${options.userName}-meta${options.path || ''}`;
+    return requestNative(options, { debug: debug });
   },
 
   requestOnMedicDb: (options, debug ) => {
@@ -391,6 +593,18 @@ module.exports = {
 
   saveDoc: doc => {
     return module.exports.requestOnTestDb({
+      path: '/', // so audit picks this up
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': JSON.stringify(doc).length,
+      },
+      body: doc,
+    });
+  },
+
+  saveDocNative: doc => {
+    return module.exports.requestOnTestDbNative({
       path: '/', // so audit picks this up
       method: 'POST',
       headers: {
@@ -417,7 +631,15 @@ module.exports = {
       }),
 
   getDoc: id => {
-    return module.exports.requestOnTestDb({
+    deprecated('utils.getDoc', 'utils.getDocNative');
+    return module.exports.requestOnTestDbNative({
+      path: `/${id}`,
+      method: 'GET',
+    });
+  },
+
+  getDocNative: id => {
+    return module.exports.requestOnTestDbNative({
       path: `/${id}`,
       method: 'GET',
     });
@@ -470,6 +692,7 @@ module.exports = {
    * Sets the document referenced by the user's org.couchdb.user document to a default value
    */
   setUserContactDoc,
+  setUserContactDocNative,
 
   /**
    * Update settings and refresh if required
@@ -500,6 +723,7 @@ module.exports = {
     }),
 
   seedTestData: (done, userContactDoc, documents) => {
+    deprecated('seedTestData', 'seedTestDataNative');
     protractor.promise
       .all(documents.map(module.exports.saveDoc))
       .then(() => module.exports.getDoc(constants.USER_CONTACT_ID))
@@ -511,6 +735,15 @@ module.exports = {
       })
       .then(done)
       .catch(done.fail);
+  },
+
+  seedTestDataNative: async (userContactDoc, documents) => {
+    documents.forEach(async doc => await module.exports.saveDocNative(doc));
+    const existingContactDoc = await module.exports.getDocNative(constants.USER_CONTACT_ID);
+    if (userContactDoc) {
+      const mergedContact = { ...existingContactDoc, ...userContactDoc };
+      await module.exports.saveDocNative(mergedContact);
+    }
   },
 
   /**
@@ -533,10 +766,14 @@ module.exports = {
       });
   },
 
+  afterEachNative: async () => {
+    await revertDbNative();
+  },
+
   //check for the update modal before
-  beforeEach: () => {
-    if (element(by.css('#update-available')).isPresent()) {
-      $('body').sendKeys(protractor.Key.ENTER);
+  beforeEach: async () => {
+    if (await element(by.css('#update-available')).isPresent()) {
+      await $('body').sendKeys(protractor.Key.ENTER);
     }
   },
 
@@ -548,6 +785,7 @@ module.exports = {
    * @return     {Promise}  promise
    */
   revertDb: revertDb,
+  revertDbNative,
 
   resetBrowser: () => {
     return browser.driver
@@ -556,7 +794,7 @@ module.exports = {
       .then(() => {
         return browser.wait(() => {
           return element(by.css('#messages-tab')).isPresent();
-        }, 10000);
+        }, 10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
       });
   },
 
@@ -697,9 +935,9 @@ module.exports = {
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
 
-  closeTour: () => {
-    element.all(by.css('.modal-dialog a.cancel')).each(elm => {
-      elm.click();
+  closeTour: async () => {
+    await element.all(by.css('.modal-dialog a.cancel')).each(async elm => {
+      await elm.click();
     });
   },
 

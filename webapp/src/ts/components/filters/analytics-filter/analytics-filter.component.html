@@ -9,13 +9,13 @@
         <span class="fa fa-chevron-down"></span>
       </span>
       <ng-container *ngFor="let module of analyticsModules">
-        <span *ngIf="module.route === activeModule?.route" class="mm-button-text"> {{ module.label | translate }} </span>
+        <span *ngIf="module.id === activeModule?.id" class="mm-button-text"> {{ module.label | translate }} </span>
       </ng-container>
     </span>
 
     <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
       <li role="presentation" *ngFor="let module of analyticsModules" [attr.data-id]="module.id">
-        <a (click)="navigate(module)" role="menuitem" tabindex="-1">{{ module.label | translate }}</a>
+        <a [routerLink]="module.route" role="menuitem" tabindex="-1">{{ module.label | translate }}</a>
       </li>
     </ul>
   </span>

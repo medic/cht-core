@@ -34,6 +34,7 @@ const initialState = {
   version: null,
   snackbarContent: null,
   translationsLoaded: false,
+  userFacilityId: null,
 };
 
 
@@ -98,6 +99,15 @@ const _globalReducer = createReducer(
       actionBar: { ...state.actionBar, left }
     };
   }),
+  on(Actions.updateLeftActionBar, (state, { payload: { left } }) => {
+    return {
+      ...state,
+      actionBar: {
+        ...state.actionBar,
+        left: { ...state.actionBar?.left, ...left },
+      },
+    };
+  }),
   on(Actions.setRightActionBar, (state, { payload: { right } }) => {
     return {
       ...state,
@@ -110,6 +120,15 @@ const _globalReducer = createReducer(
       actionBar: {
         ...state.actionBar,
         right: { ...state.actionBar?.right, verified },
+      },
+    };
+  }),
+  on(Actions.updateRightActionBar, (state, { payload: { right } }) => {
+    return {
+      ...state,
+      actionBar: {
+        ...state.actionBar,
+        right: { ...state.actionBar?.right, ...right },
       },
     };
   }),
@@ -138,6 +157,9 @@ const _globalReducer = createReducer(
     return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
   }),
   on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
+  on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
+    return { ...state, userFacilityId };
+  }),
 );
 
 export const globalReducer = (state, action) => {

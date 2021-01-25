@@ -37,6 +37,14 @@ module.exports = {
     await helper.waitUntilReady(medicLogo);
   },
 
+  calmNative: async () => {
+    // const bootstrapperSelector = by.css('.bootstrap-layer');
+    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
+    // await helper.waitElementToPresent(element(bootstrapperSelector));
+    // await helper.waitElementToDisappear(bootstrapperSelector);
+    await helper.waitUntilReadyNative(medicLogo);
+  },
+
   checkAbout: () => {
     openSubmenu('about');
     expect(genericSubmitButton.getText()).toEqual('Reload');
@@ -97,6 +105,12 @@ module.exports = {
     browser.driver.get(utils.getLoginUrl());
   },
 
+  goToLoginPageNative: async () => {
+    await browser.manage().deleteAllCookies();
+    await browser.driver.get(await utils.getLoginUrl());
+    await browser.driver.get(await utils.getLoginUrl());
+  },
+
   goToMessages: () => {
     browser.get(utils.getBaseUrl() + 'messages/');
     helper.waitUntilReady(medicLogo);
@@ -110,6 +124,7 @@ module.exports = {
   },
 
   goToReports: refresh => {
+    utils.deprecated('goToReports', 'goToReportsNative');
     browser.get(utils.getBaseUrl() + 'reports/');
     helper.waitElementToPresent(
       element(
@@ -129,6 +144,29 @@ module.exports = {
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
       browser.waitForAngular();
+    }
+  },
+
+  goToReportsNative: async refresh => {
+    await browser.get(utils.getBaseUrl() + 'reports/');
+    await helper.waitElementToPresentNative(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    await helper.waitElementToBeClickable(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    await helper.waitElementToBeVisible(element(by.id('reports-list')));
+    if (refresh) {
+      await browser.refresh();
+    } else {
+      // A trick to trigger a list refresh.
+      // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
+      await helper.clickElement(element(by.css('.reset-filter')));
+      await browser.waitForAngular();
     }
   },
 

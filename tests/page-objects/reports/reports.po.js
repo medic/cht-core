@@ -6,24 +6,42 @@ const reportBodyDetails = '#reports-content .report-body .details';
 const datePickerStart = element(by.css('.daterangepicker [name="daterangepicker_start"]'));
 const datePickerEnd = element(by.css('.daterangepicker [name="daterangepicker_end"]'));
 const dateFilter = element(by.css('#date-filter'));
+const submitReport = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+const firstForm = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'));
+
 const reportListID = '#reports-list';
 
-
 module.exports = {
+  firstForm,
+  submitReport,
   allReports: () => element.all(by.css(`${reportListID} li`)),
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
   listLoader: () => element(by.css(`${reportListID} .loader`)),
   list: () => element(by.css(reportListID)),
   reportByUUID: uuid => module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]')),
+  reportSummary: () => element(by.css('#reports-content .item-summary')),
+  formNameNoSubject: () => module.exports.reportSummary().element(by.css('mm-sender + div')),
+  subjectName: () => module.exports.reportSummary().element(by.css('.subject .name')),
+  summaryFormName: () => module.exports.reportSummary().element(by.css('.subject + div')),
+  submitterName: () => module.exports.reportSummary().element(by.css('.sender .name')),
+  submitterPhone: () => module.exports.reportSummary().element(by.css('.sender .phone')),
+  subject: async reportElement =>  {
+    return reportElement.element(by.css('.content .heading h4 span'));
+  },
+  formName: async reportElement =>  {
+    return reportElement.element(by.css('.summary'));
+  },
+  loadReport: async uuid => {
+    const report = module.exports.reportByUUID(uuid).first();
+    await helper.waitElementToBeClickable(report);
+    await helper.clickElement(report);
+    await helper.waitElementToPresent(module.exports.reportSummary(), 3000);
+    return report;
+  },
   filterByDate: (startDate, endDate) => {
-    let clear = '';
-    for (let i = 0; i < 20; i++) {
-      clear += protractor.Key.BACK_SPACE;
-    }
-
     dateFilter.click();
-    datePickerStart.click().sendKeys(clear + startDate.format('MM/DD/YYYY'));
-    datePickerEnd.click().sendKeys(clear + endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
+    datePickerStart.click().clear().sendKeys(startDate.format('MM/DD/YYYY'));
+    datePickerEnd.click().clear().sendKeys( endDate.format('MM/DD/YYYY') + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
   },
   expectReportsToExist: uuids => {
