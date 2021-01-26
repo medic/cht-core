@@ -19,6 +19,7 @@ We recommend you raise an issue on Github or start a conversation on our [Commun
 ### First time contributor?
 Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wanted) are a great place to start. Looking for other ways to help? You can also:
 * Improve our [documentation](#improving-our-documentation)
+* Review or add a [translation](#translations)
 * Find and mark duplicate issues
 * Try to reproduce issues and help with troubleshooting
 * Or [share a new idea or question](https://forum.communityhealthtoolkit.org) with us!
@@ -39,6 +40,10 @@ Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wan
 
 Is our documentation up to date? Have we covered everything we should? Could our wording be improved? Read our [Documentation Style Guide](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/) then open a pull request with your suggested changes or additions.
 Want to talk about Documentation generally? Join our [Community Forum](https://forum.communityhealthtoolkit.org)!
+
+### Translations
+
+If you are a translator but not a developer, we understand that you may need extra help to follow the [process of translating](https://docs.communityhealthtoolkit.org/apps/reference/translations/) software for the first time. If that is the case, please open an issue on the GitHub repo or start a topic on the community forum.
 
 ### Disclosing vulnerabilities
 
