@@ -223,14 +223,14 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
         this.globalActions.setEnketoEditedStatus(false);
-        this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
-      })
-      .then(() => {
+
         this.telemetryData.postSave = Date.now();
 
         this.telemetryService.record(
           `enketo:contacts:${this.telemetryData.form}:add:save`,
           this.telemetryData.postSave - this.telemetryData.preSave);
+
+        this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
