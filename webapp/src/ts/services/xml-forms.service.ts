@@ -50,6 +50,10 @@ export class XmlFormsService {
     return this.dbService.get()
       .query('medic-client/doc_by_type', options)
       .then((res) => {
+        if (!res?.rows) {
+          return;
+        }
+
         return res.rows
           .filter(row => this.findXFormAttachmentName(row.doc))
           .map(row => row.doc);
@@ -64,7 +68,7 @@ export class XmlFormsService {
   private getByView(internalId) {
     return this
       .init
-      .then(docs => docs.filter(doc => doc.internalId === internalId))
+      .then(docs => docs?.filter(doc => doc.internalId === internalId))
       .then(docs => {
         if (!docs.length) {
           return Promise.reject(new Error(`No form found for internalId "${internalId}"`));

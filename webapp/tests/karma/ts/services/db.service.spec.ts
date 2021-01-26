@@ -7,8 +7,6 @@ chai.use(chaiExclude);
 import { expect, assert } from 'chai';
 import { NgZone } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
-window.PouchDB = require('pouchdb-browser').default;
-import PouchDb from 'pouchdb-browser';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -237,7 +235,7 @@ describe('Db Service', () => {
 
   describe('method wrapping', () => {
     beforeEach(() => {
-      window.PouchDB = originalPouchDB;
+      window.PouchDB = require('pouchdb-browser').default;
       // avoid the 2dbs being initialized at the startup
       // we're just using 1 set of stubs so the calls will be mirrored if requiring 2 dbs
       sessionService.isOnlineOnly.returns(true);
@@ -312,7 +310,7 @@ describe('Db Service', () => {
     for (const method in methods) {
       if (methods[method]) {
         it(`should stub ${method}`, fakeAsync(() => {
-          const stubbedMethod = sinon.stub(PouchDb.prototype, method);
+          const stubbedMethod = sinon.stub(window.PouchDB.prototype, method);
           getService();
           const db = service.get();
 
@@ -330,7 +328,7 @@ describe('Db Service', () => {
     }
 
     it('should work with a resolving promise', fakeAsync(async () => {
-      sinon.stub(PouchDb.prototype, 'get').resolves({ the: 'thing' });
+      sinon.stub(window.PouchDB.prototype, 'get').resolves({ the: 'thing' });
       getService();
       const db = service.get();
 
@@ -339,7 +337,7 @@ describe('Db Service', () => {
     }));
 
     it('should work with a rejecting promise', fakeAsync(async () => {
-      sinon.stub(PouchDb.prototype, 'get').rejects({ code: 404 });
+      sinon.stub(window.PouchDB.prototype, 'get').rejects({ code: 404 });
 
       getService();
       const db = service.get();
@@ -356,11 +354,10 @@ describe('Db Service', () => {
       // because of how complex the Changes PouchDB object is, these are integration tests, not unit tests
       it('should call with correct params', fakeAsync(() => {
         const options = { live: false, include_docs: false, since: '123' };
-        const changesSpy = sinon.spy(PouchDb.prototype, 'changes');
+        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
 
         getService();
         const db = service.get();
-
         // can't use await, changes doesn't return a promise
         // it returns an event emitter with an attached `then` property!
         // see https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-core/src/changes.js
@@ -374,7 +371,7 @@ describe('Db Service', () => {
 
       it('should return full results', fakeAsync(async () => {
         const options = { live: false, include_docs: true };
-        const changesSpy = sinon.spy(PouchDb.prototype, 'changes');
+        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
 
         getService();
         const db = service.get();
@@ -405,7 +402,7 @@ describe('Db Service', () => {
       }));
 
       it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-        const changesSpy = sinon.spy(PouchDb.prototype, 'changes');
+        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
 
         getService();
         const db = service.get();
@@ -436,7 +433,7 @@ describe('Db Service', () => {
       }));
 
       it('should correctly bind catch', fakeAsync(async () => {
-        const changesSpy = sinon.spy(PouchDb.prototype, 'changes');
+        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
         const opts = {
           live: false,
           filter: () => {
@@ -470,7 +467,7 @@ describe('Db Service', () => {
       // because of how complex the Sync PouchDB object is, these are integration tests, not unit tests
       it('should call with correct params', fakeAsync(() => {
         const options = { live: false, since: '123' };
-        const syncSpy = sinon.spy(PouchDb.prototype, 'sync');
+        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
         const target = window.PouchDB(`db-${uuidv4()}`);
 
         getService();
@@ -505,7 +502,7 @@ describe('Db Service', () => {
 
       it('should do a full sync', fakeAsync(async () => {
         const options = { live: false };
-        const syncSpy = sinon.spy(PouchDb.prototype, 'sync');
+        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
         const target = window.PouchDB(`db-${uuidv4()}`);
 
         getService();
@@ -548,7 +545,7 @@ describe('Db Service', () => {
       }));
 
       it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-        const syncSpy = sinon.spy(PouchDb.prototype, 'sync');
+        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
         const target = window.PouchDB(`db-${uuidv4()}`);
 
         getService();
@@ -764,7 +761,7 @@ describe('Db Service', () => {
         }));
 
         it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-          const target = new PouchDb(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuidv4()}`);
 
           getService();
           const db = service.get();
