@@ -25,6 +25,8 @@ const baseConfig = {
       'e2e/create-meta-db.js',
       'e2e/login/login.specs.js',
       'e2e/content-security-policy.js',
+      'e2e/submit-enketo-form.js',
+      'e2e/forms/submit-z-score-form.spec.js',
     ],
     // performance: 'performance/**/*.js'
   },

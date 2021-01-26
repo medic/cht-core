@@ -17,7 +17,7 @@ export class ContactChangeFilterService {
   private isValidInput(object) {
     return !!(object && object.doc);
   }
-  
+
   private isReport(change) {
     return !!change.doc.form && change.doc.type === 'data_record';
   }
@@ -30,14 +30,14 @@ export class ContactChangeFilterService {
       (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc.place_id))) {
       return true;
     }
-  
+
     if ((report.doc.patient_id && report.doc.patient_id === contact.doc.patient_id) ||
         (report.doc.patient_id && report.doc.patient_id === contact.doc._id) ||
         (report.doc.place_id && report.doc.place_id === contact.doc.place_id) ||
         (report.doc.place_id && report.doc.place_id === contact.doc._id)) {
       return true;
     }
-  
+
     return false;
   }
 
@@ -66,7 +66,7 @@ export class ContactChangeFilterService {
       });
     });
   }
-  
+
   matchContact(change, contact) {
     return this.isValidInput(contact) && contact.doc._id === change.id;
   }
