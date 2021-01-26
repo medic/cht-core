@@ -69,7 +69,7 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
 
                 this.modalService
                   .show(ConfirmPasswordUpdatedComponent)
-                  .catch(() => window.location.reload(true));
+                  .catch(() => this.windowReload());
               } else {
                 this.windowReload();
               }
