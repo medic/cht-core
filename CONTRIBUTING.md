@@ -5,6 +5,7 @@ The Core Framework of the Community Health Toolkit is powered by people like you
 
 ## [Ways to contribute](#ways-to-contribute)
   - [First time contributor? Start here!](#first-time-contributor)
+  - [Review or add a translation](#translations)
   - [Submitting code](#submitting-code)
   - [Improving our documentation](#improving-our-documentation)
   - [Disclosing vulnerabilities](#disclosing-vulnerabilities)

@@ -40,7 +40,7 @@ First time contributor? Issues labeled [help wanted](https://github.com/medic/ch
 
 Looking for other ways to help? You can also:
 * Improve documentation. Check out our style guide [here](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/)
-* Review or add a [translation](CONTRIBUTING.md#translating)
+* Review or add a [translation](CONTRIBUTING.md#translations)
 * Find and mark duplicate issues
 * Try to reproduce issues and help with troubleshooting
 * Or share a new idea or question with us!
