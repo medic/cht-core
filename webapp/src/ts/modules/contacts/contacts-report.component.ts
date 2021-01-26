@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -30,7 +30,6 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   enketoStatus;
   enketoSaving;
   enketoError;
-  selectedContact;
   form;
   loadingForm;
   errorTranslationKey;
@@ -38,17 +37,18 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   cancelCallback;
 
   constructor(
-    private store: Store,
-    private enketoService: EnketoService,
-    private geolocationService: GeolocationService,
-    private telemetryService: TelemetryService,
-    private xmlFormsService: XmlFormsService,
-    private translateFromService: TranslateFromService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private translateService: TranslateService,
-    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
-  ){
+    private store:Store,
+    private enketoService:EnketoService,
+    private geolocationService:GeolocationService,
+    private telemetryService:TelemetryService,
+    private xmlFormsService:XmlFormsService,
+    private translateFromService:TranslateFromService,
+    private router:Router,
+    private route:ActivatedRoute,
+    private translateService:TranslateService,
+    private contactViewModelGeneratorService:ContactViewModelGeneratorService,
+    private ngZone:NgZone,
+  ) {
     this.globalActions = new GlobalActions(store);
   }
 
@@ -104,25 +104,32 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  private _loadData() {
+    return Promise
+      .all([
+        this.getContact(),
+        this.xmlFormsService.get(this.routeSnapshot.params?.formId),
+      ]);
+  }
+
+  private loadData() {
+    return this.ngZone.runOutsideAngular(() => this._loadData());
+  }
+
   private render() {
     this.contentError = false;
     this.errorTranslationKey = false;
 
     return this
-      .getContact()
-      .then((contact) => {
-        this.setCancelCallback();
-        this.selectedContact = contact;
-        return this.xmlFormsService.get(this.routeSnapshot.params.formId);
-      })
-      .then((form) => {
+      .loadData()
+      .then(([ contact, form ]) => {
         this.globalActions.setEnketoEditedStatus(false);
         this.globalActions.setTitle(this.translateFromService.get(form.title));
         this.setCancelCallback();
 
         const instanceData = {
           source: 'contact',
-          contact: this.selectedContact,
+          contact,
         };
         const markFormEdited = this.markFormEdited.bind(this);
         const resetFormError = this.resetFormError.bind(this);
