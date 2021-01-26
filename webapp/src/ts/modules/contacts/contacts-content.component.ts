@@ -38,14 +38,15 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   contactsLoadingSummary;
   forms;
   loadingSelectedContactReports;
-  reportStartDate;
   reportsTimeWindowMonths;
-  taskEndDate;
   tasksTimeWindowWeeks;
   userSettings;
   settings;
   childTypesBySelectedContact = [];
   canDeleteContact = false; // this disables the "Delete" button until children load
+
+  filteredTasks = [];
+  filteredReports = [];
 
   constructor(
     private store: Store,
@@ -178,25 +179,18 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   setReportsTimeWindowMonths(months?) {
     this.reportsTimeWindowMonths = months;
-    this.reportStartDate = months ? moment().subtract(months, 'months') : null;
-  }
+    const reportStartDate = months ? moment().subtract(months, 'months') : null;
 
-  filteredReports() {
-    const reports = this.selectedContact?.reports;
-    if (reports) {
-      return reports.filter((report) => !this.reportStartDate || this.reportStartDate.isBefore(report.reported_date));
-    }
-    return [];
-  }
-
-  filteredTasks() {
-    const tasks = this.selectedContact.tasks;
-    return tasks.filter((task) => !this.taskEndDate || task.dueDate <= this.taskEndDate);
+    const allReports = this.selectedContact?.reports || [];
+    this.filteredReports = allReports
+      .filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
   }
 
   setTasksTimeWindowWeeks(weeks?) {
     this.tasksTimeWindowWeeks = weeks;
-    this.taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
+    const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
+    const allTasks = this.selectedContact?.tasks || [];
+    this.filteredTasks = allTasks.filter((task) => !taskEndDate || task.dueDate <= taskEndDate);
   }
 
   private async setRightActionBar() {

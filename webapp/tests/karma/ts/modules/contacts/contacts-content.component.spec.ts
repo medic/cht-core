@@ -11,7 +11,6 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { Selectors } from '@mm-selectors/index';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
-import { FilterReportsPipe } from '@mm-pipes/contacts.pipe';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -104,7 +103,7 @@ describe('Contacts content component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [ ContactsContentComponent, ResourceIconPipe, FilterReportsPipe ],
+        declarations: [ ContactsContentComponent, ResourceIconPipe ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ActivatedRoute, useValue: activatedRoute },

@@ -80,7 +80,7 @@
         </div>
 
         <ul>
-          <ng-container *ngFor="let child of group.contacts" >
+          <ng-container *ngFor="let child of group?.contacts" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
               [route]="['/', 'contacts', child.doc._id]"
@@ -96,7 +96,7 @@
           </ng-container>
         </ul>
         <ul class="action deceased">
-          <li *ngIf="group.deceasedCount > 0" class="content-row deceased">
+          <li *ngIf="group?.deceasedCount > 0" class="content-row deceased">
             <a [routerLink]="['/contacts', selectedContact?.doc?._id, 'deceased']">
               <span translate [translateParams]="{ count: group.deceasedCount }">contact.deceased.view</span>
               <i class="fa fa-chevron-right"></i>
@@ -110,13 +110,13 @@
           <div class="action-header cell">
             <h3>{{'Tasks' | translate}}</h3>
             <span class="table-filter">
-              <a (click)="setTasksTimeWindowWeeks(1)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 1" translate [translateParams]="{WEEKS: 1}">n.week</a>
-              <a (click)="setTasksTimeWindowWeeks(2)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 2" translate [translateParams]="{WEEKS: 2}">n.week</a>
+              <a (click)="setTasksTimeWindowWeeks(1)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 1" translate [translateParams]="{ WEEKS: 1 }">n.week</a>
+              <a (click)="setTasksTimeWindowWeeks(2)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 2" translate [translateParams]="{ WEEKS: 2 }">n.week</a>
               <a (click)="setTasksTimeWindowWeeks()" class="btn btn-link" [class.selected]="!tasksTimeWindowWeeks">{{'view.all' | translate}}</a>
             </span>
           </div>
           <ul>
-            <mm-content-row *ngFor="let task of selectedContact?.tasks"
+            <mm-content-row *ngFor="let task of filteredTasks"
               [id]="task._id"
               [route]="['/', 'tasks', task._id]"
               [icon]="task.icon"
@@ -128,7 +128,7 @@
               [warning]="task.priorityLabel"
             ></mm-content-row>
           </ul>
-          <div class="row" *ngIf="!filteredTasks().length">
+          <div class="row" *ngIf="!filteredTasks.length">
             <div class="cell col">
               <span *ngIf="!tasksTimeWindowWeeks">{{'tasks.none' | translate}}</span>
               <span *ngIf="tasksTimeWindowWeeks" translate [translateParams]="{ WEEKS: tasksTimeWindowWeeks }">tasks.none.n.weeks</span>
@@ -150,7 +150,7 @@
           <div class="loader" *ngIf="loadingSelectedContactReports"></div>
           <div *ngIf="!loadingSelectedContactReports">
             <ul>
-              <mm-content-row *ngFor="let report of selectedContact?.reports | filterReports: reportStartDate"
+              <mm-content-row *ngFor="let report of filteredReports"
                 [id]="report._id"
                 [route]="['/', 'reports', report._id]"
                 [icon]="report | formIconName:forms"
@@ -162,10 +162,10 @@
                 [verified]="report.verified"
               ></mm-content-row>
             </ul>
-            <div class="row" *ngIf="!filteredReports().length">
+            <div class="row" *ngIf="!filteredReports.length">
               <div class="cell col">
                 <span *ngIf="!reportsTimeWindowMonths">{{'reports.none' | translate}}</span>
-                <span *ngIf="reportsTimeWindowMonths" translate [translateParams]="{MONTHS: reportsTimeWindowMonths}">reports.none.n.months</span>
+                <span *ngIf="reportsTimeWindowMonths" translate [translateParams]="{ MONTHS: reportsTimeWindowMonths }">reports.none.n.months</span>
               </div>
             </div>
           </div>
