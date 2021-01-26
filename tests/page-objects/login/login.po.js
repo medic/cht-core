@@ -46,5 +46,6 @@ module.exports = {
     if (shouldFail) {
       expect(helper.isTextDisplayed(incorrectCredentialsText)).toBe(true);
     }
-  }
+  },
+  returnToLogin: () => element(by.css('.btn[href="/medic/login"]'))
 };
