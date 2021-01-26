@@ -309,7 +309,7 @@ describe('Contacts Reducer', () => {
     });
   });
 
-  describe('add selected contact', () => {
+  describe('update selected contact', () => {
     it('should add a selected contact to empty list', () => {
       const selected = { _id: 'selected_report', some: 'data' };
       const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
