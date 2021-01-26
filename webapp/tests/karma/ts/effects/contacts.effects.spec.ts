@@ -170,7 +170,7 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(settingSelected.args[0][0]).to.equal(false);
       expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal(
-        { _id: 'contactid', doc: { _id: 'contactid' } }
+        { _id: 'contactid', doc: {} }
       );
       expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal(
         { getChildPlaces: true }
@@ -209,6 +209,67 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: true});
     }));
+
+    it('should load the children of the currently selected contact', () => {
+      const updateSelectedContact = sinon.stub(ContactsActions.prototype, 'updateSelectedContact');
+      store.overrideSelector(
+        Selectors.getSelectedContact,
+        {
+          _id: 'previouscontact',
+          doc: {}
+        }
+      );
+      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
+      effects.setSelectedContact.subscribe();
+
+      expect(updateSelectedContact.callCount).to.equal(1);
+      expect(updateSelectedContact.args[0][0]).to.deep.equal({ _id: 'contactid', doc: {} });
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal({ _id: 'contactid', doc: {} });
+    });
+
+    it('should call settingSelected called with the right value if refreshing', () => {
+      store.overrideSelector(
+        Selectors.getSelectedContact,
+        {
+          _id: 'contactid',
+          doc: {
+            _id: 'contactid'
+          }
+        }
+      );
+      actions$ = of(ContactActionList.setSelectedContact({ id: 'contactid', doc: {} }));
+      effects.setSelectedContact.subscribe();
+
+      expect(settingSelected.callCount).to.equal(1);
+      expect(settingSelected.args[0][0]).to.equal(true);
+    });
+
+    it('should call settingSelected called with the right value if not refreshing', () => {
+      store.overrideSelector(
+        Selectors.getSelectedContact,
+        {
+          _id: 'previouscontact',
+          doc: {
+            _id: 'previouscontact'
+          }
+        }
+      );
+      actions$ = of(ContactActionList.setSelectedContact({ id: 'contactid', doc: {} }));
+      effects.setSelectedContact.subscribe();
+
+      expect(settingSelected.callCount).to.equal(1);
+      expect(settingSelected.args[0][0]).to.equal(false);
+    });
+
+    it('should reset the store if it is called with null', () => {
+      const updateSelectedContact = sinon.stub(ContactsActions.prototype, 'updateSelectedContact');
+      actions$ = of(ContactActionList.setSelectedContact(null));
+      effects.setSelectedContact.subscribe();
+
+      expect(updateSelectedContact.callCount).to.equal(1);
+      expect(updateSelectedContact.args[0][0]).to.equal(null);
+    });
     
     describe('set title', () => {
       it('should set contact profile title', () => {

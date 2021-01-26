@@ -67,8 +67,11 @@ export class ContactsEffects {
       ),
       exhaustMap(([{ payload: { selected } }, previousSelectedContact, userFacilityId]) => {
         if (!selected) {
+          this.contactsActions.updateSelectedContact(null);
           return []; // return an empty stream if there is no selected contact
         }
+
+        this.contactsActions.updateSelectedContact(selected);
 
         const refreshing = previousSelectedContact?.doc?._id === selected.id;
         this.globalActions.settingSelected(refreshing);
@@ -82,7 +85,7 @@ export class ContactsEffects {
 
         const getChildPlaces = userFacilityId !== selected?.doc?._id;
         const options = { getChildPlaces };
-        return from(this.contactViewModelGeneratorService.loadChildren(previousSelectedContact, options)).pipe(
+        return from(this.contactViewModelGeneratorService.loadChildren(selected, options)).pipe(
           map(children => {
             return this.contactsActions.receiveSelectedContactChildren(children);
           }),
