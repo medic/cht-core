@@ -13,6 +13,10 @@ export class TranslationLoaderProvider implements TranslateLoader {
   private loadingPromises = {};
 
   getTranslation(locale) {
+    if (!locale) {
+      return;
+    }
+
     if (this.loadingPromises[locale]) {
       return from(this.loadingPromises[locale]);
     }

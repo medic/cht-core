@@ -153,7 +153,7 @@ export class AppComponent implements OnInit {
 
     this.router.events.subscribe((event:RouterEvent) => {
       // close all select2 menus on navigation
-      // https://github.com/medic/medic/issues/2927
+      // https://github.com/medic/cht-core/issues/2927
       if (event instanceof ActivationStart) {
         this.closeDropdowns();
       }

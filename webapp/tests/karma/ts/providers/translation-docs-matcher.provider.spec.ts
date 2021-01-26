@@ -22,7 +22,7 @@ describe('TranslationDocsMatcherProvider service', () => {
     });
   });
 
-  describe('getCode', () => {
+  describe('getLocaleCode', () => {
     it('should return false when not matching', () => {
       expect(service.getLocaleCode()).to.equal(false);
       expect(service.getLocaleCode([])).to.equal(null);
@@ -36,6 +36,16 @@ describe('TranslationDocsMatcherProvider service', () => {
       expect(service.getLocaleCode('messages-en')).to.equal('en');
       expect(service.getLocaleCode('messages-fr')).to.equal('fr');
       expect(service.getLocaleCode('messages-any')).to.equal('any');
+    });
+  });
+
+  describe('getTranslationsDocId', () => {
+    it('should return correct value', () => {
+      expect(service.getTranslationsDocId('code')).to.equal('messages-code');
+      expect(service.getTranslationsDocId('fr')).to.equal('messages-fr');
+      expect(service.getTranslationsDocId(123)).to.equal('messages-123');
+      expect(service.getTranslationsDocId('')).to.equal(false);
+      expect(service.getTranslationsDocId()).to.equal(false);
     });
   });
 });
