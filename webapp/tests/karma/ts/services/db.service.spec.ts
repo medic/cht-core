@@ -540,7 +540,7 @@ describe('Db Service', () => {
           expect(syncSpy.callCount).to.equal(1);
           expect(syncSpy.args[0]).to.deep.equal([target, options]);
           // sync actually calls a bunch of underlying pouchdb methods which we have wrapped
-          expect(runOutsideAngular.callCount).to.be.at.least(1);
+          expect(runOutsideAngular.called).to.equal(true);
         });
       }));
 
@@ -570,7 +570,7 @@ describe('Db Service', () => {
             expect(syncSpy.args[0]).to.deep.equal([target, { live: false, batch_size: batchSize }]);
 
             // sync actually calls a bunch of underlying pouchdb methods which we have wrapped
-            expect(runOutsideAngular.callCount).to.be.at.least(1);
+            expect(runOutsideAngular.called).to.equal(true);
 
             expect(onChange.callCount).to.equal(Math.ceil(results.push.docs_written / batchSize));
             expect(onComplete.callCount).to.equal(1);
@@ -599,6 +599,7 @@ describe('Db Service', () => {
             expect(onComplete.callCount).to.equal(0);
             expect(onError.callCount).to.equal(1);
             expect(onError.args[0][0].status).to.deep.equal(400);
+            expect(runInsideAngular.called).to.equal(true);
           });
       }));
     });
