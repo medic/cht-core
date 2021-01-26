@@ -5,10 +5,10 @@
 >
   <div role="document" class="tour-select" [class.hide-mobile-tab-labels]="minimalTabs">
     <div class="modal-body">
-      <p translate>tour.select.description</p>
+      <p>{{'tour.select.description' | translate}}</p>
       <a *ngFor="let tour of tours; trackBy: listTrackBy" class="btn tour-option" (click)="start(tour.id)" [ngClass]="'tour-option-' + tour.id">
         <div class="fa" [ngClass]="tour.icon"></div>
-        <div class="button-label" translate>{{tour.name}}</div>
+        <div class="button-label">{{tour.name | translate}}</div>
       </a>
     </div>
   </div>

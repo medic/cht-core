@@ -18,12 +18,12 @@
     class="dropdown-menu mm-dropdown-menu"
   >
     <ul>
-      <li role="presentation" class="dropdown-header" translate>contacts.results.sort.title</li>
+      <li role="presentation" class="dropdown-header">{{'contacts.results.sort.title' | translate}}</li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'alpha'" (click)="applySort('alpha')" translate>contacts.results.sort.alpha</a>
+        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'alpha'" (click)="applySort('alpha')">{{'contacts.results.sort.alpha' | translate}}</a>
       </li>
       <li role="presentation">
-        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'last_visited_date'" (click)="applySort('last_visited_date')" translate>contacts.results.sort.date.last.visited</a>
+        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'last_visited_date'" (click)="applySort('last_visited_date')">{{'contacts.results.sort.date.last.visited' | translate}}</a>
       </li>
     </ul>
   </span>

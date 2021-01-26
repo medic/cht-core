@@ -9,6 +9,6 @@
     <span class="mm-button-text" *ngIf="date.from || date.to">
       {{date.from | date:'d MMM'}} - {{date.to | date:'d MMM'}}
     </span>
-    <span class="mm-button-text" *ngIf="!date.from && !date.to" translate>Any date</span>
+    <span class="mm-button-text" *ngIf="!date.from && !date.to">{{'Any date' | translate}}</span>
   </a>
 </div>

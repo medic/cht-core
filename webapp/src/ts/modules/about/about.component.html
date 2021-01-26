@@ -8,7 +8,7 @@
     </div>
 
     <div>
-      <h3 translate (click)="secretDoor()">about</h3>
+      <h3 (click)="secretDoor()">{{'about' | translate}}</h3>
       <dl class="horizontal">
         <dt>{{'version' | translate}}</dt>
         <dd>{{version}}</dd>

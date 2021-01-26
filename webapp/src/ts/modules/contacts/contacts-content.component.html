@@ -7,11 +7,11 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedContact && !loadingContent">
-    <div translate>No contact selected</div>
+    <div>{{'No contact selected' | translate}}</div>
   </div>
 
   <div class="col-sm-8 item-content empty-selection" *ngIf="selectedContact?.error && !loadingContent">
-    <div translate>contact.select.error</div>
+    <div>{{'contact.select.error' | translate}}</div>
   </div>
 
   <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent">
@@ -22,12 +22,12 @@
             <span [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
             <div class="heading-content">
               <h2>{{selectedContact?.doc?.name}}</h2>
-              <div *ngIf="selectedContact?.doc?.date_of_death" translate>contact.deceased.title</div>
+              <div *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>
               <div class="primary-contact" *ngIf="selectedContact?.isPrimaryContact">
                 <i class="fa fa-star primary"></i>
-                <span translate>{{selectedContact?.type?.primary_contact_key || 'Primary contact'}}</span>
+                <span>{{selectedContact?.type?.primary_contact_key || 'Primary contact' | translate}}</span>
               </div>
-              <div class="muted" *ngIf="selectedContact?.doc?.muted" translate>contact.muted</div>
+              <div class="muted" *ngIf="selectedContact?.doc?.muted">{{'contact.muted' | translate}}</div>
             </div>
           </div>
 
@@ -51,14 +51,14 @@
           <div *ngFor="let card of selectedContact?.summary?.cards">
             <div class="card">
               <div class="action-header cell">
-                <h3 translate>{{card.label}}</h3>
+                <h3>{{card.label | translate}}</h3>
               </div>
               <div class="row flex grid">
                 <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of card.fields">
                   <div class="cell">
                     <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
                     <div>
-                      <label translate *ngIf="field.label">{{field.label}}</label>
+                      <label *ngIf="field.label">{{field.label | translate}}</label>
                       <p *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
                       <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
                       <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
@@ -74,9 +74,9 @@
       <div class="card children" *ngFor="let group of selectedContact?.children">
         <div class="action-header cell">
           <div class="col-xs-10">
-            <h3 translate>{{group?.type?.group_key}}</h3>
+            <h3>{{group?.type?.group_key | translate}}</h3>
           </div>
-          <div *ngIf="group?.type?.person" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+          <div *ngIf="group?.type?.person" mm-auth="can_view_tasks" class="col-xs-2 tasks-title">{{'Tasks' | translate}}</div>
         </div>
 
         <ul>
@@ -108,11 +108,11 @@
       <div *ngIf="selectedContact?.tasks" mm-auth="can_view_tasks">
         <div class="card tasks">
           <div class="action-header cell">
-            <h3 translate>Tasks</h3>
+            <h3>{{'Tasks' | translate}}</h3>
             <span class="table-filter">
               <a (click)="setTasksTimeWindowWeeks(1)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 1" translate [translateParams]="{WEEKS: 1}">n.week</a>
               <a (click)="setTasksTimeWindowWeeks(2)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 2" translate [translateParams]="{WEEKS: 2}">n.week</a>
-              <a (click)="setTasksTimeWindowWeeks()" class="btn btn-link" [class.selected]="!tasksTimeWindowWeeks" translate>view.all</a>
+              <a (click)="setTasksTimeWindowWeeks()" class="btn btn-link" [class.selected]="!tasksTimeWindowWeeks">{{'view.all' | translate}}</a>
             </span>
           </div>
           <ul>
@@ -130,8 +130,8 @@
           </ul>
           <div class="row" *ngIf="!filteredTasks().length">
             <div class="cell col">
-              <span *ngIf="!tasksTimeWindowWeeks" translate>tasks.none</span>
-              <span *ngIf="tasksTimeWindowWeeks" translate [translateParams]="{WEEKS: tasksTimeWindowWeeks}">tasks.none.n.weeks</span>
+              <span *ngIf="!tasksTimeWindowWeeks">{{'tasks.none' | translate}}</span>
+              <span *ngIf="tasksTimeWindowWeeks" translate [translateParams]="{ WEEKS: tasksTimeWindowWeeks }">tasks.none.n.weeks</span>
             </div>
           </div>
         </div>
@@ -140,11 +140,11 @@
       <div mm-auth="can_view_reports">
         <div class="card reports">
           <div class="action-header cell">
-            <h3 translate>Reports</h3>
+            <h3>{{'Reports' | translate}}</h3>
             <span class="table-filter">
               <a (click)="setReportsTimeWindowMonths(3)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 3"  translate [translateParams]="{ MONTHS: 3 }">n.month</a>
               <a (click)="setReportsTimeWindowMonths(6)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 6"  translate [translateParams]="{ MONTHS: 6 }">n.month</a>
-              <a (click)="setReportsTimeWindowMonths()" class="btn btn-link" [class.selected]="!reportsTimeWindowMonths" translate>view.all</a>
+              <a (click)="setReportsTimeWindowMonths()" class="btn btn-link" [class.selected]="!reportsTimeWindowMonths">{{'view.all' | translate}}</a>
             </span>
           </div>
           <div class="loader" *ngIf="loadingSelectedContactReports"></div>
@@ -164,7 +164,7 @@
             </ul>
             <div class="row" *ngIf="!filteredReports().length">
               <div class="cell col">
-                <span *ngIf="!reportsTimeWindowMonths" translate>reports.none</span>
+                <span *ngIf="!reportsTimeWindowMonths">{{'reports.none' | translate}}</span>
                 <span *ngIf="reportsTimeWindowMonths" translate [translateParams]="{MONTHS: reportsTimeWindowMonths}">reports.none.n.months</span>
               </div>
             </div>

@@ -7,7 +7,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedContact && !loadingContent">
-    <div translate>No contact selected</div>
+    <div>{{'No contact selected' | translate}}</div>
   </div>
 
   <div class="col-sm-8 item-content" *ngIf="selectedContact && !loadingContent">
@@ -16,7 +16,7 @@
         <div class="card children persons">
           <div class="action-header cell">
             <div class="col-xs-12">
-              <h3 translate>contact.deceased.title</h3>
+              <h3>{{'contact.deceased.title' | translate}}</h3>
             </div>
           </div>
           <ng-container *ngFor="let group of selectedContact.children" >

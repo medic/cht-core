@@ -8,14 +8,14 @@
 >
   <div role="document">
     <div class="modal-body">
-      <p translate>date.incorrect.description</p>
-      <p translate>date.incorrect.advice</p>
+      <p>{{'date.incorrect.description' | translate}}</p>
+      <p>{{'date.incorrect.advice' | translate}}</p>
       <p>
-        <span translate>date.incorrect.reported</span>:
+        <span>{{'date.incorrect.reported' | translate}}</span>:
         <span>{{reportedLocalDate | simpleDateTime}}</span>
       </p>
       <p *ngIf="expectedLocalDate">
-        <span translate>date.incorrect.expected</span>:
+        <span>{{'date.incorrect.expected' | translate}}</span>:
         <span>{{expectedLocalDate | simpleDateTime}}</span>
       </p>
     </div>
