@@ -77,6 +77,15 @@
           <text id="/immunization_growth_follow_up/patient_name:label">
             <value>-</value>
           </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit1:label">
+            <value>Summary Page&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit2:label">
+            <value>Click the Submit button at the bottom of the form.</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_title:label">
+            <value>Immunization and growth follow up&lt;i class="fa fa-calendar-check-o"&gt;&lt;/i&gt;</value>
+          </text>
         </translation>
         <translation lang="fr">
           <text id="/immunization_growth_follow_up/group_assessment/clinic/no:label">
@@ -154,6 +163,18 @@
           <text id="/immunization_growth_follow_up/patient_name:label">
             <value>../inputs/contact/name</value>
           </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_title:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary:label">
+            <value>-</value>
+          </text>
         </translation>
         <translation lang="hi">
           <text id="/immunization_growth_follow_up/group_assessment/clinic/no:label">
@@ -229,6 +250,18 @@
             <value>-</value>
           </text>
           <text id="/immunization_growth_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_title:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
@@ -308,6 +341,18 @@
           <text id="/immunization_growth_follow_up/patient_name:label">
             <value>-</value>
           </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_title:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary:label">
+            <value>-</value>
+          </text>
         </translation>
         <translation lang="sw">
           <text id="/immunization_growth_follow_up/group_assessment/clinic/no:label">
@@ -385,10 +430,22 @@
           <text id="/immunization_growth_follow_up/patient_name:label">
             <value>-</value>
           </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary/summary_title:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_growth_follow_up/summary:label">
+            <value>-</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <immunization_growth_follow_up delimiter="#" id="immunization_growth_follow_up" prefix="J1!immunization_growth_follow_up!" version="2021-01-20_16-29">
+        <immunization_growth_follow_up delimiter="#" id="immunization_growth_follow_up" prefix="J1!immunization_growth_follow_up!" version="2021-01-26_14-24">
           <inputs>
             <meta>
               <location>
@@ -417,12 +474,17 @@
               </parent>
             </contact>
           </inputs>
-          <patient_id/>
           <patient_name/>
+          <patient_id/>
           <group_assessment>
             <location/>
             <clinic/>
           </group_assessment>
+          <summary tag="hidden">
+            <summary_submit1/>
+            <summary_submit2/>
+            <summary_title/>
+          </summary>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -440,10 +502,13 @@
       <bind nodeset="/immunization_growth_follow_up/inputs/contact/parent/parent/name" type="string"/>
       <bind nodeset="/immunization_growth_follow_up/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/immunization_growth_follow_up/inputs/contact/parent/parent/parent/_id" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/immunization_growth_follow_up/patient_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/immunization_growth_follow_up/patient_name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/immunization_growth_follow_up/patient_id" type="string"/>
       <bind nodeset="/immunization_growth_follow_up/group_assessment/location" required="true()" type="select1"/>
       <bind nodeset="/immunization_growth_follow_up/group_assessment/clinic" required="true()" type="select1"/>
+      <bind nodeset="/immunization_growth_follow_up/summary/summary_submit1" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_growth_follow_up/summary/summary_submit2" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_growth_follow_up/summary/summary_title" readonly="true()" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/immunization_growth_follow_up/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -491,6 +556,17 @@
           <value>no</value>
         </item>
       </select1>
+    </group>
+    <group appearance="field-list summary" ref="/immunization_growth_follow_up/summary">
+      <input appearance="h1 yellow" ref="/immunization_growth_follow_up/summary/summary_submit1">
+        <label ref="jr:itext('/immunization_growth_follow_up/summary/summary_submit1:label')"/>
+      </input>
+      <input appearance="h2" ref="/immunization_growth_follow_up/summary/summary_submit2">
+        <label ref="jr:itext('/immunization_growth_follow_up/summary/summary_submit2:label')"/>
+      </input>
+      <input appearance="h1 blue" ref="/immunization_growth_follow_up/summary/summary_title">
+        <label ref="jr:itext('/immunization_growth_follow_up/summary/summary_title:label')"/>
+      </input>
     </group>
   </h:body>
 </h:html>

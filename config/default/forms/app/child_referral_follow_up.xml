@@ -83,6 +83,12 @@
           <text id="/child_referral_follow_up/patient_name:label">
             <value>-</value>
           </text>
+          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+            <value>Child referral follow up&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+            <value>Click the Submit button at the bottom of the form.</value>
+          </text>
         </translation>
         <translation lang="fr">
           <text id="/child_referral_follow_up/group_assessment/current_condition/dead:label">
@@ -160,8 +166,20 @@
           <text id="/child_referral_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/child_referral_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/patient_name:label">
             <value>../inputs/contact/name</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary:label">
+            <value>-</value>
           </text>
         </translation>
         <translation lang="hi">
@@ -240,7 +258,19 @@
           <text id="/child_referral_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/child_referral_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
@@ -320,7 +350,19 @@
           <text id="/child_referral_follow_up/inputs:label">
             <value>./source = 'user'</value>
           </text>
+          <text id="/child_referral_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
@@ -400,13 +442,25 @@
           <text id="/child_referral_follow_up/inputs:label">
             <value>field-list</value>
           </text>
+          <text id="/child_referral_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <child_referral_follow_up delimiter="#" id="child_referral_follow_up" prefix="J1!child_referral_follow_up!" version="2020-12-04_11-56">
+        <child_referral_follow_up delimiter="#" id="child_referral_follow_up" prefix="J1!child_referral_follow_up!" version="2021-01-26_15-32">
           <inputs>
             <meta>
               <location>
@@ -436,10 +490,15 @@
             </contact>
           </inputs>
           <patient_name/>
+          <patient_id/>
           <group_assessment>
             <followup_method/>
             <current_condition/>
           </group_assessment>
+          <summary tag="hidden">
+            <summary_submit1/>
+            <summary_submit2/>
+          </summary>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -458,8 +517,11 @@
       <bind nodeset="/child_referral_follow_up/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/child_referral_follow_up/inputs/contact/parent/parent/parent/_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/child_referral_follow_up/patient_name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/child_referral_follow_up/patient_id" type="string"/>
       <bind nodeset="/child_referral_follow_up/group_assessment/followup_method" required="true()" type="select1"/>
       <bind nodeset="/child_referral_follow_up/group_assessment/current_condition" required="true()" type="select1"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_submit1" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_submit2" readonly="true()" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/child_referral_follow_up/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -515,6 +577,14 @@
           <value>dead</value>
         </item>
       </select1>
+    </group>
+    <group appearance="field-list summary" ref="/child_referral_follow_up/summary">
+      <input appearance="h1 yellow" ref="/child_referral_follow_up/summary/summary_submit1">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_submit1:label')"/>
+      </input>
+      <input appearance="h2" ref="/child_referral_follow_up/summary/summary_submit2">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_submit2:label')"/>
+      </input>
     </group>
   </h:body>
 </h:html>

@@ -206,10 +206,10 @@
           <text id="/child_assessment/g_diarrhea:label">
             <value>Diarrhea</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
             <value>Use your thermometer to take the patient's temperature</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
             <value>Do the Rapid Diagnostic Test for Malaria (mRDT)</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -293,7 +293,7 @@
           <text id="/child_assessment/g_malaria:label">
             <value>Malaria</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
             <value>Use your MUAC strap to take the child's MUAC</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -968,10 +968,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -1055,7 +1055,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -1161,6 +1161,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_id:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_name:label">
@@ -1725,10 +1728,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -1812,7 +1815,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -1918,6 +1921,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_id:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_name:label">
@@ -2480,10 +2486,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -2567,7 +2573,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -2673,6 +2679,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_id:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_name:label">
@@ -3235,10 +3244,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -3322,7 +3331,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -3428,6 +3437,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/patient_id:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/patient_name:label">
@@ -3763,7 +3775,7 @@ Total 5 tabs</value>
         </translation>
       </itext>
       <instance>
-        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2021-01-08_06-34">
+        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2021-01-26_15-27">
           <inputs>
             <meta>
               <location>
@@ -3812,6 +3824,7 @@ Total 5 tabs</value>
           <show_signs_symptoms/>
           <display_age/>
           <apt_3_days/>
+          <patient_id/>
           <apt_6_days/>
           <g_two_mo_assessment>
             <two_mo_referred/>
@@ -3832,12 +3845,12 @@ Total 5 tabs</value>
             <danger_signs_fever/>
           </g_danger_signs_screening>
           <g_malaria>
-            <generated_note_name_66/>
+            <generated_note_name_67/>
             <malaria_temp/>
             <malaria_fever_length/>
             <malaria_fever_rash/>
             <malaria_fever_groin_pain/>
-            <generated_note_name_71/>
+            <generated_note_name_72/>
             <malaria_results/>
             <malaria_reason_no/>
             <malaria_reason_no_other/>
@@ -3862,7 +3875,7 @@ Total 5 tabs</value>
             <diarrhea_blood/>
           </g_diarrhea>
           <g_malnutrition>
-            <generated_note_name_100/>
+            <generated_note_name_101/>
             <malnutrition_muac_color/>
             <malnutrition_swollen_feet/>
           </g_malnutrition>
@@ -4104,6 +4117,7 @@ if( /child_assessment/patient_age_in_months  &lt; 12,
 concat( /child_assessment/patient_age_in_months , ' months old'), 
 concat( /child_assessment/patient_age_in_years , ' years old')))" nodeset="/child_assessment/display_age" type="string"/>
       <bind calculate="format-date-time(date-time(floor(decimal-date-time(today())) + 3), &quot;%Y-%m-%d&quot;)" nodeset="/child_assessment/apt_3_days" relevant="selected( /child_assessment/any_danger , 'yes')" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/child_assessment/patient_id" type="string"/>
       <bind calculate="format-date-time(date-time(floor(decimal-date-time(today())) + 6), &quot;%Y-%m-%d&quot;)" nodeset="/child_assessment/apt_6_days" relevant="selected( /child_assessment/any_danger , 'yes')" type="string"/>
       <bind nodeset="/child_assessment/g_two_mo_assessment/two_mo_referred" relevant=" /child_assessment/patient_age_in_months  &lt;= 2" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_two_mo_assessment/two_mo_referred_yes" readonly="true()" relevant="selected( /child_assessment/g_two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
@@ -4122,12 +4136,12 @@ concat( /child_assessment/patient_age_in_years , ' years old')))" nodeset="/chil
       <bind nodeset="/child_assessment/g_danger_signs_screening/danger_signs_fever" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malaria" relevant=" /child_assessment/patient_age_in_months  &gt; 2 and 
 selected( /child_assessment/g_danger_signs_screening/danger_signs_fever , 'yes')"/>
-      <bind nodeset="/child_assessment/g_malaria/generated_note_name_66" readonly="true()" required="true()" type="string"/>
+      <bind nodeset="/child_assessment/g_malaria/generated_note_name_67" readonly="true()" required="true()" type="string"/>
       <bind constraint=" /child_assessment/g_malaria/malaria_temp  &gt;= 34 and  /child_assessment/g_malaria/malaria_temp  &lt;= 42" jr:constraintMsg="jr:itext('/child_assessment/g_malaria/malaria_temp:jr:constraintMsg')" nodeset="/child_assessment/g_malaria/malaria_temp" required="true()" type="decimal"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_fever_length" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_fever_rash" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_fever_groin_pain" required="true()" type="select1"/>
-      <bind nodeset="/child_assessment/g_malaria/generated_note_name_71" readonly="true()" relevant="selected( /child_assessment/danger_signs_without_fever , 'no') and
+      <bind nodeset="/child_assessment/g_malaria/generated_note_name_72" readonly="true()" relevant="selected( /child_assessment/danger_signs_without_fever , 'no') and
 not(selected( /child_assessment/g_malaria/malaria_fever_length , '7')) and
 not(selected( /child_assessment/g_malaria/malaria_fever_length , '14'))" type="string"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_results" relevant="selected( /child_assessment/danger_signs_without_fever , 'no') and
@@ -4152,7 +4166,7 @@ not(selected( /child_assessment/g_malaria/malaria_fever_length , '14'))" require
       <bind nodeset="/child_assessment/g_diarrhea/diarrhea_in_day" relevant="selected( /child_assessment/g_diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_diarrhea/diarrhea_blood" relevant="selected( /child_assessment/g_diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malnutrition" relevant=" /child_assessment/patient_age_in_months  &gt;= 6 and  /child_assessment/patient_age_in_years  &lt;= 5"/>
-      <bind nodeset="/child_assessment/g_malnutrition/generated_note_name_100" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/g_malnutrition/generated_note_name_101" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/g_malnutrition/malnutrition_muac_color" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malnutrition/malnutrition_swollen_feet" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/summary/summary_assess_header" readonly="true()" type="string"/>
@@ -4491,8 +4505,8 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
     </group>
     <group appearance="field-list" ref="/child_assessment/g_malaria">
       <label ref="jr:itext('/child_assessment/g_malaria:label')"/>
-      <input ref="/child_assessment/g_malaria/generated_note_name_66">
-        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_66:label')"/>
+      <input ref="/child_assessment/g_malaria/generated_note_name_67">
+        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_67:label')"/>
       </input>
       <input ref="/child_assessment/g_malaria/malaria_temp">
         <label ref="jr:itext('/child_assessment/g_malaria/malaria_temp:label')"/>
@@ -4546,8 +4560,8 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
           <value>no</value>
         </item>
       </select1>
-      <input ref="/child_assessment/g_malaria/generated_note_name_71">
-        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_71:label')"/>
+      <input ref="/child_assessment/g_malaria/generated_note_name_72">
+        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_72:label')"/>
       </input>
       <select1 ref="/child_assessment/g_malaria/malaria_results">
         <label ref="jr:itext('/child_assessment/g_malaria/malaria_results:label')"/>
@@ -4717,8 +4731,8 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
     </group>
     <group appearance="field-list" ref="/child_assessment/g_malnutrition">
       <label ref="jr:itext('/child_assessment/g_malnutrition:label')"/>
-      <input ref="/child_assessment/g_malnutrition/generated_note_name_100">
-        <label ref="jr:itext('/child_assessment/g_malnutrition/generated_note_name_100:label')"/>
+      <input ref="/child_assessment/g_malnutrition/generated_note_name_101">
+        <label ref="jr:itext('/child_assessment/g_malnutrition/generated_note_name_101:label')"/>
       </input>
       <select1 ref="/child_assessment/g_malnutrition/malnutrition_muac_color">
         <label ref="jr:itext('/child_assessment/g_malnutrition/malnutrition_muac_color:label')"/>

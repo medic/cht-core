@@ -71,6 +71,12 @@
           <text id="/malnutrition_follow_up/patient_name:label">
             <value>-</value>
           </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit1:label">
+            <value>Malnutrition follow up&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit2:label">
+            <value>Click the Submit button at the bottom of the form.</value>
+          </text>
         </translation>
         <translation lang="fr">
           <text id="/malnutrition_follow_up/group_assessment/available/home:label">
@@ -136,8 +142,20 @@
           <text id="/malnutrition_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/malnutrition_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/malnutrition_follow_up/patient_name:label">
             <value>../inputs/contact/name</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary:label">
+            <value>-</value>
           </text>
         </translation>
         <translation lang="hi">
@@ -204,7 +222,19 @@
           <text id="/malnutrition_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/malnutrition_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/malnutrition_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
@@ -272,7 +302,19 @@
           <text id="/malnutrition_follow_up/inputs:label">
             <value>./source = 'user'</value>
           </text>
+          <text id="/malnutrition_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/malnutrition_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
@@ -340,13 +382,25 @@
           <text id="/malnutrition_follow_up/inputs:label">
             <value>field-list</value>
           </text>
+          <text id="/malnutrition_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/malnutrition_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/malnutrition_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <malnutrition_follow_up delimiter="#" id="malnutrition_follow_up" prefix="J1!malnutrition_follow_up!" version="2020-12-04_11-56">
+        <malnutrition_follow_up delimiter="#" id="malnutrition_follow_up" prefix="J1!malnutrition_follow_up!" version="2021-01-26_15-31">
           <inputs>
             <meta>
               <location>
@@ -376,10 +430,15 @@
             </contact>
           </inputs>
           <patient_name/>
+          <patient_id/>
           <group_assessment>
             <available/>
             <followup_date/>
           </group_assessment>
+          <summary tag="hidden">
+            <summary_submit1/>
+            <summary_submit2/>
+          </summary>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -398,8 +457,11 @@
       <bind nodeset="/malnutrition_follow_up/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/malnutrition_follow_up/inputs/contact/parent/parent/parent/_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/malnutrition_follow_up/patient_name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/malnutrition_follow_up/patient_id" type="string"/>
       <bind nodeset="/malnutrition_follow_up/group_assessment/available" required="true()" type="select1"/>
       <bind nodeset="/malnutrition_follow_up/group_assessment/followup_date" required="true()" type="date"/>
+      <bind nodeset="/malnutrition_follow_up/summary/summary_submit1" readonly="true()" type="string"/>
+      <bind nodeset="/malnutrition_follow_up/summary/summary_submit2" readonly="true()" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/malnutrition_follow_up/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -438,6 +500,14 @@
       </select1>
       <input ref="/malnutrition_follow_up/group_assessment/followup_date">
         <label ref="jr:itext('/malnutrition_follow_up/group_assessment/followup_date:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list summary" ref="/malnutrition_follow_up/summary">
+      <input appearance="h1 yellow" ref="/malnutrition_follow_up/summary/summary_submit1">
+        <label ref="jr:itext('/malnutrition_follow_up/summary/summary_submit1:label')"/>
+      </input>
+      <input appearance="h2" ref="/malnutrition_follow_up/summary/summary_submit2">
+        <label ref="jr:itext('/malnutrition_follow_up/summary/summary_submit2:label')"/>
       </input>
     </group>
   </h:body>
