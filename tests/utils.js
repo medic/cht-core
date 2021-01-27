@@ -586,6 +586,7 @@ module.exports = {
   }),
 
   requestOnTestDb: (options, debug) => {
+    deprecated('requestOnTestDb','requestOnTestDbNative');
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -665,7 +666,8 @@ module.exports = {
     });
   },
 
-  saveDocs: docs =>
+  saveDocs: docs => {
+    deprecated('utils.saveDocs', 'utils.saveDocsNative');
     module.exports
       .requestOnTestDb({
         path: '/_bulk_docs',
@@ -678,7 +680,24 @@ module.exports = {
         } else {
           return results;
         }
-      }),
+      }).catch();
+  },
+
+  saveDocsNative: async (docs) =>{
+    const results = await module.exports
+      .requestOnTestDbNative({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs: docs }
+      });
+
+    if (results.find(r => !r.ok)) {
+      throw Error(JSON.stringify(results, null, 2));
+    } else {
+      return results;
+    }
+  },
+
 
   getDoc: id => {
     deprecated('utils.getDoc', 'utils.getDocNative');
@@ -696,6 +715,7 @@ module.exports = {
   },
 
   getDocs: ids => {
+    deprecated('getDocsNative','getDocsNative');
     return module.exports
       .requestOnTestDb({
         path: `/_all_docs?include_docs=true`,
@@ -704,6 +724,19 @@ module.exports = {
         headers: { 'content-type': 'application/json' },
       })
       .then(response => response.rows.map(row => row.doc));
+  },
+
+  getDocsNative: async ids => {
+    console.log('docs native1');
+    const response = await module.exports
+      .requestOnTestDbNative({
+        path: `/_all_docs?include_docs=true`,
+        method: 'POST',
+        body: { keys: ids || []},
+        headers: { 'content-type': 'application/json' },
+      });
+    console.log('docs native2');
+    return response.rows.map(row => row.doc);
   },
 
   deleteDoc: id => {

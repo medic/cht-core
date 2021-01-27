@@ -13,6 +13,7 @@ const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 // @return     {<promise>}        resolves once the wait is over
 //
 const waitForSeq = (metadataId, docIds) => {
+  utils.deprecated('waitForSeqNative','waitForSeqNativeNative');
   return requestOnSentinelTestDb(metadataId)
     .catch(err => {
       if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
@@ -47,7 +48,43 @@ const waitForSeq = (metadataId, docIds) => {
     });
 };
 
+const waitForSeqNative = async (metadataId, docIds) => {
+  return requestOnSentinelTestDbNative(metadataId)
+    .catch(err => {
+      if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
+        return { value: 0 };
+      }
+      throw err;
+    })
+    .then(metaData => metaData.value)
+    .then(seq => {
+      const opts = {
+        path: '/_changes',
+        headers: { 'Content-Type': 'application/json' },
+      };
+      if (docIds) {
+        opts.path = `${opts.path}?${querystring.stringify({ since: seq, filter: '_doc_ids' })}`;
+        opts.method = 'POST';
+        opts.body = { doc_ids: Array.isArray(docIds) ? docIds : [ docIds ] };
+      } else {
+        opts.path = `${opts.path}?${querystring.stringify({ since: seq })}`;
+      }
+      return utils.requestOnTestDbNative(opts);
+    })
+    .then(response => {
+      // sentinel doesn't bump the `transitions_seq` in it's metadata doc when a change it ignores comes in
+      // so we ignore those too
+      if (!response.results.length || response.results.every(change => SKIPPED_BY_SENTINEL.test(change.id))) {
+        // sentinel has caught up and processed our doc
+        return;
+      }
+
+      return utils.delayPromise(() => waitForSeqNative(metadataId, docIds), 100);
+    });
+};
+
 const requestOnSentinelTestDb = (options) => {
+  utils.deprecated('requestOnSentinelTestDb','requestOnSentinelTestDb');
   if (typeof options === 'string') {
     options = {
       path: options,
@@ -55,6 +92,16 @@ const requestOnSentinelTestDb = (options) => {
   }
   options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
   return utils.request(options);
+};
+
+const requestOnSentinelTestDbNative = (options) => {
+  if (typeof options === 'string') {
+    options = {
+      path: options,
+    };
+  }
+  options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
+  return utils.requestNative(options);
 };
 
 const getInfoDoc = docId => {
@@ -73,6 +120,23 @@ const getInfoDocs = (docIds = []) => {
     },
   };
   return requestOnSentinelTestDb(opts).then(response => response.rows.map(row => row.doc));
+};
+
+const getInfoDocsNative = async (docIds = []) => {
+  docIds = Array.isArray(docIds) ? docIds : [docIds];
+  console.log('getInfoDocsNative native1');
+  const opts = {
+    path: '/_all_docs?include_docs=true',
+    body: { keys: docIds.map(id => id + '-info') },
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  };
+  console.log('getInfoDocsNative native2');
+  const response = await requestOnSentinelTestDbNative(opts);
+  console.log('getInfoDocsNative native3');
+  return response.rows.map(row => row.doc);
 };
 
 const deletePurgeDbs = () => {
@@ -109,10 +173,12 @@ const getCurrentSeq = () => requestOnSentinelTestDb('').then(data => data.update
 
 module.exports = {
   waitForSentinel: docIds => waitForSeq('/_local/transitions-seq', docIds),
+  waitForSentinelNative: docIds => waitForSeqNative('/_local/transitions-seq', docIds),
   waitForBackgroundCleanup: docIds => waitForSeq('/_local/background-seq', docIds),
   requestOnSentinelTestDb: requestOnSentinelTestDb,
   getInfoDoc: getInfoDoc,
   getInfoDocs: getInfoDocs,
+  getInfoDocsNative,
   deletePurgeDbs: deletePurgeDbs,
   waitForPurgeCompletion: waitForPurgeCompletion,
   getCurrentSeq: getCurrentSeq,
