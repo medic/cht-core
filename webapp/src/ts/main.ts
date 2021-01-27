@@ -8,6 +8,7 @@ window.startupTimes.firstCodeExecution = performance.now();
 window.PouchDB = require('pouchdb-browser').default;
 window.$ = window.jQuery = require('jquery');
 window.Tour = require('../js/bootstrap-tour-standalone');
+
 import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
@@ -27,10 +28,6 @@ require('../js/moment-locales/ceb');
 require('select2');
 require('../js/enketo/main');
 
-/*
- $urlRouterProvider.when('/messages/{uuid:[^:]*}', '/messages/contact:{uuid}');
- });
- */
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS, (err) => {
   if (err) {

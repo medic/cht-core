@@ -39,6 +39,7 @@ import { DatabaseConnectionMonitorService } from '@mm-services/database-connecti
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -116,6 +117,7 @@ export class AppComponent implements OnInit {
     private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
     private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
     private translateLocaleService:TranslateLocaleService,
+    private telemetryService:TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -246,6 +248,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.recordStartupTelemetry();
     this.subscribeToStore();
     this.setupRouter();
     this.loadTranslations();
@@ -274,6 +277,7 @@ export class AppComponent implements OnInit {
     this.setupAndroidVersion();
     this.requestPersistentStorage();
     this.startWealthQuintiles();
+    this.enableTooltips();
   }
 
   private setupAndroidVersion() {
@@ -601,20 +605,21 @@ export class AppComponent implements OnInit {
       }
     });
   }
-}
 
-/*  $window.startupTimes.angularBootstrapped = performance.now();
-    Telemetry.record(
+  private recordStartupTelemetry() {
+    window.startupTimes.angularBootstrapped = performance.now();
+    this.telemetryService.record(
       'boot_time:1:to_first_code_execution',
-      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
+      window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
-    Telemetry.record(
+    this.telemetryService.record(
       'boot_time:2:to_bootstrap',
-      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
+      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
     );
-    Telemetry.record(
+    this.telemetryService.record(
       'boot_time:3:to_angular_bootstrap',
-      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
+      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
     );
-    Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
-*/
+    this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
+  }
+}
