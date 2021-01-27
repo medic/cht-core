@@ -4,8 +4,8 @@ const helper = require('../../helper');
 const utils = require('../../utils');
 
 describe('Add new health center tests : ', () => {
-  afterEach(async () => { await utils.afterEachNative() });
-  beforeEach(async () => { await utils.beforeEach()});
+  afterEach(async () => { await utils.afterEachNative(); });
+  beforeEach(async () => { await utils.beforeEach(); });
 
   it('should add new health center', async () => {
     await commonElements.goToPeople();

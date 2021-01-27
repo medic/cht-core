@@ -22,7 +22,6 @@ module.exports = {
   name: () =>  element(by.css('.children h4 span')),
   peopleRows,
   contactName,
-  getSubmitButton: () => submitButton,
   selectLHSRowByText: async text => {
     module.exports.search(text);
     helper.waitUntilReady(rows.last());
@@ -79,14 +78,14 @@ module.exports = {
     dateOfBirthField.sendKeys('2000-01-01');
     helper.scrollElementIntoView(contactSexField);
     contactSexField.click();
-    nextButton.click();
+    genericForm.nextPageNative();
     const writeNameHC = element(by.css('[name="/data/clinic/is_name_generated"][value="false"]'));
     helper.waitElementToBeVisible(writeNameHC);
     writeNameHC.click();
     newPlaceName.sendKeys(name);
     element(by.css('[name="/data/clinic/external_id"]')).sendKeys('1234457');
     element(by.css('[name="/data/clinic/notes"]')).sendKeys('some notes');
-    submitButton.click();
+    genericForm.submitButton.click();
   },
 
   refresh: () => {
