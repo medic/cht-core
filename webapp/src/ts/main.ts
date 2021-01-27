@@ -22,6 +22,10 @@ import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from '../js/bootstrapper';
 
+// Moment additional locales
+require('../js/moment-locales/tl');
+require('../js/moment-locales/hil');
+require('../js/moment-locales/ceb');
 
 require('select2');
 require('../js/enketo/main');

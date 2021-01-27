@@ -8,7 +8,6 @@ import { provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from '../../../src/ts/app.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
-import { TranslationLoaderService } from '@mm-services/translation-loader.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -37,6 +36,7 @@ import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
+import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
 describe('AppComponent', () => {
   let getComponent;
@@ -69,6 +69,7 @@ describe('AppComponent', () => {
   let translateService;
   let modalService;
   let databaseConnectionMonitorService;
+  let translateLocaleService;
   // End Services
 
   let globalActions;
@@ -119,6 +120,7 @@ describe('AppComponent', () => {
       isSyncInProgress: sinon.stub(),
       subscribe: sinon.stub()
     };
+    translateLocaleService = { reloadLang: sinon.stub() };
 
     globalActions = {
       updateReplicationStatus: sinon.stub(GlobalActions.prototype, 'updateReplicationStatus'),
@@ -146,7 +148,6 @@ describe('AppComponent', () => {
         provideMockStore(),
         { provide: DBSyncService, useValue: dbSyncService },
         { provide: TranslateService, useValue: translateService },
-        { provide: TranslationLoaderService, useValue: {} },
         { provide: LanguageService, useValue: languageService },
         { provide: SetLanguageService, useValue: setLanguageService },
         { provide: SessionService, useValue: sessionService },
@@ -172,6 +173,7 @@ describe('AppComponent', () => {
         { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
         { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
         { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
+        { provide: TranslateLocaleService, useValue: translateLocaleService },
       ]
     });
 
@@ -434,34 +436,34 @@ describe('AppComponent', () => {
 
       expect(changesListener['branding-icon']).to.be.an('object');
       expect(changesListener['sync-status']).to.be.an('object');
-      expect(changesListener['inbox-translations']).to.be.an('object');
-      expect(changesListener['inbox-ddoc']).to.be.an('object');
-      expect(changesListener['inbox-user-context']).to.be.an('object');
+      expect(changesListener['translations']).to.be.an('object');
+      expect(changesListener['ddoc']).to.be.an('object');
+      expect(changesListener['user-context']).to.be.an('object');
     });
 
-    it('inbox-user-context change listener should filter only logged in user, if exists', async () => {
+    it('user-context change listener should filter only logged in user, if exists', async () => {
       sessionService.userCtx.returns({ name: 'adm', roles: ['alpha', 'omega'] });
 
       await getComponent();
 
-      expect(changesListener['inbox-user-context'].filter({ id: 'something' })).to.equal(false);
-      expect(changesListener['inbox-user-context'].filter({ id: 'someperson' })).to.equal(false);
-      expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
-      expect(changesListener['inbox-user-context'].filter({ id: 'org.couchdb.user:adm' })).to.equal(true);
+      expect(changesListener['user-context'].filter({ id: 'something' })).to.equal(false);
+      expect(changesListener['user-context'].filter({ id: 'someperson' })).to.equal(false);
+      expect(changesListener['user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
+      expect(changesListener['user-context'].filter({ id: 'org.couchdb.user:adm' })).to.equal(true);
 
       sessionService.userCtx.returns(false);
 
       await getComponent();
 
-      expect(changesListener['inbox-user-context'].filter({ doc: { type: 'user-settings', name: 'a' }}))
+      expect(changesListener['user-context'].filter({ doc: { type: 'user-settings', name: 'a' }}))
         .to.equal(false);
     });
 
-    it('inbox-user-context change listener callback should check current session', async () => {
+    it('user-context change listener callback should check current session', async () => {
       await getComponent();
 
       expect(sessionService.init.callCount).to.equal(1);
-      changesListener['inbox-user-context'].callback();
+      changesListener['user-context'].callback();
       expect(sessionService.init.callCount).to.equal(2);
     });
 
@@ -483,6 +485,48 @@ describe('AppComponent', () => {
       expect(changesListener['sync-status']).to.be.an('object');
       changesListener['sync-status'].callback();
       expect(dbSyncService.sync.callCount).to.equal(1);
+    });
+  });
+
+  describe('language reloading', () => {
+    it('filter should only match translations docs', async () => {
+      await getComponent();
+      const filter = changesListener['translations'].filter;
+      expect(filter).to.be.a('function');
+
+      expect(filter({ id: 'messages-en' })).to.equal(true);
+      expect(filter({ id: 'messages-tl' })).to.equal(true);
+      expect(filter({ id: 'not-messages-tl' })).to.equal(false);
+      expect(filter({ })).to.equal(undefined);
+      expect(filter({ id: 'undefined' })).to.equal(false);
+    });
+
+    it('callback should refresh the given locale when not enabled', async () => {
+      languageService.get.resolves('enabled_locale');
+      await getComponent();
+      sinon.resetHistory();
+      const callback = changesListener['translations'].callback;
+      expect(callback).to.be.a('function');
+
+      await callback({ id: 'messages-locale' });
+
+      expect(languageService.get.callCount).to.equal(1);
+      expect(translateLocaleService.reloadLang.callCount).to.equal(1);
+      expect(translateLocaleService.reloadLang.args[0]).to.deep.equal(['locale', false]);
+    });
+
+    it('callback should refresh the given locale when enabled', async () => {
+      languageService.get.resolves('enabled_locale');
+      await getComponent();
+      sinon.resetHistory();
+      const callback = changesListener['translations'].callback;
+      expect(callback).to.be.a('function');
+
+      await callback({ id: 'messages-enabled_locale' });
+
+      expect(languageService.get.callCount).to.equal(1);
+      expect(translateLocaleService.reloadLang.callCount).to.equal(1);
+      expect(translateLocaleService.reloadLang.args[0]).to.deep.equal(['enabled_locale', true]);
     });
   });
 });

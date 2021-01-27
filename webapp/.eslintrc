@@ -5,34 +5,12 @@
     "node": true
   },
   "plugins": ["compat"],
-  "globals": {
-    "angular": true,
-    "Tour": true
-  },
   "rules": {
     "compat/compat": "error"
   },
   "overrides": [
     {
       "files": [
-        "src/js/app.js",
-        "src/js/enketo/**",
-        "src/js/bootstrapper/**",
-        "src/js/bootstrap-multidropdown.js",
-        "tests/**/*",
-        "src/js/bootstrapper/**"
-      ],
-      "rules": {
-        "angular/window-service": "off",
-        "angular/timeout-service": "off",
-        "angular/di-order": "off",
-        "angular/interval-service": "off"
-      }
-    },
-    {
-      "files": [
-        "src/js/app.js",
-        "src/js/modules/feedback.js",
         "src/js/bootstrapper/*.js"
       ],
       "rules": {
@@ -60,7 +38,6 @@
         "@angular-eslint/use-lifecycle-interface": "warn",
         "@angular-eslint/use-pipe-transform-interface": "error",
 
-        // todo remove this after implementing some sort of logging service
         "no-console": "off",
         "no-restricted-syntax": "off",
         // Prevent TypeScript-specific constructs from being erroneously flagged as unused
