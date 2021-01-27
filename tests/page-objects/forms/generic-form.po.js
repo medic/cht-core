@@ -1,7 +1,9 @@
 const helper = require('../../helper');
+const utils = require('../../utils');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('#report-form .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
+const addButton = element(by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus'));
 
 module.exports = {
   submittedName,
@@ -53,6 +55,7 @@ module.exports = {
   },
 
   selectForm: () => {
+    utils.deprecated('selectForm','selectFormNative');
     const addButton = element(
       by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus')
     );
@@ -68,8 +71,22 @@ module.exports = {
     helper.waitElementToPresent(element(by.css('#report-form')));
   },
 
+  selectFormNative: async (formId) => {
+    await helper.waitUntilReady(addButton);
+    await helper.waitElementToBeClickable(addButton);
+    await addButton.click();
+    const form = module.exports.formByHref(formId);
+    await form.click();
+    await helper.waitElementToPresent(element(by.css('#report-form')));
+  },
+
+  formByHref: (href) => {
+    const css = `.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${href}"]`;
+    return element(by.css(css));
+  },
+
   submit: () => {
-    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
     helper.waitElementToBeClickable(submitButton);
     submitButton.click();
     helper.waitElementToBeVisible(element(by.css('div#reports-content')));

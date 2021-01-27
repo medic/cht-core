@@ -27,6 +27,7 @@ const baseConfig = {
       'e2e/submit-enketo-form.js',
       'e2e/login/token-login.spec.js',
       'e2e/forms/submit-z-score-form.spec.js',
+      'e2e/forms/submit-photo-upload-form.spec.js',
     ],
     // performance: 'performance/**/*.js'
   },
