@@ -37,6 +37,7 @@ import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('AppComponent', () => {
   let getComponent;
@@ -70,6 +71,7 @@ describe('AppComponent', () => {
   let modalService;
   let databaseConnectionMonitorService;
   let translateLocaleService;
+  let telemetryService;
   // End Services
 
   let globalActions;
@@ -77,6 +79,9 @@ describe('AppComponent', () => {
   const changesListener = {};
 
   beforeEach(async(() => {
+    // set set this in index.html
+    window.startupTimes = {};
+
     authService = { has: sinon.stub().resolves(true) };
     locationService = { path: 'localhost' };
     checkDateService = { check: sinon.stub() };
@@ -133,6 +138,7 @@ describe('AppComponent', () => {
     window.PouchDB = {
       fetch: sinon.stub()
     };
+    telemetryService = { record: sinon.stub() };
 
     TestBed.configureTestingModule({
       declarations: [
@@ -174,6 +180,7 @@ describe('AppComponent', () => {
         { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
         { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
         { provide: TranslateLocaleService, useValue: translateLocaleService },
+        { provide: TelemetryService, useValue: telemetryService },
       ]
     });
 

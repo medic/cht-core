@@ -21,6 +21,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SessionService } from '@mm-services/session.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -39,7 +40,7 @@ describe('Contacts content component', () => {
   let userSettingsService;
   let sessionService;
   let contactTypesService;
-
+  let responsiveService;
 
   beforeEach(async(() => {
     changesService = { subscribe: sinon.stub().resolves(of({})) };
@@ -97,6 +98,7 @@ describe('Contacts content component', () => {
     ];
     activatedRoute = { params: of({ id: 'load contact' }), snapshot: { params: { id: 'load contact'} } };
     router = { navigate: sinon.stub() };
+    responsiveService = { isMobile: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -120,6 +122,7 @@ describe('Contacts content component', () => {
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: TranslateFromService, useValue: translateFromService },
           { provide: ModalService, useValue: modalService },
+          { provide: ResponsiveService, useValue: responsiveService },
         ]
       })
       .compileComponents()
@@ -140,21 +143,10 @@ describe('Contacts content component', () => {
   });
 
   describe('load the user home place on mobile', () => {
-    let original;
-
-    beforeEach(() => {
-      original = window.jQuery;
-    });
-
-    afterEach(() => {
-      window.jQuery = original;
-    });
-
     it(`should not load the user's home place when on mobile`, fakeAsync(() => {
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
       store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
-      window.jQuery = sinon.stub();
-      window.jQuery.withArgs('#mobile-detection').returns({ css: () => 'inline' });
+      responsiveService.isMobile.returns(true);
       activatedRoute.params = of({});
       activatedRoute.snapshot.params = {};
       component.ngOnInit();
@@ -232,7 +224,7 @@ describe('Contacts content component', () => {
 
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0][0][0]).to.equal('/contacts/parent_id');
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'parent_id']]);
     });
 
     it('shoul clear when selected contact is deleted and has no parent', () => {
