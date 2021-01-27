@@ -586,6 +586,7 @@ module.exports = {
   }),
 
   requestOnTestDb: (options, debug) => {
+    deprecated('requestOnTestDb','requestOnTestDbNative');
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -614,6 +615,7 @@ module.exports = {
   },
 
   requestOnTestMetaDb: (options, debug) => {
+    deprecated('requestOnTestMetaDb','requestOnTestMetaDbNative');
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -665,8 +667,9 @@ module.exports = {
     });
   },
 
-  saveDocs: docs =>
-    module.exports
+  saveDocs: docs => {
+    deprecated('saveDocs','saveDocsNative');
+    return module.exports
       .requestOnTestDb({
         path: '/_bulk_docs',
         method: 'POST',
@@ -678,7 +681,8 @@ module.exports = {
         } else {
           return results;
         }
-      }),
+      });
+  },
 
   saveDocsNative: async (docs) =>{
     const results = await module.exports
@@ -696,6 +700,7 @@ module.exports = {
   },
 
   getDoc: id => {
+    deprecated('getDoc','getDocNative');
     deprecated('utils.getDoc', 'utils.getDocNative');
     return module.exports.requestOnTestDbNative({
       path: `/${id}`,
@@ -711,6 +716,7 @@ module.exports = {
   },
 
   getDocs: ids => {
+    deprecated('getDocs','getDocsNative');
     return module.exports
       .requestOnTestDb({
         path: `/_all_docs?include_docs=true`,
@@ -722,7 +728,6 @@ module.exports = {
   },
 
   getDocsNative: async ids => {
-    console.log('docs native1');
     const response = await module.exports
       .requestOnTestDbNative({
         path: `/_all_docs?include_docs=true`,
@@ -730,7 +735,6 @@ module.exports = {
         body: { keys: ids || []},
         headers: { 'content-type': 'application/json' },
       });
-    console.log('docs native2');
     return response.rows.map(row => row.doc);
   },
 
@@ -780,12 +784,14 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) =>
-    updateSettings(updates).then(() => {
+  updateSettings: (updates, ignoreRefresh = false) => {
+    deprecated('updateSettings','updateSettingsNative');
+    return updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
-    }),
+    });
+  },
   
   updateSettingsNative: async (updates, ignoreRefresh = false) => {
     await updateSettingsNative(updates);
@@ -836,6 +842,7 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: done => {
+    deprecated('afterEach','afterEachNative');
     return revertDb()
       .then(() => {
         if (done) {
