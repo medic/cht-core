@@ -11,7 +11,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
-import { isMobile } from '@mm-providers/responsive.provider';
+import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -49,20 +49,21 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   filteredReports = [];
 
   constructor(
-    private store: Store,
-    private route: ActivatedRoute,
-    private router: Router,
-    private changesService: ChangesService,
-    private contactChangeFilterService: ContactChangeFilterService,
-    private translateService: TranslateService,
-    private translateFromService: TranslateFromService,
-    private xmlFormsService: XmlFormsService,
-    private modalService: ModalService,
-    private contactTypesService: ContactTypesService,
-    private settingsService: SettingsService,
-    private sessionService: SessionService,
-    private userSettingsService: UserSettingsService,
-  ){
+    private store:Store,
+    private route:ActivatedRoute,
+    private router:Router,
+    private changesService:ChangesService,
+    private contactChangeFilterService:ContactChangeFilterService,
+    private translateService:TranslateService,
+    private translateFromService:TranslateFromService,
+    private xmlFormsService:XmlFormsService,
+    private modalService:ModalService,
+    private contactTypesService:ContactTypesService,
+    private settingsService:SettingsService,
+    private sessionService:SessionService,
+    private userSettingsService:UserSettingsService,
+    private responsiveService:ResponsiveService,
+  ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
   }
@@ -71,9 +72,13 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeToRoute();
     this.subscribeToChanges();
+    this.getUserFacility();
+    this.resetTaskAndReportsFilter();
+  }
+
+  private resetTaskAndReportsFilter() {
     this.setReportsTimeWindowMonths(3);
     this.setTasksTimeWindowWeeks(1);
-    this.getUserFacility();
   }
 
   ngOnDestroy() {
@@ -84,7 +89,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.store.select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityId) => {
-        if (userFacilityId && !this.route.snapshot.params.id && !isMobile()) {
+        if (userFacilityId && !this.route.snapshot.params.id && !this.responsiveService.isMobile()) {
           this.contactsActions.selectContact(userFacilityId);
         }
       });
@@ -104,9 +109,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
-      if (this.selectedContact !== selectedContact) {
-        this.setReportsTimeWindowMonths(3);
-        this.setTasksTimeWindowWeeks(1);
+      if (this.selectedContact?._id !== selectedContact?._id) {
+        // reset view when selected contact changes
+        this.resetTaskAndReportsFilter();
       }
       this.selectedContact = selectedContact;
       this.loadingContent = loadingContent;
@@ -139,6 +144,20 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.setRightActionBar();
       });
     this.subscription.add(contactDocSubscription);
+
+    const contactReportsSubscription = this.store
+      .select(Selectors.getSelectedContactReports)
+      .subscribe((reports) => {
+        this.setReportsTimeWindowMonths(this.reportsTimeWindowMonths, reports);
+      });
+    this.subscription.add(contactReportsSubscription);
+
+    const contactTasksSubscription = this.store
+      .select(Selectors.getSelectedContactTasks)
+      .subscribe((tasks) => {
+        this.setTasksTimeWindowWeeks(this.tasksTimeWindowWeeks, tasks);
+      });
+    this.subscription.add(contactTasksSubscription);
   }
 
   private subscribeToRoute() {
@@ -169,7 +188,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
         if (matchedContact && contactDeleted) {
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
-          return this.router.navigate([`/contacts/${parentId}`]);
+          return this.router.navigate(['/contacts', parentId]);
         }
         return this.contactsActions.selectContact(this.selectedContact._id, { silent: true });
       }
@@ -177,19 +196,19 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(changesSubscription);
   }
 
-  setReportsTimeWindowMonths(months?) {
+  setReportsTimeWindowMonths(months?, reports?) {
     this.reportsTimeWindowMonths = months;
     const reportStartDate = months ? moment().subtract(months, 'months') : null;
 
-    const allReports = this.selectedContact?.reports || [];
+    const allReports = reports || this.selectedContact?.reports || [];
     this.filteredReports = allReports
       .filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
   }
 
-  setTasksTimeWindowWeeks(weeks?) {
+  setTasksTimeWindowWeeks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
     const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
-    const allTasks = this.selectedContact?.tasks || [];
+    const allTasks = tasks || this.selectedContact?.tasks || [];
     this.filteredTasks = allTasks.filter((task) => !taskEndDate || task.dueDate <= taskEndDate);
   }
 
