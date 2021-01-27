@@ -262,7 +262,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
-      'ContactsReportsForms',
+      'SelectedContactChildrenForms',
       { contactForms: true },
       (error, forms) => {
         if (error) {
@@ -289,7 +289,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptionSelectedContactForms = this.xmlFormsService.subscribe(
-      'selectedContactForms',
+      'SelectedContactReportForms',
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary?.context,
