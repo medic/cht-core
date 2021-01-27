@@ -34,7 +34,7 @@ describe('Submit Photo Upload form', () => {
   it('upload photo', async () => {
     await  common.goToReports();
     await genericForm.selectFormNative('photo-upload');
-    await helper.waitElementToPresent(photoUpload.imagePathInput());
+    await helper.waitElementToPresentNative(photoUpload.imagePathInput());
     await photoUpload.imagePathInput().sendKeys(
       path.join(__dirname, '../../../webapp/src/img/simprints.png')
     );
