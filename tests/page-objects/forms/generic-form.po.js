@@ -1,6 +1,6 @@
 const helper = require('../../helper');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
-const submitButton = element(by.css('#report-form .submit'));
+const submitButton = element(by.css('.submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
 
 module.exports = {
@@ -45,6 +45,21 @@ module.exports = {
     }
   },
 
+  nextPageNative: async multiple => {
+    const nextButton = element(by.css('button.btn.btn-primary.next-page'));
+    if (multiple) {
+      for (let i = 0; i < multiple; i++) {
+        await helper.waitForAngularComplete();
+        await helper.waitElementToBeClickable(nextButton);
+        await nextButton.click();
+      }
+    } else {
+      await helper.waitUntilReady(nextButton);
+      await helper.waitElementToBeClickable(nextButton);
+      await nextButton.click();
+    }
+  },
+
   reportApprove: () => {
     helper.waitForAngularComplete();
     const checkBtn = element(by.css('.fa-check'));
@@ -70,6 +85,7 @@ module.exports = {
 
   submit: () => {
     const submitButton = element(by.css('[ng-click="onSubmit()"]'));
+    helper.scrollElementIntoView(submitButton);
     helper.waitElementToBeClickable(submitButton);
     submitButton.click();
     helper.waitElementToBeVisible(element(by.css('div#reports-content')));
