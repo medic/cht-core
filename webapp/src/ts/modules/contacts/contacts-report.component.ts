@@ -104,7 +104,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  private _loadData() {
+  private _getContactAndForm() {
     return Promise
       .all([
         this.getContact(),
@@ -112,8 +112,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
       ]);
   }
 
-  private loadData() {
-    return this.ngZone.runOutsideAngular(() => this._loadData());
+  private getContactAndForm() {
+    return this.ngZone.runOutsideAngular(() => this._getContactAndForm());
   }
 
   private render() {
@@ -121,7 +121,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     this.errorTranslationKey = false;
 
     return this
-      .loadData()
+      .getContactAndForm()
       .then(([ contact, form ]) => {
         this.globalActions.setEnketoEditedStatus(false);
         this.globalActions.setTitle(this.translateFromService.get(form.title));
