@@ -8,6 +8,7 @@ window.startupTimes.firstCodeExecution = performance.now();
 window.PouchDB = require('pouchdb-browser').default;
 window.$ = window.jQuery = require('jquery');
 window.Tour = require('../js/bootstrap-tour-standalone');
+
 import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
