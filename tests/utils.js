@@ -602,7 +602,7 @@ module.exports = {
     return request(options, { debug });
   },
 
-  requestOnTestDbNative: (options, debug) => {
+  requestOnTestDbNative: async (options, debug) => {
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -613,7 +613,7 @@ module.exports = {
     if (pathAndReqType !== '/GET') {
       options.path = '/' + constants.DB_NAME + (options.path || '');
     }
-    return requestNative(options, { debug });
+    return await requestNative(options, { debug });
   },
 
   requestOnTestMetaDb: (options, debug) => {
@@ -668,7 +668,8 @@ module.exports = {
     });
   },
 
-  saveDocs: docs =>
+  saveDocs: docs => {
+    deprecated('utils.saveDocs', 'utils.saveDocsNative');
     module.exports
       .requestOnTestDb({
         path: '/_bulk_docs',
@@ -681,7 +682,23 @@ module.exports = {
         } else {
           return results;
         }
-      }),
+      }).catch();
+  },
+
+  saveDocsNative: async (docs) =>{
+    const results = await module.exports
+      .requestOnTestDbNative({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs: docs }
+      });
+
+    if (results.find(r => !r.ok)) {
+      throw Error(JSON.stringify(results, null, 2));
+    } else {
+      return results;
+    }
+  },
 
   getDoc: id => {
     deprecated('utils.getDoc', 'utils.getDocNative');
