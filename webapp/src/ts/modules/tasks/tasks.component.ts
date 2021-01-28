@@ -12,6 +12,7 @@ import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TourService } from '@mm-services/tour.service';
+import { GlobalActions } from '@mm-actions/global';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -27,10 +28,12 @@ export class TasksComponent implements OnInit, OnDestroy {
     private route:ActivatedRoute,
   ) {
     this.tasksActions = new TasksActions(store);
+    this.globalActions = new GlobalActions(store);
   }
 
   subscription = new Subscription();
   private tasksActions;
+  private globalActions;
 
   tasksList;
   selectedTask;
@@ -94,6 +97,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
     this.tasksActions.setTasksList([]);
     this.tasksActions.setTasksLoaded(false);
+    this.globalActions.unsetSelected();
   }
 
   refreshTaskList() {

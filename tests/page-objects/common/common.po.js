@@ -27,9 +27,12 @@ const bugDescriptionField = element(by.css('.form-control'));
 const modalFooter = element(by.css('.modal-footer'));
 const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.submit'));
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
+const messagesList = element(by.id('message-list'));
 
 module.exports = {
-  calm: () => {
+  messagesList,
+  calm: async () => {
+
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // helper.waitElementToPresent(element(bootstrapperSelector));
     // helper.waitElementToDisappear(bootstrapperSelector);
@@ -123,6 +126,7 @@ module.exports = {
   },
 
   goToReports: refresh => {
+    utils.deprecated('goToReports', 'goToReportsNative');
     browser.get(utils.getBaseUrl() + 'reports/');
     helper.waitElementToPresent(
       element(
@@ -142,6 +146,29 @@ module.exports = {
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       element(by.css('.reset-filter')).click();
       browser.waitForAngular();
+    }
+  },
+
+  goToReportsNative: async refresh => {
+    await browser.get(utils.getBaseUrl() + 'reports/');
+    await helper.waitElementToPresentNative(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    await helper.waitElementToBeClickable(
+      element(
+        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
+      )
+    );
+    await helper.waitElementToBeVisible(element(by.id('reports-list')));
+    if (refresh) {
+      await browser.refresh();
+    } else {
+      // A trick to trigger a list refresh.
+      // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
+      await helper.clickElement(element(by.css('.reset-filter')));
+      await browser.waitForAngular();
     }
   },
 

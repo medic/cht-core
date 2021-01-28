@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -26,7 +26,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   loading = true;
   loadingContent = false;
   conversations = [];
-  selectedConversation;
+  selectedConversationId = null;
   error = false;
 
   constructor(
@@ -44,35 +44,52 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const selectorsSubscription = combineLatest(
-      this.store.select(Selectors.getConversations),
-      this.store.select(Selectors.getSelectedConversation),
-      this.store.select(Selectors.getLoadingContent),
-      this.store.select(Selectors.getMessagesError),
-    )
-      .subscribe(([
-        conversations = [],
-        selectedConversation,
-        loadingContent,
-        error,
-      ]) => {
-        // Create new reference of conversation's items
-        // because the ones from store can't be modified as they are read only.
-        this.conversations = conversations.map(c => ({ ...c }));
-        this.selectedConversation = selectedConversation;
-        this.loadingContent = loadingContent;
-        this.error = error;
-      });
-    this.subscriptions.add(selectorsSubscription);
-
+    this.subscribeToRouter();
+    this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
-
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.globalActions.unsetSelected();
+  }
+
+  private reset() {
+    this.selectedConversationId = null;
+  }
+
+  private subscribeToRouter() {
+    const subscription = this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        // Resetting values at this point prevents "Expression __ has changed after it was checked" exception.
+        this.reset();
+      }
+    });
+    this.subscriptions.add(subscription);
+  }
+
+  private subscribeToStore() {
+    const subscription = combineLatest(
+      this.store.select(Selectors.getConversations),
+      this.store.select(Selectors.getSelectedConversation),
+      this.store.select(Selectors.getLoadingContent),
+      this.store.select(Selectors.getMessagesError),
+    ).subscribe(([
+      conversations = [],
+      selectedConversation,
+      loadingContent,
+      error,
+    ]) => {
+      // Create new reference of conversation's items
+      // because the ones from store can't be modified as they are read only.
+      this.conversations = conversations.map(conversation => ({ ...conversation }));
+      this.loadingContent = loadingContent;
+      this.error = error;
+      this.selectedConversationId = selectedConversation?.id;
+    });
+    this.subscriptions.add(subscription);
   }
 
   private displayFirstConversation(conversations = []) {
