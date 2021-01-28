@@ -166,7 +166,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
-
         if (matchedContact && contactDeleted) {
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
           return this.router.navigate([`/contacts/${parentId}`]);
@@ -263,7 +262,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
-      'ContactsReportsForms',
+      'SelectedContactChildrenForms',
       { contactForms: true },
       (error, forms) => {
         if (error) {
@@ -290,7 +289,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptionSelectedContactForms = this.xmlFormsService.subscribe(
-      'selectedContactForms',
+      'SelectedContactReportForms',
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary?.context,

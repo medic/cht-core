@@ -136,6 +136,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.reportsActions.resetReportsList();
     this.reportsActions.setSelectedReports([]);
     this.globalActions.setSelectMode(false);
+    this.globalActions.unsetSelected();
   }
 
   private getReportHeading(form, report) {
