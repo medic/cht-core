@@ -63,7 +63,7 @@ module.exports = {
 
   showMessageDetails: async () => {
     // RHS
-    helper.clickElement(
+    await helper.clickElement(
       element(by.css('#message-list li:first-child .summary'))
     );
     helper.waitElementToBeVisible(incomingData);
@@ -71,7 +71,7 @@ module.exports = {
 
   expectMessageDetails: async (header, text, status) => {
     browser.waitForAngular();
-    const messageHeader = helper.getTextFromElement(
+    const messageHeader = await helper.getTextFromElement(
       element(by.css('#message-header .name'))
     );
     const messageText = helper.getTextFromElement(incomingData);
