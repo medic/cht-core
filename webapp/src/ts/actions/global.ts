@@ -16,8 +16,10 @@ export const Actions = {
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
   setLeftActionBar: createSingleValueAction('SET_LEFT_ACTION_BAR', 'left'),
+  updateLeftActionBar: createSingleValueAction('UPDATE_LEFT_ACTION_BAR', 'left'),
   setRightActionBar: createSingleValueAction('SET_RIGHT_ACTION_BAR', 'right'),
   setRightActionBarVerified: createSingleValueAction('SET_ACTION_BAR_RIGHT_VERIFIED', 'verified'),
+  updateRightActionBar: createSingleValueAction('UPDATE_RIGHT_ACTION_BAR', 'right'),
   clearFilters: createAction('CLEAR_FILTERS'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
@@ -35,6 +37,7 @@ export const Actions = {
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
+  setUserFacilityId:createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
 };
 
 export class GlobalActions {
@@ -165,12 +168,20 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setLeftActionBar(value));
   }
 
+  updateLeftActionBar(value) {
+    return this.store.dispatch(Actions.updateLeftActionBar(value));
+  }
+
   setRightActionBar(value) {
     return this.store.dispatch(Actions.setRightActionBar(value));
   }
 
   setRightActionBarVerified(verified) {
     return this.store.dispatch(Actions.setRightActionBarVerified(verified));
+  }
+
+  updateRightActionBar(value) {
+    return this.store.dispatch(Actions.updateRightActionBar(value));
   }
 
   clearRightActionBar() {
@@ -215,5 +226,9 @@ export class GlobalActions {
 
   setTranslationsLoaded() {
     return this.store.dispatch(Actions.setTranslationsLoaded());
+  }
+
+  setUserFacilityId(userFacilityId) {
+    return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
   }
 }
