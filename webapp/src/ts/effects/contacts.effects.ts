@@ -108,7 +108,8 @@ export class ContactsEffects {
       exhaustMap(([, selectedContact, forms]) => {
         return from(this.contactViewModelGeneratorService.loadReports(selectedContact, forms)).pipe(
           map(reports => {
-            this.contactsActions.loadSelectedContactTargetDoc({ ...selectedContact, reports });
+            const selected = { ...selectedContact, reports };
+            this.contactsActions.loadSelectedContactTargetDoc(selected);
             return this.contactsActions.receiveSelectedContactReports(reports);
           }),
           catchError(error => {
@@ -126,7 +127,8 @@ export class ContactsEffects {
       exhaustMap(({ payload: { selected } }) => {
         return from(this.targetAggregateService.getCurrentTargetDoc(selected)).pipe(
           map(targetDoc => {
-            this.contactsActions.loadSelectedContactSummary({ ...selected, targetDoc });
+            const selectedContact = { ...selected, targetDoc };
+            this.contactsActions.loadSelectedContactSummary(selectedContact);
             return this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
           }),
           catchError(error => {
