@@ -1,6 +1,6 @@
 const helper = require('../../helper');
 const searchBox = element(by.css('#freetext'));
-const seachButton = element(by.css('#search'));
+const searchButton = element(by.css('#search'));
 const refreshButton = element(by.css('.fa fa-undo'));
 const newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital?from=list"]'));
 const newPlaceName = element(by.css('[name="/data/init/custom_place_name"]'));
@@ -16,8 +16,18 @@ const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
 const peopleRows = element.all(by.repeater('group in contactsContentCtrl.selectedContact.children'));
 const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
+const contactsTab = element(by.css('#contacts-tab'));
+
 
 module.exports = {
+  contactsList: () => element(by.css('#contacts-list')),
+  contactContent: () => module.exports.contactsList().element(by.css('.content')),
+  cardFieldLabelText: (label) => helper.getTextFromElement(element(by.css(`.cell.${label} label`))),
+  cardFieldLabel:  (label) => element(by.css(`.cell.${label} label`)),
+  cardFieldText: (label) => helper.getTextFromElement(element(by.css(`.cell.${label} p`))),
+  searchBox,
+  searchButton,
+  contactsTab,
   peopleRows,
   contactName,
   getSubmitButton: () => submitButton,
@@ -94,7 +104,7 @@ module.exports = {
   search: async query => {
     searchBox.clear();
     searchBox.sendKeys(query);
-    await seachButton.click();
+    await searchButton.click();
   },
 
   clickRowByName: async name => {

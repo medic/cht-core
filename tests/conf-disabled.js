@@ -27,6 +27,7 @@ const baseConfig = {
       '**/docs-by-replication-key-view.js',
       'e2e/submit-enketo-form.js',
       'e2e/forms/submit-z-score-form.spec.js',
+      'tests/e2e/contact-summary.js',
     ],
     // performance: 'performance/**/*.js'
   },
