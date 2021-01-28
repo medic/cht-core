@@ -22,7 +22,6 @@ const baseConfig = {
     e2e: [
       '**/report-date-filter.js',
       //'**/sentinel/queue.spec.js', //failing probably because contact page is still WIP. Disabling for now
-      '**/docs-by-replication-key-view.js',
       '**/api/routing.js',
       '**/infodocs.js',
       '**/common.specs.js',
@@ -30,7 +29,6 @@ const baseConfig = {
       '**/send-message.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
-      'tests/e2e/create-meta-db.js',
       '**/purge.spec.js',
       'e2e/reports-subject.js',
     ],
