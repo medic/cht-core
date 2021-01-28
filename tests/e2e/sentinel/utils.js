@@ -101,7 +101,7 @@ const requestOnSentinelTestDbNative = async (options) => {
     };
   }
   options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
-  return await utils.requestNative(options);
+  return utils.requestNative(options);
 };
 
 
@@ -135,7 +135,8 @@ const getInfoDocsNative = async (docIds = []) => {
       'Content-Type': 'application/json'
     },
   };
-  return await requestOnSentinelTestDbNative(opts).then(response => response.rows.map(row => row.doc));
+  const response = await requestOnSentinelTestDbNative(opts);
+  return response.rows.map(row => row.doc);
 };
 
 const deletePurgeDbs = () => {
