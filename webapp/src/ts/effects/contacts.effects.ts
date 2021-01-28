@@ -108,6 +108,7 @@ export class ContactsEffects {
       exhaustMap(([, selectedContact, forms]) => {
         return from(this.contactViewModelGeneratorService.loadReports(selectedContact, forms)).pipe(
           map(reports => {
+            this.contactsActions.loadSelectedContactTargetDoc({ ...selectedContact, reports });
             return this.contactsActions.receiveSelectedContactReports(reports);
           }),
           catchError(error => {
@@ -119,43 +120,13 @@ export class ContactsEffects {
     );
   },{ dispatch: false });
 
-  updateSelectedContactSummary = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ContactActionList.receiveSelectedContactReports),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact))
-      ),
-      exhaustMap(([, selectedContact]) => {
-        const selected: any = { ...selectedContact };
-        this.contactsActions.setContactsLoadingSummary(true);
-        this.tasksForContactService
-          .get(selected)
-          .then((tasks) => {
-            return this.contactsActions.updateSelectedContactsTasks(tasks);
-          });
-        return from(this.contactSummaryService.get(selected.doc, selected.reports, selected.lineage)).pipe(
-          map(summary => {
-            this.contactsActions.setContactsLoadingSummary(false);
-            return this.contactsActions.updateSelectedContactSummary(summary);
-          }),
-          catchError(error => {
-            console.error('Error loading summary', error);
-            return of(this.globalActions.unsetSelected());
-          }),
-        );
-      })
-    );
-  },{ dispatch: false });
-
   receiveSelectedContactTargetDoc = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ContactActionList.updateSelectedContactSummary),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact))
-      ),
-      exhaustMap(([, selectedContact]) => {
-        return from(this.targetAggregateService.getCurrentTargetDoc(selectedContact)).pipe(
+      ofType(ContactActionList.loadSelectedContactTargetDoc),
+      exhaustMap(({ payload: { selected } }) => {
+        return from(this.targetAggregateService.getCurrentTargetDoc(selected)).pipe(
           map(targetDoc => {
+            this.contactsActions.loadSelectedContactSummary({ ...selected, targetDoc });
             return this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
           }),
           catchError(error => {
@@ -163,6 +134,32 @@ export class ContactsEffects {
             return of(this.globalActions.unsetSelected());
           }),
         );
+      })
+    );
+  },{ dispatch: false });
+
+  updateSelectedContactSummary = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ContactActionList.loadSelectedContactSummary),
+      exhaustMap(({ payload: { selected } }) => {
+        this.contactsActions.setContactsLoadingSummary(true);
+        this.tasksForContactService
+          .get(selected)
+          .then((tasks) => {
+            return this.contactsActions.updateSelectedContactsTasks(tasks);
+          });
+        return from(this.contactSummaryService
+          .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc))
+          .pipe(
+            map(summary => {
+              this.contactsActions.setContactsLoadingSummary(false);
+              return this.contactsActions.updateSelectedContactSummary(summary);
+            }),
+            catchError(error => {
+              console.error('Error loading summary', error);
+              return of(this.globalActions.unsetSelected());
+            }),
+          );
       })
     );
   },{ dispatch: false });

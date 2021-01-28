@@ -352,7 +352,7 @@ describe('Contacts effects', () => {
     it('should call the right actions', fakeAsync(() => {
       contactSummaryService.get.resolves({ summary: 'summary here'});
       tasksForContactService.get.resolves(['task 1', 'task 2']);
-      actions$ = of(ContactActionList.receiveSelectedContactReports([]));
+      actions$ = of(ContactActionList.loadSelectedContactSummary({}));
       effects.updateSelectedContactSummary.subscribe();
       flush();
 
@@ -368,7 +368,7 @@ describe('Contacts effects', () => {
     it('should catch contactSummaryService errors', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       contactSummaryService.get.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.receiveSelectedContactReports([]));
+      actions$ = of(ContactActionList.loadSelectedContactSummary({}));
       effects.updateSelectedContactSummary.subscribe();
       flush();
 
@@ -377,12 +377,29 @@ describe('Contacts effects', () => {
       expect(consoleErrorMock.callCount).to.equal(1);
       expect(consoleErrorMock.args[0][0]).to.equal('Error loading summary');
     }));
+
+    it('should call contactSummaryService with the correct values', fakeAsync(() => {
+      actions$ = of(ContactActionList.loadSelectedContactSummary({
+        doc: { _id: 'docid' },
+        reports: [{ _id: 'report1'}, { _id: 'report2' }],
+        lineage: {},
+        targetDoc: undefined
+      }));
+      effects.updateSelectedContactSummary.subscribe();
+      flush();
+
+      expect(contactSummaryService.get.callCount).to.equal(1);
+      expect(contactSummaryService.get.args[0][0]).to.deep.equal({ _id: 'docid' });
+      expect(contactSummaryService.get.args[0][1]).to.deep.equal([{ _id: 'report1'}, { _id: 'report2' }]);
+      expect(contactSummaryService.get.args[0][2]).to.deep.equal({});
+      expect(contactSummaryService.get.args[0][3]).to.deep.equal(undefined);
+    }));
   });
 
   describe('receiveSelectedContactTargetDoc', () => {
     it('should call the receiveSelectedContactTargetDoc action', fakeAsync(() => {
       const receiveSelectedContactTargetDoc = sinon.stub(ContactsActions.prototype, 'receiveSelectedContactTargetDoc');
-      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
+      actions$ = of(ContactActionList.loadSelectedContactTargetDoc({}));
       effects.receiveSelectedContactTargetDoc.subscribe();
       flush();
 
@@ -393,7 +410,7 @@ describe('Contacts effects', () => {
       const consoleErrorMock = sinon.stub(console, 'error');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       targetAggregateService.getCurrentTargetDoc.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
+      actions$ = of(ContactActionList.loadSelectedContactTargetDoc({}));
       effects.receiveSelectedContactTargetDoc.subscribe();
       flush();
 
