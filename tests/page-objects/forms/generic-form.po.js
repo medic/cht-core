@@ -72,7 +72,7 @@ module.exports = {
   },
 
   selectFormNative: async (formId) => {
-    await helper.waitUntilReady(addButton);
+    await helper.waitUntilReadyNative(addButton);
     await helper.waitElementToBeClickable(addButton);
     await addButton.click();
     const form = module.exports.formByHref(formId);
@@ -91,6 +91,16 @@ module.exports = {
     submitButton.click();
     helper.waitElementToBeVisible(element(by.css('div#reports-content')));
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
+  },
+
+  submitNative: async () => {
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    await helper.waitElementToBeClickable(submitButton);
+    await submitButton.click();
+    await helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+    const details = element(by.css('div.details'));
+    await helper.waitUntilReadyNative(details);
+    expect(await details.isPresent()).toBeTruthy();
   },
 
   validateReport: () => {

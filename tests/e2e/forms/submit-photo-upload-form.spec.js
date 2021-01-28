@@ -40,9 +40,7 @@ describe('Submit Photo Upload form', () => {
     );
     await helper.waitUntilReadyNative(photoUpload.imagePreview());
     
-    await genericForm.submit();
-    await  helper.waitUntilReadyNative(element(by.css('div.details')));
-    expect(await element(by.css('div.details')).isPresent()).toBeTruthy();
+    await genericForm.submitNative();
     await helper.waitUntilReadyNative(element(by.css('.report-image')));
     expect(await element(by.css('.report-image')).isPresent()).toBeTruthy();
   });
