@@ -66,16 +66,15 @@ describe('Messages Action', () => {
 
   it('should dispatch setSelected action', () => {
     const doc = {id: '124'};
-    const refresh = false;
     const messageAction = new MessagesActions(store);
     const setSelectedConversationSpy = sinon.spy(messageAction, 'setSelectedConversation');
     messageAction.globalActions = {
       settingSelected: sinon.stub()
     };
 
-    messageAction.setSelected(doc, refresh);
+    messageAction.setSelected(doc);
 
-    expect(messageAction.globalActions.settingSelected.withArgs(refresh).callCount).to.equal(1);
+    expect(messageAction.globalActions.settingSelected.callCount).to.equal(1);
     expect(setSelectedConversationSpy.withArgs(doc).callCount).to.equal(1);
   });
 

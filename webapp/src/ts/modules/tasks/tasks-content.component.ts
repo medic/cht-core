@@ -139,8 +139,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.geoHandle = this.geolocationService.init();
-    const refreshing = this.selectedTask?._id === id;
-    this.globalActions.settingSelected(refreshing);
+    this.globalActions.settingSelected();
 
     return this
       .hydrateTaskEmission(task)

@@ -42,9 +42,9 @@ export class MessagesActions {
     return this.store.dispatch(Actions.updateSelectedConversation(selected));
   }
 
-  setSelected(doc, refresh) {
+  setSelected(doc) {
     this.setSelectedConversation(doc);
-    this.globalActions.settingSelected(refresh);
+    this.globalActions.settingSelected();
   }
 
   markSelectedConversationRead() {

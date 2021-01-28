@@ -197,8 +197,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     }
 
     $('.message-content-wrapper').off('scroll', this.checkScrollFnDef);
-    const refreshSelected = this.selectedConversation && this.selectedConversation.id === id;
-    this.messagesActions.setSelected({ id: id, messages: [] }, refreshSelected);
+    this.messagesActions.setSelected({ id: id, messages: [] });
     this.globalActions.setLoadingShowContent(id);
 
     return Promise

@@ -70,8 +70,7 @@ export class ContactsEffects {
           return []; // return an empty stream if there is no selected contact
         }
 
-        const refreshing = previousSelectedContact?.doc?._id === selected.id;
-        this.globalActions.settingSelected(refreshing);
+        this.globalActions.settingSelected();
         this.globalActions.clearCancelCallback();
 
         const routeSnapshot = this.routeSnapshotService.get();
