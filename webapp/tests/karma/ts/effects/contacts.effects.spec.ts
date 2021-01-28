@@ -379,11 +379,19 @@ describe('Contacts effects', () => {
     }));
 
     it('should call contactSummaryService with the correct values', fakeAsync(() => {
+      const targetDoc = {
+        _id: 'targets~2020-01~contact~user',
+        values: [
+          { id: 'target1', value: { total: 1, pass: 1 } },
+          { id: 'target2', value: { total: 20, pass: 5 } },
+          { id: 'target3', value: { total: 7, pass: 7 } },
+        ],
+      };
       actions$ = of(ContactActionList.loadSelectedContactSummary({
         doc: { _id: 'docid' },
         reports: [{ _id: 'report1'}, { _id: 'report2' }],
         lineage: {},
-        targetDoc: undefined
+        targetDoc
       }));
       effects.updateSelectedContactSummary.subscribe();
       flush();
@@ -392,7 +400,7 @@ describe('Contacts effects', () => {
       expect(contactSummaryService.get.args[0][0]).to.deep.equal({ _id: 'docid' });
       expect(contactSummaryService.get.args[0][1]).to.deep.equal([{ _id: 'report1'}, { _id: 'report2' }]);
       expect(contactSummaryService.get.args[0][2]).to.deep.equal({});
-      expect(contactSummaryService.get.args[0][3]).to.deep.equal(undefined);
+      expect(contactSummaryService.get.args[0][3]).to.deep.equal(targetDoc);
     }));
   });
 
