@@ -31,14 +31,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.subscriptions.unsubscribe();
   }
 
-  navigate(module) {
-    if (!module.route) {
-      return;
-    }
-
-    this.router.navigate([module.route]);
-  }
-
   private setActiveModule() {
     this.activeModule = this.analyticsModules?.find(module => {
       return module.id === this.route.snapshot?.firstChild?.data?.moduleId;

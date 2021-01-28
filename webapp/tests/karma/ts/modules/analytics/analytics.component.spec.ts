@@ -2,6 +2,7 @@ import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { of } from 'rxjs';
@@ -13,7 +14,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
-import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
@@ -38,7 +38,7 @@ describe('AnalyticsComponent', () => {
     };
     activatedRoute = {
       snapshot: {
-        routeConfig: { path: '' },
+        firstChild: { data: {} }
       },
       url: {
         subscribe: sinon.stub().resolves(of({})),
@@ -87,10 +87,10 @@ describe('AnalyticsComponent', () => {
   it('should set selected the specified module', fakeAsync(() => {
     sinon.reset();
     const analyticsModules = [
-      { route: 'target-aggregates' },
-      { route: 'targets' }
+      { id: 'target-aggregates', route: ['/', 'analytics', 'target-aggregates'] },
+      { id: 'targets', route: ['/', 'analytics', 'targets'] }
     ];
-    activatedRoute.snapshot.routeConfig.path = 'targets';
+    activatedRoute.snapshot.firstChild.data.moduleId = 'targets';
     analyticsModulesService.get.resolves(analyticsModules);
 
     component.ngOnInit();
@@ -105,9 +105,9 @@ describe('AnalyticsComponent', () => {
 
   it('should jump to child route if single module is present', fakeAsync(() => {
     sinon.reset();
-    activatedRoute.snapshot.routeConfig.path = 'analytics';
+    activatedRoute.snapshot.firstChild.data.tab = 'analytics';
     const navigateStub = sinon.stub(router, 'navigate');
-    const analyticsModules = [{ route: 'targets' }];
+    const analyticsModules = [{ id: 'targets', route: ['/', 'analytics', 'targets'] }];
     analyticsModulesService.get.resolves(analyticsModules);
 
     component.ngOnInit();
@@ -118,16 +118,16 @@ describe('AnalyticsComponent', () => {
     expect(analyticsActions.setAnalyticsModules.callCount).to.equal(1);
     expect(analyticsActions.setAnalyticsModules.args[0][0]).to.have.members(analyticsModules);
     expect(navigateStub.callCount).to.equal(1);
-    expect(navigateStub.args[0]).to.deep.equal([['targets']]);
+    expect(navigateStub.args[0][0]).to.deep.equal(['/', 'analytics', 'targets']);
   }));
 
   it('should not jump to child route if multiple module are present', fakeAsync(() => {
     sinon.reset();
-    activatedRoute.snapshot.routeConfig.path = 'analytics';
+    activatedRoute.snapshot.firstChild.data.tab = 'analytics';
     const navigateStub = sinon.stub(router, 'navigate');
     const analyticsModules = [
-      { route: 'target-aggregates' },
-      { route: 'targets' }
+      { id: 'target-aggregates', route: ['/', 'analytics', 'target-aggregates'] },
+      { id: 'targets', route: ['/', 'analytics', 'targets'] }
     ];
     analyticsModulesService.get.resolves(analyticsModules);
 
