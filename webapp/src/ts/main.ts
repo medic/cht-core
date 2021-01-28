@@ -6,7 +6,6 @@ if (!window.startupTimes) {
 window.startupTimes.firstCodeExecution = performance.now();
 
 window.PouchDB = require('pouchdb-browser').default;
-window.PouchDB.plugin(require('pouchdb-debug'));
 window.$ = window.jQuery = require('jquery');
 window.Tour = require('../js/bootstrap-tour-standalone');
 
@@ -14,8 +13,8 @@ window.Tour = require('../js/bootstrap-tour-standalone');
 
 import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
-
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import pouchdbDebug from 'pouchdb-debug';
 
 import { AppModule } from './app.module';
 import { environment } from './environments/environment';
@@ -23,12 +22,18 @@ import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from '../js/bootstrapper';
 
+// Moment additional locales
+require('../js/moment-locales/tl');
+require('../js/moment-locales/hil');
+require('../js/moment-locales/ceb');
 
 require('select2');
 require('../js/enketo/main');
 
 (function() {
   'use strict';
+
+  window.PouchDB.plugin(pouchdbDebug);
 
   /*angular.module('inboxApp', [
     'ngRoute',

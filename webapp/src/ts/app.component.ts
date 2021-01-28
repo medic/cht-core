@@ -1,4 +1,4 @@
-import { ActivationEnd, Router, RouterEvent } from '@angular/router';
+import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
@@ -9,7 +9,6 @@ import { combineLatest } from 'rxjs';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { Selectors } from './selectors';
 import { GlobalActions } from '@mm-actions/global';
-import { TranslationLoaderService } from '@mm-services/translation-loader.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
@@ -36,6 +35,10 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
+import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
+import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
+import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
+import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -86,7 +89,6 @@ export class AppComponent implements OnInit {
     private dbSyncService:DBSyncService,
     private store:Store,
     private translateService:TranslateService,
-    private translationLoaderService:TranslationLoaderService,
     private languageService:LanguageService,
     private setLanguageService:SetLanguageService,
     private sessionService:SessionService,
@@ -113,6 +115,8 @@ export class AppComponent implements OnInit {
     private rulesEngineService:RulesEngineService,
     private recurringProcessManagerService:RecurringProcessManagerService,
     private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
+    private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
+    private translateLocaleService:TranslateLocaleService,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -148,6 +152,12 @@ export class AppComponent implements OnInit {
     };
 
     this.router.events.subscribe((event:RouterEvent) => {
+      // close all select2 menus on navigation
+      // https://github.com/medic/cht-core/issues/2927
+      if (event instanceof ActivationStart) {
+        this.closeDropdowns();
+      }
+
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
@@ -255,11 +265,12 @@ export class AppComponent implements OnInit {
       .then(() => this.startRecurringProcesses());
 
     this.globalActions.setIsAdmin(this.sessionService.isAdmin());
-    this.watchChangesBranding();
-    this.watchChangesInboxDDoc();
+    this.watchBrandingChanges();
+    this.watchDDocChanges();
     this.watchUserContextChanges();
     this.watchTranslationsChanges();
     this.watchDBSyncStatus();
+    this.watchDatabaseConnection();
     this.setAppTitle();
     this.setupAndroidVersion();
     this.requestPersistentStorage();
@@ -294,7 +305,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private watchChangesBranding() {
+  private watchBrandingChanges() {
     this.changesService.subscribe({
       key: 'branding-icon',
       filter: change => change.id === 'branding',
@@ -302,9 +313,9 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private watchChangesInboxDDoc() {
+  private watchDDocChanges() {
     this.changesService.subscribe({
-      key: 'inbox-ddoc',
+      key: 'ddoc',
       filter: (change) => {
         return (
           change.id === '_design/medic' ||
@@ -327,7 +338,7 @@ export class AppComponent implements OnInit {
   private watchUserContextChanges() {
     const userCtx = this.sessionService.userCtx();
     this.changesService.subscribe({
-      key: 'inbox-user-context',
+      key: 'user-context',
       filter: (change) => {
         return (
           userCtx &&
@@ -343,9 +354,17 @@ export class AppComponent implements OnInit {
 
   private watchTranslationsChanges() {
     this.changesService.subscribe({
-      key: 'inbox-translations',
-      filter: change => this.translationLoaderService.test(change.id),
-      callback: change => this.translateService.reloadLang(this.translationLoaderService.getCode(change.id)),
+      key: 'translations',
+      filter: change => TranslationDocsMatcherProvider.test(change.id),
+      callback: change => {
+        const locale = TranslationDocsMatcherProvider.getLocaleCode(change.id);
+        return this.languageService
+          .get()
+          .then(enabledLocale => {
+            const hotReload = enabledLocale === locale;
+            return this.translateLocaleService.reloadLang(locale, hotReload);
+          });
+      },
     });
   }
 
@@ -362,6 +381,18 @@ export class AppComponent implements OnInit {
         }
       },
     });
+  }
+
+  private watchDatabaseConnection() {
+    this.databaseConnectionMonitorService
+      .listenForDatabaseClosed()
+      .subscribe(() => {
+        this.modalService
+          .show(DatabaseClosedComponent)
+          .catch(() => {});
+
+        this.closeDropdowns();
+      });
   }
 
   private subscribeToStore() {
@@ -477,7 +508,7 @@ export class AppComponent implements OnInit {
           this.showUpdateReady();
         }, TWO_HOURS);
       });
-    //closeDropdowns();
+    this.closeDropdowns();
   }
 
   private checkPrivacyPolicy() {
@@ -534,174 +565,22 @@ export class AppComponent implements OnInit {
         }
       });
   }
-}
 
-
-
-/*(function() {
-  'use strict';
-
-  angular.module('inboxControllers', []);
-
-  angular.module('inboxControllers').controller('InboxCtrl', function(
-    $log,
-    $ngRedux,
-    $rootScope,
-    $scope,
-    $state,
-    $timeout,
-    $transitions,
-    $translate,
-    $window,
-
-
-    CheckDate,
-    CountMessages,
-
-    DatabaseConnectionMonitor,
-    Debug,
-    Feedback,
-    JsonForms,
-    Language,
-    LiveListConfig,
-    LocationService,
-    SetLanguage,
-    Snackbar,
-    Telemetry,
-    Tour,
-    TranslateFrom,
-    TranslationLoaderService,
-    UpdateServiceWorkerService,
-    WealthQuintilesWatcher,
-    XmlForms
-  ) {
-    'ngInject';
-
-    const ctrl = this;
-    const mapStateToTarget = function(state) {
-      return {
-        androidAppVersion: Selectors.getAndroidAppVersion(state),
-        cancelCallback: Selectors.getCancelCallback(state),
-        currentTab: Selectors.getCurrentTab(state),
-        enketoEdited: Selectors.getEnketoEditedStatus(state),
-        enketoSaving: Selectors.getEnketoSavingStatus(state),
-        forms: Selectors.getForms(state),
-        minimalTabs : Selectors.getMinimalTabs(state),
-        privacyPolicyAccepted: Selectors.getPrivacyPolicyAccepted(state),
-        replicationStatus: Selectors.getReplicationStatus(state),
-        selectMode: Selectors.getSelectMode(state),
-        showContent: Selectors.getShowContent(state),
-        showPrivacyPolicy: Selectors.getShowPrivacyPolicy(state),
-      };
-    };
-    const mapDispatchToTarget = function(dispatch) {
-      const globalActions = GlobalActions(dispatch);
-      return {
-        navigateBack: globalActions.navigateBack,
-        navigationCancel: globalActions.navigationCancel,
-        setAndroidAppVersion: globalActions.setAndroidAppVersion,
-        setCurrentTab: globalActions.setCurrentTab,
-        setEnketoEditedStatus: globalActions.setEnketoEditedStatus,
-        setForms: globalActions.setForms,
-        setIsAdmin: globalActions.setIsAdmin,
-        setLoadingContent: globalActions.setLoadingContent,
-        setLoadingSubActionBar: globalActions.setLoadingSubActionBar,
-        setPrivacyPolicyAccepted: globalActions.setPrivacyPolicyAccepted,
-        setSelectMode: globalActions.setSelectMode,
-        setShowActionBar: globalActions.setShowActionBar,
-        setShowContent: globalActions.setShowContent,
-        setShowPrivacyPolicy: globalActions.setShowPrivacyPolicy,
-        setTitle: globalActions.setTitle,
-        unsetSelected: globalActions.unsetSelected,
-        updateReplicationStatus: globalActions.updateReplicationStatus,
-      };
-    };
-    const unsubscribe = $ngRedux.connect(mapStateToTarget, mapDispatchToTarget)(ctrl);
-
-
-    $window.startupTimes.angularBootstrapped = performance.now();
-    Telemetry.record(
-      'boot_time:1:to_first_code_execution',
-      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
-    );
-    Telemetry.record(
-      'boot_time:2:to_bootstrap',
-      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
-    );
-    Telemetry.record(
-      'boot_time:3:to_angular_bootstrap',
-      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
-    );
-    Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
-    delete $window.startupTimes;
-
-    if ($window.location.href.indexOf('localhost') !== -1) {
-      Debug.set(Debug.get()); // Initialize with cookie
-    } else {
-      // Disable debug for everything but localhost
-      Debug.set(false);
-    }
-
-    ctrl.dbWarmedUp = true;
-
-    LiveListConfig();
-
-    ctrl.setLoadingContent(false);
-    ctrl.setLoadingSubActionBar(false);
-    ctrl.adminUrl = LocationService.adminPath;
-    ctrl.setIsAdmin(SessionService.isAdmin());
-    ctrl.modalsToShow = [];
-
-    $transitions.onBefore({}, (trans) => {
-      if (ctrl.enketoEdited && ctrl.cancelCallback) {
-        ctrl.navigationCancel({ to: trans.to(), params: trans.params() });
-        return false;
+  // close select2 dropdowns in the background
+  private closeDropdowns() {
+    $('select.select2-hidden-accessible').each((idx, element) => {
+      // prevent errors being thrown if selectors have not been
+      // initialised yet
+      try {
+        $(element).select2('close');
+      } catch (e) {
+        // exception thrown on clicking 'close'
       }
     });
+  }
 
-    $transitions.onStart({}, function(trans) {
-      const statesToUnsetSelected = ['contacts', 'messages', 'reports', 'tasks'];
-      const parentState = statesToUnsetSelected.find(state => trans.from().name.startsWith(state));
-      // unset selected when states have different base state and only when source state has selected property
-      if (parentState && !trans.to().name.startsWith(parentState)) {
-        ctrl.unsetSelected();
-      }
-    });
-
-    $transitions.onSuccess({}, function(trans) {
-      Tour.endCurrent();
-      ctrl.setCurrentTab(trans.to().name.split('.')[0]);
-      if (!$state.includes('reports')) {
-        ctrl.setSelectMode(false);
-      }
-    });
-
-    // get the forms for the forms filter
-
-    Language()
-      .then(function(language) {
-        SetLanguage(language, false);
-      })
-      .catch(function(err) {
-        $log.error('Error loading language', err);
-      });
-
-    $('body').on('click', '.send-message', function(event) {
-      const target = $(event.target).closest('.send-message');
-      if (target.hasClass('mm-icon-disabled')) {
-        return;
-      }
-      event.preventDefault();
-      Modal({
-        templateUrl: 'templates/modals/send_message.html',
-        controller: 'SendMessageCtrl',
-        controllerAs: 'sendMessageCtrl',
-        model: {
-          to: target.attr('data-send-to'),
-        },
-      });
-    });
-
+  // enables tooltips that are visible on mobile devices
+  private enableTooltips() {
     $('body').on('mouseenter', '.relative-date, .autoreply', function() {
       if ($(this).data('tooltipLoaded') !== true) {
         $(this)
@@ -721,60 +600,21 @@ export class AppComponent implements OnInit {
           .tooltip('hide');
       }
     });
+  }
+}
 
-    $('body').on('click', '#message-content .message-body', function(e) {
-      const elem = $(e.target).closest('.message-body');
-      if (!elem.is('.selected')) {
-        $('#message-content .selected').removeClass('selected');
-        elem.addClass('selected');
-      }
-    });
-
-    // close select2 dropdowns in the background
-    const closeDropdowns = function() {
-      $('select.select2-hidden-accessible').each(function() {
-        // prevent errors being thrown if selectors have not been
-        // initialised yet
-        try {
-          $(this).select2('close');
-        } catch (e) {
-          // exception thrown on clicking 'close'
-        }
-      });
-    };
-
-    // close all select2 menus on navigation
-    // https://github.com/medic/medic/issues/2927
-    $transitions.onStart({}, closeDropdowns);
-
-    const dbClosedDeregister = $rootScope.$on('databaseClosedEvent', function () {
-      Modal({
-        templateUrl: 'templates/modals/database_closed.html',
-        controller: 'ReloadingModalCtrl',
-        controllerAs: 'reloadingModalCtrl',
-      });
-      closeDropdowns();
-    });
-    DatabaseConnectionMonitor.listenForDatabaseClosed();
-
-    const showUpdateReady = function() {
-      Modal({
-        templateUrl: 'templates/modals/version_update.html',
-        controller: 'ReloadingModalCtrl',
-        controllerAs: 'reloadingModalCtrl',
-      }).catch(function() {
-        $log.debug('Delaying update');
-        $timeout(function() {
-          $log.debug('Displaying delayed update ready dialog');
-          showUpdateReady();
-        }, 2 * 60 * 60 * 1000);
-      });
-      closeDropdowns();
-    };
-
-    $scope.$on('$destroy', function() {
-      dbClosedDeregister();
-    });
-
-  });
-})();*/
+/*  $window.startupTimes.angularBootstrapped = performance.now();
+    Telemetry.record(
+      'boot_time:1:to_first_code_execution',
+      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
+    );
+    Telemetry.record(
+      'boot_time:2:to_bootstrap',
+      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
+    );
+    Telemetry.record(
+      'boot_time:3:to_angular_bootstrap',
+      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
+    );
+    Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
+*/

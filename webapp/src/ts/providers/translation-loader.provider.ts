@@ -1,11 +1,10 @@
-const translationUtils = require('@medic/translation-utils');
-const DOC_ID_PREFIX = 'messages-';
-
 import { Injectable } from '@angular/core';
 import { TranslateLoader } from '@ngx-translate/core';
 import { from } from 'rxjs';
 
 import { DbService } from '../services/db.service';
+import * as translationUtils from '@medic/translation-utils';
+import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 
 @Injectable()
 export class TranslationLoaderProvider implements TranslateLoader {
@@ -14,6 +13,10 @@ export class TranslationLoaderProvider implements TranslateLoader {
   private loadingPromises = {};
 
   getTranslation(locale) {
+    if (!locale) {
+      return;
+    }
+
     if (this.loadingPromises[locale]) {
       return from(this.loadingPromises[locale]);
     }
@@ -30,9 +33,11 @@ export class TranslationLoaderProvider implements TranslateLoader {
       });
     };
 
+    const translationsDocId = TranslationDocsMatcherProvider.getTranslationsDocId(locale);
+
     const promise =  this.db
       .get()
-      .get(DOC_ID_PREFIX + locale)
+      .get(translationsDocId)
       .then(doc => {
         const values = Object.assign(doc.generic || {}, doc.custom || {});
         if (testing) {

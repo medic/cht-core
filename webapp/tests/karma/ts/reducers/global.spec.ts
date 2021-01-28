@@ -132,6 +132,16 @@ describe('Global Reducer', () => {
     expect(globalReducer(state, Actions.setLeftActionBar(null))).to.deep.equal({ actionBar: { left: null } });
   });
 
+  it('should update left action bar', () => {
+    const left = { field: 'a', settings: 'b' };
+    state = globalReducer(state, Actions.setLeftActionBar(left));
+    expect(state).to.deep.equal({ actionBar: { left } });
+
+    const change = { other: 'e' };
+    state = globalReducer(state, Actions.updateLeftActionBar(change));
+    expect(state).to.deep.equal({ actionBar: { left: { field: 'a', settings: 'b', other: 'e' } } });
+  });
+
   it('should set correct enketo status', () => {
     state = globalReducer(state, Actions.setEnketoStatus({ edited: true }));
     expect(state).to.deep.equal({ enketoStatus: { edited: true } });
@@ -173,5 +183,15 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ actionBar: { right: { some: 'fields', verified: true } } });
     state = globalReducer(state, Actions.setRightActionBarVerified(false));
     expect(state).to.deep.equal({ actionBar: { right: { some: 'fields', verified: false } } });
+  });
+
+  it('should update right action bar', () => {
+    const right = { field: 'a', settings: 'b' };
+    state = globalReducer(state, Actions.setRightActionBar(right));
+    expect(state).to.deep.equal({ actionBar: { right } });
+
+    const change = { other: 'e' };
+    state = globalReducer(state, Actions.updateRightActionBar(change));
+    expect(state).to.deep.equal({ actionBar: { right: { field: 'a', settings: 'b', other: 'e' } } });
   });
 });

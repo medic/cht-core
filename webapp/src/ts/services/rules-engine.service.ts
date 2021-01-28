@@ -18,6 +18,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 interface DebounceActive {
   [key: string]: {
@@ -31,10 +32,13 @@ interface DebounceActive {
   providedIn: 'root'
 })
 export class RulesEngineCoreFactoryService {
-  constructor(private dbService: DbService) {}
+  constructor(
+    private dbService: DbService,
+    private feedbackService: FeedbackService
+  ) {}
 
   get() {
-    return RulesEngineCore(this.dbService.get());
+    return RulesEngineCore(this.dbService.get(), this.feedbackService);
   }
 }
 

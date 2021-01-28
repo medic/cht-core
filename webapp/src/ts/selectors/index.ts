@@ -33,6 +33,7 @@ export const Selectors = {
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
   getUnreadCount: createSelector(getGlobalState, (globalState) => globalState.unreadCount),
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
+  getUserFacilityId: createSelector(getGlobalState, (globalState) => globalState.userFacilityId),
 
   // enketo
   getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
@@ -83,15 +84,20 @@ export const Selectors = {
     return (id) => contactsState.contactsById.has(id);
   }),
   getSelectedContact: createSelector(getContactsState, (contactsState) => contactsState.selected),
-  getLoadingSelectedContactChildren: createSelector(
+  getSelectedContactDoc: createSelector(
     getContactsState,
-    (contactsState) => contactsState.contacts
+    (contactsState) => contactsState.selected?.doc
+  ),
+  getSelectedContactChildren: createSelector(
+    getContactsState,
+    (contactsState) => contactsState.selected?.children
   ),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
     (contactsState) => contactsState.loadingSelectedReports
   ),
   getContactsLoadingSummary: createSelector(getContactsState, (contactsState) => contactsState.loadingSummary),
+
   // analytics
   getAnalyticsModules: createSelector(getAnalyticsState, (analyticsState) => analyticsState.analyticsModules),
 
@@ -118,38 +124,3 @@ export const Selectors = {
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
 };
-/*
-
-// Global
-
-
-// Analytics
-const getSelectedAnalytics = state => getAnalyticsState(state).selected;
-
-// Contacts
-const getContactsState = state => state.contacts;
-const getContactsLoadingSummary = state => getContactsState(state).loadingSummary;
-const getLoadingSelectedContactChildren = state => getContactsState(state).loadingSelectedChildren;
-const getLoadingSelectedContactReports = state => getContactsState(state).loadingSelectedReports;
-const getSelectedContact = state => getContactsState(state).selected;
-const getSelectedContactDoc = reselect.createSelector(
-  getSelectedContact,
-  selected => selected && selected.doc
-);
-
-
-
-angular.module('inboxServices').constant('Selectors', {
-  getGlobalState,
-  getAndroidAppVersion,
-
-  getSelectedAnalytics,
-
-  getContactsState,
-  getContactsLoadingSummary,
-  getLoadingSelectedContactChildren,
-  getLoadingSelectedContactReports,
-  getSelectedContact,
-  getSelectedContactDoc,
-});
-*/
