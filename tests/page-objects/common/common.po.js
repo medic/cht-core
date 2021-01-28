@@ -113,11 +113,18 @@ module.exports = {
     await browser.driver.get(await utils.getLoginUrl());
   },
 
-  goToMessages: () => {
-    browser.get(utils.getBaseUrl() + 'messages/');
-    helper.waitUntilReady(medicLogo);
-    helper.waitUntilReady(element(by.id('message-list')));
+  goToMessages:  () => {
+    utils.deprecated('goToMessages','goToMessagesNative')
+     browser.get(utils.getBaseUrl() + 'messages/');
+     helper.waitUntilReady(medicLogo);
+     helper.waitUntilReady(element(by.id('message-list')));
   },
+
+  goToMessagesNative:  async () => {
+    await browser.get(utils.getBaseUrl() + 'messages/');
+    await helper.waitUntilReady(medicLogo);
+    await helper.waitUntilReady(element(by.id('message-list')));
+ },
 
   goToPeople: async () => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
@@ -173,9 +180,16 @@ module.exports = {
   },
 
   goToTasks: () => {
+    utils.deprecated("goToTasks", "goToTasksNative")
     browser.get(utils.getBaseUrl() + 'tasks/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('tasks-list')));
+  },
+
+  goToTasksNative: async () => {
+    await browser.get(utils.getBaseUrl() + 'tasks/');
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('tasks-list')));
   },
 
   isAt: list => {
