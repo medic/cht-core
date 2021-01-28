@@ -1,6 +1,6 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -118,6 +118,7 @@ export class AppComponent implements OnInit {
     private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
     private translateLocaleService:TranslateLocaleService,
     private telemetryService:TelemetryService,
+    private ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -585,24 +586,28 @@ export class AppComponent implements OnInit {
 
   // enables tooltips that are visible on mobile devices
   private enableTooltips() {
-    $('body').on('mouseenter', '.relative-date, .autoreply', function() {
-      if ($(this).data('tooltipLoaded') !== true) {
-        $(this)
-          .data('tooltipLoaded', true)
-          .tooltip({
-            placement: 'bottom',
-            trigger: 'manual',
-            container: $(this).closest('.inbox-items, .item-content, .page'),
-          })
-          .tooltip('show');
-      }
-    });
-    $('body').on('mouseleave', '.relative-date, .autoreply', function() {
-      if ($(this).data('tooltipLoaded') === true) {
-        $(this)
-          .data('tooltipLoaded', false)
-          .tooltip('hide');
-      }
+    // running this code in NgZone will end up triggering app-wide change detection on every
+    // mouseover and mouseout event over every element on the page!
+    this.ngZone.runOutsideAngular(() => {
+      $('body').on('mouseenter', '.relative-date, .autoreply', function() {
+        if ($(this).data('tooltipLoaded') !== true) {
+          $(this)
+            .data('tooltipLoaded', true)
+            .tooltip({
+              placement: 'bottom',
+              trigger: 'manual',
+              container: $(this).closest('.inbox-items, .item-content, .page'),
+            })
+            .tooltip('show');
+        }
+      });
+      $('body').on('mouseleave', '.relative-date, .autoreply', function() {
+        if ($(this).data('tooltipLoaded') === true) {
+          $(this)
+            .data('tooltipLoaded', false)
+            .tooltip('hide');
+        }
+      });
     });
   }
 
