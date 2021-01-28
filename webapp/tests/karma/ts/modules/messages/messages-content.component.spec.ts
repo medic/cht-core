@@ -4,6 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
+import { Observable } from 'rxjs';
 
 import { MessagesContentComponent } from '@mm-modules/messages/messages-content.component';
 import { MessageContactService } from '@mm-services/message-contact.service';
@@ -14,6 +15,9 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { MarkReadService } from '@mm-services/mark-read.service';
 import { SendMessageService } from '@mm-services/send-message.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ActivatedRoute } from '@angular/router';
+import { MessagesActions } from '@mm-actions/messages';
+import { PipesModule } from '@mm-pipes/pipes.module';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
@@ -27,6 +31,8 @@ describe('MessagesContentComponent', () => {
   let modalService;
   let changesFilter;
   let changesCallback;
+  let activatedRoute;
+  let activatedRouteParams;
 
   beforeEach(async(() => {
     messageContactService = {
@@ -49,12 +55,17 @@ describe('MessagesContentComponent', () => {
       { selector: 'getSelectedConversation', value: {} },
       { selector: 'getLoadingContent', value: false },
     ];
+    activatedRoute = {
+      params: new Observable(subscriber => activatedRouteParams = subscriber),
+    };
+
 
     return TestBed
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
+          RouterTestingModule,
+          PipesModule,
         ],
         declarations: [
           MessagesContentComponent
@@ -69,6 +80,7 @@ describe('MessagesContentComponent', () => {
           { provide: MarkReadService, useValue: markReadService },
           { provide: SendMessageService, useValue: sendMessageService },
           { provide: ModalService, useValue: modalService },
+          { provide: ActivatedRoute, useValue: activatedRoute }
         ]
       })
       .compileComponents()
@@ -108,11 +120,10 @@ describe('MessagesContentComponent', () => {
           ]
         }
       };
-      component.urlParameters.id = id;
-      component.urlParameters.type = type;
+      activatedRouteParams.next(`${type}:${id}`);
       lineageModelGeneratorService.contact.rejects({ code: 404 });
       messageContactService.getConversation.resolves([res]);
-      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
+      const updateSelectedConversationSpy = sinon.spy(MessagesActions.prototype, 'updateSelectedConversation');
 
       await component.selectContact(id, type);
 
@@ -128,11 +139,10 @@ describe('MessagesContentComponent', () => {
     it('should not fail when no contact and no conversation', () => {
       const id = '12';
       const type = 'contact';
-      component.urlParameters.id = id;
-      component.urlParameters.type = type;
+      activatedRouteParams.next(`${type}:${id}`);
       lineageModelGeneratorService.contact.rejects({ code: 404 });
       messageContactService.getConversation.resolves([]);
-      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
+      const updateSelectedConversationSpy = sinon.spy(MessagesActions.prototype, 'updateSelectedConversation');
 
       return component
         .selectContact(id, type)
@@ -200,11 +210,10 @@ describe('MessagesContentComponent', () => {
       const contact = { name: 'contact', _id: 'c1' };
       const messages = [ { doc: { _id: 'message1' } }, { doc: { _id: 'message2' } } ];
       lineageModelGeneratorService.contact.resolves(contact);
-      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
+      const updateSelectedConversationSpy = sinon.spy(MessagesActions.prototype, 'updateSelectedConversation');
       messageContactService.getConversation.resolves([...messages, { doc: { _id: 'message3' } }]);
       component.selectedConversation = { contact, messages, id: contact._id };
-      component.urlParameters.id = 'c1';
-      component.urlParameters.type = 'contact';
+      activatedRouteParams.next('contact:c1');
 
       await changesCallback(change);
 
@@ -220,14 +229,13 @@ describe('MessagesContentComponent', () => {
       const change = { id: 'message2', deleted: true };
       const contact = { name: 'contact', _id: 'c1' };
       const messages = [{ doc: { _id: 'message1' } }, { doc: { _id: 'message2' } } ];
-      const updateSelectedConversationSpy = sinon.spy(component.messagesActions, 'updateSelectedConversation');
+      const updateSelectedConversationSpy = sinon.spy(MessagesActions.prototype, 'updateSelectedConversation');
       const removeMessageFromSelectedConversationSpy =
-        sinon.spy(component.messagesActions, 'removeMessageFromSelectedConversation');
+        sinon.spy(MessagesActions.prototype, 'removeMessageFromSelectedConversation');
       messageContactService.getConversation.resolves(messages);
       lineageModelGeneratorService.contact.resolves(contact);
       component.selectedConversation = { contact, messages, id: contact._id };
-      component.urlParameters.id = 'c1';
-      component.urlParameters.type = 'contact';
+      activatedRouteParams.next('contact:c1');
 
       changesCallback(change);
 
