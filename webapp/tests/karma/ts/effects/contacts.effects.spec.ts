@@ -168,7 +168,7 @@ describe('Contacts effects', () => {
       expect(settingSelected.callCount).to.equal(1);
       expect(clearCancelCallback.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(settingSelected.args[0][0]).to.equal(false);
+      expect(settingSelected.args[0]).to.deep.equal([]);
       expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal(
         { _id: 'contactid', doc: { _id: 'contactid' } }
       );
