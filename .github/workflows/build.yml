@@ -21,7 +21,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ success() }} && ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Set MARKET_URL var
       run: |
         if [[ -z "$MARKET_URL" ]]; then
@@ -114,7 +113,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ success() }} && ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Set Travis Vars
       run: |
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
@@ -185,7 +183,6 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ success() }} && ${{ secrets.DOCKERHUB_USERNAME }}
     - name: Set Travis Vars
       run: |
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
