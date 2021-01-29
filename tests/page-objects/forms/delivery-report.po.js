@@ -25,8 +25,8 @@ const selectRadioButton = value => {
 };
 
 module.exports = {
-  configureForm: (userContactDoc, done) => {
-    utils.seedTestData(done, userContactDoc, docs);
+  configureForm: (userContactDoc) => {
+    utils.seedTestDataNative(userContactDoc, docs);
   },
 
   //patient page
