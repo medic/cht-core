@@ -15,12 +15,16 @@ jobs:
     name: Compile the app 
     runs-on: ubuntu-18.04
 
-    steps: 
+    steps:
+    - name: Get Docker Hub username
+      id: get-docker-hub-username
+      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: steps.get-docker-hub-username.outputs.dockerhub_username
     - name: Set MARKET_URL var
       run: |
         if [[ -z "$MARKET_URL" ]]; then
@@ -67,7 +71,7 @@ jobs:
     name: Default Config Testst
     runs-on: ubuntu-18.04
 
-    steps: 
+    steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
@@ -85,7 +89,7 @@ jobs:
     name: Standard Config Testst
     runs-on: ubuntu-18.04
 
-    steps: 
+    steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
@@ -108,11 +112,15 @@ jobs:
         node-version: [8.x, 10.x, 12.x]
 
     steps:
+    - name: Get Docker Hub username
+      id: get-docker-hub-username
+      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: steps.get-docker-hub-username.outputs.dockerhub_username
     - name: Set Travis Vars
       run: |
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
@@ -178,11 +186,15 @@ jobs:
         node-version: [8.x, 10.x, 12.x]
 
     steps:
+    - name: Get Docker Hub username
+      id: get-docker-hub-username
+      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: steps.get-docker-hub-username.outputs.dockerhub_username
     - name: Set Travis Vars
       run: |
         echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
