@@ -24,6 +24,7 @@ window.KarmaUtils = {
   nullPromise: () => () => Q.defer().promise,
   mockDB: db => () => () => db,
   setupMockStore: function(initialState, mocks = {}) {
+    /* ToDo: migrate and/or clean
     angular.module('inboxApp').config(function($ngReduxProvider, RootReducer) {
       'ngInject';
       $ngReduxProvider.createStoreWith(
@@ -31,7 +32,7 @@ window.KarmaUtils = {
         [ReduxThunk.default], [], initialState // eslint-disable-line no-undef
       );
     });
-
+    */
     const DB = () => ({
       get: () => Promise.resolve(),
       post: () => Promise.resolve(),

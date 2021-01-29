@@ -4,11 +4,12 @@ import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
+import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.component';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ContactAddRouteGuardProvider implements CanDeactivate<ContactsEditComponent> {
+export class ContactRouteGuardProvider implements CanDeactivate<ContactsEditComponent | ContactsReportComponent> {
   private globalActions;
   constructor(
     private router:Router,
@@ -18,7 +19,7 @@ export class ContactAddRouteGuardProvider implements CanDeactivate<ContactsEditC
   }
 
   canDeactivate(
-    component:ContactsEditComponent,
+    component:ContactsEditComponent | ContactsReportComponent,
     currentRoute:ActivatedRouteSnapshot,
     currentState:RouterStateSnapshot,
     nextState:RouterStateSnapshot,

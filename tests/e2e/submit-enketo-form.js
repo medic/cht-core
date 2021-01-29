@@ -2,6 +2,8 @@ const utils = require('../utils');
 const helper = require('../helper');
 const constants = require('../constants');
 const commonElements = require('../page-objects/common/common.po.js');
+const reportsPo = require('../page-objects/reports/reports.po');
+const genericForm = require('../page-objects/forms/generic-form.po');
 
 describe('Submit Enketo form', () => {
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -87,54 +89,37 @@ describe('Submit Enketo form', () => {
     },
   };
 
-  beforeAll(done => {
-    utils.seedTestData(done, userContactDoc, docs);
+  beforeAll(async () => {
+    await utils.seedTestDataNative(userContactDoc, docs);
   });
 
-  afterEach(utils.afterEach);
+  afterEach(async () => {
+    await utils.afterEachNative();
+  });
 
-  it('submits on reports tab', () => {
-    commonElements.goToReports();
+  it('submits on reports tab', async () => {
+    await commonElements.goToReportsNative();
 
-    const addButton = element(
-      by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
-    );
-    helper.waitElementToBeClickable(addButton);
+    await helper.waitElementToBeClickable(reportsPo.submitReport);
 
     // select form
-    helper.clickElement(
-      element(
-        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
-      )
-    );
-    helper.clickElement(
-      element(
-        by.css(
-          '.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'
-        )
-      )
-    );
+    await helper.clickElement(reportsPo.submitReport);
+    await helper.waitElementToBeClickable(reportsPo.firstForm);
+    await helper.clickElement(reportsPo.firstForm);
 
     // enter name
-    const nameField = element(by.css('#report-form form [name="/data/name"]'));
-    helper.waitElementToBeClickable(nameField);
-    nameField.sendKeys('Jones');
+
+    await helper.waitElementToBeClickable(genericForm.nameField);
+    await genericForm.nameField.sendKeys('Jones');
 
     // submit form
-    const submitButton = element(by.css('#report-form .submit'));
-    helper.waitUntilReady(submitButton);
-    submitButton.click();
-    helper.waitElementToPresent(
-      element(by.css('#reports-content .details ul li:first-child p'))
-    );
-    helper.waitForAngularComplete();
+
+    await helper.waitUntilReady(genericForm.submitButton);
+    await genericForm.submitButton.click();
+    await helper.waitElementToPresent(genericForm.submittedName);
+    
     // check the submitted name
-    const detail = element(
-      by.css('#reports-content .details ul li:first-child p')
-    );
-    helper.waitElementToBeVisible(detail);
-    return detail.getText().then(name => {
-      expect(name).toBe('Jones');
-    });
+    await helper.waitUntilReadyNative(genericForm.submittedName);
+    expect(await genericForm.submittedName.getText()).toBe('Jones');
   });
 });

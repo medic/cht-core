@@ -111,7 +111,7 @@
   "bundlesize": [
     {
       "path": "./build/ddocs/medic/_attachments/main.js",
-      "maxSize": "750 kB"
+      "maxSize": "800 kB"
     },
     {
       "path": "./build/ddocs/medic/_attachments/polyfills-es5.js",

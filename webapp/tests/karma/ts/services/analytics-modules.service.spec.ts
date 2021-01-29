@@ -47,9 +47,9 @@ describe('AnalyticsModulesService', () => {
       .get()
       .then(result => {
         expect(result.length).to.equal(1);
-        expect(result[0]).to.include({
+        expect(result[0]).to.deep.include({
           label: 'analytics.targets',
-          route: 'analytics/targets',
+          route: ['/', 'analytics', 'targets'],
         });
         expect(result[0].available()).to.equal(true);
       });
@@ -63,14 +63,14 @@ describe('AnalyticsModulesService', () => {
       .get()
       .then(result => {
         expect(result.length).to.equal(2);
-        expect(result[0]).to.include({
+        expect(result[0]).to.deep.include({
           label: 'analytics.targets',
-          route: 'analytics/targets',
+          route: ['/', 'analytics', 'targets'],
         });
         expect(result[0].available()).to.equal(true);
-        expect(result[1]).to.include({
+        expect(result[1]).to.deep.include({
           label: 'analytics.target.aggregates',
-          route: 'analytics/target-aggregates',
+          route: ['/', 'analytics', 'target-aggregates'],
         });
         expect(result[1].available()).to.equal(true);
       });
