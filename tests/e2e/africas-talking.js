@@ -137,6 +137,7 @@ const report = {
 describe('africas talking api', () => {
 
   beforeAll(async () => {
+    console.log('before all')
     await utils.requestNative({
       port: constants.COUCH_PORT,
       method: 'PUT',
@@ -146,9 +147,9 @@ describe('africas talking api', () => {
   });
 
   describe('- gateway submits new WT sms messages', () => {
-    const submitSms = body => {
+    const submitSms = async body => {
       const content = querystring.stringify(body);
-      return utils.requestNative({
+      await utils.requestNative({
         method: 'POST',
         path: `/api/v1/sms/africastalking/incoming-messages?key=${INCOMING_KEY}`,
         body: content,
@@ -161,10 +162,11 @@ describe('africas talking api', () => {
     };
 
     beforeEach(async() => {
+      console.log('before each')
       await submitSms({ from: '+64271234567', text: 'hello', id: 'a' })
     });
 
-    it('- shows content', async() => {
+    it('shows content test', async() => {
       commonElements.goToTasksNative();
       commonElements.goToMessagesNative();
 
@@ -187,7 +189,7 @@ describe('africas talking api', () => {
 
       // database
 
-      const dataRec = await element(by.css('#message-content li.incoming:first-child')).getAttribute('data-record-id');
+      const dataRec = await element(by.css('#message-content li.incoming:first-child')).getAttribute('data-id');
       const dataDocId = await utils.getDoc(dataRec);
       expect(dataDocId.sms_message && dataDocId.sms_message.gateway_ref).toBe('a');
 
