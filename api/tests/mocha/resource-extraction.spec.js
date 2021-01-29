@@ -85,10 +85,10 @@ describe('Resource Extraction', () => {
   it('isAttachmentExtractable filter properly for specific resources', () => {
     const isAttachmentExtractable = resourceExtraction.__get__('isAttachmentExtractable');
     expect(isAttachmentExtractable('audio/alert.mp3')).to.eq(true);
-    expect(isAttachmentExtractable('js/inbox.js')).to.eq(true);
+    expect(isAttachmentExtractable('main.js')).to.eq(true); // Webapp's entry point
     expect(isAttachmentExtractable('manifest.json')).to.eq(true);
     expect(isAttachmentExtractable('default-docs/settings.doc.json')).to.eq(true);
-    expect(isAttachmentExtractable('templates/inbox.html')).to.eq(true);
+    expect(isAttachmentExtractable('index.html')).to.eq(true); // Webapp's entry point
 
     expect(isAttachmentExtractable('translations/messages-en.properties')).to.eq(false);
   });

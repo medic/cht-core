@@ -62,7 +62,7 @@ describe('Service worker cache', () => {
     expect(cacheDetails.urls).to.deep.eq([
       '/',
       '/audio/alert.mp3',
-      '/css/inbox.css',
+      '/styles.css',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
@@ -75,8 +75,7 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant.svg',
       '/img/setup-wizard-demo.png',
       '/img/simprints.png',
-      '/js/inbox.js',
-      '/js/templates.js',
+      '/main.js',
       '/login/script.js',
       '/login/style.css',
       '/manifest.json',
