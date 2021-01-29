@@ -32,18 +32,20 @@ describe('Contacts effects', () => {
   beforeEach(async() => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
-      { selector: Selectors.getSelectedContact, value: {} }
+      { selector: Selectors.getSelectedContact, value: null },
+      { selector: Selectors.getForms, value: [] },
+      { selector: Selectors.getUserFacilityId, value: 'facility_id' },
     ];
     routeSnapshotService = { get: sinon.stub().returns({ data: { name: 'contacts.detail' }}) };
     contactViewModelGeneratorService = {
-      getContact: sinon.stub().resolves(),
-      loadChildren: sinon.stub().resolves(),
-      loadReports: sinon.stub().resolves(),
+      getContact: sinon.stub().resolves({ _id: 'contact', doc: { _id: 'contact' } }),
+      loadChildren: sinon.stub().resolves([]),
+      loadReports: sinon.stub().resolves([]),
     };
     translateService = { instant: sinon.stub().returnsArg(0) };
-    contactSummaryService = { get: sinon.stub().resolves() };
+    contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getCurrentTargetDoc: sinon.stub().resolves() };
-    tasksForContactService = { get: sinon.stub().resolves() };
+    tasksForContactService = { get: sinon.stub().resolves([]) };
 
     TestBed.configureTestingModule({
       imports: [
@@ -72,50 +74,111 @@ describe('Contacts effects', () => {
   describe('selectContact', () => {
     let setLoadingSelectedContact;
     let setContactsLoadingSummary;
+    let clearSelection;
+
+    const simulateContactsReducer = () => {
+      let selectedContact = null;
+
+      const refreshState = () => {
+        store.overrideSelector(Selectors.getSelectedContact, selectedContact);
+        store.refreshState();
+      };
+      refreshState();
+
+
+      sinon.stub(ContactsActions.prototype, 'setSelectedContact').callsFake(model => {
+        selectedContact = model;
+        refreshState();
+      });
+
+      sinon.stub(ContactsActions.prototype, 'receiveSelectedContactChildren').callsFake(children => {
+        selectedContact = { ...selectedContact, children };
+        refreshState();
+      });
+
+      sinon.stub(ContactsActions.prototype, 'receiveSelectedContactReports').callsFake(reports => {
+        selectedContact = { ...selectedContact, reports };
+        refreshState();
+      });
+
+      sinon.stub(ContactsActions.prototype, 'receiveSelectedContactTargetDoc').callsFake(targetDoc => {
+        selectedContact = { ...selectedContact, targetDoc };
+        refreshState();
+      });
+
+      sinon.stub(ContactsActions.prototype, 'updateSelectedContactsTasks').callsFake(tasks => {
+        selectedContact = { ...selectedContact, tasks };
+        refreshState();
+      });
+
+      sinon.stub(ContactsActions.prototype, 'updateSelectedContactSummary').callsFake(summary => {
+        selectedContact = { ...selectedContact, summary };
+        refreshState();
+      });
+    };
 
     beforeEach(() => {
       setLoadingSelectedContact = sinon.stub(ContactsActions.prototype, 'setLoadingSelectedContact');
       setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
+      simulateContactsReducer();
     });
 
-    it('should skip when no provided id', async (() => {
+    it('should deselect when no provided id', async (() => {
+      clearSelection = sinon.stub(ContactsActions.prototype, 'clearSelection');
       actions$ = of(ContactActionList.selectContact({  }));
       effects.selectContact.subscribe();
 
+      expect(clearSelection.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.getContact.callCount).to.equal(0);
-
     }));
 
     it('should load the contact when not silent', async () => {
       actions$ = of(ContactActionList.selectContact({ id: 'contactid', silent: false }));
-      const setSelected = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+      const setSelected:any = ContactsActions.prototype.setSelectedContact;
+      const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
+      const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
+
       contactViewModelGeneratorService.getContact.resolves({ _id: 'contactid', model: 'contact model' });
 
       await effects.selectContact.toPromise();
 
+      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.getContact.args[0]).to.deep.equal(['contactid', { merge: false }]);
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
+      expect(setLoadingShowContent.callCount).to.equal(1);
       expect(setLoadingSelectedContact.callCount).to.equal(1);
-      expect(setContactsLoadingSummary.callCount).to.equal(1);
-      expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
+      expect(setContactsLoadingSummary.callCount).to.equal(2);
+      expect(setContactsLoadingSummary.args).to.deep.equal([[true], [false]]);
+      expect(settingSelected.callCount).to.equal(1);
+      expect(settingSelected.args[0]).to.deep.equal([false]);
     });
 
-    it('should load the contact when silent', async () => {
+    it('should load the contact when silent and refreshing', async () => {
+      store.overrideSelector(Selectors.getSelectedContact, { _id: 'contactid' }); // same selected contact
+      store.refreshState();
+
       actions$ = of(ContactActionList.selectContact({ id: 'contactid', silent: true }));
-      const setSelected = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+      const setSelected:any = ContactsActions.prototype.setSelectedContact;
+      const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
       contactViewModelGeneratorService.getContact.resolves({ _id: 'contactid', model: 'contact model' });
+      const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
 
       await effects.selectContact.toPromise();
 
       expect(setSelected.callCount).to.equal(1);
       expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
+      expect(setLoadingShowContent.callCount).to.equal(0);
+      expect(setLoadingSelectedContact.callCount).to.equal(0);
+      expect(settingSelected.callCount).to.equal(1);
+      expect(settingSelected.args[0]).to.deep.equal([true]);
     });
 
     it('should handle missing contacts', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      const setSelectedContact = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+      const setSelectedContact:any = ContactsActions.prototype.setSelectedContact;
       contactViewModelGeneratorService.getContact.rejects({ code: 404, error: 'not found'});
       actions$ = of(ContactActionList.selectContact({ id: 'contactid', silent: false }));
       effects.selectContact.subscribe();
@@ -127,331 +190,299 @@ describe('Contacts effects', () => {
       expect(unsetSelected.callCount).to.equal(1);
       expect(setSelectedContact.callCount).to.equal(1);
       expect(setSelectedContact.args[0][0]).to.equal(null);
-    }));
-  });
-
-  describe('setSelectedContact', () => {
-    let settingSelected;
-    let setLoadingSelectedContact;
-    let setContactsLoadingSummary;
-    let clearCancelCallback;
-    let unsetSelected;
-    let setTitle;
-
-    beforeEach(() => {
-      settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
-      setLoadingSelectedContact = sinon.stub(ContactsActions.prototype, 'setLoadingSelectedContact');
-      setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
-      clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
-      unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      setTitle = sinon.stub(GlobalActions.prototype, 'setTitle');
-    });
-
-    it('should not call other actions if no contact is selected', () => {
-      store.overrideSelector(Selectors.getSelectedContact, null);
-      actions$ = of(ContactActionList.setSelectedContact(null));
-      effects.setSelectedContact.subscribe();
-
-      expect(settingSelected.callCount).to.equal(0);
-      expect(setLoadingSelectedContact.callCount).to.equal(0);
-      expect(setContactsLoadingSummary.callCount).to.equal(0);
-      expect(clearCancelCallback.callCount).to.equal(0);
+      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
-    });
-
-    it('should call the right actions actions if a contact is selected', () => {
-      store.overrideSelector(Selectors.getSelectedContact, { _id: 'contactid', doc: { _id: 'contactid' } });
-      store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
-      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
-      effects.setSelectedContact.subscribe();
-
-      expect(settingSelected.callCount).to.equal(1);
-      expect(clearCancelCallback.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(settingSelected.args[0][0]).to.equal(false);
-      expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal(
-        { _id: 'contactid', doc: {} }
-      );
-      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal(
-        { getChildPlaces: true }
-      );
-    });
-
-    it('should catch loadChildren errors', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
-      contactViewModelGeneratorService.loadChildren.rejects({ error: 'we have a problem' });
-      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
-      effects.setSelectedContact.subscribe();
-      flush();
-
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(unsetSelected.callCount).to.equal(1);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error fetching children');
+      expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(0);
+      expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(0);
+      expect(contactSummaryService.get.callCount).to.equal(0);
     }));
 
-    it('should not load children if home place selected', fakeAsync(() => {
-      store.overrideSelector(Selectors.getUserFacilityId, 'contactid');
-      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
-      effects.setSelectedContact.subscribe();
-      flush();
+    describe('loading children', () => {
+      it('should load children', async () => {
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'contact', doc: { _id: 'contact' } });
+        contactViewModelGeneratorService.loadChildren.resolves([
+          { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
+          { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
+        ]);
 
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: false});
-    }));
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-    it('should load children if selected contact is not home place', fakeAsync(() => {
-      store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
-      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: { _id: 'contactid' } }));
-      effects.setSelectedContact.subscribe();
-      flush();
-
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: true});
-    }));
-
-    it('should load the children of the currently selected contact', () => {
-      const updateSelectedContact = sinon.stub(ContactsActions.prototype, 'updateSelectedContact');
-      store.overrideSelector(
-        Selectors.getSelectedContact,
-        {
-          _id: 'previouscontact',
-          doc: {}
-        }
-      );
-      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
-      effects.setSelectedContact.subscribe();
-
-      expect(updateSelectedContact.callCount).to.equal(1);
-      expect(updateSelectedContact.args[0][0]).to.deep.equal({ _id: 'contactid', doc: {} });
-      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal({ _id: 'contactid', doc: {} });
-    });
-
-    it('should call settingSelected called with the right value if refreshing', () => {
-      store.overrideSelector(
-        Selectors.getSelectedContact,
-        {
-          _id: 'contactid',
-          doc: {
-            _id: 'contactid'
-          }
-        }
-      );
-      actions$ = of(ContactActionList.setSelectedContact({ id: 'contactid', doc: {} }));
-      effects.setSelectedContact.subscribe();
-
-      expect(settingSelected.callCount).to.equal(1);
-      expect(settingSelected.args[0][0]).to.equal(true);
-    });
-
-    it('should call settingSelected called with the right value if not refreshing', () => {
-      store.overrideSelector(
-        Selectors.getSelectedContact,
-        {
-          _id: 'previouscontact',
-          doc: {
-            _id: 'previouscontact'
-          }
-        }
-      );
-      actions$ = of(ContactActionList.setSelectedContact({ id: 'contactid', doc: {} }));
-      effects.setSelectedContact.subscribe();
-
-      expect(settingSelected.callCount).to.equal(1);
-      expect(settingSelected.args[0][0]).to.equal(false);
-    });
-
-    it('should reset the store if it is called with null', () => {
-      const updateSelectedContact = sinon.stub(ContactsActions.prototype, 'updateSelectedContact');
-      actions$ = of(ContactActionList.setSelectedContact(null));
-      effects.setSelectedContact.subscribe();
-
-      expect(updateSelectedContact.callCount).to.equal(1);
-      expect(updateSelectedContact.args[0][0]).to.equal(null);
-    });
-    
-    describe('set title', () => {
-      it('should set contact profile title', () => {
-        routeSnapshotService.get.returns({ data: { name: 'contacts.detail' }});
-
-        actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
-        effects.setSelectedContact.subscribe();
-
-        expect(setTitle.callCount).to.equal(1);
-        expect(setTitle.args[0][0]).to.equal('contact.profile');
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
+          { _id: 'contact', doc: { _id: 'contact' } },
+          { getChildPlaces: true },
+        ]);
+        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        expect(receiveSelectedContactChildren.args[0]).to.deep.equal([[
+          { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
+          { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
+        ]]);
       });
 
-      it('should set contact type title', () => {
-        routeSnapshotService.get.returns({ data: { name: 'contacts.detail' }});
+      it('should not load child places for user facility', async () => {
+        store.overrideSelector(Selectors.getUserFacilityId, 'facility');
+        store.refreshState();
 
-        actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', type: { name_key: 'new_type' } }));
-        effects.setSelectedContact.subscribe();
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'facility', doc: { _id: 'facility' } });
+        contactViewModelGeneratorService.loadChildren.resolves([
+          { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
+        ]);
 
-        expect(setTitle.callCount).to.equal(1);
-        expect(setTitle.args[0][0]).to.equal('new_type');
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
+          { _id: 'facility', doc: { _id: 'facility' } },
+          { getChildPlaces: false },
+        ]);
+        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        expect(receiveSelectedContactChildren.args[0]).to.deep.equal([[
+          { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
+        ]]);
       });
 
-      it('should set contact decease title', () => {
-        routeSnapshotService.get.returns({ data: { name: 'contacts.deceased' }});
+      it('should handle errors when loading children', async () => {
+        sinon.stub(console, 'error');
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        contactViewModelGeneratorService.loadChildren.rejects({ code: 400 });
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-        actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
-        effects.setSelectedContact.subscribe();
-
-        expect(setTitle.callCount).to.equal(1);
-        expect(setTitle.args[0][0]).to.equal('contact.deceased.title');
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(0);
+        expect(tasksForContactService.get.callCount).to.equal(0);
+        expect(contactSummaryService.get.callCount).to.equal(0);
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(1);
       });
     });
-  });
 
-  describe('receiveSelectedContactReports', () => {
-    let unsetSelected;
-    let receiveSelectedContactReports;
+    describe('loading reports', () => {
+      it('should load reports after loading children', async () => {
+        store.overrideSelector(Selectors.getForms, [{ id: 'form1' }]);
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'place', doc: { _id: 'place' } });
+        contactViewModelGeneratorService.loadChildren.resolves([
+          { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
+          { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
+        ]);
+        contactViewModelGeneratorService.loadReports.resolves([{ _id: 'report1' }]);
 
-    beforeEach(() => {
-      unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      receiveSelectedContactReports = sinon.stub(ContactsActions.prototype, 'receiveSelectedContactReports');
+        actions$ = of(ContactActionList.selectContact({ id: 'place' }));
+        await effects.selectContact.toPromise();
+
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal([
+          {
+            _id: 'place',
+            doc: { _id: 'place' },
+            children: [
+              { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
+              { type: { id: 'place' }, contacts: [{ _id: 'place' }] },
+            ],
+          },
+          [{ id: 'form1' }],
+        ]);
+
+        const receiveSelectedContactReports:any = ContactsActions.prototype.receiveSelectedContactReports;
+        expect(receiveSelectedContactReports.callCount).to.equal(1);
+        expect(receiveSelectedContactReports.args[0]).to.deep.equal([[{ _id: 'report1' }]]);
+      });
+
+      it('should handle errors when loading reports', async () => {
+        sinon.stub(console, 'error');
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        contactViewModelGeneratorService.loadReports.rejects({ code: 400 });
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(0);
+        expect(tasksForContactService.get.callCount).to.equal(0);
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(1);
+      });
     });
 
-    it('should catch loadReports errors', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
-      contactViewModelGeneratorService.loadReports.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.receiveSelectedContactChildren([]));
-      effects.receiveSelectedContactReports.subscribe();
-      flush();
+    describe('loading targetDoc', () => {
+      it('should load targetDoc after loading reports', async () => {
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'person', doc: { _id: 'person' } });
+        contactViewModelGeneratorService.loadChildren.resolves([]);
+        contactViewModelGeneratorService.loadReports.resolves([{ _id: 'report' }]);
+        targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
 
-      expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-      expect(unsetSelected.callCount).to.equal(1);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error loading reports');
-    }));
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-    it('should call the receiveSelectedContactReports action', fakeAsync(() => {
-      actions$ = of(ContactActionList.receiveSelectedContactChildren([]));
-      effects.receiveSelectedContactReports.subscribe();
-      flush();
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(targetAggregateService.getCurrentTargetDoc.args[0]).to.deep.equal([{
+          _id: 'person',
+          doc: { _id: 'person' },
+          children: [],
+          reports: [{ _id: 'report' }],
+        }]);
+        const receiveSelectedContactTargetDoc:any = ContactsActions.prototype.receiveSelectedContactTargetDoc;
+        expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
+        expect(receiveSelectedContactTargetDoc.args[0]).to.deep.equal([{ _id: 'targetDoc' }]);
+      });
 
-      expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-      expect(receiveSelectedContactReports.callCount).to.equal(1);
-    }));
-  });
+      it('should handle errors when loading the target doc', async () => {
+        sinon.stub(console, 'error');
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        targetAggregateService.getCurrentTargetDoc.rejects({ code: 400 });
 
-  describe('updateSelectedContactSummary', () => {
-    let setContactsLoadingSummary;
-    let updateSelectedContactSummary;
-    let unsetSelected;
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-    beforeEach(() => {
-      setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
-      updateSelectedContactSummary = sinon.stub(ContactsActions.prototype, 'updateSelectedContactSummary');
-      unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(contactSummaryService.get.callCount).to.equal(0);
+        expect(tasksForContactService.get.callCount).to.equal(0);
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(1);
+      });
     });
 
-    it('should call the right actions', fakeAsync(() => {
-      contactSummaryService.get.resolves({ summary: 'summary here'});
-      actions$ = of(ContactActionList.loadSelectedContactSummary());
-      effects.updateSelectedContactSummary.subscribe();
-      flush();
+    describe('loading contact summary', () => {
+      it('should load contact summary after loading the target doc', async () => {
+        contactViewModelGeneratorService.getContact.resolves({
+          _id: 'person',
+          doc: { _id: 'person', parent: { _id: 'parent' } },
+          lineage: [{ _id: 'parent' }, { _id: 'grandparent' }],
+        });
+        contactViewModelGeneratorService.loadChildren.resolves([]);
+        contactViewModelGeneratorService.loadReports.resolves([{ _id: 'the_report' }]);
+        targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
+        contactSummaryService.get.resolves({ cards: [{ id: 'card' }], fields: [{ id: 'field' }] });
 
-      expect(updateSelectedContactSummary.callCount).to.equal(1);
-      expect(setContactsLoadingSummary.callCount).to.equal(2);
-      expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
-      expect(setContactsLoadingSummary.args[1][0]).to.equal(false);
-      expect(updateSelectedContactSummary.args[0][0]).to.deep.equal({ summary: 'summary here'});
-    }));
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-    it('should catch contactSummaryService errors', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
-      contactSummaryService.get.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.loadSelectedContactSummary());
-      effects.updateSelectedContactSummary.subscribe();
-      flush();
+        expect(contactSummaryService.get.callCount).to.equal(1);
+        expect(contactSummaryService.get.args[0]).to.deep.equal([
+          { _id: 'person', parent: { _id: 'parent' } },
+          [{ _id: 'the_report' }],
+          [{ _id: 'parent' }, { _id: 'grandparent' }],
+          { _id: 'targetDoc' },
+        ]);
+        const updateSelectedContactSummary:any = ContactsActions.prototype.updateSelectedContactSummary;
+        expect(updateSelectedContactSummary.callCount).to.equal(1);
+        expect(updateSelectedContactSummary.args[0]).to.deep.equal([
+          { cards: [{ id: 'card' }], fields: [{ id: 'field' }] }
+        ]);
+      });
 
-      expect(contactSummaryService.get.callCount).to.equal(1);
-      expect(unsetSelected.callCount).to.equal(1);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error loading summary');
-    }));
+      it('should handle errors when loading the contact summary', async () => {
+        sinon.stub(console, 'error');
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        contactSummaryService.get.rejects({ code: 400 });
 
-    it('should call contactSummaryService with the correct values', fakeAsync(() => {
-      const targetDoc = {
-        _id: 'targets~2020-01~contact~user',
-        values: [
-          { id: 'target1', value: { total: 1, pass: 1 } },
-          { id: 'target2', value: { total: 20, pass: 5 } },
-          { id: 'target3', value: { total: 7, pass: 7 } },
-        ],
-      };
-      store.overrideSelector(
-        Selectors.getSelectedContact,
-        {
-          doc: { _id: 'docid' },
-          reports: [{ _id: 'report1'}, { _id: 'report2' }],
-          lineage: {},
-          targetDoc
-        }
-      );
-      actions$ = of(ContactActionList.loadSelectedContactSummary());
-      effects.updateSelectedContactSummary.subscribe();
-      flush();
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-      expect(contactSummaryService.get.callCount).to.equal(1);
-      expect(contactSummaryService.get.args[0][0]).to.deep.equal({ _id: 'docid' });
-      expect(contactSummaryService.get.args[0][1]).to.deep.equal([{ _id: 'report1'}, { _id: 'report2' }]);
-      expect(contactSummaryService.get.args[0][2]).to.deep.equal({});
-      expect(contactSummaryService.get.args[0][3]).to.deep.equal(targetDoc);
-    }));
-  });
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(contactSummaryService.get.callCount).to.equal(1);
+        expect(tasksForContactService.get.callCount).to.equal(0);
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(1);
+      });
+    });
 
-  describe('receiveSelectedContactTargetDoc', () => {
-    it('should call the receiveSelectedContactTargetDoc action', fakeAsync(() => {
-      const receiveSelectedContactTargetDoc = sinon.stub(ContactsActions.prototype, 'receiveSelectedContactTargetDoc');
-      actions$ = of(ContactActionList.loadSelectedContactTargetDoc());
-      effects.receiveSelectedContactTargetDoc.subscribe();
-      flush();
+    describe('loading tasks', () => {
+      it('should load tasks after contact summary', async () => {
+        contactViewModelGeneratorService.getContact.resolves({
+          _id: 'person',
+          doc: { _id: 'person', parent: { _id: 'parent' } },
+        });
+        contactViewModelGeneratorService.loadChildren.resolves([{ type: 'a' }]);
+        contactViewModelGeneratorService.loadReports.resolves([{ _id: 'the_report' }]);
+        targetAggregateService.getCurrentTargetDoc.resolves({ _id: 'targetDoc' });
+        contactSummaryService.get.resolves({ cards: [{ id: 'card' }], fields: [{ id: 'field' }] });
+        tasksForContactService.get.resolves([{ _id: 'task1' }]);
 
-      expect(receiveSelectedContactTargetDoc.callCount).to.equal(1);
-    }));
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-    it('should catch targetAggregateService errors', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
-      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      targetAggregateService.getCurrentTargetDoc.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.loadSelectedContactTargetDoc());
-      effects.receiveSelectedContactTargetDoc.subscribe();
-      flush();
+        expect(tasksForContactService.get.callCount).to.equal(1);
+        expect(tasksForContactService.get.args[0]).to.deep.equal([{
+          _id: 'person',
+          doc: { _id: 'person', parent: { _id: 'parent' } },
+          children: [{ type: 'a' }],
+          reports: [{ _id: 'the_report' }],
+          summary: { cards: [{ id: 'card' }], fields: [{ id: 'field' }] },
+          targetDoc: { _id: 'targetDoc' },
+        }]);
+        const updateSelectedContactsTasks:any = ContactsActions.prototype.updateSelectedContactsTasks;
+        expect(updateSelectedContactsTasks.callCount).to.equal(1);
+        expect(updateSelectedContactsTasks.args[0]).to.deep.equal([[{ _id: 'task1' }]]);
+      });
 
-      expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
-      expect(unsetSelected.callCount).to.equal(1);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error loading target doc');
-    }));
-  });
+      it('should handle errors when loading tasks', async () => {
+        sinon.stub(console, 'error');
+        const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
+        const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+        tasksForContactService.get.rejects({ code: 400 });
 
-  describe('updateSelectedContactsTasks', () => {
-    it('should call the updateSelectedContactsTasks action', fakeAsync(() => {
-      tasksForContactService.get.resolves(['task 1', 'task 2']);
-      const updateSelectedContactsTasks = sinon.stub(ContactsActions.prototype, 'updateSelectedContactsTasks');
-      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
-      effects.updateSelectedContactsTasks.subscribe();
-      flush();
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
 
-      expect(updateSelectedContactsTasks.callCount).to.equal(1);
-      expect(updateSelectedContactsTasks.args[0][0]).to.deep.equal(['task 1', 'task 2']);
-    }));
+        expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(1);
+        expect(contactSummaryService.get.callCount).to.equal(1);
+        expect(tasksForContactService.get.callCount).to.equal(1);
+        expect(setSnackbarContent.callCount).to.equal(0);
+        expect(unsetSelected.callCount).to.equal(1);
+      });
+    });
 
-    it('should catch tasksForContactService errors', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
-      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      tasksForContactService.get.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
-      effects.updateSelectedContactsTasks.subscribe();
-      flush();
+    describe('setting the title', () => {
+      it('should set title correctly on deceased page', async () => {
+        routeSnapshotService.get.returns({ data: { name: 'contacts.deceased' } });
+        const setTitle = sinon.stub(GlobalActions.prototype, 'setTitle');
 
-      expect(tasksForContactService.get.callCount).to.equal(1);
-      expect(unsetSelected.callCount).to.equal(1);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0]).to.equal('Error loading tasks');
-    }));
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        expect(setTitle.callCount).to.equal(1);
+        expect(setTitle.args[0]).to.deep.equal(['contact.deceased.title']);
+      });
+
+      it('should set title correctly when no type', async () => {
+        const setTitle = sinon.stub(GlobalActions.prototype, 'setTitle');
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        expect(setTitle.callCount).to.equal(1);
+        expect(setTitle.args[0]).to.deep.equal(['contact.profile']);
+      });
+
+      it('should set title correct for contact type', async () => {
+        contactViewModelGeneratorService.getContact.resolves({
+          _id: 'contact',
+          type: { name_key: 'this is the title' },
+        });
+        const setTitle = sinon.stub(GlobalActions.prototype, 'setTitle');
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        expect(setTitle.callCount).to.equal(1);
+        expect(setTitle.args[0]).to.deep.equal(['this is the title']);
+      });
+    });
   });
 });

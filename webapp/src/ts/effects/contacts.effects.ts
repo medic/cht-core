@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store, select } from '@ngrx/store';
-import { from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, withLatestFrom } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { exhaustMap, withLatestFrom } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
@@ -18,8 +18,8 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 export class ContactsEffects {
   private contactsActions;
   private globalActions;
+
   private selectedContact;
-  private forms;
 
   constructor(
     private actions$: Actions,
@@ -37,15 +37,18 @@ export class ContactsEffects {
     this.store
       .select(Selectors.getSelectedContact)
       .subscribe(selectedContact => this.selectedContact = selectedContact);
-    this.store.select(Selectors.getForms).subscribe(forms => this.forms = forms);
   }
 
   selectContact = createEffect(() => {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
-      exhaustMap(({ payload: { id, silent } }) => {
+      withLatestFrom(
+        this.store.pipe(select(Selectors.getUserFacilityId)),
+        this.store.select(Selectors.getForms),
+      ),
+      exhaustMap(([{ payload: { id, silent } }, userFacilityId, forms]) => {
         if (!id) {
-          return of(this.contactsActions.setSelectedContact(null));
+          return of(this.contactsActions.clearSelection());
         }
 
         if (!silent) {
@@ -53,21 +56,30 @@ export class ContactsEffects {
           this.contactsActions.setLoadingSelectedContact();
           this.contactsActions.setContactsLoadingSummary(true);
         }
-        return from(this.contactViewModelGeneratorService.getContact(id, { getChildPlaces: true, merge: false })).pipe(
-          map(model => this.contactsActions.setSelectedContact(model)),
-          catchError((error) => {
-            if (error.code === 404 && !silent) {
+
+        const refreshing = this.selectedContact?._id === id;
+
+        const loadContact = this
+          .loadContact(id, refreshing)
+          .then(() => this.loadChildren(userFacilityId))
+          .then(() => this.loadReports(forms))
+          .then(() => this.loadTargetDoc())
+          .then(() => this.loadContactSummary())
+          .then(() => this.loadTasks())
+          .catch(err => {
+            if (err.code === 404 && !silent) {
               this.globalActions.setSnackbarContent(this.translateService.instant('error.404.title'));
             }
-            console.error('Error selecting contact', error);
+            console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
             return of(this.contactsActions.setSelectedContact(null));
-          }),
-        );
+          });
+
+        return of(loadContact);
       }),
     );
   }, { dispatch: false });
-  /*
+
   private setTitle(selected) {
     const routeSnapshot = this.routeSnapshotService.get();
     const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
@@ -76,18 +88,28 @@ export class ContactsEffects {
     this.globalActions.setTitle(this.translateService.instant(title));
   }
 
-  private loadChildren(selected, userFacilityId) {
-    const getChildPlaces = userFacilityId !== selected?.doc?._id;
+  private loadContact(id, refreshing) {
     return this.contactViewModelGeneratorService
-      .loadChildren(selected, { getChildPlaces })
+      .getContact(id, { merge: false })
+      .then(model => {
+        this.globalActions.settingSelected(refreshing);
+        this.contactsActions.setSelectedContact(model);
+        this.setTitle(model);
+      });
+  }
+
+  private loadChildren(userFacilityId) {
+    const getChildPlaces = userFacilityId !== this.selectedContact?._id;
+    return this.contactViewModelGeneratorService
+      .loadChildren(this.selectedContact, { getChildPlaces })
       .then(children => {
         this.contactsActions.receiveSelectedContactChildren(children);
       });
   }
 
-  private loadReports() {
+  private loadReports(forms) {
     return this.contactViewModelGeneratorService
-      .loadReports(this.selectedContact, this.forms)
+      .loadReports(this.selectedContact, forms)
       .then(reports => {
         return this.contactsActions.receiveSelectedContactReports(reports);
       });
@@ -118,162 +140,4 @@ export class ContactsEffects {
         return this.contactsActions.updateSelectedContactSummary(summary);
       });
   }
-
-  setSelectedContact = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ContactActionList.setSelectedContact),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact)),
-        this.store.pipe(select(Selectors.getUserFacilityId)),
-      ),
-      exhaustMap(([{ payload: { selected } }, previousSelectedContact, userFacilityId]) => {
-        if (!selected) {
-          return []; // return an empty stream if there is no selected contact
-        }
-
-        const refreshing = previousSelectedContact?.doc?._id === selected.id;
-        this.globalActions.settingSelected(refreshing);
-        this.globalActions.clearCancelCallback();
-
-        this.setTitle(selected);
-
-        const loadContact = this
-          .loadChildren(selected, userFacilityId)
-          .then(() => this.loadReports())
-          .then(() => this.loadTargetDoc())
-          .then(() => this.loadContactSummary())
-          .then(() => this.loadTasks());
-
-        return of(loadContact);
-      }),
-    );
-  }, { dispatch: false });*/
-
-  setSelectedContact = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ContactActionList.setSelectedContact),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact)),
-        this.store.pipe(select(Selectors.getUserFacilityId)),
-      ),
-      exhaustMap(([{ payload: { selected } }, previousSelectedContact, userFacilityId]) => {
-        if (!selected) {
-          this.contactsActions.updateSelectedContact(null);
-          return []; // return an empty stream if there is no selected contact
-        }
-
-        this.contactsActions.updateSelectedContact(selected);
-
-        const refreshing = previousSelectedContact?.doc?._id === selected.id;
-        this.globalActions.settingSelected(refreshing);
-        this.globalActions.clearCancelCallback();
-
-        const routeSnapshot = this.routeSnapshotService.get();
-        const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
-          ? this.translateService.instant('contact.deceased.title') : null;
-        const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
-        this.globalActions.setTitle(this.translateService.instant(title));
-
-        const getChildPlaces = userFacilityId !== selected?.doc?._id;
-        const options = { getChildPlaces };
-        return from(this.contactViewModelGeneratorService.loadChildren(selected, options)).pipe(
-          map(children => {
-            return this.contactsActions.receiveSelectedContactChildren(children);
-          }),
-          catchError(error => {
-            console.error('Error fetching children', error);
-            return of(this.globalActions.unsetSelected());
-          }),
-        );
-      })
-    );
-  },{ dispatch: false });
-
-  receiveSelectedContactReports = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ContactActionList.receiveSelectedContactChildren),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact)),
-        this.store.pipe(select(Selectors.getForms)),
-      ),
-      exhaustMap(([, selectedContact, forms]) => {
-        return from(this.contactViewModelGeneratorService.loadReports(selectedContact, forms)).pipe(
-          map(reports => {
-            this.contactsActions.receiveSelectedContactReports(reports);
-            return this.contactsActions.loadSelectedContactTargetDoc();
-          }),
-          catchError(error => {
-            console.error('Error loading reports', error);
-            return of(this.globalActions.unsetSelected());
-          }),
-        );
-      })
-    );
-  },{ dispatch: false });
-
-  receiveSelectedContactTargetDoc = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ContactActionList.loadSelectedContactTargetDoc),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact)),
-      ),
-      exhaustMap(([, selectedContact]) => {
-        return from(this.targetAggregateService.getCurrentTargetDoc(selectedContact)).pipe(
-          map(targetDoc => {
-            this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
-            return this.contactsActions.loadSelectedContactSummary();
-          }),
-          catchError(error => {
-            console.error('Error loading target doc', error);
-            return of(this.globalActions.unsetSelected());
-          }),
-        );
-      })
-    );
-  },{ dispatch: false });
-
-  updateSelectedContactSummary = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ContactActionList.loadSelectedContactSummary),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact)),
-      ),
-      exhaustMap(([, selectedContact]) => {
-        this.contactsActions.setContactsLoadingSummary(true);
-        return from(
-          this.contactSummaryService
-            .get(selectedContact.doc, selectedContact.reports, selectedContact.lineage, selectedContact.targetDoc))
-          .pipe(
-            map(summary => {
-              this.contactsActions.setContactsLoadingSummary(false);
-              return this.contactsActions.updateSelectedContactSummary(summary);
-            }),
-            catchError(error => {
-              console.error('Error loading summary', error);
-              return of(this.globalActions.unsetSelected());
-            }),
-          );
-      })
-    );
-  },{ dispatch: false });
-
-  updateSelectedContactsTasks = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ContactActionList.updateSelectedContactSummary),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectedContact)),
-      ),
-      exhaustMap(([, selectedContact]) => {
-        return from(this.tasksForContactService.get(selectedContact)).pipe(
-          map(tasks => {
-            return this.contactsActions.updateSelectedContactsTasks(tasks);
-          }),
-          catchError(error => {
-            console.error('Error loading tasks', error);
-            return of(this.globalActions.unsetSelected());
-          }),
-        );
-      })
-    );
-  },{ dispatch: false });
 }
