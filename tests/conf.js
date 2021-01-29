@@ -21,7 +21,7 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     e2e: [
       '**/report-date-filter.js',
-      '**/sentinel/queue.spec.js',
+      //'**/sentinel/queue.spec.js',
       '**/api/routing.js',
       '**/infodocs.js',
       '**/common.specs.js',
