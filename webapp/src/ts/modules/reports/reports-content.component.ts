@@ -106,6 +106,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    this.reportsActions.setSelectedReports([]);
   }
 
   trackByFn(index, item) {

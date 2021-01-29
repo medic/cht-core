@@ -317,8 +317,8 @@ export class ContactViewModelGeneratorService {
       });
   }
 
-  loadReports(mode, forms) {
-    return this.ngZone.runOutsideAngular(() => this._loadReports(mode, forms));
+  loadReports(model, forms) {
+    return this.ngZone.runOutsideAngular(() => this._loadReports(model, forms));
   }
 
   private _loadReports(model, forms) {

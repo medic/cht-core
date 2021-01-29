@@ -405,7 +405,6 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getMinimalTabs),
-      this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
@@ -414,20 +413,23 @@ export class AppComponent implements OnInit {
       androidAppVersion,
       currentTab,
       minimalTabs,
-      showContent,
       privacyPolicyAccepted,
       showPrivacyPolicy,
       selectMode,
     ]) => {
+      this.replicationStatus = replicationStatus;
+      this.androidAppVersion = androidAppVersion;
+      this.currentTab = currentTab;
+      this.minimalTabs = minimalTabs;
+      this.showPrivacyPolicy = showPrivacyPolicy;
+      this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.selectMode = selectMode;
+    });
+
+    this.store.select(Selectors.getShowContent).subscribe(showContent => {
+      // A child component updates this value in a change detection cycle and triggers change detection errors
       setTimeout(() => {
-        this.replicationStatus = replicationStatus;
-        this.androidAppVersion = androidAppVersion;
-        this.currentTab = currentTab;
-        this.minimalTabs = minimalTabs;
         this.showContent = showContent;
-        this.showPrivacyPolicy = showPrivacyPolicy;
-        this.privacyPolicyAccepted = privacyPolicyAccepted;
-        this.selectMode = selectMode;
       });
     });
   }

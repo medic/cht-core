@@ -307,14 +307,18 @@ export class TargetAggregatesService {
   }
 
   getCurrentTargetDoc(contact?) {
+    return this.ngZone.runOutsideAngular(() => this._getCurrentTargetDoc(contact));
+  }
+
+  private _getCurrentTargetDoc(contact?) {
     if (!contact) {
-      return;
+      return Promise.resolve();
     }
 
     const contactUuid = _isString(contact) ? contact : contact._id;
 
     if (!contactUuid) {
-      return;
+      return Promise.resolve();
     }
 
     return this.settingsService

@@ -231,6 +231,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    this.reportsActions.setSelectedReports([]);
     this.geoHandle && this.geoHandle.cancel();
     // old code checked whether the component is reused before unloading the form
     // this is because AngularJS created the new "controller" before destroying the old one

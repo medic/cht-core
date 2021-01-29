@@ -18,6 +18,8 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 export class ContactsEffects {
   private contactsActions;
   private globalActions;
+  private selectedContact;
+  private forms;
 
   constructor(
     private actions$: Actions,
@@ -31,13 +33,21 @@ export class ContactsEffects {
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
+
+    this.store
+      .select(Selectors.getSelectedContact)
+      .subscribe(selectedContact => this.selectedContact = selectedContact);
+    this.store.select(Selectors.getForms).subscribe(forms => this.forms = forms);
   }
 
   selectContact = createEffect(() => {
     return this.actions$.pipe(
       ofType(ContactActionList.selectContact),
-      filter(({ payload: { id } }) => !!id),
       exhaustMap(({ payload: { id, silent } }) => {
+        if (!id) {
+          return of(this.contactsActions.setSelectedContact(null));
+        }
+
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
           this.contactsActions.setLoadingSelectedContact();
@@ -57,6 +67,87 @@ export class ContactsEffects {
       }),
     );
   }, { dispatch: false });
+  /*
+  private setTitle(selected) {
+    const routeSnapshot = this.routeSnapshotService.get();
+    const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
+      ? this.translateService.instant('contact.deceased.title') : null;
+    const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
+    this.globalActions.setTitle(this.translateService.instant(title));
+  }
+
+  private loadChildren(selected, userFacilityId) {
+    const getChildPlaces = userFacilityId !== selected?.doc?._id;
+    return this.contactViewModelGeneratorService
+      .loadChildren(selected, { getChildPlaces })
+      .then(children => {
+        this.contactsActions.receiveSelectedContactChildren(children);
+      });
+  }
+
+  private loadReports() {
+    return this.contactViewModelGeneratorService
+      .loadReports(this.selectedContact, this.forms)
+      .then(reports => {
+        return this.contactsActions.receiveSelectedContactReports(reports);
+      });
+  }
+
+  private loadTargetDoc() {
+    return this.targetAggregateService
+      .getCurrentTargetDoc(this.selectedContact)
+      .then(targetDoc => {
+        this.contactsActions.receiveSelectedContactTargetDoc(targetDoc);
+      });
+  }
+
+  private loadTasks() {
+    return this.tasksForContactService
+      .get(this.selectedContact)
+      .then(tasks => {
+        this.contactsActions.updateSelectedContactsTasks(tasks);
+      });
+  }
+
+  private loadContactSummary() {
+    const selected = this.selectedContact;
+    return this.contactSummaryService
+      .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
+      .then(summary => {
+        this.contactsActions.setContactsLoadingSummary(false);
+        return this.contactsActions.updateSelectedContactSummary(summary);
+      });
+  }
+
+  setSelectedContact = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ContactActionList.setSelectedContact),
+      withLatestFrom(
+        this.store.pipe(select(Selectors.getSelectedContact)),
+        this.store.pipe(select(Selectors.getUserFacilityId)),
+      ),
+      exhaustMap(([{ payload: { selected } }, previousSelectedContact, userFacilityId]) => {
+        if (!selected) {
+          return []; // return an empty stream if there is no selected contact
+        }
+
+        const refreshing = previousSelectedContact?.doc?._id === selected.id;
+        this.globalActions.settingSelected(refreshing);
+        this.globalActions.clearCancelCallback();
+
+        this.setTitle(selected);
+
+        const loadContact = this
+          .loadChildren(selected, userFacilityId)
+          .then(() => this.loadReports())
+          .then(() => this.loadTargetDoc())
+          .then(() => this.loadContactSummary())
+          .then(() => this.loadTasks());
+
+        return of(loadContact);
+      }),
+    );
+  }, { dispatch: false });*/
 
   setSelectedContact = createEffect(() => {
     return this.actions$.pipe(

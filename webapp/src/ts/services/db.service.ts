@@ -47,18 +47,25 @@ export class DbService {
   }
 
   private outOfZoneEventEmitter(fn, db) {
-    const events = ['change', 'paused', 'active', 'denied', 'complete', 'error'];
+    // complete possible events list is: ['change', 'paused', 'active', 'denied', 'complete', 'error']
+    // omitting `paused` and `active` events, as we have no handlers for these and we don't need to trigger
+    // change detection when they are emitted
+    const events = ['change', 'denied', 'complete', 'error'];
 
     return (...args) => {
       const promiseEmitter:any = new EventEmitter();
       const emitter = this.ngZone.runOutsideAngular(() => fn.apply(db, args));
+      promiseEmitter.isInAngularZone = NgZone.isInAngularZone();
       promiseEmitter.then = emitter.then.bind(emitter);
       promiseEmitter.catch = emitter.catch.bind(emitter);
       promiseEmitter.cancel = emitter.cancel.bind(emitter);
 
       events.forEach(event => {
         emitter.on(event, (...args) => {
-          this.ngZone.run(() => promiseEmitter.emit(event, ...args));
+          if (promiseEmitter.isInAngularZone) {
+            return this.ngZone.run(() => promiseEmitter.emit(event, ...args));
+          }
+          promiseEmitter.emit(event, ...args);
         });
       });
 
