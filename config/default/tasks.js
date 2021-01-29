@@ -191,7 +191,6 @@ module.exports = [
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
-      console.log('dueDate: ', dueDate);
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(
@@ -201,7 +200,7 @@ module.exports = [
   },
 
 
-  // MNCH Child assessment two_mo_referred_yes 3 day
+  // MNCH Child assessment two_mo_referred_yes 3 day (<2 mo)
   {
     name: 'two_mo_referred',
     icon: 'icon-followup-general',
@@ -210,18 +209,120 @@ module.exports = [
     appliesToType: ['child_assessment'],
     actions: [{type: 'report',form: 'child_referral_follow_up'}],
     appliesIf: function(contact, report) {
-      console.log('g_two_mo_assessment.two_mo_referred',getField(report, 'g_two_mo_assessment.two_mo_referred'));
-      // Mark as referral for danger signs of newborns, Go to summary page & end form. Triggers a child referral follow up that starts in 3 days and stays for 3 days
-      return getField(report, 'g_two_mo_assessment.two_mo_referred') === 'yes';
+      if(getField(report, 'g_two_mo_assessment.two_mo_referred') === 'yes') {
+        // Mark as referral for danger signs of newborns, Go to summary page & end form. Triggers a chi referral follow up that starts in 3 days and stays for 3 days
+        console.log('two_mo_referred task');
+        return true;
+      } else {
+        return false;
+      }
     },
     events: [
       {
         id: 'immunization_growth_child_referral_follow_up', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 3, start: 1, end: 3 // todo - get correct end and start days
+        days: 1, start: 3, end: 3 // todo - get correct end and start days
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) { // todo - this doesn't seem to resolve task
-      console.log('dueDate: ', dueDate);
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(
+        contact.reports, ['child_referral_follow_up'], startTime, endTime
+      );
+    }
+  },
+
+  // MNCH Child assessment danger_signs_without_fever 3 day  (>2 mo)
+  {
+    name: 'danger_signs_without_fever',
+    icon: 'icon-followup-general',
+    title: 'Child referral follow up',
+    appliesTo: 'reports',
+    appliesToType: ['child_assessment'],
+    actions: [{type: 'report',form: 'child_referral_follow_up'}],
+    appliesIf: function(contact, report) {
+      if(getField(report, 'danger_signs_without_fever') === 'yes' &&
+        getField(report, 'g_two_mo_assessment.two_mo_referred') !== 'yes') {
+        console.log('danger_signs_without_fever task');
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days danger_signs_without_fever
+        return true;
+      } else {
+        return false;
+      }
+    },
+    events: [
+      {
+        id: 'child_assessment_danger_signs_without_fever', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        days: 3, start: 3, end: 3 // todo - get correct end and start days
+      }
+    ],
+    resolvedIf: function(contact, report, event, dueDate) {
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(
+        contact.reports, ['child_referral_follow_up'], startTime, endTime
+      );
+    }
+  },
+
+  // MNCH Child assessment malaria_fever_length >= 7 days  (>2 mo)
+  {
+    name: 'danger_signs_malaria_fever_length',
+    icon: 'icon-followup-general',
+    title: 'Child referral follow up',
+    appliesTo: 'reports',
+    appliesToType: ['child_assessment'],
+    actions: [{type: 'report',form: 'child_referral_follow_up'}],
+    appliesIf: function(contact, report) {
+      if(getField(report, 'g_malaria.malaria_fever_length') >= 7) {
+        // If fever for 7 days or more--mark it as danger sign  for Urgent Referral.
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+        console.log('malaria_fever_length task');
+        return true;
+      } else {
+        return false;
+      }
+    },
+    events: [
+      {
+        id: 'child_assessment_malaria_fever_length', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        days: 3, start: 3, end: 3 // todo - get correct end and start days
+      }
+    ],
+    resolvedIf: function(contact, report, event, dueDate) {
+      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      const endTime = addDays(dueDate, event.end + 1).getTime();
+      return isFormArraySubmittedInWindow(
+        contact.reports, ['child_referral_follow_up'], startTime, endTime
+      );
+    }
+  },
+
+  // MNCH Child assessment malaria_results_not_done  (>2 mo)
+  {
+    name: 'danger_signs_malaria_results_not_done',
+    icon: 'icon-followup-general',
+    title: 'Child referral follow up',
+    appliesTo: 'reports',
+    appliesToType: ['child_assessment'],
+    actions: [{type: 'report',form: 'child_referral_follow_up'}],
+    appliesIf: function(contact, report) {
+      if(getField(report, 'g_malaria.malaria_results') >= 'not_done') { // todo - this isn't right metric to check for - see design doc O26
+        // Rapid Malaria Tests Results - if "Not done" - Capture as danger sign for referral
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+        console.log('malaria_results not done task');
+        return true;
+      } else {
+        return false;
+      }
+    },
+    events: [
+      {
+        id: 'child_assessment_malaria_results_not_done', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        days: 3, start: 3, end: 3 // todo - get correct end and start days
+      }
+    ],
+    resolvedIf: function(contact, report, event, dueDate) {
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(
