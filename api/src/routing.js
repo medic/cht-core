@@ -188,7 +188,6 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    logger.warn('hoooolaaaaa 22');
     res.sendFile(path.join(extractedResourceDirectory, 'index.html')); // Webapp's index - entry point
   }
 });
