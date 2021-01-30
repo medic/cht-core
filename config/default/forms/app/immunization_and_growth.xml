@@ -300,7 +300,7 @@
             <value>Exclusive breastfeeding</value>
           </text>
           <text id="/immunization_and_growth/g_feeding_method/feeding_method_a/feeding_method_complimentary:label">
-            <value>Complimentary feeding</value>
+            <value>Complementary feeding</value>
           </text>
           <text id="/immunization_and_growth/g_feeding_method/feeding_method_a/feeding_method_other:label">
             <value>Other</value>
@@ -384,7 +384,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_vit_a:label">
-            <value>Did the child receive Vitamin A supplimentation?</value>
+            <value>Did the child receive Vitamin A supplement?</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed/no:label">
             <value>No</value>
@@ -4302,7 +4302,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-26_16-01">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-29_15-47">
           <inputs>
             <meta>
               <location>

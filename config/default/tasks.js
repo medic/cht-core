@@ -48,6 +48,7 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
   return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
 }
 
+// todo - verify events.ID nomenclature
 module.exports = [
 
   // MNCH Immunization and Growth follow up 3 days
@@ -59,17 +60,16 @@ module.exports = [
     appliesToType: ['immunization_and_growth'],
     actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
     appliesIf: function(contact, report) {
-      // todo - use this form or a different one for "urgent referral"? "If any danger sign marked triggers an urgent referral follow up form that"
       // Trigger a immunization follow up form 3 days from the selected date
       return parseInt(getField(report, 'g_missed_vaccine_details.missed_vaccine_date'))  > 0;
     },
     events: [
       {
-        id: 'immunization_growth_follow_up_is_set_missed_vaccine_date_3', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        id: 'immunization_growth_follow_up_is_set_missed_vaccine_date_3',
         dueDate: function (event, contact, report) {
           return getDateISOLocal(getField(report, 'g_missed_vaccine_details.missed_vaccine_date'));
         },
-        start: 3, end: 3 // todo - get correct end and start days
+        start: 3, end: 3
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
@@ -96,11 +96,11 @@ module.exports = [
     },
     events: [
       {
-        id: 'immunization_growth_follow_up_is_set_deworm_next_date_3', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        id: 'immunization_growth_follow_up_is_set_deworm_next_date_3',
         dueDate: function (event, contact, report) {
           return getDateISOLocal(getField(report, 'g_deworming.deworm_next_date'));
         },
-        start: 3, end: 3 // todo - get correct end and start days
+        start: 3, end: 3
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
@@ -127,11 +127,11 @@ module.exports = [
     },
     events: [
       {
-        id: 'immunization_growth_follow_up_is_set_next_appointment_date_3', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        id: 'immunization_growth_follow_up_is_set_next_appointment_date_3',
         dueDate: function (event, contact, report) {
           return getDateISOLocal(getField(report, 'g_next_appointment.next_appointment_date'));
         },
-        start: 3, end: 3 // todo - get correct end and start days
+        start: 3, end: 3
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
@@ -158,9 +158,9 @@ module.exports = [
     },
     events: [
       {
-        id: 'immunization_growth_follow_up_is_set_developmental_milestones_7', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
+        id: 'immunization_growth_follow_up_is_set_developmental_milestones_7',
         dueDate: function (event, contact, report) { return getDateISOLocal(getField(report, 'g_developmental_milestones.developmental_next_assignment_date')); },
-        start: 7, end: 3 // todo - get correct end and start days
+        start: 7, end: 3
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
@@ -174,20 +174,20 @@ module.exports = [
 
   // MNCH Immunization and Growth follow up child_referral_follow_up 1 day
   {
-    name: 'immunization_growth_child_referral_follow_up',
+    name: 'immunization_growth_any_danger',
     icon: 'icon-followup-general',
     title: 'Child referral follow up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
     actions: [{type: 'report',form: 'child_referral_follow_up'}],
     appliesIf: function(contact, report) {
-      // Trigger a child development referral follow up task 21days from the  reported_date. The task should stay for 3 more days
+      // If any danger sign marked triggers an "Child referral follow up" form that shows up the next day of the reported day
       return getField(report, 'any_danger') === 'yes';
     },
     events: [
       {
-        id: 'immunization_growth_child_referral_follow_up', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 1, start: 1, end: 3 // todo - get correct end and start days
+        id: 'immunization_growth_any_danger',
+        days: 1, start: 1, end: 3
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
@@ -200,84 +200,79 @@ module.exports = [
   },
 
 
-  // MNCH Child assessment two_mo_referred_yes 3 day (<2 mo)
+  // MNCH Child assessment child_referral_follow_up_3day
   {
-    name: 'two_mo_referred',
+    name: 'child_referral_follow_up_3day',
     icon: 'icon-followup-general',
     title: 'Child referral follow up',
     appliesTo: 'reports',
     appliesToType: ['child_assessment'],
     actions: [{type: 'report',form: 'child_referral_follow_up'}],
     appliesIf: function(contact, report) {
-      if(getField(report, 'g_two_mo_assessment.two_mo_referred') === 'yes') {
-        // Mark as referral for danger signs of newborns, Go to summary page & end form. Triggers a chi referral follow up that starts in 3 days and stays for 3 days
-        console.log('two_mo_referred task');
-        return true;
-      } else {
-        return false;
-      }
-    },
-    events: [
-      {
-        id: 'immunization_growth_child_referral_follow_up', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 1, start: 3, end: 3 // todo - get correct end and start days
-      }
-    ],
-    resolvedIf: function(contact, report, event, dueDate) { // todo - this doesn't seem to resolve task
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
-      const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(
-        contact.reports, ['child_referral_follow_up'], startTime, endTime
-      );
-    }
-  },
+      if(
+        getField(report, 'g_two_mo_assessment.two_mo_referred') === 'yes' ||
+        getField(report, 'danger_signs_without_fever') === 'yes' ||
+        getField(report, 'g_malaria.malaria_fever_length') >= 7 ||
+        getField(report, 'g_malaria.malaria_results') === 'not_done' ||
+        getField(report, 'receive_malaria_treatment') === 'yes' ||
+        getField(report, 'receive_fever_treatment') === 'yes' ||
+        getField(report, 'g_cough.cough_time') >= 14 ||
+        getField(report, 'fast_breathing_child') === 'yes' ||
+        getField(report, 'fast_breathing_person') === 'yes' ||
+        getField(report, 'g_diarrhea.diarrhea_last') >= 14 ||
+        getField(report, 'g_diarrhea.diarrhea_blood') === 'yes'  ||
+        (
+          getField(report, 'g_diarrhea.diarrhea_last') < 14 &&
+          getField(report, 'g_diarrhea.diarrhea_blood') === 'no'
+        ) ||
+        getField(report, 'g_malnutrition.malnutrition_muac_color') === 'red' ||
+        getField(report, 'g_malnutrition.malnutrition_muac_color') === 'yellow' ||
+        getField(report, 'g_malnutrition.malnutrition_swollen_feet') === 'yes'
+      ) {
+        // Mark as referral for danger signs of newborns, Go to summary page & end form. Triggers a chi referral
+        // follow up that starts in 3 days and stays for 3 days
 
-  // MNCH Child assessment danger_signs_without_fever 3 day  (>2 mo)
-  {
-    name: 'danger_signs_without_fever',
-    icon: 'icon-followup-general',
-    title: 'Child referral follow up',
-    appliesTo: 'reports',
-    appliesToType: ['child_assessment'],
-    actions: [{type: 'report',form: 'child_referral_follow_up'}],
-    appliesIf: function(contact, report) {
-      if(getField(report, 'danger_signs_without_fever') === 'yes' &&
-        getField(report, 'g_two_mo_assessment.two_mo_referred') !== 'yes') {
-        console.log('danger_signs_without_fever task');
         // Trigger a child referral follow up that starts in 3 days and stays for 3 days danger_signs_without_fever
-        return true;
-      } else {
-        return false;
-      }
-    },
-    events: [
-      {
-        id: 'child_assessment_danger_signs_without_fever', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 3, start: 3, end: 3 // todo - get correct end and start days
-      }
-    ],
-    resolvedIf: function(contact, report, event, dueDate) {
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
-      const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(
-        contact.reports, ['child_referral_follow_up'], startTime, endTime
-      );
-    }
-  },
 
-  // MNCH Child assessment malaria_fever_length >= 7 days  (>2 mo)
-  {
-    name: 'danger_signs_malaria_fever_length',
-    icon: 'icon-followup-general',
-    title: 'Child referral follow up',
-    appliesTo: 'reports',
-    appliesToType: ['child_assessment'],
-    actions: [{type: 'report',form: 'child_referral_follow_up'}],
-    appliesIf: function(contact, report) {
-      if(getField(report, 'g_malaria.malaria_fever_length') >= 7) {
         // If fever for 7 days or more--mark it as danger sign  for Urgent Referral.
         // Trigger a child referral follow up that starts in 3 days and stays for 3 days
-        console.log('malaria_fever_length task');
+
+        // Rapid Malaria Tests Results - if "Not done" - Capture as danger sign for referral
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+
+        // Trigger: If fever for less than 7 days AND RDT results-Positive trigger a
+        // child treatment follow up that show up in 3 and 6 days. the tasks should stay for 3 days
+
+        // Trigger: If fever for less than 7 days AND RDT-Negative/Not done trigger a child treatment
+        // follow up that show up in 3 and 6 days. the tasks should stay for 3 days
+
+        // Have you referred ${patient_name} for malaria test? Refer child to a health facility for malaria test
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+
+        // How long has this cough lasted? If 14 days or more---mark it as a danger sign for Urgent Referral
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+
+        // How many breaths per minute? if   integer => 50bpm and age is 2 to 12months If yes--mark it as danger
+        // sign  for Urgent Referral.
+        // if  integer =>40bpm and age is >12months upto 5 years If yes--mark it as danger sign  for Urgent Referral.
+        // if integer>24bpm and age is more than 5 years
+
+        // How long has the diarrhea lasted? If  14 days or more--mark it as danger sign  for Urgent Referral
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+
+        // Is there blood in the diarrhea? If yes--mark it as danger sign  for Urgent Referral.
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+
+        // If diarrhea for less than14 days AND No blood in diarrhea trigger a child treatment follow
+        // up that show up in 3 and 6 days. the tasks should stay for 3 days
+
+        // If red MUAC trigger a malnutrition referral follow up that starts in 3 days and stays for 3 days
+
+        // If yellow MUAC trigger a child treatment follow up that show up in 3 and 6 days. the tasks should stay for 3 days
+
+        // Swelling of both feet of the child? If yes--mark it as danger sign  for Urgent Referral.
+        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
+        console.log('child_referral_follow_up_3day task');
         return true;
       } else {
         return false;
@@ -285,8 +280,8 @@ module.exports = [
     },
     events: [
       {
-        id: 'child_assessment_malaria_fever_length', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 3, start: 3, end: 3 // todo - get correct end and start days
+        id: 'immunization_growth_child_referral_follow_up',
+        days: 3, start: 3, end: 3
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
@@ -298,19 +293,47 @@ module.exports = [
     }
   },
 
-  // MNCH Child assessment malaria_results_not_done  (>2 mo)
+  // MNCH Child assessment child_referral_follow_up_6day
   {
-    name: 'danger_signs_malaria_results_not_done',
+    name: 'child_referral_follow_up_6day',
     icon: 'icon-followup-general',
     title: 'Child referral follow up',
     appliesTo: 'reports',
     appliesToType: ['child_assessment'],
     actions: [{type: 'report',form: 'child_referral_follow_up'}],
     appliesIf: function(contact, report) {
-      if(getField(report, 'g_malaria.malaria_results') >= 'not_done') { // todo - this isn't right metric to check for - see design doc O26
-        // Rapid Malaria Tests Results - if "Not done" - Capture as danger sign for referral
-        // Trigger a child referral follow up that starts in 3 days and stays for 3 days
-        console.log('malaria_results not done task');
+      if(
+        getField(report, 'receive_malaria_treatment') === 'yes' ||
+        getField(report, 'receive_fever_treatment') === 'yes' ||
+        getField(report, 'g_cough.cough_time') < 14 ||
+        (
+          getField(report, 'fast_breathing_person')  === 'yes'  &&
+          getField(report, 'g_cough.cough_time')  < 14
+        ) ||
+        (
+          getField(report, 'g_diarrhea.diarrhea_last') < 14 &&
+          getField(report, 'g_diarrhea.diarrhea_blood') === 'no'
+        ) ||
+        getField(report, 'g_malnutrition.malnutrition_muac_color') === 'yellow'
+      ) {
+        // Trigger: If fever for less than 7 days AND RDT results-Positive trigger a
+        // child treatment follow up that show up in 3 and 6 days. the tasks should stay for 3 days
+
+        // Trigger: If fever for less than 7 days AND RDT-Negative/Not done trigger a child treatment
+        // follow up that show up in 3 and 6 days. the tasks should stay for 3 days
+
+        // How long has this cough lasted? If cough less than 14 days trigger a child treatment follow up that
+        // show up in 3 and 6 days. the tasks should stay for 3 days
+
+        // If cough for less than 14 days AND Fast Breathing trigger a child treatment follow up that show up in 3
+        // and 6 days. the tasks should stay for 3 days
+
+        // If diarrhea for less than14 days AND No blood in diarrhea trigger a child treatment follow up that show up
+        // in 3 and 6 days. the tasks should stay for 3 days
+
+        // If yellow MUAC trigger a child treatment follow up that show up in 3 and 6 days. the tasks should
+        // stay for 3 days
+        console.log('child_referral_follow_up_6day task');
         return true;
       } else {
         return false;
@@ -318,8 +341,8 @@ module.exports = [
     },
     events: [
       {
-        id: 'child_assessment_malaria_results_not_done', // todo - verify ID nomenclature and dedupe w/ other calls to immunization_growth_follow_up
-        days: 3, start: 3, end: 3 // todo - get correct end and start days
+        id: 'child_assessment_malaria_results_not_done_receive_fever_treatment2',
+        days: 6, start: 3, end: 3 // todo - this doesn't show up in "2 weeks" which I think it should...
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
