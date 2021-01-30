@@ -342,7 +342,6 @@ describe('Contacts effects', () => {
     let unsetSelected;
 
     beforeEach(() => {
-      updateSelectedContactsTasks = sinon.stub(ContactsActions.prototype, 'updateSelectedContactsTasks');
       setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
       updateSelectedContactSummary = sinon.stub(ContactsActions.prototype, 'updateSelectedContactSummary');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
