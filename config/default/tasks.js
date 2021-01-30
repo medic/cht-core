@@ -280,7 +280,7 @@ module.exports = [
     },
     events: [
       {
-        id: 'immunization_growth_child_referral_follow_up',
+        id: 'child_referral_follow_up_3day',
         days: 3, start: 3, end: 3
       }
     ],
@@ -341,7 +341,7 @@ module.exports = [
     },
     events: [
       {
-        id: 'child_assessment_malaria_results_not_done_receive_fever_treatment2',
+        id: 'child_referral_follow_up_6day',
         days: 6, start: 3, end: 3 // todo - this doesn't show up in "2 weeks" which I think it should...
       }
     ],
