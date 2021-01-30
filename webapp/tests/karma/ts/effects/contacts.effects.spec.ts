@@ -337,7 +337,6 @@ describe('Contacts effects', () => {
   });
 
   describe('updateSelectedContactSummary', () => {
-    let updateSelectedContactsTasks;
     let setContactsLoadingSummary;
     let updateSelectedContactSummary;
     let unsetSelected;
