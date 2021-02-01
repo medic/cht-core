@@ -147,7 +147,7 @@ const _globalReducer = createReducer(
   on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
     return { ...state, cancelCallback };
   }),
-  on(Actions.setLoadingSubActionbar, (state, { payload: { loading } }) => {
+  on(Actions.setLoadingSubActionBar, (state, { payload: { loading } }) => {
     return { ...state, loadingSubActionBar: loading };
   }),
   on(Actions.setUnreadCount, (state, { payload: { unreadCount } }) => {
