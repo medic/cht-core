@@ -57,10 +57,8 @@ export class ContactsEffects {
           this.contactsActions.setContactsLoadingSummary(true);
         }
 
-        const refreshing = this.selectedContact?._id === id;
-
         const loadContact = this
-          .loadContact(id, refreshing)
+          .loadContact(id)
           .then(() => this.loadChildren(userFacilityId))
           .then(() => this.loadReports(forms))
           .then(() => this.loadTargetDoc())
@@ -88,11 +86,11 @@ export class ContactsEffects {
     this.globalActions.setTitle(this.translateService.instant(title));
   }
 
-  private loadContact(id, refreshing) {
+  private loadContact(id) {
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
       .then(model => {
-        this.globalActions.settingSelected(refreshing);
+        this.globalActions.settingSelected();
         this.contactsActions.setSelectedContact(model);
         this.setTitle(model);
       });
