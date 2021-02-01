@@ -213,7 +213,7 @@ describe('Reports effects', () => {
       expect(markReportRead.args[0]).to.deep.equal(['report']);
       expect(setRightActionBar.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
-      expect(settingSelected.args[0]).to.deep.equal([0]);
+      expect(settingSelected.args[0]).to.deep.equal([]);
     });
 
     it('should call correct actions when not in select mode and refreshing', () => {
@@ -241,7 +241,7 @@ describe('Reports effects', () => {
       expect(markReportRead.args[0]).to.deep.equal(['report']);
       expect(setRightActionBar.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
-      expect(settingSelected.args[0]).to.deep.equal([true]);
+      expect(settingSelected.args[0]).to.deep.equal([]);
     });
   });
 
@@ -718,7 +718,7 @@ describe('Reports effects', () => {
         },
       ]]);
       expect(settingSelected.callCount).to.equal(1);
-      expect(settingSelected.args[0]).to.deep.equal([true]);
+      expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setRightActionBar.callCount).to.equal(1);
       expect(setRightActionBar.args[0]).to.deep.equal([]);
     }));

@@ -151,10 +151,10 @@ describe('Contacts effects', () => {
       expect(setContactsLoadingSummary.callCount).to.equal(2);
       expect(setContactsLoadingSummary.args).to.deep.equal([[true], [false]]);
       expect(settingSelected.callCount).to.equal(1);
-      expect(settingSelected.args[0]).to.deep.equal([false]);
+      expect(settingSelected.args[0]).to.deep.equal([]);
     });
 
-    it('should load the contact when silent and refreshing', async () => {
+    it('should load the contact when silent', async () => {
       store.overrideSelector(Selectors.getSelectedContact, { _id: 'contactid' }); // same selected contact
       store.refreshState();
 
@@ -171,7 +171,7 @@ describe('Contacts effects', () => {
       expect(setLoadingShowContent.callCount).to.equal(0);
       expect(setLoadingSelectedContact.callCount).to.equal(0);
       expect(settingSelected.callCount).to.equal(1);
-      expect(settingSelected.args[0]).to.deep.equal([true]);
+      expect(settingSelected.args[0]).to.deep.equal([]);
     });
 
     it('should handle missing contacts', fakeAsync(() => {
