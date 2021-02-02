@@ -5,38 +5,149 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/child_referral_follow_up/group_assessment/current_condition/dead:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:jr:constraintMsg">
+            <value>Enter a date in the next 7 days</value>
+          </text>
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:label">
+            <value>Date for the next treatment follow up</value>
+          </text>
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:jr:constraintMsg">
+            <value>Enter a date in the next 7 days</value>
+          </text>
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:label">
+            <value>Date for the next re-referral follow up</value>
+          </text>
+          <text id="/child_referral_follow_up/g_follow_up_date:label">
+            <value>Follow Up date</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/referred:label">
+            <value>Referred</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/taught:label">
+            <value>Taught Key health messages</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/treated:label">
+            <value>Treated</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions:label">
+            <value>Select all the actions that you have taken</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/died:label">
+            <value>Died</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/improved:label">
+            <value><output value=" /child_referral_follow_up/patient_name "/> Improved</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/no_transport:label">
+            <value>Lack of transport fee</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/other:label">
+            <value>Other</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility:label">
+            <value>Why did <output value=" /child_referral_follow_up/patient_name "/> not go to the health facility as referred?</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility_other:label">
+            <value>Other</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral:label">
+            <value>Missed Referral Details</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/dead:label">
             <value>Dead</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/improving:label">
-            <value>Improving</value>
-          </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/no_change:label">
-            <value>No change</value>
-          </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/sicker:label">
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/getting_sicker:label">
             <value>Getting sicker</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition:label">
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/improving:label">
+            <value>Improving</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/no_change:label">
+            <value>No change</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition:label">
             <value>Select the statement that best describes <output value=" /child_referral_follow_up/patient_name "/> condition now</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/home:label">
-            <value>At the <output value=" /child_referral_follow_up/patient_name "/> home</value>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:jr:constraintMsg">
+            <value>Enter a date in the past</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/phone:label">
-            <value>By phone</value>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:label">
+            <value>Date of Death of <output value=" /child_referral_follow_up/patient_name "/></value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method:label">
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/by_phone:label">
+            <value>By Phone</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/in_person:label">
+            <value>In person</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method:label">
             <value>How are you following up?</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment:label">
+          <text id="/child_referral_follow_up/g_person_condition:label">
             <value>Person's Condition</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/actions:label">
+            <value>Actions taken by the receiving officer</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/clinical_officer:label">
+            <value>Clinical Officer</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/doctor:label">
+            <value>Doctor</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/nurse:label">
+            <value>Nurse</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:jr:constraintMsg">
+            <value>Enter a date in the past</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:label">
+            <value>Profession of the attending officer</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:jr:constraintMsg">
+            <value>Enter a date in the past</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:label">
+            <value>When <output value=" /child_referral_follow_up/patient_name "/> did attend the clinic visit?</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/no:label">
+            <value>No</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no:label">
+            <value>Did <output value=" /child_referral_follow_up/patient_name "/> go to the health facility as referred?</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/instructions:label">
+            <value>Instructions for the CHW</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/name_of_facility:label">
+            <value>Name of the health facility attended</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info:label">
+            <value>Referral Information</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment/treatment_description:label">
+            <value>Describe treatment given</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment:label">
+            <value>Treatment</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments/treatment_comments:label">
+            <value>Provide any Comments</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments:label">
+            <value>Comments</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:hint">
             <value>Select a person from the list</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:label">
             <value>Patient ID</value>
+          </text>
+          <text id="/child_referral_follow_up/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/name:label">
             <value>Patient Name</value>
@@ -68,6 +179,9 @@
           <text id="/child_referral_follow_up/inputs/contact/patient_id:label">
             <value>Medic ID</value>
           </text>
+          <text id="/child_referral_follow_up/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
           <text id="/child_referral_follow_up/inputs/contact:label">
             <value>Contact</value>
           </text>
@@ -83,45 +197,202 @@
           <text id="/child_referral_follow_up/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit1:label">
-            <value>Child referral follow up&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          <text id="/child_referral_follow_up/summary/summary_age:label">
+            <value><output value=" /child_referral_follow_up/display_age "/></value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit2:label">
-            <value>Click the Submit button at the bottom of the form.</value>
+          <text id="/child_referral_follow_up/summary/summary_cmments:label">
+            <value><output value=" /child_referral_follow_up/g_treatment_domments/treatment_comments "/></value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_complete:label">
+            <value>Referral completed</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_descr:label">
+            <value><output value=" /child_referral_follow_up/g_treatment/treatment_description "/></value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_details:label">
+            <value>Person Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up1:label">
+            <value>The date for the next treatment follow up for <output value=" /child_referral_follow_up/patient_name "/> is <output value=" /child_referral_follow_up/g_follow_up_date/follow_up_date "/></value></text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up2:label">
+            <value>The date for the next referral follow up for <output value=" /child_referral_follow_up/patient_name "/> is <output value=" /child_referral_follow_up/g_follow_up_date/re_referral_date "/></value></text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up:label">
+            <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_info:label">
+            <value>Referral Follow Up Information&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr1:label">
+            <value>You must call the health facility to inform them of this referral immediately. It is preferable that you accompany <output value=" /child_referral_follow_up/patient_name "/> to the nearest health facility</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr2:label">
+            <value>Be sure to submit a death report for <output value=" /child_referral_follow_up/patient_name "/> to record the death reports and inform the CHW to confirm the death</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr:label">
+            <value>Key Instruction&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_name:label">
+            <value><output value=" /child_referral_follow_up/patient_name "/></value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_not_complete:label">
+            <value>Referal not completed</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral1:label">
+            <value>Referral Follow Up Report&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral2:label">
+            <value>Be sure you submit to complete this action</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral:label">
+            <value>Refer immediately to health facility because the condition of the patient has not improved&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
           </text>
         </translation>
         <translation lang="fr">
-          <text id="/child_referral_follow_up/group_assessment/current_condition/dead:label">
+          <text id="/child_referral_follow_up/display_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/improving:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/no_change:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/sicker:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/home:label">
+          <text id="/child_referral_follow_up/g_follow_up_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/phone:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/referred:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/taught:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/treated:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/died:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/improved:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/no_transport:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility_other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/dead:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/getting_sicker:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/improving:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/no_change:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/by_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/in_person:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/clinical_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/doctor:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/nurse:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/instructions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/name_of_facility:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment/treatment_description:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments/treatment_comments:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/inputs/contact/date_of_birth:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/name:label">
@@ -154,6 +425,9 @@
           <text id="/child_referral_follow_up/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_referral_follow_up/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/inputs/contact:label">
             <value>-</value>
           </text>
@@ -164,6 +438,15 @@
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_years:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/patient_id:label">
@@ -172,10 +455,55 @@
           <text id="/child_referral_follow_up/patient_name:label">
             <value>../inputs/contact/name</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+          <text id="/child_referral_follow_up/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+          <text id="/child_referral_follow_up/summary/summary_cmments:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_descr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_details:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_not_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/summary:label">
@@ -183,37 +511,151 @@
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/child_referral_follow_up/group_assessment/current_condition/dead:label">
+          <text id="/child_referral_follow_up/display_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/improving:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/no_change:label">
-            <value>-</value>
-          </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/sicker:label">
-            <value>-</value>
-          </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition:label">
-            <value>-</value>
-          </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/home:label">
-            <value>-</value>
-          </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/phone:label">
-            <value>-</value>
-          </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:label">
             <value>yes</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_follow_up_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/referred:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/taught:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/treated:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/died:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/improved:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/no_transport:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility:label">
+            <value>yes</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility_other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/dead:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/getting_sicker:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/improving:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/no_change:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/by_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/in_person:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method:label">
+            <value>yes</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/clinical_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/doctor:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/nurse:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no:label">
+            <value>yes</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/instructions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/name_of_facility:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment/treatment_description:label">
+            <value>yes</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments/treatment_comments:label">
+            <value>yes</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/inputs/contact/date_of_birth:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/name:label">
@@ -244,6 +686,9 @@
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/inputs/contact/sex:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact:label">
@@ -258,16 +703,70 @@
           <text id="/child_referral_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/child_referral_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_years:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/patient_id:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+          <text id="/child_referral_follow_up/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+          <text id="/child_referral_follow_up/summary/summary_cmments:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_descr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_details:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_not_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/summary:label">
@@ -275,37 +774,151 @@
           </text>
         </translation>
         <translation lang="id">
-          <text id="/child_referral_follow_up/group_assessment/current_condition/dead:label">
+          <text id="/child_referral_follow_up/display_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/improving:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/no_change:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/sicker:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/home:label">
+          <text id="/child_referral_follow_up/g_follow_up_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/phone:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/referred:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/taught:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/treated:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/died:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/improved:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/no_transport:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility_other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/dead:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/getting_sicker:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/improving:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/no_change:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/by_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/in_person:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/clinical_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/doctor:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/nurse:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/instructions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/name_of_facility:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment/treatment_description:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments/treatment_comments:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:hint">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/inputs/contact/date_of_birth:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/name:label">
@@ -336,6 +949,9 @@
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/patient_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/inputs/contact/sex:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact:label">
@@ -350,16 +966,70 @@
           <text id="/child_referral_follow_up/inputs:label">
             <value>./source = 'user'</value>
           </text>
+          <text id="/child_referral_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_years:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/patient_id:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+          <text id="/child_referral_follow_up/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+          <text id="/child_referral_follow_up/summary/summary_cmments:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_descr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_details:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_not_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/summary:label">
@@ -367,31 +1037,142 @@
           </text>
         </translation>
         <translation lang="sw">
-          <text id="/child_referral_follow_up/group_assessment/current_condition/dead:label">
+          <text id="/child_referral_follow_up/display_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/improving:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/no_change:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/follow_up_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition/sicker:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/current_condition:label">
+          <text id="/child_referral_follow_up/g_follow_up_date/re_referral_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/home:label">
+          <text id="/child_referral_follow_up/g_follow_up_date:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method/phone:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/referred:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment/followup_method:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/taught:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/group_assessment:label">
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions/treated:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/died:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/improved:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/no_transport:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility/other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral/missed_health_facility_other:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_missed_referral:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/dead:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/getting_sicker:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/improving:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition/no_change:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/current_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/death_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/by_phone:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method/in_person:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition/followup_method:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_person_condition:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/actions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/clinical_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/doctor:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer/nurse:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/attending_officer:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_date:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/health_facility_yes_no:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/instructions:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info/name_of_facility:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_referral_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment/treatment_description:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments/treatment_comments:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/g_treatment_domments:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:hint">
@@ -399,6 +1180,9 @@
           </text>
           <text id="/child_referral_follow_up/inputs/contact/_id:label">
             <value>db-object</value>
+          </text>
+          <text id="/child_referral_follow_up/inputs/contact/date_of_birth:label">
+            <value>-</value>
           </text>
           <text id="/child_referral_follow_up/inputs/contact/name:label">
             <value>-</value>
@@ -430,6 +1214,9 @@
           <text id="/child_referral_follow_up/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_referral_follow_up/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/inputs/contact:label">
             <value>-</value>
           </text>
@@ -442,16 +1229,70 @@
           <text id="/child_referral_follow_up/inputs:label">
             <value>field-list</value>
           </text>
+          <text id="/child_referral_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/patient_age_in_years:label">
+            <value>-</value>
+          </text>
           <text id="/child_referral_follow_up/patient_id:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/patient_name:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit1:label">
+          <text id="/child_referral_follow_up/summary/summary_age:label">
             <value>-</value>
           </text>
-          <text id="/child_referral_follow_up/summary/summary_submit2:label">
+          <text id="/child_referral_follow_up/summary/summary_cmments:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_descr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_details:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_follow_up:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_info:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_instr:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_not_complete:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_referral_follow_up/summary/summary_referral:label">
             <value>-</value>
           </text>
           <text id="/child_referral_follow_up/summary:label">
@@ -460,7 +1301,7 @@
         </translation>
       </itext>
       <instance>
-        <child_referral_follow_up delimiter="#" id="child_referral_follow_up" prefix="J1!child_referral_follow_up!" version="2021-01-29_15-47">
+        <child_referral_follow_up delimiter="#" id="child_referral_follow_up" prefix="J1!child_referral_follow_up!" version="2021-02-02_14-53">
           <inputs>
             <meta>
               <location>
@@ -475,6 +1316,8 @@
             <contact>
               <_id/>
               <patient_id/>
+              <date_of_birth>0</date_of_birth>
+              <sex/>
               <name/>
               <parent>
                 <_id/>
@@ -490,14 +1333,57 @@
             </contact>
           </inputs>
           <patient_name/>
+          <patient_age_in_years tag="hidden">0</patient_age_in_years>
+          <patient_age_in_months tag="hidden">0</patient_age_in_months>
+          <patient_age_in_days tag="hidden"/>
+          <display_age/>
           <patient_id/>
-          <group_assessment>
+          <g_person_condition>
             <followup_method/>
             <current_condition/>
-          </group_assessment>
+            <death_date/>
+          </g_person_condition>
+          <g_referral_info>
+            <health_facility_yes_no/>
+            <health_facility_date/>
+            <attending_officer/>
+            <name_of_facility/>
+            <actions/>
+            <instructions/>
+          </g_referral_info>
+          <g_missed_referral>
+            <missed_health_facility/>
+            <missed_health_facility_other/>
+            <missed_health_actions/>
+          </g_missed_referral>
+          <g_treatment>
+            <treatment_description/>
+          </g_treatment>
+          <g_treatment_domments>
+            <treatment_comments/>
+          </g_treatment_domments>
+          <g_follow_up_date>
+            <follow_up_date/>
+            <re_referral_date/>
+          </g_follow_up_date>
           <summary tag="hidden">
-            <summary_submit1/>
-            <summary_submit2/>
+            <summary_referral1/>
+            <summary_referral2/>
+            <summary_details/>
+            <summary_name/>
+            <summary_age/>
+            <summary_info/>
+            <summary_complete/>
+            <summary_not_complete/>
+            <summary_descr/>
+            <summary_cmments/>
+            <summary_referral/>
+            <summary_instr/>
+            <summary_instr1/>
+            <summary_instr2/>
+            <summary_follow_up/>
+            <summary_follow_up1/>
+            <summary_follow_up2/>
           </summary>
           <meta tag="hidden">
             <instanceID/>
@@ -505,11 +1391,13 @@
         </child_referral_follow_up>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/child_referral_follow_up/inputs" relevant="/source = 'user'"/>
+      <bind nodeset="/child_referral_follow_up/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/child_referral_follow_up/inputs/source" type="string"/>
       <bind nodeset="/child_referral_follow_up/inputs/source_id" type="string"/>
       <bind nodeset="/child_referral_follow_up/inputs/contact/_id" type="db:person"/>
       <bind nodeset="/child_referral_follow_up/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/child_referral_follow_up/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/child_referral_follow_up/inputs/contact/sex" type="string"/>
       <bind nodeset="/child_referral_follow_up/inputs/contact/name" type="string"/>
       <bind nodeset="/child_referral_follow_up/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/child_referral_follow_up/inputs/contact/parent/parent/_id" type="string"/>
@@ -517,11 +1405,63 @@
       <bind nodeset="/child_referral_follow_up/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/child_referral_follow_up/inputs/contact/parent/parent/parent/_id" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/child_referral_follow_up/patient_name" type="string"/>
+      <bind calculate="floor( difference-in-months(  /child_referral_follow_up/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/child_referral_follow_up/patient_age_in_years" type="string"/>
+      <bind calculate="difference-in-months(  /child_referral_follow_up/inputs/contact/date_of_birth , today() )" nodeset="/child_referral_follow_up/patient_age_in_months" type="string"/>
+      <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /child_referral_follow_up/inputs/contact/date_of_birth ) )" nodeset="/child_referral_follow_up/patient_age_in_days" type="string"/>
+      <bind calculate="if( /child_referral_follow_up/patient_age_in_days  &lt; 31, 
+concat( /child_referral_follow_up/patient_age_in_days , ' days old'),
+if( /child_referral_follow_up/patient_age_in_months  &lt; 12, 
+concat( /child_referral_follow_up/patient_age_in_months , ' months old'), 
+concat( /child_referral_follow_up/patient_age_in_years , ' years old')))" nodeset="/child_referral_follow_up/display_age" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/child_referral_follow_up/patient_id" type="string"/>
-      <bind nodeset="/child_referral_follow_up/group_assessment/followup_method" required="true()" type="select1"/>
-      <bind nodeset="/child_referral_follow_up/group_assessment/current_condition" required="true()" type="select1"/>
-      <bind nodeset="/child_referral_follow_up/summary/summary_submit1" readonly="true()" type="string"/>
-      <bind nodeset="/child_referral_follow_up/summary/summary_submit2" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/g_person_condition/followup_method" required="true()" type="select1"/>
+      <bind nodeset="/child_referral_follow_up/g_person_condition/current_condition" required="true()" type="select1"/>
+      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/child_referral_follow_up/g_person_condition/death_date:jr:constraintMsg')" nodeset="/child_referral_follow_up/g_person_condition/death_date" relevant="selected( /child_referral_follow_up/g_person_condition/current_condition , 'dead')" required="true()" type="date"/>
+      <bind nodeset="/child_referral_follow_up/g_referral_info" relevant=" /child_referral_follow_up/g_person_condition/current_condition  != 'dead'"/>
+      <bind nodeset="/child_referral_follow_up/g_referral_info/health_facility_yes_no" required="true()" type="select1"/>
+      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/child_referral_follow_up/g_referral_info/health_facility_date:jr:constraintMsg')" nodeset="/child_referral_follow_up/g_referral_info/health_facility_date" relevant="selected( /child_referral_follow_up/g_person_condition/followup_method , 'yes')" required="true()" type="date"/>
+      <bind jr:constraintMsg="jr:itext('/child_referral_follow_up/g_referral_info/attending_officer:jr:constraintMsg')" nodeset="/child_referral_follow_up/g_referral_info/attending_officer" required="true()" type="select1"/>
+      <bind nodeset="/child_referral_follow_up/g_referral_info/name_of_facility" required="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/g_referral_info/actions" required="false()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/g_referral_info/instructions" required="false()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/g_missed_referral" relevant="selected( /child_referral_follow_up/g_referral_info/health_facility_yes_no , 'no')"/>
+      <bind nodeset="/child_referral_follow_up/g_missed_referral/missed_health_facility" required="true()" type="select1"/>
+      <bind nodeset="/child_referral_follow_up/g_missed_referral/missed_health_facility_other" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_facility , 'other')" required="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/g_missed_referral/missed_health_actions" relevant=" /child_referral_follow_up/g_missed_referral/missed_health_facility  != 'died'" required="true()" type="select"/>
+      <bind nodeset="/child_referral_follow_up/g_treatment" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'treated')"/>
+      <bind nodeset="/child_referral_follow_up/g_treatment/treatment_description" required="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/g_treatment_domments" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'referred')"/>
+      <bind nodeset="/child_referral_follow_up/g_treatment_domments/treatment_comments" required="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/g_follow_up_date" relevant=" /child_referral_follow_up/g_missed_referral/missed_health_actions  != 'taught'"/>
+      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today())) and
+decimal-date-time(.) &lt;= floor(decimal-date-time(today() + 7))" jr:constraintMsg="jr:itext('/child_referral_follow_up/g_follow_up_date/follow_up_date:jr:constraintMsg')" nodeset="/child_referral_follow_up/g_follow_up_date/follow_up_date" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'treated')" required="true()" type="date"/>
+      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today())) and
+decimal-date-time(.) &lt;= floor(decimal-date-time(today() + 7))" jr:constraintMsg="jr:itext('/child_referral_follow_up/g_follow_up_date/re_referral_date:jr:constraintMsg')" nodeset="/child_referral_follow_up/g_follow_up_date/re_referral_date" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'referred')" required="true()" type="date"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_referral1" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_referral2" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_details" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_name" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_age" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_info" readonly="true()" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_complete" readonly="true()" relevant="selected( /child_referral_follow_up/g_referral_info/health_facility_yes_no , 'yes')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_not_complete" readonly="true()" relevant="selected( /child_referral_follow_up/g_referral_info/health_facility_yes_no , 'no')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_descr" readonly="true()" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'referred')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_cmments" readonly="true()" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'treated')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_referral" readonly="true()" relevant="(selected( /child_referral_follow_up/g_person_condition/current_condition , 'no_change') or
+selected( /child_referral_follow_up/g_person_condition/current_condition , 'getting_sicker') ) and 
+ /child_referral_follow_up/g_missed_referral/missed_health_facility  != 'died'" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_instr" readonly="true()" relevant="selected( /child_referral_follow_up/g_person_condition/current_condition , 'no_change') or
+selected( /child_referral_follow_up/g_person_condition/current_condition , 'getting_sicker') or 
+selected( /child_referral_follow_up/g_person_condition/current_condition , 'dead') or
+selected( /child_referral_follow_up/g_missed_referral/missed_health_facility , 'died')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_instr1" readonly="true()" relevant="selected( /child_referral_follow_up/g_person_condition/current_condition , 'no_change') or 
+selected( /child_referral_follow_up/g_person_condition/current_condition , 'getting_sicker')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_instr2" readonly="true()" relevant="selected( /child_referral_follow_up/g_person_condition/current_condition , 'dead') or 
+selected( /child_referral_follow_up/g_missed_referral/missed_health_facility , 'died')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_follow_up" readonly="true()" relevant="selected( /child_referral_follow_up/g_referral_info/health_facility_yes_no , 'no') and
+ /child_referral_follow_up/g_missed_referral/missed_health_actions  != 'taught'" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_follow_up1" readonly="true()" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'treated')" type="string"/>
+      <bind nodeset="/child_referral_follow_up/summary/summary_follow_up2" readonly="true()" relevant="selected( /child_referral_follow_up/g_missed_referral/missed_health_actions , 'referred')" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/child_referral_follow_up/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -545,45 +1485,195 @@
         </group>
       </group>
     </group>
-    <group ref="/child_referral_follow_up/group_assessment">
-      <label ref="jr:itext('/child_referral_follow_up/group_assessment:label')"/>
-      <select1 ref="/child_referral_follow_up/group_assessment/followup_method">
-        <label ref="jr:itext('/child_referral_follow_up/group_assessment/followup_method:label')"/>
+    <group appearance="field-list" ref="/child_referral_follow_up/g_person_condition">
+      <label ref="jr:itext('/child_referral_follow_up/g_person_condition:label')"/>
+      <select1 ref="/child_referral_follow_up/g_person_condition/followup_method">
+        <label ref="jr:itext('/child_referral_follow_up/g_person_condition/followup_method:label')"/>
         <item>
-          <label ref="jr:itext('/child_referral_follow_up/group_assessment/followup_method/home:label')"/>
-          <value>home</value>
+          <label ref="jr:itext('/child_referral_follow_up/g_person_condition/followup_method/in_person:label')"/>
+          <value>in_person</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_referral_follow_up/group_assessment/followup_method/phone:label')"/>
-          <value>phone</value>
+          <label ref="jr:itext('/child_referral_follow_up/g_person_condition/followup_method/by_phone:label')"/>
+          <value>by_phone</value>
         </item>
       </select1>
-      <select1 ref="/child_referral_follow_up/group_assessment/current_condition">
-        <label ref="jr:itext('/child_referral_follow_up/group_assessment/current_condition:label')"/>
+      <select1 ref="/child_referral_follow_up/g_person_condition/current_condition">
+        <label ref="jr:itext('/child_referral_follow_up/g_person_condition/current_condition:label')"/>
         <item>
-          <label ref="jr:itext('/child_referral_follow_up/group_assessment/current_condition/improving:label')"/>
+          <label ref="jr:itext('/child_referral_follow_up/g_person_condition/current_condition/improving:label')"/>
           <value>improving</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_referral_follow_up/group_assessment/current_condition/no_change:label')"/>
+          <label ref="jr:itext('/child_referral_follow_up/g_person_condition/current_condition/no_change:label')"/>
           <value>no_change</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_referral_follow_up/group_assessment/current_condition/sicker:label')"/>
-          <value>sicker</value>
+          <label ref="jr:itext('/child_referral_follow_up/g_person_condition/current_condition/getting_sicker:label')"/>
+          <value>getting_sicker</value>
         </item>
         <item>
-          <label ref="jr:itext('/child_referral_follow_up/group_assessment/current_condition/dead:label')"/>
+          <label ref="jr:itext('/child_referral_follow_up/g_person_condition/current_condition/dead:label')"/>
           <value>dead</value>
         </item>
       </select1>
+      <input ref="/child_referral_follow_up/g_person_condition/death_date">
+        <label ref="jr:itext('/child_referral_follow_up/g_person_condition/death_date:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/child_referral_follow_up/g_referral_info">
+      <label ref="jr:itext('/child_referral_follow_up/g_referral_info:label')"/>
+      <select1 ref="/child_referral_follow_up/g_referral_info/health_facility_yes_no">
+        <label ref="jr:itext('/child_referral_follow_up/g_referral_info/health_facility_yes_no:label')"/>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_referral_info/health_facility_yes_no/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_referral_info/health_facility_yes_no/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/child_referral_follow_up/g_referral_info/health_facility_date">
+        <label ref="jr:itext('/child_referral_follow_up/g_referral_info/health_facility_date:label')"/>
+      </input>
+      <select1 ref="/child_referral_follow_up/g_referral_info/attending_officer">
+        <label ref="jr:itext('/child_referral_follow_up/g_referral_info/attending_officer:label')"/>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_referral_info/attending_officer/nurse:label')"/>
+          <value>nurse</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_referral_info/attending_officer/clinical_officer:label')"/>
+          <value>clinical_officer</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_referral_info/attending_officer/doctor:label')"/>
+          <value>doctor</value>
+        </item>
+      </select1>
+      <input ref="/child_referral_follow_up/g_referral_info/name_of_facility">
+        <label ref="jr:itext('/child_referral_follow_up/g_referral_info/name_of_facility:label')"/>
+      </input>
+      <input ref="/child_referral_follow_up/g_referral_info/actions">
+        <label ref="jr:itext('/child_referral_follow_up/g_referral_info/actions:label')"/>
+      </input>
+      <input ref="/child_referral_follow_up/g_referral_info/instructions">
+        <label ref="jr:itext('/child_referral_follow_up/g_referral_info/instructions:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/child_referral_follow_up/g_missed_referral">
+      <label ref="jr:itext('/child_referral_follow_up/g_missed_referral:label')"/>
+      <select1 ref="/child_referral_follow_up/g_missed_referral/missed_health_facility">
+        <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_facility:label')"/>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_facility/improved:label')"/>
+          <value>improved</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_facility/no_transport:label')"/>
+          <value>no_transport</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_facility/died:label')"/>
+          <value>died</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_facility/other:label')"/>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/child_referral_follow_up/g_missed_referral/missed_health_facility_other">
+        <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_facility_other:label')"/>
+      </input>
+      <select ref="/child_referral_follow_up/g_missed_referral/missed_health_actions">
+        <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_actions:label')"/>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_actions/referred:label')"/>
+          <value>referred</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_actions/taught:label')"/>
+          <value>taught</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/child_referral_follow_up/g_missed_referral/missed_health_actions/treated:label')"/>
+          <value>treated</value>
+        </item>
+      </select>
+    </group>
+    <group appearance="field-list" ref="/child_referral_follow_up/g_treatment">
+      <label ref="jr:itext('/child_referral_follow_up/g_treatment:label')"/>
+      <input ref="/child_referral_follow_up/g_treatment/treatment_description">
+        <label ref="jr:itext('/child_referral_follow_up/g_treatment/treatment_description:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/child_referral_follow_up/g_treatment_domments">
+      <label ref="jr:itext('/child_referral_follow_up/g_treatment_domments:label')"/>
+      <input ref="/child_referral_follow_up/g_treatment_domments/treatment_comments">
+        <label ref="jr:itext('/child_referral_follow_up/g_treatment_domments/treatment_comments:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/child_referral_follow_up/g_follow_up_date">
+      <label ref="jr:itext('/child_referral_follow_up/g_follow_up_date:label')"/>
+      <input ref="/child_referral_follow_up/g_follow_up_date/follow_up_date">
+        <label ref="jr:itext('/child_referral_follow_up/g_follow_up_date/follow_up_date:label')"/>
+      </input>
+      <input ref="/child_referral_follow_up/g_follow_up_date/re_referral_date">
+        <label ref="jr:itext('/child_referral_follow_up/g_follow_up_date/re_referral_date:label')"/>
+      </input>
     </group>
     <group appearance="field-list summary" ref="/child_referral_follow_up/summary">
-      <input appearance="h1 yellow" ref="/child_referral_follow_up/summary/summary_submit1">
-        <label ref="jr:itext('/child_referral_follow_up/summary/summary_submit1:label')"/>
+      <input appearance="h1 yellow" ref="/child_referral_follow_up/summary/summary_referral1">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_referral1:label')"/>
       </input>
-      <input appearance="h2" ref="/child_referral_follow_up/summary/summary_submit2">
-        <label ref="jr:itext('/child_referral_follow_up/summary/summary_submit2:label')"/>
+      <input appearance="h2" ref="/child_referral_follow_up/summary/summary_referral2">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_referral2:label')"/>
+      </input>
+      <input appearance="h1 green" ref="/child_referral_follow_up/summary/summary_details">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_details:label')"/>
+      </input>
+      <input appearance="center" ref="/child_referral_follow_up/summary/summary_name">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_name:label')"/>
+      </input>
+      <input appearance="center" ref="/child_referral_follow_up/summary/summary_age">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_age:label')"/>
+      </input>
+      <input appearance="h1 blue" ref="/child_referral_follow_up/summary/summary_info">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_info:label')"/>
+      </input>
+      <input appearance="center" ref="/child_referral_follow_up/summary/summary_complete">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_complete:label')"/>
+      </input>
+      <input appearance="center" ref="/child_referral_follow_up/summary/summary_not_complete">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_not_complete:label')"/>
+      </input>
+      <input ref="/child_referral_follow_up/summary/summary_descr">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_descr:label')"/>
+      </input>
+      <input ref="/child_referral_follow_up/summary/summary_cmments">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_cmments:label')"/>
+      </input>
+      <input appearance="h1 red" ref="/child_referral_follow_up/summary/summary_referral">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_referral:label')"/>
+      </input>
+      <input appearance="h1 blue" ref="/child_referral_follow_up/summary/summary_instr">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_instr:label')"/>
+      </input>
+      <input appearance="li" ref="/child_referral_follow_up/summary/summary_instr1">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_instr1:label')"/>
+      </input>
+      <input appearance="li" ref="/child_referral_follow_up/summary/summary_instr2">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_instr2:label')"/>
+      </input>
+      <input appearance="h1 lime" ref="/child_referral_follow_up/summary/summary_follow_up">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_follow_up:label')"/>
+      </input>
+      <input ref="/child_referral_follow_up/summary/summary_follow_up1">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_follow_up1:label')"/>
+      </input>
+      <input ref="/child_referral_follow_up/summary/summary_follow_up2">
+        <label ref="jr:itext('/child_referral_follow_up/summary/summary_follow_up2:label')"/>
       </input>
     </group>
   </h:body>
