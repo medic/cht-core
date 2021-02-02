@@ -600,7 +600,7 @@ module.exports = {
     return request(options, { debug });
   },
 
-  requestOnTestDbNative: (options, debug) => {
+  requestOnTestDbNative: async (options, debug) => {
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -611,7 +611,7 @@ module.exports = {
     if (pathAndReqType !== '/GET') {
       options.path = '/' + constants.DB_NAME + (options.path || '');
     }
-    return requestNative(options, { debug });
+    return await requestNative(options, { debug });
   },
 
   requestOnTestMetaDb: (options, debug) => {
