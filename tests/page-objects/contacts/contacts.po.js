@@ -32,7 +32,6 @@ module.exports = {
   contactName,
   center: () => element(by.css('.card h2')),
   name: () =>  element(by.css('.children h4 span')),
-  getSubmitButton: () => submitButton,
   selectLHSRowByText: async text => {
     module.exports.search(text);
     helper.waitUntilReady(rows.last());
