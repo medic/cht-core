@@ -63,7 +63,7 @@ describe('Contacts Reducer', () => {
         filters: {},
         selected: null,
         loadingSelectedChildren: false,
-        loadingSelectedContacts: false,
+        loadingSelectedReports: false,
         loadingSummary: false,
       });
     });

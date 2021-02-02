@@ -10,7 +10,7 @@ const initialState = {
   selected: null,
   filters: {},
   loadingSelectedChildren: false,
-  loadingSelectedContacts: false,
+  loadingSelectedReports: false,
   loadingSummary: false,
 };
 
