@@ -130,7 +130,7 @@ const report = {
 
 describe('sms-gateway api', () => {
   const pollSmsApi = body => {
-    return utils.request({
+    return utils.requestNative({
       method: 'POST',
       path: '/api/sms',
       body: body
@@ -139,7 +139,7 @@ describe('sms-gateway api', () => {
 
   describe('- gateway submits new WT sms messages', () => {
     beforeAll( async () => await helper.waitForAppToLoad(12000,10000));
-    beforeEach(done => {
+    beforeEach(async () => {
       const body = {
         messages: [
           {
@@ -149,14 +149,12 @@ describe('sms-gateway api', () => {
           },
         ],
       };
-      pollSmsApi(body)
-        .then(done)
-        .catch(done.fail);
-      helper.handleUpdateModal();
+      await pollSmsApi(body);
+      await helper.handleUpdateModal();
     });
-    afterEach(helper.handleUpdateModal);
+    afterEach(async () => { await helper.handleUpdateModal});
 
-    it('- shows content', async () => {
+    it('shows content', async () => {
       await helper.waitForAppToLoad();
       //LHS
       await smsGatewayPo.showMessageList();
