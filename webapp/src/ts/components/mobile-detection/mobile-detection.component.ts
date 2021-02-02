@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, HostListener } from '@angular/core';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
 
@@ -6,14 +6,14 @@ import { ResponsiveService } from '@mm-services/responsive.service';
   template: '<div id="mobile-detection"></div>',
   selector: 'mobile-detection',
 })
-export class MobileDetectionComponent implements AfterViewInit {
+export class MobileDetectionComponent implements AfterViewChecked {
   constructor(
     private elementRef:ElementRef,
     private responsiveService:ResponsiveService,
   ) {
   }
 
-  ngAfterViewInit() {
+  ngAfterViewChecked() {
     this.detectMobileScreenSize();
   }
 
