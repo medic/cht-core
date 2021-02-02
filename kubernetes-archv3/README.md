@@ -1,7 +1,7 @@
 # Kubernetes Deployment Files
 
 This folder contains files to set up the CHT core App locally on Kubernetes. When run in Kubernetes, these files generate services that are needed to run the CHT core app.
-The services share secrets through environment variables in the  `secrets.yml` file. Services discover each other through these variable. If you update the names of any of the resources be sure to update the same in the `secrets.yml` file lest the services will not discover each other.
+The services share secrets through environment variables in the  `secrets.yml` file. Services discover each other through these variables. If you update the names of any of the resources be sure to update the same in the `secrets.yml` file lest the services will not discover each other.
 Secrets in the `secrets.yml` file are base64 encoded. Be sure to encode them before adding them to the respective variable.
 To encode a secret you can run a command similar to the one below.
 
