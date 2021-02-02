@@ -1,6 +1,7 @@
 const utils = require('../../utils');
 const querystring = require('querystring');
 const constants = require('../../constants');
+const _ = require('lodash');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 
@@ -30,7 +31,7 @@ const waitForSeq = (metadataId, docIds) => {
       if (docIds) {
         opts.path = `${opts.path}?${querystring.stringify({ since: seq, filter: '_doc_ids' })}`;
         opts.method = 'POST';
-        opts.body = { doc_ids: Array.isArray(docIds) ? docIds : [ docIds ] };
+        opts.body = { doc_ids: _.castArray(docIds) };
       } else {
         opts.path = `${opts.path}?${querystring.stringify({ since: seq })}`;
       }
@@ -65,7 +66,7 @@ const waitForSeqNative = async (metadataId, docIds) => {
       if (docIds) {
         opts.path = `${opts.path}?${querystring.stringify({ since: seq, filter: '_doc_ids' })}`;
         opts.method = 'POST';
-        opts.body = { doc_ids: Array.isArray(docIds) ? docIds : [ docIds ] };
+        opts.body = { doc_ids: _.castArray(docIds) };
       } else {
         opts.path = `${opts.path}?${querystring.stringify({ since: seq })}`;
       }
@@ -110,11 +111,11 @@ const getInfoDoc = docId => {
 
 const getInfoDocs = (docIds = []) => {
   utils.deprecated('getInfoDocs','getInfoDocsNative');
-  docIds = Array.isArray(docIds) ? docIds : [docIds];
+  docIds = _.castArray(docIds);
 
   const opts = {
     path: '/_all_docs?include_docs=true',
-    body: { keys: docIds.map(id => id + '-info') },
+    body: { keys: docIds.map(id => `${id}-info`) },
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -124,8 +125,7 @@ const getInfoDocs = (docIds = []) => {
 };
 
 const getInfoDocsNative = async (docIds = []) => {
-  docIds = Array.isArray(docIds) ? docIds : [docIds];
-  console.log('getInfoDocsNative native1');
+  docIds = _.castArray(docIds);
   const opts = {
     path: '/_all_docs?include_docs=true',
     body: { keys: docIds.map(id => id + '-info') },
@@ -134,9 +134,7 @@ const getInfoDocsNative = async (docIds = []) => {
       'Content-Type': 'application/json'
     },
   };
-  console.log('getInfoDocsNative native2');
   const response = await requestOnSentinelTestDbNative(opts);
-  console.log('getInfoDocsNative native3');
   return response.rows.map(row => row.doc);
 };
 
