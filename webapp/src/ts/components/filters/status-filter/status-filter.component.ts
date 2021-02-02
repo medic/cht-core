@@ -24,7 +24,7 @@ export class StatusFilterComponent implements AbstractFilter {
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter: MultiDropdownFilterComponent;
+  dropdownFilter:any = { selected: new Map() };
 
   constructor(
     private store: Store,

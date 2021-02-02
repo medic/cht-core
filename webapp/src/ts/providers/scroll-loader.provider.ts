@@ -16,7 +16,7 @@ export class ScrollLoaderProvider {
       }
     };
     this.ngZone.runOutsideAngular(() => {
-      window.jQuery('.inbox-items')
+      $('.inbox-items')
         .off('scroll', _check)
         .on('scroll', _check);
     });

@@ -31,7 +31,7 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter: MultiDropdownFilterComponent;
+  dropdownFilter:any = { selected: new Map() };
 
   constructor(
     private store:Store,
