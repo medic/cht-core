@@ -2,7 +2,6 @@ const utils = require('../utils');
 const helper = require('../helper');
 const contactsPo = require('../page-objects/contacts/contacts.po');
 
-
 describe('Contact summary info', () => {
   const SCRIPT = `
     let cards = [];
@@ -200,10 +199,10 @@ describe('Contact summary info', () => {
     expect(await contactsPo.cardFieldText('test_sex')).toBe(CAROL.sex);
 
     expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
-    expect(await contactsPo.cardFieldText('alicetag')).toBe(ALICE.name + ' ' + ALICE.phone);
+    expect(await contactsPo.cardFieldText('alicetag')).toBe(`${ALICE.name} ${ALICE.phone}`);
 
     expect(await contactsPo.cardFieldLabelText('davidtag')).toBe('davidTag');
-    expect(await contactsPo.cardFieldText('davidtag')).toBe(DAVID.name + ' ' + DAVID.phone);
+    expect(await contactsPo.cardFieldText('davidtag')).toBe(`${DAVID.name} ${DAVID.phone}`);
 
     expect(await contactsPo.cardFieldLabelText('visittag')).toBe('visitTag');
     expect(await contactsPo.cardFieldText('visittag')).toBe(DAVID_VISIT.form);

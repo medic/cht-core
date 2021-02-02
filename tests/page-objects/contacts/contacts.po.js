@@ -102,8 +102,8 @@ module.exports = {
   },
 
   search: async query => {
-    searchBox.clear();
-    searchBox.sendKeys(query);
+    await searchBox.clear();
+    await searchBox.sendKeys(query);
     await searchButton.click();
   },
 
