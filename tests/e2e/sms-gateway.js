@@ -138,7 +138,7 @@ describe('sms-gateway api', () => {
   };
 
   describe('- gateway submits new WT sms messages', () => {
-    beforeAll( async () => await helper.waitForAppToLoad(12000,10000));
+    // beforeAll( async () => await helper.waitForAppToLoad(12000,10000));
     beforeEach(async () => {
       const body = {
         messages: [
@@ -152,7 +152,7 @@ describe('sms-gateway api', () => {
       await pollSmsApi(body);
       await helper.handleUpdateModal();
     });
-    afterEach(async () => { await helper.handleUpdateModal});
+    afterEach(async () => { await helper.handleUpdateModal(); });
 
     it('shows content', async () => {
       await helper.waitForAppToLoad();
@@ -170,7 +170,7 @@ describe('sms-gateway api', () => {
     let savedDoc;
 
     beforeEach(async () => {
-      const result = utils.saveDocNative(report)
+      const result = utils.saveDocNative(report);
       savedDoc = result.id;
       const body = {
         updates: [
@@ -182,7 +182,7 @@ describe('sms-gateway api', () => {
             reason: 'Insufficient credit',
           },
         ]
-      }
+      };
       await pollSmsApi(body);
     });
 
@@ -214,7 +214,7 @@ describe('sms-gateway api', () => {
         timestamp: '2016-08-05T02:24:48.569Z',
       });
 
-      let result = await utils.saveDocNative(reportWithTwoMessagesToSend);
+      const result = await utils.saveDocNative(reportWithTwoMessagesToSend);
       savedDoc = result.id;
       response = await pollSmsApi({});
     });

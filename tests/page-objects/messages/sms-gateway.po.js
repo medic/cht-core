@@ -34,15 +34,15 @@ const getTaskState = async element => {
 
 module.exports = {
 
-  showMessageList : async () => {
-    utils.resetBrowser();
-    helper.clickElement(element(by.id('messages-tab')));
+  showMessageList :  async () => {
+    await utils.resetBrowser();
+    await helper.clickElement(element(by.id('messages-tab')));
 
     // LHS
     helper.waitElementToPresent(
       element(by.css('#message-list li:first-child'))
     );
-    browser.waitForAngular();
+    await browser.waitForAngular();
     helper.waitElementToBeVisible(
       element(by.css('#message-list li:first-child'))
     );
