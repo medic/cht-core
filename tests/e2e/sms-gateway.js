@@ -188,7 +188,7 @@ describe('sms-gateway api', () => {
 
     afterEach(async () => { await utils.deleteDocNative(savedDoc); });
 
-    it('- shows content 1', async () => {
+    it('- shows content', async () => {
 
       await smsGatewayPo.showReport();
 
@@ -204,7 +204,7 @@ describe('sms-gateway api', () => {
     let savedDoc;
     let response;
 
-    beforeEach(done => {
+    beforeEach(async () => {
       const reportWithTwoMessagesToSend = JSON.parse(JSON.stringify(report));
       // First scheduled message is in forwarded-to-gateway state.
       reportWithTwoMessagesToSend.scheduled_tasks[0].state =
@@ -214,49 +214,17 @@ describe('sms-gateway api', () => {
         timestamp: '2016-08-05T02:24:48.569Z',
       });
 
-      utils
-        .saveDoc(reportWithTwoMessagesToSend)
-        .then(result => {
-          savedDoc = result.id;
-          return pollSmsApi({}).then(res => {
-            response = res;
-            done();
-          });
-        })
-        .catch(done.fail);
+      let result = await utils.saveDocNative(reportWithTwoMessagesToSend);
+      savedDoc = result.id;
+      response = await pollSmsApi({});
     });
 
-    afterEach(done => {
-      helper.logConsoleErrors('sms-gateway');
-      utils
-        .deleteDoc(savedDoc)
-        .then(done)
-        .catch(done.fail);
+    afterEach(async () => {
+      await helper.logConsoleErrors('sms-gateway');
+      await utils.deleteDocNative(savedDoc);
     });
 
     it('- returns list and updates state', async () => {
-      // TEMP: This is a flaky test, because sometimes there are more messages
-      //       than the 2 that we expect there to be. Outputting so when it
-      //       flakes we can see which messages they are and work out where
-      //       they came from
-      //  For reference, when running this locally with I got:
-      // [
-      //   {
-      //     "content": "Thank you for registering Shannon.
-      //          Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016",
-      //     "id": "00f237ab-dd34-44a8-9f17-caaa022be947",
-      //     "to": "+64275555556"
-      //   },
-      //   {
-      //     "content": "Please remind Shannon (28551) to visit the health facility for ANC visit this week.
-      //          When she does let us know with \"V 28551\". Thanks!",
-      //     "id": "40cb5078-57da-427c-b3a9-b76ae581e5da",
-      //     "to": "+64275555556"
-      //   }
-      // ]
-      console.log('Messages currently present'); // eslint-disable-line no-console
-      console.log(JSON.stringify(response.messages)); // eslint-disable-line no-console
-
       expect(response.messages.length).toBe(2);
       expect(response.messages[0].id).toBe(messageId1);
       expect(response.messages[0].to).toBe(messageTo1);
