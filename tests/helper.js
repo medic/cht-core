@@ -12,6 +12,12 @@ function handleUpdateModal() {
   }
 }
 
+const handleUpdateModalNative = async () => {
+  if (await element(by.css('#update-available')).isPresent()) {
+    await $('body').sendKeys(protractor.Key.ENTER);
+  }
+};
+
 module.exports = {
   clickElement: element => {
     handleUpdateModal();
@@ -277,11 +283,5 @@ module.exports = {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
-  
-  waitForAppToLoad: async (timeout=12000,sleep = 1000) => {
-    const loadingStatus = element(by.css('.loading-status'));
-    browser.sleep(sleep);//at least a second for page to stabilize. Longer on travis
-    handleUpdateModal();
-    return await browser.wait(EC.textToBePresentInElement(loadingStatus, 'No messages found'), timeout);
-  },
+  handleUpdateModalNative,
 };
