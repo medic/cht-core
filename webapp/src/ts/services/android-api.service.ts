@@ -6,6 +6,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { SimprintsService } from '@mm-services/simprints.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -23,7 +24,7 @@ export class AndroidApiService {
     private mrdtService:MRDTService,
     private sessionService:SessionService,
     private router:Router,
-    // todo simprints service
+    private simprintsService:SimprintsService,
     private zone:NgZone,
     private routeSnapshotService:RouteSnapshotService,
   ) {
@@ -231,11 +232,9 @@ export class AndroidApiService {
       return console.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
     }
     if (requestType === 'identify') {
-      // todo migrate when Simprints is migrated
-      //Simprints.identifyResponse(requestId, response);
+      this.simprintsService.identifyResponse(requestId, response);
     } else if (requestType === 'register') {
-      // todo migrate when Simprints is migrated
-      //Simprints.registerResponse(requestId, response);
+      this.simprintsService.registerResponse(requestId, response);
     } else {
       return console.error(new Error('Unknown request type: "' + requestType + '"'));
     }
