@@ -7,7 +7,6 @@ metadata:
   labels:
     cht.service: dev-medic-api
     app: dev-v3
-  
 spec:
   selector:
     matchLabels:

@@ -10,4 +10,3 @@ spec:
   - name: haproxy-port
     port: 5984
     targetPort: 5984
-    
