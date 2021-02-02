@@ -1,7 +1,7 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
-const submitButton = element(by.css('#report-form .submit'));
+const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
 const addButton = element(by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus'));
 
@@ -47,6 +47,16 @@ module.exports = {
     }
   },
 
+  nextPageNative: async (numberOfPages = 1) => {
+    const nextButton = element(by.css('button.btn.btn-primary.next-page'));
+
+    for (let i = 0; i < numberOfPages; i++) {
+      await helper.waitUntilReady(nextButton);
+      await helper.waitElementToBeClickable(nextButton);
+      await nextButton.click();
+    }
+  },
+
   reportApprove: () => {
     helper.waitForAngularComplete();
     const checkBtn = element(by.css('.fa-check'));
@@ -87,6 +97,7 @@ module.exports = {
 
   submit: () => {
     const submitButton = element(by.css('.btn.submit.btn-primary'));
+    helper.scrollElementIntoView(submitButton);
     helper.waitElementToBeClickable(submitButton);
     submitButton.click();
     helper.waitElementToBeVisible(element(by.css('div#reports-content')));
