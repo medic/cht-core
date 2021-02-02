@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-v3-nginx
+  annotations:
+    nginx.version: medicmobile/nginx:3.10.0-slim-k3s-020120-6
+  labels:
+    cht.service: dev-v3-nginx
+    app: dev-v3
+spec:
+  selector:
+    matchLabels:
+      cht.service: dev-v3-nginx
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        nginx.version: medicmobile/nginx:3.10.0-slim-k3s-020120-6
+      labels:
+        cht.service: dev-v3-nginx
+        app: dev-v3  
+    spec:
+      containers:
+      - name: nginx
+        image: medicmobile/nginx:3.10.0-slim-k3s-020120-6
+        envFrom:
+        - secretRef:
+            name: "secret-dev-v3-env"   
+        resources: {}
+      restartPolicy: Always
+status: {}
