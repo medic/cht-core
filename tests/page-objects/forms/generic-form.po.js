@@ -48,11 +48,10 @@ module.exports = {
   nextPageNative: async (numberOfPages = 1) => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
 
-    while (numberOfPages > 0) {
+    for (let i = 0; i < numberOfPages; i++) {
       await helper.waitUntilReady(nextButton);
       await helper.waitElementToBeClickable(nextButton);
       await nextButton.click();
-      numberOfPages--;
     }
   },
 
