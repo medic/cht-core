@@ -730,6 +730,12 @@ module.exports = {
     });
   },
 
+  deleteDocNative: async id => {
+    let doc = module.exports.getDocNative(id);
+    doc._deleted = true;
+    return module.exports.saveDocNative(doc);
+  },
+
   deleteDocs: ids => {
     return module.exports.getDocs(ids).then(docs => {
       docs.forEach(doc => doc._deleted = true);

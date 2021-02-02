@@ -197,68 +197,58 @@ describe('africas talking api', () => {
     });
   });
 
-  // describe('- gateway submits WT sms status updates', () => {
-  //   let savedDoc;
+  describe('- gateway submits WT sms status updates', () => {
+    let savedDoc;
 
-  //   const submitDeliveryReport = body => {
-  //     const content = querystring.stringify(body);
-  //     return utils.request({
-  //       method: 'POST',
-  //       path: `/api/v1/sms/africastalking/delivery-reports?key=${INCOMING_KEY}`,
-  //       body: content,
-  //       headers: {
-  //         'Content-Type': 'application/x-www-form-urlencoded',
-  //         'Content-Length': content.length,
-  //       },
-  //       json: false,
-  //     });
-  //   };
+    const submitDeliveryReport = async body => {
+      const content = querystring.stringify(body);
+      return utils.requestNative({
+        method: 'POST',
+        path: `/api/v1/sms/africastalking/delivery-reports?key=${INCOMING_KEY}`,
+        body: content,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': content.length,
+        },
+        json: false,
+      });
+    };
 
-  //   beforeEach(done => {
-  //     utils.saveDoc(report)
-  //       .then(result => {
-  //         savedDoc = result.id;
-  //         return Promise.all([
-  //           submitDeliveryReport({ id: messageGatewayRef1, status: 'Submitted', phoneNumber: messageTo1 }),
-  //           submitDeliveryReport({ id: messageGatewayRef2, status: 'Success', phoneNumber: messageTo2 }),
-  //           submitDeliveryReport({ id: messageGatewayRef3, status: 'Failed',
-  //             failureReason: 'InsufficientCredit', phoneNumber: messageTo3 }),
-  //         ]);
-  //       })
-  //       .then(done)
-  //       .catch(done.fail);
-  //   });
+    beforeEach( async () => {
+      
+      const result = await utils.saveDocNative(report)
+      savedDoc = result.id;
+      await submitDeliveryReport({ id: messageGatewayRef1, status: 'Submitted', phoneNumber: messageTo1 }),
+      await submitDeliveryReport({ id: messageGatewayRef2, status: 'Success', phoneNumber: messageTo2 }),
+      await submitDeliveryReport({ id: messageGatewayRef3, status: 'Failed',
+      failureReason: 'InsufficientCredit', phoneNumber: messageTo3 })
+    });
 
-  //   afterEach(done => {
-  //     utils.deleteDoc(savedDoc)
-  //       .then(done)
-  //       .catch(done.fail);
-  //   });
+    afterEach(async() => { utils.deleteDocNative(savedDoc); });
 
-  //   Xit('- shows content', () => {
-  //     commonElements.goToReports();
-  //     helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
-  //     helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
-  //     helper.waitElementToPresent(element(by.css('#reports-content .body .item-summary .icon')));
-  //     helper.waitForAngularComplete();
+    it('- shows content', async () => {
+      commonElements.goToReportsNative();
+      await helper.waitUntilReadyNative(element(by.css('#reports-list li:first-child')));
+      await helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
+      helper.waitElementToPresentNative(element(by.css('#reports-content .body .item-summary .icon')));
 
-  //     // tasks
-  //     const sentTaskState = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
-  //     const deliveredTaskState = element(by.css(
-  //       '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')
-  //     );
-  //     const scheduledTaskState = element(by.css(
-  //       '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')
-  //     );
-  //     const failedTaskState = element(by.css(
-  //       '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')
-  //     );
+      // tasks
+      const sentTaskState = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
+      const deliveredTaskState = element(by.css(
+        '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')
+      );
+      const scheduledTaskState = element(by.css(
+        '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')
+      );
+      const failedTaskState = element(by.css(
+        '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')
+      );
 
-  //     expect(helper.getTextFromElement(sentTaskState)).toBe('sent');
-  //     expect(helper.getTextFromElement(deliveredTaskState)).toBe('delivered');
-  //     expect(helper.getTextFromElement(scheduledTaskState)).toBe('scheduled');
-  //     expect(helper.getTextFromElement(failedTaskState)).toBe('failed');
-  //   });
-  // });
+      expect(await helper.getTextFromElement(sentTaskState)).toBe('sent');
+      expect(await helper.getTextFromElement(deliveredTaskState)).toBe('delivered');
+      expect(await helper.getTextFromElement(scheduledTaskState)).toBe('scheduled');
+      expect(await helper.getTextFromElement(failedTaskState)).toBe('failed');
+    });
+  });
 
 });
