@@ -74,7 +74,4 @@ kubectl get nodes --all-namespaces
 
  ```
 
-4. Once the services have been created you can access the api output on your local machine by first discovering the IP of your host node and entering it's URL in your browser. https://host-ip:31000/
-To get your host ip please run.
-
-`kubectl get services --namespace kube-system traefik --output jsonpath='{.status.loadBalancer.ingress[0].ip}`
+4. Once the services have been created you can access the api output on your local machine by going to https://localhost 
