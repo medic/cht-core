@@ -1,6 +1,6 @@
 const helper = require('../../helper');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
-const submitButton = element(by.css('.submit'));
+const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
 
 module.exports = {
@@ -45,18 +45,14 @@ module.exports = {
     }
   },
 
-  nextPageNative: async multiple => {
+  nextPageNative: async (numberOfPages = 1) => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
-    if (multiple) {
-      for (let i = 0; i < multiple; i++) {
-        await helper.waitForAngularComplete();
-        await helper.waitElementToBeClickable(nextButton);
-        await nextButton.click();
-      }
-    } else {
+
+    while (numberOfPages > 0) {
       await helper.waitUntilReady(nextButton);
       await helper.waitElementToBeClickable(nextButton);
       await nextButton.click();
+      numberOfPages--;
     }
   },
 
