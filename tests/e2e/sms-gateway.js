@@ -1,6 +1,6 @@
 const utils = require('../utils');
-const commonElements = require('../page-objects/common/common.po.js');
 const helper = require('../helper');
+const smsGatewayPo = require('../page-objects/messages/sms-gateway.po');
 
 const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
 const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
@@ -138,6 +138,7 @@ describe('sms-gateway api', () => {
   };
 
   describe('- gateway submits new WT sms messages', () => {
+    beforeAll( async () => await helper.waitForAppToLoad(12000,10000));
     beforeEach(done => {
       const body = {
         messages: [
@@ -155,62 +156,15 @@ describe('sms-gateway api', () => {
     });
     afterEach(helper.handleUpdateModal);
 
-    it('- shows content', () => {
-      utils.resetBrowser();
-      helper.clickElement(element(by.id('messages-tab')));
-
-      // LHS
-      helper.waitElementToPresent(
-        element(by.css('#message-list li:first-child'))
-      );
-      helper.waitForAngularComplete();
-      helper.waitElementToBeVisible(
-        element(by.css('#message-list li:first-child'))
-      );
-      expect(
-        helper.getTextFromElement(
-          element(by.css('#message-list li:first-child .heading h4'))
-        )
-      ).toBe('+64271234567');
-      expect(
-        helper.getTextFromElement(
-          element(by.css('#message-list li:first-child .summary p'))
-        )
-      ).toBe('hello');
-
+    it('- shows content', async () => {
+      await helper.waitForAppToLoad();
+      //LHS
+      await smsGatewayPo.showMessageList();
+      await smsGatewayPo.expectMessage('+64271234567', 'hello');
       // RHS
-      helper.clickElement(
-        element(by.css('#message-list li:first-child .summary'))
-      );
-      helper.waitElementToBeVisible(
-        element(
-          by.css('#message-content li.incoming:first-child .data p:first-child')
-        )
-      );
-      helper.waitElementToPresent(
-        element(
-          by.css('#message-content li.incoming:first-child .data p:first-child')
-        )
-      );
-      helper.waitForAngularComplete();
-      const messageHeader = helper.getTextFromElement(
-        element(by.css('#message-header .name'))
-      );
-      const messageText = helper.getTextFromElement(
-        element(
-          by.css('#message-content li.incoming:first-child .data p:first-child')
-        )
-      );
-      const messageStatus = helper.getTextFromElement(
-        element(
-          by.css(
-            '#message-content li.incoming:first-child .data .state.received'
-          )
-        )
-      );
-      expect(messageHeader).toBe('+64271234567');
-      expect(messageText).toBe('hello');
-      expect(messageStatus).toBe('received');
+      await smsGatewayPo.showMessageDetails();
+      await smsGatewayPo.expectMessageDetails('+64271234567', 'hello', 'received');
+
     });
   });
 
@@ -247,48 +201,15 @@ describe('sms-gateway api', () => {
         .catch(done.fail);
     });
 
-    it('- shows content', () => {
-      commonElements.goToReports();
-      helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
-      helper.clickElement(
-        element(by.css('#reports-list li:first-child .heading'))
-      );
-      helper.waitElementToPresent(
-        element(by.css('#reports-content .body .item-summary .icon'))
-      );
-      helper.waitForAngularComplete();
+    it('- shows content', async () => {
+
+      smsGatewayPo.showReport();
 
       // tasks
-      const sentTaskState = helper.getTextFromElement(
-        element(
-          by.css('#reports-content .details > ul .task-list .task-state .state')
-        )
-      );
-      const deliveredTaskState = helper.getTextFromElement(
-        element(
-          by.css(
-            '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'
-          )
-        )
-      );
-      const scheduledTaskState = helper.getTextFromElement(
-        element(
-          by.css(
-            '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state'
-          )
-        )
-      );
-      const failedTaskState = helper.getTextFromElement(
-        element(
-          by.css(
-            '#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state'
-          )
-        )
-      );
-      expect(sentTaskState).toBe('sent');
-      expect(deliveredTaskState).toBe('delivered');
-      expect(scheduledTaskState).toBe('scheduled');
-      expect(failedTaskState).toBe('failed');
+      expect(await smsGatewayPo.sentTaskState()).toMatch('sent');
+      expect(await smsGatewayPo.deliveredTaskState()).toMatch('delivered');
+      expect(await smsGatewayPo.scheduledTaskState()).toMatch('scheduled');
+      expect(await smsGatewayPo.failedTaskState()).toMatch('failed');
     });
   });
 
@@ -326,7 +247,7 @@ describe('sms-gateway api', () => {
         .catch(done.fail);
     });
 
-    it('- returns list and updates state', () => {
+    it('- returns list and updates state', async () => {
       // TEMP: This is a flaky test, because sometimes there are more messages
       //       than the 2 that we expect there to be. Outputting so when it
       //       flakes we can see which messages they are and work out where
@@ -357,35 +278,14 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].to).toBe(messageTo2);
       expect(response.messages[1].content).toBe(messageContent2);
 
-      commonElements.goToReports();
-      helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
+      await smsGatewayPo.showReport();
 
-      helper.clickElement(
-        element(by.css('#reports-list li:first-child .heading'))
-      );
-      helper.waitElementToPresent(
-        element(by.css('#reports-content .body .item-summary .icon'))
-      );
-
-      helper.waitForAngularComplete();
+      browser.waitForAngular();
       // tasks
-      // State for messageId1 has been updated from pending to forwarded-to-gateway.
-      const feedback = element(
-        by.css('#reports-content .details > ul .task-list .task-state .state')
-      );
-      helper.waitUntilReady(feedback);
-      expect(helper.getTextFromElement(feedback)).toBe('forwarded to gateway');
+      expect(await smsGatewayPo.feedbackState()).toMatch('forwarded');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(
-        helper.getTextFromElement(
-          element(
-            by.css(
-              '#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'
-            )
-          )
-        )
-      ).toBe('forwarded to gateway');
+      expect(await smsGatewayPo.messageState()).toMatch('forwarded');
     });
   });
 });
