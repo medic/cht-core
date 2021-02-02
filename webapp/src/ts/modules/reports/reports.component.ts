@@ -276,13 +276,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   toggleSelected(report, event) {
-    event.stopPropagation();
-
     if (!report?._id) {
       return;
     }
 
     if (this.selectMode) {
+      // prevent the routerLink redirection
+      event.stopPropagation();
       const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
       if (!isSelected) {
         // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
