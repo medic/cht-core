@@ -9,7 +9,7 @@ const getState = (first, second) => {
     `#reports-content .scheduled-tasks > ul > li:nth-child(${first}) > ul > li:nth-child(${second}) .task-state .state`
   ));
 };
-const  sentTask= element(by.css('#reports-content .details > ul .task-list .task-state .state'));
+const  sentTask = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
 
 const deliveredTask = getState(1,1);
 
@@ -27,8 +27,8 @@ const incomingData = element(by.css('#message-content li.incoming:first-child .d
 // State for messageId2 is still forwarded-to-gateway
 const message2State = getState(1,1);
 
-const getTaskState = element => {
-  helper.waitUntilReady(element);
+const getTaskState = async element => {
+  await helper.waitUntilReadyNative(element);
   return helper.getTextFromElement(element);
 };
 
@@ -88,12 +88,10 @@ module.exports = {
   },
 
   showReport : async () => {
-    commonElements.goToReports();
-    await helper.waitUntilReady(element(by.css('#reports-list li:first-child')));
-    helper.clickElement(
-      element(by.css('#reports-list li:first-child .heading'))
-    );
-    helper.waitElementToPresent(
+    await commonElements.goToReportsNative();
+    await helper.waitUntilReadyNative(element(by.css('#reports-list li:first-child')));
+    await  element(by.css('#reports-list li:first-child .heading')).click();
+    await helper.waitElementToPresent(
       element(by.css('#reports-content .body .item-summary .icon'))
     );
   },

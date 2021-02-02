@@ -169,39 +169,28 @@ describe('sms-gateway api', () => {
   describe('- gateway submits WT sms status updates', () => {
     let savedDoc;
 
-    beforeEach(done => {
-      utils
-        .saveDoc(report)
-        .then(result => {
-          savedDoc = result.id;
-          const body = {
-            updates: [
-              { id: messageId1, status: 'SENT' },
-              { id: messageId2, status: 'DELIVERED' },
-              {
-                id: messageId3,
-                status: 'FAILED',
-                reason: 'Insufficient credit',
-              },
-            ],
-          };
-          pollSmsApi(body)
-            .then(done)
-            .catch(done.fail);
-        })
-        .catch(done.fail);
+    beforeEach(async () => {
+      const result = utils.saveDocNative(report)
+      savedDoc = result.id;
+      const body = {
+        updates: [
+          { id: messageId1, status: 'SENT' },
+          { id: messageId2, status: 'DELIVERED' },
+          {
+            id: messageId3,
+            status: 'FAILED',
+            reason: 'Insufficient credit',
+          },
+        ]
+      }
+      await pollSmsApi(body);
     });
 
-    afterEach(done => {
-      utils
-        .deleteDoc(savedDoc)
-        .then(done)
-        .catch(done.fail);
-    });
+    afterEach(async () => { await utils.deleteDocNative(savedDoc); });
 
-    it('- shows content', async () => {
+    it('- shows content 1', async () => {
 
-      smsGatewayPo.showReport();
+      await smsGatewayPo.showReport();
 
       // tasks
       expect(await smsGatewayPo.sentTaskState()).toMatch('sent');
