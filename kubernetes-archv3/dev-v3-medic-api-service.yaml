@@ -5,10 +5,8 @@ metadata:
 spec:
   selector:
     cht.service: dev-v3-medic-api
-  type: NodePort
+  clusterIP: None
   ports:
   - name: medic-api-port
-    port: 80
+    port: 5988
     targetPort: 5988
-    nodePort: 31000
-    
