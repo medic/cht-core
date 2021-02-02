@@ -97,6 +97,7 @@ export class ContactsEffects {
   }
 
   private loadChildren(userFacilityId) {
+    console.log(this.selectedContact);
     const getChildPlaces = userFacilityId !== this.selectedContact?._id;
     return this.contactViewModelGeneratorService
       .loadChildren(this.selectedContact, { getChildPlaces })
