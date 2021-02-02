@@ -216,7 +216,7 @@ describe('Contacts Reducer', () => {
         filters: {},
       };
       const newState = contactsReducer(state, Actions.resetContactsList());
-  
+
       expect(newState).to.deep.equal({
         contacts: [],
         contactsById: new Map(),
@@ -330,11 +330,10 @@ describe('Contacts Reducer', () => {
     });
   });
 
-  describe('updateSelectedContact', () => {
-    it('should set a selected contact in the state', () => {
-      const selected = { _id: 'selected_contact', some: 'data' };
-
-      const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
+  describe('Set selected contact', () => {
+    it('should set the selected contact', () => {
+      const selected = { _id: 'selected_report', some: 'data' };
+      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
 
       expect(newState).to.deep.equal({
         contacts: [],
@@ -345,32 +344,68 @@ describe('Contacts Reducer', () => {
       });
     });
 
-    it('should update selected contact in the state', ()=> {
+    it('should set selected contact with full contacts list', ()=> {
       state = {
         contacts: [
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
         ]),
-        selected: { _id: 'selected_contact' },
       };
-      const newSelected = { _id: 'selected_contact', some: 'data' };
-
-      const newState = contactsReducer(state, Actions.updateSelectedContact(newSelected));
+      const selected = { _id: 'selected_contact', some: 'data' };
+      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
 
       expect(newState).to.deep.equal({
         contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
         ]),
         selected: { _id: 'selected_contact', some: 'data' },
       });
     });
 
-    it('should set null the selected contact in the state', () => {
+    it('should update selected contact', () => {
+      state = {
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: { _id: 'first_selected_contact', some: 'data' }
+      };
+      const selected = { _id: 'second_selected_contact', some: 'other data' };
+      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
+
+      expect(newState).to.deep.equal({
+        contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '1', name: 'Centre 1', type: 'health_center' },
+        ],
+        contactsById: new Map([
+          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
+          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
+        ]),
+        selected: { _id: 'second_selected_contact', some: 'other data' },
+      });
+    });
+
+    it('should unset selected contact', () => {
       state = {
         contacts: [
           { _id: '1', name: 'Centre 1', type: 'health_center' },
@@ -381,7 +416,7 @@ describe('Contacts Reducer', () => {
         selected: { _id: 'selected_contact' },
       };
 
-      const newState = contactsReducer(state, Actions.updateSelectedContact(null));
+      const newState = contactsReducer(state, Actions.setSelectedContact(null));
 
       expect(newState).to.deep.equal({
         contacts: [
