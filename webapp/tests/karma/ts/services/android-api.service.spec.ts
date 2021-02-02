@@ -1,25 +1,27 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { NgZone } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { Router } from '@angular/router';
 import { MRDTService } from '@mm-services/mrdt.service';
-import { NgZone } from '@angular/core';
+import { SimprintsService } from '@mm-services/simprints.service';
+
 
 describe('AndroidApi service', () => {
 
   let service;
-  //let identifyResponse;
-  //let registerResponse;
   let sessionService;
   let router;
   let feedbackService;
   let mrdtService;
   let geolocationService;
+  let simprintsService;
+  let consoleErrorMock;
 
   beforeEach(() => {
     sessionService = {
@@ -51,11 +53,18 @@ describe('AndroidApi service', () => {
       permissionRequestResolved: sinon.stub()
     };
 
+    simprintsService = {
+      identifyResponse: sinon.stub(),
+      registerResponse: sinon.stub()
+    };
+
+    consoleErrorMock = sinon.stub(console, 'error');
+
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: GeolocationService, useValue: geolocationService },
-        // todo simprints
+        { provide: SimprintsService, useValue: simprintsService },
         { provide: FeedbackService, useValue: feedbackService },
         { provide: Router, useValue: router },
         { provide: MRDTService, useValue: mrdtService },
@@ -68,32 +77,32 @@ describe('AndroidApi service', () => {
   afterEach(() => {
     sinon.restore();
   });
-  // todo migrate when simprints service has been migrated
-  /*
   describe('simprintsResponse', () => {
 
     it('errors when given string id', () => {
       service.v1.simprintsResponse(null, 'hello', null);
-      chai.expect($log.error.logs.length).to.equal(1);
-      chai.expect($log.error.logs[0][0].message).to.equal('Unable to parse requestId: "hello"');
-      chai.expect(identifyResponse.callCount).to.equal(0);
-      chai.expect(registerResponse.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0].message).to.equal('Unable to parse requestId: "hello"');
+      expect(simprintsService.identifyResponse.callCount).to.equal(0);
+      expect(simprintsService.registerResponse.callCount).to.equal(0);
     });
 
     it('errors when given invalid response', () => {
       service.v1.simprintsResponse(null, '1', 'not json');
-      chai.expect($log.error.logs.length).to.equal(1);
-      chai.expect($log.error.logs[0][0].message).to.equal('Unable to parse JSON response from android app: "not json"');
-      chai.expect(identifyResponse.callCount).to.equal(0);
-      chai.expect(registerResponse.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0].message).to.equal(
+        'Unable to parse JSON response from android app: "not json"'
+      );
+      expect(simprintsService.identifyResponse.callCount).to.equal(0);
+      expect(simprintsService.registerResponse.callCount).to.equal(0);
     });
 
     it('errors when given unknown request type', () => {
       service.v1.simprintsResponse('query', '1', '{ "id": 153 }');
-      chai.expect($log.error.logs.length).to.equal(1);
-      chai.expect($log.error.logs[0][0].message).to.equal('Unknown request type: "query"');
-      chai.expect(identifyResponse.callCount).to.equal(0);
-      chai.expect(registerResponse.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0].message).to.equal('Unknown request type: "query"');
+      expect(simprintsService.identifyResponse.callCount).to.equal(0);
+      expect(simprintsService.registerResponse.callCount).to.equal(0);
     });
 
     it('calls identify', () => {
@@ -103,25 +112,24 @@ describe('AndroidApi service', () => {
         { id: 486, tier: 'TIER_5' }
       ];
       service.v1.simprintsResponse('identify', expectedRequestId.toString(), JSON.stringify(expectedResponse));
-      chai.expect($log.error.logs.length).to.equal(0);
-      chai.expect(identifyResponse.callCount).to.equal(1);
-      chai.expect(identifyResponse.args[0][0]).to.equal(expectedRequestId);
-      chai.expect(identifyResponse.args[0][1]).to.deep.equal(expectedResponse);
-      chai.expect(registerResponse.callCount).to.equal(0);
+      expect(consoleErrorMock.callCount).to.equal(0);
+      expect(simprintsService.identifyResponse.callCount).to.equal(1);
+      expect(simprintsService.identifyResponse.args[0][0]).to.equal(expectedRequestId);
+      expect(simprintsService.identifyResponse.args[0][1]).to.deep.equal(expectedResponse);
+      expect(simprintsService.registerResponse.callCount).to.equal(0);
     });
 
     it('calls register', () => {
       const expectedRequestId = 54895590;
       const expectedResponse = { id: 849556216 };
       service.v1.simprintsResponse('register', expectedRequestId.toString(), JSON.stringify(expectedResponse));
-      chai.expect($log.error.logs.length).to.equal(0);
-      chai.expect(identifyResponse.callCount).to.equal(0);
-      chai.expect(registerResponse.callCount).to.equal(1);
-      chai.expect(registerResponse.args[0][0]).to.equal(expectedRequestId);
-      chai.expect(registerResponse.args[0][1]).to.deep.equal(expectedResponse);
+      expect(consoleErrorMock.callCount).to.equal(0);
+      expect(simprintsService.identifyResponse.callCount).to.equal(0);
+      expect(simprintsService.registerResponse.callCount).to.equal(1);
+      expect(simprintsService.registerResponse.args[0][0]).to.equal(expectedRequestId);
+      expect(simprintsService.registerResponse.args[0][1]).to.deep.equal(expectedResponse);
     });
   });
-  */
 
   describe('logout', () => {
     it('should call sessionService logout', () => {
@@ -192,7 +200,6 @@ describe('AndroidApi service', () => {
     });
 
     it('should catch parse errors', () => {
-      const consoleErrorMock = sinon.stub(console, 'error');
       const response = '{ this:  }is not valid json';
       service.mrdtResponse(response);
       expect(mrdtService.respond.callCount).to.equal(0);
@@ -210,7 +217,6 @@ describe('AndroidApi service', () => {
     });
 
     it('should catch parse errors', () => {
-      const consoleErrorMock = sinon.stub(console, 'error');
       const response = '{ this:  }is not valid json';
       service.mrdtTimeTakenResponse(response);
       expect(mrdtService.respondTimeTaken.callCount).to.equal(0);

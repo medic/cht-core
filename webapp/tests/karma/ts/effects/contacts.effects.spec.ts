@@ -170,7 +170,7 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(settingSelected.args[0][0]).to.equal(false);
       expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal(
-        { _id: 'contactid', doc: { _id: 'contactid' } }
+        { _id: 'contactid', doc: {} }
       );
       expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal(
         { getChildPlaces: true }
@@ -209,6 +209,67 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.args[0][1]).to.deep.equal({getChildPlaces: true});
     }));
+
+    it('should load the children of the currently selected contact', () => {
+      const updateSelectedContact = sinon.stub(ContactsActions.prototype, 'updateSelectedContact');
+      store.overrideSelector(
+        Selectors.getSelectedContact,
+        {
+          _id: 'previouscontact',
+          doc: {}
+        }
+      );
+      actions$ = of(ContactActionList.setSelectedContact({ _id: 'contactid', doc: {} }));
+      effects.setSelectedContact.subscribe();
+
+      expect(updateSelectedContact.callCount).to.equal(1);
+      expect(updateSelectedContact.args[0][0]).to.deep.equal({ _id: 'contactid', doc: {} });
+      expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadChildren.args[0][0]).to.deep.equal({ _id: 'contactid', doc: {} });
+    });
+
+    it('should call settingSelected called with the right value if refreshing', () => {
+      store.overrideSelector(
+        Selectors.getSelectedContact,
+        {
+          _id: 'contactid',
+          doc: {
+            _id: 'contactid'
+          }
+        }
+      );
+      actions$ = of(ContactActionList.setSelectedContact({ id: 'contactid', doc: {} }));
+      effects.setSelectedContact.subscribe();
+
+      expect(settingSelected.callCount).to.equal(1);
+      expect(settingSelected.args[0][0]).to.equal(true);
+    });
+
+    it('should call settingSelected called with the right value if not refreshing', () => {
+      store.overrideSelector(
+        Selectors.getSelectedContact,
+        {
+          _id: 'previouscontact',
+          doc: {
+            _id: 'previouscontact'
+          }
+        }
+      );
+      actions$ = of(ContactActionList.setSelectedContact({ id: 'contactid', doc: {} }));
+      effects.setSelectedContact.subscribe();
+
+      expect(settingSelected.callCount).to.equal(1);
+      expect(settingSelected.args[0][0]).to.equal(false);
+    });
+
+    it('should reset the store if it is called with null', () => {
+      const updateSelectedContact = sinon.stub(ContactsActions.prototype, 'updateSelectedContact');
+      actions$ = of(ContactActionList.setSelectedContact(null));
+      effects.setSelectedContact.subscribe();
+
+      expect(updateSelectedContact.callCount).to.equal(1);
+      expect(updateSelectedContact.args[0][0]).to.equal(null);
+    });
     
     describe('set title', () => {
       it('should set contact profile title', () => {
@@ -276,13 +337,11 @@ describe('Contacts effects', () => {
   });
 
   describe('updateSelectedContactSummary', () => {
-    let updateSelectedContactsTasks;
     let setContactsLoadingSummary;
     let updateSelectedContactSummary;
     let unsetSelected;
 
     beforeEach(() => {
-      updateSelectedContactsTasks = sinon.stub(ContactsActions.prototype, 'updateSelectedContactsTasks');
       setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
       updateSelectedContactSummary = sinon.stub(ContactsActions.prototype, 'updateSelectedContactSummary');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
@@ -290,24 +349,21 @@ describe('Contacts effects', () => {
 
     it('should call the right actions', fakeAsync(() => {
       contactSummaryService.get.resolves({ summary: 'summary here'});
-      tasksForContactService.get.resolves(['task 1', 'task 2']);
-      actions$ = of(ContactActionList.receiveSelectedContactReports([]));
+      actions$ = of(ContactActionList.loadSelectedContactSummary());
       effects.updateSelectedContactSummary.subscribe();
       flush();
 
       expect(updateSelectedContactSummary.callCount).to.equal(1);
-      expect(updateSelectedContactsTasks.callCount).to.equal(1);
       expect(setContactsLoadingSummary.callCount).to.equal(2);
       expect(setContactsLoadingSummary.args[0][0]).to.equal(true);
       expect(setContactsLoadingSummary.args[1][0]).to.equal(false);
       expect(updateSelectedContactSummary.args[0][0]).to.deep.equal({ summary: 'summary here'});
-      expect(updateSelectedContactsTasks.args[0][0]).to.deep.equal(['task 1', 'task 2']);
     }));
 
     it('should catch contactSummaryService errors', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       contactSummaryService.get.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.receiveSelectedContactReports([]));
+      actions$ = of(ContactActionList.loadSelectedContactSummary());
       effects.updateSelectedContactSummary.subscribe();
       flush();
 
@@ -316,12 +372,41 @@ describe('Contacts effects', () => {
       expect(consoleErrorMock.callCount).to.equal(1);
       expect(consoleErrorMock.args[0][0]).to.equal('Error loading summary');
     }));
+
+    it('should call contactSummaryService with the correct values', fakeAsync(() => {
+      const targetDoc = {
+        _id: 'targets~2020-01~contact~user',
+        values: [
+          { id: 'target1', value: { total: 1, pass: 1 } },
+          { id: 'target2', value: { total: 20, pass: 5 } },
+          { id: 'target3', value: { total: 7, pass: 7 } },
+        ],
+      };
+      store.overrideSelector(
+        Selectors.getSelectedContact,
+        {
+          doc: { _id: 'docid' },
+          reports: [{ _id: 'report1'}, { _id: 'report2' }],
+          lineage: {},
+          targetDoc
+        }
+      );
+      actions$ = of(ContactActionList.loadSelectedContactSummary());
+      effects.updateSelectedContactSummary.subscribe();
+      flush();
+
+      expect(contactSummaryService.get.callCount).to.equal(1);
+      expect(contactSummaryService.get.args[0][0]).to.deep.equal({ _id: 'docid' });
+      expect(contactSummaryService.get.args[0][1]).to.deep.equal([{ _id: 'report1'}, { _id: 'report2' }]);
+      expect(contactSummaryService.get.args[0][2]).to.deep.equal({});
+      expect(contactSummaryService.get.args[0][3]).to.deep.equal(targetDoc);
+    }));
   });
 
   describe('receiveSelectedContactTargetDoc', () => {
     it('should call the receiveSelectedContactTargetDoc action', fakeAsync(() => {
       const receiveSelectedContactTargetDoc = sinon.stub(ContactsActions.prototype, 'receiveSelectedContactTargetDoc');
-      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
+      actions$ = of(ContactActionList.loadSelectedContactTargetDoc());
       effects.receiveSelectedContactTargetDoc.subscribe();
       flush();
 
@@ -332,7 +417,7 @@ describe('Contacts effects', () => {
       const consoleErrorMock = sinon.stub(console, 'error');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
       targetAggregateService.getCurrentTargetDoc.rejects({ error: 'we have a problem'});
-      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
+      actions$ = of(ContactActionList.loadSelectedContactTargetDoc());
       effects.receiveSelectedContactTargetDoc.subscribe();
       flush();
 
@@ -340,6 +425,33 @@ describe('Contacts effects', () => {
       expect(unsetSelected.callCount).to.equal(1);
       expect(consoleErrorMock.callCount).to.equal(1);
       expect(consoleErrorMock.args[0][0]).to.equal('Error loading target doc');
+    }));
+  });
+
+  describe('updateSelectedContactsTasks', () => {
+    it('should call the updateSelectedContactsTasks action', fakeAsync(() => {
+      tasksForContactService.get.resolves(['task 1', 'task 2']);
+      const updateSelectedContactsTasks = sinon.stub(ContactsActions.prototype, 'updateSelectedContactsTasks');
+      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
+      effects.updateSelectedContactsTasks.subscribe();
+      flush();
+
+      expect(updateSelectedContactsTasks.callCount).to.equal(1);
+      expect(updateSelectedContactsTasks.args[0][0]).to.deep.equal(['task 1', 'task 2']);
+    }));
+
+    it('should catch tasksForContactService errors', fakeAsync(() => {
+      const consoleErrorMock = sinon.stub(console, 'error');
+      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      tasksForContactService.get.rejects({ error: 'we have a problem'});
+      actions$ = of(ContactActionList.updateSelectedContactSummary({}));
+      effects.updateSelectedContactsTasks.subscribe();
+      flush();
+
+      expect(tasksForContactService.get.callCount).to.equal(1);
+      expect(unsetSelected.callCount).to.equal(1);
+      expect(consoleErrorMock.callCount).to.equal(1);
+      expect(consoleErrorMock.args[0][0]).to.equal('Error loading tasks');
     }));
   });
 });
