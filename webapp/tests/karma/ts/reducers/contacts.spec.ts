@@ -309,10 +309,10 @@ describe('Contacts Reducer', () => {
     });
   });
 
-  describe('add selected contact', () => {
+  describe('update selected contact', () => {
     it('should add a selected contact to empty list', () => {
       const selected = { _id: 'selected_report', some: 'data' };
-      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
+      const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
 
       expect(newState).to.deep.equal({
         contacts: [],
@@ -336,7 +336,7 @@ describe('Contacts Reducer', () => {
         ])
       };
       const selected = { _id: 'selected_report', some: 'data' };
-      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
+      const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
 
       expect(newState).to.deep.equal({
         contacts: [
@@ -368,7 +368,7 @@ describe('Contacts Reducer', () => {
         selected: { _id: 'first_selected_report', some: 'data' }
       };
       const selected = { _id: 'second_selected_report', some: 'other data' };
-      const newState = contactsReducer(state, Actions.setSelectedContact(selected));
+      const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
 
       expect(newState).to.deep.equal({
         contacts: [
@@ -384,7 +384,7 @@ describe('Contacts Reducer', () => {
         selected: { _id: 'second_selected_report', some: 'other data' },
       });
 
-      const newerState = contactsReducer(state, Actions.setSelectedContact(null));
+      const newerState = contactsReducer(state, Actions.updateSelectedContact(null));
 
       expect(newerState).to.deep.equal({
         contacts: [
