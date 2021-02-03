@@ -137,7 +137,6 @@ const report = {
 describe('africas talking api', () => {
 
   beforeAll(async () => {
-    console.log('before all')
     await utils.requestNative({
       port: constants.COUCH_PORT,
       method: 'PUT',
@@ -162,7 +161,6 @@ describe('africas talking api', () => {
     };
 
     beforeEach(async() => {
-      console.log('before each')
       await submitSms({ from: '+64271234567', text: 'hello', id: 'a' })
     });
 
