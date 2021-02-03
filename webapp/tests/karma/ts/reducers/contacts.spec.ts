@@ -12,7 +12,28 @@ describe('Contacts Reducer', () => {
       contactsById: new Map(),
       selected: [],
       filters: {},
+      loadingSummary: false,
     };
+  });
+
+  it('should set loadingSummary in the state', () => {
+    let newState = contactsReducer(state, Actions.setContactsLoadingSummary(true));
+    expect(newState).to.deep.equal({
+      contacts: [],
+      contactsById: new Map(),
+      selected: [],
+      filters: {},
+      loadingSummary: true,
+    });
+
+    newState = contactsReducer(state, Actions.setContactsLoadingSummary(false));
+    expect(newState).to.deep.equal({
+      contacts: [],
+      contactsById: new Map(),
+      selected: [],
+      filters: {},
+      loadingSummary: false,
+    });
   });
 
   describe('updateContacts', () => {
@@ -42,7 +63,7 @@ describe('Contacts Reducer', () => {
         filters: {},
         selected: null,
         loadingSelectedChildren: false,
-        loadingSelectedContacts: false,
+        loadingSelectedReports: false,
         loadingSummary: false,
       });
     });
@@ -309,95 +330,67 @@ describe('Contacts Reducer', () => {
     });
   });
 
-  describe('update selected contact', () => {
-    it('should add a selected contact to empty list', () => {
-      const selected = { _id: 'selected_report', some: 'data' };
+  describe('updateSelectedContact', () => {
+    it('should set a selected contact in the state', () => {
+      const selected = { _id: 'selected_contact', some: 'data' };
+
       const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
 
       expect(newState).to.deep.equal({
         contacts: [],
         contactsById: new Map(),
         filters: {},
-        selected: { _id: 'selected_report', some: 'data' },
+        selected: { _id: 'selected_contact', some: 'data' },
+        loadingSummary: false,
       });
     });
 
-    it('should add selected report to existing list', ()=> {
+    it('should update selected contact in the state', ()=> {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
-        ])
+        ]),
+        selected: { _id: 'selected_contact' },
       };
-      const selected = { _id: 'selected_report', some: 'data' };
-      const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
+      const newSelected = { _id: 'selected_contact', some: 'data' };
+
+      const newState = contactsReducer(state, Actions.updateSelectedContact(newSelected));
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
         ]),
-        selected: { _id: 'selected_report', some: 'data' },
+        selected: { _id: 'selected_contact', some: 'data' },
       });
     });
 
-    it('should update if there is already a selected report', () => {
+    it('should set null the selected contact in the state', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
         ]),
-        selected: { _id: 'first_selected_report', some: 'data' }
+        selected: { _id: 'selected_contact' },
       };
-      const selected = { _id: 'second_selected_report', some: 'other data' };
-      const newState = contactsReducer(state, Actions.updateSelectedContact(selected));
+
+      const newState = contactsReducer(state, Actions.updateSelectedContact(null));
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
         ]),
-        selected: { _id: 'second_selected_report', some: 'other data' },
-      });
-
-      const newerState = contactsReducer(state, Actions.updateSelectedContact(null));
-
-      expect(newerState).to.deep.equal({
-        contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
-          { _id: '1', name: 'Centre 1', type: 'health_center' },
-        ],
-        contactsById: new Map([
-          ['1', { _id: '1', name: 'Centre 1','type':'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
-        ]),
-        selected: null,
+        selected: null
       });
     });
   });
@@ -414,6 +407,7 @@ describe('Contacts Reducer', () => {
         selected: {
           summary: { some: 'summary' }
         },
+        loadingSummary: false,
       });
     });
 
@@ -429,7 +423,7 @@ describe('Contacts Reducer', () => {
           ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
           ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
         ]),
-        selected: { _id: 'first_selected_report', some: 'data' }
+        selected: { _id: 'first_selected_contact', some: 'data' }
       };
       const summary = { some: 'summary' };
       const newState = contactsReducer(state, Actions.updateSelectedContactSummary(summary));
@@ -445,7 +439,232 @@ describe('Contacts Reducer', () => {
           ['2', { _id: '2', name: 'Facility 2','type':'district_hospital' }],
           ['3', { _id: '3', name: 'Random Facility','type':'district_hospital' }],
         ]),
-        selected: { _id: 'first_selected_report', some: 'data', summary: { some: 'summary' } }
+        selected: { _id: 'first_selected_contact', some: 'data', summary: { some: 'summary' } }
+      });
+    });
+  });
+
+  describe('receiveSelectedContactChildren', () => {
+    it('should set the children of selected contact in the state', () => {
+      state.selected = { _id: 'selected_contact' };
+      const children = [{ _id: 'child-1' }];
+
+      const newState = contactsReducer(state, Actions.receiveSelectedContactChildren(children));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          children: [{ _id: 'child-1' }]
+        },
+        loadingSummary: false,
+        loadingSelectedChildren: false,
+      });
+    });
+
+    it('should update the children of selected contact in the state', ()=> {
+      state.selected = {
+        _id: 'selected_contact',
+        children: [{ _id: 'child-1' }]
+      };
+      const children = [{ _id: 'child-2' }];
+
+      const newState = contactsReducer(state, Actions.receiveSelectedContactChildren(children));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          children: [
+            { _id: 'child-2' }
+          ]
+        },
+        loadingSummary: false,
+        loadingSelectedChildren: false,
+      });
+    });
+  });
+
+  describe('receiveSelectedContactReports', () => {
+    it('should set the reports of selected contact in the state', () => {
+      state.selected = { _id: 'selected_contact' };
+      const reports = [{ _id: 'report-1' }];
+
+      const newState = contactsReducer(state, Actions.receiveSelectedContactReports(reports));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          reports: [{ _id: 'report-1' }]
+        },
+        loadingSummary: false,
+        loadingSelectedReports: false
+      });
+    });
+
+    it('should update the reports of selected contact in the state', ()=> {
+      state.selected = {
+        _id: 'selected_contact',
+        reports: [{ _id: 'report-1' }]
+      };
+      const reports = [{ _id: 'report-2' }];
+
+      const newState = contactsReducer(state, Actions.receiveSelectedContactReports(reports));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          reports: [
+            { _id: 'report-2' }
+          ]
+        },
+        loadingSelectedReports: false,
+        loadingSummary: false,
+      });
+    });
+  });
+
+  describe('updateSelectedContactsTasks', () => {
+    it('should update taskCounts of every contact in children and add tasks to the selected contact in state ', () => {
+      state.selected = {
+        _id: 'selected_contact',
+        children: [
+          {
+            _id: 'child-1',
+            contacts: [ { id: 'contact-1' } ]
+          },
+          {
+            _id: 'child-2',
+            contacts: [ { id: 'contact-2' } ]
+          },
+          {
+            _id: 'child-3',
+            contacts: [ { id: 'contact-3' }, { id: 'contact-4' } ]
+          }
+        ]
+      };
+      const tasks = [
+        {
+          _id: 'task-1',
+          emission: { forId: 'contact-1' }
+        },
+        {
+          _id: 'task-2',
+          emission: { forId: 'contact-1' }
+        },
+        {
+          _id: 'task-3',
+          emission: { forId: 'contact-3' }
+        }
+      ];
+
+      const newState = contactsReducer(state, Actions.updateSelectedContactsTasks(tasks));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          children: [
+            {
+              _id: 'child-1',
+              contacts: [ { id: 'contact-1', taskCount: 2 } ]
+            },
+            {
+              _id: 'child-2',
+              contacts: [ { id: 'contact-2', taskCount: undefined } ]
+            },
+            {
+              _id: 'child-3',
+              contacts: [ { id: 'contact-3', taskCount: 1 }, { id: 'contact-4', taskCount: undefined } ]
+            }
+          ],
+          tasks: [
+            { forId: 'contact-1' },
+            { forId: 'contact-1' },
+            { forId: 'contact-3' }
+          ]
+        },
+        loadingSummary: false,
+      });
+    });
+
+    it('should add tasks but not update children when selected contact doesnt have children in state', () => {
+      state.selected = {
+        _id: 'selected_contact',
+        children: []
+      };
+      const tasks = [{
+        _id: 'task-1',
+        emission: { forId: 'contact-1' }
+      }];
+
+      const newState = contactsReducer(state, Actions.updateSelectedContactsTasks(tasks));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          children: [],
+          tasks: [
+            { forId: 'contact-1' }
+          ]
+        },
+        loadingSummary: false,
+      });
+    });
+  });
+
+  describe('receiveSelectedContactTargetDoc', () => {
+    it('should set the targetDoc of selected contact in the state', () => {
+      state.selected = { _id: 'selected_contact' };
+      const targetDoc = { _id: 'doc-1' };
+
+      const newState = contactsReducer(state, Actions.receiveSelectedContactTargetDoc(targetDoc));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          targetDoc: { _id: 'doc-1' }
+        },
+        loadingSummary: false,
+      });
+    });
+
+    it('should update the targetDoc of selected contact in the state', ()=> {
+      state.selected = {
+        _id: 'selected_contact',
+        targetDoc: { _id: 'doc-1' }
+      };
+      const targetDoc = { _id: 'doc-2' };
+
+      const newState = contactsReducer(state, Actions.receiveSelectedContactTargetDoc(targetDoc));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: {
+          _id: 'selected_contact',
+          targetDoc: { _id: 'doc-2' }
+        },
+        loadingSummary: false,
       });
     });
   });
