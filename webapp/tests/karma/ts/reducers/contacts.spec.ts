@@ -332,7 +332,7 @@ describe('Contacts Reducer', () => {
 
   describe('Set selected contact', () => {
     it('should set the selected contact', () => {
-      const selected = { _id: 'selected_report', some: 'data' };
+      const selected = { _id: 'selected_contact', some: 'data' };
       const newState = contactsReducer(state, Actions.setSelectedContact(selected));
 
       expect(newState).to.deep.equal({
@@ -347,6 +347,8 @@ describe('Contacts Reducer', () => {
     it('should set selected contact with full contacts list', ()=> {
       state = {
         contacts: [
+          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
+          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
