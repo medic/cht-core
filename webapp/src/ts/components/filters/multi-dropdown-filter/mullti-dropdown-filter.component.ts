@@ -95,3 +95,11 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
     this.filterLabel = this.getLabel();
   }
 }
+
+export class MultiDropdownFilterComponentStub {
+  selected = new Map();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  clear(apply) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  toggle(element) {}
+}

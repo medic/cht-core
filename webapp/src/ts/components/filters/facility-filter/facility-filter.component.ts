@@ -15,7 +15,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { Selectors } from '../../../selectors';
 import { GlobalActions } from '@mm-actions/global';
 import {
-  MultiDropdownFilterComponent
+  MultiDropdownFilterComponent,
+  MultiDropdownFilterComponentStub,
 } from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
@@ -36,7 +37,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter:any = { selected: new Map() };
+  dropdownFilter = new MultiDropdownFilterComponentStub(); // initialize variable to avoid change detection errors
 
   constructor(
     private store:Store,
