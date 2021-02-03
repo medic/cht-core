@@ -151,6 +151,9 @@ describe('Global Reducer', () => {
 
     state = globalReducer(state, Actions.setEnketoStatus({ saving: false, edited: false }));
     expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false }});
+
+    state = globalReducer(state, Actions.setEnketoStatus({ error: 'some error' }));
+    expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false, error: 'some error' }});
   });
 
   it('should set cancel callback', () => {
@@ -163,6 +166,9 @@ describe('Global Reducer', () => {
     state = globalReducer(state, Actions.setCancelCallback(otherCallback));
     expect(state).to.deep.equal({ cancelCallback: otherCallback });
     expect(state.cancelCallback()).to.equal('otherthing');
+
+    state = globalReducer(state, Actions.setCancelCallback(null));
+    expect(state).to.deep.equal({ cancelCallback: null });
   });
 
   it('should set right action bar', () => {
@@ -193,5 +199,29 @@ describe('Global Reducer', () => {
     const change = { other: 'e' };
     state = globalReducer(state, Actions.updateRightActionBar(change));
     expect(state).to.deep.equal({ actionBar: { right: { field: 'a', settings: 'b', other: 'e' } } });
+  });
+
+  it('should set selectMode in state', () => {
+    state = globalReducer(state, Actions.setSelectMode(true));
+    expect(state).to.deep.equal({ selectMode: true });
+
+    state = globalReducer(state, Actions.setSelectMode(false));
+    expect(state).to.deep.equal({ selectMode: false });
+  });
+
+  it('should set loadingSubActionBar in state', () => {
+    state = globalReducer(state, Actions.setLoadingSubActionBar(true));
+    expect(state).to.deep.equal({ loadingSubActionBar: true });
+
+    state = globalReducer(state, Actions.setLoadingSubActionBar(false));
+    expect(state).to.deep.equal({ loadingSubActionBar: false });
+  });
+
+  it('should set showContent in state', () => {
+    state = globalReducer(state, Actions.setShowContent(true));
+    expect(state).to.deep.equal({ showContent: true });
+
+    state = globalReducer(state, Actions.setShowContent(false));
+    expect(state).to.deep.equal({ showContent: false });
   });
 });

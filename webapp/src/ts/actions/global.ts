@@ -33,7 +33,7 @@ export const Actions = {
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
-  setLoadingSubActionbar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
+  setLoadingSubActionBar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
@@ -213,7 +213,7 @@ export class GlobalActions {
   }
 
   setLoadingSubActionBar(loading) {
-    return this.store.dispatch(Actions.setLoadingSubActionbar(loading));
+    return this.store.dispatch(Actions.setLoadingSubActionBar(loading));
   }
 
   setUnreadCount(unreadCount) {

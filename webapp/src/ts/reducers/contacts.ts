@@ -1,7 +1,8 @@
-import { Actions } from '../actions/contacts';
 import { createReducer, on } from '@ngrx/store';
 import { UniqueSortedList } from './utils';
+
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { Actions } from '@mm-actions/contacts';
 
 const initialState = {
   contacts: [],
@@ -9,7 +10,7 @@ const initialState = {
   selected: null,
   filters: {},
   loadingSelectedChildren: false,
-  loadingSelectedContacts: false,
+  loadingSelectedReports: false,
   loadingSummary: false,
 };
 
