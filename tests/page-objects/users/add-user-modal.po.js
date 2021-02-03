@@ -40,7 +40,7 @@ const getCancelButton = () => {
 
 module.exports = {
   submit: async () => {
-    await helper.waitUntilReady(getSubmitButton());
+    await helper.waitUntilReadyNative(getSubmitButton());
     await getSubmitButton().click();
   },
 
@@ -50,7 +50,7 @@ module.exports = {
   },
 
   fillForm: async (username, fullName, password) => {
-    await helper.waitUntilReady(getSubmitButton()); // wait for form to load
+    await helper.waitUntilReadyNative(getSubmitButton()); // wait for form to load
     await getUsernameField().sendKeys(username);
     await getFullNameField().sendKeys(fullName);
     await getEmailField().sendKeys('bede@mobile.org');
