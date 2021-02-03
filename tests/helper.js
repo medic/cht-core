@@ -220,7 +220,7 @@ module.exports = {
 
   waitElementToBeVisible: (elm, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
+    return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
   },
 
   waitElementToBeClickable: (elm, timeout) => {
