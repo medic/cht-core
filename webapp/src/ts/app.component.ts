@@ -74,7 +74,6 @@ export class AppComponent implements OnInit {
   translationsLoaded;
 
   currentTab = '';
-  showContent;
   privacyPolicyAccepted;
   showPrivacyPolicy;
   selectMode;
@@ -424,13 +423,6 @@ export class AppComponent implements OnInit {
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.selectMode = selectMode;
-    });
-
-    this.store.select(Selectors.getShowContent).subscribe(showContent => {
-      // A child component updates this value in a change detection cycle and triggers change detection errors
-      setTimeout(() => {
-        this.showContent = showContent;
-      });
     });
   }
 

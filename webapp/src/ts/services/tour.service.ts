@@ -72,7 +72,7 @@ export class TourService {
   }
 
   private mmShow(list, showContent) {
-    const showingContent = $('body').is('.show-content');
+    const showingContent = $('.app-root').is('.show-content');
     if (showContent !== showingContent) {
       // firstLink is the first link available in a list view (in the first record),
       // eg. the first report clickable in the Reports tab, but the link
