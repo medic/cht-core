@@ -31,3 +31,13 @@ export class ReportsAddDeactivationGuardProvider implements CanDeactivate<Report
     return false;
   }
 }
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ReportsSelectModelDeactivationGuardProvider implements CanDeactivate<ReportsAddComponent> {
+  canDeactivate(component: ReportsAddComponent) {
+    // when in select mode, we don't want to navigate away from the "empty" report detail page
+    return !component.selectMode;
+  }
+}

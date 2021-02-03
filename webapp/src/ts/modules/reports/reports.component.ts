@@ -275,26 +275,23 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleSelected(report, event) {
+  toggleSelected(report) {
+    if (!this.selectMode) {
+      // let the routerLink handle navigation
+      return;
+    }
     if (!report?._id) {
       return;
     }
 
-    if (this.selectMode) {
-      // prevent the routerLink redirection
-      event.stopPropagation();
-      const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
-      if (!isSelected) {
-        // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
-        // the selectReport action will actually get all details
-        this.reportsActions.addSelectedReport(report);
-        this.reportsActions.selectReport(report);
-      } else {
-        this.reportsActions.removeSelectedReport(report);
-      }
-      return;
+    const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
+    if (!isSelected) {
+      // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
+      // the selectReport action will actually get all details
+      this.reportsActions.addSelectedReport(report);
+      this.reportsActions.selectReport(report);
+    } else {
+      this.reportsActions.removeSelectedReport(report);
     }
-
-    this.router.navigate(['/reports', report._id]);
   }
 }
