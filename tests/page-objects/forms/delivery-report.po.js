@@ -1,6 +1,5 @@
 const utils = require('../../utils');
 const helper = require('../../helper');
-const genericForm = require('./generic-form.po');
 const fs = require('fs');
 
 const xml = fs.readFileSync(`${__dirname}/../../../config/standard/forms/app/delivery.xml`, 'utf8');
