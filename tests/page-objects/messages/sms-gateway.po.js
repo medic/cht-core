@@ -1,6 +1,7 @@
 const utils = require('../../utils');
 const commonElements = require('../common/common.po');
 const messagePo = require('../messages/messages.po');
+const reportsPo = require('../reports/reports.po');
 const helper = require('../../helper');
 const { browser, element } = require('protractor');
 
@@ -76,10 +77,12 @@ module.exports = {
     await expect(messageStatus).toMatch(status);
   },
 
-  showReport : async () => {
+  showReport : async (reportId) => {
     await commonElements.goToReportsNative();
-    await helper.waitUntilReadyNative(element(by.css('#reports-list li:first-child')));
-    await  element(by.css('#reports-list li:first-child .heading')).click();
+    const report = reportsPo.reportByUUID(reportId).first();
+    console.log(report.locator());
+    await helper.waitUntilReadyNative(report);
+    await report.click();
     await helper.waitElementToPresent(
       element(by.css('#reports-content .body .item-summary .icon'))
     );

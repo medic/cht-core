@@ -188,7 +188,7 @@ describe('sms-gateway api', () => {
 
     it('- shows content', async () => {
 
-      await smsGatewayPo.showReport();
+      await smsGatewayPo.showReport(savedDoc);
 
       // tasks
       expect(await smsGatewayPo.sentTaskState()).toMatch('sent');
@@ -231,7 +231,7 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].to).toBe(messageTo2);
       expect(response.messages[1].content).toBe(messageContent2);
 
-      await smsGatewayPo.showReport();
+      await smsGatewayPo.showReport(savedDoc);
 
       browser.waitForAngular();
       // tasks
