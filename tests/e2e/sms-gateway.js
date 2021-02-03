@@ -155,12 +155,22 @@ describe('sms-gateway api', () => {
 
     it('shows content', async () => {
       //LHS
+      const phone = '+64271234567';
+      const msg = 'hello';
       await smsGatewayPo.showMessageList();
-      await smsGatewayPo.expectMessage('+64271234567', 'hello');
+      const messageListHeading = await helper.getTextFromElement(smsGatewayPo.messageHeading(1));
+      expect(messageListHeading).toBe(phone);
+      const messageListSummary = await helper.getTextFromElement(smsGatewayPo.messageSummary(1));
+      expect(messageListSummary).toBe(msg);
+
       // RHS
       await smsGatewayPo.showMessageDetails();
-      await smsGatewayPo.expectMessageDetails('+64271234567', 'hello', 'received');
-
+      const messageHeader = await helper.getTextFromElement(smsGatewayPo.messageDetailsHeader());
+      expect(messageHeader).toBe(phone);
+      const messageText = await helper.getTextFromElement(smsGatewayPo.incomingData);
+      expect(messageText).toBe(msg);
+      const messageStatus = await helper.getTextFromElement(smsGatewayPo.messageDetailStatus());
+      await expect(messageStatus).toMatch('received');
     });
   });
 
@@ -258,7 +268,6 @@ describe('sms-gateway api', () => {
 
       await smsGatewayPo.showReport(savedDoc);
 
-      browser.waitForAngular();
       // tasks
       expect(await smsGatewayPo.feedbackState()).toMatch('forwarded');
       // scheduled tasks

@@ -38,11 +38,11 @@ module.exports = {
     helper.waitElementToBeVisible(messagePo.messageByIndex(1));
   },
 
-  expectMessage: async (heading, summary) => {
-    const message = messagePo.messageByIndex(1);
-    expect(await helper.getTextFromElement(message.element(by.css('.heading h4')))).toBe(heading);
-    expect(await helper.getTextFromElement(message.element(by.css('.summary p')))).toBe(summary);
-  },
+  messageHeading: (index) => messagePo.messageByIndex(index).element(by.css('.heading h4')),
+  messageSummary: (index) => messagePo.messageByIndex(index).element(by.css('.summary p')),
+  messageDetailsHeader: () => element(by.css('#message-header .name')),
+  incomingData,
+  messageDetailStatus: () =>  element(by.css('#message-content li.incoming:first-child .data .state.received')),
 
   showMessageDetails: async () => {
     // RHS
@@ -51,28 +51,9 @@ module.exports = {
     helper.waitElementToBeVisible(incomingData);
   },
 
-  expectMessageDetails: async (header, text, status) => {
-    browser.waitForAngular();
-    const messageHeader = await helper.getTextFromElement(
-      element(by.css('#message-header .name'))
-    );
-    const messageText = helper.getTextFromElement(incomingData);
-    const messageStatus = helper.getTextFromElement(
-      element(
-        by.css(
-          '#message-content li.incoming:first-child .data .state.received'
-        )
-      )
-    );
-    await expect(messageHeader).toBe(header);
-    await expect(messageText).toBe(text);
-    await expect(messageStatus).toMatch(status);
-  },
-
   showReport : async (reportId) => {
     await commonElements.goToReportsNative();
     const report = reportsPo.reportByUUID(reportId).first();
-    console.log(report.locator());
     await helper.waitUntilReadyNative(report);
     await report.click();
     await helper.waitElementToPresent(
