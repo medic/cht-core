@@ -5,7 +5,7 @@ const addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
 const addedUser = 'fulltester' + new Date().getTime();
 const fullName = 'Bede Ngaruko';
-const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
+
 
 describe('Add user  : ', () => {
 
@@ -29,16 +29,18 @@ describe('Add user  : ', () => {
     await usersPage.openAddUserModal();
     await addUserModal.fillForm('user0', 'Not Saved', 'short');
     await addUserModal.submit();
-    expect(await errorMessagePassword.getText()).toBe('The password must be at least 8 characters long.');
-    await element(by.css('button.cancel.close')).click();
+    const text = await addUserModal.errorMessagePassword().getText();
+    expect(text).toBe('The password must be at least 8 characters long.');
+    await addUserModal.closeButton().click();
   });
 
   it('should reject weak passwords', async () => {
     await usersPage.openAddUserModal();
     await addUserModal.fillForm('user0', 'Not Saved', 'weakPassword');
     await addUserModal.submit();
-    expect(await errorMessagePassword.getText()).toContain('The password is too easy to guess.');
-    await element(by.css('button.cancel.close')).click();
+    const text = await addUserModal.errorMessagePassword().getText();
+    expect(text).toContain('The password is too easy to guess.');
+    await addUserModal.closeButton().click();
   });
 
   it('should reject non-matching passwords', async () => {
@@ -46,26 +48,28 @@ describe('Add user  : ', () => {
     await addUserModal.fillForm('user0', 'Not Saved', '%4wbbygxkgdwvdwT65');
     await element(by.id('edit-password-confirm')).sendKeys('abc');
     await addUserModal.submit();
-    expect(await errorMessagePassword.getText()).toMatch('Passwords must match');
-    await element(by.css('button.cancel.close')).click();
+    const text = await addUserModal.errorMessagePassword().getText();
+    expect(text).toMatch('Passwords must match');
+    await addUserModal.closeButton().click();
   });
 
   it('should require password', async () => {
     await usersPage.openAddUserModal();
     await addUserModal.fillForm('user0', 'Not Saved', '');
     await addUserModal.submit();
-    expect(await errorMessagePassword.getText()).toContain('required');
-    await element(by.css('button.cancel.close')).click();
+    const text = await addUserModal.errorMessagePassword().getText();
+    expect(text).toContain('required');
+    await addUserModal.closeButton().click();
   });
 
   it('should require username', async () => {
     await usersPage.openAddUserModal();
     await addUserModal.fillForm('', 'Not Saved', '%4wbbygxkgdwvdwT65');
     await addUserModal.submit();
-    const errorMessageUserName = element.all(by.css('span.help-block.ng-binding')).get(0);
+    const errorMessageUserName = addUserModal.errorMessageUserName().get(0);
     await helper.waitUntilReadyNative(errorMessageUserName);
     expect(await errorMessageUserName.getText()).toContain('required');
-    await element(by.css('button.cancel.close')).click();
+    await addUserModal.closeButton().click();
   });
 
   it('should require place and contact for restricted user', async () => {
@@ -75,6 +79,6 @@ describe('Add user  : ', () => {
     await addUserModal.submit();
     expect(await element(by.css('#facilitySelect ~ .help-block')).getText()).toContain('required');
     expect(await element(by.css('#contactSelect ~ .help-block')).getText()).toContain('required');
-    await element(by.css('button.cancel.close')).click();
+    await addUserModal.closeButton().click();
   });
 });

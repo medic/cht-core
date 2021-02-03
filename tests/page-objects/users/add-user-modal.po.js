@@ -39,6 +39,9 @@ const getCancelButton = () => {
 };
 
 module.exports = {
+  closeButton: () => element(by.css('button.cancel.close')),
+  errorMessageUserName: () => element.all(by.css('span.help-block.ng-binding')),
+  errorMessagePassword: () => element(by.css('#edit-password ~ .help-block')),
   submit: async () => {
     await helper.waitUntilReadyNative(getSubmitButton());
     await getSubmitButton().click();
