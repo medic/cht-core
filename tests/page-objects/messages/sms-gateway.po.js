@@ -1,5 +1,6 @@
 const utils = require('../../utils');
 const commonElements = require('../common/common.po');
+const messagePo = require('../messages/messages.po');
 const helper = require('../../helper');
 const { browser, element } = require('protractor');
 
@@ -39,33 +40,21 @@ module.exports = {
     await helper.clickElement(element(by.id('messages-tab')));
 
     // LHS
-    helper.waitElementToPresent(
-      element(by.css('#message-list li:first-child'))
-    );
+    helper.waitElementToPresent(messagePo.messageByIndex(1));
     await browser.waitForAngular();
-    helper.waitElementToBeVisible(
-      element(by.css('#message-list li:first-child'))
-    );
+    helper.waitElementToBeVisible(messagePo.messageByIndex(1));
   },
 
   expectMessage: async (heading, summary) => {
-    await expect(
-      helper.getTextFromElement(
-        element(by.css('#message-list li:first-child .heading h4'))
-      )
-    ).toBe(heading);
-    await expect(
-      helper.getTextFromElement(
-        element(by.css('#message-list li:first-child .summary p'))
-      )
-    ).toBe(summary);
+    const message = messagePo.messageByIndex(1);
+    expect(await helper.getTextFromElement(message.element(by.css('.heading h4')))).toBe(heading);
+    expect(await helper.getTextFromElement(message.element(by.css('.summary p')))).toBe(summary);
   },
 
   showMessageDetails: async () => {
     // RHS
-    await helper.clickElement(
-      element(by.css('#message-list li:first-child .summary'))
-    );
+    const message = messagePo.messageByIndex(1);
+    await helper.clickElement(message.element(by.css('.summary')));
     helper.waitElementToBeVisible(incomingData);
   },
 

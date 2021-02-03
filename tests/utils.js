@@ -731,7 +731,7 @@ module.exports = {
   },
 
   deleteDocNative: async id => {
-    const doc = module.exports.getDocNative(id);
+    const doc = await module.exports.getDocNative(id);
     doc._deleted = true;
     return module.exports.saveDocNative(doc);
   },
