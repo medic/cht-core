@@ -20,6 +20,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { EnketoService } from '@mm-services/enketo.service';
 import { ComponentsModule } from '@mm-components/components.module';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Reports Add Component', () => {
   let component:ReportsAddComponent;
@@ -34,6 +35,7 @@ describe('Reports Add Component', () => {
   let enketoService;
   let router;
   let route;
+  let telemetryService;
 
   beforeEach(async(() => {
     dbService = { getAttachment: sinon.stub() };
@@ -53,6 +55,7 @@ describe('Reports Add Component', () => {
       params: new Subject(),
     };
     router = { navigate: sinon.stub() };
+    telemetryService = { record: sinon.stub() };
 
     const mockedSelectors = [
       { selector: Selectors.getLoadingContent, value: false },
@@ -84,6 +87,7 @@ describe('Reports Add Component', () => {
           { provide: EnketoService, useValue: enketoService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
+          { provide: TelemetryService, useValue: telemetryService },
         ],
       })
       .compileComponents()
@@ -98,7 +102,7 @@ describe('Reports Add Component', () => {
     sinon.restore();
   });
 
-  it('should create ReportsComponent', () => {
+  it('should create ReportsAddComponent', () => {
     expect(component).to.exist;
   });
 

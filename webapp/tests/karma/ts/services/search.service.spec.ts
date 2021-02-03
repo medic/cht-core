@@ -8,6 +8,7 @@ import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SessionService } from '@mm-services/session.service';
 import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Search service', () => {
   let service:SearchService;
@@ -16,6 +17,7 @@ describe('Search service', () => {
   let db;
   let clock;
   let session;
+  let telemetryService;
 
   beforeEach(() => {
     GetDataRecords = sinon.stub();
@@ -23,6 +25,7 @@ describe('Search service', () => {
     searchStub.resolves({});
     db = { query: sinon.stub().resolves() };
     session = { isOnlineOnly: sinon.stub() };
+    telemetryService = { record: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -30,7 +33,7 @@ describe('Search service', () => {
         { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
         { provide: SessionService, useValue: session },
         { provide: SearchFactoryService, useValue: { get: () => searchStub } },
-        // todo add telemetry
+        { provide: TelemetryService, useValue: telemetryService },
       ],
     });
     service = TestBed.inject(SearchService);
