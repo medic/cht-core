@@ -15,6 +15,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { EnketoService } from '@mm-services/enketo.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 
 @Component({
@@ -34,6 +35,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     private translateService:TranslateService,
     private router:Router,
     private route:ActivatedRoute,
+    private telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(this.store);
     this.reportsActions = new ReportsActions(this.store);
@@ -191,12 +193,11 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.telemetryData.postRender = Date.now();
                 this.telemetryData.action = model.doc ? 'edit' : 'add';
                 this.telemetryData.form = model.formInternalId;
-                // todo migrate this when Telemetry is migrated
-                /*
-                 Telemetry.record(
-                 `enketo:reports:${telemetryData.form}:${telemetryData.action}:render`,
-                 telemetryData.postRender - telemetryData.preRender);
-                 */
+                
+                this.telemetryService.record(
+                  `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+                  this.telemetryData.postRender - this.telemetryData.preRender
+                );
               })
               .catch((err) => {
                 this.setError(err);
@@ -270,11 +271,11 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.telemetryData.preSave = Date.now();
-    // todo migrate this when Telemetry is migrated
-    /*
-     Telemetry.record(
-     `enketo:reports:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
-     telemetryData.preSave - telemetryData.postRender);*/
+    
+    this.telemetryService.record(
+      `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -293,12 +294,11 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         this.router.navigate(['/reports', docs[0]._id]);
       })
       .then(() => {
-        this.telemetryData.postSave = Date.now();
-        // todo migrate this when Telemetry is migrated
-        /*
-         Telemetry.record(
-         `enketo:reports:${telemetryData.form}:${telemetryData.action}:save`,
-         telemetryData.postSave - telemetryData.preSave);*/
+        this.telemetryData.postSave = Date.now();        
+        this.telemetryService.record(
+          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:save`,
+          this.telemetryData.postSave - this.telemetryData.preSave
+        );
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
