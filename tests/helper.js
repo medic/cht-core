@@ -117,7 +117,7 @@ module.exports = {
       });
   },
 
-  elementByText: (text) => element(by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)),
+  elementByText: text => element(by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)),
 
   isTextDisplayed: text => module.exports.elementByText(text).isDisplayed(),
 
