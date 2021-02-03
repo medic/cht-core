@@ -117,11 +117,13 @@ module.exports = {
       });
   },
 
-  isTextDisplayed: text => {
-    const selectedElement = element(
-      by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
-    );
-    return selectedElement.isDisplayed();
+  elementByText: (text) => element(by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)),
+
+  isTextDisplayed: text => module.exports.elementByText(text).isDisplayed(),
+
+  waitForTextDisplayed: text => {
+    const selectedElement = module.exports.elementByText(text);
+    return module.exports.waitUntilReadyNative(selectedElement);
   },
 
   logConsoleErrors: spec => {

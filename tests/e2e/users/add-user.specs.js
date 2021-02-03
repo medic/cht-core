@@ -9,31 +9,22 @@ const errorMessagePassword = element(by.css('#edit-password ~ .help-block'));
 
 describe('Add user  : ', () => {
 
-  afterAll(done =>
-    utils.request(`/_users/${addedUser}`)
-      .then(doc => utils.request({
-        path: `/_users/${addedUser}?rev=${doc._rev}`,
-        method: 'DELETE'
-      }))
-      .catch(() => {}) // If this fails we don't care
-      .then(() => utils.afterEach(done)));
+  afterAll(async () => {
+    const userPath = `/_users/org.couchdb.user:${addedUser}`;
+    const doc = await utils.requestNative(userPath);
+    await utils.requestNative({
+      path: `${userPath}?rev=${doc._rev}`,
+      method: 'DELETE'
+    });});
 
-  it('should add user with valid password', () => {
-    usersPage.openAddUserModal();
-    addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
-    addUserModal.submit();
-    browser.wait(() => {
-      return element(by.css('#edit-user-profile')).isDisplayed()
-        .then(isDisplayed => {
-          return !isDisplayed;
-        })
-        .catch(() => {
-          return true;
-        });
-    }, 2000);
-    helper.waitForAngularComplete();
-    expect(helper.isTextDisplayed(addedUser)).toBe(true);
-    expect(helper.isTextDisplayed(fullName)).toBe(true);
+  it('should add user with valid password', async () => {
+    await usersPage.openAddUserModal();
+    await addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
+    await addUserModal.submit();
+    await helper.waitForTextDisplayed(addedUser);
+    await helper.waitForTextDisplayed(fullName);
+    expect(await helper.isTextDisplayed(addedUser)).toBe(true);
+    expect(await helper.isTextDisplayed(fullName)).toBe(true);
   });
 
   it('should reject passwords shorter than 8 characters', () => {
