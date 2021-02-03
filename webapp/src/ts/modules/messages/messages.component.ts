@@ -38,7 +38,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private exportService: ExportService,
     private modalService: ModalService,
     private tourService: TourService,
-    private responsiveService:ResponsiveService,
+    private responsiveService: ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);

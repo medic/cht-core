@@ -11,7 +11,7 @@
     <div id="reports-list" class="col-sm-4 inbox-items left-pane">
       <div class="selection-count" *ngIf="selectMode">
         <span *ngIf="selectedReports?.length === 1">{{'select.mode.count.singular' | translate}}</span>
-        <span *ngIf="selectedReports?.length !== 1" translate="select.mode.count.plural" [translateParams]="{ number: selectedReports?.length || 0 }"></span>
+        <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 }">select.mode.count.plural</span>
       </div>
       <ul [hidden]="loading && !appending">
         <li *ngFor="let report of reportsList; trackBy: listTrackBy"

@@ -7,7 +7,6 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { Router } from '@angular/router';
 
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ChangesService } from '@mm-services/changes.service';

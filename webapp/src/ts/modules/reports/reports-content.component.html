@@ -14,7 +14,7 @@
 
     <div class="selection-count" *ngIf="selectMode && selectedReports.length">
       <span *ngIf="selectedReports.length === 1">{{'select.mode.count.singular' | translate}}</span>
-      <span *ngIf="selectedReports.length !== 1" translate="select.mode.count.plural" [translateParams]="{ number: selectedReports?.length }"></span>
+      <span *ngIf="selectedReports.length !== 1" translate [translateParams]="{ number: selectedReports?.length }">select.mode.count.plural</span>
     </div>
 
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">

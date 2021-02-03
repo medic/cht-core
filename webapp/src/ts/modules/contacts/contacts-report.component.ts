@@ -37,17 +37,17 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   cancelCallback;
 
   constructor(
-    private store:Store,
-    private enketoService:EnketoService,
-    private geolocationService:GeolocationService,
-    private telemetryService:TelemetryService,
-    private xmlFormsService:XmlFormsService,
-    private translateFromService:TranslateFromService,
-    private router:Router,
-    private route:ActivatedRoute,
-    private translateService:TranslateService,
-    private contactViewModelGeneratorService:ContactViewModelGeneratorService,
-    private ngZone:NgZone,
+    private store: Store,
+    private enketoService: EnketoService,
+    private geolocationService: GeolocationService,
+    private telemetryService: TelemetryService,
+    private xmlFormsService: XmlFormsService,
+    private translateFromService: TranslateFromService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private translateService: TranslateService,
+    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private ngZone: NgZone,
   ) {
     this.globalActions = new GlobalActions(store);
   }

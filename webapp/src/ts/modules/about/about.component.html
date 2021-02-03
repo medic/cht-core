@@ -65,16 +65,16 @@
       <h4>{{'android_app.data_usage.system.title' | translate}}</h4>
       <dl class="horizontal">
         <dt>{{'android_app.data_usage.rx' | translate}}</dt>
-        <dd translate="number.bytes" [translateParams]="{ number: androidDataUsage?.system?.rx | number }"></dd>
+        <dd translate [translateParams]="{ number: androidDataUsage?.system?.rx | number }">number.bytes</dd>
         <dt>{{'android_app.data_usage.tx' | translate}}</dt>
-        <dd translate="number.bytes" [translateParams]="{ number: androidDataUsage?.system?.tx | number }"></dd>
+        <dd translate [translateParams]="{ number: androidDataUsage?.system?.tx | number }">number.bytes</dd>
       </dl>
       <h4>{{'android_app.data_usage.app.title' | translate}}</h4>
       <dl class="horizontal">
         <dt>{{'android_app.data_usage.rx' | translate}}</dt>
-        <dd translate="number.bytes" [translateParams]="{ number: androidDataUsage?.app?.rx | number }"></dd>
+        <dd translate [translateParams]="{ number: androidDataUsage?.app?.rx | number }">number.bytes</dd>
         <dt>{{'android_app.data_usage.tx' | translate}}</dt>
-        <dd translate="number.bytes" [translateParams]="{ number: androidDataUsage?.app?.tx | number }"></dd>
+        <dd translate [translateParams]="{ number: androidDataUsage?.app?.tx | number }">number.bytes</dd>
       </dl>
     </div>
 

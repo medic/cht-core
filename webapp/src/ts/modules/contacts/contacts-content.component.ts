@@ -49,20 +49,20 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   filteredReports = [];
 
   constructor(
-    private store:Store,
-    private route:ActivatedRoute,
-    private router:Router,
-    private changesService:ChangesService,
-    private contactChangeFilterService:ContactChangeFilterService,
-    private translateService:TranslateService,
-    private translateFromService:TranslateFromService,
-    private xmlFormsService:XmlFormsService,
-    private modalService:ModalService,
-    private contactTypesService:ContactTypesService,
-    private settingsService:SettingsService,
-    private sessionService:SessionService,
-    private userSettingsService:UserSettingsService,
-    private responsiveService:ResponsiveService,
+    private store: Store,
+    private route: ActivatedRoute,
+    private router: Router,
+    private changesService: ChangesService,
+    private contactChangeFilterService: ContactChangeFilterService,
+    private translateService: TranslateService,
+    private translateFromService: TranslateFromService,
+    private xmlFormsService: XmlFormsService,
+    private modalService: ModalService,
+    private contactTypesService: ContactTypesService,
+    private settingsService: SettingsService,
+    private sessionService: SessionService,
+    private userSettingsService: UserSettingsService,
+    private responsiveService: ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
