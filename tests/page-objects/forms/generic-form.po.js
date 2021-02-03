@@ -1,7 +1,9 @@
 const helper = require('../../helper');
+const utils = require('../../utils');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
+const addButton = element(by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus'));
 
 module.exports = {
   submittedName,
@@ -63,6 +65,7 @@ module.exports = {
   },
 
   selectForm: () => {
+    utils.deprecated('selectForm','selectFormNative');
     const addButton = element(
       by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus')
     );
@@ -78,13 +81,37 @@ module.exports = {
     helper.waitElementToPresent(element(by.css('#report-form')));
   },
 
+  selectFormNative: async (formId) => {
+    await helper.waitUntilReadyNative(addButton);
+    await helper.waitElementToBeClickable(addButton);
+    await addButton.click();
+    const form = module.exports.formByHref(formId);
+    await form.click();
+    await helper.waitElementToPresent(element(by.css('#report-form')));
+  },
+
+  formByHref: (href) => {
+    const css = `.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${href}"]`;
+    return element(by.css(css));
+  },
+
   submit: () => {
-    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
     helper.scrollElementIntoView(submitButton);
     helper.waitElementToBeClickable(submitButton);
     submitButton.click();
     helper.waitElementToBeVisible(element(by.css('div#reports-content')));
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
+  },
+
+  submitNative: async () => {
+    const submitButton = element(by.css('.btn.submit.btn-primary'));
+    await helper.waitElementToBeClickable(submitButton);
+    await submitButton.click();
+    await helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+    const details = element(by.css('div.details'));
+    await helper.waitUntilReadyNative(details);
+    expect(await details.isPresent()).toBeTruthy();
   },
 
   validateReport: () => {
