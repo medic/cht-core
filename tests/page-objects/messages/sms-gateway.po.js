@@ -12,13 +12,6 @@ const getState = (first, second) => {
   ));
 };
 const  sentTask = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
-
-const deliveredTask = getState(1,1);
-
-const scheduledTask = getState(1,2);
-
-const failedTask = getState(2,1);
-
 const feedback = element(
   by.css('#reports-content .details > ul .task-list .task-state .state')
 );
@@ -27,7 +20,6 @@ const incomingData = element(by.css('#message-content li.incoming:first-child .d
 
 // scheduled tasks
 // State for messageId2 is still forwarded-to-gateway
-const message2State = getState(1,1);
 
 const getTaskState = async element => {
   await helper.waitUntilReadyNative(element);
@@ -88,16 +80,9 @@ module.exports = {
     );
   },
 
-  sentTaskState : async () => await getTaskState(sentTask),
+  getTaskState,
+  getState,
 
-  deliveredTaskState : async () => await getTaskState(deliveredTask),
-
-  scheduledTaskState : async () => await getTaskState(scheduledTask),
-
-  failedTaskState : async () => await getTaskState(failedTask),
-
-  feedbackState : async () => await getTaskState(feedback),
-
-  messageState : async () => await getTaskState(message2State),
-
+  sentTaskState: async () => await getTaskState(sentTask),
+  feedbackState: async () => await getTaskState(feedback),
 };
