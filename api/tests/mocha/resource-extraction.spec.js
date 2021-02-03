@@ -50,7 +50,7 @@ describe('Resource Extraction', () => {
       expect(mockFs.writeFile.callCount).to.eq(1);
 
       const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-      expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
+      expect(actualOutputPath).to.include('/extracted-resources/js/attached.js');
       expect(actualContent).to.include(expected.content);
     });
   });
@@ -64,7 +64,7 @@ describe('Resource Extraction', () => {
         expect(mockFs.writeFile.callCount).to.eq(1);
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[0];
-        expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
+        expect(actualOutputPath).to.include('/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
       });
   });
@@ -81,7 +81,7 @@ describe('Resource Extraction', () => {
         expect(mockFs.writeFile.callCount).to.eq(2);
 
         const [actualOutputPath, actualContent] = mockFs.writeFile.args[1];
-        expect(actualOutputPath).to.include('src/extracted-resources/js/attached.js');
+        expect(actualOutputPath).to.include('/extracted-resources/js/attached.js');
         expect(actualContent).to.include(expected.content);
       });
   });
@@ -110,8 +110,8 @@ describe('Resource Extraction', () => {
     mockFs.mkdirSync = sinon.stub().returns(true);
     return resourceExtraction.run().then(() => {
       expect(mockFs.mkdirSync.callCount).to.eq(2);
-      expect(mockFs.mkdirSync.args[0][0]).to.include('src/extracted-resources');
-      expect(mockFs.mkdirSync.args[1][0]).to.include('src/extracted-resources/js');
+      expect(mockFs.mkdirSync.args[0][0]).to.include('/extracted-resources');
+      expect(mockFs.mkdirSync.args[1][0]).to.include('/extracted-resources/js');
     });
   });
 
@@ -130,7 +130,7 @@ describe('Resource Extraction', () => {
       resourceExtraction.removeDirectory();
 
       expect(mockFs.existsSync.callCount).to.equal(1);
-      expect(mockFs.existsSync.args[0][0]).to.include('src/extracted-resources');
+      expect(mockFs.existsSync.args[0][0]).to.include('/extracted-resources');
       expect(mockFs.readdirSync.callCount).to.equal(0);
       expect(mockFs.unlinkSync.callCount).to.equal(0);
       expect(mockFs.rmdirSync.callCount).to.equal(0);
@@ -143,11 +143,11 @@ describe('Resource Extraction', () => {
       resourceExtraction.removeDirectory();
 
       expect(mockFs.existsSync.callCount).to.equal(1);
-      expect(mockFs.existsSync.args[0][0]).to.include('src/extracted-resources');
+      expect(mockFs.existsSync.args[0][0]).to.include('/extracted-resources');
       expect(mockFs.readdirSync.callCount).to.equal(1);
-      expect(mockFs.readdirSync.args[0][0]).to.include('src/extracted-resources');
+      expect(mockFs.readdirSync.args[0][0]).to.include('/extracted-resources');
       expect(mockFs.rmdirSync.callCount).to.equal(1);
-      expect(mockFs.rmdirSync.args[0][0]).to.include('src/extracted-resources');
+      expect(mockFs.rmdirSync.args[0][0]).to.include('/extracted-resources');
       expect(mockFs.unlinkSync.callCount).to.equal(0);
       expect(isDirectoryStub.callCount).to.equal(0);
     });
@@ -182,25 +182,25 @@ describe('Resource Extraction', () => {
 
       expect(mockFs.existsSync.callCount).to.equal(5);
       expect(mockFs.readdirSync.callCount).to.equal(5);
-      expect(mockFs.readdirSync.args[0][0]).to.include('src/extracted-resources');
-      expect(mockFs.readdirSync.args[1][0]).to.include('src/extracted-resources/audio');
-      expect(mockFs.readdirSync.args[2][0]).to.include('src/extracted-resources/js');
-      expect(mockFs.readdirSync.args[3][0]).to.include('src/extracted-resources/deep');
-      expect(mockFs.readdirSync.args[4][0]).to.include('src/extracted-resources/deep/deeper');
+      expect(mockFs.readdirSync.args[0][0]).to.include('/extracted-resources');
+      expect(mockFs.readdirSync.args[1][0]).to.include('/extracted-resources/audio');
+      expect(mockFs.readdirSync.args[2][0]).to.include('/extracted-resources/js');
+      expect(mockFs.readdirSync.args[3][0]).to.include('/extracted-resources/deep');
+      expect(mockFs.readdirSync.args[4][0]).to.include('/extracted-resources/deep/deeper');
 
       expect(mockFs.rmdirSync.callCount).to.equal(5);
-      expect(mockFs.rmdirSync.args[0][0]).to.include('src/extracted-resources/audio');
-      expect(mockFs.rmdirSync.args[1][0]).to.include('src/extracted-resources/js');
-      expect(mockFs.rmdirSync.args[2][0]).to.include('src/extracted-resources/deep/deeper');
-      expect(mockFs.rmdirSync.args[3][0]).to.include('src/extracted-resources/deep');
-      expect(mockFs.rmdirSync.args[4][0]).to.include('src/extracted-resources');
+      expect(mockFs.rmdirSync.args[0][0]).to.include('/extracted-resources/audio');
+      expect(mockFs.rmdirSync.args[1][0]).to.include('/extracted-resources/js');
+      expect(mockFs.rmdirSync.args[2][0]).to.include('/extracted-resources/deep/deeper');
+      expect(mockFs.rmdirSync.args[3][0]).to.include('/extracted-resources/deep');
+      expect(mockFs.rmdirSync.args[4][0]).to.include('/extracted-resources');
 
       expect(mockFs.unlinkSync.callCount).to.equal(5);
-      expect(mockFs.unlinkSync.args[0][0]).to.include('src/extracted-resources/audio/audio.mp3');
-      expect(mockFs.unlinkSync.args[1][0]).to.include('src/extracted-resources/index.html');
-      expect(mockFs.unlinkSync.args[2][0]).to.include('src/extracted-resources/js/service-worker.js');
-      expect(mockFs.unlinkSync.args[3][0]).to.include('src/extracted-resources/main.js');
-      expect(mockFs.unlinkSync.args[4][0]).to.include('src/extracted-resources/deep/deeper/any.js');
+      expect(mockFs.unlinkSync.args[0][0]).to.include('/extracted-resources/audio/audio.mp3');
+      expect(mockFs.unlinkSync.args[1][0]).to.include('/extracted-resources/index.html');
+      expect(mockFs.unlinkSync.args[2][0]).to.include('/extracted-resources/js/service-worker.js');
+      expect(mockFs.unlinkSync.args[3][0]).to.include('/extracted-resources/main.js');
+      expect(mockFs.unlinkSync.args[4][0]).to.include('/extracted-resources/deep/deeper/any.js');
     });
   });
 });
