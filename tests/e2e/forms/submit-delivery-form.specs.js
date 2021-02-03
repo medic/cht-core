@@ -11,34 +11,34 @@ describe('Submit Delivery Report', () => {
   'time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
   beforeAll(async () => {
-    await docs.map(utils.saveDoc);
+    await docs.map(utils.saveDocNative);
     await deliveryReport.configureForm(userContactDoc);
   });
 
   afterEach(async () => { await utils.resetBrowser(); });
 
-  afterAll(async () => { await utils.afterEach(); });
+  afterAll(async () => { await utils.afterEachNative(); });
 
   it('open delivery form', async () => {
     await common.goToReports();
-    await genericForm.selectForm();
+    await genericForm.selectFormNative('D');
     //select name
     await deliveryReport.selectPatientName('jack');
-    await genericForm.nextPage();
+    await genericForm.nextPageNative();
     await helper.waitElementToBeVisible(element(by.css('[value="healthy"]')));
     //Delivery info
     await deliveryReport.selectLiveBirthButton();
     await deliveryReport.selectFacilityButton();
     await deliveryReport.enterDeliveryDate('');
-    await genericForm.nextPage();
+    await genericForm.nextPageNative();
     expect(await deliveryReport.getNoteToCHW()).toBe(noteToCHW);
-    await genericForm.nextPage();
+    await genericForm.nextPageNative();
     //summary page
     expect(await deliveryReport.getOutcomeText()).toBe('Live Birth');
     expect(await deliveryReport.getDeliveryLocationSummaryText()).toBe('Facility');
     expect(await deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
     //submit
-    await genericForm.submit();
+    await genericForm.submitNative();
     expect(await element(by.css('div.details')).isPresent()).toBeTruthy();
   });
 });

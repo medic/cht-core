@@ -7,9 +7,9 @@ const xml = fs.readFileSync(`${__dirname}/../../../config/standard/forms/app/del
 
 const docs = [
   {
-    _id: 'form:delivery',
+    _id: 'form:standard_delivery',
     internalId: 'D',
-    title: 'Delivery',
+    title: 'Standard Delivery',
     type: 'form',
     _attachments: {
       xml: {
@@ -20,8 +20,8 @@ const docs = [
   },
 ];
 
-const selectRadioButton = value => {
-  element(by.css(`[value=${value}]`)).click();
+const selectRadioButton = async value => {
+  await element(by.css(`[value=${value}]`)).click();
 };
 
 module.exports = {
@@ -34,14 +34,15 @@ module.exports = {
     return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
   },
 
-  selectPatientName: name => {
-    genericForm.waitForPageToBeReady();
-    element(by.css('.selection')).click();
-    const search = element(by.css('.select2-search__field'));
-    search.click();
-    search.sendKeys(name);
-    helper.waitElementToBeVisible(element(by.css('.name')));
-    element(by.css('.name')).click();
+  selectPatientName: async name => {
+    const select = element(by.css('.selection'));
+    await helper.waitUntilReadyNative(select);
+    await select.click();
+    const search = await element(by.css('.select2-search__field'));
+    await search.click();
+    await search.sendKeys(name);
+    await helper.waitElementToBeVisible(element(by.css('.name')));
+    await element(by.css('.name')).click();
   },
 
   //Delivery Info page -- Pregnancy outcomes
@@ -70,11 +71,11 @@ module.exports = {
   },
 
   //Delivery Info page -- Delivery date
-  enterDeliveryDate: deliveryDate => {
+  enterDeliveryDate: async deliveryDate => {
     const datePicker = element(by.css('[placeholder="yyyy-mm-dd"]'));
-    datePicker.click();
+    await datePicker.click();
     //type date in the text box as '2017-04-23'
-    datePicker.sendKeys(deliveryDate);
+    await datePicker.sendKeys(deliveryDate);
   },
 
   reset: () => {
@@ -82,7 +83,7 @@ module.exports = {
   },
 
   //note to CHW
-  getNoteToCHW: () => {
+  getNoteToCHW: async () => {
     const locator = '[data-value=" /delivery/group_note/default_chw_sms_text "]';
     const  e = element.all(by.css(locator)).filter(function(elem) {
       return elem.getText().then(function(text) {
@@ -109,9 +110,9 @@ module.exports = {
     ).getText();
   },
 
-  getFollowUpMessage: () => {
+  getFollowUpMessage: async () => {
     const css = '[lang="en"] [data-value=" /delivery/chw_sms "]';
-    helper.waitElementToBeVisible(element(by.css(css)));
+    await helper.waitElementToBeVisible(element(by.css(css)));
     return element(by.css(css)).getText();
   },
 };
