@@ -144,6 +144,11 @@ const deletePurgeDbs = () => {
   });
 };
 
+const deletePurgeDbsNative = async () => {
+  const dbs = await getPurgeDbsNative();
+  return dbs.map(async db => await utils.requestNative({ path: `/${db}`, method: 'DELETE' }));
+};
+
 const getPurgeDbs = () => {
   const options = {
     path: '/_all_dbs'
@@ -151,6 +156,14 @@ const getPurgeDbs = () => {
   return utils.request(options).then(dbs => {
     return dbs.filter(db => db.startsWith(`${constants.DB_NAME}-purged-role-`));
   });
+};
+
+const getPurgeDbsNative = async () => {
+  const options = {
+    path: '/_all_dbs'
+  };
+  const dbs = await utils.requestNative(options);
+  return dbs.filter(db => db.startsWith(`${constants.DB_NAME}-purged-role-`));
 };
 
 const waitForPurgeCompletion = seq => {
@@ -168,7 +181,23 @@ const waitForPurgeCompletion = seq => {
     });
 };
 
+const waitForPurgeCompletionNative = async seq => {
+  const params = {
+    since: seq,
+    feed: 'longpoll',
+  };
+  const result = await requestOnSentinelTestDbNative('/_changes?' + querystring.stringify(params));
+  if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
+    return;
+  }
+  waitForPurgeCompletionNative(result.last_seq);
+};
+
 const getCurrentSeq = () => requestOnSentinelTestDb('').then(data => data.update_seq);
+const getCurrentSeqNative = async () => { 
+  const data = await requestOnSentinelTestDbNative('');
+  return data.update_seq;
+};
 
 module.exports = {
   waitForSentinel: docIds => waitForSeq('/_local/transitions-seq', docIds),
@@ -179,7 +208,10 @@ module.exports = {
   getInfoDocs: getInfoDocs,
   getInfoDocsNative:getInfoDocsNative,
   deletePurgeDbs: deletePurgeDbs,
+  deletePurgeDbsNative,
   waitForPurgeCompletion: waitForPurgeCompletion,
+  waitForPurgeCompletionNative,
   getCurrentSeq: getCurrentSeq,
+  getCurrentSeqNative,
   getPurgeDbs: getPurgeDbs,
 };

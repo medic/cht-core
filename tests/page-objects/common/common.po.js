@@ -8,7 +8,7 @@ const genericCancelBtn = element(by.css('.modal .btn.cancel'));
 const messagesLink = element(by.id('messages-tab'));
 const analyticsLink = element(by.id('analytics-tab'));
 const hamburgerMenu = element(by.css('.dropdown.options>a'));
-const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
+const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li:not(.hidden)'));
 const logoutButton = $('[ng-click=logout]');
 
 // Configuration wizard
@@ -81,6 +81,12 @@ module.exports = {
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
 
+  syncNative: async () => {
+    await module.exports.openMenuNative();
+    await openSubmenu('sync');
+    await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
+  },
+
   checkUserSettings: () => {
     openSubmenu('user settings');
     const optionNames = helper.getTextFromElements(settings);
@@ -114,9 +120,16 @@ module.exports = {
   },
 
   goToMessages: () => {
+    utils.deprecated('goToMesssages','goToMessagesNative');
     browser.get(utils.getBaseUrl() + 'messages/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('message-list')));
+  },
+
+  goToMessagesNative: async () => {
+    await browser.get(utils.getBaseUrl() + 'messages/');
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('message-list')));
   },
 
   goToPeople: async () => {
@@ -193,6 +206,12 @@ module.exports = {
     helper.waitUntilReady(messagesLink);
     helper.clickElement(hamburgerMenu);
     helper.waitUntilReady(hamburgerMenuOptions);
+  },
+
+  openMenuNative: async () => {
+    await helper.waitUntilReadyNative(messagesLink);
+    await helper.clickElementNative(hamburgerMenu);
+    await helper.waitUntilReadyNative(hamburgerMenuOptions.first());
   },
 
   confirmDelete: async () => {

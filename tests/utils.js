@@ -818,6 +818,13 @@ module.exports = {
         return refreshToGetNewSettings();
       }
     }),
+  
+  revertSettingsNative: async ignoreRefresh => {
+    await revertSettingsNative();
+    if (!ignoreRefresh) {
+      return refreshToGetNewSettings();
+    }
+  },
 
   seedTestData: (done, userContactDoc, documents) => {
     deprecated('seedTestData', 'seedTestDataNative');

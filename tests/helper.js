@@ -41,6 +41,21 @@ module.exports = {
       });
   },
 
+  clickElementNative: async element => {
+    await handleUpdateModalNative();
+    try {
+      const msg = `First attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element),12000, msg);
+      await element.click();
+    } catch (err) {
+      browser.sleep(1000);
+      handleUpdateModalNative();
+      const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
+      await element.click();
+    } 
+  },
+
   /**
    * Usage: findVisible element and click on it
    * elements : array of all elements where required elemnt has to present
