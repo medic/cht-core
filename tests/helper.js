@@ -12,6 +12,12 @@ function handleUpdateModal() {
   }
 }
 
+const handleUpdateModalNative = async () => {
+  if (await element(by.css('#update-available')).isPresent()) {
+    await $('body').sendKeys(protractor.Key.ENTER);
+  }
+};
+
 module.exports = {
   clickElement: element => {
     handleUpdateModal();
@@ -277,4 +283,5 @@ module.exports = {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
+  handleUpdateModalNative,
 };
