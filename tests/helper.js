@@ -298,4 +298,5 @@ module.exports = {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
+  handleUpdateModalNative,
 };
