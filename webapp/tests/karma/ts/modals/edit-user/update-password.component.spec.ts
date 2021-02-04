@@ -160,77 +160,64 @@ describe('UpdatePasswordComponent', () => {
   it('user is updated with password change', async () => {
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
-    const loginData = JSON.stringify({
-      user: 'admin',
-      password: password,
-      redirect: '',
-      locale: ''
-    });
+    const user = 'admin';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
     component.editUserModel.currentPassword = currentPassword;
     userLoginService.login.resolves({});
-    component.updatePassword();
-    await Promise.resolve();
+    await component.updatePassword();
+
     expect(translateHelperService.get.called).to.equal(false);
     expect(component.errors).to.deep.equal({});
     expect(updateUserService.update.called).to.equal(true);
-    expect(updateUserService.update.getCall(0).args[0]).to.equal('admin');
+    expect(updateUserService.update.getCall(0).args[0]).to.equal(user);
     expect(updateUserService.update.getCall(0).args[1].password).to.equal(password);
-    expect(updateUserService.update.getCall(0).args[2]).to.equal('admin');
+    expect(updateUserService.update.getCall(0).args[2]).to.equal(user);
     expect(updateUserService.update.getCall(0).args[3]).to.equal(currentPassword);
     expect(userLoginService.login.called).to.equal(true);
-    expect(userLoginService.login.getCall(0).args[0]).to.equal(loginData);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(user, password);
   });
 
-  it('should login user when password is correclty updated', (done) => {
+  it('should login user when password is correclty updated', async () => {
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
-    const loginData = JSON.stringify({
-      user: 'admin',
-      password: password,
-      redirect: '',
-      locale: ''
-    });
+    const user = 'admin';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
     component.editUserModel.currentPassword = currentPassword;
-    component.updatePassword();
+
     modalService.show.resolves({});
     userLoginService.login.rejects({status: 302});
-    setTimeout(() => {
-      expect(updateUserService.update.called).to.equal(true);
-      expect(userLoginService.login.called).to.equal(true);
-      expect(userLoginService.login.getCall(0).args[0]).to.equal(loginData);
-      expect(setFinished.callCount).to.equal(1);
-      expect(close.callCount).to.equal(1);
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.args[0]).to.deep.equal([
-        ConfirmPasswordUpdatedComponent,
-      ]);
-      done();
-    });
+
+    await component.updatePassword();
+
+    expect(updateUserService.update.called).to.equal(true);
+    expect(userLoginService.login.called).to.equal(true);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(user, password);
+    expect(setFinished.callCount).to.equal(1);
+    expect(close.callCount).to.equal(1);
+    expect(modalService.show.callCount).to.equal(1);
+    expect(modalService.show.args[0]).to.deep.equal([
+      ConfirmPasswordUpdatedComponent,
+    ]);
   });
 
   it('should not show updated password modal when login is not successful', async () => {
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
-    const loginData = JSON.stringify({
-      user: 'admin',
-      password: password,
-      redirect: '',
-      locale: ''
-    });
+    const user = 'admin';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
     component.editUserModel.currentPassword = currentPassword;
-    component.updatePassword();
+
     modalService.show.resolves({});
     userLoginService.login.rejects({status: 401});
-    await Promise.resolve();
+
+    await component.updatePassword();
+
     expect(updateUserService.update.called).to.equal(true);
     expect(userLoginService.login.called).to.equal(true);
-    expect(userLoginService.login.getCall(0).args[0]).to.equal(loginData);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(user, password);
     expect(setFinished.callCount).to.equal(0);
     expect(close.callCount).to.equal(0);
     expect(modalService.show.callCount).to.equal(0);

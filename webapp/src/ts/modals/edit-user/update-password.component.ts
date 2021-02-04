@@ -56,12 +56,11 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
       const password = this.editUserModel.password;
       const updates = { password };
       const username = this.editUserModel.username;
-      this.updateUserService
+      return this.updateUserService
         .update(username, updates, username, this.editUserModel.currentPassword)
         .then(() => {
-          const data = this.getLoginData(username, password);
-          this.userLoginService
-            .login(data)
+          return this.userLoginService
+            .login(username, password)
             .catch(err => {
               if (err.status === 302) {
                 this.setFinished();
@@ -69,7 +68,8 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
 
                 this.modalService
                   .show(ConfirmPasswordUpdatedComponent)
-                  .catch(() => this.windowReload());
+                  .catch(() => {})
+                  .finally(() => this.windowReload());
               } else {
                 this.windowReload();
               }
@@ -93,15 +93,6 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
     } else {
       this.setError();
     }
-  }
-
-  private getLoginData (username, password) {
-    return JSON.stringify({
-      user: username,
-      password: password,
-      redirect: '',
-      locale: ''
-    });
   }
 
   private windowReload() {

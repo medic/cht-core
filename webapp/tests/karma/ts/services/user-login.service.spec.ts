@@ -10,6 +10,9 @@ describe('UserLogin service', () => {
   let httpMock: HttpTestingController;
   let location: LocationService;
 
+  const user = 'admin';
+  const password = 'password';
+
   const getUrl = function() {
     location.dbName = 'medicdb';
     return '/' + location.dbName + '/login';
@@ -36,7 +39,7 @@ describe('UserLogin service', () => {
       redirect: '',
       locale: ''
     });
-    const login = service.login(data);
+    const login = service.login(user, password);
     const res = httpMock.expectOne(url);
     res.flush({ success: true });
     const result: any = await login;
@@ -47,13 +50,7 @@ describe('UserLogin service', () => {
 
   it('should return error call login backend service', () => {
     const url = getUrl();
-    const data = JSON.stringify({
-      user: 'admin',
-      password: 'password',
-      redirect: '',
-      locale: ''
-    });
-    const login = service.login(data);
+    const login = service.login(user, password);
     const res = httpMock.expectOne(url);
     res.flush({message: 'Not logged in'}, {status: 401, statusText: 'Not logged in'});
 

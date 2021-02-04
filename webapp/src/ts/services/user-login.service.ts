@@ -14,9 +14,10 @@ export class UserLoginService {
   /**
    * Calls back-end Login service. 
    *
-   * @param {Object} data Data needed for login.
+   * @param {String} username username of the user to be logged in.
+   * @param {String} password password of the user.
    */
-  login(data): Promise<Object> {
+  login(username, password): Promise<Object> {
 
     const url = '/' + this.location.dbName + '/login';
 
@@ -25,7 +26,14 @@ export class UserLoginService {
       'Accept': 'application/json',
     };
 
-    console.debug('UserLogin', url, data.user);
+    const data = JSON.stringify({
+      user: username,
+      password: password,
+      redirect: '',
+      locale: ''
+    });
+
+    console.debug('UserLogin', url, username);
 
     return this.http.post(url, data || {}, {headers}).toPromise();
   }
