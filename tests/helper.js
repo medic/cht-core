@@ -41,6 +41,21 @@ module.exports = {
       });
   },
 
+  clickElementNative: async element => {
+    await handleUpdateModalNative();
+    try {
+      const msg = `First attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element),12000, msg);
+      await element.click();
+    } catch (err) {
+      browser.sleep(1000);
+      handleUpdateModalNative();
+      const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
+      await element.click();
+    } 
+  },
+
   /**
    * Usage: findVisible element and click on it
    * elements : array of all elements where required elemnt has to present
@@ -123,13 +138,11 @@ module.exports = {
       });
   },
 
-  elementByText: text => element(by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)),
-
-  isTextDisplayed: text => module.exports.elementByText(text).isDisplayed(),
-
-  waitForTextDisplayed: text => {
-    const selectedElement = module.exports.elementByText(text);
-    return module.exports.waitUntilReadyNative(selectedElement);
+  isTextDisplayed: text => {
+    const selectedElement = element(
+      by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
+    );
+    return selectedElement.isDisplayed();
   },
 
   logConsoleErrors: spec => {
@@ -228,7 +241,7 @@ module.exports = {
 
   waitElementToBeVisible: (elm, timeout) => {
     timeout = timeout || 15000;
-    return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
+    browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
   },
 
   waitElementToBeClickable: (elm, timeout) => {
@@ -285,5 +298,4 @@ module.exports = {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
-  handleUpdateModalNative,
 };

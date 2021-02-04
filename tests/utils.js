@@ -586,7 +586,6 @@ module.exports = {
   }),
 
   requestOnTestDb: (options, debug) => {
-    deprecated('requestOnTestDb','requestOnTestDbNative');
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -615,7 +614,6 @@ module.exports = {
   },
 
   requestOnTestMetaDb: (options, debug) => {
-    deprecated('requestOnTestMetaDb','requestOnTestMetaDbNative');
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -668,8 +666,8 @@ module.exports = {
   },
 
   saveDocs: docs => {
-    deprecated('saveDocs','saveDocsNative');
-    return module.exports
+    deprecated('utils.saveDocs', 'utils.saveDocsNative');
+    module.exports
       .requestOnTestDb({
         path: '/_bulk_docs',
         method: 'POST',
@@ -681,7 +679,7 @@ module.exports = {
         } else {
           return results;
         }
-      });
+      }).catch();
   },
 
   saveDocsNative: async (docs) =>{
@@ -700,7 +698,6 @@ module.exports = {
   },
 
   getDoc: id => {
-    deprecated('getDoc','getDocNative');
     deprecated('utils.getDoc', 'utils.getDocNative');
     return module.exports.requestOnTestDbNative({
       path: `/${id}`,
@@ -716,7 +713,6 @@ module.exports = {
   },
 
   getDocs: ids => {
-    deprecated('getDocs','getDocsNative');
     return module.exports
       .requestOnTestDb({
         path: `/_all_docs?include_docs=true`,
@@ -727,28 +723,11 @@ module.exports = {
       .then(response => response.rows.map(row => row.doc));
   },
 
-  getDocsNative: async ids => {
-    const response = await module.exports
-      .requestOnTestDbNative({
-        path: `/_all_docs?include_docs=true`,
-        method: 'POST',
-        body: { keys: ids || []},
-        headers: { 'content-type': 'application/json' },
-      });
-    return response.rows.map(row => row.doc);
-  },
-
   deleteDoc: id => {
     return module.exports.getDoc(id).then(doc => {
       doc._deleted = true;
       return module.exports.saveDoc(doc);
     });
-  },
-
-  deleteDocNative: async id => {
-    const doc = await module.exports.getDocNative(id);
-    doc._deleted = true;
-    return module.exports.saveDocNative(doc);
   },
 
   deleteDocs: ids => {
@@ -790,14 +769,12 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) => {
-    deprecated('updateSettings','updateSettingsNative');
-    return updateSettings(updates).then(() => {
+  updateSettings: (updates, ignoreRefresh = false) =>
+    updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
-    });
-  },
+    }),
   
   updateSettingsNative: async (updates, ignoreRefresh = false) => {
     await updateSettingsNative(updates);
@@ -818,6 +795,13 @@ module.exports = {
         return refreshToGetNewSettings();
       }
     }),
+  
+  revertSettingsNative: async ignoreRefresh => {
+    await revertSettingsNative();
+    if (!ignoreRefresh) {
+      return refreshToGetNewSettings();
+    }
+  },
 
   seedTestData: (done, userContactDoc, documents) => {
     deprecated('seedTestData', 'seedTestDataNative');
@@ -848,7 +832,6 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: done => {
-    deprecated('afterEach','afterEachNative');
     return revertDb()
       .then(() => {
         if (done) {

@@ -8,7 +8,7 @@ const genericCancelBtn = element(by.css('.modal .btn.cancel'));
 const messagesLink = element(by.id('messages-tab'));
 const analyticsLink = element(by.id('analytics-tab'));
 const hamburgerMenu = element(by.css('.dropdown.options>a'));
-const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
+const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li:not(.hidden)'));
 const logoutButton = $('[ng-click=logout]');
 
 // Configuration wizard
@@ -32,11 +32,11 @@ const messagesList = element(by.id('message-list'));
 module.exports = {
   messagesList,
   calm: async () => {
+
     // const bootstrapperSelector = by.css('.bootstrap-layer');
-    // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
-    // await helper.waitElementToPresent(element(bootstrapperSelector));
-    // await helper.waitElementToDisappear(bootstrapperSelector);
-    await helper.waitUntilReady(medicLogo);
+    // helper.waitElementToPresent(element(bootstrapperSelector));
+    // helper.waitElementToDisappear(bootstrapperSelector);
+    helper.waitUntilReady(medicLogo);
   },
 
   calmNative: async () => {
@@ -76,9 +76,16 @@ module.exports = {
   },
 
   sync: () => {
+    utils.deprecated('sync','syncNative');
     module.exports.openMenu();
     openSubmenu('sync');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
+  },
+
+  syncNative: async () => {
+    await module.exports.openMenuNative();
+    await openSubmenu('sync');
+    await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
   checkUserSettings: () => {
@@ -190,9 +197,16 @@ module.exports = {
   },
 
   openMenu: () => {
+    utils.deprecated('openMenu','openMenuNative');
     helper.waitUntilReady(messagesLink);
     helper.clickElement(hamburgerMenu);
     helper.waitUntilReady(hamburgerMenuOptions);
+  },
+
+  openMenuNative: async () => {
+    await helper.waitUntilReadyNative(messagesLink);
+    await helper.clickElementNative(hamburgerMenu);
+    await helper.waitUntilReadyNative(hamburgerMenuOptions.first());
   },
 
   confirmDelete: async () => {
@@ -206,5 +220,5 @@ module.exports = {
 };
 
 function openSubmenu(menuName) {
-  helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
+  return helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
 }
