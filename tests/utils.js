@@ -691,7 +691,6 @@ module.exports = {
         method: 'POST',
         body: { docs: docs }
       });
-      
     if (results.find(r => !r.ok)) {
       throw Error(JSON.stringify(results, null, 2));
     } else {
