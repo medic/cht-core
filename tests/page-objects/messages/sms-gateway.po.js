@@ -53,7 +53,7 @@ module.exports = {
 
   showReport : async (reportId) => {
     await commonElements.goToReportsNative();
-    const report = reportsPo.reportByUUID(reportId).first();
+    const report = reportsPo.reportByUUID(reportId)
     await helper.waitUntilReadyNative(report);
     await report.click();
     await helper.waitElementToPresent(
