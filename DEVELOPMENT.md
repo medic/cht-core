@@ -50,7 +50,7 @@ Medic recommends you familiarise yourself with other Docker commands to make doc
 
 ### CouchDB on Ubuntu
 
-While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there's some caveats: 
+While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats: 
 
 * For Ubuntu 18.04 and earlier, you need to specify in `apt` version to install with the `-V` flag.  For example, on a clean 18.04 install you would run:
    ```bash
