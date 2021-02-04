@@ -139,11 +139,13 @@ module.exports = {
       });
   },
 
-  isTextDisplayed: text => {
-    const selectedElement = element(
-      by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)
-    );
-    return selectedElement.isDisplayed();
+  elementByText: text => element(by.xpath(`//*[contains(normalize-space(text()), "${text}")]`)),
+
+  isTextDisplayed: text => module.exports.elementByText(text).isDisplayed(),
+
+  waitForTextDisplayed: text => {
+    const selectedElement = module.exports.elementByText(text);
+    return module.exports.waitUntilReadyNative(selectedElement);
   },
 
   logConsoleErrors: spec => {
@@ -242,7 +244,7 @@ module.exports = {
 
   waitElementToBeVisible: (elm, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
+    return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
   },
 
   waitElementToBeClickable: (elm, timeout) => {
@@ -299,4 +301,5 @@ module.exports = {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
   handleUpdateModal,
+  handleUpdateModalNative,
 };
