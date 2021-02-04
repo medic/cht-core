@@ -33,7 +33,7 @@ module.exports = {
     return reportElement.element(by.css('.summary'));
   },
   loadReport: async uuid => {
-    const report = module.exports.reportByUUID(uuid).first();
+    const report = module.exports.reportByUUID(uuid);
     await helper.waitElementToBeClickable(report);
     await helper.clickElement(report);
     await helper.waitElementToPresent(module.exports.reportSummary(), 3000);
