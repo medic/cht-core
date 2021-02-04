@@ -54,33 +54,39 @@ const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsyncScript
 });
 
 describe('Service worker cache', () => {
-  afterEach(utils.afterEach);
+  afterEach(utils.afterEachNative);
 
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
+
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
     expect(cacheDetails.urls).to.deep.eq([
       '/',
       '/audio/alert.mp3',
-      '/styles.css',
+      '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
       '/fonts/enketo-icons-v2.woff',
-      '/fonts/fontawesome-webfont.woff2',
       '/img/icon-chw-selected.svg',
       '/img/icon-chw.svg',
       '/img/icon-nurse-selected.svg',
       '/img/icon-nurse.svg',
       '/img/icon-pregnant-selected.svg',
       '/img/icon-pregnant.svg',
+      '/img/layers.png',
       '/img/setup-wizard-demo.png',
       '/img/simprints.png',
-      '/main.js',
       '/login/script.js',
       '/login/style.css',
+      '/main.js',
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
+      '/polyfills-es5.js',
+      '/polyfills.js',
+      '/runtime.js',
+      '/scripts.js',
+      '/styles.css'
     ]);
   });
 
@@ -106,6 +112,7 @@ describe('Service worker cache', () => {
       
       // confirm no additional requests were added into the cache
       const { urls: resultingCachedUrls } = await getCachedRequests();
+
       expect(resultingCachedUrls).to.deep.eq(initialCachedUrls);
     } finally {
       // since we've broken the cache. for sw registration
