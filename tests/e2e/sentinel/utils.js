@@ -48,6 +48,7 @@ const waitForSeq = (metadataId, docIds) => {
 };
 
 const requestOnSentinelTestDb = (options) => {
+  utils.deprecated('requestOnSentinelTestDb','requestOnSentinelTestDbNative');
   if (typeof options === 'string') {
     options = {
       path: options,
@@ -55,6 +56,16 @@ const requestOnSentinelTestDb = (options) => {
   }
   options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
   return utils.request(options);
+};
+
+const requestOnSentinelTestDbNative = (options) => {
+  if (typeof options === 'string') {
+    options = {
+      path: options,
+    };
+  }
+  options.path = '/' + constants.DB_NAME + '-sentinel' + (options.path || '');
+  return utils.requestNative(options);
 };
 
 const getInfoDoc = docId => {
@@ -81,7 +92,13 @@ const deletePurgeDbs = () => {
   });
 };
 
+const deletePurgeDbsNative = async () => {
+  const dbs = await getPurgeDbsNative();
+  return dbs.map(async db => await utils.requestNative({ path: `/${db}`, method: 'DELETE' }));
+};
+
 const getPurgeDbs = () => {
+  utils.deprecated('getPurgeDbs','getPurgeDbsNative');
   const options = {
     path: '/_all_dbs'
   };
@@ -90,7 +107,16 @@ const getPurgeDbs = () => {
   });
 };
 
+const getPurgeDbsNative = async () => {
+  const options = {
+    path: '/_all_dbs'
+  };
+  const dbs = await utils.requestNative(options);
+  return dbs.filter(db => db.startsWith(`${constants.DB_NAME}-purged-role-`));
+};
+
 const waitForPurgeCompletion = seq => {
+  utils.deprecated('waitForPurgeCompletion','waitForPurgeCompletionNative');
   const params = {
     since: seq,
     feed: 'longpoll',
@@ -105,16 +131,36 @@ const waitForPurgeCompletion = seq => {
     });
 };
 
+const waitForPurgeCompletionNative = async seq => {
+  const params = {
+    since: seq,
+    feed: 'longpoll',
+  };
+  const result = await requestOnSentinelTestDbNative('/_changes?' + querystring.stringify(params));
+  if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
+    return;
+  }
+  waitForPurgeCompletionNative(result.last_seq);
+};
+
 const getCurrentSeq = () => requestOnSentinelTestDb('').then(data => data.update_seq);
+const getCurrentSeqNative = async () => { 
+  const data = await requestOnSentinelTestDbNative('');
+  return data.update_seq;
+};
 
 module.exports = {
   waitForSentinel: docIds => waitForSeq('/_local/transitions-seq', docIds),
   waitForBackgroundCleanup: docIds => waitForSeq('/_local/background-seq', docIds),
   requestOnSentinelTestDb: requestOnSentinelTestDb,
+  requestOnSentinelTestDbNative,
   getInfoDoc: getInfoDoc,
   getInfoDocs: getInfoDocs,
   deletePurgeDbs: deletePurgeDbs,
+  deletePurgeDbsNative,
   waitForPurgeCompletion: waitForPurgeCompletion,
+  waitForPurgeCompletionNative,
   getCurrentSeq: getCurrentSeq,
+  getCurrentSeqNative,
   getPurgeDbs: getPurgeDbs,
 };
