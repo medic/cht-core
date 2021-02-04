@@ -35,6 +35,9 @@
           <text id="/child_development_follow_up/inputs/contact/_id:label">
             <value>Patient ID</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact/name:label">
             <value>Patient Name</value>
           </text>
@@ -65,6 +68,9 @@
           <text id="/child_development_follow_up/inputs/contact/patient_id:label">
             <value>Medic ID</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact:label">
             <value>Contact</value>
           </text>
@@ -77,11 +83,17 @@
           <text id="/child_development_follow_up/inputs:label">
             <value>Patient</value>
           </text>
-          <text id="/child_development_follow_up/patient_name:label">
-            <value>-</value>
+          <text id="/child_development_follow_up/summary/summary_submit1:label">
+            <value>Malnutrition follow up&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit2:label">
+            <value>Click the Submit button at the bottom of the form.</value>
           </text>
         </translation>
         <translation lang="fr">
+          <text id="/child_development_follow_up/data:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/group_assessment/agreed_to_go/no:label">
             <value>-</value>
           </text>
@@ -110,6 +122,9 @@
             <value>-</value>
           </text>
           <text id="/child_development_follow_up/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/inputs/contact/date_of_birth:label">
             <value>-</value>
           </text>
           <text id="/child_development_follow_up/inputs/contact/name:label">
@@ -142,6 +157,9 @@
           <text id="/child_development_follow_up/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact:label">
             <value>-</value>
           </text>
@@ -154,11 +172,35 @@
           <text id="/child_development_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/patient_name:label">
             <value>../inputs/contact/name</value>
           </text>
+          <text id="/child_development_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary:label">
+            <value>-</value>
+          </text>
         </translation>
         <translation lang="hi">
+          <text id="/child_development_follow_up/data:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/group_assessment/agreed_to_go/no:label">
             <value>-</value>
           </text>
@@ -189,6 +231,9 @@
           <text id="/child_development_follow_up/inputs/contact/_id:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact/name:label">
             <value>-</value>
           </text>
@@ -219,6 +264,9 @@
           <text id="/child_development_follow_up/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact:label">
             <value>-</value>
           </text>
@@ -231,11 +279,35 @@
           <text id="/child_development_follow_up/inputs:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
         <translation lang="id">
+          <text id="/child_development_follow_up/data:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/group_assessment/agreed_to_go/no:label">
             <value>-</value>
           </text>
@@ -266,6 +338,9 @@
           <text id="/child_development_follow_up/inputs/contact/_id:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact/name:label">
             <value>-</value>
           </text>
@@ -296,6 +371,9 @@
           <text id="/child_development_follow_up/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact:label">
             <value>-</value>
           </text>
@@ -308,11 +386,35 @@
           <text id="/child_development_follow_up/inputs:label">
             <value>./source = 'user'</value>
           </text>
+          <text id="/child_development_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
         <translation lang="sw">
+          <text id="/child_development_follow_up/data:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/group_assessment/agreed_to_go/no:label">
             <value>-</value>
           </text>
@@ -343,6 +445,9 @@
           <text id="/child_development_follow_up/inputs/contact/_id:label">
             <value>db-object</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/date_of_birth:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact/name:label">
             <value>-</value>
           </text>
@@ -373,6 +478,9 @@
           <text id="/child_development_follow_up/inputs/contact/patient_id:label">
             <value>-</value>
           </text>
+          <text id="/child_development_follow_up/inputs/contact/sex:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/inputs/contact:label">
             <value>-</value>
           </text>
@@ -385,13 +493,34 @@
           <text id="/child_development_follow_up/inputs:label">
             <value>field-list</value>
           </text>
+          <text id="/child_development_follow_up/patient_age_in_days:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_months:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_age_in_years:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/patient_id:label">
+            <value>-</value>
+          </text>
           <text id="/child_development_follow_up/patient_name:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary/summary_submit2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_development_follow_up/summary:label">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <child_development_follow_up delimiter="#" id="child_development_follow_up" prefix="J1!child_development_follow_up!" version="2020-12-04_11-56">
+        <child_development_follow_up delimiter="#" id="child_development_follow_up" prefix="J1!child_development_follow_up!" version="2021-02-04_14-51">
           <inputs>
             <meta>
               <location>
@@ -406,6 +535,8 @@
             <contact>
               <_id/>
               <patient_id/>
+              <date_of_birth>0</date_of_birth>
+              <sex/>
               <name/>
               <parent>
                 <_id/>
@@ -420,33 +551,50 @@
               </parent>
             </contact>
           </inputs>
+          <patient_age_in_years tag="hidden">0</patient_age_in_years>
+          <patient_age_in_months tag="hidden">0</patient_age_in_months>
+          <patient_age_in_days tag="hidden"/>
           <patient_name/>
+          <patient_id/>
           <group_assessment>
             <go_to_clinic/>
             <agreed_to_go/>
             <date_planned/>
           </group_assessment>
+          <summary tag="hidden">
+            <summary_submit1/>
+            <summary_submit2/>
+          </summary>
+          <data tag="hidden"/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
         </child_development_follow_up>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/child_development_follow_up/inputs" relevant="/source = 'user'"/>
+      <bind nodeset="/child_development_follow_up/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/child_development_follow_up/inputs/source" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/source_id" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/_id" type="db:person"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/child_development_follow_up/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/child_development_follow_up/inputs/contact/sex" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/name" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/parent/parent/_id" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/parent/parent/name" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/parent/parent/phone" type="string"/>
       <bind nodeset="/child_development_follow_up/inputs/contact/parent/parent/parent/_id" type="string"/>
+      <bind calculate="floor( difference-in-months(  /child_development_follow_up/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/child_development_follow_up/patient_age_in_years" type="string"/>
+      <bind calculate="difference-in-months(  /child_development_follow_up/inputs/contact/date_of_birth , today() )" nodeset="/child_development_follow_up/patient_age_in_months" type="string"/>
+      <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /child_development_follow_up/inputs/contact/date_of_birth ) )" nodeset="/child_development_follow_up/patient_age_in_days" type="string"/>
       <bind calculate="../inputs/contact/name" nodeset="/child_development_follow_up/patient_name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/child_development_follow_up/patient_id" type="string"/>
       <bind nodeset="/child_development_follow_up/group_assessment/go_to_clinic" required="true()" type="select1"/>
       <bind nodeset="/child_development_follow_up/group_assessment/agreed_to_go" required="true()" type="select1"/>
       <bind nodeset="/child_development_follow_up/group_assessment/date_planned" required="true()" type="date"/>
+      <bind nodeset="/child_development_follow_up/summary/summary_submit1" readonly="true()" type="string"/>
+      <bind nodeset="/child_development_follow_up/summary/summary_submit2" readonly="true()" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/child_development_follow_up/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -498,5 +646,14 @@
         <label ref="jr:itext('/child_development_follow_up/group_assessment/date_planned:label')"/>
       </input>
     </group>
+    <group appearance="field-list summary" ref="/child_development_follow_up/summary">
+      <input appearance="h1 yellow" ref="/child_development_follow_up/summary/summary_submit1">
+        <label ref="jr:itext('/child_development_follow_up/summary/summary_submit1:label')"/>
+      </input>
+      <input appearance="h2" ref="/child_development_follow_up/summary/summary_submit2">
+        <label ref="jr:itext('/child_development_follow_up/summary/summary_submit2:label')"/>
+      </input>
+    </group>
+    <group appearance="hidden" ref="/child_development_follow_up/data"/>
   </h:body>
 </h:html>

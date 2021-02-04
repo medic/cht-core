@@ -144,14 +144,14 @@ module.exports = [
     }
   },
 
-  // MNCH Immunization and Growth follow up developmental_milestones 7 days
+  // MNCH Immunization and Growth child_development_follow_up - developmental_milestones 7 days
   {
     name: 'immunization_growth_follow_up_developmental_milestones',
-    icon: 'icon-people-children',
-    title: 'Immunization Growth Follow Up',
+    icon: 'icon-child-growth',
+    title: 'Child Development Follow Up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
-    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
+    actions: [{type: 'report',form: 'child_development_follow_up'}],
     appliesIf: function(contact, report) {
       // Trigger a child development referral follow up task 7days from the  selected date. The task should stay for 3 more days
       return parseInt(getField(report, 'g_developmental_milestones.developmental_next_assignment_date'))  > 0;
@@ -159,15 +159,21 @@ module.exports = [
     events: [
       {
         id: 'immunization_growth_follow_up_is_set_developmental_milestones_7',
-        dueDate: function (event, contact, report) { return getDateISOLocal(getField(report, 'g_developmental_milestones.developmental_next_assignment_date')); },
-        start: 7, end: 3
+        dueDate: function (event, contact, report) {
+          console.log('g_developmental_milestones.developmental_apt_date: ',
+            getField(report, 'g_developmental_milestones.developmental_apt_date'));
+          // todo - this triggers wrong form (should be  child development referral)
+          // todo - doesn't trigger  it in 7 days from developmental_next_assignment_date, does it simply on the date specified in developmental_next_assignment_date
+          return getDateISOLocal(getField(report, 'g_developmental_milestones.developmental_apt_date'));
+        },
+        start: 3, end: 3
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(
-        contact.reports, ['immunization_growth_follow_up'], startTime, endTime
+        contact.reports, ['child_development_follow_up'], startTime, endTime
       );
     }
   },
