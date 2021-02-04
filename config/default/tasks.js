@@ -160,10 +160,6 @@ module.exports = [
       {
         id: 'immunization_growth_follow_up_is_set_developmental_milestones_7',
         dueDate: function (event, contact, report) {
-          console.log('g_developmental_milestones.developmental_apt_date: ',
-            getField(report, 'g_developmental_milestones.developmental_apt_date'));
-          // todo - this triggers wrong form (should be  child development referral)
-          // todo - doesn't trigger  it in 7 days from developmental_next_assignment_date, does it simply on the date specified in developmental_next_assignment_date
           return getDateISOLocal(getField(report, 'g_developmental_milestones.developmental_apt_date'));
         },
         start: 3, end: 3
