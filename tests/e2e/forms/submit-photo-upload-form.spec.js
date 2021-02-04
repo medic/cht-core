@@ -32,7 +32,7 @@ describe('Submit Photo Upload form', () => {
   afterAll(async () => { await utils.afterEachNative();});
 
   it('upload photo', async () => {
-    await common.goToReports();
+    await common.goToReportsNative();
     await genericForm.selectFormNative('photo-upload');
     await helper.waitElementToPresentNative(photoUpload.imagePathInput());
     await photoUpload.imagePathInput().sendKeys(
