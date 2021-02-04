@@ -1,6 +1,7 @@
 const helper = require('../../helper');
 const photoUpload = require('../../page-objects/forms/photo-upload.po');
 const common = require('../../page-objects/common/common.po');
+const genericForm = require('../../page-objects/forms/generic-form.po');
 const utils = require('../../utils');
 const constants = require('../../constants');
 const path = require('path');
@@ -20,47 +21,27 @@ const userContactDoc = {
 };
 
 describe('Submit Photo Upload form', () => {
-  beforeAll(done => {
-    Promise.resolve()
-      .then(() => photoUpload.configureForm(userContactDoc, done))
-      .catch(done.fail);
+  beforeAll(async () => {
+    await photoUpload.configureFormNative(userContactDoc);
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
+  afterEach(async () => {
+    await utils.resetBrowser();
   });
 
-  afterAll(utils.afterEach);
+  afterAll(async () => { await utils.afterEachNative();});
 
-  it('upload photo', () => {
-    common.goToReports();
-
-    // select form
-    const addButton = element(
-      by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
-    );
-    helper.waitElementToPresent(addButton);
-    helper.clickElement(addButton);
-    element(
-      by.css(
-        '.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'
-      )
-    ).click();
-    helper.waitElementToPresent(
-      element(by.css('#photo-upload input[type=file]'))
-    );
-    element(by.css('#photo-upload input[type=file]')).sendKeys(
+  it('upload photo', async () => {
+    await common.goToReports();
+    await genericForm.selectFormNative('photo-upload');
+    await helper.waitElementToPresentNative(photoUpload.imagePathInput());
+    await photoUpload.imagePathInput().sendKeys(
       path.join(__dirname, '../../../webapp/src/img/simprints.png')
     );
-    helper.waitElementToPresent(
-      element(by.css('#photo-upload .file-picker .file-preview img'))
-    );
-    //submit
-    photoUpload.submit();
-    helper.waitElementToPresent(element(by.css('div.details')));
-    expect(element(by.css('div.details')).isPresent()).toBeTruthy();
-    helper.waitElementToPresent(element(by.css('.report-image')));
-    expect(element(by.css('.report-image')).isPresent()).toBeTruthy();
+    await helper.waitUntilReadyNative(photoUpload.imagePreview());
+    
+    await genericForm.submitNative();
+    await helper.waitUntilReadyNative(element(by.css('.report-image')));
+    expect(await element(by.css('.report-image')).isPresent()).toBeTruthy();
   });
 });

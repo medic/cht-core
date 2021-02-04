@@ -10,40 +10,35 @@ describe('Submit Delivery Report', () => {
   const noteToCHW = 'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is ' +
   'time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
-  beforeAll(done => {
-    protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(() => deliveryReport.configureForm(userContactDoc, done))
-      .catch(done.fail);
+  beforeAll(async () => {
+    await docs.map(utils.saveDocNative);
+    await deliveryReport.configureForm(userContactDoc);
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
-  });
+  afterEach(async () => { await utils.resetBrowser(); });
 
-  afterAll(utils.afterEach);
+  afterAll(async () => { await utils.afterEachNative(); });
 
-  it('open delivery form', () => {
-    common.goToReports();
-    genericForm.selectForm();
+  it('open delivery form', async () => {
+    await common.goToReports();
+    await genericForm.selectFormNative('D');
     //select name
-    deliveryReport.selectPatientName('jack');
-    genericForm.nextPage();
-    helper.waitElementToBeVisible(element(by.css('[value="healthy"]')));
+    await deliveryReport.selectPatientName('jack');
+    await genericForm.nextPageNative();
+    await helper.waitElementToBeVisible(element(by.css('[value="healthy"]')));
     //Delivery info
-    deliveryReport.selectLiveBirthButton();
-    deliveryReport.selectFacilityButton();
-    deliveryReport.enterDeliveryDate('');
-    genericForm.nextPage();
-    expect(deliveryReport.getNoteToCHW()).toBe(noteToCHW);
-    genericForm.nextPage();
+    await deliveryReport.selectLiveBirthButton();
+    await deliveryReport.selectFacilityButton();
+    await deliveryReport.enterDeliveryDate('');
+    await genericForm.nextPageNative();
+    expect(await deliveryReport.getNoteToCHW()).toBe(noteToCHW);
+    await genericForm.nextPageNative();
     //summary page
-    expect(deliveryReport.getOutcomeText()).toBe('Live Birth');
-    expect(deliveryReport.getDeliveryLocationSummaryText()).toBe('Facility');
-    expect(deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
+    expect(await deliveryReport.getOutcomeText()).toBe('Live Birth');
+    expect(await deliveryReport.getDeliveryLocationSummaryText()).toBe('Facility');
+    expect(await deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
     //submit
-    genericForm.submit();
-    expect(element(by.css('div.details')).isPresent()).toBeTruthy();
+    await genericForm.submitNative();
+    expect(await element(by.css('div.details')).isPresent()).toBeTruthy();
   });
 });
