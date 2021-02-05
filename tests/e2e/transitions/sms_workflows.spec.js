@@ -99,11 +99,11 @@ const expectTasks = (doc, expectations) => {
 };
 
 describe('SMS workflows', () => {
-  beforeAll(() => utils.saveDocs(contacts));
+  beforeAll(async () => await utils.saveDocsNative(contacts));
   
-  afterAll(() => utils.revertDb());
+  afterAll(async () => await utils.revertDbNative());
 
-  afterEach(() => utils.revertDb(contacts.map(c => c._id)));
+  afterEach(async () => await utils.revertDbNative(contacts.map(c => c._id)));
 
   describe('mapping recipients', () => {
     it('should correctly map parent for patient', async () => {
@@ -166,11 +166,11 @@ describe('SMS workflows', () => {
       ];
 
       const ids = reports.map(report => report._id);
-      await utils.updateSettings(settings);
-      await utils.saveDocs(reports);
-      await sentinelUtils.waitForSentinel(ids);
+      await utils.updateSettingsNative(settings);
+      await utils.saveDocsNative(reports);
+      await sentinelUtils.waitForSentinelNative(ids);
 
-      const [ patientChw6, patientChw3, patientChw4  ] = await utils.getDocs(ids);
+      const [ patientChw6, patientChw3, patientChw4  ] = await utils.getDocsNative(ids);
       expectTasks(patientChw6, [
         // health_center.contact._id === chw2
         { messages: [{ to: 'phone2',  message: 'to parent' }] },
