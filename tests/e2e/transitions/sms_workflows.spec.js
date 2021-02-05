@@ -98,6 +98,14 @@ const expectTasks = (doc, expectations) => {
     .to.have.deep.members(expectations);
 };
 
+const processReportsAndSetings = async (reports, settings) => {
+  const ids = reports.map(report => report._id);
+  await utils.updateSettingsNative(settings);
+  await utils.saveDocsNative(reports);
+  await sentinelUtils.waitForSentinelNative(ids);
+  return utils.getDocsNative(ids);
+};
+
 describe('SMS workflows', () => {
   beforeAll(async () => await utils.saveDocsNative(contacts));
   
@@ -165,12 +173,7 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
-
-      const [ patientChw6, patientChw3, patientChw4  ] = await utils.getDocsNative(ids);
+      const [ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
       expectTasks(patientChw6, [
         // health_center.contact._id === chw2
         { messages: [{ to: 'phone2',  message: 'to parent' }] },
@@ -240,11 +243,8 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
-      const  [contactChw6, contactChw4, contactChw3  ] = await utils.getDocsNative(ids);
+
+      const  [contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports,settings);
       expectTasks(contactChw6, [
         // context.parent = health_center
         // context.parent.parent = district
@@ -336,12 +336,8 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
-      const[ patientChw6, patientChw3, patientChw4  ] = await utils.getDocsNative(ids);
+      const[ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
       expectTasks(patientChw6, [
         // clinic.contact._id === chw2
         { messages: [{ to: 'phone1',  message: 'to clinic' }] },
@@ -423,13 +419,9 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
 
-      const [ contactChw6, contactChw4, contactChw3  ] = await utils.getDocsNative(ids);
+      const [ contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports,settings);
       expectTasks(contactChw6, [
         // context.parent = health_center
         { messages: [{ to: 'phone6',  message: 'to clinic' }] }, // to sender
@@ -536,11 +528,8 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
-      const [ patientChw5, patientChw3, patientChw4 ] = await utils.getDocsNative(ids);
+
+      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSetings(reports,settings);
       expectTasks(patientChw5, [
         { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
         { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
@@ -637,11 +626,8 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
-      const [ contactChw5, contactChw2, contactChw3  ] = await utils.getDocsNative(ids);
+
+      const [ contactChw5, contactChw2, contactChw3  ] = await processReportsAndSetings(reports,settings);
       expectTasks(contactChw5, [
         { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
         { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
@@ -730,11 +716,8 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
-      const [ patientChw5, patientChw3, patientChw4  ] = await utils.getDocsNative(ids);
+
+      const [ patientChw5, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
 
       expectTasks(patientChw5, [
         { messages: [{ to: 'phone1', message: 'to clinic' }] },
@@ -808,11 +791,8 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
-      await utils.updateSettingsNative(settings);
-      await utils.saveDocsNative(reports);
-      await sentinelUtils.waitForSentinelNative(ids);
-      const [ contactChw5, contactChw2, contactChw3   ] = await utils.getDocsNative(ids);
+
+      const [ contactChw5, contactChw2, contactChw3   ] = await processReportsAndSetings(reports,settings);
       expectTasks(contactChw5, [
         { messages: [{ to: 'phone1', message: 'to clinic' }] },
         { messages: [{ to: 'phone2', message: 'to health_center' }] },
