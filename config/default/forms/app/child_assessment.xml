@@ -6,7 +6,7 @@
       <itext>
         <translation lang="en">
           <text id="/child_assessment/g_breathing/breathing_count:label">
-            <value>How many breaths per minute?</value>
+            <value>How many breaths were counted during the minute?</value>
           </text>
           <text id="/child_assessment/g_breathing/breathing_note1:label">
             <value>The child does not have fast breathing</value>
@@ -54,7 +54,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_cough/cough_yes_no:label">
-            <value>Does <output value=" /child_assessment/patient_name "/> have a Cough?</value>
+            <value>Does <output value=" /child_assessment/patient_name "/> have a cough?</value>
           </text>
           <text id="/child_assessment/g_cough:label">
             <value>Cough</value>
@@ -66,7 +66,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_bleeding:label">
-            <value>Bleeding from nose, mouth, skin, other sites?</value>
+            <value>Is <output value=" /child_assessment/patient_name "/> bleeding from nose, mouth, skin, other sites?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_breath/no:label">
             <value>No</value>
@@ -75,7 +75,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_breath:label">
-            <value>Difficulty in breathing?</value>
+            <value>Does <output value=" /child_assessment/patient_name "/> have difficulty breathing?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_chest/no:label">
             <value>No</value>
@@ -84,7 +84,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_chest:label">
-            <value>Chest indrawing?</value>
+            <value>Is <output value=" /child_assessment/patient_name "/> chest indrawing?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_drink/no:label">
             <value>No</value>
@@ -93,7 +93,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_drink:label">
-            <value>Not able to drink or feed anything</value>
+            <value>Is <output value=" /child_assessment/patient_name "/> unable to drink or eat anything?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_fever/no:label">
             <value>No</value>
@@ -102,7 +102,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_fever:label">
-            <value>Fever</value>
+            <value>Does <output value=" /child_assessment/patient_name "/> have a fever?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_hot_cold/no:label">
             <value>No</value>
@@ -111,7 +111,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_hot_cold:label">
-            <value>Feels hot or unusually cold</value>
+            <value>Does <output value=" /child_assessment/patient_name "/> feel hot or unusually cold?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_less_active/no:label">
             <value>No</value>
@@ -120,10 +120,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_less_active:label">
-            <value>Becomes less active</value>
-          </text>
-          <text id="/child_assessment/g_danger_signs_screening/danger_signs_present:label">
-            <value>Does <output value=" /child_assessment/patient_name "/> have any of these signs?</value>
+            <value>Is <output value=" /child_assessment/patient_name "/> unusually less active?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_sleepy/no:label">
             <value>No</value>
@@ -132,7 +129,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_sleepy:label">
-            <value>Unusually sleepy or unconscious</value>
+            <value>Is <output value=" /child_assessment/patient_name "/> unusually sleepy or unconscious?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_vomit/no:label">
             <value>No</value>
@@ -141,7 +138,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_vomit:label">
-            <value>Vomiting everything</value>
+            <value>Is <output value=" /child_assessment/patient_name "/> vomiting everything?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_yellow/no:label">
             <value>No</value>
@@ -150,10 +147,10 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_yellow:label">
-            <value>Whole body becomes yellow</value>
+            <value>Is <output value=" /child_assessment/patient_name "/> whole body yellow?</value>
           </text>
           <text id="/child_assessment/g_danger_signs_screening:label">
-            <value>Danger signs screening</value>
+            <value>Danger Signs Screening</value>
           </text>
           <text id="/child_assessment/g_diarrhea/diarrhea_blood/no:label">
             <value>No</value>
@@ -171,7 +168,7 @@
             <value>3 or more</value>
           </text>
           <text id="/child_assessment/g_diarrhea/diarrhea_in_day:label">
-            <value>Number of stools passed in the last day</value>
+            <value>How many stools did <output value=" /child_assessment/patient_name "/> have in the last 24 hours?</value>
           </text>
           <text id="/child_assessment/g_diarrhea/diarrhea_last/14:label">
             <value>14 days or more</value>
@@ -201,16 +198,16 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_diarrhea/diarrhea_yes_no:label">
-            <value>Has Diarrhea 3 or more loose stools in 24hrs?</value>
+            <value>Has <output value=" /child_assessment/patient_name "/> had 3 or more loose stools in the last 24 hours?</value>
           </text>
           <text id="/child_assessment/g_diarrhea:label">
             <value>Diarrhea</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
             <value>Use your thermometer to take the patient's temperature</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
-            <value>Do the Rapid Diagnostic Test for Malaria (mRDT)</value>
+          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
+            <value>Do the Malaria Rapid Diagnostic Test (mRDT)</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
             <value>No</value>
@@ -219,7 +216,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain:label">
-            <value>Does <output value=" /child_assessment/patient_name "/> have painful groins swelling?</value>
+            <value>Does <output value=" /child_assessment/patient_name "/> have painful groin swelling?</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_length/14:label">
             <value>14 days or more</value>
@@ -258,10 +255,10 @@
             <value>Other</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_reason_no:label">
-            <value>Why was malaria test not done?</value>
+            <value>Why was a malaria test not done?</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_reason_no_other:label">
-            <value>Why was malaria test not done?</value>
+            <value>Specify other reason</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_referred/no:label">
             <value>No</value>
@@ -282,18 +279,18 @@
             <value>Positive</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_results:label">
-            <value>Rapid Malaria Tests Results</value>
+            <value>What was the Malaria test result?</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_temp:jr:constraintMsg">
             <value>Temperature has to be between 34 and 42</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_temp:label">
-            <value>What is the Temperature?</value>
+            <value>What is the temperature?</value>
           </text>
           <text id="/child_assessment/g_malaria:label">
             <value>Malaria</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
             <value>Use your MUAC strap to take the child's MUAC</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -315,7 +312,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_swollen_feet:label">
-            <value>Swelling of both feet of the child?</value>
+            <value>Does {$patient_name} have swelling of both feet?</value>
           </text>
           <text id="/child_assessment/g_malnutrition:label">
             <value>Malnutrition</value>
@@ -327,7 +324,7 @@
             <value>Yes</value>
           </text>
           <text id="/child_assessment/g_two_mo_assessment/two_mo_referred:label">
-            <value><output value=" /child_assessment/patient_name "/> is below 2 months. Refer to health facility. Have you referred them for danger signs management?</value>
+            <value><output value=" /child_assessment/patient_name "/> is below 2 months. Have you referred them to the health facility for danger signs management?</value>
           </text>
           <text id="/child_assessment/g_two_mo_assessment/two_mo_referred_no:label">
             <value>You cannot do an assessment for this age. If you do not want to refer for danger signs, use the other appropriate forms like immunization for other actions</value>
@@ -392,12 +389,6 @@
           <text id="/child_assessment/inputs:label">
             <value>Patient</value>
           </text>
-          <text id="/child_assessment/summary/summary_age:label">
-            <value><output value=" /child_assessment/display_age "/></value>
-          </text>
-          <text id="/child_assessment/summary/summary_assess_header:label">
-            <value>Patient Assessment&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
-          </text>
           <text id="/child_assessment/summary/summary_cough:label">
             <value>Cough</value>
           </text>
@@ -405,23 +396,25 @@
             <value>Help the caregiver give the first dose now.</value>
           </text>
           <text id="/child_assessment/summary/summary_cough_instruct_g1/summary_cough_instruct_2:label">
-            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding</value>
+            <value>Advise caregiver to increase fluids, to continue exclusive breastfeeding or to continue breastfeeding and feeding the child if child is not on exclusive breastfeeding.</value>
           </text>
           <text id="/child_assessment/summary/summary_cough_instruct_g2/summary_cough_instruct_3:label">
-            <value>Advise caregiver not to give any drugs to the child for this condition:Cough medicines may contain harmful ingredients, and are expensive</value>
+            <value>Advise caregiver not to give any drugs to the child for this condition. Cough medicines may contain harmful ingredients, and are expensive.</value>
           </text>
           <text id="/child_assessment/summary/summary_cough_instruct_g2/summary_cough_instruct_4:label">
             <value>Advice caregiver to go to health facility or if not possible return if the child: 
-does not eat, or drink, breastfeed, 
-develops fast breathing/difficult breathing or 
-has blood in the stool or 
-any sign that the child is getting sicker</value>
+&lt;ul&gt;
+ &lt;li&gt;- does not eat, or drink, breastfeed&lt;/li&gt; 
+ &lt;li&gt;- develops fast breathing/difficult breathing&lt;/li&gt; 
+ &lt;li&gt;- has blood in the stool&lt;/li&gt;
+ &lt;li&gt;- any sign that the child is getting sicker&lt;/li&gt;
+&lt;/ul&gt;</value>
           </text>
           <text id="/child_assessment/summary/summary_cough_instruct_g2/summary_cough_instruct_5:label">
             <value>Advice caregiver on use of a bednet (ITN)</value>
           </text>
           <text id="/child_assessment/summary/summary_cough_treatement_1:label">
-            <value>Soothe the throat and relieve the cough with a safe remedy warm fluids, lemon tea, tea with honey, or breast milk.</value>
+            <value>Soothe the throat and relieve the cough with a safe remedy, warm fluids, lemon tea, tea with honey, or breast milk.</value>
           </text>
           <text id="/child_assessment/summary/summary_cough_treatement_2:label">
             <value>Soothe the throat and relieve the cough with breastfeeding only.</value>
@@ -430,7 +423,7 @@ any sign that the child is getting sicker</value>
             <value>Patient Details&lt;i class="fa fa-vcard"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/child_assessment/summary/summary_diag_header:label">
-            <value>Diagnosis(es)&lt;i class="fa fa-info-circle"&gt;&lt;/i&gt;</value>
+            <value>Diagnosis&lt;i class="fa fa-info-circle"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/child_assessment/summary/summary_diarrhea:label">
             <value>Diarrhea</value>
@@ -539,6 +532,9 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/summary_follow_up_header:label">
             <value>Follow Up Tasks&lt;I class="fa fa-flag"&gt;&lt;/i&gt;</value>
           </text>
+          <text id="/child_assessment/summary/summary_header:label">
+            <value>Patient Assessment&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
           <text id="/child_assessment/summary/summary_imp_instr2_header:label">
             <value>Important Instructions&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
@@ -546,7 +542,7 @@ Total 5 tabs</value>
             <value>Important Instructions&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs1:label">
-            <value>Explain why the sick needs to go to the health facility</value>
+            <value>Explain why the sick needs to go to the health facility.</value>
           </text>
           <text id="/child_assessment/summary/summary_imp_instr_g1/summary_danger_signs2:label">
             <value>For any sick person who can drink, advice to give more fluids and continue feeding or breastfeeding.</value>
@@ -650,11 +646,12 @@ any sign that the child is getting sicker</value>
             <value>Advice caregiver on use of a bednet (ITN)</value>
           </text>
           <text id="/child_assessment/summary/summary_mauc_treatement_1:label">
-            <value>Counsel care giver on Feeding or Refer for supplementary feeding program, if available</value>
+            <value>Counsel caregiver on feeding or refer for supplementary feeding program, if available</value>
           </text>
           <text id="/child_assessment/summary/summary_name:label">
-            <value><output value=" /child_assessment/patient_name "/></value>
-          </text>
+            <value>**<output value=" /child_assessment/patient_name "/>**
+<output value=" /child_assessment/inputs/contact/sex "/>
+<output value=" /child_assessment/display_age "/></value></text>
           <text id="/child_assessment/summary/summary_pneumonia_instruct_amox_gr1/summary_pneumonia_instruct_amox_1:label">
             <value>Help the caregiver give the first dose now</value>
           </text>
@@ -720,9 +717,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/summary_refer_gr/summary_refer_header:label">
             <value>Refer urgently to Health facility&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/child_assessment/summary/summary_sex:label">
-            <value><output value=" /child_assessment/inputs/contact/sex "/></value>
-          </text>
           <text id="/child_assessment/summary/summary_sick:label">
             <value>Sick child</value>
           </text>
@@ -731,6 +725,51 @@ Total 5 tabs</value>
           </text>
           <text id="/child_assessment/summary/summary_symp_header:label">
             <value>Signs &amp; Symptoms&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child:
+ - does not eat, or drink, breastfeed
+ - develops fast breathing/difficult breathing
+ - has blood in the stool - any sign that the child is getting sicker</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1B:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+&lt;ul&gt;
+ &lt;li&gt;- does not eat, or drink, breastfeed&lt;/li&gt; 
+ &lt;li&gt;- develops fast breathing/difficult breathing&lt;/li&gt; 
+ &lt;li&gt;- has blood in the stool&lt;/li&gt;
+ &lt;li&gt;- any sign that the child is getting sicker&lt;/li&gt;
+&lt;/ul&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child:
+ - does not eat, or drink, breastfeed
+ - develops fast breathing/difficult breathing
+ - has blood in the stool - any sign that the child is getting sicker</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2B:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+&lt;ul&gt;
+ &lt;li&gt;- does not eat, or drink, breastfeed&lt;/li&gt; 
+ &lt;li&gt;- develops fast breathing/difficult breathing&lt;/li&gt; 
+ &lt;li&gt;- has blood in the stool&lt;/li&gt;
+ &lt;li&gt;- any sign that the child is getting sicker&lt;/li&gt;
+&lt;/ul&gt;</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child:
+ - does not eat, or drink, breastfeed
+ - develops fast breathing/difficult breathing
+ - has blood in the stool - any sign that the child is getting sicker</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3B:label">
+            <value>Advice caregiver to go to health facility or if not possible return if the child: 
+&lt;ul&gt;
+ &lt;li&gt;- does not eat, or drink, breastfeed&lt;/li&gt; 
+ &lt;li&gt;- develops fast breathing/difficult breathing&lt;/li&gt; 
+ &lt;li&gt;- has blood in the stool&lt;/li&gt;
+ &lt;li&gt;- any sign that the child is getting sicker&lt;/li&gt;
+&lt;/ul&gt;</value>
           </text>
           <text id="/child_assessment/summary/summary_treatement_header:label">
             <value>Treatment&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
@@ -884,9 +923,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_less_active:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_danger_signs_screening/danger_signs_present:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_sleepy/no:label">
             <value>-</value>
           </text>
@@ -968,10 +1004,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -1055,7 +1091,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -1190,12 +1226,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/show_signs_symptoms:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_age:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/summary/summary_assess_header:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_cough:label">
             <value>-</value>
           </text>
@@ -1320,6 +1350,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_follow_up_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_header:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_imp_instr2_header:label">
@@ -1477,9 +1510,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/summary_refer_gr:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_sex:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_sick:label">
             <value>-</value>
           </text>
@@ -1487,6 +1517,24 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_symp_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3B:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_treatement_header:label">
@@ -1644,9 +1692,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_less_active:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_danger_signs_screening/danger_signs_present:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_sleepy/no:label">
             <value>-</value>
           </text>
@@ -1728,10 +1773,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -1815,7 +1860,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -1950,12 +1995,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/show_signs_symptoms:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_age:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/summary/summary_assess_header:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_cough:label">
             <value>-</value>
           </text>
@@ -2080,6 +2119,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_follow_up_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_header:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_imp_instr2_header:label">
@@ -2235,9 +2277,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/summary_refer_gr:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_sex:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_sick:label">
             <value>-</value>
           </text>
@@ -2245,6 +2284,24 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_symp_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3B:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_treatement_header:label">
@@ -2402,9 +2459,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_less_active:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_danger_signs_screening/danger_signs_present:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_sleepy/no:label">
             <value>-</value>
           </text>
@@ -2486,10 +2540,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -2573,7 +2627,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -2708,12 +2762,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/show_signs_symptoms:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_age:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/summary/summary_assess_header:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_cough:label">
             <value>-</value>
           </text>
@@ -2838,6 +2886,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_follow_up_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_header:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_imp_instr2_header:label">
@@ -2993,9 +3044,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/summary_refer_gr:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_sex:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_sick:label">
             <value>-</value>
           </text>
@@ -3003,6 +3051,24 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_symp_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3B:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_treatement_header:label">
@@ -3160,9 +3226,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_less_active:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_danger_signs_screening/danger_signs_present:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/g_danger_signs_screening/danger_signs_sleepy/no:label">
             <value>-</value>
           </text>
@@ -3244,10 +3307,10 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_diarrhea:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_67:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_66:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malaria/generated_note_name_72:label">
+          <text id="/child_assessment/g_malaria/generated_note_name_71:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malaria/malaria_fever_groin_pain/no:label">
@@ -3331,7 +3394,7 @@ Total 5 tabs</value>
           <text id="/child_assessment/g_malaria:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/g_malnutrition/generated_note_name_101:label">
+          <text id="/child_assessment/g_malnutrition/generated_note_name_100:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/g_malnutrition/malnutrition_muac_color/green:label">
@@ -3466,12 +3529,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/show_signs_symptoms:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_age:label">
-            <value>-</value>
-          </text>
-          <text id="/child_assessment/summary/summary_assess_header:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_cough:label">
             <value>-</value>
           </text>
@@ -3596,6 +3653,9 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_follow_up_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_header:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_imp_instr2_header:label">
@@ -3751,9 +3811,6 @@ Total 5 tabs</value>
           <text id="/child_assessment/summary/summary_refer_gr:label">
             <value>-</value>
           </text>
-          <text id="/child_assessment/summary/summary_sex:label">
-            <value>-</value>
-          </text>
           <text id="/child_assessment/summary/summary_sick:label">
             <value>-</value>
           </text>
@@ -3761,6 +3818,24 @@ Total 5 tabs</value>
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_symp_header:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test1B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test2B:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3:label">
+            <value>-</value>
+          </text>
+          <text id="/child_assessment/summary/summary_test3B:label">
             <value>-</value>
           </text>
           <text id="/child_assessment/summary/summary_treatement_header:label">
@@ -3775,7 +3850,7 @@ Total 5 tabs</value>
         </translation>
       </itext>
       <instance>
-        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2021-01-29_15-22">
+        <child_assessment delimiter="#" id="child_assessment" prefix="J1!child_assessment!" version="2021-02-05_14-14">
           <inputs>
             <meta>
               <location>
@@ -3832,7 +3907,6 @@ Total 5 tabs</value>
             <two_mo_referred_no/>
           </g_two_mo_assessment>
           <g_danger_signs_screening>
-            <danger_signs_present/>
             <danger_signs_sleepy/>
             <danger_signs_less_active/>
             <danger_signs_yellow/>
@@ -3845,12 +3919,12 @@ Total 5 tabs</value>
             <danger_signs_fever/>
           </g_danger_signs_screening>
           <g_malaria>
-            <generated_note_name_67/>
+            <generated_note_name_66/>
             <malaria_temp/>
             <malaria_fever_length/>
             <malaria_fever_rash/>
             <malaria_fever_groin_pain/>
-            <generated_note_name_72/>
+            <generated_note_name_71/>
             <malaria_results/>
             <malaria_reason_no/>
             <malaria_reason_no_other/>
@@ -3875,17 +3949,21 @@ Total 5 tabs</value>
             <diarrhea_blood/>
           </g_diarrhea>
           <g_malnutrition>
-            <generated_note_name_101/>
+            <generated_note_name_100/>
             <malnutrition_muac_color/>
             <malnutrition_swollen_feet/>
           </g_malnutrition>
           <summary tag="hidden">
-            <summary_assess_header/>
+            <summary_header/>
             <summary_submit/>
             <summary_detrails_header/>
             <summary_name/>
-            <summary_sex/>
-            <summary_age/>
+            <summary_test1/>
+            <summary_test2/>
+            <summary_test3/>
+            <summary_test1B/>
+            <summary_test2B/>
+            <summary_test3B/>
             <summary_symp_header/>
             <summary_rash/>
             <summary_malaria_test/>
@@ -4123,7 +4201,6 @@ concat( /child_assessment/patient_age_in_years , ' years old')))" nodeset="/chil
       <bind nodeset="/child_assessment/g_two_mo_assessment/two_mo_referred_yes" readonly="true()" relevant="selected( /child_assessment/g_two_mo_assessment/two_mo_referred , 'yes')" type="string"/>
       <bind nodeset="/child_assessment/g_two_mo_assessment/two_mo_referred_no" readonly="true()" relevant="selected( /child_assessment/g_two_mo_assessment/two_mo_referred , 'no')" type="string"/>
       <bind nodeset="/child_assessment/g_danger_signs_screening" relevant=" /child_assessment/patient_age_in_months  &gt; 2"/>
-      <bind nodeset="/child_assessment/g_danger_signs_screening/danger_signs_present" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/g_danger_signs_screening/danger_signs_sleepy" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_danger_signs_screening/danger_signs_less_active" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_danger_signs_screening/danger_signs_yellow" required="true()" type="select1"/>
@@ -4136,12 +4213,12 @@ concat( /child_assessment/patient_age_in_years , ' years old')))" nodeset="/chil
       <bind nodeset="/child_assessment/g_danger_signs_screening/danger_signs_fever" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malaria" relevant=" /child_assessment/patient_age_in_months  &gt; 2 and 
 selected( /child_assessment/g_danger_signs_screening/danger_signs_fever , 'yes')"/>
-      <bind nodeset="/child_assessment/g_malaria/generated_note_name_67" readonly="true()" required="true()" type="string"/>
+      <bind nodeset="/child_assessment/g_malaria/generated_note_name_66" readonly="true()" required="true()" type="string"/>
       <bind constraint=" /child_assessment/g_malaria/malaria_temp  &gt;= 34 and  /child_assessment/g_malaria/malaria_temp  &lt;= 42" jr:constraintMsg="jr:itext('/child_assessment/g_malaria/malaria_temp:jr:constraintMsg')" nodeset="/child_assessment/g_malaria/malaria_temp" required="true()" type="decimal"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_fever_length" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_fever_rash" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_fever_groin_pain" required="true()" type="select1"/>
-      <bind nodeset="/child_assessment/g_malaria/generated_note_name_72" readonly="true()" relevant="selected( /child_assessment/danger_signs_without_fever , 'no') and
+      <bind nodeset="/child_assessment/g_malaria/generated_note_name_71" readonly="true()" relevant="selected( /child_assessment/danger_signs_without_fever , 'no') and
 not(selected( /child_assessment/g_malaria/malaria_fever_length , '7')) and
 not(selected( /child_assessment/g_malaria/malaria_fever_length , '14'))" type="string"/>
       <bind nodeset="/child_assessment/g_malaria/malaria_results" relevant="selected( /child_assessment/danger_signs_without_fever , 'no') and
@@ -4166,15 +4243,19 @@ not(selected( /child_assessment/g_malaria/malaria_fever_length , '14'))" require
       <bind nodeset="/child_assessment/g_diarrhea/diarrhea_in_day" relevant="selected( /child_assessment/g_diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_diarrhea/diarrhea_blood" relevant="selected( /child_assessment/g_diarrhea/diarrhea_yes_no , 'yes')" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malnutrition" relevant=" /child_assessment/patient_age_in_months  &gt;= 6 and  /child_assessment/patient_age_in_years  &lt;= 5"/>
-      <bind nodeset="/child_assessment/g_malnutrition/generated_note_name_101" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/g_malnutrition/generated_note_name_100" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/g_malnutrition/malnutrition_muac_color" required="true()" type="select1"/>
       <bind nodeset="/child_assessment/g_malnutrition/malnutrition_swollen_feet" required="true()" type="select1"/>
-      <bind nodeset="/child_assessment/summary/summary_assess_header" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_header" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/summary_submit" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/summary_detrails_header" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/summary_name" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/summary_sex" readonly="true()" type="string"/>
-      <bind nodeset="/child_assessment/summary/summary_age" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_test1" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_test2" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_test3" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_test1B" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_test2B" readonly="true()" type="string"/>
+      <bind nodeset="/child_assessment/summary/summary_test3B" readonly="true()" type="string"/>
       <bind nodeset="/child_assessment/summary/summary_symp_header" readonly="true()" relevant="selected( /child_assessment/show_signs_symptoms , 'yes')" type="string"/>
       <bind nodeset="/child_assessment/summary/summary_rash" readonly="true()" relevant="selected( /child_assessment/g_malaria/malaria_fever_rash , 'yes')" type="string"/>
       <bind nodeset="/child_assessment/summary/summary_malaria_test" readonly="true()" relevant="selected( /child_assessment/g_malaria/malaria_referred , 'yes')" type="string"/>
@@ -4389,9 +4470,6 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
     </group>
     <group appearance="field-list" ref="/child_assessment/g_danger_signs_screening">
       <label ref="jr:itext('/child_assessment/g_danger_signs_screening:label')"/>
-      <input ref="/child_assessment/g_danger_signs_screening/danger_signs_present">
-        <label ref="jr:itext('/child_assessment/g_danger_signs_screening/danger_signs_present:label')"/>
-      </input>
       <select1 ref="/child_assessment/g_danger_signs_screening/danger_signs_sleepy">
         <label ref="jr:itext('/child_assessment/g_danger_signs_screening/danger_signs_sleepy:label')"/>
         <item>
@@ -4505,8 +4583,8 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
     </group>
     <group appearance="field-list" ref="/child_assessment/g_malaria">
       <label ref="jr:itext('/child_assessment/g_malaria:label')"/>
-      <input ref="/child_assessment/g_malaria/generated_note_name_67">
-        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_67:label')"/>
+      <input ref="/child_assessment/g_malaria/generated_note_name_66">
+        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_66:label')"/>
       </input>
       <input ref="/child_assessment/g_malaria/malaria_temp">
         <label ref="jr:itext('/child_assessment/g_malaria/malaria_temp:label')"/>
@@ -4560,8 +4638,8 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
           <value>no</value>
         </item>
       </select1>
-      <input ref="/child_assessment/g_malaria/generated_note_name_72">
-        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_72:label')"/>
+      <input ref="/child_assessment/g_malaria/generated_note_name_71">
+        <label ref="jr:itext('/child_assessment/g_malaria/generated_note_name_71:label')"/>
       </input>
       <select1 ref="/child_assessment/g_malaria/malaria_results">
         <label ref="jr:itext('/child_assessment/g_malaria/malaria_results:label')"/>
@@ -4731,8 +4809,8 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
     </group>
     <group appearance="field-list" ref="/child_assessment/g_malnutrition">
       <label ref="jr:itext('/child_assessment/g_malnutrition:label')"/>
-      <input ref="/child_assessment/g_malnutrition/generated_note_name_101">
-        <label ref="jr:itext('/child_assessment/g_malnutrition/generated_note_name_101:label')"/>
+      <input ref="/child_assessment/g_malnutrition/generated_note_name_100">
+        <label ref="jr:itext('/child_assessment/g_malnutrition/generated_note_name_100:label')"/>
       </input>
       <select1 ref="/child_assessment/g_malnutrition/malnutrition_muac_color">
         <label ref="jr:itext('/child_assessment/g_malnutrition/malnutrition_muac_color:label')"/>
@@ -4762,8 +4840,8 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
       </select1>
     </group>
     <group appearance="field-list summary" ref="/child_assessment/summary">
-      <input appearance="h1 yellow" ref="/child_assessment/summary/summary_assess_header">
-        <label ref="jr:itext('/child_assessment/summary/summary_assess_header:label')"/>
+      <input appearance="h1 yellow" ref="/child_assessment/summary/summary_header">
+        <label ref="jr:itext('/child_assessment/summary/summary_header:label')"/>
       </input>
       <input appearance="h2" ref="/child_assessment/summary/summary_submit">
         <label ref="jr:itext('/child_assessment/summary/summary_submit:label')"/>
@@ -4774,11 +4852,23 @@ selected( /child_assessment/g_malnutrition/malnutrition_muac_color , 'yellow') a
       <input appearance="center" ref="/child_assessment/summary/summary_name">
         <label ref="jr:itext('/child_assessment/summary/summary_name:label')"/>
       </input>
-      <input appearance="center" ref="/child_assessment/summary/summary_sex">
-        <label ref="jr:itext('/child_assessment/summary/summary_sex:label')"/>
+      <input ref="/child_assessment/summary/summary_test1">
+        <label ref="jr:itext('/child_assessment/summary/summary_test1:label')"/>
       </input>
-      <input appearance="center" ref="/child_assessment/summary/summary_age">
-        <label ref="jr:itext('/child_assessment/summary/summary_age:label')"/>
+      <input appearance="center" ref="/child_assessment/summary/summary_test2">
+        <label ref="jr:itext('/child_assessment/summary/summary_test2:label')"/>
+      </input>
+      <input appearance="li" ref="/child_assessment/summary/summary_test3">
+        <label ref="jr:itext('/child_assessment/summary/summary_test3:label')"/>
+      </input>
+      <input ref="/child_assessment/summary/summary_test1B">
+        <label ref="jr:itext('/child_assessment/summary/summary_test1B:label')"/>
+      </input>
+      <input appearance="center" ref="/child_assessment/summary/summary_test2B">
+        <label ref="jr:itext('/child_assessment/summary/summary_test2B:label')"/>
+      </input>
+      <input appearance="li" ref="/child_assessment/summary/summary_test3B">
+        <label ref="jr:itext('/child_assessment/summary/summary_test3B:label')"/>
       </input>
       <input appearance="h1 blue" ref="/child_assessment/summary/summary_symp_header">
         <label ref="jr:itext('/child_assessment/summary/summary_symp_header:label')"/>

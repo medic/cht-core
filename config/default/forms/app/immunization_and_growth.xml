@@ -9,7 +9,7 @@
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_bch/bcg_date:label">
-            <value>Enter the date when BCG vaccine was given</value>
+            <value>When was the BCG vaccine given?</value>
           </text>
           <text id="/immunization_and_growth/g_bch:label">
             <value>BCG</value>
@@ -54,7 +54,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_active:label">
-            <value>Becomes less active</value>
+            <value>Has <output value=" /immunization_and_growth/patient_name "/> become less active?</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_breastfeeding/no:label">
             <value>No</value>
@@ -63,7 +63,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_breastfeeding:label">
-            <value>Stops breastfeeding well</value>
+            <value>Does <output value=" /immunization_and_growth/patient_name "/> have problems with breastfeeding?</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_breath/no:label">
             <value>No</value>
@@ -72,7 +72,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_breath:label">
-            <value>Has difficult or fast breathing</value>
+            <value>Does <output value=" /immunization_and_growth/patient_name "/> have difficult or fast breathing?</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot/no:label">
             <value>No</value>
@@ -81,10 +81,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot:label">
-            <value>Feels hot or unusually cold</value>
-          </text>
-          <text id="/immunization_and_growth/g_danger_signs/danger_signs_note:label">
-            <value>Does <output value=" /immunization_and_growth/patient_name "/> have any of the following danger signs?</value>
+            <value>Does <output value=" /immunization_and_growth/patient_name "/> feels hot or unusually cold?</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_other/no:label">
             <value>No</value>
@@ -93,7 +90,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_other:label">
-            <value>Other</value>
+            <value>Does <output value=" /immunization_and_growth/patient_name "/> have any other danger signs?</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_other_text:jr:constraintMsg">
             <value>-</value>
@@ -108,7 +105,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_yellow:label">
-            <value>Whole body becomes yellow</value>
+            <value>Has their whole body become yellow?</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs:label">
             <value>Danger Signs</value>
@@ -135,7 +132,7 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_developmental_milestones/developmental_head_hold:label">
-            <value>Does the baby has head control (head holding)?</value>
+            <value>Does the baby have head control (head holding)?</value>
           </text>
           <text id="/immunization_and_growth/g_developmental_milestones/developmental_milestones_note:label">
             <value>All children with delayed milestones should be referred to the health facility for further assessment by health care providers</value>
@@ -144,7 +141,7 @@
             <value>Enter a date in the future</value>
           </text>
           <text id="/immunization_and_growth/g_developmental_milestones/developmental_next_assignment_date:label">
-            <value>Select the Date the caregiver has agreed to take the child for assessment</value>
+            <value>On what date will the caregiver take <output value=" /immunization_and_growth/patient_name "/> for assessment?</value>
           </text>
           <text id="/immunization_and_growth/g_developmental_milestones/developmental_notes:label">
             <value>Each baby develops in their own individual way and at their own rate, failure to reach certain milestones may signal medical or developmental problems requiring special attention. Observe the baby carefully for the outlined milestones.</value>
@@ -180,7 +177,7 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_developmental_milestones/developmental_smile:label">
-            <value>Does the baby has a social smile?</value>
+            <value>Does the baby have a social smile?</value>
           </text>
           <text id="/immunization_and_growth/g_developmental_milestones/developmental_stand/no:label">
             <value>No</value>
@@ -243,7 +240,7 @@
             <value>Please observe if the baby can walk</value>
           </text>
           <text id="/immunization_and_growth/g_developmental_milestones:label">
-            <value>Developmental milestones</value>
+            <value>Developmental Milestones</value>
           </text>
           <text id="/immunization_and_growth/g_deworming/deworm_age/dewormed_1.5yr:label">
             <value>1 and 1/2 years</value>
@@ -276,13 +273,13 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_deworming/deworm_age:label">
-            <value>Age when <output value=" /immunization_and_growth/patient_name "/> was dewormed</value>
+            <value>How old was <output value=" /immunization_and_growth/patient_name "/> when last dewormed?</value>
           </text>
           <text id="/immunization_and_growth/g_deworming/deworm_next_date:jr:constraintMsg">
             <value>Enter a date in the future</value>
           </text>
           <text id="/immunization_and_growth/g_deworming/deworm_next_date:label">
-            <value>Enter Date for next deworming</value>
+            <value>When is the next deworming scheduled?</value>
           </text>
           <text id="/immunization_and_growth/g_deworming/dewormed/no:label">
             <value>No</value>
@@ -330,7 +327,7 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_feeding_method/feeding_method_other:label">
-            <value>Please specify Other</value>
+            <value>Specify other feeding method</value>
           </text>
           <text id="/immunization_and_growth/g_feeding_method:label">
             <value>Feeding Method</value>
@@ -348,7 +345,7 @@
             <value>Did the child receive deworming tablets?</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_height:label">
-            <value>Please specify the height/length in cm</value>
+            <value>Specify the height/length in cm</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_measured/no:label">
             <value>No</value>
@@ -358,9 +355,6 @@
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_measured:label">
             <value>Was the child measured?</value>
-          </text>
-          <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_note:label">
-            <value>Please specify the other services that the child did receive during the last clinic visit</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_other_treatment/no:label">
             <value>No</value>
@@ -375,7 +369,7 @@
             <value>Did the child receive any other treatment?</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_others:label">
-            <value>Please specify</value>
+            <value>Specify additional treatments</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_vit_a/no:label">
             <value>No</value>
@@ -384,7 +378,7 @@
             <value>Yes</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_vit_a:label">
-            <value>Did the child receive Vitamin A supplement?</value>
+            <value>Did the child receive a Vitamin A supplement?</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed/no:label">
             <value>No</value>
@@ -396,16 +390,16 @@
             <value>Was the child weighed?</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_weight:label">
-            <value>Please specify the weigh in kg</value>
+            <value>Specify the weight in kg</value>
           </text>
           <text id="/immunization_and_growth/g_growth_monitoring:label">
-            <value>Growth monitoring</value>
+            <value>Growth Monitoring</value>
           </text>
           <text id="/immunization_and_growth/g_inactivated_polio/inactivated_polio_date:jr:constraintMsg">
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_inactivated_polio/inactivated_polio_date:label">
-            <value>Enter the Date when Inactivated Polio vaccine (IPV) was given</value>
+            <value>When was the Inactivated Polio vaccine (IPV) given?</value>
           </text>
           <text id="/immunization_and_growth/g_inactivated_polio:label">
             <value>Inactivated Polio Vaccine (IPV)</value>
@@ -420,7 +414,7 @@
             <value>Does <output value=" /immunization_and_growth/patient_name "/> sleep under insecticide treated mosquito net?</value>
           </text>
           <text id="/immunization_and_growth/g_llitn_use/llitn_use_teach:label">
-            <value>Teach Caregiver on the importance of child sleeping under long lasting insecticide treated mosquito net. Refer them to health facility to get one.</value>
+            <value>Tell the caregiver on the importance of child sleeping under long lasting insecticide treated mosquito net. Refer them to health facility to get one.</value>
           </text>
           <text id="/immunization_and_growth/g_llitn_use:label">
             <value>LLITN Use</value>
@@ -429,7 +423,7 @@
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_measles_vaccine/measles_vaccine_date:label">
-            <value>Enter the date when the last Measles was given</value>
+            <value>When was the last Measles given?</value>
           </text>
           <text id="/immunization_and_growth/g_measles_vaccine/measles_vaccine_dose/measles_vaccine_dose_18mo:label">
             <value>18 months</value>
@@ -438,7 +432,7 @@
             <value>9 months</value>
           </text>
           <text id="/immunization_and_growth/g_measles_vaccine/measles_vaccine_dose:label">
-            <value>Which dose of Measles Vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
+            <value>Which dose of the Measles vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
           </text>
           <text id="/immunization_and_growth/g_measles_vaccine:label">
             <value>Measles Vaccine</value>
@@ -465,13 +459,13 @@
             <value>Enter a date in the future</value>
           </text>
           <text id="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_date:label">
-            <value>Select the Date the caregiver has agreed to take the child for the immunization visit</value>
+            <value>On what date will the caregiver take <output value=" /immunization_and_growth/patient_name "/> for their immunization visit?</value>
           </text>
           <text id="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_other:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_other:label">
-            <value>Specify the other action taken</value>
+            <value>Specify other actions taken</value>
           </text>
           <text id="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_reasons/missed_vaccine_details_reason_another_apt:label">
             <value>Child was given another appointment date</value>
@@ -501,16 +495,25 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_why:label">
-            <value>Specify why <output value=" /immunization_and_growth/patient_name "/> did not attend the clinic visit.</value>
+            <value>Specify why <output value=" /immunization_and_growth/patient_name "/> did not attend the clinic visit</value>
           </text>
           <text id="/immunization_and_growth/g_missed_vaccine_details:label">
-            <value>Missed Vaccine details</value>
+            <value>Missed Vaccines</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment/next_appointment_date:jr:constraintMsg">
             <value>Enter a date in the future</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment/next_appointment_date:label">
-            <value>When is the child due for the next immunization?</value>
+            <value>When is their next immunization visit scheduled?</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/no:label">
+            <value>No</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known:label">
+            <value>Is the next immunization date known for <output value=" /immunization_and_growth/patient_name "/>?</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment:label">
             <value>Next Appointment Date</value>
@@ -534,25 +537,25 @@
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_opv/opv_dose_date0:label">
-            <value>Enter date when birth dose of OPV was given</value>
+            <value>When was the birth dose of OPV given?</value>
           </text>
           <text id="/immunization_and_growth/g_opv/opv_dose_date1:jr:constraintMsg">
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_opv/opv_dose_date1:label">
-            <value>Enter date when 1st dose of OPV was given</value>
+            <value>When was the 1st dose of OPV given?</value>
           </text>
           <text id="/immunization_and_growth/g_opv/opv_dose_date2:jr:constraintMsg">
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_opv/opv_dose_date2:label">
-            <value>Enter date when 2nd dose of OPV was given</value>
+            <value>When was the 2nd dose of OPV given?</value>
           </text>
           <text id="/immunization_and_growth/g_opv/opv_dose_date3:jr:constraintMsg">
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_opv/opv_dose_date3:label">
-            <value>Enter date when 3rd dose of OPV was given</value>
+            <value>When was the 3rd dose of OPV given?</value>
           </text>
           <text id="/immunization_and_growth/g_opv:label">
             <value>Oral Polio Vaccine</value>
@@ -561,7 +564,7 @@
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_pentavalent/pentavalent_date:label">
-            <value>Enter the date when the Pentavalent last vaccine dose was given</value>
+            <value>When was the last Pentavalent dose given?</value>
           </text>
           <text id="/immunization_and_growth/g_pentavalent/pentavalent_dose/pentavalent_dose_1:label">
             <value>1st dose</value>
@@ -576,13 +579,13 @@
             <value>Which dose of Pentavalent did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
           </text>
           <text id="/immunization_and_growth/g_pentavalent:label">
-            <value>Pentavalent vaccine</value>
+            <value>Pentavalent Vaccine</value>
           </text>
           <text id="/immunization_and_growth/g_pneumococcal/pneumococcal_date:jr:constraintMsg">
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_pneumococcal/pneumococcal_date:label">
-            <value>Enter the date when the last Pneumococcal (PCV) was given</value>
+            <value>When was the last Pneumococcal (PCV) given?</value>
           </text>
           <text id="/immunization_and_growth/g_pneumococcal/pneumococcal_dose/pneumococcal_dose_1:label">
             <value>1st dose</value>
@@ -594,7 +597,7 @@
             <value>3rd dose</value>
           </text>
           <text id="/immunization_and_growth/g_pneumococcal/pneumococcal_dose:label">
-            <value>Which dose of Pneumococcal (PCV) Vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
+            <value>Which dose of Pneumococcal (PCV) vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
           </text>
           <text id="/immunization_and_growth/g_pneumococcal:label">
             <value>Pneumococcal (PCV) Vaccine</value>
@@ -603,7 +606,7 @@
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_rota_virus/rota_virus_date:label">
-            <value>Enter the date when the last Rota Virus Vaccine was given</value>
+            <value>When was the last Rotavirus vaccine given?</value>
           </text>
           <text id="/immunization_and_growth/g_rota_virus/rota_virus_dose/rota_virus_dose_1:label">
             <value>1st dose</value>
@@ -612,7 +615,7 @@
             <value>2nd dose</value>
           </text>
           <text id="/immunization_and_growth/g_rota_virus/rota_virus_dose:label">
-            <value>Which dose of Rota Virus Vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
+            <value>Which dose of Rotavirus vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
           </text>
           <text id="/immunization_and_growth/g_rota_virus:label">
             <value>Rota Virus Vaccine</value>
@@ -633,7 +636,7 @@
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_vitamin_a_vaccine/vitamin_a_date:label">
-            <value>Enter the date when the last Vitamin A Vaccine was given</value>
+            <value>When was the last Vitamin A Vaccine given?</value>
           </text>
           <text id="/immunization_and_growth/g_vitamin_a_vaccine/vitamin_a_dose/vitamin_a_dose_12mo:label">
             <value>12 months</value>
@@ -675,10 +678,10 @@
             <value>Enter a date in the past</value>
           </text>
           <text id="/immunization_and_growth/g_yellow_fever_vaccine/yellow_fever_date:label">
-            <value>Enter the Date when Yellow Fever vaccine was given?</value>
+            <value>When was the Yellow Fever vaccine given??</value>
           </text>
           <text id="/immunization_and_growth/g_yellow_fever_vaccine:label">
-            <value>Yellow Fever vaccine</value>
+            <value>Yellow Fever Vaccine</value>
           </text>
           <text id="/immunization_and_growth/inputs/contact/_id:hint">
             <value>Select a person from the list</value>
@@ -763,6 +766,9 @@
           <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>Growth monitoring&lt;I class="fa fa-line-chart"&gt;&lt;/i&gt;</value>
           </text>
+          <text id="/immunization_and_growth/summary/summary_header:label">
+            <value>Summary Page&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
           <text id="/immunization_and_growth/summary/summary_height:label">
             <value><output value=" /immunization_and_growth/g_growth_monitoring/growth_monitoring_height "/> cm</value>
           </text>
@@ -800,13 +806,10 @@
             <value>Referral&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_and_growth/summary/summary_roto:label">
-            <value>RotaVirus vaccine received</value>
+            <value>Rotavirus vaccine received</value>
           </text>
-          <text id="/immunization_and_growth/summary/summary_submit1:label">
-            <value>Summary Page&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
-          </text>
-          <text id="/immunization_and_growth/summary/summary_submit2:label">
-            <value>Click the Submit button at the bottom of the form.</value>
+          <text id="/immunization_and_growth/summary/summary_submit:label">
+            <value>Be sure you submit to complete this action</value>
           </text>
           <text id="/immunization_and_growth/summary/summary_title:label">
             <value>Immunization and Growth monitoring&lt;i class="fa fa-calendar-check-o"&gt;&lt;/i&gt;</value>
@@ -915,9 +918,6 @@
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/g_danger_signs/danger_signs_note:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_other/no:label">
             <value>-</value>
           </text>
@@ -1191,9 +1191,6 @@
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_measured:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_note:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_other_treatment/no:label">
             <value>-</value>
           </text>
@@ -1342,6 +1339,15 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment/next_appointment_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/no:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment:label">
@@ -1626,6 +1632,9 @@
           <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/summary/summary_header:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
@@ -1665,10 +1674,7 @@
           <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/summary_submit1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/summary_submit2:label">
+          <text id="/immunization_and_growth/summary/summary_submit:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary/summary_title:label">
@@ -1782,9 +1788,6 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/g_danger_signs/danger_signs_note:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_other/no:label">
@@ -2060,9 +2063,6 @@
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_measured:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_note:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_other_treatment/no:label">
             <value>-</value>
           </text>
@@ -2211,6 +2211,15 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment/next_appointment_date:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/no:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment:label">
@@ -2495,6 +2504,9 @@
           <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/summary/summary_header:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
@@ -2534,10 +2546,7 @@
           <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/summary_submit1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/summary_submit2:label">
+          <text id="/immunization_and_growth/summary/summary_submit:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary/summary_title:label">
@@ -2652,9 +2661,6 @@
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot:label">
             <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/g_danger_signs/danger_signs_note:label">
-            <value>Rota Virus Vaccine</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_other/no:label">
             <value>-</value>
@@ -2929,9 +2935,6 @@
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_measured:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_note:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_other_treatment/no:label">
             <value>-</value>
           </text>
@@ -3081,6 +3084,15 @@
           </text>
           <text id="/immunization_and_growth/g_next_appointment/next_appointment_date:label">
             <value>Which dose of Rota Virus Vaccine did <output value=" /immunization_and_growth/patient_name "/> receive?</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/no:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known:label">
+            <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment:label">
             <value>-</value>
@@ -3364,6 +3376,9 @@
           <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/summary/summary_header:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
@@ -3403,10 +3418,7 @@
           <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/summary_submit1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/summary_submit2:label">
+          <text id="/immunization_and_growth/summary/summary_submit:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary/summary_title:label">
@@ -3520,9 +3532,6 @@
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/g_danger_signs/danger_signs_note:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_danger_signs/danger_signs_other/no:label">
@@ -3798,9 +3807,6 @@
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_measured:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_note:label">
-            <value>-</value>
-          </text>
           <text id="/immunization_and_growth/g_growth_monitoring/growth_monitoring_other_treatment/no:label">
             <value>-</value>
           </text>
@@ -3950,6 +3956,15 @@
           </text>
           <text id="/immunization_and_growth/g_next_appointment/next_appointment_date:label">
             <value>yes</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/no:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known/yes:label">
+            <value>-</value>
+          </text>
+          <text id="/immunization_and_growth/g_next_appointment/next_appointment_known:label">
+            <value>-</value>
           </text>
           <text id="/immunization_and_growth/g_next_appointment:label">
             <value>-</value>
@@ -4233,6 +4248,9 @@
           <text id="/immunization_and_growth/summary/summary_grow_mon:label">
             <value>-</value>
           </text>
+          <text id="/immunization_and_growth/summary/summary_header:label">
+            <value>-</value>
+          </text>
           <text id="/immunization_and_growth/summary/summary_height:label">
             <value>-</value>
           </text>
@@ -4272,10 +4290,7 @@
           <text id="/immunization_and_growth/summary/summary_roto:label">
             <value>-</value>
           </text>
-          <text id="/immunization_and_growth/summary/summary_submit1:label">
-            <value>-</value>
-          </text>
-          <text id="/immunization_and_growth/summary/summary_submit2:label">
+          <text id="/immunization_and_growth/summary/summary_submit:label">
             <value>-</value>
           </text>
           <text id="/immunization_and_growth/summary/summary_title:label">
@@ -4302,7 +4317,7 @@
         </translation>
       </itext>
       <instance>
-        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-01-29_15-47">
+        <immunization_and_growth delimiter="#" id="immunization_and_growth" prefix="J1!immunization_and_growth!" version="2021-02-05_13-54">
           <inputs>
             <meta>
               <location>
@@ -4394,10 +4409,10 @@
             <deworm_next_date/>
           </g_deworming>
           <g_next_appointment>
+            <next_appointment_known/>
             <next_appointment_date/>
           </g_next_appointment>
           <g_growth_monitoring>
-            <growth_monitoring_note/>
             <growth_monitoring_weighed/>
             <growth_monitoring_weight/>
             <growth_monitoring_measured/>
@@ -4441,7 +4456,6 @@
             <missed_vaccine_date/>
           </g_missed_vaccine_details>
           <g_danger_signs>
-            <danger_signs_note/>
             <danger_signs_breastfeeding/>
             <danger_signs_breath/>
             <danger_signs_active/>
@@ -4451,8 +4465,8 @@
             <danger_signs_other_text/>
           </g_danger_signs>
           <summary tag="hidden">
-            <summary_submit1/>
-            <summary_submit2/>
+            <summary_header/>
+            <summary_submit/>
             <summary_title/>
             <summary_details/>
             <summary_name/>
@@ -4571,9 +4585,9 @@ concat( /immunization_and_growth/patient_age_in_years , ' years old')))" nodeset
       <bind jr:constraintMsg="jr:itext('/immunization_and_growth/g_deworming/deworm_age:jr:constraintMsg')" nodeset="/immunization_and_growth/g_deworming/deworm_age" relevant="selected( /immunization_and_growth/g_deworming/dewormed , 'yes')" required="true()" type="select"/>
       <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/g_deworming/deworm_next_date:jr:constraintMsg')" nodeset="/immunization_and_growth/g_deworming/deworm_next_date" required="true()" type="date"/>
       <bind nodeset="/immunization_and_growth/g_next_appointment" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')"/>
-      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/g_next_appointment/next_appointment_date:jr:constraintMsg')" nodeset="/immunization_and_growth/g_next_appointment/next_appointment_date" required="true()" type="date"/>
+      <bind nodeset="/immunization_and_growth/g_next_appointment/next_appointment_known" required="true()" type="select1"/>
+      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/g_next_appointment/next_appointment_date:jr:constraintMsg')" nodeset="/immunization_and_growth/g_next_appointment/next_appointment_date" relevant="selected( /immunization_and_growth/g_next_appointment/next_appointment_known , 'yes')" required="true()" type="date"/>
       <bind nodeset="/immunization_and_growth/g_growth_monitoring" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'yes')"/>
-      <bind nodeset="/immunization_and_growth/g_growth_monitoring/growth_monitoring_note" readonly="true()" type="string"/>
       <bind nodeset="/immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed" relevant=" /immunization_and_growth/patient_age_in_months  &lt; 59" required="true()" type="select1"/>
       <bind nodeset="/immunization_and_growth/g_growth_monitoring/growth_monitoring_weight" relevant="selected( /immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed , 'yes')" required="true()" type="int"/>
       <bind nodeset="/immunization_and_growth/g_growth_monitoring/growth_monitoring_measured" relevant=" /immunization_and_growth/patient_age_in_months  &lt; 59" required="true()" type="select1"/>
@@ -4617,14 +4631,13 @@ selected( /immunization_and_growth/g_developmental_milestones/developmental_sit 
 selected( /immunization_and_growth/g_developmental_milestones/developmental_stand , 'no') or 
 selected( /immunization_and_growth/g_developmental_milestones/developmental_walk , 'no') or
 selected( /immunization_and_growth/g_developmental_milestones/developmental_talk , 'no')" required="true()" type="select1"/>
-      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/g_developmental_milestones/developmental_next_assignment_date:jr:constraintMsg')" nodeset="/immunization_and_growth/g_developmental_milestones/developmental_next_assignment_date" relevant="selected( /immunization_and_growth/g_developmental_milestones/developmental_refer , 'yes')" required="true()" type="date"/>
+      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/g_developmental_milestones/developmental_next_assignment_date:jr:constraintMsg')" nodeset="/immunization_and_growth/g_developmental_milestones/developmental_next_assignment_date" relevant="selected( /immunization_and_growth/g_developmental_milestones/developmental_refer , 'yes')" required="false()" type="date"/>
       <bind nodeset="/immunization_and_growth/g_missed_vaccine_details" relevant="selected( /immunization_and_growth/g_vaccines/attend_clinic , 'no')"/>
       <bind nodeset="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_reasons" required="true()" type="select"/>
       <bind jr:constraintMsg="jr:itext('/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_why:jr:constraintMsg')" nodeset="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_why" relevant="selected( /immunization_and_growth/g_missed_vaccine_details/missed_vaccine_reasons , 'missed_vaccine_details_reason_other')" required="true()" type="string"/>
       <bind jr:constraintMsg="jr:itext('/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_actions:jr:constraintMsg')" nodeset="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_actions" required="true()" type="select"/>
       <bind jr:constraintMsg="jr:itext('/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_other:jr:constraintMsg')" nodeset="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_other" relevant="selected( /immunization_and_growth/g_missed_vaccine_details/missed_vaccine_actions , 'missed_vaccine_details_actions_other')" required="true()" type="string"/>
-      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_date:jr:constraintMsg')" nodeset="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_date" relevant="selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" required="true()" type="date"/>
-      <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_note" readonly="true()" type="string"/>
+      <bind constraint="decimal-date-time(.) &gt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_date:jr:constraintMsg')" nodeset="/immunization_and_growth/g_missed_vaccine_details/missed_vaccine_date" relevant="selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" required="false()" type="date"/>
       <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_breastfeeding" required="true()" type="select1"/>
       <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_breath" required="true()" type="select1"/>
       <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_active" required="true()" type="select1"/>
@@ -4632,8 +4645,8 @@ selected( /immunization_and_growth/g_developmental_milestones/developmental_talk
       <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_cold_hot" required="true()" type="select1"/>
       <bind nodeset="/immunization_and_growth/g_danger_signs/danger_signs_other" required="true()" type="select1"/>
       <bind jr:constraintMsg="jr:itext('/immunization_and_growth/g_danger_signs/danger_signs_other_text:jr:constraintMsg')" nodeset="/immunization_and_growth/g_danger_signs/danger_signs_other_text" relevant="selected( /immunization_and_growth/g_danger_signs/danger_signs_other , 'yes')" required="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/summary_submit1" readonly="true()" type="string"/>
-      <bind nodeset="/immunization_and_growth/summary/summary_submit2" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_header" readonly="true()" type="string"/>
+      <bind nodeset="/immunization_and_growth/summary/summary_submit" readonly="true()" type="string"/>
       <bind nodeset="/immunization_and_growth/summary/summary_title" readonly="true()" type="string"/>
       <bind nodeset="/immunization_and_growth/summary/summary_details" readonly="true()" type="string"/>
       <bind nodeset="/immunization_and_growth/summary/summary_name" readonly="true()" type="string"/>
@@ -4980,15 +4993,23 @@ selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
     </group>
     <group appearance="field-list" ref="/immunization_and_growth/g_next_appointment">
       <label ref="jr:itext('/immunization_and_growth/g_next_appointment:label')"/>
+      <select1 ref="/immunization_and_growth/g_next_appointment/next_appointment_known">
+        <label ref="jr:itext('/immunization_and_growth/g_next_appointment/next_appointment_known:label')"/>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/g_next_appointment/next_appointment_known/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/immunization_and_growth/g_next_appointment/next_appointment_known/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
       <input ref="/immunization_and_growth/g_next_appointment/next_appointment_date">
         <label ref="jr:itext('/immunization_and_growth/g_next_appointment/next_appointment_date:label')"/>
       </input>
     </group>
     <group appearance="field-list" ref="/immunization_and_growth/g_growth_monitoring">
       <label ref="jr:itext('/immunization_and_growth/g_growth_monitoring:label')"/>
-      <input ref="/immunization_and_growth/g_growth_monitoring/growth_monitoring_note">
-        <label ref="jr:itext('/immunization_and_growth/g_growth_monitoring/growth_monitoring_note:label')"/>
-      </input>
       <select1 ref="/immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed">
         <label ref="jr:itext('/immunization_and_growth/g_growth_monitoring/growth_monitoring_weighed:label')"/>
         <item>
@@ -5295,9 +5316,6 @@ selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
     </group>
     <group appearance="field-list" ref="/immunization_and_growth/g_danger_signs">
       <label ref="jr:itext('/immunization_and_growth/g_danger_signs:label')"/>
-      <input ref="/immunization_and_growth/g_danger_signs/danger_signs_note">
-        <label ref="jr:itext('/immunization_and_growth/g_danger_signs/danger_signs_note:label')"/>
-      </input>
       <select1 ref="/immunization_and_growth/g_danger_signs/danger_signs_breastfeeding">
         <label ref="jr:itext('/immunization_and_growth/g_danger_signs/danger_signs_breastfeeding:label')"/>
         <item>
@@ -5369,11 +5387,11 @@ selected( /immunization_and_growth/missed_vaccine_apt , 'yes')" type="string"/>
       </input>
     </group>
     <group appearance="field-list summary" ref="/immunization_and_growth/summary">
-      <input appearance="h1 yellow" ref="/immunization_and_growth/summary/summary_submit1">
-        <label ref="jr:itext('/immunization_and_growth/summary/summary_submit1:label')"/>
+      <input appearance="h1 yellow" ref="/immunization_and_growth/summary/summary_header">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_header:label')"/>
       </input>
-      <input appearance="h2" ref="/immunization_and_growth/summary/summary_submit2">
-        <label ref="jr:itext('/immunization_and_growth/summary/summary_submit2:label')"/>
+      <input appearance="h2" ref="/immunization_and_growth/summary/summary_submit">
+        <label ref="jr:itext('/immunization_and_growth/summary/summary_submit:label')"/>
       </input>
       <input appearance="h1 blue" ref="/immunization_and_growth/summary/summary_title">
         <label ref="jr:itext('/immunization_and_growth/summary/summary_title:label')"/>
