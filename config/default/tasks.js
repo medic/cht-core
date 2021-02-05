@@ -58,7 +58,7 @@ module.exports = [
     title: 'Immunization Growth Follow Up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
-    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
+    actions: [{type: 'report',form: 'immunization_and_growth'}],
     appliesIf: function(contact, report) {
       // Trigger a immunization follow up form 3 days from the selected date
       return parseInt(getField(report, 'g_missed_vaccine_details.missed_vaccine_date'))  > 0;
@@ -75,7 +75,7 @@ module.exports = [
     resolvedIf: function(contact, report, event, dueDate) {
       return isFormArraySubmittedInWindow(
         contact.reports,
-        ['immunization_growth_follow_up'],
+        ['immunization_and_growth'],
         Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
         addDays(dueDate, event.end + 1).getTime()
       );
@@ -89,7 +89,7 @@ module.exports = [
     title: 'Immunization Growth Follow Up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
-    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
+    actions: [{type: 'report',form: 'immunization_and_growth'}],
     appliesIf: function(contact, report) {
       // Trigger a immunization follow up form 3 days from the selected date
       return parseInt(getField(report, 'g_deworming.deworm_next_date'))  > 0;
@@ -106,7 +106,7 @@ module.exports = [
     resolvedIf: function(contact, report, event, dueDate) {
       return isFormArraySubmittedInWindow(
         contact.reports,
-        ['immunization_growth_follow_up'],
+        ['immunization_and_growth'],
         Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
         addDays(dueDate, event.end + 1).getTime()
       );
@@ -120,7 +120,7 @@ module.exports = [
     title: 'Immunization Growth Follow Up',
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
-    actions: [{type: 'report',form: 'immunization_growth_follow_up'}],
+    actions: [{type: 'report',form: 'immunization_and_growth'}],
     appliesIf: function(contact, report) {
       // Trigger a immunization follow up form 3 days from the selected date
       return parseInt(getField(report, 'g_next_appointment.next_appointment_date'))  > 0;
@@ -137,7 +137,7 @@ module.exports = [
     resolvedIf: function(contact, report, event, dueDate) {
       return isFormArraySubmittedInWindow(
         contact.reports,
-        ['immunization_growth_follow_up'],
+        ['immunization_and_growth'],
         Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
         addDays(dueDate, event.end + 1).getTime()
       );
