@@ -129,7 +129,7 @@ export class ChangesService {
     }
 
     const observable = options.debounce ? db.observable.pipe(debounceTime(options.debounce)) : db.observable;
-    const subscription = observable.subscribe(change => {
+    db.subscriptions[options.key] = observable.subscribe(change => {
       try {
         if (!options.filter || options.filter(change)) {
           options.callback(change);
@@ -138,8 +138,13 @@ export class ChangesService {
         console.error(new Error('Error executing changes callback: ' + options.key), e);
       }
     });
-    db.subscriptions[options.key] = subscription;
-    return subscription;
+
+    return {
+      unsubscribe: () => {
+        db.subscriptions[options.key].unsubscribe();
+        delete db.subscriptions[options.key];
+      }
+    };
   }
 
   killWatchers() {

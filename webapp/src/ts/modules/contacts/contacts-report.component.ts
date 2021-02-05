@@ -69,6 +69,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     this.subscription.unsubscribe();
     this.geoHandle && this.geoHandle.cancel();
     this.enketoService.unload(this.form);
+    this.globalActions.clearCancelCallback();
   }
 
   ngAfterViewInit() {

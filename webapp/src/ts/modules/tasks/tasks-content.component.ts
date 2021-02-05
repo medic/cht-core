@@ -68,6 +68,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.geoHandle?.cancel();
+    this.enketoService.unload(this.form);
+    this.globalActions.clearCancelCallback();
   }
 
   private subscribeToStore() {

@@ -83,7 +83,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.contactsActions.selectContact(null);
+    this.contactsActions.setSelectedContact(null);
+    this.globalActions.setRightActionBar({});
   }
 
   private getUserFacility() {
