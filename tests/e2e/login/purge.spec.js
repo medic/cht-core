@@ -228,7 +228,7 @@ describe('Purging on login', () => {
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(async () => { utils.afterEachNative()});
+  afterEach(async () => { utils.afterEachNative(); });
 
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
