@@ -96,7 +96,7 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
   }
 }
 
-export class MultiDropdownFilterComponentStub {
+export class MultiDropdownFilter {
   selected = new Map();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   clear(apply) {}

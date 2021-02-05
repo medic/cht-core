@@ -1,4 +1,4 @@
-import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { tap, withLatestFrom } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
@@ -13,7 +13,6 @@ import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/naviga
 
 @Injectable()
 export class GlobalEffects {
-  private renderer: Renderer2;
   private globalActions;
 
   constructor(
@@ -21,10 +20,8 @@ export class GlobalEffects {
     private modalService: ModalService,
     private store:Store,
     private router:Router,
-    private rendererFactory:RendererFactory2
   ) {
     this.globalActions = new GlobalActions(store);
-    this.renderer = rendererFactory.createRenderer(null, null);
   }
 
   deleteDocConfirm$ = createEffect(

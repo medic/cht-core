@@ -10,7 +10,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import {
   MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Status Filter Component', () => {

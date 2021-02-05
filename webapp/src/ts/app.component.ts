@@ -583,21 +583,23 @@ export class AppComponent implements OnInit {
     // running this code in NgZone will end up triggering app-wide change detection on every
     // mouseover and mouseout event over every element on the page!
     this.ngZone.runOutsideAngular(() => {
-      $('body').on('mouseenter', '.relative-date, .autoreply', function() {
-        if ($(this).data('tooltipLoaded') !== true) {
-          $(this)
+      $('body').on('mouseenter', '.relative-date, .autoreply', (event) => {
+        const element = $(event.currentTarget);
+        if (element.data('tooltipLoaded') !== true) {
+          element
             .data('tooltipLoaded', true)
             .tooltip({
               placement: 'bottom',
               trigger: 'manual',
-              container: $(this).closest('.inbox-items, .item-content, .page'),
+              container: element.closest('.inbox-items, .item-content, .page'),
             })
             .tooltip('show');
         }
       });
-      $('body').on('mouseleave', '.relative-date, .autoreply', function() {
-        if ($(this).data('tooltipLoaded') === true) {
-          $(this)
+      $('body').on('mouseleave', '.relative-date, .autoreply', (event) => {
+        const element = $(event.currentTarget);
+        if (element.data('tooltipLoaded') === true) {
+          element
             .data('tooltipLoaded', false)
             .tooltip('hide');
         }

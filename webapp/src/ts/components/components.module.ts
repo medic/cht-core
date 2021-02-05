@@ -14,7 +14,7 @@ import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from
 
 import {
   MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';

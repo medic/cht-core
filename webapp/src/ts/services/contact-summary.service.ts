@@ -72,7 +72,7 @@ export class ContactSummaryService {
     return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDoc));
   }
 
-  _get(contact, reports, lineage, targetDoc?) {
+  private _get(contact, reports, lineage, targetDoc?) {
     return this
       .getGeneratorFunction()
       .then((fn) => {

@@ -4,8 +4,8 @@ import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
 import {
   MultiDropdownFilterComponent,
-  MultiDropdownFilterComponentStub,
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+  MultiDropdownFilter,
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
@@ -25,7 +25,7 @@ export class StatusFilterComponent implements AbstractFilter {
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter = new MultiDropdownFilterComponentStub(); // initialize variable to avoid change detection errors
+  dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
 
   constructor(
     private store: Store,
