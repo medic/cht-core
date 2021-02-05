@@ -3,6 +3,7 @@ const sentinelUtils = require('../sentinel/utils');
 
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
+const commonPo = require('../../page-objects/common/common.po');
 chai.use(chaiExclude);
 
 const contacts = [
@@ -107,7 +108,10 @@ const processReportsAndSetings = async (reports, settings) => {
 };
 
 describe('SMS workflows', () => {
-  beforeAll(async () => await utils.saveDocsNative(contacts));
+  beforeAll(async () => { 
+    commonPo.goToPeople();
+    await utils.saveDocsNative(contacts);
+  });
   
   afterAll(async () => await utils.revertDbNative());
 
