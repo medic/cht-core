@@ -216,7 +216,7 @@ describe('Purging on login', () => {
 
   afterAll(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    commonElements.goToLoginPage();
+    await commonElements.goToLoginPageNative();
     loginPage.loginNative(auth.username, auth.password);
     const doc = await utils.requestNative(`/_users/org.couchdb.user:${restrictedUserName}`);
     await utils.requestNative({
@@ -228,7 +228,7 @@ describe('Purging on login', () => {
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(utils.afterEachNative);
+  afterEach(async () => { utils.afterEachNative()});
 
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
