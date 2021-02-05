@@ -121,8 +121,8 @@ module.exports = {
 
   goToPeople: async () => {
     await browser.get(utils.getBaseUrl() + 'contacts/');
-    await helper.waitUntilReady(medicLogo);
-    await helper.waitUntilReady(element(by.id('contacts-list')));
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('contacts-list')));
   },
 
   goToReports: refresh => {
