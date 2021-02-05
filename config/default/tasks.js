@@ -92,6 +92,7 @@ module.exports = [
     actions: [{type: 'report',form: 'immunization_and_growth'}],
     appliesIf: function(contact, report) {
       // Trigger a immunization follow up form 3 days from the selected date
+      console.log('g_deworming.deworm_next_date', getField(report, 'g_deworming.deworm_next_date'));
       return parseInt(getField(report, 'g_deworming.deworm_next_date'))  > 0;
     },
     events: [
@@ -121,17 +122,23 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
     actions: [{type: 'report',form: 'immunization_and_growth'}],
-    appliesIf: function(contact, report) {
-      // Trigger a immunization follow up form 3 days from the selected date
-      return parseInt(getField(report, 'g_next_appointment.next_appointment_date'))  > 0;
-    },
+appliesIf: function(contact, report) {
+  // Trigger a immunization follow up form 3 days from the selected date
+  if (parseInt(getField(report, 'g_next_appointment.next_appointment_date'))  > 0){
+    console.log('YES g_next_appointment.next_appointment_date', getField(report, 'g_next_appointment.next_appointment_date'));
+    return true;
+  } else {
+    console.log('NO g_next_appointment.next_appointment_date', getField(report, 'g_next_appointment.next_appointment_date'));
+    return false;
+  }
+},
     events: [
       {
         id: 'immunization_growth_follow_up_is_set_next_appointment_date_3',
         dueDate: function (event, contact, report) {
           return getDateISOLocal(getField(report, 'g_next_appointment.next_appointment_date'));
         },
-        start: 3, end: 3
+        start: 31, end: 30
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
