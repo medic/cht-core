@@ -28,11 +28,13 @@ const baseConfig = {
       '**/docs-by-replication-key-view.js',
       'e2e/submit-enketo-form.js',
       'e2e/forms/submit-z-score-form.spec.js',
+      '**/sms-gateway.js',
       'e2e/forms/submit-photo-upload-form.spec.js',
       'e2e/transitions/public_form_transitions.spec.js',
       'e2e/contacts/add-new-health-center.js',
       'e2e/contacts/add-new-person.js',
       'e2e/forms/submit-delivery-form.specs.js',
+      'e2e/users/add-user.specs.js',
     ],
     // performance: 'performance/**/*.js'
   },
