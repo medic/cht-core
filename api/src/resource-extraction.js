@@ -23,7 +23,7 @@ const isAttachmentExtractable = name => {
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
 let extractedDigests = {};
 
-const createFolderIfDne = path => !fs.existsSync(path) && fs.mkdirSync(path);
+const createFolderIfDne = folderPath => !fs.existsSync(folderPath) && fs.mkdirSync(folderPath);
 
 const removeDirectoryRecursive = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
