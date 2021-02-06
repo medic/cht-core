@@ -67,6 +67,8 @@ export class LanguageService {
   ) {
   }
 
+  private readonly DEFAULT_LOCALE = 'en';
+
   private fetchLocale() {
     return this.userSettingsService
       .get()
@@ -78,7 +80,7 @@ export class LanguageService {
         return this.settingsService
           .get()
           .then((settings:any) => {
-            return settings.locale || 'en';
+            return settings.locale || this.DEFAULT_LOCALE;
           });
       });
   }

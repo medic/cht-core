@@ -125,6 +125,29 @@ const updateSettings = updates => {
     });
 };
 
+const updateSettingsNative = async updates => {
+  if (originalSettings) {
+    throw new Error('A previous test did not call revertSettings');
+  }
+  const settings = await requestNative({
+    path: '/api/v1/settings',
+    method: 'GET',
+  });
+
+  originalSettings = settings;
+  // Make sure all updated fields are present in originalSettings, to enable reverting later.
+  Object.keys(updates).forEach(updatedField => {
+    if (!_.has(originalSettings, updatedField)) {
+      originalSettings[updatedField] = null;
+    }
+  });
+  return requestNative({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: updates,
+  });
+};
+
 const revertSettings = () => {
   deprecated('utils.revertSettings', 'utils.revertSettingsNative');
   if (!originalSettings) {
@@ -405,7 +428,7 @@ const revertDb = (except, ignoreRefresh) => {
 };
 
 const revertDbNative = async (except, ignoreRefresh) => {
-  const needsRefresh = revertSettingsNative();
+  const needsRefresh = await revertSettingsNative();
   await deleteAllNative(except);
   if (!ignoreRefresh && needsRefresh) {
     return refreshToGetNewSettings();
@@ -437,6 +460,33 @@ const deleteUsers = async (users, meta = false) => {
     await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'DELETE' });
   }
 };
+
+const deleteUsersNative = async (users, meta = false) => {
+  const usernames = users.map(user => `org.couchdb.user:${user.username}`);
+  const userDocs = await requestNative({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
+  const opts = { path: `/${constants.DB_NAME}/_all_docs`, method: 'POST', body: { keys: usernames}};
+  const medicDocs = await requestNative(opts);
+  const toDelete = userDocs.rows
+    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .filter(stub => stub);
+  const toDeleteMedic = medicDocs.rows
+    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .filter(stub => stub);
+
+  
+  await  requestNative({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } });
+  await  requestNative({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } });
+  
+
+  if (!meta) {
+    return;
+  }
+
+  for (const user of users) {
+    await requestNative({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'DELETE' });
+  }
+};
+
 
 const createUsers = async (users, meta = false) => {
   const createUserOpts = {
@@ -536,6 +586,7 @@ module.exports = {
   }),
 
   requestOnTestDb: (options, debug) => {
+    deprecated('requestOnTestDb','requestOnTestDbNative');
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -549,7 +600,7 @@ module.exports = {
     return request(options, { debug });
   },
 
-  requestOnTestDbNative: (options, debug) => {
+  requestOnTestDbNative: async (options, debug) => {
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -560,10 +611,11 @@ module.exports = {
     if (pathAndReqType !== '/GET') {
       options.path = '/' + constants.DB_NAME + (options.path || '');
     }
-    return requestNative(options, { debug });
+    return await requestNative(options, { debug });
   },
 
   requestOnTestMetaDb: (options, debug) => {
+    deprecated('requestOnTestMetaDb','requestOnTestMetaDbNative');
     if (typeof options === 'string') {
       options = {
         path: options,
@@ -615,8 +667,9 @@ module.exports = {
     });
   },
 
-  saveDocs: docs =>
-    module.exports
+  saveDocs: docs => {
+    deprecated('saveDocs','saveDocsNative');
+    return module.exports
       .requestOnTestDb({
         path: '/_bulk_docs',
         method: 'POST',
@@ -628,9 +681,26 @@ module.exports = {
         } else {
           return results;
         }
-      }),
+      });
+  },
+
+  saveDocsNative: async (docs) =>{
+    const results = await module.exports
+      .requestOnTestDbNative({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs: docs }
+      });
+
+    if (results.find(r => !r.ok)) {
+      throw Error(JSON.stringify(results, null, 2));
+    } else {
+      return results;
+    }
+  },
 
   getDoc: id => {
+    deprecated('getDoc','getDocNative');
     deprecated('utils.getDoc', 'utils.getDocNative');
     return module.exports.requestOnTestDbNative({
       path: `/${id}`,
@@ -646,6 +716,7 @@ module.exports = {
   },
 
   getDocs: ids => {
+    deprecated('getDocs','getDocsNative');
     return module.exports
       .requestOnTestDb({
         path: `/_all_docs?include_docs=true`,
@@ -656,11 +727,28 @@ module.exports = {
       .then(response => response.rows.map(row => row.doc));
   },
 
+  getDocsNative: async ids => {
+    const response = await module.exports
+      .requestOnTestDbNative({
+        path: `/_all_docs?include_docs=true`,
+        method: 'POST',
+        body: { keys: ids || []},
+        headers: { 'content-type': 'application/json' },
+      });
+    return response.rows.map(row => row.doc);
+  },
+
   deleteDoc: id => {
     return module.exports.getDoc(id).then(doc => {
       doc._deleted = true;
       return module.exports.saveDoc(doc);
     });
+  },
+
+  deleteDocNative: async id => {
+    const doc = await module.exports.getDocNative(id);
+    doc._deleted = true;
+    return module.exports.saveDocNative(doc);
   },
 
   deleteDocs: ids => {
@@ -702,12 +790,21 @@ module.exports = {
    * @param      {Boolean}  ignoreRefresh  don't bother refreshing
    * @return     {Promise}  completion promise
    */
-  updateSettings: (updates, ignoreRefresh = false) =>
-    updateSettings(updates).then(() => {
+  updateSettings: (updates, ignoreRefresh = false) => {
+    deprecated('updateSettings','updateSettingsNative');
+    return updateSettings(updates).then(() => {
       if (!ignoreRefresh) {
         return refreshToGetNewSettings();
       }
-    }),
+    });
+  },
+  
+  updateSettingsNative: async (updates, ignoreRefresh = false) => {
+    await updateSettingsNative(updates);
+    if (!ignoreRefresh) {
+      return refreshToGetNewSettings();
+    }
+  },
 
   /**
    * Revert settings and refresh if required
@@ -751,6 +848,7 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: done => {
+    deprecated('afterEach','afterEachNative');
     return revertDb()
       .then(() => {
         if (done) {
@@ -840,6 +938,7 @@ module.exports = {
   // @param {Boolean} meta - if true, deletes meta db-s as well, default true
   // @return {Promise}
   deleteUsers: deleteUsers,
+  deleteUsersNative,
 
   // Creates users - optionally also creating their meta dbs
   // @param {Array} users - list of users to be created

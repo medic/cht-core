@@ -17,13 +17,15 @@ describe('DeleteDocConfirmComponent', () => {
   let fixture: ComponentFixture<DeleteDocConfirmComponent>;
   let bdModalRef;
   let dbService;
+  let localDb;
   let router;
   let translateService;
   let globalActions;
 
   beforeEach(async(() => {
     bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
-    dbService = { get: () => ({ put: sinon.stub().resolves(true) }) };
+    localDb = { put: sinon.stub().resolves(true) };
+    dbService = { get: sinon.stub().returns(localDb) };
     router = {
       url: '',
       navigate: sinon.stub()
@@ -103,6 +105,20 @@ describe('DeleteDocConfirmComponent', () => {
       expect(component.model.doc).to.not.have.key('patient');
       expect(component.model.doc.contact).to.deep.equal(minifiedContact);
       expect(component.model.doc.contact.parent).to.not.have.key('name');
+      expect(localDb.put.callCount).to.equal(1);
+      expect(localDb.put.args[0][0]).to.deep.equal({
+        _deleted: true,
+        id: 'id',
+        rev: 'rev',
+        type: 'data_record',
+        contact: {
+          _id: 'id',
+          parent: {
+            _id: 'id123',
+            parent: { _id: 'id456' }
+          }
+        }
+      });
     });
 
     it('should not navigate if it is selectMode', fakeAsync(() => {

@@ -1,7 +1,8 @@
-import { Actions } from '../actions/contacts';
 import { createReducer, on } from '@ngrx/store';
 import { UniqueSortedList } from './utils';
+
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { Actions } from '@mm-actions/contacts';
 
 const initialState = {
   contacts: [],
@@ -9,7 +10,7 @@ const initialState = {
   selected: null,
   filters: {},
   loadingSelectedChildren: false,
-  loadingSelectedContacts: false,
+  loadingSelectedReports: false,
   loadingSummary: false,
 };
 
@@ -104,7 +105,7 @@ const receiveSelectedContactReports = (state, reports) => {
   };
 };
 
-const setSelectedContact = (state, selected) => {
+const updateSelectedContact = (state, selected) => {
   return { ...state, selected };
 };
 
@@ -143,7 +144,7 @@ const _contactsReducer = createReducer(
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
   on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),
-  on(Actions.setSelectedContact, (state, { payload: { selected } }) => setSelectedContact(state, selected)),
+  on(Actions.updateSelectedContact, (state, { payload: { selected } }) => updateSelectedContact(state, selected)),
   on(Actions.setLoadingSelectedContact, (state) => setLoadingSelectedContact(state)),
   on(Actions.setContactsLoadingSummary, (state, { payload: { value }}) => setContactsLoadingSummary(state, value)),
   on(Actions.receiveSelectedContactChildren, (state, { payload: { children }}) => {
