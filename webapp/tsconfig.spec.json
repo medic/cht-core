@@ -11,7 +11,7 @@
     ]
   },
   "files": [
-    "tests/karma/ts/test.ts",
+    "tests/karma/test.ts",
     "src/ts/polyfills.ts"
   ],
   "include": [

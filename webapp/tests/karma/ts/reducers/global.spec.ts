@@ -132,6 +132,16 @@ describe('Global Reducer', () => {
     expect(globalReducer(state, Actions.setLeftActionBar(null))).to.deep.equal({ actionBar: { left: null } });
   });
 
+  it('should update left action bar', () => {
+    const left = { field: 'a', settings: 'b' };
+    state = globalReducer(state, Actions.setLeftActionBar(left));
+    expect(state).to.deep.equal({ actionBar: { left } });
+
+    const change = { other: 'e' };
+    state = globalReducer(state, Actions.updateLeftActionBar(change));
+    expect(state).to.deep.equal({ actionBar: { left: { field: 'a', settings: 'b', other: 'e' } } });
+  });
+
   it('should set correct enketo status', () => {
     state = globalReducer(state, Actions.setEnketoStatus({ edited: true }));
     expect(state).to.deep.equal({ enketoStatus: { edited: true } });
@@ -141,6 +151,9 @@ describe('Global Reducer', () => {
 
     state = globalReducer(state, Actions.setEnketoStatus({ saving: false, edited: false }));
     expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false }});
+
+    state = globalReducer(state, Actions.setEnketoStatus({ error: 'some error' }));
+    expect(state).to.deep.equal({ enketoStatus: { edited: false, saving: false, error: 'some error' }});
   });
 
   it('should set cancel callback', () => {
@@ -153,6 +166,9 @@ describe('Global Reducer', () => {
     state = globalReducer(state, Actions.setCancelCallback(otherCallback));
     expect(state).to.deep.equal({ cancelCallback: otherCallback });
     expect(state.cancelCallback()).to.equal('otherthing');
+
+    state = globalReducer(state, Actions.setCancelCallback(null));
+    expect(state).to.deep.equal({ cancelCallback: null });
   });
 
   it('should set right action bar', () => {
@@ -173,5 +189,39 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ actionBar: { right: { some: 'fields', verified: true } } });
     state = globalReducer(state, Actions.setRightActionBarVerified(false));
     expect(state).to.deep.equal({ actionBar: { right: { some: 'fields', verified: false } } });
+  });
+
+  it('should update right action bar', () => {
+    const right = { field: 'a', settings: 'b' };
+    state = globalReducer(state, Actions.setRightActionBar(right));
+    expect(state).to.deep.equal({ actionBar: { right } });
+
+    const change = { other: 'e' };
+    state = globalReducer(state, Actions.updateRightActionBar(change));
+    expect(state).to.deep.equal({ actionBar: { right: { field: 'a', settings: 'b', other: 'e' } } });
+  });
+
+  it('should set selectMode in state', () => {
+    state = globalReducer(state, Actions.setSelectMode(true));
+    expect(state).to.deep.equal({ selectMode: true });
+
+    state = globalReducer(state, Actions.setSelectMode(false));
+    expect(state).to.deep.equal({ selectMode: false });
+  });
+
+  it('should set loadingSubActionBar in state', () => {
+    state = globalReducer(state, Actions.setLoadingSubActionBar(true));
+    expect(state).to.deep.equal({ loadingSubActionBar: true });
+
+    state = globalReducer(state, Actions.setLoadingSubActionBar(false));
+    expect(state).to.deep.equal({ loadingSubActionBar: false });
+  });
+
+  it('should set showContent in state', () => {
+    state = globalReducer(state, Actions.setShowContent(true));
+    expect(state).to.deep.equal({ showContent: true });
+
+    state = globalReducer(state, Actions.setShowContent(false));
+    expect(state).to.deep.equal({ showContent: false });
   });
 });

@@ -33,16 +33,23 @@ describe('ResourceIcons service', () => {
 
   describe('getImg function', () => {
 
-    it('returns empty string when given no name', () => {
+    it('should return empty string when given no name', () => {
       const service = getService();
       const actual = service.getImg();
       expect(actual).to.equal('');
     });
 
-    it('returns empty string when no doc yet', () => {
+    it('should return empty string when no doc yet', () => {
       const service = getService();
-      const actual = service.getImg('delivery', 'resources');
-      expect(actual).to.equal('<span class="resource-icon" title="delivery" >&nbsp</span>');
+
+      const resourceIcon = service.getImg('delivery', 'resources');
+      expect(resourceIcon).to.equal('<span class="resource-icon" title="delivery" >&nbsp</span>');
+
+      const brandingLogo = service.getImg('logo', 'branding');
+      expect(brandingLogo).to.equal('<span class="header-logo" data-title="logo" >&nbsp</span>');
+
+      const partnersImage = service.getImg('partner', 'partners');
+      expect(partnersImage).to.equal('<span class="partner-image" title="partner" >&nbsp</span>');
     });
 
     it('should return empty string when no doc yet with placeholder', () => {
@@ -52,7 +59,7 @@ describe('ResourceIcons service', () => {
       expect(actual).to.equal(expected);
     });
 
-    it('returns img when resources doc already cached', fakeAsync(() => {
+    it('should return img when resources doc already cached', fakeAsync(() => {
       const resources = {
         resources: {
           child: 'child.png',
@@ -78,6 +85,56 @@ describe('ResourceIcons service', () => {
         '<img src="data:image/png;base64,kiddlywinks" />' +
         '</span>';
       expect(actual).to.equal(expected);
+    }));
+
+    it('should return img when branding doc already cached', fakeAsync(() => {
+      const brandingDoc = {
+        resources: {
+          logo: 'medic-logo-light-full.svg'
+        },
+        _attachments: {
+          'medic-logo-light-full.svg': {
+            content_type: 'image/svg+xml',
+            data: 'TguMzJsMi4xNT'
+          }
+        }
+      };
+      get.resolves(brandingDoc);
+      const service = getService();
+      tick();
+
+      const branding = service.getImg('logo', 'branding');
+
+      const expected =
+        '<span class="header-logo" data-title="logo" >' +
+        '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
+        '</span>';
+      expect(branding).to.equal(expected);
+    }));
+
+    it('should return img when partners doc already cached', fakeAsync(() => {
+      const partnersDoc = {
+        resources: {
+          partnerAbc: 'partnerAbcLogo.png'
+        },
+        _attachments: {
+          'partnerAbcLogo.png': {
+            content_type: 'image/png',
+            data: 'UHuMzJsMi4xNT'
+          }
+        }
+      };
+      get.resolves(partnersDoc);
+      const service = getService();
+      tick();
+
+      const partners = service.getImg('partnerAbc', 'partners');
+
+      const expected =
+        '<span class="partner-image" title="partnerAbc" >' +
+        '<img src="data:image/png;base64,UHuMzJsMi4xNT" />' +
+        '</span>';
+      expect(partners).to.equal(expected);
     }));
 
     it('should return nothing when resources doc already cached and image doesnt exist', fakeAsync(() => {
@@ -132,7 +189,7 @@ describe('ResourceIcons service', () => {
       expect(actual).to.equal(expected);
     }));
 
-    it('returns inline svg for svg images', fakeAsync(() => {
+    it('should return inline svg for svg images', fakeAsync(() => {
       const data = `<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <rect x="10" y="10" height="100" width="100" style="stroke:#ff0000; fill: #0000ff"/>
                   </svg>`;

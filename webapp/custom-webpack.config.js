@@ -14,6 +14,7 @@ module.exports = {
       // https://github.com/enketo/enketo-core/issues/454
       '../../js/dropdown.jquery': 'node_modules/bootstrap/js/dropdown',
       'bikram-sambat': 'node_modules/bikram-sambat',
+      'messageformat': 'node_modules/messageformat/index',
 
       // enketo geopicker widget css requires these two images as backgrounds
       // they don't exist in the enketo source and the styles are commented out in the latest version

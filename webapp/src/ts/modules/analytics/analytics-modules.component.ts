@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { Router } from '@angular/router';
 
 import { Selectors } from '@mm-selectors/index';
 
@@ -15,8 +14,7 @@ export class AnalyticsModulesComponent implements OnInit, OnDestroy {
   loading = true;
 
   constructor(
-    private store: Store,
-    private router: Router,
+    private store: Store
   ) { }
 
   ngOnInit() {
@@ -26,13 +24,6 @@ export class AnalyticsModulesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-  }
-
-  navigate(module) {
-    if (!module || !module.route) {
-      return;
-    }
-    this.router.navigate([module.route]);
   }
 
   private subscribeToStore() {

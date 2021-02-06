@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { PipesService } from '@mm-services/pipes.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 /**
  * Service for generating summary information based on a given
@@ -18,6 +19,7 @@ export class ContactSummaryService {
   constructor(
     private settingsService:SettingsService,
     private pipesService:PipesService,
+    private feedbackService: FeedbackService
   ) {
   }
 
@@ -71,8 +73,9 @@ export class ContactSummaryService {
       .then((fn) => {
         try {
           return fn(contact, reports || [], lineage || [], targetDoc);
-        } catch (e) {
-          console.error('Configuration error in contact-summary function: ' + e.message);
+        } catch (error) {
+          console.error('Configuration error in contact-summary function: ' + error);
+          this.feedbackService.submit('Configuration error in contact-summary function: ' + error.message, false);
           throw new Error('Configuration error');
         }
       })

@@ -39,8 +39,11 @@ const getCancelButton = () => {
 };
 
 module.exports = {
+  closeButton: () => element(by.css('button.cancel.close')),
+  errorMessageUserName: () => element.all(by.css('span.help-block.ng-binding')),
+  errorMessagePassword: () => element(by.css('#edit-password ~ .help-block')),
   submit: async () => {
-    await helper.waitUntilReady(getSubmitButton());
+    await helper.waitUntilReadyNative(getSubmitButton());
     await getSubmitButton().click();
   },
 
@@ -50,7 +53,7 @@ module.exports = {
   },
 
   fillForm: async (username, fullName, password) => {
-    await helper.waitUntilReady(getSubmitButton()); // wait for form to load
+    await helper.waitUntilReadyNative(getSubmitButton()); // wait for form to load
     await getUsernameField().sendKeys(username);
     await getFullNameField().sendKeys(fullName);
     await getEmailField().sendKeys('bede@mobile.org');

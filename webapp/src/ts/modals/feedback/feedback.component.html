@@ -9,7 +9,7 @@
 >
   <form action="" method="POST">
     <div class="form-group" [class.has-error]="error.message">
-      <textarea [(ngModel)]="model.message" class="form-control" name="message" translate translate-attr-placeholder="Bug description"></textarea>
+      <textarea [(ngModel)]="model.message" class="form-control" name="message" placeholder="{{'Bug description' | translate}}"></textarea>
       <span class="help-block" *ngIf="error.message">{{error.message}}</span>
     </div>
   </form>
