@@ -86,6 +86,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.contactsActions.setSelectedContact(null);
     this.globalActions.setRightActionBar({});
     Selectors.getActionBar.release();
+    Selectors.getSelectedContactChildren.release();
+    Selectors.getSelectedContactReports.release();
+    Selectors.getSelectedContactTasks.release();
   }
 
   private getUserFacility() {
