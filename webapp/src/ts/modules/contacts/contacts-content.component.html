@@ -110,9 +110,9 @@
           <div class="action-header cell">
             <h3>{{'Tasks' | translate}}</h3>
             <span class="table-filter">
-              <a (click)="setTasksTimeWindowWeeks(1)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 1" translate [translateParams]="{ WEEKS: 1 }">n.week</a>
-              <a (click)="setTasksTimeWindowWeeks(2)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 2" translate [translateParams]="{ WEEKS: 2 }">n.week</a>
-              <a (click)="setTasksTimeWindowWeeks()" class="btn btn-link" [class.selected]="!tasksTimeWindowWeeks">{{'view.all' | translate}}</a>
+              <a (click)="filterTasks(1)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 1" translate [translateParams]="{ WEEKS: 1 }">n.week</a>
+              <a (click)="filterTasks(2)" class="btn btn-link" [class.selected]="tasksTimeWindowWeeks === 2" translate [translateParams]="{ WEEKS: 2 }">n.week</a>
+              <a (click)="filterTasks()" class="btn btn-link" [class.selected]="!tasksTimeWindowWeeks">{{'view.all' | translate}}</a>
             </span>
           </div>
           <ul>
@@ -142,9 +142,9 @@
           <div class="action-header cell">
             <h3>{{'Reports' | translate}}</h3>
             <span class="table-filter">
-              <a (click)="setReportsTimeWindowMonths(3)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 3"  translate [translateParams]="{ MONTHS: 3 }">n.month</a>
-              <a (click)="setReportsTimeWindowMonths(6)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 6"  translate [translateParams]="{ MONTHS: 6 }">n.month</a>
-              <a (click)="setReportsTimeWindowMonths()" class="btn btn-link" [class.selected]="!reportsTimeWindowMonths">{{'view.all' | translate}}</a>
+              <a (click)="filterReports(3)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 3" translate [translateParams]="{ MONTHS: 3 }">n.month</a>
+              <a (click)="filterReports(6)" class="btn btn-link" [class.selected]="reportsTimeWindowMonths === 6" translate [translateParams]="{ MONTHS: 6 }">n.month</a>
+              <a (click)="filterReports()" class="btn btn-link" [class.selected]="!reportsTimeWindowMonths">{{'view.all' | translate}}</a>
             </span>
           </div>
           <div class="loader" *ngIf="loadingSelectedContactReports"></div>

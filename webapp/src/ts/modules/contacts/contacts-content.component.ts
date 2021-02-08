@@ -77,8 +77,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private resetTaskAndReportsFilter() {
-    this.setReportsTimeWindowMonths(3);
-    this.setTasksTimeWindowWeeks(1);
+    this.filterReports(3);
+    this.filterTasks(1);
   }
 
   ngOnDestroy() {
@@ -149,14 +149,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     const contactReportsSubscription = this.store
       .select(Selectors.getSelectedContactReports)
       .subscribe((reports) => {
-        this.setReportsTimeWindowMonths(this.reportsTimeWindowMonths, reports);
+        this.filterReports(this.reportsTimeWindowMonths, reports);
       });
     this.subscription.add(contactReportsSubscription);
 
     const contactTasksSubscription = this.store
       .select(Selectors.getSelectedContactTasks)
       .subscribe((tasks) => {
-        this.setTasksTimeWindowWeeks(this.tasksTimeWindowWeeks, tasks);
+        this.filterTasks(this.tasksTimeWindowWeeks, tasks);
       });
     this.subscription.add(contactTasksSubscription);
   }
@@ -197,7 +197,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(changesSubscription);
   }
 
-  setReportsTimeWindowMonths(months?, reports?) {
+  filterReports(months?, reports?) {
     this.reportsTimeWindowMonths = months;
     const reportStartDate = months ? moment().subtract(months, 'months') : null;
 
@@ -206,7 +206,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       .filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
   }
 
-  setTasksTimeWindowWeeks(weeks?, tasks?) {
+  filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
     const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
     const allTasks = tasks || this.selectedContact?.tasks || [];

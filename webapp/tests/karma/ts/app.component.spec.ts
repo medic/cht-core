@@ -79,7 +79,7 @@ describe('AppComponent', () => {
   const changesListener = {};
 
   beforeEach(async(() => {
-    // set set this in index.html
+    // set this in index.html
     window.startupTimes = {};
 
     authService = { has: sinon.stub().resolves(true) };
