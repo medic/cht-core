@@ -205,7 +205,7 @@ module.exports = {
   openMenu: () => {
     helper.waitUntilReady(messagesLink);
     helper.clickElement(hamburgerMenu);
-    helper.waitUntilReady(hamburgerMenuOptions);
+    return helper.waitUntilReady(hamburgerMenuOptions);
   },
 
   openMenuNative: async () => {
