@@ -188,7 +188,7 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(extractedResourceDirectory, 'inbox.html'));
+    res.sendFile(path.join(extractedResourceDirectory, 'index.html')); // Webapp's index - entry point
   }
 });
 
