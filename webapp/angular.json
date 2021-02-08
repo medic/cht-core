@@ -64,7 +64,7 @@
                 }
               ],
               "deleteOutputPath": false,
-              "optimization": true,
+              "optimization": false,
               "outputHashing": "none",
               "sourceMap": true,
               "extractCss": true,

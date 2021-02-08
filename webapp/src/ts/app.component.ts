@@ -277,7 +277,7 @@ export class AppComponent implements OnInit {
     this.setupAndroidVersion();
     this.requestPersistentStorage();
     this.startWealthQuintiles();
-    //this.enableTooltips();
+    this.enableTooltips();
   }
 
   private setupAndroidVersion() {

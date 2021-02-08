@@ -120,7 +120,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setCancelCallback() {
-    this.globalActions.setCancelCallback(() => {
+    const cancelCallback = () => {
       if (this.routeSnapshot.queryParams?.from === 'list') {
         this.router.navigate(['/contacts']);
       } else {
@@ -131,7 +131,12 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           this.router.navigate(['/contacts']);
         }
       }
-    });
+    };
+    const boundContext = {
+      routeSnapshot: this.routeSnapshot,
+      router: this.router,
+    };
+    this.globalActions.setCancelCallback(cancelCallback.bind(boundContext));
   }
 
   ngOnDestroy() {

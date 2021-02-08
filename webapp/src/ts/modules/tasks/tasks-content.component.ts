@@ -232,18 +232,31 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    this.globalActions.setCancelCallback(() => {
-      this.tasksActions.setSelectedTask(null);
-      if (skipDetails) {
+    let cancelCallback;
+    if (skipDetails) {
+      cancelCallback = () => {
+        this.tasksActions.setSelectedTask(null);
         this.router.navigate(['/tasks']);
-      } else {
+      };
+    } else {
+      cancelCallback = () => {
         this.enketoService.unload(this.form);
         this.form = null;
         this.loadingForm = false;
         this.contentError = false;
         this.globalActions.clearCancelCallback();
-      }
-    });
+      };
+    }
+
+    const boundContext = {
+      tasksActions: this.tasksActions,
+      globalActions: this.globalActions,
+      router: this.router,
+      enketoService: this.enketoService,
+      form: this.form,
+    };
+
+    this.globalActions.setCancelCallback(cancelCallback.bind(boundContext));
 
     this.contentError = false;
     this.resetFormError();

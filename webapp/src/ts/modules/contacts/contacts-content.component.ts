@@ -85,10 +85,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
     this.contactsActions.setSelectedContact(null);
     this.globalActions.setRightActionBar({});
-    Selectors.getActionBar.release();
+/*    Selectors.getActionBar.release();
     Selectors.getSelectedContactChildren.release();
     Selectors.getSelectedContactReports.release();
     Selectors.getSelectedContactTasks.release();
+    Selectors.getLoadingSelectedContactReports.release();
+    Selectors.getContactsLoadingSummary.release();*/
   }
 
   private getUserFacility() {
@@ -223,13 +225,19 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     await this.setUserSettings();
     await this.setSettings();
 
+    const boundContext = {
+      router: this.router,
+      modalService: this.modalService,
+      selectedContact: this.selectedContact,
+    };
+
     this.globalActions.setRightActionBar({
       relevantForms: [], // This disables the "New Action" button until forms load
       sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
       canDelete: this.canDeleteContact,
       canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
-      openContactMutedModal: (form) => this.openContactMutedModal(form),
-      openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
+      openContactMutedModal: this.openContactMutedModal.bind(boundContext),
+      openSendMessageModal: this.openSendMessageModal.bind(boundContext),
     });
 
     this.subscribeToAllContactXmlForms();
