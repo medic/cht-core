@@ -18,7 +18,7 @@
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "../build/ddocs/medic/_attachments",
-            "index": "src/templates/inbox.html",
+            "index": "src/ts/index.html",
             "main": "src/ts/main.ts",
             "polyfills": "src/ts/polyfills.ts",
             "tsConfig": "tsconfig.app.json",

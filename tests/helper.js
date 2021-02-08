@@ -1,4 +1,5 @@
 const fs = require('fs');
+const utils = require('./utils');
 const EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
@@ -7,6 +8,7 @@ function writeScreenShot(data, filename) {
   stream.end();
 }
 function handleUpdateModal() {
+  utils.deprecated('handleUpdateModal','handleUpdateModalNative');
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
   }

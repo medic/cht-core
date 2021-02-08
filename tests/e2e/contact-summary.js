@@ -1,5 +1,6 @@
 const utils = require('../utils');
 const helper = require('../helper');
+const contactsPo = require('../page-objects/contacts/contacts.po');
 
 describe('Contact summary info', () => {
   const SCRIPT = `
@@ -8,8 +9,8 @@ describe('Contact summary info', () => {
     let fields = [];
     if (contact.type === "person") {
       fields = [
-        { label: "test.pid", value: contact.patient_id, width: 3 },
-        { label: "test.sex", value: contact.sex, width: 3 },
+        { label: "test_pid", value: contact.patient_id, width: 3 },
+        { label: "test_sex", value: contact.sex, width: 3 },
       ];
       Object.keys(contact.linked_docs).forEach(key => {
         const linkedDoc = contact.linked_docs[key];
@@ -161,97 +162,64 @@ describe('Contact summary info', () => {
 
   const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
 
-  beforeEach(done => {
-    utils
-      .updateSettings({ contact_summary: SCRIPT })
-      .then(() => utils.saveDocs(DOCS))
-      .then(done)
-      .catch(done.fail);
+  beforeEach(async () => {
+    await utils.updateSettingsNative({ contact_summary: SCRIPT });
+    await utils.saveDocsNative(DOCS);
   });
 
-  afterEach(utils.afterEach);
+  afterEach(async () => { await utils.afterEachNative(); });
 
-  const selectContact = term => {
-    helper.waitElementToBeVisible(element(by.id('freetext')));
-    element(by.id('freetext')).sendKeys(term);
-    helper.clickElement(element(by.id('search')));
-    helper.waitElementToPresent(
-      element(by.css('#contacts-list .filtered .content'))
-    );
-    helper.clickElement(element(by.css('#contacts-list .filtered .content')));
-    helper.waitElementToPresent(element(by.css('#contacts-list')));
+  const selectContact = async term => {
+    await helper.waitUntilReadyNative(contactsPo.searchBox);
+    await contactsPo.searchBox.sendKeys(term);
+    await helper.clickElementNative(contactsPo.searchButton);
+    await helper.waitUntilReadyNative(contactsPo.contactContent());
+    await helper.clickElementNative(contactsPo.contactContent());
+    await helper.waitUntilReadyNative(contactsPo.contactsList());
   };
 
-  it('contact summary', () => {
+  it('contact summary', async () => {
     //disabled.
-    helper.clickElement(element(by.css('#contacts-tab')));
+    await helper.waitUntilReadyNative(contactsPo.contactsTab);
+    await helper.clickElementNative(contactsPo.contactsTab);
     try {
-      selectContact('carol');
+      await selectContact('carol');
     } catch (err) {
-      browser.refresh();
-      helper.waitForAngularComplete();
-      helper.clickElement(element(by.css('#contacts-tab')));
-      selectContact('carol');
+      await browser.refresh();
+      await helper.clickElementNative(contactsPo.contactsTab);
+      await selectContact('carol');
     }
     // assert the summary card has the right fields
-    helper.waitElementToPresent(
-      element(
-        by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')
-      )
-    );
-    expect(
-      helper.getTextFromElement(
-        element(
-          by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')
-        )
-      )
-    ).toBe('test.pid');
-    expect(
-      helper.getTextFromElement(
-        element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p'))
-      )
-    ).toBe(CAROL.patient_id);
-    expect(
-      helper.getTextFromElement(
-        element(
-          by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')
-        )
-      )
-    ).toBe('test.sex');
-    expect(
-      helper.getTextFromElement(
-        element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p'))
-      )
-    ).toBe(CAROL.sex);
+    
+    await helper.waitUntilReadyNative(contactsPo.cardFieldLabel('test_pid'));
+    expect(await contactsPo.cardFieldLabelText('test_pid')).toBe('test_pid');
+    expect(await contactsPo.cardFieldText('test_pid')).toBe(CAROL.patient_id);
+    
+    expect(await contactsPo.cardFieldLabelText('test_sex')).toBe('test_sex');
+    expect(await contactsPo.cardFieldText('test_sex')).toBe(CAROL.sex);
 
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(3) label'))))
-      .toBe('aliceTag');
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(3) p'))))
-      .toBe(ALICE.name + ' ' + ALICE.phone);
+    expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
+    expect(await contactsPo.cardFieldText('alicetag')).toBe(`${ALICE.name} ${ALICE.phone}`);
 
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(4) label'))))
-      .toBe('davidTag');
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(4) p'))))
-      .toBe(DAVID.name + ' ' + DAVID.phone);
+    expect(await contactsPo.cardFieldLabelText('davidtag')).toBe('davidTag');
+    expect(await contactsPo.cardFieldText('davidtag')).toBe(`${DAVID.name} ${DAVID.phone}`);
 
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(5) label'))))
-      .toBe('visitTag');
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(5) p'))))
-      .toBe(DAVID_VISIT.form);
+    expect(await contactsPo.cardFieldLabelText('visittag')).toBe('visitTag');
+    expect(await contactsPo.cardFieldText('visittag')).toBe(DAVID_VISIT.form);
 
     // assert that the pregnancy card exists and has the right fields.
     expect(
-      helper.getTextFromElement(
+      await helper.getTextFromElement(
         element(by.css('.content-pane .meta > div > .card .action-header h3'))
       )
     ).toBe('test.pregnancy');
     expect(
-      helper.getTextFromElement(
+      await helper.getTextFromElement(
         element(by.css('.content-pane .meta > div > .card .row label'))
       )
     ).toBe('test.visits');
     expect(
-      helper.getTextFromElement(
+      await helper.getTextFromElement(
         element(by.css('.content-pane .meta > div > .card .row p'))
       )
     ).toBe('1');

@@ -35,7 +35,7 @@ function writeServiceWorkerFile({staticDirectoryPath, apiSrcDirectoryPath, scrip
       path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
-      '/': [path.join(staticDirectoryPath, 'inbox.html')],
+      '/': [path.join(staticDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')],
       '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
     },

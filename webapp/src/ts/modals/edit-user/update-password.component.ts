@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import * as passwordTester from 'simple-password-tester';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
+import { UserLoginService } from '@mm-services/user-login.service';
 import { EditUserAbstract } from '@mm-modals/edit-user/edit-user.component';
 import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -35,7 +38,9 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
     bsModalRef: BsModalRef,
     userSettingsService: UserSettingsService,
     private updateUserService: UpdateUserService,
+    private userLoginService: UserLoginService,
     private translateHelperService:TranslateHelperService,
+    private modalService: ModalService,
   ) {
     super(bsModalRef, userSettingsService);
   }
@@ -48,13 +53,27 @@ export class UpdatePasswordComponent extends EditUserAbstract implements OnInit 
     this.errors = {};
     this.setProcessing();
     if (this.validatePasswordFields()) {
-      const updates = { password: this.editUserModel.password };
+      const password = this.editUserModel.password;
+      const updates = { password };
       const username = this.editUserModel.username;
-      this.updateUserService
+      return this.updateUserService
         .update(username, updates, username, this.editUserModel.currentPassword)
         .then(() => {
-          this.setFinished();
-          this.windowReload();
+          return this.userLoginService
+            .login(username, password)
+            .catch(err => {
+              if (err.status === 302) {
+                this.setFinished();
+                this.close();
+
+                this.modalService
+                  .show(ConfirmPasswordUpdatedComponent)
+                  .catch(() => {})
+                  .finally(() => this.windowReload());
+              } else {
+                this.windowReload();
+              }
+            });
         })
         .catch(err => {
           if (err.status === 0) { //Offline Status
