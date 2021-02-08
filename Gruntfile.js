@@ -367,7 +367,7 @@ module.exports = function(grunt) {
           ];
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',
-            'api/extracted-resources/**/*',
+            'api/**/extracted-resources/**/*',
             'api/build/**/*',
             '**/node_modules/**',
             'build/**',
