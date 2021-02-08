@@ -199,11 +199,10 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   private setCancelCallback() {
     this.routeSnapshot = this.route.snapshot;
     if (this.routeSnapshot.params) {
-      const cancelCallback = () => {
-        this.router.navigate(['/contacts', this.routeSnapshot?.params?.id || '']);
+      const cancelCallback = (router, contactId) => {
+        router.navigate(['/contacts', contactId || '']);
       };
-      const boundContext = { router: this.router, routeSnapshot: this.routeSnapshot };
-      this.globalActions.setCancelCallback(cancelCallback.bind(boundContext));
+      this.globalActions.setCancelCallback(cancelCallback.bind({}, this.router, this.routeSnapshot?.params?.id));
     } else {
       this.globalActions.clearCancelCallback();
     }

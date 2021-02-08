@@ -64,9 +64,9 @@
                 }
               ],
               "deleteOutputPath": false,
-              "optimization": false,
+              "optimization": true,
               "outputHashing": "none",
-              "sourceMap": true,
+              "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
@@ -76,7 +76,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "2mb",
-                  "maximumError": "100mb"
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",

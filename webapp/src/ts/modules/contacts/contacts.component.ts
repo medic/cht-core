@@ -177,7 +177,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.globalActions.clearFilters();
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
-    //Selectors.getActionBar.release();
   }
 
   private isRelevantVisitReport (doc) {
@@ -445,16 +444,16 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private setLeftActionBar() {
+    const exportFn = (exportService, filters) => {
+      exportService.export('contacts', filters, { humanReadable: true });
+    };
+
     this.globalActions.setLeftActionBar({
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
       childPlaces: this.allowedChildPlaces,
-      exportFn: this.exportFn.bind({ exportService: this.exportService, filters: this.filters }),
+      exportFn: exportFn.bind({}, this.exportService, this.filters),
     });
-  }
-
-  private exportFn() {
-    this.exportService.export('contacts', this.filters, { humanReadable: true });
   }
 
   private subscribeToAllContactXmlForms() {

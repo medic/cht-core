@@ -120,23 +120,15 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setCancelCallback() {
-    const cancelCallback = () => {
-      if (this.routeSnapshot.queryParams?.from === 'list') {
-        this.router.navigate(['/contacts']);
+    const cancelCallback = (router:Router, routeSnapshot) => {
+      if (routeSnapshot.queryParams?.from === 'list') {
+        router.navigate(['/contacts']);
       } else {
-        const parentContactId = this.routeSnapshot.params.id || this.routeSnapshot.params.parent_id;
-        if (parentContactId) {
-          this.router.navigate(['/contacts', parentContactId]);
-        } else {
-          this.router.navigate(['/contacts']);
-        }
+        const parentContactId = routeSnapshot.params.id || routeSnapshot.params.parent_id;
+        router.navigate(['/contacts', parentContactId || '']);
       }
     };
-    const boundContext = {
-      routeSnapshot: this.routeSnapshot,
-      router: this.router,
-    };
-    this.globalActions.setCancelCallback(cancelCallback.bind(boundContext));
+    this.globalActions.setCancelCallback(cancelCallback.bind({}, this.router, this.routeSnapshot));
   }
 
   ngOnDestroy() {

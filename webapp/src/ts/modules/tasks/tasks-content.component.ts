@@ -232,31 +232,24 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    let cancelCallback;
     if (skipDetails) {
-      cancelCallback = () => {
-        this.tasksActions.setSelectedTask(null);
-        this.router.navigate(['/tasks']);
+      const cancelCallback = (tasksActions:TasksActions, router:Router) => {
+        tasksActions.setSelectedTask(null);
+        router.navigate(['/tasks']);
       };
+      this.globalActions.setCancelCallback(cancelCallback.bind({}, this.tasksActions, this.router));
     } else {
-      cancelCallback = () => {
+      const cancelCallback = () => {
+        this.tasksActions.setSelectedTask(null);
         this.enketoService.unload(this.form);
         this.form = null;
         this.loadingForm = false;
         this.contentError = false;
         this.globalActions.clearCancelCallback();
       };
+      // unfortunately, this callback has to update the component itself
+      this.globalActions.setCancelCallback(cancelCallback.bind(this));
     }
-
-    const boundContext = {
-      tasksActions: this.tasksActions,
-      globalActions: this.globalActions,
-      router: this.router,
-      enketoService: this.enketoService,
-      form: this.form,
-    };
-
-    this.globalActions.setCancelCallback(cancelCallback.bind(boundContext));
 
     this.contentError = false;
     this.resetFormError();

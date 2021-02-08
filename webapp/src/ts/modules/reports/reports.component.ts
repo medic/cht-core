@@ -143,7 +143,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.globalActions.setSelectMode(false);
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
-    Selectors.getActionBar.release();
   }
 
   private getReportHeading(form, report) {
@@ -258,11 +257,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private setActionBarData() {
     this.globalActions.setLeftActionBar({
       hasResults: this.hasReports,
-      exportFn: this.exportFn.bind({ ngZone: this.ngZone, exportService: this.exportService }),
+      exportFn: this.exportFn.bind({}, this.ngZone, this.exportService),
     });
   }
 
-  private exportFn(e) {
+  private exportFn(ngZone, exportService, e) {
     const exportFilters = _assignIn({}, this.filters);
     ['forms', 'facilities'].forEach((type) => {
       if (exportFilters[type]) {
@@ -271,12 +270,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
     const $link = $(e.target).closest('a');
     $link.addClass('mm-icon-disabled');
-    this.ngZone.runOutsideAngular(() => {
+    ngZone.runOutsideAngular(() => {
       setTimeout(() => {
         $link.removeClass('mm-icon-disabled');
       }, 2000);
     });
-    this.exportService.export('reports', exportFilters, { humanReadable: true });
+    exportService.export('reports', exportFilters, { humanReadable: true });
   }
 
   toggleSelected(report) {

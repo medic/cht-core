@@ -119,13 +119,17 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private updateActionBar() {
     const leftActionBar = {
       hasResults: this.conversations && this.conversations.length > 0,
-      exportFn: () => this.exportService.export('messages', {}, { humanReadable: true }),
-      openSendMessageModal: (event) => this.openSendMessageModal(event)
+      exportFn: this.exportFn.bind({}, this.exportService),
+      openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
     };
     this.globalActions.setLeftActionBar(leftActionBar);
   }
 
-  private openSendMessageModal(event) {
+  private exportFn(exportService:ExportService) {
+    exportService.export('messages', {}, { humanReadable: true });
+  }
+
+  private openSendMessageModal(modalService:ModalService, event) {
     const target = $(event.target).closest('.send-message');
 
     if (target.hasClass('mm-icon-disabled')) {
@@ -133,7 +137,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
-    this.modalService
+    modalService
       .show(SendMessageComponent)
       .catch(() => {});
   }
