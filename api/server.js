@@ -34,6 +34,10 @@ process
     await ddocExtraction.run();
     logger.info('DDoc extraction completed successfully');
 
+    logger.info('Cleaning resources directory…');
+    resourceExtraction.removeDirectory();
+    logger.info('Cleaning resources directory completed successfully');
+
     logger.info('Extracting resources…');
     await resourceExtraction.run();
     logger.info('Extracting resources completed successfully');

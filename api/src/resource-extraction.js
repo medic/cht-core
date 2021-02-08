@@ -23,7 +23,34 @@ const isAttachmentExtractable = name => {
 // Map of attachmentName -> attachmentDigest used to avoid extraction of unchanged documents
 let extractedDigests = {};
 
-const createFolderIfDne = x => !fs.existsSync(x) && fs.mkdirSync(x);
+const createFolderIfDne = folderPath => !fs.existsSync(folderPath) && fs.mkdirSync(folderPath);
+
+const removeDirectoryRecursive = (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    return;
+  }
+
+  const files = fs.readdirSync(dirPath) || [];
+
+  files.forEach(fileName => {
+    const filePath = path.join(dirPath, fileName);
+
+    if (fs.statSync(filePath).isDirectory()) {
+      removeDirectoryRecursive(filePath);
+    } else {
+      fs.unlinkSync(filePath);
+    }
+  });
+
+  fs.rmdirSync(dirPath);
+};
+
+const removeDirectory = () => {
+  const outputPath = environment.getExtractedResourcesPath();
+
+  // ToDo: When no longer supporting Node.js -v.12, replace with: fs.rmdirSync(outputPath, { recursive: true });
+  removeDirectoryRecursive(outputPath);
+};
 
 const extractResources = () => {
   const extractToDirectory = environment.getExtractedResourcesPath();
@@ -55,5 +82,6 @@ const extractAttachment = (extractToDirectory, attachmentName) => db.medic
 
 module.exports = {
   run: extractResources,
+  removeDirectory: removeDirectory,
   clearCache: () => extractedDigests = {},
 };

@@ -9,8 +9,11 @@ import { Subject } from 'rxjs';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdateUserService } from '@mm-services/update-user.service';
-import { MmModal } from '@mm-modals/mm-modal/mm-modal';
+import { UserLoginService } from '@mm-services/user-login.service';
+import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { TranslateHelperService } from '@mm-services/translate-helper.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 
 describe('UpdatePasswordComponent', () => {
 
@@ -20,11 +23,21 @@ describe('UpdatePasswordComponent', () => {
   let updateUserService;
   let translateHelperService;
   let bsModalRef;
+  let userLoginService;
+  let modalService;
+  let setFinished;
+  let close;
 
   beforeEach(async(() => {
     bsModalRef = { hide: sinon.stub(), onHide: new Subject() };
     updateUserService = {
       update: sinon.stub().resolves({}),
+    };
+    userLoginService = {
+      login: sinon.stub(),
+    };
+    modalService = {
+      show: sinon.stub().resolves(),
     };
     userSettingsService = {
       get: sinon.stub().resolves(
@@ -42,6 +55,8 @@ describe('UpdatePasswordComponent', () => {
       fieldIsRequired: sinon.stub().resolvesArg(0),
       get: sinon.stub().resolvesArg(0),
     };
+    setFinished = sinon.stub(MmModalAbstract.prototype, 'setFinished');
+    close = sinon.stub(MmModalAbstract.prototype, 'close');
 
     return TestBed
       .configureTestingModule({
@@ -55,6 +70,8 @@ describe('UpdatePasswordComponent', () => {
         ],
         providers: [
           { provide: UpdateUserService, useValue: updateUserService },
+          { provide: UserLoginService, useValue: userLoginService },
+          { provide: ModalService, useValue: modalService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: BsModalRef, useValue: bsModalRef },
           { provide: TranslateHelperService, useValue: translateHelperService },
@@ -140,20 +157,70 @@ describe('UpdatePasswordComponent', () => {
     expect(consoleErrorMock.args[0][0]).to.equal('Error submitting modal');
   });
 
-  it('user is updated with password change', () => {
+  it('user is updated with password change', async () => {
     const password = '1QrAs$$3%%kkkk445234234234';
     const currentPassword = '2xml4me';
+    const user = 'admin';
     component.editUserModel.password = password;
     component.editUserModel.passwordConfirm = password;
     component.editUserModel.currentPassword = currentPassword;
-    component.updatePassword();
+    userLoginService.login.resolves({});
+    await component.updatePassword();
+
     expect(translateHelperService.get.called).to.equal(false);
     expect(component.errors).to.deep.equal({});
     expect(updateUserService.update.called).to.equal(true);
-    expect(updateUserService.update.getCall(0).args[0]).to.equal('admin');
+    expect(updateUserService.update.getCall(0).args[0]).to.equal(user);
     expect(updateUserService.update.getCall(0).args[1].password).to.equal(password);
-    expect(updateUserService.update.getCall(0).args[2]).to.equal('admin');
+    expect(updateUserService.update.getCall(0).args[2]).to.equal(user);
     expect(updateUserService.update.getCall(0).args[3]).to.equal(currentPassword);
+    expect(userLoginService.login.called).to.equal(true);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(user, password);
+  });
+
+  it('should login user when password is correclty updated', async () => {
+    const password = '1QrAs$$3%%kkkk445234234234';
+    const currentPassword = '2xml4me';
+    const user = 'admin';
+    component.editUserModel.password = password;
+    component.editUserModel.passwordConfirm = password;
+    component.editUserModel.currentPassword = currentPassword;
+
+    modalService.show.resolves({});
+    userLoginService.login.rejects({status: 302});
+
+    await component.updatePassword();
+
+    expect(updateUserService.update.called).to.equal(true);
+    expect(userLoginService.login.called).to.equal(true);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(user, password);
+    expect(setFinished.callCount).to.equal(1);
+    expect(close.callCount).to.equal(1);
+    expect(modalService.show.callCount).to.equal(1);
+    expect(modalService.show.args[0]).to.deep.equal([
+      ConfirmPasswordUpdatedComponent,
+    ]);
+  });
+
+  it('should not show updated password modal when login is not successful', async () => {
+    const password = '1QrAs$$3%%kkkk445234234234';
+    const currentPassword = '2xml4me';
+    const user = 'admin';
+    component.editUserModel.password = password;
+    component.editUserModel.passwordConfirm = password;
+    component.editUserModel.currentPassword = currentPassword;
+
+    modalService.show.resolves({});
+    userLoginService.login.rejects({status: 401});
+
+    await component.updatePassword();
+
+    expect(updateUserService.update.called).to.equal(true);
+    expect(userLoginService.login.called).to.equal(true);
+    expect(userLoginService.login.getCall(0).args[0]).to.equal(user, password);
+    expect(setFinished.callCount).to.equal(0);
+    expect(close.callCount).to.equal(0);
+    expect(modalService.show.callCount).to.equal(0);
   });
 
   it('errors if current password is not provided', () => {
