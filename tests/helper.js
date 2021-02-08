@@ -48,8 +48,8 @@ module.exports = {
       await browser.wait(EC.elementToBeClickable(element),12000, msg);
       await element.click();
     } catch (err) {
-      browser.sleep(1000);
-      handleUpdateModalNative();
+      await browser.sleep(1000);
+      await handleUpdateModalNative();
       const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
       await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
       await element.click();
