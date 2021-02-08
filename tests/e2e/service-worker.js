@@ -105,6 +105,18 @@ describe('Service worker cache', () => {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;' +
         'q=0.8,application/signed-exchange;v=b3'
       });
+
+      await expectCachedState(true, '/medic/login');
+      await expectCachedState(true, '/medic/login', {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;' +
+        'q=0.8,application/signed-exchange;v=b3'
+      });
+
+      await expectCachedState(true, '/medic/_design/medic/_rewrite/');
+      await expectCachedState(true, '/medic/_design/medic/_rewrite/', {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;' +
+        'q=0.8,application/signed-exchange;v=b3'
+      });
       
       // no part of syncing is cached
       await expectCachedState(false, '/dbinfo', { 'Accept': 'application/json' });

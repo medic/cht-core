@@ -33,7 +33,7 @@ const removeDirectoryRecursive = (dirPath) => {
   const files = fs.readdirSync(dirPath) || [];
 
   files.forEach(fileName => {
-    const filePath = `${dirPath}/${fileName}`;
+    const filePath = path.join(dirPath, fileName);
 
     if (fs.statSync(filePath).isDirectory()) {
       removeDirectoryRecursive(filePath);
@@ -48,7 +48,7 @@ const removeDirectoryRecursive = (dirPath) => {
 const removeDirectory = () => {
   const outputPath = environment.getExtractedResourcesPath();
 
-  // ToDo: When migrating to node +v.12.10.0, replace with: fs.rmdirSync(outputPath, { recursive: true });
+  // ToDo: When no longer supporting Node.js -v.12, replace with: fs.rmdirSync(outputPath, { recursive: true });
   removeDirectoryRecursive(outputPath);
 };
 
