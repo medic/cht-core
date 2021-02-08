@@ -108,6 +108,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
     this.reportsActions.setSelectedReports([]);
     this.globalActions.setRightActionBar({});
+    Selectors.getActionBar.release();
   }
 
   trackByFn(index, item) {

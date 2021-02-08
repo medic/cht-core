@@ -177,6 +177,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.globalActions.clearFilters();
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
+    Selectors.getActionBar.release();
   }
 
   private isRelevantVisitReport (doc) {
