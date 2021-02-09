@@ -36,6 +36,7 @@ const baseConfig = {
       'e2e/forms/submit-delivery-form.specs.js',
       'e2e/users/add-user.specs.js',
       'e2e/login/purge.spec.js',
+      'e2e/registration-by-sms.js',
     ],
     // performance: 'performance/**/*.js'
   },
