@@ -30,6 +30,9 @@ module.exports = {
   summaryFormName: () => module.exports.reportSummary().element(by.css('.subject + div')),
   submitterName: () => module.exports.reportSummary().element(by.css('.sender .name')),
   submitterPhone: () => module.exports.reportSummary().element(by.css('.sender .phone')),
+  submitterPlace: () => module.exports.reportSummary().element(by.css('.position a')),
+  detail: () => module.exports.reportSummary().element(by.css('.detail')),
+  detailStatus: () => module.exports.reportSummary().element(by.css('.detail .status')),
   subject: reportElement =>  {
     return reportElement.element(by.css('.content .heading h4 span'));
   },
@@ -136,5 +139,30 @@ module.exports = {
       'There should be at least one report in the LHS'
     );
   },
+  taskByIndex: (index) => {
+    return element(by.css(reportBodyDetails)).element(by.css(`.task-list > li:nth-child(${index})`));
+  },
+  taskTextByIndex: (index) => {
+    return module.exports.taskByIndex(index).element(by.css('ul > li')).getText();
+  },
+  taskRecipientByIndex: (index) => {
+    return module.exports.taskByIndex(index).element(by.css('.task-state .recipient'));
+  },
+  taskGatewayStatusByIndex: (index) => {
+    return module.exports.taskByIndex(index).element(by.css('.task-state .state.forwarded-to-gateway'));
+  },
+  scheduledTaskByIndex: (index) => {
+    return element(by.css(`#reports-content .details .scheduled-tasks > ul > li:nth-child(${index})`));
+  },
+  scheduledTaskMessageByIndex: (index) => {
+    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li > ul > li'));
+  },
+  scheduledTaskStateByIndex: (index) => {
+    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .state.scheduled'));
+  },
+  scheduledTaskRecipientByIndex: (index) => {
+    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .recipient'));
+  }
+
 };
 
