@@ -112,8 +112,8 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
 
     // keep displaying facilities until we have a scroll or we've displayed all
     if (!this.scrollDisplayed && this.facilities.length && this.totalFacilitiesDisplayed < this.facilities.length) {
-      const listHeight = $('#facility-dropdown-list').innerHeight();
-      if (listHeight < 300) { // maximum height
+      const listHeight = $('#facility-dropdown-list')[0].scrollHeight;
+      if (listHeight < 301) { // 300 is maximum height
         setTimeout(() => this.displayOneMoreFacility());
       } else {
         this.scrollDisplayed = true;
