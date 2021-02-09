@@ -7,7 +7,6 @@ export const Actions = {
   removeContactFromList: createSingleValueAction('REMOVE_CONTACT_FROM_LIST', 'contact'),
   selectContact: createMultiValueAction('SELECT_CONTACT'),
   setSelectedContact: createSingleValueAction('SET_SELECTED_CONTACT', 'selected'),
-  updateSelectedContact: createSingleValueAction('UPDATE_SELECTED_CONTACT', 'selected'),
   setContactsLoadingSummary: createSingleValueAction('SET_CONTACT_LOADING_SUMMARY', 'value'),
   setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
   receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
@@ -15,8 +14,6 @@ export const Actions = {
   updateSelectedContactSummary: createSingleValueAction('UPDATE_SELECTED_CONTACT_SUMMARY', 'summary'),
   updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
   receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
-  loadSelectedContactTargetDoc: createAction('LOAD_SELECTED_CONTACT_TARGET_DOC'),
-  loadSelectedContactSummary: createAction('LOAD_SELECTED_CONTACT_SUMMARY'),
 };
 
 export class ContactsActions {
@@ -48,10 +45,6 @@ export class ContactsActions {
     return this.store.dispatch(Actions.setSelectedContact(model));
   }
 
-  updateSelectedContact(model) {
-    return this.store.dispatch(Actions.updateSelectedContact(model));
-  }
-
   setContactsLoadingSummary(value) {
     return this.store.dispatch(Actions.setContactsLoadingSummary(value));
   }
@@ -78,13 +71,5 @@ export class ContactsActions {
 
   receiveSelectedContactTargetDoc(targetDoc) {
     return this.store.dispatch(Actions.receiveSelectedContactTargetDoc(targetDoc));
-  }
-
-  loadSelectedContactTargetDoc() {
-    return this.store.dispatch(Actions.loadSelectedContactTargetDoc());
-  }
-
-  loadSelectedContactSummary() {
-    return this.store.dispatch(Actions.loadSelectedContactSummary());
   }
 }

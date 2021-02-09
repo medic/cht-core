@@ -1,4 +1,3 @@
-import { isMobile } from '@mm-providers/responsive.provider';
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -8,6 +7,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { SessionService } from '@mm-services/session.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +26,7 @@ export class TourService {
     private sessionService: SessionService,
     private translateService: TranslateService,
     private router: Router,
+    private responsiveService:ResponsiveService,
   ) { }
 
   private mmScroll(container, elem) {
@@ -71,7 +72,7 @@ export class TourService {
   }
 
   private mmShow(list, showContent) {
-    const showingContent = $('body').is('.show-content');
+    const showingContent = $('.app-root').is('.show-content');
     if (showContent !== showingContent) {
       // firstLink is the first link available in a list view (in the first record),
       // eg. the first report clickable in the Reports tab, but the link
@@ -79,7 +80,7 @@ export class TourService {
       let firstLink;
       if (showContent) {
         firstLink = $(list).find('li').filter(':first').find('a')[0];
-      } else if (isMobile()) {
+      } else if (this.responsiveService.isMobile()) {
         firstLink = $('.navigation .filter-bar-back a')[0];
       }
       if (firstLink) {
@@ -89,7 +90,7 @@ export class TourService {
   }
 
   private mmOpenDropdown(elem) {
-    if (!isMobile()) {
+    if (!this.responsiveService.isMobile()) {
       (<any>document.querySelector(elem + ' multi-dropdown-filter a.mm-button')).click();
     }
   }
@@ -254,7 +255,7 @@ export class TourService {
           content: 'tour.reports.date-filter.description',
           onShow: () => this.mmShowReportList(),
           onShown: () => {
-            if (!isMobile()) {
+            if (!this.responsiveService.isMobile()) {
               $('#date-filter').trigger('click');
             }
           },
@@ -517,7 +518,7 @@ export class TourService {
 
       settings.template = this.createTemplate();
 
-      const mobile = isMobile();
+      const mobile = this.responsiveService.isMobile();
       settings.steps.forEach(step => {
         step.title = this.translateService.instant(step.title);
         step.content = this.translateService.instant(step.content);

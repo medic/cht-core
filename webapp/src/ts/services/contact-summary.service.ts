@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { PipesService } from '@mm-services/pipes.service';
@@ -19,7 +19,8 @@ export class ContactSummaryService {
   constructor(
     private settingsService:SettingsService,
     private pipesService:PipesService,
-    private feedbackService: FeedbackService
+    private feedbackService:FeedbackService,
+    private ngZone:NgZone,
   ) {
   }
 
@@ -68,6 +69,10 @@ export class ContactSummaryService {
   }
 
   get(contact, reports, lineage, targetDoc?) {
+    return this.ngZone.runOutsideAngular(() => this._get(contact, reports, lineage, targetDoc));
+  }
+
+  private _get(contact, reports, lineage, targetDoc?) {
     return this
       .getGeneratorFunction()
       .then((fn) => {

@@ -9,14 +9,14 @@
       <div *ngIf="!user.token_login">
         <a (click)="updatePassword()" class="btn btn-link">
           <i class="fa fa-fw fa-key"></i>
-          <span translate>password.update</span>
+          <span>{{'password.update' | translate}}</span>
         </a>
       </div>
 
       <div>
         <a (click)="editSettings()" class="btn btn-link">
           <i class="fa fa-fw fa-user"></i>
-          <span translate>Edit User Profile</span>
+          <span>{{'Edit User Profile' | translate}}</span>
         </a>
       </div>
     </div>

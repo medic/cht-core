@@ -1,11 +1,15 @@
 import { find as _find, assignIn as _assignIn } from 'lodash-es';
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  NgZone,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { isMobile } from '@mm-providers/responsive.provider';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
@@ -16,6 +20,7 @@ import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 const PAGE_SIZE = 50;
 
@@ -31,7 +36,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private listContains;
 
   reportsList;
-  filteredReportsList;
   selectedReports;
   forms;
   error;
@@ -42,7 +46,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
   filters:any = {};
   hasReports;
   selectMode;
-  filtered;
   verifyingReport;
   showContent;
   enketoEdited;
@@ -59,6 +62,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private exportService:ExportService,
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
+    private responsiveService:ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -116,6 +120,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         return change.doc && change.doc.form || this.listContains(change.id);
       },
     });
+
     this.subscription.add(dbSubscription);
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
@@ -175,7 +180,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.error = false;
       this.errorSyntax = false;
       this.loading = true;
-      if (this.selectedReports?.length && isMobile()) {
+      if (this.selectedReports?.length && this.responsiveService.isMobile()) {
         this.globalActions.unsetSelected();
       }
 
@@ -194,7 +199,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
         updatedReports = this.prepareReports(updatedReports);
 
         this.reportsActions.updateReportsList(updatedReports);
-        // set action bar data todo
 
         this.moreItems = updatedReports.length >= options.limit;
         this.hasReports = !!updatedReports.length;
@@ -202,9 +206,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
         this.appending = false;
         this.error = false;
         this.errorSyntax = false;
-
-        // set first report selected if conditions todo
-        // scrolling todo
 
         this.initScroll();
         this.setActionBarData();
@@ -239,7 +240,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.router.navigate(['reports']);
       this.reportsActions.clearSelection();
     }
-    if (!force && isMobile() && this.showContent) {
+    if (!force && this.responsiveService.isMobile() && this.showContent) {
       // leave content shown
       return;
     }
@@ -275,23 +276,22 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   toggleSelected(report) {
+    if (!this.selectMode) {
+      // let the routerLink handle navigation
+      return;
+    }
     if (!report?._id) {
       return;
     }
 
-    if (this.selectMode) {
-      const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
-      if (!isSelected) {
-        // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
-        // the selectReport action will actually get all details
-        this.reportsActions.addSelectedReport(report);
-        this.reportsActions.selectReport(report);
-      } else {
-        this.reportsActions.removeSelectedReport(report);
-      }
-      return;
+    const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
+    if (!isSelected) {
+      // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
+      // the selectReport action will actually get all details
+      this.reportsActions.addSelectedReport(report);
+      this.reportsActions.selectReport(report);
+    } else {
+      this.reportsActions.removeSelectedReport(report);
     }
-
-    this.router.navigate(['/reports', report._id]);
   }
 }

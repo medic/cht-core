@@ -18,18 +18,18 @@
                 <span class="number">1</span>
                 <i class="fa fa-check"></i>
               </span>
-              <span translate>setup.modem.title</span>
+              <span>{{'setup.modem.title' | translate}}</span>
               <span class="value"></span>
             </h4>
           </div>
           <div id="modem-setup-content" class="modem-setup-content panel-collapse">
-            <p translate>setup.modem.description</p>
-            <label for="default-country-code-setup" translate>Default country code</label>
-            <p translate>Default country code help</p>
+            <p>{{'setup.modem.description' | translate}}</p>
+            <label for="default-country-code-setup">{{'Default country code' | translate}}</label>
+            <p>{{'Default country code help' | translate}}</p>
             <select [(ngModel)]="model.countryCode" id="default-country-code-setup" name="default-country-code">
             </select>
-            <label for="gateway-number-setup" translate>Gateway number</label>
-            <p translate>Gateway number help</p>
+            <label for="gateway-number-setup">{{'Gateway number' | translate}}</label>
+            <p>{{'Gateway number help' | translate}}</p>
             <input [(ngModel)]="model.gatewayNumber" id="gateway-number-setup" name="gateway-number" type="text"/>
           </div>
         </accordion-group>
@@ -44,18 +44,18 @@
                 <span class="number">2</span>
                 <i class="fa fa-check"></i>
               </span>
-              <span translate>setup.contact.title</span>
+              <span>{{'setup.contact.title' | translate}}</span>
               <span class="value"></span>
             </h4>
           </div>
           <div id="primary-contact-content" class="primary-contact-content panel-collapse">
-            <p translate>setup.contact.description</p>
+            <p>{{'setup.contact.description' | translate}}</p>
             <p class="horizontal-options">
-              <a href="#" class="icon contact-pregnant" data-value="patient" translate>Pregnant patient</a>
-              <a href="#" class="icon contact-chw" data-value="chw" translate>Community health worker</a>
-              <a href="#" class="icon contact-nurse" data-value="nurse" translate>Facility nurse</a>
+              <a href="#" class="icon contact-pregnant" data-value="patient">{{'Pregnant patient' | translate}}</a>
+              <a href="#" class="icon contact-chw" data-value="chw">{{'Community health worker' | translate}}</a>
+              <a href="#" class="icon contact-nurse" data-value="nurse">{{'Facility nurse' | translate}}</a>
             </p>
-            <p translate>setup.contact.help</p>
+            <p>{{'setup.contact.help' | translate}}</p>
           </div>
         </accordion-group>
       </div>
@@ -69,24 +69,24 @@
                 <span class="number">3</span>
                 <i class="fa fa-check"></i>
               </span>
-              <span translate>setup.language.title</span>
+              <span>{{'setup.language.title' | translate}}</span>
               <span class="value"></span>
             </h4>
           </div>
           <div id="language-preference-content" class="language-preference-content panel-collapse">
-            <span translate>setup.language.outgoing.subtitle</span>
+            <span>{{'setup.language.outgoing.subtitle' | translate}}</span>
             <p class="horizontal-options locale-outgoing">
               <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
                 <span class="rectangle">{{ language.name }}</span>
               </a>
             </p>
-            <span translate>setup.language.subtitle</span>
+            <span>{{'setup.language.subtitle' | translate}}</span>
             <p class="horizontal-options locale">
               <a *ngFor="let language of enabledLocales" href="#" [attr.data-value]="language.code">
                 <span class="rectangle">{{ language.name }}</span>
               </a>
             </p>
-            <p translate>setup.language.description</p>
+            <p>{{'setup.language.description' | translate}}</p>
           </div>
         </accordion-group>
       </div>
@@ -100,23 +100,23 @@
                 <span class="number">4</span>
                 <i class="fa fa-check"></i>
               </span>
-              <span translate>setup.registration.title</span>
+              <span>{{'setup.registration.title' | translate}}</span>
               <span class="value"></span>
             </h4>
           </div>
           <div id="registration-form-content" class="registration-form-content panel-collapse">
-            <p translate>setup.registration.description</p>
+            <p>{{'setup.registration.description' | translate}}</p>
             <p class="horizontal-options">
               <a href="#" data-value="true">
                 <span class="circle"><i class="fa fa-check"></i></span>
-                <span class="description" translate>with.lmp</span>
+                <span class="description">{{'with.lmp' | translate}}</span>
               </a>
               <a href="#" data-value="false">
                 <span class="circle"><i class="fa fa-check"></i></span>
-                <span class="description" translate>without.lmp</span>
+                <span class="description">{{'without.lmp' | translate}}</span>
               </a>
             </p>
-            <p translate>setup.registration.help</p>
+            <p>{{'setup.registration.help' | translate}}</p>
           </div>
         </accordion-group>
       </div>

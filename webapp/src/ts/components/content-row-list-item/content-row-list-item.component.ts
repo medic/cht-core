@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { Attribute, ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
   selector: '<mm-content-row>',
@@ -7,7 +7,8 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 })
 export class ContentRowListItemComponent {
   // string: (required) the _id of the doc
-  @Input() id;
+  @Attribute('data-record-id') id;
+
   // string: (optional) the name of the route to link to
   @Input() route;
   // boolean: (optional) whether to mark this row read
@@ -57,8 +58,4 @@ export class ContentRowListItemComponent {
   @Input() primary;
   @Input() visits;
   @Input() statusIcon;
-
-  @Output() onClick:EventEmitter<any> = new EventEmitter();
-
-  constructor() {}
 }

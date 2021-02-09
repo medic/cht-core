@@ -8,19 +8,19 @@
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()">
             <span class="fa fa-check-square-o"></span>
-            <p translate>select.mode.select.all</p>
+            <p>{{'select.mode.select.all' | translate}}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" (click)="deselectAll()">
             <span class="fa fa-square-o"></span>
-            <p translate>select.mode.deselect.all</p>
+            <p>{{'select.mode.deselect.all' | translate}}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)" [ngClass]="{'mm-icon-disabled': !selectedReportsDocs.length}">
             <span class="fa fa-trash-o"></span>
-            <p translate>select.mode.delete.all</p>
+            <p>{{'select.mode.delete.all' | translate}}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" (click)="setSelect(false)">
             <span class="fa fa-times-circle"></span>
-            <p translate>select.mode.stop</p>
+            <p>{{'select.mode.stop' | translate}}</p>
           </a>
         </div>
       </div>
@@ -29,7 +29,7 @@
         <div class="actions dropup" dropdown [dropup]="true">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" dropdownToggle dropdata-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}">
             <span class="fa fa-plus"></span>
-            <p translate>Submit Report</p>
+            <p>{{'Submit Report' | translate}}</p>
           </a>
           <ng-container *ngIf="nonContactForms?.length">
             <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
@@ -43,11 +43,11 @@
           </ng-container>
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mmAuth="can_bulk_delete_reports" (click)="setSelect(true)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
             <span class="fa fa-check-circle"></span>
-            <p translate>select.mode.start</p>
+            <p>{{'select.mode.start' | translate}}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin" (click)="actionBar?.left?.exportFn($event)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
             <span class="fa fa-arrow-down"></span>
-            <p translate>Export</p>
+            <p>{{'Export' | translate}}</p>
           </a>
         </div>
       </div>
@@ -60,7 +60,7 @@
             data-toggle="dropdown"
           >
             <span class="fa fa-plus"></span>
-            <p translate>Add place</p>
+            <p>{{'Add place' | translate}}</p>
           </a>
 
           <ul *ngIf="actionBar?.left?.childPlaces?.length > 1"
@@ -72,7 +72,7 @@
                 [queryParams]="{ from: 'list' }"
               >
                 <span [innerHTML]="child.icon | resourceIcon"></span>
-                <span class="content" translate>{{ child.create_key }}</span>
+                <span class="content">{{ child.create_key | translate }}</span>
               </a>
             </li>
           </ul>
@@ -87,7 +87,7 @@
               <i [innerHTML]="actionBar.left.childPlaces[0].icon | resourceIcon"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p translate>{{ actionBar.left.childPlaces[0].create_key }}</p>
+            <p>{{ actionBar.left.childPlaces[0].create_key | translate}}</p>
           </a>
 
           <a *ngIf="isAdmin"
@@ -96,7 +96,7 @@
             [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
           >
             <span class="fa fa-arrow-down"></span>
-            <p translate>Export</p>
+            <p>{{'Export' | translate}}</p>
           </a>
         </div>
       </div>
@@ -105,11 +105,11 @@
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" (click)="actionBar?.left?.openSendMessageModal($event)">
             <span class="fa fa-plus"></span>
-            <p translate>Send Message</p>
+            <p>{{'Send Message' | translate}}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="isAdmin" (click)="actionBar?.left?.exportFn()" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
             <span class="fa fa-arrow-down"></span>
-            <p translate>Export</p>
+            <p>{{'Export' | translate}}</p>
           </a>
         </div>
       </div>
@@ -121,7 +121,7 @@
           <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
               <span class="fa fa-trash-o"></span>
-              <p translate>select.mode.delete.all</p>
+              <p>{{'select.mode.delete.all' | translate}}</p>
             </a>
           </div>
         </div>
@@ -130,11 +130,11 @@
           <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
-              <p translate>Send Message</p>
+              <p>{{'Send Message' | translate}}</p>
             </a>
             <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
-              <p translate>Send Message</p>
+              <p>{{'Send Message' | translate}}</p>
             </a>
             <div class="dropdown-menu sub-actions" *ngIf="actionBar?.right?.verifyingReport && loadingSubActionBar">
               <div class="loader"></div>
@@ -142,28 +142,28 @@
             <div class="dropdown-menu sub-actions" mmAuth [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
               <a class="mm-icon mm-icon-caption verify-error" [ngClass]="{ active: actionBar?.right?.verified === false }" (click)="verifyReport(false)">
                 <report-verify-invalid-icon class="verify-icon"></report-verify-invalid-icon>
-                <span translate>reports.verify.invalid</span>
+                <span>{{'reports.verify.invalid' | translate}}</span>
               </a>
               <a class="mm-icon mm-icon-caption verify-valid" [ngClass]="{ active: actionBar?.right?.verified }" (click)="verifyReport(true)">
                 <report-verify-valid-icon class="verify-icon"></report-verify-valid-icon>
-                <span translate>reports.verify.valid</span>
+                <span>{{'reports.verify.valid' | translate}}</span>
               </a>
             </div>
             <a class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
               <span class="fa fa-check"></span>
-              <p translate>reports.verify</p>
+              <p>{{'reports.verify' | translate}}</p>
             </a>
             <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_update_reports" [routerLink]="['/reports', 'edit', selectedReportsDocs[0]?._id]">
               <span class="fa fa-pencil"></span>
-              <p translate>Edit</p>
+              <p>{{'Edit' | translate}}</p>
             </a>
             <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type !== 'xml'" (click)="launchEditFacilityDialog()">
               <span class="fa fa-pencil"></span>
-              <p translate>Update Facility</p>
+              <p>{{'Update Facility' | translate}}</p>
             </a>
             <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportsDocs[0])" mmAuth="can_delete_reports">
               <span class="fa fa-trash-o"></span>
-              <p translate>Delete</p>
+              <p>{{'Delete' | translate}}</p>
             </a>
           </div>
         </div>
@@ -174,7 +174,7 @@
           <span>
             <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
               <span class="fa fa-plus"></span>
-              <p translate>action.report.add</p>
+              <p>{{'action.report.add' | translate}}</p>
             </a>
             <ul id="relevant-contacts-form" class="dropdown-menu mm-dropdown-menu with-icon" *ngIf="actionBar?.right?.relevantForms && actionBar?.right?.relevantForms?.length">
               <li *ngFor="let form of actionBar.right.relevantForms; trackBy: trackByForms" [attr.id]="form.id">
@@ -193,13 +193,13 @@
                   <i class="fa {{ group.menu_icon }}"></i>
                   <i class="fa fa-plus fa-stack-1x"></i>
                 </span>
-                <p translate>{{ group.menu_key }}</p>
+                <p>{{ group.menu_key | translate}}</p>
               </a>
               <ul class="dropdown-menu mm-dropdown-menu with-icon">
                 <li *ngFor="let type of group.types; trackBy: trackById">
                   <a [routerLink]="['/', 'contacts', selectedContactDoc._id, 'add', type.id]">
                     <span [innerHTML]="type.icon | resourceIcon"></span>
-                    <span class="content" translate>{{ type.create_key }}</span>
+                    <span class="content">{{ type.create_key | translate}}</span>
                   </a>
                 </li>
               </ul>
@@ -213,7 +213,7 @@
                 <i [innerHTML]="group.types[0]?.icon | resourceIcon"></i>
                 <i class="fa fa-plus fa-stack-1x"></i>
               </span>
-              <p translate>{{ group.types[0]?.create_key }}</p>
+              <p>{{ group.types[0]?.create_key | translate}}</p>
             </a>
           </span>
 
@@ -224,7 +224,7 @@
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-phone"></span>
-            <p translate>call</p>
+            <p>{{'call' | translate}}</p>
           </a>
           <a *ngIf="actionBar?.right?.sendTo"
             mmAuth="can_view_message_action"
@@ -233,7 +233,7 @@
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.sendTo?.phone }"
           >
             <span class="fa fa-envelope"></span>
-            <p translate>Send Message</p>
+            <p>{{'Send Message' | translate}}</p>
           </a>
           <a *ngIf="actionBar?.right?.sendTo"
             mmAuth="can_view_message_action"
@@ -242,7 +242,7 @@
             (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)"
           >
             <span class="fa fa-envelope"></span>
-            <p translate>Send Message</p>
+            <p>{{'Send Message' | translate}}</p>
           </a>
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption"
@@ -250,7 +250,7 @@
             [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
           >
             <span class="fa fa-pencil"></span>
-            <p translate>Edit</p>
+            <p>{{'Edit' | translate}}</p>
           </a>
 
           <a mmAuth="can_delete_contacts"
@@ -259,7 +259,7 @@
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"
           >
             <span class="fa fa-trash-o"></span>
-            <p translate>Delete</p>
+            <p>{{'Delete' | translate}}</p>
           </a>
         </div>
       </div>

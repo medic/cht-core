@@ -16,6 +16,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 
 describe('contacts report component', () => {
   let component: ContactsReportComponent;
@@ -73,7 +74,8 @@ describe('contacts report component', () => {
           RouterTestingModule,
         ],
         declarations: [
-          ContactsReportComponent
+          ContactsReportComponent,
+          EnketoComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

@@ -37,6 +37,19 @@ const initialState = {
   userFacilityId: null,
 };
 
+const setShowContent = (state, showContent) => {
+  const selectMode = state.selectMode;
+  if (showContent && selectMode) {
+    // when in select mode we never show the RHS on mobile
+    return state;
+  }
+  if (showContent) {
+    $('.app-root').addClass('show-content');
+  } else {
+    $('.app-root').removeClass('show-content');
+  }
+  return { ...state, showContent };
+};
 
 const _globalReducer = createReducer(
   initialState,
@@ -88,7 +101,7 @@ const _globalReducer = createReducer(
     return { ...state, title };
   }),
   on(Actions.setShowContent, (state, { payload: { showContent } }) => {
-    return { ...state, showContent };
+    return setShowContent(state, showContent);
   }),
   on(Actions.setSelectMode, (state, { payload: { selectMode } }) => {
     return { ...state, selectMode };

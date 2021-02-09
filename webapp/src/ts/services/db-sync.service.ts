@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { SessionService } from '@mm-services/session.service';
@@ -45,6 +45,7 @@ export class DBSyncService {
     private authService:AuthService,
     private rulesEngineService:RulesEngineService,
     private dbSyncRetryService:DbSyncRetryService,
+    private ngZone:NgZone,
   ) {}
 
   private readonly DIRECTIONS = [
@@ -180,7 +181,7 @@ export class DBSyncService {
       .info()
       .then(info => currentSeq = info.update_seq)
       .then(() => local.sync(remote))
-      .then(() => purger.writePurgeMetaCheckpoint(local, currentSeq));
+      .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
   }
 
   private sendUpdate(update) {

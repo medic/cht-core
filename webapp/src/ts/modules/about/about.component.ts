@@ -76,7 +76,7 @@ export class AboutComponent implements OnInit, OnDestroy {
 
     if ((<any>window).medicmobile_android && typeof (<any>window).medicmobile_android.getDataUsage === 'function') {
       this.updateAndroidDataUsage();
-      this.dataUsageUpdate = setInterval(this.updateAndroidDataUsage, 2000);
+      this.dataUsageUpdate = setInterval(() => this.updateAndroidDataUsage(), 2000);
     }
 
     this.dbService

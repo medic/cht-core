@@ -7,19 +7,15 @@ import { DatabaseConnectionMonitorService } from '@mm-services/database-connecti
 
 describe('DatabaseConnectionMonitorService', () => {
   let service: DatabaseConnectionMonitorService;
-  const subscriptions: Subscription = new Subscription();
-  const originalPouchDB = window.PouchDB;
-  window.PouchDB = require('pouchdb-browser').default;
+  let subscriptions;
+  let originalPouchDB;
 
   const triggerPouchDbDOMException = () => {
     let db = window.PouchDB('test', { auto_compaction: true });
     const write = i => {
-      db
+      return db
         .put({ _id: i + 'a', bar: 'bar' })
-        .then(() => write(i + 1))
-        .catch(err => {
-          throw err;
-        });
+        .then(() => write(i + 1));
     };
     write(0);
     db.destroy();
@@ -27,11 +23,14 @@ describe('DatabaseConnectionMonitorService', () => {
   };
 
   beforeEach(() => {
+    subscriptions = new Subscription();
+    originalPouchDB = window.PouchDB;
+    window.PouchDB = require('pouchdb-browser').default;
     TestBed.configureTestingModule({});
     service = TestBed.inject(DatabaseConnectionMonitorService);
   });
 
-  after(() => {
+  afterEach(() => {
     window.PouchDB = originalPouchDB;
     subscriptions.unsubscribe();
   });

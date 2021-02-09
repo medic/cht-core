@@ -1,8 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
-import { take } from 'rxjs/operators';
 
 import { createSingleValueAction } from './actionUtils';
-import { Selectors } from '../selectors';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
@@ -76,17 +74,7 @@ export class GlobalActions {
   }
 
   setShowContent(showContent) {
-    return this.store
-      .select(Selectors.getSelectMode)
-      .pipe(take(1))
-      .subscribe(selectMode => {
-        if (showContent && selectMode) {
-          // when in select mode we never show the RHS on mobile
-          return;
-        }
-
-        return this.store.dispatch(Actions.setShowContent(showContent));
-      });
+    return this.store.dispatch(Actions.setShowContent(showContent));
   }
 
   setShowActionBar(showActionBar) {

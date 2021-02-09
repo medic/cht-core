@@ -1,6 +1,6 @@
 <div class="content-pane right-pane">
   <div class="col-sm-8 item-content empty-selection" *ngIf="!selected && !error">
-    <div translate>analytics.target.aggregates.no.target.selected</div>
+    <div>{{'analytics.target.aggregates.no.target.selected' | translate}}</div>
   </div>
 
   <div class="col-sm-8 item-content empty-selection selection-error" *ngIf="error || selected?.error">
@@ -20,8 +20,8 @@
           </div>
 
           <div class="cell">
-            <label *ngIf="selected.hasGoal; else doesntHaveGoalTpl" translate>analytics.target.aggregates.supervisees.meeting.goal</label>
-            <ng-template #doesntHaveGoalTpl><label translate>analytics.target.aggregates.total</label></ng-template>
+            <label *ngIf="selected.hasGoal; else doesntHaveGoalTpl">{{'analytics.target.aggregates.supervisees.meeting.goal' | translate}}</label>
+            <ng-template #doesntHaveGoalTpl><label>{{'analytics.target.aggregates.total' | translate}}</label></ng-template>
             <p>{{ selected.aggregateValue?.summary }}</p>
           </div>
         </div>
@@ -30,7 +30,7 @@
       <div class="aggregate-detail card">
         <div class="action-header cell row">
           <div class="col-xs-6 col-md-4">
-            <h3 translate>analytics.target.aggregates.reported</h3>
+            <h3>{{'analytics.target.aggregates.reported' | translate}}</h3>
           </div>
           <div class="col-xs-6 col-md-8 text-right">
             <h3 *ngIf="selected.subtitle_translation_key">

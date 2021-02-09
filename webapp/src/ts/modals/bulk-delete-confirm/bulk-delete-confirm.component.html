@@ -8,9 +8,9 @@
   (onCancel)="cancel()"
   (onSubmit)="submit()"
 >
-  <p *ngIf="!deleteComplete && !status.processing && model.docs.length === 1" translate>confirm.delete</p>
+  <p *ngIf="!deleteComplete && !status.processing && model.docs.length === 1">{{'confirm.delete' | translate}}</p>
   <p *ngIf="!deleteComplete && !status.processing && model.docs.length !== 1" translate [translateParams]="{ number: model.docs.length }">confirm.delete.plural</p>
-  <p *ngIf="deleteComplete" translate>bulkdelete.complete</p>
-  <p *ngIf="status.processing" translate>confirm.delete.progress</p>
+  <p *ngIf="deleteComplete">{{'bulkdelete.complete' | translate}}</p>
+  <p *ngIf="status.processing">{{'confirm.delete.progress' | translate}}</p>
   <p *ngIf="status.processing" translate [translateParams]="{ totalDeleted: totalDocsDeleted, totalSelected: totalDocsSelected }">confirm.delete.totals</p>
 </mm-modal>
