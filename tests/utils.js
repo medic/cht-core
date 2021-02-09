@@ -489,6 +489,7 @@ const deleteUsersNative = async (users, meta = false) => {
 
 
 const createUsers = async (users, meta = false) => {
+  deprecated('utils.createUsers', 'utils.createUsersNative');
   const createUserOpts = {
     path: '/api/v1/users',
     method: 'POST',
@@ -505,6 +506,26 @@ const createUsers = async (users, meta = false) => {
 
   for (const user of users) {
     await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'PUT'});
+  }
+};
+
+const createUsersNative = async (users, meta = false) => {
+  const createUserOpts = {
+    path: '/api/v1/users',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  };
+
+  for (const user of users) {
+    await requestNative(Object.assign({ body: user }, createUserOpts));
+  }
+
+  if (!meta) {
+    return;
+  }
+
+  for (const user of users) {
+    await requestNative({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'PUT'});
   }
 };
 
@@ -933,6 +954,7 @@ module.exports = {
   // @param {Boolean} meta - if true, creates meta db-s as well, default false
   // @return {Promise}
   createUsers: createUsers,
+  createUsersNative,
 
   setDebug: debug => e2eDebug = debug,
 
