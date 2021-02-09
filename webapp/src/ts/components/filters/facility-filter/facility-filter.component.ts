@@ -73,7 +73,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   private displayOneMoreFacility() {
-    if (this.totalFacilitiesDisplayed > this.facilities.length) {
+    if (this.totalFacilitiesDisplayed >= this.facilities.length) {
       return;
     }
 
