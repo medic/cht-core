@@ -28,22 +28,6 @@ require('../js/moment-locales/ceb');
 require('select2');
 require('../js/enketo/main');
 
-
-import { ɵBrowserGetTestability } from '@angular/platform-browser';
-
-ɵBrowserGetTestability.prototype.addToWindow = () => void 0;
-ɵBrowserGetTestability.prototype.findTestabilityInTree = () => void 0;
-
-import { TestabilityRegistry } from '@angular/core';
-TestabilityRegistry.prototype.registerApplication = () => void 0;
-TestabilityRegistry.prototype.unregisterApplication = () => void 0;
-TestabilityRegistry.prototype.unregisterAllApplications = () => void 0;
-TestabilityRegistry.prototype.getTestability = () => null;
-TestabilityRegistry.prototype.getAllTestabilities = () => [];
-TestabilityRegistry.prototype.getAllRootElements = () => [];
-TestabilityRegistry.prototype.findTestabilityInTree = () => null;
-
-
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS, (err) => {
   if (err) {

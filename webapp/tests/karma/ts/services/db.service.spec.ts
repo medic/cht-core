@@ -71,8 +71,8 @@ describe('Db Service', () => {
     pouchDB = sinon.stub().returns({ ...pouchResponse });
     window.PouchDB = pouchDB;
 
-    sinon.stub(NgZone.prototype, 'runOutsideAngular').callsArg(0);
-    sinon.stub(NgZone.prototype, 'run').callsArg(0);
+    runOutsideAngular = sinon.stub(NgZone.prototype, 'runOutsideAngular').callsArg(0);
+    runInsideAngular = sinon.stub(NgZone.prototype, 'run').callsArg(0);
   }));
 
   afterEach(() => {

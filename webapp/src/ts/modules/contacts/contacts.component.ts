@@ -444,16 +444,16 @@ export class ContactsComponent implements OnInit, OnDestroy{
   }
 
   private setLeftActionBar() {
-    const exportFn = (exportService, filters) => {
-      exportService.export('contacts', filters, { humanReadable: true });
-    };
-
     this.globalActions.setLeftActionBar({
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
       childPlaces: this.allowedChildPlaces,
-      exportFn: exportFn.bind({}, this.exportService, this.filters),
+      exportFn: this.exportFn.bind({}, this.exportService, this.filters),
     });
+  }
+
+  private exportFn(exportService, filters) {
+    exportService.export('contacts', filters, { humanReadable: true });
   }
 
   private subscribeToAllContactXmlForms() {
