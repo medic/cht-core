@@ -20,7 +20,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { MultiDropdownFilterComponent } from
-  '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+  '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 
 describe('Reports Filters Component', () => {
   let component: ReportsFiltersComponent;

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -30,7 +30,6 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   enketoStatus;
   enketoSaving;
   enketoError;
-  selectedContact;
   form;
   loadingForm;
   errorTranslationKey;
@@ -48,7 +47,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     private route: ActivatedRoute,
     private translateService: TranslateService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
-  ){
+    private ngZone: NgZone,
+  ) {
     this.globalActions = new GlobalActions(store);
   }
 
@@ -104,25 +104,32 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  private _getContactAndForm() {
+    return Promise
+      .all([
+        this.getContact(),
+        this.xmlFormsService.get(this.routeSnapshot.params?.formId),
+      ]);
+  }
+
+  private getContactAndForm() {
+    return this.ngZone.runOutsideAngular(() => this._getContactAndForm());
+  }
+
   private render() {
     this.contentError = false;
     this.errorTranslationKey = false;
 
     return this
-      .getContact()
-      .then((contact) => {
-        this.setCancelCallback();
-        this.selectedContact = contact;
-        return this.xmlFormsService.get(this.routeSnapshot.params.formId);
-      })
-      .then((form) => {
+      .getContactAndForm()
+      .then(([ contact, form ]) => {
         this.globalActions.setEnketoEditedStatus(false);
         this.globalActions.setTitle(this.translateFromService.get(form.title));
         this.setCancelCallback();
 
         const instanceData = {
           source: 'contact',
-          contact: this.selectedContact,
+          contact,
         };
         const markFormEdited = this.markFormEdited.bind(this);
         const resetFormError = this.resetFormError.bind(this);
@@ -223,14 +230,14 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
         this.globalActions.setEnketoSavingStatus(false);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
         this.globalActions.setEnketoEditedStatus(false);
-        this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
-      })
-      .then(() => {
+
         this.telemetryData.postSave = Date.now();
 
         this.telemetryService.record(
           `enketo:contacts:${this.telemetryData.form}:add:save`,
           this.telemetryData.postSave - this.telemetryData.preSave);
+
+        this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);

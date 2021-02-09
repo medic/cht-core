@@ -10,7 +10,7 @@ import sinon from 'sinon';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import {
   MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';

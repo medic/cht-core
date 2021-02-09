@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { 
-  TranslateFakeLoader, 
-  TranslateLoader, 
-  TranslateModule, 
-  TranslateService 
+import {
+  TranslateFakeLoader,
+  TranslateLoader,
+  TranslateModule,
+  TranslateService
 } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
@@ -1059,9 +1059,15 @@ describe('TargetAggregatesService', () => {
 
   describe('getCurrentTargetDoc', () => {
     it('should do nothing when no contact uuid', () => {
-      expect(service.getCurrentTargetDoc()).to.equal(undefined);
-      expect(service.getCurrentTargetDoc({})).to.equal(undefined);
-      expect(service.getCurrentTargetDoc('')).to.equal(undefined);
+      return Promise
+        .all([
+          service.getCurrentTargetDoc(),
+          service.getCurrentTargetDoc({}),
+          service.getCurrentTargetDoc(''),
+        ])
+        .then(results => {
+          expect(results).to.deep.equal([undefined, undefined, undefined]);
+        });
     });
 
     it('should throw when getting settings fails', () => {

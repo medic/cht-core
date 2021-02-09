@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { from, Observable } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
@@ -9,7 +9,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'multi-dropdown-filter',
   templateUrl: './multi-dropdown-filter.component.html'
 })
-export class MultiDropdownFilterComponent implements AbstractFilter {
+export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
   @Input() items;
   @Input() disabled;
   @Input() label;
@@ -23,9 +23,14 @@ export class MultiDropdownFilterComponent implements AbstractFilter {
   @Output() onOpen:EventEmitter<any> = new EventEmitter();
 
   selected = new Set();
+  filterLabel;
 
   constructor(private translateService:TranslateService) {
     this.apply = _debounce(this.apply, 200);
+  }
+
+  ngOnInit() {
+    this.filterLabel = this.getLabel();
   }
 
   onOpenChange(open) {
@@ -59,6 +64,7 @@ export class MultiDropdownFilterComponent implements AbstractFilter {
   }
 
   private apply() {
+    this.filterLabel = this.getLabel();
     this.applyFilter.emit(Array.from(this.selected));
   }
 
@@ -82,6 +88,18 @@ export class MultiDropdownFilterComponent implements AbstractFilter {
 
   clear(apply=true) {
     this.selected.clear();
-    apply && this.apply();
+    if (apply) {
+      return this.apply();
+    }
+
+    this.filterLabel = this.getLabel();
   }
+}
+
+export class MultiDropdownFilter {
+  selected = new Map();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  clear(apply) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  toggle(element) {}
 }

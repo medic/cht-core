@@ -1,6 +1,6 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
 import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
@@ -39,6 +39,7 @@ import { DatabaseConnectionMonitorService } from '@mm-services/database-connecti
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -73,13 +74,12 @@ export class AppComponent implements OnInit {
   translationsLoaded;
 
   currentTab = '';
-  showContent;
-  privacyPolicyAccepted = true;
-  showPrivacyPolicy = false;
+  privacyPolicyAccepted;
+  showPrivacyPolicy;
   selectMode;
   minimalTabs;
   adminUrl;
-  canLogOut = false;
+  canLogOut;
   replicationStatus;
   androidAppVersion;
   nonContactForms;
@@ -104,7 +104,6 @@ export class AppComponent implements OnInit {
     private xmlFormsService:XmlFormsService,
     private jsonFormsService:JsonFormsService,
     private translateFromService:TranslateFromService,
-    private changeDetectorRef:ChangeDetectorRef,
     private countMessageService:CountMessageService,
     private privacyPoliciesService:PrivacyPoliciesService,
     private routeSnapshotService:RouteSnapshotService,
@@ -117,6 +116,8 @@ export class AppComponent implements OnInit {
     private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
     private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
     private translateLocaleService:TranslateLocaleService,
+    private telemetryService:TelemetryService,
+    private ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(store);
 
@@ -247,6 +248,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.recordStartupTelemetry();
     this.subscribeToStore();
     this.setupRouter();
     this.loadTranslations();
@@ -275,6 +277,7 @@ export class AppComponent implements OnInit {
     this.setupAndroidVersion();
     this.requestPersistentStorage();
     this.startWealthQuintiles();
+    this.enableTooltips();
   }
 
   private setupAndroidVersion() {
@@ -401,7 +404,6 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getMinimalTabs),
-      this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
@@ -410,7 +412,6 @@ export class AppComponent implements OnInit {
       androidAppVersion,
       currentTab,
       minimalTabs,
-      showContent,
       privacyPolicyAccepted,
       showPrivacyPolicy,
       selectMode,
@@ -419,11 +420,9 @@ export class AppComponent implements OnInit {
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
       this.minimalTabs = minimalTabs;
-      this.showContent = showContent;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.selectMode = selectMode;
-      this.changeDetectorRef.detectChanges();
     });
   }
 
@@ -581,40 +580,47 @@ export class AppComponent implements OnInit {
 
   // enables tooltips that are visible on mobile devices
   private enableTooltips() {
-    $('body').on('mouseenter', '.relative-date, .autoreply', function() {
-      if ($(this).data('tooltipLoaded') !== true) {
-        $(this)
-          .data('tooltipLoaded', true)
-          .tooltip({
-            placement: 'bottom',
-            trigger: 'manual',
-            container: $(this).closest('.inbox-items, .item-content, .page'),
-          })
-          .tooltip('show');
-      }
-    });
-    $('body').on('mouseleave', '.relative-date, .autoreply', function() {
-      if ($(this).data('tooltipLoaded') === true) {
-        $(this)
-          .data('tooltipLoaded', false)
-          .tooltip('hide');
-      }
+    // running this code in NgZone will end up triggering app-wide change detection on every
+    // mouseover and mouseout event over every element on the page!
+    this.ngZone.runOutsideAngular(() => {
+      $('body').on('mouseenter', '.relative-date, .autoreply', (event) => {
+        const element = $(event.currentTarget);
+        if (element.data('tooltipLoaded') !== true) {
+          element
+            .data('tooltipLoaded', true)
+            .tooltip({
+              placement: 'bottom',
+              trigger: 'manual',
+              container: element.closest('.inbox-items, .item-content, .page'),
+            })
+            .tooltip('show');
+        }
+      });
+      $('body').on('mouseleave', '.relative-date, .autoreply', (event) => {
+        const element = $(event.currentTarget);
+        if (element.data('tooltipLoaded') === true) {
+          element
+            .data('tooltipLoaded', false)
+            .tooltip('hide');
+        }
+      });
     });
   }
-}
 
-/*  $window.startupTimes.angularBootstrapped = performance.now();
-    Telemetry.record(
+  private recordStartupTelemetry() {
+    window.startupTimes.angularBootstrapped = performance.now();
+    this.telemetryService.record(
       'boot_time:1:to_first_code_execution',
-      $window.startupTimes.firstCodeExecution - $window.startupTimes.start
+      window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
-    Telemetry.record(
+    this.telemetryService.record(
       'boot_time:2:to_bootstrap',
-      $window.startupTimes.bootstrapped - $window.startupTimes.firstCodeExecution
+      window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
     );
-    Telemetry.record(
+    this.telemetryService.record(
       'boot_time:3:to_angular_bootstrap',
-      $window.startupTimes.angularBootstrapped - $window.startupTimes.bootstrapped
+      window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
     );
-    Telemetry.record('boot_time', $window.startupTimes.angularBootstrapped - $window.startupTimes.start);
-*/
+    this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
+  }
+}

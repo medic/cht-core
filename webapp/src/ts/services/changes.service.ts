@@ -1,7 +1,7 @@
 /**
  * Service to listen for database changes.
  */
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -41,7 +41,6 @@ export class ChangesService {
     private db:DbService,
     private session:SessionService,
     private store:Store,
-    private ngZone:NgZone,
   ) {
     this.store.select(Selectors.getLastChangedDoc).subscribe(obj => this.lastChangedDoc = obj);
     this.servicesActions = new ServicesActions(store);
@@ -71,7 +70,8 @@ export class ChangesService {
   private watchChanges(meta) {
     console.info(`Initiating changes watch (meta=${meta})`);
     const db = meta ? this.dbs.meta : this.dbs.medic;
-    const watch = this.db.get({ meta: meta })
+    const watch = this.db
+      .get({ meta: meta })
       .changes({
         live: true,
         since: db.lastSeq,
@@ -79,16 +79,8 @@ export class ChangesService {
         include_docs: db.watchIncludeDocs,
         return_docs: false,
       })
-      .on('change', change => {
-        NgZone.isInAngularZone() ?
-          this.onChangeHandler(db, meta, change) :
-          this.ngZone.run(() => this.onChangeHandler(db, meta, change));
-      })
-      .on('error', (err) => {
-        NgZone.isInAngularZone() ?
-          this.onErrorHandler(err, meta) :
-          this.ngZone.run(() => this.onErrorHandler(err, meta));
-      });
+      .on('change', (change) => this.onChangeHandler(db, meta, change))
+      .on('error', (err) => this.onErrorHandler(err, meta));
 
     this.watches.push(watch);
   }

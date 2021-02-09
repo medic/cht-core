@@ -2,29 +2,28 @@ import {
   Component,
   EventEmitter,
   OnDestroy,
-  ChangeDetectorRef,
   Output,
   ViewChild,
   Input,
-  OnInit,
-  AfterViewInit
+  OnInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { sortBy as _sortBy } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 
-import { Selectors } from '../../../selectors';
-import { GlobalActions } from '../../../actions/global';
+import { Selectors } from '@mm-selectors/index';
+import { GlobalActions } from '@mm-actions/global';
 import {
-  MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+  MultiDropdownFilterComponent,
+  MultiDropdownFilter,
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-form-type-filter',
   templateUrl: './form-type-filter.component.html'
 })
-export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter, AfterViewInit {
+export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   private globalActions;
 
   subscription: Subscription = new Subscription();
@@ -33,11 +32,10 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter: MultiDropdownFilterComponent;
+  dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
 
   constructor(
     private store:Store,
-    private cd: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -51,12 +49,6 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
       this.forms = _sortBy(forms, 'name');
     });
     this.subscription.add(subscription);
-  }
-
-  ngAfterViewInit() {
-    // this is needed because the change detection doesn't run normally at this point, and we're using the
-    // child component's methods in the view.
-    this.cd.detectChanges();
   }
 
   applyFilter(forms) {

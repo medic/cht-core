@@ -1,41 +1,36 @@
-import { Component, ChangeDetectorRef, ViewChild, Output, EventEmitter, Input, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import {
-  MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+  MultiDropdownFilterComponent,
+  MultiDropdownFilter,
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
 @Component({
   selector: 'mm-status-filter',
   templateUrl: './status-filter.component.html'
 })
-export class StatusFilterComponent implements AbstractFilter, AfterViewInit {
+export class StatusFilterComponent implements AbstractFilter {
   private globalActions;
 
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
   };
+  allStatuses = [...this.statuses.valid, ...this.statuses.verified];
 
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter: MultiDropdownFilterComponent;
+  dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
 
   constructor(
     private store: Store,
-    private cd: ChangeDetectorRef,
   ) {
     this.globalActions = new GlobalActions(store);
-  }
-
-  ngAfterViewInit() {
-    // this is needed because the change detection doesn't run normally at this point, and we're using the
-    // child component's methods in the view.
-    this.cd.detectChanges();
   }
 
   private getValidStatus(statuses) {
@@ -78,9 +73,5 @@ export class StatusFilterComponent implements AbstractFilter, AfterViewInit {
 
   clear() {
     this.dropdownFilter?.clear(false);
-  }
-
-  allStatuses() {
-    return [...this.statuses.valid, ...this.statuses.verified];
   }
 }

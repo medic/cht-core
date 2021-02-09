@@ -7,7 +7,6 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { Router } from '@angular/router';
 
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ChangesService } from '@mm-services/changes.service';
@@ -127,13 +126,11 @@ describe('Reports Component', () => {
   });
 
   describe('toggleSelected', () => {
-    let navigate;
     let addSelectedReport;
     let selectReport;
     let removeSelectedReport;
 
     beforeEach(() => {
-      navigate = sinon.stub(Router.prototype, 'navigate');
       addSelectedReport = sinon.stub(ReportsActions.prototype, 'addSelectedReport');
       selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
       removeSelectedReport = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
@@ -141,18 +138,16 @@ describe('Reports Component', () => {
 
     it('should not crash when called without report (for some reason)', () => {
       component.toggleSelected(undefined);
-      expect(navigate.callCount).to.equal(0);
+
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
-    it('should navigate when not in select mode', () => {
+    it('should do nothing when not in select mode', () => {
       component.selectMode = false;
       component.toggleSelected({ _id: 'report_id' });
 
-      expect(navigate.callCount).to.equal(1);
-      expect(navigate.args[0]).to.deep.equal([['/reports', 'report_id']]);
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(0);
@@ -168,7 +163,6 @@ describe('Reports Component', () => {
       expect(selectReport.callCount).to.equal(1);
       expect(selectReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(removeSelectedReport.callCount).to.equal(0);
-      expect(navigate.callCount).to.equal(0);
     });
 
     it('should add selected report when in select mode and not already selected with some selected reports', () => {
@@ -181,7 +175,6 @@ describe('Reports Component', () => {
       expect(selectReport.callCount).to.equal(1);
       expect(selectReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(removeSelectedReport.callCount).to.equal(0);
-      expect(navigate.callCount).to.equal(0);
     });
 
     it('should remove selected report if in select mode and already selected', () => {
@@ -193,7 +186,6 @@ describe('Reports Component', () => {
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(1);
       expect(removeSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
-      expect(navigate.callCount).to.equal(0);
     });
   });
 

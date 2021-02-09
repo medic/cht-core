@@ -215,36 +215,6 @@ class ASTCompiler {
     return v;
   }
 
-  handleBinaryAND_OR() {
-    const ast = this.cAst;
-    const stmts = this.cStmts;
-    const _s1 = [];
-    const _s2 = [];
-    const l = this.build(ast.left);
-    const r = this.build(ast.right, _s2);
-
-    let v = this.createVar();
-
-    if (ast.operation === '&&') {
-      v = r;
-      _s1.push(
-        `if(${l}){`,
-        _s2.join(';'),
-        `}`
-      );
-    } else {
-      v = l;
-      _s1.push(
-        `if(!${l}){`,
-        _s2.join(';'),
-        `;${v}=${r};`,
-        `}`
-      );
-    }
-    stmts.push(_s1.join(''));
-    return v;
-  }
-
   handleBinaryDefault() {
     const ast = this.cAst;
     const stmts = this.cStmts;
@@ -260,9 +230,6 @@ class ASTCompiler {
     const op = ast.operation;
     if (op === '+' || op === '-') {
       return this.handleBinaryPlus_Minus();
-    }
-    if (op === '&&' || op === '||') {
-      return this.handleBinaryAND_OR();
     }
 
     return this.handleBinaryDefault();

@@ -13,7 +13,7 @@
       <ng-container *ngIf="!task.deleted">
         <div class="form-group">
           <label>
-            <span translate>tasks.0.messages.0.message</span>
+            <span>{{'tasks.0.messages.0.message' | translate}}</span>
             <a class="btn btn-link fa fa-trash-o" (click)="deleteTask(index)" *ngIf="task.state === 'scheduled' || task.state === 'muted'"></a>
           </label>
           <input type="text" class="form-control" *ngFor="let message of task.messages" [(ngModel)]="message.message" [ngModelOptions]="{standalone: true}" [disabled]="task.hasOwnProperty('translation_key')"/>
@@ -30,7 +30,7 @@
 
     <a class="btn" (click)="addTask()">
       <i class="fa fa-plus"></i>
-      <span translate>Add Message</span>
+      <span>{{'Add Message' | translate}}</span>
     </a>
 
   </form>

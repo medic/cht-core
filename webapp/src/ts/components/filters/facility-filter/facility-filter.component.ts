@@ -2,23 +2,22 @@ import {
   Component,
   EventEmitter,
   OnDestroy,
-  ChangeDetectorRef,
   Output,
   ViewChild,
   Input,
-  OnInit,
-  AfterViewInit
+  OnInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription, from } from 'rxjs';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Selectors } from '../../../selectors';
+import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import {
-  MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+  MultiDropdownFilterComponent,
+  MultiDropdownFilter,
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
@@ -26,7 +25,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter, AfterViewInit {
+export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter {
   subscription:Subscription = new Subscription();
   private globalActions;
   isAdmin;
@@ -38,11 +37,10 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
-  dropdownFilter: MultiDropdownFilterComponent;
+  dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
 
   constructor(
     private store:Store,
-    private cd: ChangeDetectorRef,
     private placeHierarchyService:PlaceHierarchyService,
     private translateService:TranslateService,
   ) {
@@ -98,12 +96,6 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
     hierarchy.forEach(facility => sortChildren(facility));
 
     return _sortBy(hierarchy, iteratee => iteratee.doc?.name);
-  }
-
-  ngAfterViewInit() {
-    // this is needed because the change detection doesn't run normally at this point, and we're using the
-    // child component's methods in the view.
-    this.cd.detectChanges();
   }
 
   applyFilter(facilities) {

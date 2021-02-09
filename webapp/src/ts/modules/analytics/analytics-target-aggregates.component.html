@@ -1,6 +1,6 @@
 <div class="page" *ngIf="!enabled || loading">
   <div class="item-content empty-selection disabled" *ngIf="!loading; else loaderTpl">
-    <div translate>analytics.target.aggregates.disabled</div>
+    <div>{{'analytics.target.aggregates.disabled' | translate}}</div>
   </div>
 </div>
 
@@ -16,8 +16,8 @@
         [aggregate]="aggregate.aggregateValue">
       </mm-content-row>
     </ul>
-    <p *ngIf="error && !aggregates" class="alert alert-danger" role="alert" translate>analytics.target.aggregates.error</p>
-    <p class="loading-status" *ngIf="!error && !aggregates?.length" translate>analytics.target.aggregates.no.targets</p>
+    <p *ngIf="error && !aggregates" class="alert alert-danger" role="alert">{{'analytics.target.aggregates.error' | translate}}</p>
+    <p class="loading-status" *ngIf="!error && !aggregates?.length">{{'analytics.target.aggregates.no.targets' | translate}}</p>
   </div>
 
   <router-outlet></router-outlet>

@@ -95,6 +95,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+
     this.tasksActions.setTasksList([]);
     this.tasksActions.setTasksLoaded(false);
     this.globalActions.unsetSelected();

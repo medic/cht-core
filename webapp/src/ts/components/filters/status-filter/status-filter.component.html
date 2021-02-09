@@ -1,19 +1,19 @@
 <multi-dropdown-filter
-  [items]="allStatuses()"
+  [items]="allStatuses"
   (applyFilter)="applyFilter($event)"
   [label]="getFilterLabel"
   [disabled]="disabled"
 >
   <span class="fa fa-circle-o"></span>
   <ul>
-    <li role="presentation" class="dropdown-header" translate>status.review.title</li>
-    <li role="presentation" *ngFor="let status of statuses.verified" [class.selected]="dropdownFilter?.isSelected(status)">
-      <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="dropdownFilter?.toggle(status)" translate>status.review.{{status}}</a>
+    <li role="presentation" class="dropdown-header">{{'status.review.title' | translate}}</li>
+    <li role="presentation" *ngFor="let status of statuses.verified" [class.selected]="dropdownFilter?.selected.has(status)">
+      <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="dropdownFilter?.toggle(status)">{{'status.review.' + status | translate}}</a>
     </li>
 
-    <li role="presentation" class="dropdown-header" translate>status.sms.title</li>
-    <li role="presentation" *ngFor="let status of statuses.valid" [class.selected]="dropdownFilter?.isSelected(status)">
-      <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="dropdownFilter?.toggle(status)" translate>status.sms.{{status}}</a>
+    <li role="presentation" class="dropdown-header">{{'status.sms.title' | translate}}</li>
+    <li role="presentation" *ngFor="let status of statuses.valid" [class.selected]="dropdownFilter?.selected.has(status)">
+      <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="dropdownFilter?.toggle(status)">{{'status.sms.' + status | translate}}</a>
     </li>
   </ul>
 </multi-dropdown-filter>
