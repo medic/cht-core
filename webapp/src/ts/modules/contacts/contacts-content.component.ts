@@ -377,7 +377,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   private openContactMutedModal(router:Router, modalService:ModalService, selectedContactId, form) {
     if (!form.showUnmuteModal) {
-      return router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]);
+      return router.navigate(['/contacts', selectedContactId, 'report', form.code]);
     }
 
     modalService
