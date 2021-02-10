@@ -134,6 +134,29 @@ describe('Parse provider', () => {
       const result4 = parse(expression, { user: userContactDoc });
       expect(result4).to.equal(false);
     });
+
+    it('should work with a form context', () => {
+      const expression = `
+        contact.type === 'person' && 
+        summary.alive && !summary.muted && summary.show_delivery_form && 
+        user.parent.type === 'health_center' && 
+        (!contact.sex || contact.sex === 'female') && 
+        (!contact.date_of_birth || (ageInYears(contact) >= 12 && ageInYears(contact) <= 49))
+      `;
+      const userContactDoc = {
+        date_of_birth: '1998-05-13',
+        date_of_birth_method: 'approx',
+        name: 'peanuts',
+        patient_id: '03451',
+        reported_date: 1589367057387,
+        role: 'nurse',
+        sex: 'female',
+        type: 'person',
+      };
+
+      const result = parse(expression, {}, { user: userContactDoc, contact: undefined, summary: undefined });
+      expect(result).to.equal(false);
+    });
   });
 
   describe('with pipes', () => {

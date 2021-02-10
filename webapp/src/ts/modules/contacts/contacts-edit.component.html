@@ -5,7 +5,7 @@
     </div>
   </div>
   <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && contentError">
-    <div translate>{{ errorTranslationKey }}</div>
+    <div *ngIf="errorTranslationKey">{{ errorTranslationKey | translate}}</div>
   </div>
   <div class="col-sm-8 item-content material" [hidden]="loadingContent || contentError">
     <div class="card">

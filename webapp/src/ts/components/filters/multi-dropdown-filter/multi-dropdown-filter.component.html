@@ -6,12 +6,12 @@
     <span class="mm-button-dropdown">
       <span class="fa fa-chevron-down"></span>
     </span>
-    <span class="mm-button-text">{{this.getLabel() | async}}</span>
+    <span class="mm-button-text">{{filterLabel | async}}</span>
   </a>
   <div role="menu" class="dropdown-menu mm-dropdown-menu" *dropdownMenu>
     <p class="actions">
-      <a (click)="selectAll()" class="btn btn-link select-all" translate>{{selectAllLabel || 'select all'}}</a>
-      <a (click)="clear()" class="btn btn-link reset" translate>{{clearLabel || 'clear'}}</a>
+      <a (click)="selectAll()" class="btn btn-link select-all">{{selectAllLabel || 'select all' | translate}}</a>
+      <a (click)="clear()" class="btn btn-link reset">{{clearLabel || 'clear' | translate}}</a>
     </p>
     <div class="loader" *ngIf="!items.length"></div>
     <ng-content select="ul"></ng-content>

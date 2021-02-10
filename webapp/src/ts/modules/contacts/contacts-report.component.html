@@ -6,7 +6,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingForm && contentError">
-    <div translate>{{ errorTranslationKey }}</div>
+    <div>{{ errorTranslationKey | translate}}</div>
   </div>
 
   <div class="col-sm-8 item-content material" [hidden]="loadingForm || contentError">

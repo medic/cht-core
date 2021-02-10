@@ -7,13 +7,13 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && !selectedReports?.length">
-    <div translate>No report selected</div>
+    <div>{{'No report selected' | translate }}</div>
   </div>
 
   <div id="reports-content" class="col-sm-8 item-content" *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
     <div class="selection-count" *ngIf="selectMode && selectedReports.length">
-      <span *ngIf="selectedReports.length === 1" translate>select.mode.count.singular</span>
+      <span *ngIf="selectedReports.length === 1">{{'select.mode.count.singular' | translate}}</span>
       <span *ngIf="selectedReports.length !== 1" translate [translateParams]="{ number: selectedReports?.length }">select.mode.count.plural</span>
     </div>
 
@@ -62,9 +62,9 @@
           <ng-container *ngIf="selection.formatted?.form">
             <li *ngFor="let field of (selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data)" class="indent-{{field.depth || 0}}">
               <label>
-                <span *ngIf="selection.formatted.content_type === 'xml'" translate>{{field.label}}</span>
+                <span *ngIf="selection.formatted.content_type === 'xml'">{{field.label | translate}}</span>
                 <span *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
-                <span class="fa fa-cogs" *ngIf="field.generated" translate title="{{'Generated report field' | translate }}"></span>
+                <span class="fa fa-cogs" *ngIf="field.generated" title="{{'Generated report field' | translate }}"></span>
               </label>
               <p *ngIf="!field.imagePath">
                 <span *ngIf="field.target && field.target.filter"><a (click)="search(field.target.filter)">{{field.value}}</a></span>
@@ -76,7 +76,7 @@
           </ng-container>
 
           <li *ngIf="selection.formatted?.errors?.length">
-            <label translate>Errors</label>
+            <label>{{'Errors' | translate}}</label>
             <ul>
               <li *ngFor="let error of selection.formatted.errors">
                 <p>{{error.message}}</p>
@@ -84,12 +84,12 @@
             </ul>
           </li>
           <li *ngIf="selection?.formatted?.sms_message?.message">
-            <label translate>selection.doc.content.raw</label>
             <p>{{selection.formatted.sms_message.message}}</p>
+            <label>{{'selection.doc.content.raw' | translate}}</label>
           </li>
           <li *ngIf="selection?.formatted?.tasks?.length">
-            <label *ngIf="selection.formatted.kujua_message" translate>tasks.0.messages.0.to</label>
-            <label *ngIf="!selection.formatted.kujua_message" translate>Automated Reply</label>
+            <label *ngIf="selection.formatted.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
+            <label *ngIf="!selection.formatted.kujua_message">{{'Automated Reply' | translate}}</label>
             <ul class="task-list">
               <li *ngFor="let task of selection.formatted.tasks">
                 <ul>
@@ -104,16 +104,16 @@
           </li>
         </ul>
         <div class="scheduled-tasks" *ngIf="selection?.formatted?.scheduled_tasks_by_group?.length">
-          <h2 translate>tasks</h2>
+          <h2>{{'tasks' | translate}}</h2>
           <ul>
             <li *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
               <ng-container *ngIf="{ loading: false } as localContext">
                 <h3>{{group.name}}</h3>
                 <p>
                 <span *ngIf="!localContext.loading">
-                  <a class="btn btn-link" (click)="edit(selection, group)" translate>Edit</a>
-                  <a class="btn btn-link" (click)="mute(selection, group, localContext)" *ngIf="canMute(group)" translate>Mute</a>
-                  <a class="btn btn-link" (click)="schedule(selection, group, localContext)" *ngIf="canSchedule(group)" translate>Schedule</a>
+                  <a class="btn btn-link" (click)="edit(selection, group)">{{'Edit' | translate}}</a>
+                  <a class="btn btn-link" (click)="mute(selection, group, localContext)" *ngIf="canMute(group)">{{'Mute' | translate}}</a>
+                  <a class="btn btn-link" (click)="schedule(selection, group, localContext)" *ngIf="canSchedule(group)">{{'Schedule' | translate}}</a>
                 </span>
                   <span class="inline loader" *ngIf="localContext.loading"></span>
                 </p>
@@ -123,8 +123,8 @@
                       <li *ngFor="let message of task?.messages">
                         <p>{{message.message}}</p>
                         <div class="message-error" *ngIf="message.error">
-                          <span translate>messages.errors.invalid</span>
-                          <span translate>{{message.error}}</span>
+                          <span>{{'messages.errors.invalid' | translate}}</span>
+                          <span>{{message.error | translate}}</span>
                         </div>
                       </li>
                     </ul>

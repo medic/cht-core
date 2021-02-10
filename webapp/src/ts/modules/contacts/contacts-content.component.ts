@@ -11,7 +11,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
-import { isMobile } from '@mm-providers/responsive.provider';
+import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -38,14 +38,15 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   contactsLoadingSummary;
   forms;
   loadingSelectedContactReports;
-  reportStartDate;
   reportsTimeWindowMonths;
-  taskEndDate;
   tasksTimeWindowWeeks;
   userSettings;
   settings;
   childTypesBySelectedContact = [];
   canDeleteContact = false; // this disables the "Delete" button until children load
+
+  filteredTasks = [];
+  filteredReports = [];
 
   constructor(
     private store: Store,
@@ -61,7 +62,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private sessionService: SessionService,
     private userSettingsService: UserSettingsService,
-  ){
+    private responsiveService: ResponsiveService,
+  ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
   }
@@ -70,20 +72,25 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeToRoute();
     this.subscribeToChanges();
-    this.setReportsTimeWindowMonths(3);
-    this.setTasksTimeWindowWeeks(1);
     this.getUserFacility();
+    this.resetTaskAndReportsFilter();
+  }
+
+  private resetTaskAndReportsFilter() {
+    this.filterReports(3);
+    this.filterTasks(1);
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    this.contactsActions.selectContact(null);
   }
 
   private getUserFacility() {
     this.store.select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityId) => {
-        if (userFacilityId && !this.route.snapshot.params.id && !isMobile()) {
+        if (userFacilityId && !this.route.snapshot.params.id && !this.responsiveService.isMobile()) {
           this.contactsActions.selectContact(userFacilityId);
         }
       });
@@ -103,9 +110,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       loadingSelectedContactReports,
       contactsLoadingSummary,
     ]) => {
-      if (this.selectedContact !== selectedContact) {
-        this.setReportsTimeWindowMonths(3);
-        this.setTasksTimeWindowWeeks(1);
+      if (this.selectedContact?._id !== selectedContact?._id) {
+        // reset view when selected contact changes
+        this.resetTaskAndReportsFilter();
       }
       this.selectedContact = selectedContact;
       this.loadingContent = loadingContent;
@@ -138,6 +145,20 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         this.setRightActionBar();
       });
     this.subscription.add(contactDocSubscription);
+
+    const contactReportsSubscription = this.store
+      .select(Selectors.getSelectedContactReports)
+      .subscribe((reports) => {
+        this.filterReports(this.reportsTimeWindowMonths, reports);
+      });
+    this.subscription.add(contactReportsSubscription);
+
+    const contactTasksSubscription = this.store
+      .select(Selectors.getSelectedContactTasks)
+      .subscribe((tasks) => {
+        this.filterTasks(this.tasksTimeWindowWeeks, tasks);
+      });
+    this.subscription.add(contactTasksSubscription);
   }
 
   private subscribeToRoute() {
@@ -168,7 +189,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
         if (matchedContact && contactDeleted) {
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
-          return this.router.navigate([`/contacts/${parentId}`]);
+          return this.router.navigate(['/contacts', parentId]);
         }
         return this.contactsActions.selectContact(this.selectedContact._id, { silent: true });
       }
@@ -176,27 +197,20 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(changesSubscription);
   }
 
-  setReportsTimeWindowMonths(months?) {
+  filterReports(months?, reports?) {
     this.reportsTimeWindowMonths = months;
-    this.reportStartDate = months ? moment().subtract(months, 'months') : null;
+    const reportStartDate = months ? moment().subtract(months, 'months') : null;
+
+    const allReports = reports || this.selectedContact?.reports || [];
+    this.filteredReports = allReports
+      .filter((report) => !reportStartDate || reportStartDate.isBefore(report.reported_date));
   }
 
-  filteredReports() {
-    const reports = this.selectedContact?.reports;
-    if (reports) {
-      return reports.filter((report) => !this.reportStartDate || this.reportStartDate.isBefore(report.reported_date));
-    }
-    return [];
-  }
-
-  filteredTasks() {
-    const tasks = this.selectedContact.tasks;
-    return tasks.filter((task) => !this.taskEndDate || task.dueDate <= this.taskEndDate);
-  }
-
-  setTasksTimeWindowWeeks(weeks?) {
+  filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
-    this.taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
+    const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
+    const allTasks = tasks || this.selectedContact?.tasks || [];
+    this.filteredTasks = allTasks.filter((task) => !taskEndDate || task.dueDate <= taskEndDate);
   }
 
   private async setRightActionBar() {

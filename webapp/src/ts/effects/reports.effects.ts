@@ -106,7 +106,7 @@ export class ReportsEffects {
         }
 
         this.reportActions.setRightActionBar();
-        return of(this.globalActions.settingSelected(refreshing));
+        return of(this.globalActions.settingSelected());
       }),
     );
   }, { dispatch: false });
@@ -238,7 +238,7 @@ export class ReportsEffects {
               };
             });
             this.reportActions.setSelectedReports(selected);
-            this.globalActions.settingSelected(true);
+            this.globalActions.settingSelected();
             this.reportActions.setRightActionBar();
           })
           .catch(err => {

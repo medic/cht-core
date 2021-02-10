@@ -11,7 +11,7 @@ import sinon from 'sinon';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import {
   MultiDropdownFilterComponent
-} from '@mm-components/filters/multi-dropdown-filter/mullti-dropdown-filter.component';
+} from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 

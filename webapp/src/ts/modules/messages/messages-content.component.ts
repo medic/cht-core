@@ -2,7 +2,7 @@ import {
   AfterViewChecked,
   AfterViewInit,
   ChangeDetectorRef,
-  Component,
+  Component, NgZone,
   OnDestroy,
   OnInit
 } from '@angular/core';
@@ -37,19 +37,20 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;
   private globalActions: GlobalActions;
-  messagesActions: MessagesActions;
+  private messagesActions: MessagesActions;
   loadingContent;
   loadingMoreContent = false;
   selectedConversation;
   firstUnread;
   send = { message: '' };
-  urlParameters = { type: '', id: '' };
   subscriptions: Subscription = new Subscription();
   textAreaFocused = false;
-  hasToScroll = false;
   isAddRecipientBtnActive = false;
   allLoaded = false;
-  checkScrollFnDef;
+
+  private urlParameters = { type: '', id: '' };
+  private hasToScroll = false;
+  private checkScrollFnDef;
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -62,6 +63,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     private markReadService: MarkReadService,
     private sendMessageService: SendMessageService,
     private modalService: ModalService,
+    private ngZone:NgZone,
   ) { }
 
   ngOnInit(): void {
@@ -95,15 +97,17 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
     // Ensuring that any Bootstrap tooltip is removed when loading new conversation.
     $('.tooltip').remove();
-    $('body')
-      .on('focus', '#message-footer textarea', () => {
-        this.textAreaFocused = true;
-      })
-      .on('blur', '#message-footer textarea', () => {
-        if (!this.isAddRecipientBtnActive) {
-          this.textAreaFocused = false;
-        }
-      });
+    this.ngZone.runOutsideAngular(() => {
+      $('body')
+        .on('focus', '#message-footer textarea', () => {
+          this.ngZone.run(() => this.textAreaFocused = true);
+        })
+        .on('blur', '#message-footer textarea', () => {
+          if (!this.isAddRecipientBtnActive) {
+            this.ngZone.run(() => this.textAreaFocused = false);
+          }
+        });
+    });
   }
 
   ngAfterViewChecked(): void {
@@ -111,8 +115,9 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     // Scrolling only when last message is rendered.
     if (this.hasToScroll && !this.loadingContent && lastMessage.length) {
       // ToDo: Determine when the view has finished rendering and scroll to unread messages.
-      //  To avoid timeouts (performance costly)
-      setTimeout(() => this.scrollToUnread());
+      this.ngZone.runOutsideAngular(() => {
+        setTimeout(() => this.scrollToUnread());
+      });
     }
   }
 
@@ -128,7 +133,9 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
   private checkScroll(elem) {
     if (elem && elem.scrollTop() === 0 && !this.allLoaded) {
-      this.updateConversation({ skip: true });
+      this.ngZone.run(() => {
+        this.updateConversation({ skip: true });
+      });
     }
   }
 
@@ -281,18 +288,20 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         const first = $('.item-content .body #message-content ul > li').filter(':first');
         this.markConversationReadIfNeeded();
         // ToDo: determine when view had finished rendering to the scrolling can be calculated correctly.
-        setTimeout(() => {
-          let scroll:any = false;
-          if (options.skip) {
-            const spinnerHeight = 102;
-            scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
-          } else if (first.length && newMessageFromUser) {
-            scroll = $('.message-content-wrapper')[0].scrollHeight;
-          }
+        this.ngZone.runOutsideAngular(() => {
+          setTimeout(() => {
+            let scroll:any = false;
+            if (options.skip) {
+              const spinnerHeight = 102;
+              scroll = $('.message-content-wrapper li')[conversation.length].offsetTop - spinnerHeight;
+            } else if (first.length && newMessageFromUser) {
+              scroll = $('.message-content-wrapper')[0].scrollHeight;
+            }
 
-          if (scroll) {
-            $('.message-content-wrapper').scrollTop(scroll);
-          }
+            if (scroll) {
+              $('.message-content-wrapper').scrollTop(scroll);
+            }
+          });
         });
       })
       .catch(err => console.error('Error fetching contact conversation', err));

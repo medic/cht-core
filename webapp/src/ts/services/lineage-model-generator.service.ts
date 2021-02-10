@@ -1,5 +1,5 @@
 import * as LineageFactory from '@medic/lineage';
-import {Injectable} from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
 
@@ -8,7 +8,10 @@ import { DbService } from '@mm-services/db.service';
 })
 export class LineageModelGeneratorService {
   lineageLib;
-  constructor(private dbService:DbService) {
+  constructor(
+    private dbService:DbService,
+    private ngZone:NgZone,
+  ) {
     this.lineageLib = LineageFactory(Promise, this.dbService.get());
   }
 
@@ -33,12 +36,16 @@ export class LineageModelGeneratorService {
       });
   }
 
+  contact(id, options?) {
+    return this.ngZone.runOutsideAngular(() => this._contact(id, options));
+  }
+
   /**
    * Fetch a contact and its lineage by the given uuid. Returns a
    * contact model, or if merge is true the doc with the
    * lineage inline.
    */
-  contact(id, { merge=false }={}) {
+  private _contact(id, { merge=false }={}) {
     return this
       .get(id)
       .then((docs) => this.hydrate(docs))
@@ -69,11 +76,14 @@ export class LineageModelGeneratorService {
       });
   }
 
+  report(id) {
+    return this.ngZone.runOutsideAngular(() => this._report(id));
+  }
   /**
    * Fetch a contact and its lineage by the given uuid. Returns a
    * report model.
    */
-  report(id) {
+  private _report(id) {
     return this.lineageLib
       .fetchHydratedDoc(id, { throwWhenMissingLineage: true })
       .then((hydrated) => {
@@ -86,6 +96,10 @@ export class LineageModelGeneratorService {
   }
 
   reportSubjects(ids) {
+    return this.ngZone.runOutsideAngular(() => this._reportSubjects(ids));
+  }
+
+  private _reportSubjects(ids) {
     return this.lineageLib
       .fetchLineageByIds(ids)
       .then((docsList) => {

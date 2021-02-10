@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -15,6 +15,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { EnketoService } from '@mm-services/enketo.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 
 @Component({
@@ -34,6 +35,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     private translateService:TranslateService,
     private router:Router,
     private route:ActivatedRoute,
+    private telemetryService:TelemetryService,
+    private ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(this.store);
     this.reportsActions = new ReportsActions(this.store);
@@ -49,6 +52,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   form;
   errorTranslationKey;
   cancelCallback;
+  selectMode;
 
   private geoHandle:any;
   private globalActions;
@@ -66,6 +70,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getCancelCallback),
+      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       loadingContent,
       selectedReports,
@@ -73,6 +78,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       enketoSaving,
       enketoError,
       cancelCallback,
+      selectMode,
     ]) => {
       this.selectedReports = selectedReports;
       this.loadingContent = loadingContent;
@@ -81,6 +87,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
       this.cancelCallback = cancelCallback;
+      this.selectMode = selectMode;
     });
     this.subscription.add(reduxSubscription);
   }
@@ -132,6 +139,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private loadForm() {
+    return this.ngZone.runOutsideAngular(() => this._loadForm());
+  }
+
+  private _loadForm() {
     return this
       .getSelected()
       .then((model:any) => {
@@ -147,66 +158,72 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
           .then(([ reportContent, form ]) => {
             this.globalActions.setEnketoEditedStatus(false);
 
-            return this.enketoService
-              .render(
-                '#report-form',
-                form,
-                reportContent,
-                this.markFormEdited.bind(this),
-                this.resetFormError.bind(this),
-              )
-              .then((form) => {
-                this.form = form;
-                this.globalActions.setLoadingContent(false);
-              })
-              .then(() => {
-                if (!model.doc || !model.doc._id) {
-                  return;
-                }
-
-                return Promise
-                  .all($('#report-form input[type=file]')
-                    .map((idx, element) => {
-                      const $element = $(element);
-                      const attachmentName = 'user-file' + $element.attr('name');
-
-                      return this.dbService
-                        .get()
-                        .getAttachment(model.doc._id, attachmentName)
-                        .then(blob => this.fileReaderService.base64(blob))
-                        .then((base64) => {
-                          const $picker = $element
-                            .closest('.question')
-                            .find('.widget.file-picker');
-
-                          $picker.find('.file-feedback').empty();
-
-                          const $preview = $picker.find('.file-preview');
-                          $preview.empty();
-                          $preview.append('<img src="data:' + base64 + '">');
-                        });
-                    }));
-              })
-              .then(() => {
-                this.telemetryData.postRender = Date.now();
-                this.telemetryData.action = model.doc ? 'edit' : 'add';
-                this.telemetryData.form = model.formInternalId;
-                // todo migrate this when Telemetry is migrated
-                /*
-                 Telemetry.record(
-                 `enketo:reports:${telemetryData.form}:${telemetryData.action}:render`,
-                 telemetryData.postRender - telemetryData.preRender);
-                 */
-              })
-              .catch((err) => {
-                this.setError(err);
-                console.error('Error loading form.', err);
-              });
+            return this.ngZone.run(() => this.renderForm(form, reportContent, model));
           });
       })
       .catch((err) => {
         this.setError(err);
         console.error('Error setting selected doc', err);
+      });
+  }
+
+  private renderAttachmentPreviews(model) {
+    return Promise
+      .resolve()
+      .then(() => Promise
+        .all($('#report-form input[type=file]')
+          .map((idx, element) => {
+            const $element = $(element);
+            const attachmentName = 'user-file' + $element.attr('name');
+
+            return this.dbService
+              .get()
+              .getAttachment(model.doc._id, attachmentName)
+              .then(blob => this.fileReaderService.base64(blob))
+              .then((base64) => {
+                const $picker = $element
+                  .closest('.question')
+                  .find('.widget.file-picker');
+
+                $picker.find('.file-feedback').empty();
+
+                const $preview = $picker.find('.file-preview');
+                $preview.empty();
+                $preview.append('<img src="data:' + base64 + '">');
+              });
+          })));
+  }
+
+  private renderForm(form, reportContent, model) {
+    return this.enketoService
+      .render(
+        '#report-form',
+        form,
+        reportContent,
+        this.markFormEdited.bind(this),
+        this.resetFormError.bind(this),
+      )
+      .then((form) => {
+        this.form = form;
+        this.globalActions.setLoadingContent(false);
+        if (!model.doc || !model.doc._id) {
+          return;
+        }
+
+        return this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(model));
+      })
+      .then(() => {
+        this.telemetryData.postRender = Date.now();
+        this.telemetryData.action = model.doc ? 'edit' : 'add';
+        this.telemetryData.form = model.formInternalId;
+
+        this.telemetryService.record(
+          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
+          this.telemetryData.postRender - this.telemetryData.preRender);
+      })
+      .catch((err) => {
+        this.setError(err);
+        console.error('Error loading form.', err);
       });
   }
 
@@ -218,6 +235,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    this.reportsActions.setSelectedReports([]);
     this.geoHandle && this.geoHandle.cancel();
     // old code checked whether the component is reused before unloading the form
     // this is because AngularJS created the new "controller" before destroying the old one
@@ -270,11 +288,9 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.telemetryData.preSave = Date.now();
-    // todo migrate this when Telemetry is migrated
-    /*
-     Telemetry.record(
-     `enketo:reports:${telemetryData.form}:${telemetryData.action}:user_edit_time`,
-     telemetryData.preSave - telemetryData.postRender);*/
+    this.telemetryService.record(
+      `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
+      this.telemetryData.preSave - this.telemetryData.postRender);
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -291,14 +307,11 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         this.globalActions.setSnackbarContent(this.translateService.instant(snackBarTranslationKey));
         this.globalActions.setEnketoEditedStatus(false);
         this.router.navigate(['/reports', docs[0]._id]);
-      })
-      .then(() => {
+
         this.telemetryData.postSave = Date.now();
-        // todo migrate this when Telemetry is migrated
-        /*
-         Telemetry.record(
-         `enketo:reports:${telemetryData.form}:${telemetryData.action}:save`,
-         telemetryData.postSave - telemetryData.preSave);*/
+        this.telemetryService.record(
+          `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:save`,
+          this.telemetryData.postSave - this.telemetryData.preSave);
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);
