@@ -21,7 +21,7 @@ let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const requestNative = async (options, { debug } = {}) => {
+const requestNative = (options, { debug } = {}) => {
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
