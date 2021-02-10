@@ -237,10 +237,11 @@ module.exports = {
   scheduledTaskRecipientByIndex: (index) => {
     return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .recipient'));
   },
+
   waitForReportToAppearNative: async (numOfReports = 1) => {
     await browser.refresh();
     while (await module.exports.allReports().count < numOfReports) {
-      await browser.sleep(100);
+      browser.sleep(100);
     }
   },
 };

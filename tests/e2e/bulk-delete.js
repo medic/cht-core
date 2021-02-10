@@ -63,10 +63,11 @@ describe('Bulk delete reports', () => {
     });
   });
 
-  afterEach(async () => await utils.afterEachNative());
+  afterEach(async () => { await utils.afterEachNative(); });
 
   it('reports', async () => {
     await commonElements.goToReportsNative();
+    // await reports.waitForReportToAppearNative();
     await reports.startSelectModeNative(savedUuids);
     await reports.stopSelectModeNative(savedUuids);
     // start select mode again
