@@ -4,8 +4,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { expect } from 'chai';
 import sinon from 'sinon';
+import * as chai from 'chai';
+import * as chaiExclude from 'chai-exclude';
+//@ts-ignore
+chai.use(chaiExclude);
+import { expect } from 'chai';
 
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import {
@@ -126,7 +130,7 @@ describe('Facility Filter Component', () => {
 
       placeHierarchyService.get.resolves(facilities);
       await component.loadFacilities();
-      expect(component.facilities).to.deep.equal([
+      expect(component.facilities).excludingEvery('label').to.deep.equal([
         {
           _id: '3',
           doc: { name: 'alpha' },
@@ -170,7 +174,7 @@ describe('Facility Filter Component', () => {
         },
       ]);
 
-      expect(component.flattenedFacilities).to.have.deep.members([
+      expect(component.flattenedFacilities).excludingEvery('label').to.have.deep.members([
         {
           _id: '3',
           doc: { name: 'alpha' },
