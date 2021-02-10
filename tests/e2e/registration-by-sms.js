@@ -7,8 +7,7 @@ const reportsPo = require('../page-objects/reports/reports.po');
 const dateFormatString = 'ddd, MMM Do, YYYY';
 
 const computeExpectedDate = async () => {
-  const reportedDateOptions = await element(by.css('#reports-content .item-summary .relative-date-content'))
-    .getAttribute('data-date-options');
+  const reportedDateOptions = await reportsPo.relativeDate().getAttribute('data-date-options');
   const reportedDate = JSON.parse(reportedDateOptions);
   const start = moment(reportedDate.date).startOf('day').subtract(12, 'weeks');
   const expectedDate = start.add(40, 'weeks');
@@ -237,7 +236,7 @@ describe('registration transition', () => {
         }]
       };
       await utils.updateSettingsNative(CONFIG);
-      DOCS.map(async doc => { await utils.saveDocNative(doc); });
+      await Promise.all(DOCS.map(async doc => await utils.saveDocNative(doc)));
       await submit(body);
       await sUtils.waitForSentinelNative();
     });
@@ -247,7 +246,7 @@ describe('registration transition', () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     });
 
-    afterEach(async () => { await utils.afterEachNative(); });
+    afterEach(async () => await utils.afterEachNative());
     afterAll(function() {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });

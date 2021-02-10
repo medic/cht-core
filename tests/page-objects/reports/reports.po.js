@@ -16,6 +16,7 @@ const reportsByUUID = (uuid) => {
 const reportListID = '#reports-list';
 
 module.exports = {
+  relativeDate: () => element(by.css('#reports-content .item-summary .relative-date-content')),
   firstForm,
   submitReport,
   allReports: () => element.all(by.css(`${reportListID} li`)),
