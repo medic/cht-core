@@ -9,9 +9,11 @@
   },
   "plugins": [
     "no-only-tests",
-    "jasmine"
+    "jasmine",
+    "async"
   ],
   "rules": {
+    "async/missing-await-in-async-fn": 1,
     "no-only-tests/no-only-tests": "error",
     "jasmine/no-focused-tests": "error",
     "no-console": "off",

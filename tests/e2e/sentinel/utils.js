@@ -49,7 +49,7 @@ const waitForSeq = (metadataId, docIds) => {
     });
 };
 
-const waitForSeqNative = async (metadataId, docIds) => {
+const waitForSeqNative = (metadataId, docIds) => {
   return requestOnSentinelTestDbNative(metadataId)
     .catch(err => {
       if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
