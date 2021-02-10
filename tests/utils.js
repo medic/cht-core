@@ -351,7 +351,7 @@ const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
-    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000, 'refresh to get settings failed')
     .then(() => {
       dialog.click();
     })
@@ -369,7 +369,7 @@ const refreshToGetNewSettings = () => {
         protractor.ExpectedConditions.elementToBeClickable(
           element(by.id('contacts-tab'))
         ),
-        10000
+        10000, 'Second refresh to get settings'
       );
     });
 };
