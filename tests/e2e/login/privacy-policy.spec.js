@@ -75,13 +75,12 @@ describe('Privacy policy', () => {
   };
 
   const closeTourModal = async () => {
-    await helper.waitElementToBeVisible(element(by.css('.modal-dialog .modal-footer .btn')));
-    element(by.css('.modal-dialog .modal-footer .btn')).click();
+    await helper.waitElementToBeVisibleNative(element(by.css('.modal-dialog .modal-footer .btn')));
+    await element(by.css('.modal-dialog .modal-footer .btn')).click();
   };
 
   beforeAll(async () => {
-    await utils.saveDocNative(privacyPolicies);
-    await utils.saveDocNative(PARENT_PLACE);
+    await utils.saveDocsNative([privacyPolicies, PARENT_PLACE]);
   });
 
   afterEach(async () => {
@@ -101,37 +100,41 @@ describe('Privacy policy', () => {
 
     it('should show the correct privacy policy on login', async () => {
       await utils.createUsersNative([onlineUser]);
+
+      // After first login, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('online', password);
-
       await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
-      let content = await helper.getTextFromElement(element(by.css('#privacy-policy-wrapper .html-content')));
+      let content = await helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
       expect(content).toEqual('English Privacy Policy\nMore markup');
 
       const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
-      acceptButton.click();
+      await acceptButton.click();
       await commonElements.calmNative();
-      await utils.resetBrowser();
-      // no privacy policy on next load
+      await utils.resetBrowserNative();
+      // After accepting, no privacy policy on next load
       await commonElements.calmNative();
       await closeTourModal();
       await helper.handleUpdateModalNative();
 
-      browser.get(utils.getBaseUrl() + 'privacy-policy');
+      // Check display when loading privacy policy page
+      await browser.get(utils.getBaseUrl() + 'privacy-policy');
       const privacyPolicyContainer = element(by.css('.privacy-policy.configuration'));
-      await helper.waitElementToBeVisible(privacyPolicyContainer);
-      content = await helper.getTextFromElement(privacyPolicyContainer);
+      await helper.waitElementToBeVisibleNative(privacyPolicyContainer);
+      content = await helper.getTextFromElementNative(privacyPolicyContainer);
       expect(content).toEqual('English Privacy Policy\nMore markup');
 
+      // No privacy policy on 2nd login
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('online', password);
-      await commonElements.calmNative(); // no privacy policy on 2nd login
+      await commonElements.calmNative();
 
+      // After login in french, check that privacy policy was prompted to user again
       await commonElements.goToLoginPageNative();
-      await loginPage.loginNative('online', password, false, 'fr'); // login in french now
-      const contentFr = await helper.getTextFromElement(element(by.css('#privacy-policy-wrapper .html-content')));
+      await loginPage.loginNative('online', password, false, 'fr');
+      const contentFr = await helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
       expect(contentFr).toEqual('Politique de confidentialité en Francais\nPlus de markup');
-      element(by.css('#privacy-policy-wrapper .btn')).click();
+      await element(by.css('#privacy-policy-wrapper .btn')).click();
       await commonElements.calmNative();
     });
   });
@@ -142,53 +145,50 @@ describe('Privacy policy', () => {
     });
 
     it('should show the correct privacy policy on login', async () => {
-      await browser.wait(() => utils.createUsersNative([offlineUser]).then(() => true));
+      await utils.createUsersNative([offlineUser]);
+
+      // After first login in french, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('offline', password, false, 'fr');
-      expect(true).toEqual(true);
-
       await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
-      const content = helper.getTextFromElement(by.css('#privacy-policy-wrapper .html-content'));
-      expect(content).toEqual('Politique de confidentialitén Francais\nPlus de markup');
+      const content = await helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
+      expect(content).toEqual('Politique de confidentialité en Francais\nPlus de markup');
 
       const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
-      acceptButton.click();
+      await acceptButton.click();
       await commonElements.calmNative();
-      await utils.resetBrowser();
-      // no privacy policy on next load
+      await utils.resetBrowserNative();
+      // After accepting, no privacy policy on next load
       await commonElements.calmNative();
       await closeTourModal();
       await helper.handleUpdateModalNative();
-  /*
-      browser.get(utils.getBaseUrl() + 'privacy-policy');
+
+      // Check display when loading privacy policy page
+      await browser.get(utils.getBaseUrl() + 'privacy-policy');
       const privacyPolicyContainer = element(by.css('.privacy-policy.configuration'));
-      await helper.waitElementToBeVisible(privacyPolicyContainer);
-      const contentText = helper.getTextFromElement(privacyPolicyContainer);
+      await helper.waitElementToBeVisibleNative(privacyPolicyContainer);
+      const contentText = await helper.getTextFromElementNative(privacyPolicyContainer);
       expect(contentText).toEqual('Politique de confidentialité en Francais\nPlus de markup');
 
+      // Update privacy policies
+      const policiesDoc = await utils.getDocNative('privacy-policies');
       const updatePrivacyPolicyInFrench = 'Cette text est totalement different c`est fois!';
+      policiesDoc.privacy_policies.fr = 'new_attachment';
+      policiesDoc._attachments.new_attachment = {
+        content_type: 'text/html',
+        data: Buffer.from(updatePrivacyPolicyInFrench).toString('base64'),
+      };
+      await utils.saveDocNative(policiesDoc);
 
-      browser.wait(() => {
-        return utils
-          .getDoc('privacy-policies')
-          .then(doc => {
-            doc.privacy_policies.fr = 'new_attachment';
-            doc._attachments.new_attachment = {
-              content_type: 'text/html',
-              data: Buffer.from(updatePrivacyPolicyInFrench).toString('base64'),
-            };
+      await commonElements.syncNative();
+      await browser.driver.navigate().refresh();
 
-            return utils.saveDoc(doc);
-          })
-          .then(() => true);
-      });
-      commonElements.sync();
-      browser.driver.navigate().refresh();
-
-      const contentUpdated = element(by.css('#privacy-policy-wrapper .html-content')); // privacy policy updated
-      expect(helper.getTextFromElement(contentUpdated)).toEqual(updatePrivacyPolicyInFrench);
-      element(by.css('#privacy-policy-wrapper .btn')).click();
-      commonElements.calm();*/
+      // Privacy policy updated
+      const contentElement = element(by.css('#privacy-policy-wrapper .html-content'));
+      const contentUpdated = await helper.getTextFromElementNative(contentElement);
+      expect(contentUpdated).toEqual(updatePrivacyPolicyInFrench);
+      await element(by.css('#privacy-policy-wrapper .btn')).click();
+      await commonElements.calmNative();
     });
   });
 });

@@ -117,6 +117,26 @@ module.exports = {
       });
   },
 
+  getTextFromElementNative: async (element) => {
+    try {
+      await browser.wait(
+        EC.presenceOf(element),
+        12000,
+        `Element taking too long to appear in the DOM.Let us retry ${element.locator()}`
+      );
+      return await element.getText();
+
+    } catch (error) {
+      await browser.sleep(1000);
+      await browser.wait(
+        EC.visibilityOf(element),
+        12000,
+        `Element taking too long to appear in the DOM. Giving up! ${element.locator()}`
+      );
+      return await element.getText();
+    }
+  },
+
   getTextFromElements: elements => {
     const textFromElements = [];
     return browser
@@ -245,6 +265,14 @@ module.exports = {
   waitElementToBeVisible: (elm, timeout) => {
     timeout = timeout || 15000;
     return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
+  },
+
+  waitElementToBeVisibleNative: async (elm, timeout = 15000) => {
+    await browser.wait(
+      EC.visibilityOf(elm),
+      timeout,
+      `waitElementToBeVisible timed out looking for ${elm.locator()}`
+    );
   },
 
   waitElementToBeClickable: (elm, timeout) => {

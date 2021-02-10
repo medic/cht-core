@@ -916,6 +916,17 @@ module.exports = {
       });
   },
 
+  resetBrowserNative: async () => {
+    await browser.driver
+      .navigate()
+      .refresh();
+    await browser.wait(
+      () => element(by.css('#messages-tab')).isPresent(),
+      10000,
+      'Timed out waiting for browser to reset. Looking for element #messages-tab'
+    );
+  },
+
   countOf: count => {
     return c => {
       return c === count;

@@ -76,9 +76,15 @@ module.exports = {
   },
 
   sync: () => {
-    module.exports.openMenu();
+    module.exports.openMenuNative();
     openSubmenu('sync');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
+  },
+
+  syncNative: async () => {
+    await module.exports.openMenuNative();
+    await openSubmenuNative('sync');
+    await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
   checkUserSettings: () => {
@@ -195,6 +201,12 @@ module.exports = {
     helper.waitUntilReady(hamburgerMenuOptions);
   },
 
+  openMenuNative: async () => {
+    await helper.waitUntilReadyNative(messagesLink);
+    await helper.clickElementNative(hamburgerMenu);
+    await helper.waitUntilReadyNative(hamburgerMenuOptions);
+  },
+
   confirmDelete: async () => {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
@@ -207,4 +219,8 @@ module.exports = {
 
 function openSubmenu(menuName) {
   helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
+}
+
+async function openSubmenuNative(menuName) {
+  await helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
 }
