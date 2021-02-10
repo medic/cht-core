@@ -458,4 +458,66 @@ describe('DBSync service', () => {
       });
     });
   });
+
+  describe('replicateTo filter', () => {
+
+    let filterFunction;
+
+    beforeEach(() => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      userCtx.returns({ name: 'mobile', roles: ['district-manager'] });
+      localMedicDb.info.resolves({ update_seq: -99 });
+      from.returns({ on: recursiveOnFrom });
+      return service.sync().then(() => {
+        expect(to.callCount).to.equal(1);
+        filterFunction = to.args[0][1].filter;
+      });
+    });
+
+    it('does not replicate the ddoc', () => {
+      const actual = filterFunction({ _id: '_design/medic-client' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate any ddoc - #3268', () => {
+      const actual = filterFunction({ _id: '_design/sneaky-mcsneakface' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate the resources doc', () => {
+      const actual = filterFunction({ _id: 'resources' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate the service-worker-meta doc', () => {
+      const actual = filterFunction({ _id: 'service-worker-meta' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate forms', () => {
+      const actual = filterFunction({ _id: '1', type: 'form' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate translations', () => {
+      const actual = filterFunction({ _id: '1', type: 'translations' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does replicate reports', () => {
+      const actual = filterFunction({ _id: '1', type: 'data_record' });
+      expect(actual).to.equal(true);
+    });
+
+    it('does not replicate the branding doc', () => {
+      const actual = filterFunction({ _id: 'branding' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate the partners doc', () => {
+      const actual = filterFunction({ _id: 'partners' });
+      expect(actual).to.equal(false);
+    });
+  });
 });

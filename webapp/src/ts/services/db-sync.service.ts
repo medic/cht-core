@@ -8,10 +8,32 @@ import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
 
+const READ_ONLY_TYPES = ['form', 'translations'];
+const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
+const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+
+const readOnlyFilter = function(doc) {
+  // Never replicate "purged" documents upwards
+  const keys = Object.keys(doc);
+  if (keys.length === 4 &&
+    keys.includes('_id') &&
+    keys.includes('_rev') &&
+    keys.includes('_deleted') &&
+    keys.includes('purged')) {
+    return false;
+  }
+
+  // don't try to replicate read only docs back to the server
+  return (
+    READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
+    READ_ONLY_IDS.indexOf(doc._id) === -1 &&
+    doc._id.indexOf(DDOC_PREFIX) !== 0
+  );
+};
 
 @Injectable({
   providedIn: 'root'
@@ -26,21 +48,11 @@ export class DBSyncService {
     private ngZone:NgZone,
   ) {}
 
-  private loadFilterFn() {
-    if (this.DIRECTIONS[0].options.filter) {
-      return Promise.resolve();
-    }
-
-    return this.dbService.get().get('_design/medic-client').then(ddoc => {
-      this.DIRECTIONS[0].options.filter = new Function(`return ${ddoc.filters.db_sync}`)();
-    });
-  }
-
   private readonly DIRECTIONS = [
     {
       name: 'to',
       options: {
-        filter: undefined,
+        filter: readOnlyFilter,
         checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
@@ -56,7 +68,6 @@ export class DBSyncService {
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
   ];
-
   private inProgressSync;
   private knownOnlineState = true; // assume the user is online
   private syncIsRecent = false; // true when a replication has succeeded within one interval
@@ -128,9 +139,8 @@ export class DBSyncService {
     }
 
     if (!this.inProgressSync) {
-      this.inProgressSync = this
-        .loadFilterFn()
-        .then(() => Promise.all(this.DIRECTIONS.map(direction => this.replicateIfAllowed(direction))))
+      this.inProgressSync = Promise
+        .all(this.DIRECTIONS.map(direction => this.replicateIfAllowed(direction)))
         .then(errs => {
           return this.getCurrentSeq().then(currentSeq => {
             errs = errs.filter(err => err);
