@@ -40,6 +40,7 @@ module.exports = {
   },
 
   calmNative: async () => {
+    utils.deprecated('calm','calmNative');
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
@@ -82,6 +83,7 @@ module.exports = {
   },
 
   syncNative: async () => {
+    utils.deprecated('sync','syncNative');
     await module.exports.openMenuNative();
     await openSubmenuNative('sync');
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
@@ -114,6 +116,7 @@ module.exports = {
   },
 
   goToLoginPageNative: async () => {
+    utils.deprecated('goToLoginPage','goToLoginPageNative');
     await browser.manage().deleteAllCookies();
     await browser.driver.get(await utils.getLoginUrl());
     await browser.driver.get(await utils.getLoginUrl());
@@ -156,6 +159,7 @@ module.exports = {
   },
 
   goToReportsNative: async refresh => {
+    utils.deprecated('goToReports','goToReportsNative');
     await browser.get(utils.getBaseUrl() + 'reports/');
     await helper.waitElementToPresentNative(
       element(
@@ -202,6 +206,7 @@ module.exports = {
   },
 
   openMenuNative: async () => {
+    utils.deprecated('openMenu','openMenuNative');
     await helper.waitUntilReadyNative(messagesLink);
     await helper.clickElementNative(hamburgerMenu);
     await helper.waitUntilReadyNative(hamburgerMenuOptions);
@@ -222,5 +227,6 @@ function openSubmenu(menuName) {
 }
 
 async function openSubmenuNative(menuName) {
-  await helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
+  utils.deprecated('openSubmenu','openSubmenuNative');
+  await helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
 }

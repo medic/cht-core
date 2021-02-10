@@ -89,6 +89,26 @@ module.exports = {
       });
   },
 
+  findElementByTextAndClickNative: async (elements, expectedText) => {
+    utils.deprecated('findElementByTextAndClick','findElementByTextAndClickNative');
+    await browser.wait(
+      EC.presenceOf(elements),
+      12000,
+      'Element taking too long to appear in the DOM. Giving up!'
+    );
+
+    await elements.each(async (element) => {
+      await element.getText();
+      const text  = text.toLowerCase().trim();
+
+      if (!text.includes(expectedText)) {
+        return;
+      }
+
+      await element.click();
+    });
+  },
+
   getTextFromElement: element => {
     return browser
       .wait(
@@ -118,6 +138,7 @@ module.exports = {
   },
 
   getTextFromElementNative: async (element) => {
+    utils.deprecated('getTextFromElement','getTextFromElementNative');
     try {
       await browser.wait(
         EC.presenceOf(element),
@@ -268,6 +289,7 @@ module.exports = {
   },
 
   waitElementToBeVisibleNative: async (elm, timeout = 15000) => {
+    utils.deprecated('waitElementToBeVisible','waitElementToBeVisibleNative');
     await browser.wait(
       EC.visibilityOf(elm),
       timeout,
