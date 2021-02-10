@@ -906,6 +906,7 @@ module.exports = {
   revertDbNative,
 
   resetBrowser: () => {
+    deprecated('utils.resetBrowser', 'utils.resetBrowserNative');
     return browser.driver
       .navigate()
       .refresh()
