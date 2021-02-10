@@ -5,18 +5,19 @@ const loginPage = require('../../page-objects/login/login.po.js');
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
+const uuid = require('uuid/v4');
 
 /* global window */
 
 describe('db-sync-filter', () => {
-  const restrictedUserName = 'e2e_restricted';
-  const restrictedPass = 'e2e_restricted';
-  const restrictedFacilityId = 'restriced-facility';
-  const restrictedContactId = 'restricted-contact';
-  const patientId = 'e2e-patient';
-  const report1 = 'report1';
-  const report2 = 'report2';
-  const report3 = 'report3';
+  const restrictedUserName = uuid();
+  const restrictedPass = uuid();
+  const restrictedFacilityId = uuid();
+  const restrictedContactId = uuid();
+  const patientId = uuid();
+  const report1 = uuid();
+  const report2 = uuid();
+  const report3 = uuid();
   const restrictedUser = {
     _id: `org.couchdb.user:${restrictedUserName}`,
     type: 'user',

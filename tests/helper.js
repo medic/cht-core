@@ -47,8 +47,6 @@ module.exports = {
     await handleUpdateModalNative();
     try {
       const msg = `First attempt to click failed. Element is ${element.locator()}`;
-      console.log('waiting to be clickable');
-      console.log(element);
       await browser.wait(EC.elementToBeClickable(element),12000, msg);
       await element.click();
     } catch (err) {
