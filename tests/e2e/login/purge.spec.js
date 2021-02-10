@@ -250,7 +250,6 @@ describe('Purging on login', () => {
     expect(await browser.isElementPresent(reports.reportByUUID(badFormId))).toBeFalse;
 
     let result = await getPurgeLog();
-    console.log(result);
     // purge ran but after initial replication, nothing to purge
     chai.expect(result._rev).to.equal('0-1');
     chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
@@ -264,7 +263,7 @@ describe('Purging on login', () => {
     const purgeDate = result.date;
 
     await utils.resetBrowser();
-    await commonElements.calm();
+    commonElements.calm();
     await browser.waitForAngular();
     result = await getPurgeLog();
 
