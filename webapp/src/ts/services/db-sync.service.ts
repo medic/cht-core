@@ -26,11 +26,21 @@ export class DBSyncService {
     private ngZone:NgZone,
   ) {}
 
+  private loadFilterFn() {
+    if (this.DIRECTIONS[0].options.filter) {
+      return Promise.resolve();
+    }
+
+    return this.dbService.get().get('_design/medic-client').then(ddoc => {
+      this.DIRECTIONS[0].options.filter = new Function(`return ${ddoc.filters.db_sync}`)();
+    });
+  }
+
   private readonly DIRECTIONS = [
     {
       name: 'to',
       options: {
-        filter: 'medic-client/db_sync',
+        filter: undefined,
         checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
@@ -46,6 +56,7 @@ export class DBSyncService {
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
   ];
+
   private inProgressSync;
   private knownOnlineState = true; // assume the user is online
   private syncIsRecent = false; // true when a replication has succeeded within one interval
@@ -117,8 +128,9 @@ export class DBSyncService {
     }
 
     if (!this.inProgressSync) {
-      this.inProgressSync = Promise
-        .all(this.DIRECTIONS.map(direction => this.replicateIfAllowed(direction)))
+      this.inProgressSync = this
+        .loadFilterFn()
+        .then(() => Promise.all(this.DIRECTIONS.map(direction => this.replicateIfAllowed(direction))))
         .then(errs => {
           return this.getCurrentSeq().then(currentSeq => {
             errs = errs.filter(err => err);

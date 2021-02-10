@@ -47,6 +47,8 @@ module.exports = {
     await handleUpdateModalNative();
     try {
       const msg = `First attempt to click failed. Element is ${element.locator()}`;
+      console.log('waiting to be clickable');
+      console.log(element);
       await browser.wait(EC.elementToBeClickable(element),12000, msg);
       await element.click();
     } catch (err) {
@@ -55,7 +57,7 @@ module.exports = {
       const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
       await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
       await element.click();
-    } 
+    }
   },
 
   /**
@@ -301,6 +303,11 @@ module.exports = {
   waitUntilReadyNative: elm => {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
+
+  isDisplayed: elm => {
+    return elm.isDisplayed();
+  },
+
   handleUpdateModal,
   handleUpdateModalNative,
 };

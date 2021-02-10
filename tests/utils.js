@@ -47,13 +47,9 @@ const requestNative = (options, { debug } = {}) => {
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  return new Promise(function(resolve,reject){
-    rpn(options)
-      .then((resp) => resolve(resp))
-      .catch(err => {
-        err.responseBody = err.response && err.response.body;
-        reject(err);
-      });
+  return rpn(options).catch(err => {
+    err.responseBody = err.response && err.response.body;
+    throw err;
   });
 };
 
@@ -473,10 +469,10 @@ const deleteUsersNative = async (users, meta = false) => {
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
-  
+
   await  requestNative({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } });
   await  requestNative({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } });
-  
+
 
   if (!meta) {
     return;
@@ -643,6 +639,14 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
+  requestOnMedicDbNative: (options, debug ) => {
+    if (typeof options === 'string') {
+      options = { path: options };
+    }
+    options.path = `/medic${options.path || ''}`;
+    return requestNative(options, { debug: debug });
+  },
+
   saveDoc: doc => {
     return module.exports.requestOnTestDb({
       path: '/', // so audit picks this up
@@ -726,7 +730,7 @@ module.exports = {
       .then(response => response.rows.map(row => row.doc));
   },
 
-  getDocsNative: async ids => {
+  getDocsNative: async (ids, fullResponse = false) => {
     const response = await module.exports
       .requestOnTestDbNative({
         path: `/_all_docs?include_docs=true`,
@@ -734,7 +738,7 @@ module.exports = {
         body: { keys: ids || []},
         headers: { 'content-type': 'application/json' },
       });
-    return response.rows.map(row => row.doc);
+    return fullResponse ? response :  response.rows.map(row => row.doc);
   },
 
   deleteDoc: id => {
@@ -797,7 +801,7 @@ module.exports = {
       }
     });
   },
-  
+
   updateSettingsNative: async (updates, ignoreRefresh = false) => {
     await updateSettingsNative(updates);
     if (!ignoreRefresh) {
@@ -817,7 +821,7 @@ module.exports = {
         return refreshToGetNewSettings();
       }
     }),
-  
+
   revertSettingsNative: async ignoreRefresh => {
     await revertSettingsNative();
     if (!ignoreRefresh) {
@@ -905,10 +909,10 @@ module.exports = {
   resetBrowserNative: async () => {
     await browser.driver.navigate().refresh();
     return browser.wait(() => {
-      return element(by.css('#messages-tab')).isPresent();}, 
+      return element(by.css('#messages-tab')).isPresent();},
     10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
   },
-  
+
   countOf: count => {
     return c => {
       return c === count;

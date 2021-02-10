@@ -7,8 +7,8 @@ const genericSubmitButton = element(by.css('.btn.btn-primary'));
 const genericCancelBtn = element(by.css('.modal .btn.cancel'));
 const messagesLink = element(by.id('messages-tab'));
 const analyticsLink = element(by.id('analytics-tab'));
-const hamburgerMenu = element(by.css('.dropdown.options>a'));
-const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li:not(.hidden)'));
+const hamburgerMenu = element(by.id('header-dropdown-link'));
+const hamburgerMenuOptions = element.all(by.css('#header-dropdown>li:not(.hidden)'));
 const logoutButton = $('[ng-click=logout]');
 
 // Configuration wizard
@@ -84,6 +84,15 @@ module.exports = {
   syncNative: async () => {
     await module.exports.openMenuNative();
     await openSubmenu('sync');
+    await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
+  },
+
+  waitForSyncNative: async () => {
+    const menuOptions = hamburgerMenuOptions;
+    const menuAlreadyOpen = menuOptions.length && menuOptions.first() && await helper.isDisplayed(menuOptions.first());
+    if (!menuAlreadyOpen) {
+      await hamburgerMenu.click();
+    }
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
@@ -205,7 +214,7 @@ module.exports = {
   openMenu: () => {
     helper.waitUntilReady(messagesLink);
     helper.clickElement(hamburgerMenu);
-    return helper.waitUntilReady(hamburgerMenuOptions);
+    return helper.waitUntilReady(hamburgerMenuOptions.first());
   },
 
   openMenuNative: async () => {
@@ -218,7 +227,7 @@ module.exports = {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
   },
-  
+
   expectDisplayDate:() => {
     expect(displayTime.isPresent()).toBeTruthy();
   },
