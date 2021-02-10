@@ -20,7 +20,7 @@ describe('Submit Delivery Report', () => {
   afterAll(async () => { await utils.afterEachNative(); });
 
   it('open delivery form', async () => {
-    await common.goToReports();
+    await common.goToReportsNative();
     await genericForm.selectFormNative('D');
     //select name
     await deliveryReport.selectPatientName('jack');

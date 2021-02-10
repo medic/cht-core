@@ -114,8 +114,8 @@ describe('Submit Enketo form', () => {
 
     // submit form
 
-    await helper.waitUntilReady(genericForm.submitButton);
-    await genericForm.submitButton.click();
+    await helper.waitUntilReadyNative(genericForm.submitButton);
+    await helper.clickElementNative(genericForm.submitButton);
     await helper.waitElementToPresent(genericForm.submittedName);
     
     // check the submitted name
