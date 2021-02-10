@@ -208,7 +208,7 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 ## End to End tests
 
 The end to end UI tests leverage the [protractor](https://www.protractortest.org/#/) framework. They are located in the 
-[tests](tests) directory. As of right now there are two states with control flow and without control flow. The former handles async implicitly but is being removed. The config file is located at `tests/conf.js`. The disabled state requires you to manage promises. We are using async/await syntax to manage these. The config file is located at`tests/conf-disabled.js`. The dual state is temporary and `conf-disabled` with async/await will be the normal.  
+[tests](tests) directory. As of right now there are two states with control flow and without control flow. The former handles async implicitly but is being removed. The config file is located at `tests/conf.js`. With out control flow, this requires you to manage promises. We are using async/await syntax to handle this change. The config file is located at`tests/conf-disabled.js`. The dual state is temporary and `conf-disabled` with async/await will be the normal.  
 
 To run the tests, first build the app with `grunt` command. Then to run with control flow use `grunt e2e`. To run the tests without control flow use `grunt e2e-disabled`. In both cases the grunt command will start couchdb in docker, download the chrome driver, start webdriver, start api, start sentinel, and execute tests.  
 
