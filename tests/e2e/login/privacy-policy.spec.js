@@ -150,10 +150,10 @@ describe('Privacy policy', () => {
       // After first login in french, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('offline', password, false, 'fr');
-      await browser.sleep(1000); // overriding default language.
       await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
-      const content = await helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
-      expect(content).toEqual('Politique de confidentialité en Francais\nPlus de markup');
+      const content = element(by.css('#privacy-policy-wrapper .html-content[test-language="fr"]'));
+      let contentText = await helper.getTextFromElementNative(content);
+      expect(contentText).toEqual('Politique de confidentialité en Francais\nPlus de markup');
 
       const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
       await acceptButton.click();
@@ -168,7 +168,7 @@ describe('Privacy policy', () => {
       await browser.get(utils.getBaseUrl() + 'privacy-policy');
       const privacyPolicyContainer = element(by.css('.privacy-policy.configuration'));
       await helper.waitElementToBeVisibleNative(privacyPolicyContainer);
-      const contentText = await helper.getTextFromElementNative(privacyPolicyContainer);
+      contentText = await helper.getTextFromElementNative(privacyPolicyContainer);
       expect(contentText).toEqual('Politique de confidentialité en Francais\nPlus de markup');
 
       // Update privacy policies
