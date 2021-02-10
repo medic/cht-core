@@ -22,13 +22,15 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
   private globalActions;
   isAdmin;
 
-  facilities = [];
   flattenedFacilities = [];
   displayedFacilities = [];
+
+  private facilities = [];
   private totalFacilitiesDisplayed = 0;
-  private scrollDisplayed = false;
-  private scrollEventEnabled = false;
-  private displayingMoreFacilities = false;
+  private listHasScroll = false;
+  private scrollEventListenerAdded = false;
+  private displayNewFacilityQueued = false;
+  private readonly MAX_LIST_HEIGHT = 300; // this is set in CSS
 
   @Input() disabled;
   @Output() search: EventEmitter<any> = new EventEmitter();
@@ -55,6 +57,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
     this.subscription.add(subscription);
   }
 
+  // this method is called on dropdown open
   loadFacilities() {
     if (this.facilities.length) {
       this.displayOneMoreFacility();
@@ -64,7 +67,7 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
     return this.placeHierarchyService
       .get()
       .then(hierarchy => {
-        hierarchy = this.sortHierarchyAndAddLabels(hierarchy);
+        hierarchy = this.sortHierarchyAndAddFacilityLabels(hierarchy);
         this.facilities = hierarchy;
         this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
         this.displayOneMoreFacility();
@@ -81,17 +84,22 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
     this.displayedFacilities = this.facilities.slice(0, this.totalFacilitiesDisplayed);
   }
 
-  private enableOnScrollEvent() {
+  private addOnScrollEventListener() {
+    if (this.scrollEventListenerAdded || !this.facilities.length) {
+      return;
+    }
+
+    this.scrollEventListenerAdded = true;
     this.ngZone.runOutsideAngular(() => {
       $('#facility-dropdown-list').on('scroll', (event) => {
         // the scroll event is triggered for every scrolled pixel.
-        // don't queue displaying another facility if the previous one hasn't been yet displayed
-        if (this.displayingMoreFacilities) {
+        // don't queue displaying another facility if the previous one hasn't yet been displayed
+        if (this.displayNewFacilityQueued) {
           return;
         }
         // visible height + pixel scrolled >= total height - 100
         if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight - 100) {
-          this.displayingMoreFacilities = true;
+          this.displayNewFacilityQueued = true;
           setTimeout(() => {
             this.ngZone.run(() => this.displayOneMoreFacility());
           });
@@ -101,27 +109,25 @@ export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   ngAfterViewChecked() {
-    // we've displayed all facilities, next scroll should load more
-    this.displayingMoreFacilities = false;
-
     // add the scroll event listener after we have a list element to attach it to!
-    if (!this.scrollEventEnabled && this.facilities.length) {
-      this.scrollEventEnabled = true;
-      this.enableOnScrollEvent();
-    }
+    this.addOnScrollEventListener();
+
+    // we've displayed the queued facility within this change detection cycle, next scroll should load one more
+    this.displayNewFacilityQueued = false;
 
     // keep displaying facilities until we have a scroll or we've displayed all
-    if (!this.scrollDisplayed && this.facilities.length && this.totalFacilitiesDisplayed < this.facilities.length) {
+    if (!this.listHasScroll && this.facilities.length && this.totalFacilitiesDisplayed < this.facilities.length) {
       const listHeight = $('#facility-dropdown-list')[0].scrollHeight;
-      if (listHeight < 301) { // 300 is maximum height
+      const hasScroll = listHeight > this.MAX_LIST_HEIGHT;
+      if (!hasScroll) {
         setTimeout(() => this.displayOneMoreFacility());
       } else {
-        this.scrollDisplayed = true;
+        this.listHasScroll = true;
       }
     }
   }
 
-  private sortHierarchyAndAddLabels(hierarchy) {
+  private sortHierarchyAndAddFacilityLabels(hierarchy) {
     const sortChildren = (facility) => {
       facility.label = this.itemLabel(facility);
       if (!facility.children || !facility.children.length) {
