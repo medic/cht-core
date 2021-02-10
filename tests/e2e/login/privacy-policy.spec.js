@@ -150,6 +150,7 @@ describe('Privacy policy', () => {
       // After first login in french, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('offline', password, false, 'fr');
+      await browser.sleep(1000); // overriding default language.
       await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
       const content = await helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
       expect(content).toEqual('Politique de confidentialité en Francais\nPlus de markup');
