@@ -76,7 +76,7 @@ module.exports = {
   },
 
   sync: () => {
-    module.exports.openMenuNative();
+    module.exports.openMenu();
     openSubmenu('sync');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
