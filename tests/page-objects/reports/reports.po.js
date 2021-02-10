@@ -1,4 +1,5 @@
 const helper = require('../../helper');
+const utils = require('../../utils');
 
 const itemSummary = '#reports-content .report-body .item-summary';
 const reportBody = '#reports-content .report-body';
@@ -70,11 +71,18 @@ module.exports = {
   },
 
   collapseSelection: () => {
+    utils.deprecated('collapseSelection','collapseSelectionNative');
     element(by.css(itemSummary)).click();
     expect(element(by.css(reportBodyDetails)).isDisplayed()).toBeFalsy();
   },
 
+  collapseSelectionNative: async () => {
+    await element(by.css(itemSummary)).click();
+    expect(await element(by.css(reportBodyDetails)).isPresent()).toBeFalsy();
+  },
+
   deleteSelectedReports: (savedUuids) => {
+    utils.deprecated('deleteSelectedReports','deleteSelectedReportsNative');
     element(by.css('.action-container .detail-actions .delete-all')).click();
     const confirmButton = element(by.css('.btn.submit.btn-danger'));
     helper.waitElementToBeClickable(confirmButton, 5000);
@@ -86,10 +94,30 @@ module.exports = {
     expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
   },
 
+  deleteSelectedReportsNative: async (savedUuids) => {
+    await element(by.css('.action-container .detail-actions .delete-all')).click();
+    const confirmButton = element(by.css('.btn.submit.btn-danger'));
+    await helper.waitElementToBeClickable(confirmButton, 5000);
+    await confirmButton.click();
+    await helper.waitElementToBeClickable(confirmButton, 5000);
+    await confirmButton.click();
+    await helper.waitElementToPresent(element(by.css('#reports-list li')), 30000);
+    // make sure the reports are deleted
+    expect(await reportsByUUID(savedUuids[1]).count()).toBe(1);
+  },
+
+
   deselectAll: () => {
+    utils.deprecated('deselectAll','deselectAllNative');
     element(by.css('.action-container .deselect-all')).click();
     expect(element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed()).toBeFalsy();
     expect(element.all(by.css(reportBody)).count()).toBe(0);
+  },
+
+  deselectAllNative: async () => {
+    await element(by.css('.action-container .deselect-all')).click();
+    expect(await element(by.css('#reports-content .selection-count > span')).isPresent()).toBeFalsy();
+    expect(await element.all(by.css(reportBody)).count()).toBe(0);
   },
 
   expandSelection: () => {
@@ -97,10 +125,22 @@ module.exports = {
     helper.waitElementToBeVisible(element(by.css(reportBodyDetails)), 3000);
   },
 
+  expandSelectionNative: async () => {
+    await element(by.css(itemSummary)).click();
+    await helper.waitElementToBeVisible(element(by.css(reportBodyDetails)), 3000);
+  },
+
   selectAll: () => {
+    utils.deprecated('selectall','selectAllNative');
     element(by.css('.action-container .select-all')).click();
     helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span:nth-child(2)')), 3000);
     expect(element.all(by.css(reportBody)).count()).toBe(3);
+  },
+
+  selectAllNative: async () => {
+    await element(by.css('.action-container .select-all')).click();
+    await helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span')), 3000);
+    expect(await element.all(by.css(reportBody)).count()).toBe(3);
   },
 
   selectSeveralReports: (savedUuids) => {
@@ -108,6 +148,14 @@ module.exports = {
     element(by.css('#reports-list li[data-record-id="' + savedUuids[2] + '"] input[type="checkbox"]')).click();
     browser.sleep(1000);
     expect(element.all(by.css(reportBody)).count()).toBe(2);
+  },
+
+  selectSeveralReportsNative: async (savedUuids) => {
+    const checkCss = 'input[type="checkbox"]';
+    await reportsByUUID(savedUuids[0]).first().element(by.css(checkCss)).click();
+    await reportsByUUID(savedUuids[2]).first().element(by.css(checkCss)).click();
+    await browser.sleep(1000);
+    expect(await element.all(by.css(reportBody)).count()).toBe(2);
   },
 
   selectReport: (savedUuids) => {
@@ -118,7 +166,17 @@ module.exports = {
     expect(element(by.css(reportBodyDetails)).isDisplayed()).toBeFalsy();
   },
 
+  selectReportNative: async (savedUuids) => {
+    await element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).click();
+    await helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span:first-child')), 3000);
+    expect(await element.all(by.css(reportBody)).count()).toBe(1);
+    expect(await element(by.css('#reports-content .report-body .item-summary .sender .name')).getText()).toBe('Sharon');
+    const reportElm = element(by.css(reportBodyDetails));
+    expect(await reportElm.isPresent()).toBeFalsy();
+  },
+
   startSelectMode: (savedUuids)=> {
+    utils.deprecated('startSelectMode','startSelectModeNative');
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
     helper.waitElementToPresent(selectModeButton, 1000);
     selectModeButton.click();
@@ -126,10 +184,24 @@ module.exports = {
       .toBeTruthy();
   },
 
+  startSelectModeNative: async (savedUuids)=> {
+    const selectModeButton = element(by.css('.action-container .select-mode-start'));
+    await helper.clickElementNative(selectModeButton);
+    const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
+    await helper.waitUntilReadyNative(checkbox);
+  },
+
   stopSelectMode: (savedUuids)=> {
+    utils.deprecated('stopSelectMode','stopSelectModeNative');
     element(by.css('.action-container .select-mode-stop')).click();
     expect(element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`)).isDisplayed())
       .toBeFalsy();
+  },
+
+  stopSelectModeNative: async (savedUuids)=> {
+    await element(by.css('.action-container .select-mode-stop')).click();
+    const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
+    await helper.waitElementToDisappear(checkbox.locator());
   },
 
   waitForReportToAppear: ()=> {
@@ -163,7 +235,12 @@ module.exports = {
   },
   scheduledTaskRecipientByIndex: (index) => {
     return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .recipient'));
-  }
-
+  },
+  waitForReportToAppearNative: async (numOfReports = 1) => {
+    await browser.refresh();
+    while (await module.exports.allReports().count < numOfReports) {
+      browser.sleep(100);
+    }
+  },
 };
 

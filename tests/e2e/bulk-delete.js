@@ -56,35 +56,30 @@ describe('Bulk delete reports', () => {
   ];
 
   const savedUuids = [];
-  beforeEach(done => {
-    protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(results => {
-        results.forEach(result => {
-          savedUuids.push(result.id);
-        });
-        done();
-      })
-      .catch(done.fail);
+  beforeEach(async () => {
+    const results = await Promise.all(docs.map(utils.saveDocNative));
+    results.forEach(result => {
+      savedUuids.push(result.id);
+    });
   });
 
-  afterEach(utils.afterEach);
+  afterEach(async () => { await utils.afterEachNative(); });
 
-  it('reports', () => {
-    commonElements.goToReports();
-    reports.waitForReportToAppear();
-    reports.startSelectMode(savedUuids);
-    reports.stopSelectMode(savedUuids);
+  it('reports', async () => {
+    await commonElements.goToReportsNative();
+    // await reports.waitForReportToAppearNative();
+    await reports.startSelectModeNative(savedUuids);
+    await reports.stopSelectModeNative(savedUuids);
     // start select mode again
-    reports.startSelectMode(savedUuids);
-    reports.selectReport(savedUuids);
-    reports.expandSelection();
-    reports.collapseSelection();
+    await reports.startSelectModeNative(savedUuids);
+    await reports.selectReportNative(savedUuids);
+    await reports.expandSelectionNative();
+    await reports.collapseSelectionNative();
     // deselect
-    element(by.css('#reports-content .report-body .deselect')).click();
-    reports.selectAll();
-    reports.deselectAll();
-    reports.selectSeveralReports(savedUuids);
-    reports.deleteSelectedReports(savedUuids);
+    await element(by.css('#reports-content .report-body .deselect')).click();
+    await reports.selectAllNative();
+    await reports.deselectAllNative();
+    await reports.selectSeveralReportsNative(savedUuids);
+    await reports.deleteSelectedReportsNative(savedUuids);
   });
 });
