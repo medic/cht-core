@@ -35,6 +35,7 @@ const baseConfig = {
       'e2e/contacts/add-new-person.js',
       'e2e/forms/submit-delivery-form.specs.js',
       'e2e/users/add-user.specs.js',
+      'e2e/login/purge.spec.js',
     ],
     // performance: 'performance/**/*.js'
   },
