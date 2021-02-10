@@ -63,6 +63,7 @@ module.exports = {
    * expectedText : text that element should include
    */
   findElementByTextAndClick: (elements, expectedText) => {
+    utils.deprecated('findElementByTextAndClick','findElementByTextAndClickNative');
     return browser
       .wait(
         EC.presenceOf(elements),
@@ -90,7 +91,6 @@ module.exports = {
   },
 
   findElementByTextAndClickNative: async (elements, expectedText) => {
-    utils.deprecated('findElementByTextAndClick','findElementByTextAndClickNative');
     await browser.wait(
       EC.presenceOf(elements),
       12000,
@@ -110,6 +110,7 @@ module.exports = {
   },
 
   getTextFromElement: element => {
+    utils.deprecated('getTextFromElement','getTextFromElementNative');
     return browser
       .wait(
         EC.presenceOf(element),
@@ -138,7 +139,6 @@ module.exports = {
   },
 
   getTextFromElementNative: async (element) => {
-    utils.deprecated('getTextFromElement','getTextFromElementNative');
     try {
       await browser.wait(
         EC.presenceOf(element),
@@ -284,12 +284,12 @@ module.exports = {
   },
 
   waitElementToBeVisible: (elm, timeout) => {
+    utils.deprecated('waitElementToBeVisible','waitElementToBeVisibleNative');
     timeout = timeout || 15000;
     return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
   },
 
   waitElementToBeVisibleNative: async (elm, timeout = 15000) => {
-    utils.deprecated('waitElementToBeVisible','waitElementToBeVisibleNative');
     await browser.wait(
       EC.visibilityOf(elm),
       timeout,

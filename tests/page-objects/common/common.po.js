@@ -32,6 +32,7 @@ const messagesList = element(by.id('message-list'));
 module.exports = {
   messagesList,
   calm: async () => {
+    utils.deprecated('calm','calmNative');
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
@@ -40,7 +41,6 @@ module.exports = {
   },
 
   calmNative: async () => {
-    utils.deprecated('calm','calmNative');
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
@@ -77,13 +77,13 @@ module.exports = {
   },
 
   sync: () => {
+    utils.deprecated('sync','syncNative');
     module.exports.openMenu();
     openSubmenu('sync');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
 
   syncNative: async () => {
-    utils.deprecated('sync','syncNative');
     await module.exports.openMenuNative();
     await openSubmenuNative('sync');
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
@@ -111,12 +111,12 @@ module.exports = {
   },
 
   goToLoginPage: () => {
+    utils.deprecated('goToLoginPage','goToLoginPageNative');
     browser.manage().deleteAllCookies();
     browser.driver.get(utils.getLoginUrl());
   },
 
   goToLoginPageNative: async () => {
-    utils.deprecated('goToLoginPage','goToLoginPageNative');
     await browser.manage().deleteAllCookies();
     await browser.driver.get(await utils.getLoginUrl());
     await browser.driver.get(await utils.getLoginUrl());
@@ -159,7 +159,6 @@ module.exports = {
   },
 
   goToReportsNative: async refresh => {
-    utils.deprecated('goToReports','goToReportsNative');
     await browser.get(utils.getBaseUrl() + 'reports/');
     await helper.waitElementToPresentNative(
       element(
@@ -200,13 +199,13 @@ module.exports = {
   },
 
   openMenu: () => {
+    utils.deprecated('openMenu','openMenuNative');
     helper.waitUntilReady(messagesLink);
     helper.clickElement(hamburgerMenu);
     helper.waitUntilReady(hamburgerMenuOptions);
   },
 
   openMenuNative: async () => {
-    utils.deprecated('openMenu','openMenuNative');
     await helper.waitUntilReadyNative(messagesLink);
     await helper.clickElementNative(hamburgerMenu);
     await helper.waitUntilReadyNative(hamburgerMenuOptions);
@@ -223,10 +222,10 @@ module.exports = {
 };
 
 function openSubmenu(menuName) {
+  utils.deprecated('openSubmenu','openSubmenuNative');
   helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
 }
 
 async function openSubmenuNative(menuName) {
-  utils.deprecated('openSubmenu','openSubmenuNative');
   await helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
 }
