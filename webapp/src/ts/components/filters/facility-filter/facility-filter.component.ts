@@ -1,4 +1,14 @@
-import { Component, EventEmitter, OnDestroy, Output, ViewChild, Input, OnInit, NgZone } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  Output,
+  ViewChild,
+  Input,
+  OnInit,
+  NgZone,
+  AfterViewChecked
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription, from } from 'rxjs';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
@@ -17,15 +27,15 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter {
+export class FacilityFilterComponent implements OnDestroy, OnInit, AbstractFilter, AfterViewChecked {
   subscription:Subscription = new Subscription();
   private globalActions;
   isAdmin;
 
+  facilities = [];
   flattenedFacilities = [];
   displayedFacilities = [];
 
-  private facilities = [];
   private totalFacilitiesDisplayed = 0;
   private listHasScroll = false;
   private scrollEventListenerAdded = false;
