@@ -217,7 +217,7 @@ describe('Purging on login', () => {
   afterAll(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     await commonElements.goToLoginPageNative();
-    loginPage.loginNative(auth.username, auth.password);
+    await loginPage.loginNative(auth.username, auth.password);
     const doc = await utils.requestNative(`/_users/org.couchdb.user:${restrictedUserName}`);
     await utils.requestNative({
       path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
