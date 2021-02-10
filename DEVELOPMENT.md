@@ -15,7 +15,7 @@ You will need to install the following:
 - [Node.js](https://nodejs.org) 8.11.x and above LTS release (designated with an even major version number)
 - [npm](https://npmjs.com/) 6.x.x and above (to support npm ci)
 - [grunt cli](https://gruntjs.com/using-the-cli)
-- [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). For simplicity we [recommend installing via docker](#couchdb-on-docker). If on a Mac, please note that installation via homebrew is **not** supported.
+- [CouchDB](https://couchdb.apache.org) 2.x ([installation instructions](http://docs.couchdb.org/en/2.3.1/install/index.html)). For simplicity we [recommend installing via docker](#couchdb-on-docker). If on a Mac, please note that installation via homebrew is **not** supported. If on Ubuntu and you don't want to use docker, see [our notes below](#couchdb-on-docker).
 - xsltproc
 - python 2.7
 
@@ -47,6 +47,19 @@ Once this downloads and starts, you will need to [initialise CouchDB](http://loc
 You can use `docker stop medic-couchdb` to stop it and `docker start medic-couchdb` to start it again. Remember that you'll need to start it whenever you restart your OS, which might not be the case if you use a normal OS package.
 
 Medic recommends you familiarise yourself with other Docker commands to make docker image and container management clearer.
+
+### CouchDB on Ubuntu
+
+While we recommend use Docker to install CouchDB for development, it is still possible to install CouchDB on bare metal in Ubuntu, but there are some caveats: 
+
+* For Ubuntu 18.04 and earlier, you need to specify in `apt` version to install with the `-V` flag.  For example, on a clean 18.04 install you would run:
+    ```bash
+    curl -sL https://couchdb.apache.org/repo/bintray-pubkey.asc | sudo apt-key add
+    echo "deb https://apache.bintray.com/couchdb-deb bionic main" | sudo tee -a /etc/apt/sources.list
+    apt update
+    apt install couchdb=2.3.1~bionic -V
+    ```
+* For Ubuntu 20.04 and later, there is no 2.3.x `apt` package, so you must use a snap. After ensuring [`snapd` is installed](https://snapcraft.io/docs/installing-snapd), you can then run: `snap install --channel=2.x couchdb`
 
 ## Required environment variables
 
