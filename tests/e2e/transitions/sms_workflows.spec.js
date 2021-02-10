@@ -109,7 +109,7 @@ const processReportsAndSetings = async (reports, settings) => {
 
 describe('SMS workflows', () => {
   beforeAll(async () => { 
-    commonPo.goToPeople();
+    await commonPo.goToPeople();
     await utils.saveDocsNative(contacts);
   });
   
