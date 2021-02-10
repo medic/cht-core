@@ -44,14 +44,14 @@ module.exports = {
   },
 
   clickElementNative: async element => {
-    handleUpdateModalNative();
+    await handleUpdateModalNative();
     try {
       const msg = `Element taking too long to appear in the DOM ${element.locator()}`;
       await browser.wait(EC.elementToBeClickable(element), 12000, msg);
       await element.click();
     } catch (err) {
       await browser.sleep(1000);
-      handleUpdateModalNative();
+      await handleUpdateModalNative();
       await browser.wait(EC.elementToBeClickable(element), 12000, `element is ${element.locator()}`);
       await element.click();
     }
@@ -98,8 +98,8 @@ module.exports = {
     );
 
     await elements.each(async (element) => {
-      await element.getText();
-      const text  = text.toLowerCase().trim();
+      let text = await element.getText();
+      text = text.toLowerCase().trim();
 
       if (!text.includes(expectedText)) {
         return;

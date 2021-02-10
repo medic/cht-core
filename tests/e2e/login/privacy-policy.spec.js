@@ -92,7 +92,7 @@ describe('Privacy policy', () => {
     await loginPage.loginNative(auth.username, auth.password);
     await utils.revertDbNative();
   });
-
+  
   describe('for an online user', () => {
     afterEach(async () => {
       await utils.deleteUsersNative([onlineUser]);

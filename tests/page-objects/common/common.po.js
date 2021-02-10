@@ -8,7 +8,7 @@ const genericCancelBtn = element(by.css('.modal .btn.cancel'));
 const messagesLink = element(by.id('messages-tab'));
 const analyticsLink = element(by.id('analytics-tab'));
 const hamburgerMenu = element(by.css('.dropdown.options>a'));
-const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li'));
+const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li:not(.hidden)'));
 const logoutButton = $('[ng-click=logout]');
 
 // Configuration wizard
@@ -208,7 +208,7 @@ module.exports = {
   openMenuNative: async () => {
     await helper.waitUntilReadyNative(messagesLink);
     await helper.clickElementNative(hamburgerMenu);
-    await helper.waitUntilReadyNative(hamburgerMenuOptions);
+    await helper.waitUntilReadyNative(hamburgerMenuOptions.first());
   },
 
   confirmDelete: async () => {
