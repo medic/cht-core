@@ -139,14 +139,13 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.geoHandle = this.geolocationService.init();
-    const refreshing = this.selectedTask?._id === id;
-    this.globalActions.settingSelected(refreshing);
+    this.globalActions.settingSelected();
 
     return this
       .hydrateTaskEmission(task)
       .then(hydratedTask => {
         this.tasksActions.setSelectedTask(hydratedTask);
-        this.globalActions.setTitle(hydratedTask.title);
+        this.globalActions.setTitle(hydratedTask?.title);
         this.globalActions.setShowContent(true);
 
         if (this.hasOneActionAndNoFields(hydratedTask)) {
@@ -218,10 +217,10 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;
-        if (formDoc.translation_key) {
+        if (formDoc?.translation_key) {
           this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
         } else {
-          this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
+          this.globalActions.setTitle(this.translateFromService.get(formDoc?.title));
         }
       });
   }
@@ -281,7 +280,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
 
   save() {
     if (this.enketoSaving) {
-      console.debug('Attempted to call tasks-content:$scope.save more than once');
+      console.debug('Attempted to call tasks-content.component:save more than once');
       return;
     }
 

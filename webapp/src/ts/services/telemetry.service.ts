@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import * as moment from 'moment';
 
@@ -20,8 +20,9 @@ export class TelemetryService {
   private queue = Promise.resolve();
 
   constructor(
-    private dbService: DbService,
-    private sessionService: SessionService
+    private dbService:DbService,
+    private sessionService:SessionService,
+    private ngZone:NgZone,
   ) {
     // Intentionally scoped to the specific user, as they may perform a
     // different role (online vs. offline being being the most obvious) with different performance implications
@@ -242,7 +243,11 @@ export class TelemetryService {
    *                        aggregated if required
    * @memberof Telemetry
    */
-  record(key, value?) {
+  record (key, value?) {
+    return this.ngZone.runOutsideAngular(() => this._record(key, value));
+  }
+
+  private _record(key, value?) {
     if (value === undefined) {
       value = 1;
     }

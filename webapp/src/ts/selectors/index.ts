@@ -92,6 +92,8 @@ export const Selectors = {
     getContactsState,
     (contactsState) => contactsState.selected?.children
   ),
+  getSelectedContactReports: createSelector(getContactsState, (contactsState) => contactsState.selected?.reports),
+  getSelectedContactTasks: createSelector(getContactsState, (contactsState) => contactsState.selected?.tasks),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
     (contactsState) => contactsState.loadingSelectedReports

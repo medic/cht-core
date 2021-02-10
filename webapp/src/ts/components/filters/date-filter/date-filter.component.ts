@@ -8,8 +8,8 @@ interface LocaleWithWeekSpec extends moment.Locale {
 }
 
 import { GlobalActions } from '@mm-actions/global';
-import { isMobile } from '@mm-providers/responsive.provider';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
   selector: 'mm-date-filter',
@@ -28,6 +28,7 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
 
   constructor(
     private store: Store,
+    private responsiveService:ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -67,7 +68,7 @@ export class DateFilterComponent implements OnDestroy, AbstractFilter, AfterView
     });
 
     datepicker.on('mm.dateSelected.daterangepicker', (e, picker) => {
-      if (isMobile()) {
+      if (this.responsiveService.isMobile()) {
         // mobile version - only show one calendar at a time
         if (picker.container.is('.show-from')) {
           picker.container.removeClass('show-from').addClass('show-to');

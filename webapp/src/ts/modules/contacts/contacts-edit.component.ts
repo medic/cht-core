@@ -45,7 +45,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   loadingContent;
   contact;
   contactId;
-  errorTranslationKey = false;
+  errorTranslationKey;
   contentError = false;
   cancelCallback;
   enketoEdited;

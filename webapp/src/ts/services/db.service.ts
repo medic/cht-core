@@ -6,7 +6,8 @@ const USER_DB_SUFFIX = 'user';
 const META_DB_SUFFIX = 'meta';
 const USERS_DB_SUFFIX = 'users';
 
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
+import { EventEmitter } from 'events';
 
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
@@ -19,9 +20,77 @@ export class DbService {
   private cache = {};
   private isOnlineOnly;
 
+  private readonly POUCHDB_METHODS = {
+    destroy: this.outOfZonePromise.bind(this),
+    put: this.outOfZonePromise.bind(this),
+    post: this.outOfZonePromise.bind(this),
+    get: this.outOfZonePromise.bind(this),
+    remove: this.outOfZonePromise.bind(this),
+    bulkDocs: this.outOfZonePromise.bind(this),
+    bulkGet: this.outOfZonePromise.bind(this),
+    allDocs: this.outOfZonePromise.bind(this),
+    putAttachment: this.outOfZonePromise.bind(this),
+    getAttachment: this.outOfZonePromise.bind(this),
+    removeAttachment: this.outOfZonePromise.bind(this),
+    query: this.outOfZonePromise.bind(this),
+    viewCleanup: this.outOfZonePromise.bind(this),
+    info: this.outOfZonePromise.bind(this),
+    compact: this.outOfZonePromise.bind(this),
+    revsDiff: this.outOfZonePromise.bind(this),
+    changes: this.outOfZoneEventEmitter.bind(this),
+    sync: this.outOfZoneEventEmitter.bind(this),
+    replicate: this.outOfZoneReplicate.bind(this),
+  };
+
+  private outOfZonePromise(fn, db) {
+    return (...args) => this.ngZone.runOutsideAngular(() => fn.apply(db, args));
+  }
+
+  private outOfZoneEventEmitter(fn, db) {
+    // complete possible events list is: ['change', 'paused', 'active', 'denied', 'complete', 'error']
+    // omitting `paused` and `active` events, as we have no handlers for these and we don't need to trigger
+    // change detection when they are emitted
+    const events = ['change', 'denied', 'complete', 'error'];
+
+    return (...args) => {
+      const promiseEmitter:any = new EventEmitter();
+      const emitter = this.ngZone.runOutsideAngular(() => fn.apply(db, args));
+      promiseEmitter.isInAngularZone = NgZone.isInAngularZone();
+      promiseEmitter.then = emitter.then.bind(emitter);
+      promiseEmitter.catch = emitter.catch.bind(emitter);
+      promiseEmitter.cancel = emitter.cancel.bind(emitter);
+
+      events.forEach(event => {
+        emitter.on(event, (...args) => {
+          if (promiseEmitter.isInAngularZone) {
+            return this.ngZone.run(() => promiseEmitter.emit(event, ...args));
+          }
+          promiseEmitter.emit(event, ...args);
+        });
+      });
+
+      return promiseEmitter;
+    };
+  }
+
+  private outOfZoneReplicate(fn, db) {
+    const getter = Object.keys(fn).reduce((index, key) => {
+      index[key] = this.outOfZoneEventEmitter(db.replicate[key], db);
+      return index;
+    }, {});
+
+    Object.defineProperty(db, 'replicate', {
+      set() {},
+      get() {
+        return getter;
+      }
+    });
+  }
+
   constructor(
     private sessionService:SessionService,
     private locationService:LocationService,
+    private ngZone:NgZone,
   ) {
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
 
@@ -75,10 +144,20 @@ export class DbService {
     return clone;
   }
 
+  private wrapMethods(db) {
+    for (const method in this.POUCHDB_METHODS) {
+      if (this.POUCHDB_METHODS[method]) {
+        db[method] = this.POUCHDB_METHODS[method](db[method], db);
+      }
+    }
+    return db;
+  }
+
   get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
     const name = this.getDbName(remote, meta, usersMeta);
     if (!this.cache[name]) {
-      this.cache[name] = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
+      const db = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
+      this.cache[name] = this.wrapMethods(db);
     }
     return this.cache[name];
   }

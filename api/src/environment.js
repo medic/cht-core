@@ -53,7 +53,7 @@ module.exports.getExtractedResourcesPath = () => {
   let destination = MEDIC_API_RESOURCE_PATH;
   if (!destination) {
     const isProduction = NODE_ENV === 'production';
-    const defaultLocation = path.join(__dirname, `extracted-resources`);
+    const defaultLocation = path.join(__dirname, '..', 'extracted-resources');
     destination = isProduction ? '/tmp/extracted-resources' : defaultLocation;
   }
 

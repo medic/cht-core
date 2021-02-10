@@ -1,4 +1,5 @@
 const fs = require('fs');
+const utils = require('./utils');
 const EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
@@ -7,6 +8,7 @@ function writeScreenShot(data, filename) {
   stream.end();
 }
 function handleUpdateModal() {
+  utils.deprecated('handleUpdateModal','handleUpdateModalNative');
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
   }
@@ -39,6 +41,21 @@ module.exports = {
             element.click();
           });
       });
+  },
+
+  clickElementNative: async element => {
+    await handleUpdateModalNative();
+    try {
+      const msg = `First attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element),12000, msg);
+      await element.click();
+    } catch (err) {
+      await browser.sleep(1000);
+      await handleUpdateModalNative();
+      const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
+      await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
+      await element.click();
+    } 
   },
 
   /**

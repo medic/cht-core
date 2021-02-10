@@ -20,6 +20,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { EnketoService } from '@mm-services/enketo.service';
 import { ComponentsModule } from '@mm-components/components.module';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Reports Add Component', () => {
   let component:ReportsAddComponent;
@@ -84,6 +85,7 @@ describe('Reports Add Component', () => {
           { provide: EnketoService, useValue: enketoService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
+          { provide: TelemetryService, useValue: { record: sinon.stub() }},
         ],
       })
       .compileComponents()
@@ -98,7 +100,7 @@ describe('Reports Add Component', () => {
     sinon.restore();
   });
 
-  it('should create ReportsComponent', () => {
+  it('should create ReportsAddComponent', () => {
     expect(component).to.exist;
   });
 

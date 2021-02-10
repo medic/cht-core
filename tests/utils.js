@@ -691,7 +691,6 @@ module.exports = {
         method: 'POST',
         body: { docs: docs }
       });
-
     if (results.find(r => !r.ok)) {
       throw Error(JSON.stringify(results, null, 2));
     } else {
@@ -818,6 +817,13 @@ module.exports = {
         return refreshToGetNewSettings();
       }
     }),
+  
+  revertSettingsNative: async ignoreRefresh => {
+    await revertSettingsNative();
+    if (!ignoreRefresh) {
+      return refreshToGetNewSettings();
+    }
+  },
 
   seedTestData: (done, userContactDoc, documents) => {
     deprecated('seedTestData', 'seedTestDataNative');
@@ -896,6 +902,13 @@ module.exports = {
       });
   },
 
+  resetBrowserNative: async () => {
+    await browser.driver.navigate().refresh();
+    return browser.wait(() => {
+      return element(by.css('#messages-tab')).isPresent();}, 
+    10000,'Timed out waiting for browser to reset. Looking for element #messages-tab');
+  },
+  
   countOf: count => {
     return c => {
       return c === count;

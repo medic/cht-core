@@ -11,32 +11,32 @@
   <form action="" method="POST">
 
     <div class="form-group" [ngClass]="{'has-error': errors.name}">
-      <label for="name" translate>User Name</label> *
+      <label for="name">{{'User Name' | translate}}</label> *
       <input id="name" type="text" class="form-control" name="username"
              [(ngModel)]="editUserModel.username" [disabled]="editUserModel.id" />
       <span class="help-block">{{errors.name}}</span>
     </div>
 
     <div class="form-group">
-      <label for="fullname" translate>Full Name</label>
+      <label for="fullname">{{'Full Name' | translate}}</label>
       <input id="fullname" type="text" class="form-control" name="fullname"
              [(ngModel)]="editUserModel.fullname" />
     </div>
 
     <div class="form-group">
-      <label for="email" translate>Email Address</label>
+      <label for="email">{{'Email Address' | translate}}</label>
       <input id="email" type="text" class="form-control" name="email"
              [(ngModel)]="editUserModel.email" />
     </div>
 
     <div class="form-group">
-      <label for="phone" translate>Phone Number</label>
+      <label for="phone">{{'Phone Number' | translate}}</label>
       <input id="phone" type="text" class="form-control" name="phone"
              [(ngModel)]="editUserModel.phone"/>
     </div>
 
     <div class="form-group">
-      <label for="language" translate>Language</label>
+      <label for="language">{{'Language' | translate}}</label>
       <select id="language" class="form-control" [(ngModel)]="editUserModel.language.code" name="language">
         <option [value]="locale.code" *ngFor="let locale of enabledLocales; trackBy: listTrackBy">
           {{locale.name}}

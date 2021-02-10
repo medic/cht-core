@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { AuthService } from '@mm-services/auth.service';
@@ -24,6 +24,7 @@ export class XmlFormsService {
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
     private parseProvider:ParseProvider,
+    private ngZone:NgZone,
   ) {
     this.init = this.getForms();
 
@@ -49,6 +50,10 @@ export class XmlFormsService {
     return this.dbService.get()
       .query('medic-client/doc_by_type', options)
       .then((res) => {
+        if (!res?.rows) {
+          return;
+        }
+
         return res.rows
           .filter(row => this.findXFormAttachmentName(row.doc))
           .map(row => row.doc);
@@ -63,7 +68,7 @@ export class XmlFormsService {
   private getByView(internalId) {
     return this
       .init
-      .then(docs => docs.filter(doc => doc.internalId === internalId))
+      .then(docs => docs?.filter(doc => doc.internalId === internalId))
       .then(docs => {
         if (!docs.length) {
           return Promise.reject(new Error(`No form found for internalId "${internalId}"`));
@@ -86,6 +91,10 @@ export class XmlFormsService {
   }
 
   private filterAll(forms, options) {
+    return this.ngZone.runOutsideAngular(() => this._filterAll(forms, options));
+  }
+
+  private _filterAll(forms, options) {
     return this.userContactService.get().then(user => {
       // clone the forms list so we don't affect future filtering
       forms = forms.slice();

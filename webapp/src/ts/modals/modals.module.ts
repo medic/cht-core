@@ -13,6 +13,7 @@ import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.compo
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
+import { ConfirmPasswordUpdatedComponent } from './edit-user/confirm-password-updated.component';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
@@ -37,6 +38,7 @@ import { ContactsMutedComponent } from './contacts-muted/contacts-muted.componen
     SendMessageComponent,
     DeleteDocConfirmComponent,
     UpdatePasswordComponent,
+    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TourSelectComponent,
@@ -62,6 +64,7 @@ import { ContactsMutedComponent } from './contacts-muted/contacts-muted.componen
     LogoutConfirmComponent,
     FeedbackComponent,
     UpdatePasswordComponent,
+    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TourSelectComponent,

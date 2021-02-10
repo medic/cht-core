@@ -1,8 +1,5 @@
 <div class="row header">
   <div class="inner">
-
-    <span id="mobile-detection"></span>
-
     <a routerLink="home">
       <div class="logo">
         <div class="logo-full" [innerHtml]="'logo' | headerLogo"></div>
@@ -21,80 +18,80 @@
           <li role="presentation" mmAuth="can_view_messages,!can_view_messages_tab">
             <a role="menuitem" tabindex="-1" routerLink="messages">
               <i class="fa fa-fw fa-envelope"></i>
-              <span translate>Messages</span>
+              <span>{{'Messages' | translate}}</span>
             </a>
           </li>
           <li role="presentation" mmAuth="can_view_tasks,!can_view_tasks_tab">
             <a role="menuitem" tabindex="-1" routerLink="tasks">
               <i class="fa fa-fw fa-flag"></i>
-              <span translate>Tasks</span>
+              <span>{{'Tasks' | translate}}</span>
             </a>
           </li>
           <li role="presentation" mmAuth="can_view_reports,!can_view_reports_tab">
             <a role="menuitem" tabindex="-1" routerLink="reports">
               <i class="fa fa-fw fa-list-alt"></i>
-              <span translate>Reports</span>
+              <span>{{'Reports' | translate}}</span>
             </a>
           </li>
           <li role="presentation" mmAuth="can_view_contacts,!can_view_contacts_tab">
             <a role="menuitem" tabindex="-1" routerLink="contacts">
               <i class="fa fa-fw fa-user"></i>
-              <span translate>Contacts</span>
+              <span>{{'Contacts' | translate}}</span>
             </a>
           </li>
 
           <li role="presentation" mmAuth="can_view_analytics,!can_view_analytics_tab">
             <a role="menuitem" tabindex="-1" routerLink="analytics" routerLink-opts="{reload: true}">
               <i class="fa fa-bar-chart-o"></i>
-              <span translate>Analytics</span>
+              <span>{{'Analytics' | translate}}</span>
             </a>
           </li>
           <li role="presentation" class="desktop-only" mmAuth [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]" [mmAuthOnline]="true">
             <a href="{{adminUrl}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
               <i class="fa fa-fw fa-cog"></i>
-              <span translate>admin.app.name</span>
+              <span>{{'admin.app.name' | translate}}</span>
             </a>
           </li>
           <li role="presentation" mmAuth="can_configure">
             <a role="menuitem" tabindex="-1" (click)="openGuidedSetup()">
               <i class="fa fa-fw fa-list-ol"></i>
-              <span translate>Easy Setup Wizard</span>
+              <span>{{'Easy Setup Wizard' | translate}}</span>
             </a>
           </li>
           <li role="presentation">
             <a role="menuitem" tabindex="-1" rel="external" (click)="openTourSelect()" *ngIf="tours.length">
               <i class="fa fa-fw fa-graduation-cap"></i>
-              <span translate>Guided Tour</span>
+              <span>{{'Guided Tour' | translate}}</span>
             </a>
           </li>
           <li role="presentation">
             <a routerLink="about" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>
-              <span translate>about</span>
+              <span>{{'about' | translate}}</span>
             </a>
           </li>
           <li role="presentation" mmAuth="can_edit_profile">
             <a role="menuitem" tabindex="-1" routerLink="user">
               <i class="fa fa-fw fa-user"></i>
-              <span translate>edit.user.settings</span>
+              <span>{{'edit.user.settings' | translate}}</span>
             </a>
           </li>
           <li role="presentation" *ngIf="showPrivacyPolicy">
             <a role="menuitem" tabindex="-1" routerLink="privacy-policy">
               <i class="fa fa-fw fa-lock"></i>
-              <span translate>privacy.policy</span>
+              <span>{{'privacy.policy' | translate}}</span>
             </a>
           </li>
           <li role="presentation">
             <a role="menuitem" tabindex="-1" (click)="openFeedback()">
               <i class="fa fa-fw fa-bug"></i>
-              <span translate>Report Bug</span>
+              <span>{{'Report Bug' | translate}}</span>
             </a>
           </li>
           <li role="presentation" *ngIf="canLogOut">
             <a role="menuitem" tabindex="-1" rel="external" (click)="logout()">
               <i class="fa fa-fw fa-power-off"></i>
-              <span translate>Log Out</span>
+              <span>{{'Log Out' | translate}}</span>
             </a>
           </li>
 
@@ -103,7 +100,7 @@
           <li role="presentation disabled" *ngIf="!replicationStatus.disabled" [ngClass]="{ 'disabled': replicationStatus.current?.disableSyncButton }">
             <a role="menuitem" tabindex="-1" (click)="!replicationStatus.current?.disableSyncButton && replicate()">
               <i class="fa fa-fw fa-refresh"></i>
-              <span translate>sync.now</span>
+              <span>{{'sync.now' | translate}}</span>
             </a>
           </li>
 
@@ -112,10 +109,10 @@
           <li role="presentation disabled" *ngIf="!replicationStatus.disabled" class="sync-status">
             <a class="no-click" [ngClass]="replicationStatus.current?.className" *ngIf="replicationStatus.current">
               <i class="fa fa-fw" [ngClass]="replicationStatus.current?.icon"></i>
-              <span [translate]="replicationStatus.current.key"></span>
+              <span>{{replicationStatus.current.key | translate}}</span>
             </a>
             <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
-              <span translate>sync.last_success</span>
+              <span>{{'sync.last_success' | translate}}</span>
               <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
             </a>
           </li>
@@ -133,8 +130,10 @@
             <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] >= 100">100+</span>
           </span>
         </div>
-        <div class="button-label" translate>{{tab.translation}}</div>
+        <div class="button-label">{{tab.translation | translate}}</div>
       </a>
     </div>
+
+    <mobile-detection></mobile-detection>
   </div>
 </div>
