@@ -302,7 +302,7 @@ module.exports = {
 
   waitElementToDisappear: (locator, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(() => {
+    return browser.wait(() => {
       return element(locator)
         .isDisplayed()
         .then(presenceOfElement => !presenceOfElement);
@@ -311,7 +311,7 @@ module.exports = {
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
-    browser.wait(() => elm.isPresent(), timeout);
+    return browser.wait(() => elm.isPresent(), timeout);
   },
 
   waitElementToPresentNative: async (elm, timeout) => {
