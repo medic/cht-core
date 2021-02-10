@@ -24,7 +24,7 @@ const baseConfig = {
     e2e: [
       'e2e/service-worker.js',
       'e2e/create-meta-db.js',
-      'e2e/login/login.specs.js', 
+      'e2e/login/login.specs.js',
       '**/docs-by-replication-key-view.js',
       'e2e/submit-enketo-form.js',
       'e2e/forms/submit-z-score-form.spec.js',

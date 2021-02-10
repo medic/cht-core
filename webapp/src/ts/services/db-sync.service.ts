@@ -8,32 +8,10 @@ import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
 import { AuthService } from '@mm-services/auth.service';
 
-const READ_ONLY_TYPES = ['form', 'translations'];
-const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
-const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
-
-const readOnlyFilter = function(doc) {
-  // Never replicate "purged" documents upwards
-  const keys = Object.keys(doc);
-  if (keys.length === 4 &&
-    keys.includes('_id') &&
-    keys.includes('_rev') &&
-    keys.includes('_deleted') &&
-    keys.includes('purged')) {
-    return false;
-  }
-
-  // don't try to replicate read only docs back to the server
-  return (
-    READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
-    READ_ONLY_IDS.indexOf(doc._id) === -1 &&
-    doc._id.indexOf(DDOC_PREFIX) !== 0
-  );
-};
 
 @Injectable({
   providedIn: 'root'
@@ -52,7 +30,7 @@ export class DBSyncService {
     {
       name: 'to',
       options: {
-        filter: readOnlyFilter,
+        filter: 'medic-client/db_sync',
         checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
