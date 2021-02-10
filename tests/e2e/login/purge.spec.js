@@ -218,9 +218,13 @@ describe('Purging on login', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    await utils.deleteUsers([restrictedUserName]);
-    await utils.revertDb();
-    await sentinelUtils.deletePurgeDbs();
+    const doc = await utils.requestNative(`/_users/org.couchdb.user:${restrictedUserName}`);
+    await utils.requestNative({
+      path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
+      method: 'DELETE'
+    });
+    utils.revertDbNative();
+    await sentinelUtils.deletePurgeDbsNative();
   });
 
   beforeEach(utils.beforeEach);
