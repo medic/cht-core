@@ -63,7 +63,7 @@ describe('Bulk delete reports', () => {
     });
   });
 
-  afterEach(async () => { await utils.afterEachNative(); });
+  afterEach(async () => await utils.afterEachNative());
 
   it('reports', async () => {
     await commonElements.goToReportsNative();
