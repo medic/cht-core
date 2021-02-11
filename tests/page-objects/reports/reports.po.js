@@ -86,7 +86,7 @@ module.exports = {
     confirmButton.click();
     helper.waitElementToBeClickable(confirmButton, 5000);
     confirmButton.click();
-    helper.waitElementToPresent(element(by.css('#reports-list li')), 30000);
+    helper.waitElementToPresent(element(by.css('#reports-list li')));
     // make sure the reports are deleted
     expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
   },
@@ -98,7 +98,7 @@ module.exports = {
     await confirmButton.click();
     await helper.waitElementToBeClickable(confirmButton, 5000);
     await confirmButton.click();
-    await helper.waitElementToPresent(element(by.css('#reports-list li')), 30000);
+    await helper.waitElementToPresent(element(by.css('#reports-list li')));
     // make sure the reports are deleted
     expect(await reportsByUUID(savedUuids[1]).count()).toBe(1);
   },
@@ -213,7 +213,7 @@ module.exports = {
   waitForReportToAppearNative: async (numOfReports = 1) => {
     await browser.refresh();
     while (await module.exports.allReports().count < numOfReports) {
-      browser.sleep(100);
+      await browser.sleep(100);
     }
   },
 };
