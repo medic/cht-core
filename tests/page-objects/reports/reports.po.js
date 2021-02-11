@@ -20,6 +20,7 @@ module.exports = {
   relativeDate: () => element(by.css('#reports-content .item-summary .relative-date-content')),
   firstForm,
   submitReport,
+  deselctReport: () => element(by.css('#reports-content .report-body .deselect')),
   allReports: () => element.all(by.css(`${reportListID} li`)),
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
   listLoader: () => element(by.css(`${reportListID} .loader`)),
