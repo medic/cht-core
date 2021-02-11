@@ -103,9 +103,9 @@ describe('Submit Enketo form', () => {
     await helper.waitElementToBeClickable(reportsPo.submitReport);
 
     // select form
-    await helper.clickElement(reportsPo.submitReport);
+    await helper.clickElementNative(reportsPo.submitReport);
     await helper.waitElementToBeClickable(reportsPo.firstForm);
-    await helper.clickElement(reportsPo.firstForm);
+    await helper.clickElementNative(reportsPo.firstForm);
 
     // enter name
 
