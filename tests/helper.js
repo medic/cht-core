@@ -63,7 +63,7 @@ module.exports = {
    * elements : array of all elements where required elemnt has to present
    * expectedText : text that element should include
    */
-  findElementByTextAndClick: (elements, expectedText) => {
+  findElementByTextAndClick: async (elements, expectedText) => {
     return browser
       .wait(
         EC.presenceOf(elements),
@@ -71,8 +71,8 @@ module.exports = {
         'Element taking too long to appear in the DOM. Giving up!'
       )
       .then(() => {
-        elements.each(element => {
-          element.getText()
+        return elements.each(element => {
+          return element.getText()
             .then(text => {
               if (
                 text
@@ -80,11 +80,14 @@ module.exports = {
                   .trim()
                   .includes(expectedText)
               ) {
-                element.click();
+                return browser
+                  .wait(
+                    EC.elementToBeClickable(element),
+                    12000,
+                    `Element taking too long to appear in the DOM ${element.locator()}`
+                  )
+                  .then(() => element.click());
               }
-            })
-            .catch(err => {
-              throw err;
             });
         });
       });
@@ -270,7 +273,7 @@ module.exports = {
 
   waitElementToPresentNative: async (elm, timeout) => {
     timeout = timeout || 10000;
-    await browser.wait(async () => await elm.isPresent(), timeout);
+    await browser.wait(() => elm.isPresent(), timeout);
   },
 
   waitForAngularComplete: () => {

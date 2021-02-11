@@ -177,7 +177,7 @@ describe('db-sync-filter', () => {
   };
 
   const getServerRevs = async (docIds) => {
-    const result = utils.requestOnMedicDbNative('/_all_docs', { keys: docIds });
+    const result = utils.requestOnMedicDbNative({ path: '/_all_docs', params: { keys: docIds } });
     return result.rows;
   };
 
@@ -207,10 +207,11 @@ describe('db-sync-filter', () => {
     await updateDoc(report2, { extra: '2' });
     await updateDoc(patientId, { extra: '3' });
 
-    await commonElements.waitForSyncNative();
+    await commonElements.syncNative();
 
     // docs were successfully synced to the server
     const [ updatedReport1, updatedReport2, updatedPatient ] = await utils.getDocsNative([report1, report2, patientId]);
+    console.log(updatedPatient);
     chai.expect(updatedReport1.extra).to.equal('1');
     chai.expect(updatedReport2.extra).to.equal('2');
     chai.expect(updatedPatient.extra).to.equal('3');
@@ -219,7 +220,7 @@ describe('db-sync-filter', () => {
   it('should not filter deletes', async () => {
     await updateDoc(report1, { _deleted: true });
 
-    await commonElements.waitForSyncNative();
+    await commonElements.syncNative();
 
     const result = await utils.getDocsNative([report1], true);
     chai.expect(result.rows[0]).excludingEvery('rev').to.deep.equal({
@@ -232,18 +233,18 @@ describe('db-sync-filter', () => {
 
   it('should filter resources, service-worker, forms, translations, branding, partners docs', async () => {
     const docIds = [
-      //'_design/medic-client',
       'resources',
       'service-worker-meta',
       'form:pregnancy',
       'messages-en',
     ];
     const serverRevs = await getServerRevs(docIds);
+    console.log(JSON.stringify(serverRevs, null, 2));
     for (const docId of docIds) {
       await updateDoc(docId, { something: 'random' });
     }
 
-    await commonElements.waitForSyncNative();
+    await commonElements.syncNative();
 
     const updatedServerRevs = await getServerRevs(docIds);
     chai.expect(serverRevs).to.deep.equal(updatedServerRevs);
@@ -252,7 +253,7 @@ describe('db-sync-filter', () => {
   it('should filter locally purged docs', async () => {
     const { rev:localRev } = await updateDoc(report3, { _deleted: true, purged: true }, true);
 
-    await commonElements.waitForSyncNative();
+    await commonElements.syncNative();
 
     const serverReport = await utils.getDocNative(report3);
     chai.expect(serverReport).excludingEvery('_rev').to.deep.equal(initialReports[2]);

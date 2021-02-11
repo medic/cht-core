@@ -25,7 +25,7 @@ const baseConfig = {
       'e2e/service-worker.js',
       'e2e/create-meta-db.js',
       'e2e/login/login.specs.js',
-      '**/docs-by-replication-key-view.js',
+      '**!/docs-by-replication-key-view.js',
       'e2e/submit-enketo-form.js',
       'e2e/forms/submit-z-score-form.spec.js',
       'tests/e2e/contact-summary.js',
@@ -49,7 +49,7 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
+      args: ['--window-size=1024,768', /*'--headless',*/ '--disable-gpu'],
       prefs: {
         intl: { accept_languages: 'en-US' },
       },

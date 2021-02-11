@@ -53,7 +53,7 @@ module.exports = {
   },
 
   checkConfigurationWizard: async () => {
-    openSubmenu('configuration wizard');
+    await openSubmenu('configuration wizard');
     await helper.waitUntilReady(skipSetup);
     await expect(helper.getTextFromElement(wizardTitle)).toEqual('Configuration wizard');
     await expect(helper.getTextFromElement(defaultCountryCode)).toEqual('Canada (+1)');
@@ -77,22 +77,13 @@ module.exports = {
 
   sync: () => {
     module.exports.openMenu();
-    openSubmenu('sync');
+    openSubmenu('sync now');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
 
   syncNative: async () => {
     await module.exports.openMenuNative();
-    await openSubmenu('sync');
-    await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
-  },
-
-  waitForSyncNative: async () => {
-    const menuOptions = hamburgerMenuOptions;
-    const menuAlreadyOpen = menuOptions.length && menuOptions.first() && await helper.isDisplayed(menuOptions.first());
-    if (!menuAlreadyOpen) {
-      await hamburgerMenu.click();
-    }
+    await openSubmenu('sync now');
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
@@ -219,8 +210,13 @@ module.exports = {
 
   openMenuNative: async () => {
     await helper.waitUntilReadyNative(messagesLink);
-    await helper.clickElementNative(hamburgerMenu);
-    await helper.waitUntilReadyNative(hamburgerMenuOptions.first());
+    const menuAlreadyOpen = hamburgerMenuOptions.length &&
+                            hamburgerMenuOptions.first() &&
+                            await helper.isDisplayed(hamburgerMenuOptions.first());
+    if (!menuAlreadyOpen) {
+      await hamburgerMenu.click();
+    }
+    await helper.isDisplayed(hamburgerMenuOptions.first());
   },
 
   confirmDelete: async () => {
@@ -234,5 +230,5 @@ module.exports = {
 };
 
 function openSubmenu(menuName) {
-  helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
+  return helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
 }

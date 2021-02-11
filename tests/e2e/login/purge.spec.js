@@ -263,7 +263,7 @@ describe('Purging on login', () => {
     const purgeDate = result.date;
 
     await utils.resetBrowser();
-    commonElements.calm();
+    await commonElements.calm();
     await browser.waitForAngular();
     result = await getPurgeLog();
 
