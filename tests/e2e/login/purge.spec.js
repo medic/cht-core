@@ -218,22 +218,18 @@ describe('Purging on login', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    const doc = await utils.requestNative(`/_users/org.couchdb.user:${restrictedUserName}`);
-    await utils.requestNative({
-      path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
-      method: 'DELETE'
-    });
+    await utils.deleteUsersNative([restrictedUserName]);
     await utils.revertDbNative();
     await sentinelUtils.deletePurgeDbsNative();
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(async () => { await utils.afterEachNative(); });
+  afterEach(utils.afterEachNative);
 
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
       const callback = arguments[arguments.length - 1];
-      const db = window.PouchDB('medic-user-e2e_restricted');
+      const db = window.CHTCore.DB.get();
       db.get('_local/purgelog')
         .then(doc => callback(doc))
         .catch(err => callback(err));
