@@ -17,7 +17,7 @@ const changeLocale = locale => {
   if (!locale) {
     return;
   }
-  return element(by.css(`.locale[name="${locale}"]`)).click();
+  element(by.css(`.locale[name="${locale}"]`)).click();
 };
 
 module.exports = {
