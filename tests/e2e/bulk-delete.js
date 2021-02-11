@@ -67,7 +67,6 @@ describe('Bulk delete reports', () => {
 
   it('reports', async () => {
     await commonElements.goToReportsNative();
-    // await reports.waitForReportToAppearNative();
     await reports.startSelectModeNative(savedUuids);
     await reports.stopSelectModeNative(savedUuids);
     // start select mode again
