@@ -333,6 +333,7 @@ module.exports = function(grunt) {
           ];
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',
+            'webapp/src/js/bootstrap-tour-standalone.js',
             'api/extracted-resources/**/*',
             'api/build/**/*',
             '**/node_modules/**',
