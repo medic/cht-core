@@ -151,7 +151,7 @@ describe('Privacy policy', () => {
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('offline', password, false, 'fr');
       await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
-      const content = element(by.css('#privacy-policy-wrapper .html-content[test-language="fr"]'));
+      const content = element(by.css('#privacy-policy-wrapper .html-content'));
       let contentText = await helper.getTextFromElementNative(content);
       expect(contentText).toEqual('Politique de confidentialité en Francais\nPlus de markup');
 

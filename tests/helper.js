@@ -99,10 +99,9 @@ module.exports = {
     );
 
     await elements.each(async (element) => {
-      await element.getText();
-      const text  = text.toLowerCase().trim();
+      const text = await element.getText();
 
-      if (!text.includes(expectedText)) {
+      if (!text.toLowerCase().trim().includes(expectedText)) {
         return;
       }
 
