@@ -19,6 +19,7 @@ const reportListID = '#reports-list';
 module.exports = {
   firstForm,
   submitReport,
+  deselctReport: () => element(by.css('#reports-content .report-body .deselect')),
   allReports: () => element.all(by.css(`${reportListID} li`)),
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
   listLoader: () => element(by.css(`${reportListID} .loader`)),
