@@ -75,7 +75,7 @@ describe('Bulk delete reports', () => {
     await reports.expandSelectionNative();
     await reports.collapseSelectionNative();
     // deselect
-    await element(by.css('#reports-content .report-body .deselect')).click();
+    await reports.deselctReport().click();
     await reports.selectAllNative();
     await reports.deselectAllNative();
     await reports.selectSeveralReportsNative(savedUuids);
