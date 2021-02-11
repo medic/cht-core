@@ -164,37 +164,6 @@ module.exports = function(grunt) {
           debug: true,
         },
       },
-      /*webapp: {
-        src: 'webapp/src/js/app.js',
-        dest: 'build/ddocs/medic/_attachments/js/inbox.js',
-        browserifyOptions: {
-          detectGlobals: false,
-        },
-        options: {
-          transform: ['browserify-ngannotate'],
-          alias: {
-            'enketo-config': './webapp/src/js/enketo/config.json',
-            'widgets': './webapp/src/js/enketo/widgets',
-            './xpath-evaluator-binding': './webapp/src/js/enketo/OpenrosaXpathEvaluatorBinding',
-            'extended-xpath': './webapp/node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-            'openrosa-xpath-extensions': './webapp/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            // translator for enketo's internal i18n
-            'translator': './webapp/src/js/enketo/translator',
-            // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream
-            // https://github.com/enketo/enketo-core/issues/454
-            '../../js/dropdown.jquery': './webapp/node_modules/bootstrap/js/dropdown',
-            'angular-translate-interpolation-messageformat': './webapp/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'angular-translate-handler-log': './webapp/node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
-            'bikram-sambat': './webapp/node_modules/bikram-sambat',
-            'moment': './webapp/node_modules/moment',
-            'lodash/core': './webapp/node_modules/lodash/core',
-            'lodash/intersection': './webapp/node_modules/lodash/intersection',
-            'lodash/uniq': './webapp/node_modules/lodash/uniq',
-            'lodash/uniqBy': './webapp/node_modules/lodash/uniqBy',
-            'lodash/groupBy': './webapp/node_modules/lodash/groupBy',
-          },
-        },
-      },*/
       admin: {
         src: 'admin/src/js/main.js',
         dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
@@ -354,10 +323,7 @@ module.exports = function(grunt) {
             'sentinel/**/*.js',
             'shared-libs/**/*.js',
             'tests/**/*.js',
-            // todo Change this list to lint all *.js files after all files were migrated and the /js folder
-            // only contains "used" files.
-            'webapp/src/js/bootstrapper/*.js',
-            'webapp/src/js/enketo/*.js',
+            'webapp/src/**/*.js',
             'webapp/src/**/*.ts',
             'webapp/tests/**/*.js',
             'webapp/tests/**/*.ts',
@@ -1020,11 +986,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'Unit tests', [
     'env:unit-test',
-    // todo this is a temporary fix, because webapp tests now require shared libs to be installed
-    // so I moved shared libs tests at the top, because they also all libs dependencies
-    'exec:shared-lib-unit',
     'unit-webapp-no-dependencies',
     'karma:admin',
+    'exec:shared-lib-unit',
     'mochaTest:unit',
   ]);
 
@@ -1049,11 +1013,11 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
     'exec:check-version',
-    'install-dependencies',
     'static-analysis',
+    'install-dependencies',
+    'unit',
     'build',
     'mochaTest:api-integration',
-    'unit'
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
