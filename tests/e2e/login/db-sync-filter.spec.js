@@ -162,7 +162,8 @@ describe('db-sync-filter', () => {
     return browser.executeAsyncScript((docId, changes, overwrite) => {
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
-      return db.get(docId)
+      return db
+        .get(docId)
         .then(doc => {
           if (overwrite) {
             doc = { _rev: doc._rev, _id: doc._id };
@@ -174,6 +175,17 @@ describe('db-sync-filter', () => {
         .then(result => callback(result))
         .catch(err => callback(err));
     }, docId, changes, overwrite);
+  };
+
+  const createDoc = (doc) => {
+    return browser.executeAsyncScript((doc) => {
+      const callback = arguments[arguments.length - 1];
+      const db = window.CHTCore.DB.get();
+      return db
+        .put(doc)
+        .then(result => callback(result))
+        .catch(err => callback(err));
+    }, doc);
   };
 
   const getServerRevs = async (docIds) => {
@@ -206,15 +218,22 @@ describe('db-sync-filter', () => {
     await updateDoc(report1, { extra: '1' });
     await updateDoc(report2, { extra: '2' });
     await updateDoc(patientId, { extra: '3' });
+    const newReport = { ...initialReports[0], _id: uuid(), extra: '4' };
+    await createDoc(newReport);
 
     await commonElements.syncNative();
 
     // docs were successfully synced to the server
-    const [ updatedReport1, updatedReport2, updatedPatient ] = await utils.getDocsNative([report1, report2, patientId]);
-    console.log(updatedPatient);
+    const [
+      updatedReport1,
+      updatedReport2,
+      updatedPatient,
+      updatedNewReport,
+    ] = await utils.getDocsNative([report1, report2, patientId, newReport._id]);
     chai.expect(updatedReport1.extra).to.equal('1');
     chai.expect(updatedReport2.extra).to.equal('2');
     chai.expect(updatedPatient.extra).to.equal('3');
+    chai.expect(updatedNewReport).excludingEvery('_rev').to.deep.equal(newReport);
   });
 
   it('should not filter deletes', async () => {
@@ -239,7 +258,6 @@ describe('db-sync-filter', () => {
       'messages-en',
     ];
     const serverRevs = await getServerRevs(docIds);
-    console.log(JSON.stringify(serverRevs, null, 2));
     for (const docId of docIds) {
       await updateDoc(docId, { something: 'random' });
     }
@@ -259,5 +277,24 @@ describe('db-sync-filter', () => {
     chai.expect(serverReport).excludingEvery('_rev').to.deep.equal(initialReports[2]);
     chai.expect(serverReport._rev).to.not.equal(localRev);
     chai.expect(serverReport).to.not.have.property('purged');
+  });
+
+  it('should filter ddocs', async () => {
+    const newDdoc = { _id: '_design/test' };
+    await createDoc(newDdoc);
+    const serverRevs = await getServerRevs(['_design/medic-client']);
+    await updateDoc('_design/medic-client', { something: 'random' });
+    // updating the ddoc will throw the "upgrade" popup, ignore it!
+    await utils.closeReloadModal();
+
+    await commonElements.syncNative();
+
+    const updatedServerRevs = await getServerRevs(['_design/medic-client']);
+    chai.expect(serverRevs).to.deep.equal(updatedServerRevs);
+    const result = await utils.getDocsNative(['_design/test'], true);
+    chai.expect(result.rows[0]).to.deep.equal({
+      key: '_design/test',
+      error: 'not_found',
+    });
   });
 });

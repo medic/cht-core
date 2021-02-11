@@ -229,7 +229,7 @@ describe('Purging on login', () => {
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
       const callback = arguments[arguments.length - 1];
-      const db = window.PouchDB('medic-user-e2e_restricted');
+      const db = window.CHTCore.DB.get();
       db.get('_local/purgelog')
         .then(doc => callback(doc))
         .catch(err => callback(err));

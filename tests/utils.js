@@ -346,17 +346,13 @@ const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
-    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000, 'refresh to get settings failed')
-    .then(() => {
-      dialog.click();
-    })
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+    .then(() => dialog.click())
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      return dialog.isPresent().then(function(result) {
-        if (result) {
-          dialog.click();
-        }
+      return dialog.isPresent().then((isPresent) => {
+        return isPresent && dialog.click();
       });
     })
     .then(() => {
@@ -367,6 +363,13 @@ const refreshToGetNewSettings = () => {
         10000, 'Second refresh to get settings'
       );
     });
+};
+
+const closeReloadModal = () => {
+  const dialog = element(by.css('#update-available .btn.cancel:not(.disabled)'));
+  return browser
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+    .then(() => dialog.click());
 };
 
 const setUserContactDoc = () => {
@@ -1050,6 +1053,7 @@ module.exports = {
     });
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
+  closeReloadModal: closeReloadModal,
 
   closeTour: async () => {
     await element.all(by.css('.modal-dialog a.cancel')).each(async elm => {
