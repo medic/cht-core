@@ -4,7 +4,7 @@ const helper = require('../../helper');
 const utils = require('../../utils');
 
 describe('Add new person tests : ', () => {
-  afterEach(async () => { await utils.resetBrowser(); });
+  afterEach(async () => { await utils.resetBrowserNative(); });
 
   afterAll(async () => { await utils.afterEachNative(); });
 

@@ -2,10 +2,10 @@ const auth = require('../../auth')();
 const commonElements = require('../../page-objects/common/common.po.js');
 const reports = require('../../page-objects/reports/reports.po.js');
 const utils = require('../../utils');
+const helper = require('../../helper');
 const loginPage = require('../../page-objects/login/login.po.js');
 const sentinelUtils = require('../sentinel/utils');
 const chai = require('chai');
-const helper = require('../../helper');
 
 /* global window */
 
@@ -198,43 +198,37 @@ describe('Purging on login', () => {
   };
 
   let originalTimeout;
-  beforeAll(done => {
+  beforeAll(async () => {
+    await commonElements.goToMessagesNative();
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-    let seq;
-    return utils
-      .saveDocs(initialReports.concat(initialDocs))
-      .then(() => utils.request({
-        path: `/_users/org.couchdb.user:${restrictedUserName}`,
-        method: 'PUT',
-        body: restrictedUser
-      }))
-      .then(() => sentinelUtils.getCurrentSeq())
-      .then(result => seq = result)
-      .then(() => utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true))
-      .then(() => restartSentinel())
-      .then(() => sentinelUtils.waitForPurgeCompletion(seq))
-      .then(() => done()).catch(done.fail);
+    await utils.saveDocsNative(initialReports.concat(initialDocs));
+    await utils.requestNative({
+      path: `/_users/org.couchdb.user:${restrictedUserName}`,
+      method: 'PUT',
+      body: restrictedUser
+    });
+    const seq = await sentinelUtils.getCurrentSeqNative();
+    await utils.updateSettingsNative({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
+    await restartSentinel();
+    await sentinelUtils.waitForPurgeCompletionNative(seq);
   });
 
-  afterAll(done => {
+  afterAll(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    commonElements.goToLoginPage();
-    loginPage.login(auth.username, auth.password);
-    return Promise.all([
-      utils.request(`/_users/org.couchdb.user:${restrictedUserName}`)
-        .then(doc => utils.request({
-          path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
-          method: 'DELETE'
-        })),
-      utils.revertDb()
-    ])
-      .then(() => sentinelUtils.deletePurgeDbs())
-      .then(() => done()).catch(done.fail);
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(auth.username, auth.password);
+    const doc = await utils.requestNative(`/_users/org.couchdb.user:${restrictedUserName}`);
+    await utils.requestNative({
+      path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
+      method: 'DELETE'
+    });
+    await utils.revertDbNative();
+    await sentinelUtils.deletePurgeDbsNative();
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(utils.afterEach);
+  afterEach(async () => { await utils.afterEachNative(); });
 
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
@@ -248,86 +242,77 @@ describe('Purging on login', () => {
 
   const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
-  it('Logging in as a restricted user with configured purge rules should not download purged docs', () => {
-    utils.resetBrowser();
-    commonElements.goToLoginPage();
-    loginPage.login(restrictedUserName, restrictedPass);
-    commonElements.calm();
-    commonElements.goToReports();
-    reports.expectReportsToExist([goodFormId]);
-    reports.expectReportsToNotExist([badFormId]);
+  it('Logging in as a restricted user with configured purge rules should not download purged docs', async () => {
+    await utils.resetBrowser();
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(restrictedUserName, restrictedPass);
+    await commonElements.calmNative();
+    await commonElements.goToReportsNative();
+    const goodFormReport = reports.reportByUUID(goodFormId);
+    await helper.waitUntilReadyNative(goodFormReport);
+    expect(await browser.isElementPresent(goodFormReport)).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(badFormId))).toBeFalse;
 
-    let purgeDate;
+    let result = await getPurgeLog();
+    // purge ran but after initial replication, nothing to purge
+    chai.expect(result._rev).to.equal('0-1');
+    chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
+    chai.expect(result.history.length).to.equal(1);
+    chai.expect(result.count).to.equal(0);
+    chai.expect(result.history[0]).to.deep.equal({
+      count: 0,
+      roles: result.roles,
+      date: result.date
+    });
+    const purgeDate = result.date;
 
-    return getPurgeLog()
-      .then(result => {
-        // purge ran but after initial replication, nothing to purge
-        chai.expect(result._rev).to.equal('0-1');
-        chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
-        chai.expect(result.history.length).to.equal(1);
-        chai.expect(result.count).to.equal(0);
-        chai.expect(result.history[0]).to.deep.equal({
-          count: 0,
-          roles: result.roles,
-          date: result.date
-        });
-        purgeDate = result.date;
-      })
-      .then(() => {
-        utils.resetBrowser();
-        commonElements.calm();
-        helper.waitForAngularComplete();
-        return getPurgeLog();
-      })
-      .then(result => {
-        // purge didn't run again on next refresh
-        chai.expect(result._rev).to.equal('0-1');
-        chai.expect(result.date).to.equal(purgeDate);
-      })
-      .then(() => {
-        browser.wait(() => utils.saveDocs(subsequentReports).then(() => true));
-        commonElements.sync();
-        commonElements.goToReports();
-        reports.expectReportsToExist([goodFormId, goodFormId2, badFormId2]);
+    await utils.resetBrowser();
+    await commonElements.calm();
+    await browser.waitForAngular();
+    result = await getPurgeLog();
 
-        browser.wait(() => {
-          let seq;
-          const purgeSettings = {
-            fn: purgeFn.toString(),
-            text_expression: 'every 1 seconds',
-            run_every_days: '0'
-          };
-          return utils.revertSettings(true)
-            .then(() => sentinelUtils.getCurrentSeq())
-            .then(result => seq = result)
-            .then(() => utils.updateSettings({ purge: purgeSettings}, true))
-            .then(() => restartSentinel())
-            .then(() => sentinelUtils.waitForPurgeCompletion(seq))
-            .then(() => true);
-        });
-        // get new settings that say to purge on every boot!
-        commonElements.sync();
-        utils.refreshToGetNewSettings();
-        commonElements.calm();
-        return getPurgeLog();
-      })
-      .then(result => {
-        // purge ran again and it purged the bad form
-        chai.expect(result._rev).to.equal('0-2');
-        chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
-        chai.expect(result.history.length).to.equal(2);
-        chai.expect(result.count).to.equal(1);
-        chai.expect(result.history[1].date).to.equal(purgeDate);
-        chai.expect(result.history[0]).to.deep.equal({
-          count: 1,
-          roles: result.roles,
-          date: result.date
-        });
-      })
-      .then(() => {
-        commonElements.goToReports();
-        reports.expectReportsToExist([goodFormId, goodFormId2]);
-        reports.expectReportsToNotExist([badFormId, badFormId2]);
-      });
+    // purge didn't run again on next refresh
+    chai.expect(result._rev).to.equal('0-1');
+    chai.expect(result.date).to.equal(purgeDate);
+    await utils.saveDocsNative(subsequentReports);
+
+    await commonElements.syncNative();
+    await commonElements.goToReportsNative();
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(badFormId2))).toBeTrue;
+
+    const purgeSettings = {
+      fn: purgeFn.toString(),
+      text_expression: 'every 1 seconds',
+      run_every_days: '0'
+    };
+    await utils.revertSettingsNative(true);
+    const seq = await sentinelUtils.getCurrentSeqNative();
+    await utils.updateSettingsNative({ purge: purgeSettings}, true);
+    await restartSentinel();
+    await sentinelUtils.waitForPurgeCompletionNative(seq);
+    // get new settings that say to purge on every boot!
+    await commonElements.syncNative();
+    await utils.refreshToGetNewSettings();
+
+    result = await getPurgeLog();
+    // purge ran again and it purged the bad form
+    chai.expect(result._rev).to.equal('0-2');
+    chai.expect(result.roles).to.equal(JSON.stringify(restrictedUser.roles.sort()));
+    chai.expect(result.history.length).to.equal(2);
+    chai.expect(result.count).to.equal(1);
+    chai.expect(result.history[1].date).to.equal(purgeDate);
+    chai.expect(result.history[0]).to.deep.equal({
+      count: 1,
+      roles: result.roles,
+      date: result.date
+    });
+    await commonElements.goToReportsNative();
+
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(badFormId))).toBeFalse;
+    expect(await browser.isElementPresent(reports.reportByUUID(badFormId2))).toBeFalse;
   });
 });

@@ -21,7 +21,7 @@ let e2eDebug;
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const requestNative = async (options, { debug } = {}) => {
+const requestNative = (options, { debug } = {}) => {
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -350,7 +350,7 @@ const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
-    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000, 'refresh to get settings failed')
     .then(() => {
       dialog.click();
     })
@@ -368,7 +368,8 @@ const refreshToGetNewSettings = () => {
         protractor.ExpectedConditions.elementToBeClickable(
           element(by.id('contacts-tab'))
         ),
-        10000
+        10000,
+        'Second refresh to get settings'
       );
     });
 };
@@ -839,6 +840,13 @@ module.exports = {
       }
     }),
 
+  revertSettingsNative: async ignoreRefresh => {
+    await revertSettingsNative();
+    if (!ignoreRefresh) {
+      return refreshToGetNewSettings();
+    }
+  },
+
   seedTestData: (done, userContactDoc, documents) => {
     deprecated('seedTestData', 'seedTestDataNative');
     protractor.promise
@@ -918,10 +926,8 @@ module.exports = {
   },
 
   resetBrowserNative: async () => {
-    await browser.driver
-      .navigate()
-      .refresh();
-    await browser.wait(
+    await browser.driver.navigate().refresh();
+    return browser.wait(
       () => element(by.css('#messages-tab')).isPresent(),
       10000,
       'Timed out waiting for browser to reset. Looking for element #messages-tab'

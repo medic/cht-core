@@ -290,7 +290,7 @@ describe('registration transition', () => {
       expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');
     };
 
-    it('shows content', async () => {
+    it('shows content', () => {
       commonElements.goToReports(true);
       helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(

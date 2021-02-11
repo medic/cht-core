@@ -9,6 +9,10 @@ const dateFilter = element(by.css('#date-filter'));
 const submitReport = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
 const firstForm = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'));
 
+const reportsByUUID = (uuid) => {
+  return module.exports.list().all(by.css(`li[data-record-id="${uuid}"]`));
+};
+
 const reportListID = '#reports-list';
 
 module.exports = {
@@ -18,21 +22,22 @@ module.exports = {
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
   listLoader: () => element(by.css(`${reportListID} .loader`)),
   list: () => element(by.css(reportListID)),
-  reportByUUID: uuid => module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]')),
+  reportByUUID: uuid => reportsByUUID(uuid).first(),
+  reportsByUUID: reportsByUUID,
   reportSummary: () => element(by.css('#reports-content .item-summary')),
   formNameNoSubject: () => module.exports.reportSummary().element(by.css('mm-sender + div')),
   subjectName: () => module.exports.reportSummary().element(by.css('.subject .name')),
   summaryFormName: () => module.exports.reportSummary().element(by.css('.subject + div')),
   submitterName: () => module.exports.reportSummary().element(by.css('.sender .name')),
   submitterPhone: () => module.exports.reportSummary().element(by.css('.sender .phone')),
-  subject: async reportElement =>  {
+  subject: reportElement =>  {
     return reportElement.element(by.css('.content .heading h4 span'));
   },
-  formName: async reportElement =>  {
+  formName: reportElement =>  {
     return reportElement.element(by.css('.summary'));
   },
   loadReport: async uuid => {
-    const report = module.exports.reportByUUID(uuid).first();
+    const report = module.exports.reportByUUID(uuid);
     await helper.waitElementToBeClickable(report);
     await helper.clickElement(report);
     await helper.waitElementToPresent(module.exports.reportSummary(), 3000);
