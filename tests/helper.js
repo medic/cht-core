@@ -8,7 +8,7 @@ function writeScreenShot(data, filename) {
   stream.end();
 }
 function handleUpdateModal() {
-  utils.deprecated('handleUpdateModal','handleUpdateModalNative');
+  utils.deprecated('handleUpdateModal', 'handleUpdateModalNative');
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
   }
@@ -64,7 +64,7 @@ module.exports = {
    * expectedText : text that element should include
    */
   findElementByTextAndClick: (elements, expectedText) => {
-    utils.deprecated('findElementByTextAndClick','findElementByTextAndClickNative');
+    utils.deprecated('findElementByTextAndClick', 'findElementByTextAndClickNative');
     return browser
       .wait(
         EC.presenceOf(elements),
@@ -110,7 +110,7 @@ module.exports = {
   },
 
   getTextFromElement: element => {
-    utils.deprecated('getTextFromElement','getTextFromElementNative');
+    utils.deprecated('getTextFromElement', 'getTextFromElementNative');
     return browser
       .wait(
         EC.presenceOf(element),
@@ -284,7 +284,7 @@ module.exports = {
   },
 
   waitElementToBeVisible: (elm, timeout) => {
-    utils.deprecated('waitElementToBeVisible','waitElementToBeVisibleNative');
+    utils.deprecated('waitElementToBeVisible', 'waitElementToBeVisibleNative');
     timeout = timeout || 15000;
     return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
   },

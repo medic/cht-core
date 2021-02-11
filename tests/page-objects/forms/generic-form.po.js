@@ -65,7 +65,7 @@ module.exports = {
   },
 
   selectForm: () => {
-    utils.deprecated('selectForm','selectFormNative');
+    utils.deprecated('selectForm', 'selectFormNative');
     const addButton = element(
       by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus')
     );

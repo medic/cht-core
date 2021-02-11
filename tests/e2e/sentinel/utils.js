@@ -14,7 +14,7 @@ const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
 // @return     {<promise>}        resolves once the wait is over
 //
 const waitForSeq = (metadataId, docIds) => {
-  utils.deprecated('waitForSeq','waitForSeqNative');
+  utils.deprecated('waitForSeq', 'waitForSeqNative');
   return requestOnSentinelTestDb(metadataId)
     .catch(err => {
       if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
@@ -110,7 +110,7 @@ const getInfoDoc = docId => {
 };
 
 const getInfoDocs = (docIds = []) => {
-  utils.deprecated('getInfoDocs','getInfoDocsNative');
+  utils.deprecated('getInfoDocs', 'getInfoDocsNative');
   docIds = _.castArray(docIds);
 
   const opts = {
