@@ -2,6 +2,7 @@ const auth = require('../../auth')();
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.po.js');
+const privacyPolicyPage = require('../../page-objects/privacy-policy/privacy-policy.po');
 const helper = require('../../helper');
 
 describe('Privacy policy', () => {
@@ -104,25 +105,17 @@ describe('Privacy policy', () => {
       // After first login, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('online', password);
-      await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
-      let content = await helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
-      expect(content).toEqual('English Privacy Policy\nMore markup');
+      expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual('English Privacy Policy\nMore markup');
 
-      const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
-      await acceptButton.click();
-      await commonElements.calmNative();
-      await utils.resetBrowserNative();
       // After accepting, no privacy policy on next load
+      await privacyPolicyPage.acceptPrivacyPolicy();
+      await utils.resetBrowserNative();
       await commonElements.calmNative();
       await closeTourModal();
       await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
-      await browser.get(utils.getBaseUrl() + 'privacy-policy');
-      const privacyPolicyContainer = element(by.css('.privacy-policy.configuration'));
-      await helper.waitElementToBeVisibleNative(privacyPolicyContainer);
-      content = await helper.getTextFromElementNative(privacyPolicyContainer);
-      expect(content).toEqual('English Privacy Policy\nMore markup');
+      expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual('English Privacy Policy\nMore markup');
 
       // No privacy policy on 2nd login
       await commonElements.goToLoginPageNative();
@@ -132,10 +125,9 @@ describe('Privacy policy', () => {
       // After login in french, check that privacy policy was prompted to user again
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('online', password, false, 'fr');
-      const contentFr = await helper.getTextFromElementNative(element(by.css('#privacy-policy-wrapper .html-content')));
+      const contentFr = await privacyPolicyPage.getPrivacyPolicyFromOverlay();
       expect(contentFr).toEqual('Politique de confidentialité en Francais\nPlus de markup');
-      await element(by.css('#privacy-policy-wrapper .btn')).click();
-      await commonElements.calmNative();
+      await privacyPolicyPage.acceptPrivacyPolicy();
     });
   });
 
@@ -145,51 +137,33 @@ describe('Privacy policy', () => {
     });
 
     it('should show the correct privacy policy on login', async () => {
+      const frenchPolicyText = 'Politique de confidentialité en Francais\nPlus de markup';
       await utils.createUsersNative([offlineUser]);
 
       // After first login in french, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('offline', password, false, 'fr');
-      await helper.waitElementToPresentNative(element(by.css('#privacy-policy-wrapper')));
-      const content = element(by.css('#privacy-policy-wrapper .html-content'));
-      let contentText = await helper.getTextFromElementNative(content);
-      expect(contentText).toEqual('Politique de confidentialité en Francais\nPlus de markup');
+      expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual(frenchPolicyText);
 
-      const acceptButton = element(by.css('#privacy-policy-wrapper .btn'));
-      await acceptButton.click();
-      await commonElements.calmNative();
-      await utils.resetBrowserNative();
       // After accepting, no privacy policy on next load
+      await privacyPolicyPage.acceptPrivacyPolicy();
+      await utils.resetBrowserNative();
       await commonElements.calmNative();
       await closeTourModal();
       await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
-      await browser.get(utils.getBaseUrl() + 'privacy-policy');
-      const privacyPolicyContainer = element(by.css('.privacy-policy.configuration'));
-      await helper.waitElementToBeVisibleNative(privacyPolicyContainer);
-      contentText = await helper.getTextFromElementNative(privacyPolicyContainer);
-      expect(contentText).toEqual('Politique de confidentialité en Francais\nPlus de markup');
+      expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual(frenchPolicyText);
 
       // Update privacy policies
-      const policiesDoc = await utils.getDocNative('privacy-policies');
-      const updatePrivacyPolicyInFrench = 'Cette text est totalement different c`est fois!';
-      policiesDoc.privacy_policies.fr = 'new_attachment';
-      policiesDoc._attachments.new_attachment = {
-        content_type: 'text/html',
-        data: Buffer.from(updatePrivacyPolicyInFrench).toString('base64'),
-      };
-      await utils.saveDocNative(policiesDoc);
-
+      const newPolicyText = 'Cette text est totalement different c`est fois!';
+      await privacyPolicyPage.updatePrivacyPolicy('privacy-policies', 'fr_attachment', newPolicyText);
       await commonElements.syncNative();
       await browser.driver.navigate().refresh();
 
       // Privacy policy updated
-      const contentElement = element(by.css('#privacy-policy-wrapper .html-content'));
-      const contentUpdated = await helper.getTextFromElementNative(contentElement);
-      expect(contentUpdated).toEqual(updatePrivacyPolicyInFrench);
-      await element(by.css('#privacy-policy-wrapper .btn')).click();
-      await commonElements.calmNative();
+      expect(await privacyPolicyPage.getPrivacyPolicyFromOverlay()).toEqual(newPolicyText);
+      await privacyPolicyPage.acceptPrivacyPolicy();
     });
   });
 });

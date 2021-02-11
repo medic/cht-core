@@ -145,7 +145,7 @@ module.exports = {
         12000,
         `Element taking too long to appear in the DOM.Let us retry ${element.locator()}`
       );
-      return await element.getText();
+      return element.getText();
 
     } catch (error) {
       await browser.sleep(1000);
@@ -154,7 +154,7 @@ module.exports = {
         12000,
         `Element taking too long to appear in the DOM. Giving up! ${element.locator()}`
       );
-      return await element.getText();
+      return element.getText();
     }
   },
 
