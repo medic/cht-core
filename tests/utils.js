@@ -47,13 +47,9 @@ const requestNative = (options, { debug } = {}) => {
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  return new Promise(function(resolve,reject){
-    rpn(options)
-      .then((resp) => resolve(resp))
-      .catch(err => {
-        err.responseBody = err.response && err.response.body;
-        reject(err);
-      });
+  return rpn(options).catch(err => {
+    err.responseBody = err.response && err.response.body;
+    throw err;
   });
 };
 
@@ -350,17 +346,13 @@ const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
-    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000, 'refresh to get settings failed')
-    .then(() => {
-      dialog.click();
-    })
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+    .then(() => dialog.click())
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      return dialog.isPresent().then(function(result) {
-        if (result) {
-          dialog.click();
-        }
+      return dialog.isPresent().then((isPresent) => {
+        return isPresent && dialog.click();
       });
     })
     .then(() => {
@@ -372,6 +364,13 @@ const refreshToGetNewSettings = () => {
         'Second refresh to get settings'
       );
     });
+};
+
+const closeReloadModal = () => {
+  const dialog = element(by.css('#update-available .btn.cancel:not(.disabled)'));
+  return browser
+    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
+    .then(() => dialog.click());
 };
 
 const setUserContactDoc = () => {
@@ -474,10 +473,10 @@ const deleteUsersNative = async (users, meta = false) => {
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
-  
+
   await  requestNative({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } });
   await  requestNative({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } });
-  
+
 
   if (!meta) {
     return;
@@ -665,6 +664,14 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
+  requestOnMedicDbNative: (options, debug ) => {
+    if (typeof options === 'string') {
+      options = { path: options };
+    }
+    options.path = `/medic${options.path || ''}`;
+    return requestNative(options, { debug: debug });
+  },
+
   saveDoc: doc => {
     return module.exports.requestOnTestDb({
       path: '/', // so audit picks this up
@@ -748,7 +755,7 @@ module.exports = {
       .then(response => response.rows.map(row => row.doc));
   },
 
-  getDocsNative: async ids => {
+  getDocsNative: async (ids, fullResponse = false) => {
     const response = await module.exports
       .requestOnTestDbNative({
         path: `/_all_docs?include_docs=true`,
@@ -756,7 +763,7 @@ module.exports = {
         body: { keys: ids || []},
         headers: { 'content-type': 'application/json' },
       });
-    return response.rows.map(row => row.doc);
+    return fullResponse ? response :  response.rows.map(row => row.doc);
   },
 
   deleteDoc: id => {
@@ -819,7 +826,7 @@ module.exports = {
       }
     });
   },
-  
+
   updateSettingsNative: async (updates, ignoreRefresh = false) => {
     await updateSettingsNative(updates);
     if (!ignoreRefresh) {
@@ -1072,6 +1079,7 @@ module.exports = {
     });
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
+  closeReloadModal: closeReloadModal,
 
   closeTour: async () => {
     await element.all(by.css('.modal-dialog a.cancel')).each(async elm => {

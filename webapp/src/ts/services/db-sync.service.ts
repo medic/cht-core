@@ -34,6 +34,9 @@ const readOnlyFilter = function(doc) {
     doc._id.indexOf(DDOC_PREFIX) !== 0
   );
 };
+// PouchDB uses this value to generate a replication id. Because of non-deterministic minification, there's a high risk
+// of invalidating existent replication checkpointers after upgrade, causing users to restart upwards replication.
+readOnlyFilter.toString = () => '';
 
 @Injectable({
   providedIn: 'root'

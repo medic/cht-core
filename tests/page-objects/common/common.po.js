@@ -7,8 +7,8 @@ const genericSubmitButton = element(by.css('.btn.btn-primary'));
 const genericCancelBtn = element(by.css('.modal .btn.cancel'));
 const messagesLink = element(by.id('messages-tab'));
 const analyticsLink = element(by.id('analytics-tab'));
-const hamburgerMenu = element(by.css('.dropdown.options>a'));
-const hamburgerMenuOptions = element.all(by.css('.dropdown.options>ul>li:not(.hidden)'));
+const hamburgerMenu = element(by.id('header-dropdown-link'));
+const hamburgerMenuOptions = element.all(by.css('#header-dropdown>li:not(.hidden)'));
 const logoutButton = $('[ng-click=logout]');
 
 // Configuration wizard
@@ -54,7 +54,7 @@ module.exports = {
   },
 
   checkConfigurationWizard: async () => {
-    openSubmenu('configuration wizard');
+    await openSubmenu('configuration wizard');
     await helper.waitUntilReady(skipSetup);
     await expect(helper.getTextFromElement(wizardTitle)).toEqual('Configuration wizard');
     await expect(helper.getTextFromElement(defaultCountryCode)).toEqual('Canada (+1)');
@@ -79,13 +79,13 @@ module.exports = {
   sync: () => {
     utils.deprecated('sync', 'syncNative');
     module.exports.openMenu();
-    openSubmenu('sync');
+    openSubmenu('sync now');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
   },
 
   syncNative: async () => {
     await module.exports.openMenuNative();
-    await openSubmenuNative('sync');
+    await openSubmenu('sync now');
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
@@ -209,30 +209,30 @@ module.exports = {
     utils.deprecated('openMenu', 'openMenuNative');
     helper.waitUntilReady(messagesLink);
     helper.clickElement(hamburgerMenu);
-    return helper.waitUntilReady(hamburgerMenuOptions);
+    return helper.waitUntilReady(hamburgerMenuOptions.first());
   },
 
   openMenuNative: async () => {
     await helper.waitUntilReadyNative(messagesLink);
-    await helper.clickElementNative(hamburgerMenu);
-    await helper.waitUntilReadyNative(hamburgerMenuOptions.first());
+    const menuAlreadyOpen = hamburgerMenuOptions.length &&
+                            hamburgerMenuOptions.first() &&
+                            await helper.isDisplayed(hamburgerMenuOptions.first());
+    if (!menuAlreadyOpen) {
+      await hamburgerMenu.click();
+    }
+    await helper.isDisplayed(hamburgerMenuOptions.first());
   },
 
   confirmDelete: async () => {
     await helper.waitUntilReady(deleteButton);
     await deleteButton.click();
   },
-  
+
   expectDisplayDate:() => {
     expect(displayTime.isPresent()).toBeTruthy();
   },
 };
 
 function openSubmenu(menuName) {
-  utils.deprecated('openSubmenu', 'openSubmenuNative');
-  helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
-}
-
-async function openSubmenuNative(menuName) {
-  await helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
+  return helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
 }
