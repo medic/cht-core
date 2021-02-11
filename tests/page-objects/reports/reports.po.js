@@ -241,7 +241,7 @@ module.exports = {
   waitForReportToAppearNative: async (numOfReports = 1) => {
     await browser.refresh();
     while (await module.exports.allReports().count < numOfReports) {
-      browser.sleep(100);
+      await browser.sleep(100);
     }
   },
 };
