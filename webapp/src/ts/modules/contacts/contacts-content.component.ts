@@ -83,7 +83,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.contactsActions.selectContact(null);
+    this.contactsActions.setSelectedContact(null);
+    this.globalActions.setRightActionBar({});
   }
 
   private getUserFacility() {
@@ -223,8 +224,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
       canDelete: this.canDeleteContact,
       canEdit: this.sessionService.isAdmin() || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
-      openContactMutedModal: (form) => this.openContactMutedModal(form),
-      openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo)
+      openContactMutedModal:
+        this.openContactMutedModal.bind({}, this.router, this.modalService, this.selectedContact._id),
+      openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
     });
 
     this.subscribeToAllContactXmlForms();
@@ -373,20 +375,19 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     return models;
   }
 
-  private openContactMutedModal(form) {
+  private openContactMutedModal(router:Router, modalService:ModalService, selectedContactId, form) {
     if (!form.showUnmuteModal) {
-      this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]);
-      return;
+      return router.navigate(['/contacts', selectedContactId, 'report', form.code]);
     }
 
-    this.modalService
+    modalService
       .show(ContactsMutedComponent)
-      .then(() => this.router.navigate(['/contacts', this.selectedContact._id, 'report', form.code]))
+      .then(() => this.router.navigate(['/contacts', selectedContactId, 'report', form.code]))
       .catch(() => {});
   }
 
-  private openSendMessageModal(sendTo) {
-    this.modalService
+  private openSendMessageModal(modalService:ModalService, sendTo) {
+    modalService
       .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
       .catch(() => {});
   }

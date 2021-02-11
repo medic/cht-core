@@ -15,6 +15,10 @@ export class SearchFiltersService {
     this.freetextFilter = freetextFilter;
   }
 
+  destroy() {
+    this.freetextFilter = null;
+  }
+
   freetextSearch(query) {
     this.freetextFilter?.applyFieldChange(query, true);
   }

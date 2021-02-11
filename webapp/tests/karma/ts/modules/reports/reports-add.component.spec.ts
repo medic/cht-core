@@ -122,7 +122,7 @@ describe('Reports Add Component', () => {
       const callback = setCancelCallback.args[0][0];
       callback();
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
+      expect(router.navigate.args[0]).to.deep.equal([['/reports', '']]);
     });
 
     it('should set cancel callback when route loads an existent report', () => {

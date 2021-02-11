@@ -68,6 +68,8 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.geoHandle?.cancel();
+    this.enketoService.unload(this.form);
+    this.globalActions.clearCancelCallback();
   }
 
   private subscribeToStore() {
@@ -230,18 +232,24 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    this.globalActions.setCancelCallback(() => {
-      this.tasksActions.setSelectedTask(null);
-      if (skipDetails) {
-        this.router.navigate(['/tasks']);
-      } else {
+    if (skipDetails) {
+      const cancelCallback = (tasksActions:TasksActions, router:Router) => {
+        tasksActions.setSelectedTask(null);
+        router.navigate(['/tasks']);
+      };
+      this.globalActions.setCancelCallback(cancelCallback.bind({}, this.tasksActions, this.router));
+    } else {
+      const cancelCallback = () => {
+        this.tasksActions.setSelectedTask(null);
         this.enketoService.unload(this.form);
         this.form = null;
         this.loadingForm = false;
         this.contentError = false;
         this.globalActions.clearCancelCallback();
-      }
-    });
+      };
+      // unfortunately, this callback has to update the component itself
+      this.globalActions.setCancelCallback(cancelCallback.bind(this));
+    }
 
     this.contentError = false;
     this.resetFormError();
