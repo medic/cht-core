@@ -63,7 +63,7 @@ module.exports = {
    * elements : array of all elements where required elemnt has to present
    * expectedText : text that element should include
    */
-  findElementByTextAndClick: async (elements, expectedText) => {
+  findElementByTextAndClick: (elements, expectedText) => {
     return browser
       .wait(
         EC.presenceOf(elements),
@@ -80,13 +80,7 @@ module.exports = {
                   .trim()
                   .includes(expectedText)
               ) {
-                return browser
-                  .wait(
-                    EC.elementToBeClickable(element),
-                    12000,
-                    `Element taking too long to appear in the DOM ${element.locator()}`
-                  )
-                  .then(() => element.click());
+                return element.click();
               }
             });
         });
