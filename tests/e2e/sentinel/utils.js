@@ -49,7 +49,7 @@ const waitForSeq = (metadataId, docIds) => {
     });
 };
 
-const waitForSeqNative = async (metadataId, docIds) => {
+const waitForSeqNative = (metadataId, docIds) => {
   return requestOnSentinelTestDbNative(metadataId)
     .catch(err => {
       if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
@@ -190,11 +190,11 @@ const waitForPurgeCompletionNative = async seq => {
   if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
     return;
   }
-  waitForPurgeCompletionNative(result.last_seq);
+  return waitForPurgeCompletionNative(result.last_seq);
 };
 
 const getCurrentSeq = () => requestOnSentinelTestDb('').then(data => data.update_seq);
-const getCurrentSeqNative = async () => { 
+const getCurrentSeqNative = async () => {
   const data = await requestOnSentinelTestDbNative('');
   return data.update_seq;
 };

@@ -82,7 +82,7 @@ module.exports = {
   },
 
   //note to CHW
-  getNoteToCHW: async () => {
+  getNoteToCHW: () => {
     const locator = '[data-value=" /delivery/group_note/default_chw_sms_text "]';
     const  e = element.all(by.css(locator)).filter(function(elem) {
       return elem.getText().then(function(text) {

@@ -142,6 +142,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.reportsActions.setSelectedReports([]);
     this.globalActions.setSelectMode(false);
     this.globalActions.unsetSelected();
+    this.globalActions.setLeftActionBar({});
   }
 
   private getReportHeading(form, report) {
@@ -256,23 +257,25 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private setActionBarData() {
     this.globalActions.setLeftActionBar({
       hasResults: this.hasReports,
-      exportFn: (e) => {
-        const exportFilters = _assignIn({}, this.filters);
-        ['forms', 'facilities'].forEach((type) => {
-          if (exportFilters[type]) {
-            delete exportFilters[type].options;
-          }
-        });
-        const $link = $(e.target).closest('a');
-        $link.addClass('mm-icon-disabled');
-        this.ngZone.runOutsideAngular(() => {
-          setTimeout(() => {
-            $link.removeClass('mm-icon-disabled');
-          }, 2000);
-        });
-        this.exportService.export('reports', exportFilters, { humanReadable: true });
-      },
+      exportFn: this.exportFn.bind({}, this.ngZone, this.exportService),
     });
+  }
+
+  private exportFn(ngZone, exportService, e) {
+    const exportFilters = _assignIn({}, this.filters);
+    ['forms', 'facilities'].forEach((type) => {
+      if (exportFilters[type]) {
+        delete exportFilters[type].options;
+      }
+    });
+    const $link = $(e.target).closest('a');
+    $link.addClass('mm-icon-disabled');
+    ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        $link.removeClass('mm-icon-disabled');
+      }, 2000);
+    });
+    exportService.export('reports', exportFilters, { humanReadable: true });
   }
 
   toggleSelected(report) {

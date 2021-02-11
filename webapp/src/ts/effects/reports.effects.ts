@@ -189,11 +189,12 @@ export class ReportsEffects {
         model.verified = doc.verified;
         model.type = doc.content_type;
         model.verifyingReport = verifyingReport;
-        model.openSendMessageModal = (sendTo) => {
-          this.modalService
+        const openSendMessageModal = (modalService:ModalService, sendTo) => {
+          modalService
             .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
             .catch(() => {});
         };
+        model.openSendMessageModal = openSendMessageModal.bind({}, this.modalService);
 
         if (!doc.contact?._id) {
           return this.globalActions.setRightActionBar(model);

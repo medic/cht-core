@@ -199,10 +199,10 @@ describe('Purging on login', () => {
 
   let originalTimeout;
   beforeAll(async () => {
-    commonElements.goToMessagesNative();
+    await commonElements.goToMessagesNative();
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-    utils.saveDocsNative(initialReports.concat(initialDocs));
+    await utils.saveDocsNative(initialReports.concat(initialDocs));
     await utils.requestNative({
       path: `/_users/org.couchdb.user:${restrictedUserName}`,
       method: 'PUT',
@@ -210,7 +210,7 @@ describe('Purging on login', () => {
     });
     const seq = await sentinelUtils.getCurrentSeqNative();
     await utils.updateSettingsNative({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
-    restartSentinel();
+    await restartSentinel();
     await sentinelUtils.waitForPurgeCompletionNative(seq);
   });
 
@@ -218,22 +218,18 @@ describe('Purging on login', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    const doc = await utils.requestNative(`/_users/org.couchdb.user:${restrictedUserName}`);
-    await utils.requestNative({
-      path: `/_users/org.couchdb.user:${restrictedUserName}?rev=${doc._rev}`,
-      method: 'DELETE'
-    });
-    utils.revertDbNative();
+    await utils.deleteUsersNative([restrictedUserName]);
+    await utils.revertDbNative();
     await sentinelUtils.deletePurgeDbsNative();
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(async () => { utils.afterEachNative(); });
+  afterEach(utils.afterEachNative);
 
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
       const callback = arguments[arguments.length - 1];
-      const db = window.PouchDB('medic-user-e2e_restricted');
+      const db = window.CHTCore.DB.get();
       db.get('_local/purgelog')
         .then(doc => callback(doc))
         .catch(err => callback(err));
@@ -267,7 +263,7 @@ describe('Purging on login', () => {
     const purgeDate = result.date;
 
     await utils.resetBrowser();
-    commonElements.calm();
+    await commonElements.calm();
     await browser.waitForAngular();
     result = await getPurgeLog();
 
@@ -277,10 +273,10 @@ describe('Purging on login', () => {
     await utils.saveDocsNative(subsequentReports);
 
     await commonElements.syncNative();
-    commonElements.goToReportsNative();
-    expect(browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
-    expect(browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
-    expect(browser.isElementPresent(reports.reportByUUID(badFormId2))).toBeTrue;
+    await commonElements.goToReportsNative();
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(badFormId2))).toBeTrue;
 
     const purgeSettings = {
       fn: purgeFn.toString(),
@@ -308,11 +304,11 @@ describe('Purging on login', () => {
       roles: result.roles,
       date: result.date
     });
-    commonElements.goToReportsNative();
+    await commonElements.goToReportsNative();
 
-    expect(browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
-    expect(browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
-    expect(browser.isElementPresent(reports.reportByUUID(badFormId))).toBeFalse;
-    expect(browser.isElementPresent(reports.reportByUUID(badFormId2))).toBeFalse;
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(goodFormId2))).toBeTrue;
+    expect(await browser.isElementPresent(reports.reportByUUID(badFormId))).toBeFalse;
+    expect(await browser.isElementPresent(reports.reportByUUID(badFormId2))).toBeFalse;
   });
 });

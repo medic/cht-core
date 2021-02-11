@@ -55,7 +55,7 @@ module.exports = {
       const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
       await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
       await element.click();
-    } 
+    }
   },
 
   /**
@@ -71,8 +71,8 @@ module.exports = {
         'Element taking too long to appear in the DOM. Giving up!'
       )
       .then(() => {
-        elements.each(element => {
-          element.getText()
+        return elements.each(element => {
+          return element.getText()
             .then(text => {
               if (
                 text
@@ -80,11 +80,8 @@ module.exports = {
                   .trim()
                   .includes(expectedText)
               ) {
-                element.click();
+                return element.click();
               }
-            })
-            .catch(err => {
-              throw err;
             });
         });
       });
@@ -270,7 +267,7 @@ module.exports = {
 
   waitElementToPresentNative: async (elm, timeout) => {
     timeout = timeout || 10000;
-    await browser.wait(async () => await elm.isPresent(), timeout);
+    await browser.wait(() => elm.isPresent(), timeout);
   },
 
   waitForAngularComplete: () => {
@@ -301,6 +298,11 @@ module.exports = {
   waitUntilReadyNative: elm => {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
   },
+
+  isDisplayed: elm => {
+    return elm.isDisplayed();
+  },
+
   handleUpdateModal,
   handleUpdateModalNative,
 };

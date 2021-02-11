@@ -32,10 +32,10 @@ module.exports = {
   summaryFormName: () => module.exports.reportSummary().element(by.css('.subject + div')),
   submitterName: () => module.exports.reportSummary().element(by.css('.sender .name')),
   submitterPhone: () => module.exports.reportSummary().element(by.css('.sender .phone')),
-  subject: async reportElement =>  {
+  subject: reportElement =>  {
     return reportElement.element(by.css('.content .heading h4 span'));
   },
-  formName: async reportElement =>  {
+  formName: reportElement =>  {
     return reportElement.element(by.css('.summary'));
   },
   loadReport: async uuid => {
