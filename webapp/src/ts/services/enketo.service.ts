@@ -668,6 +668,7 @@ export class EnketoService {
     });
 
     delete window.CHTCore.debugFormModel;
+    delete this.currentForm;
     this.objUrls.length = 0;
   }
 }

@@ -109,13 +109,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   private setCancelCallback() {
     this.routeSnapshot = this.route.snapshot;
     if (this.routeSnapshot.params && (this.routeSnapshot.params.reportId || this.routeSnapshot.params.formId)) {
-      this.globalActions.setCancelCallback(() => {
-        if (this.routeSnapshot.params.reportId) {
-          this.router.navigate(['/reports', this.routeSnapshot.params.reportId]);
-        } else {
-          this.router.navigate(['/reports']);
-        }
-      });
+      const cancelCallback = (router:Router, routeSnapshot) => {
+        router.navigate(['/reports', routeSnapshot?.params?.reportId || '']);
+      };
+      this.globalActions.setCancelCallback(cancelCallback.bind({}, this.router, this.routeSnapshot));
     } else {
       this.globalActions.clearCancelCallback();
     }
@@ -245,6 +242,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.enketoService.unload(this.form);
+    this.globalActions.clearCancelCallback();
   }
 
   private getSelected() {
