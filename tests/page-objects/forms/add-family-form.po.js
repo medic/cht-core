@@ -20,36 +20,36 @@ const docs = [
 ];
 
 module.exports = {
-  configureForm: (contactId, done) => {
-    utils.seedTestData(done, contactId, docs);
+  configureForm: async (contactId) => {
+    await utils.seedTestDataNative(contactId, docs);
   },
 
-  fillPrimaryCaregiver: caregiverName => {
+  fillPrimaryCaregiver: async caregiverName => {
     const primaryCaregiverField = element(
       by.css('[name="/data/contact/name"]')
     );
-    helper.waitUntilReady(primaryCaregiverField);
+    await helper.waitUntilReadyNative(primaryCaregiverField);
     primaryCaregiverField.clear().sendKeys(caregiverName);
   },
 
-  fillPrimaryTel: () => {
+  fillPrimaryTel: async () => {
     const primaryTelField = element(by.css('.ignore[type="tel"]'));
-    helper.waitUntilReady(primaryTelField);
-    primaryTelField.clear().sendKeys('+13125551212');
+    await helper.waitUntilReadyNative(primaryTelField);
+    await primaryTelField.clear().sendKeys('+13125551212');
   },
 
-  fillSexAndAge: () => {
+  fillSexAndAge: async () => {
     // 0 - female; 1 - male
-    const sex = element.all(by.css('[name="/data/ephemeral_dob/g_sex"]'));
-    helper.waitUntilReady(sex);
+    const sex = element(by.css('[name="/data/ephemeral_dob/g_sex"]'));
+    await helper.waitUntilReadyNative(sex);
     const age = element(by.css('[name="/data/ephemeral_dob/age"]'));
-    const female = sex.get(0);
-    helper.waitElementToBeClickable(female);
-    female.click();
-    age.clear().sendKeys(20);
+    const female = sex;
+    await helper.waitElementToBeClickable(female);
+    await female.click();
+    await age.clear().sendKeys(20);
   },
 
-  fillChildren: () => {
+  fillChildren: async () => {
     const childrenUnderFiveField = element(
       by.css('[name="/data/ephemeral_pregnancy/g_children_under_5"]')
     );
@@ -57,34 +57,34 @@ module.exports = {
     const currentlyPregnant = element.all(
       by.css('[name="/data/ephemeral_pregnancy/pregnant"]')
     );
-    childrenUnderFiveField.clear().sendKeys(2);
-    currentlyPregnant.get(0).click();
+    await childrenUnderFiveField.clear().sendKeys(2);
+    await currentlyPregnant.get(0).click();
   },
 
-  registerChildrenOption: () => {
+  registerChildrenOption: async () => {
     // 0 - yes; 1 - no
     const registerChildren = element.all(
       by.css('[name="/data/repeat-relevant/child"]')
     );
-    registerChildren.get(1).click();
+    await registerChildren.get(1).click();
   },
 
-  womenBetween: () => {
+  womenBetween: async () => {
     const women = element(
       by.css('[name="/data/other_women/g_women_15_to_49"]')
     );
     women.clear().sendKeys(2);
   },
 
-  registerWomenOption: () => {
+  registerWomenOption: async () => {
     // 0 - yes; 1 - no
     const registerChildren = element.all(
       by.css('[name="/data/repeat-women/women"]')
     );
-    registerChildren.get(1).click();
+    await registerChildren.get(1).click();
   },
 
-  finalSurvey: (sourceWater, mosqNet, hygenicToilet, familyPlan) => {
+  finalSurvey: async (sourceWater, mosqNet, hygenicToilet, familyPlan) => {
     // Source of water: 0 - Boreholes; 1- Spring
     const sourceOfWater = element.all(
       by.css('.current fieldset:first-of-type input')
@@ -102,10 +102,10 @@ module.exports = {
       by.css('.current fieldset:nth-of-type(4) input')
     );
 
-    sourceOfWater.get(sourceWater).click();
-    mosquitoNet.get(mosqNet).click();
-    hygienicToilet.get(hygenicToilet).click();
-    familyPlanning.get(familyPlan).click();
+    await sourceOfWater.get(sourceWater).click();
+    await mosquitoNet.get(mosqNet).click();
+    await hygienicToilet.get(hygenicToilet).click();
+    await familyPlanning.get(familyPlan).click();
   },
 
   reportCheck: (

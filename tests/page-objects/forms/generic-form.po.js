@@ -18,6 +18,15 @@ module.exports = {
     editFormBtn.click();
   },
 
+  editFormNative: async () => {
+    await helper.waitForAngularComplete();
+    const editFormBtn = element.all(
+      by.css('[href^="#/reports/edit"]>.fa-pencil')
+    );
+    await helper.waitUntilReady(editFormBtn);
+    await editFormBtn.click();
+  },
+
   goBack: () => {
     element(by.css('button.btn.btn-default.previous-page')).click();
   },
@@ -28,6 +37,16 @@ module.exports = {
     reportInvalidBtn.click();
     const reportInvalidIcon = element(by.css('.detail>.status>.error'));
     helper.waitUntilReady(reportInvalidIcon);
+    const reportInvalidMessage = element(by.css('.verify-error>span:last-of-type'));
+    expect(reportInvalidMessage.getText()).toEqual('Has errors');
+  },
+
+  invalidateReportNative: async () => {
+    const reportInvalidBtn = element(by.css('[ng-include*="verify-invalid"]'));
+    await helper.waitUntilReady(reportInvalidBtn);
+    await reportInvalidBtn.click();
+    const reportInvalidIcon = element(by.css('.detail>.status>.error'));
+    await helper.waitUntilReady(reportInvalidIcon);
     const reportInvalidMessage = element(by.css('.verify-error>span:last-of-type'));
     expect(reportInvalidMessage.getText()).toEqual('Has errors');
   },
@@ -62,6 +81,13 @@ module.exports = {
     const checkBtn = element(by.css('.fa-check'));
     helper.waitUntilReady(checkBtn);
     checkBtn.click();
+  },
+
+  reportApproveNative: async () => {
+    await helper.waitForAngularComplete();
+    const checkBtn = element(by.css('.fa-check'));
+    await helper.waitUntilReady(checkBtn);
+    await checkBtn.click();
   },
 
   selectForm: () => {
@@ -120,6 +146,16 @@ module.exports = {
     reportValidBtn.click();
     const reportValidIcon = element(by.css('.detail>.status>.verified'));
     helper.waitUntilReady(reportValidIcon);
+    const reportValidMessage = element(by.css('.verify-valid>span:last-of-type'));
+    expect(reportValidMessage.getText()).toEqual('Correct');
+  },
+
+  validateReportNative: async () => {
+    const reportValidBtn = element(by.css('[ng-include*="verify-valid"]'));
+    await helper.waitElementToBeClickable(reportValidBtn);
+    await reportValidBtn.click();
+    const reportValidIcon = element(by.css('.detail>.status>.verified'));
+    await helper.waitUntilReady(reportValidIcon);
     const reportValidMessage = element(by.css('.verify-valid>span:last-of-type'));
     expect(reportValidMessage.getText()).toEqual('Correct');
   },
