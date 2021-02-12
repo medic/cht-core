@@ -238,7 +238,9 @@ describe('all_docs handler', () => {
       .saveDocsNative(docs)
       .then(() => Promise.all([
         utils.requestOnTestDbNative(_.defaults(request, offlineRequestOptions)),
-        utils.requestOnTestDbNative(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
+        utils.requestOnTestDbNative(
+          _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)
+        )
       ]))
       .then((results) => {
         results.forEach(result => {
