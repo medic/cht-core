@@ -253,7 +253,7 @@ module.exports = {
 
   waitElementToDisappear: (locator, timeout) => {
     timeout = timeout || 15000;
-    browser.wait(() => {
+    return browser.wait(() => {
       return element(locator)
         .isDisplayed()
         .then(presenceOfElement => !presenceOfElement);
