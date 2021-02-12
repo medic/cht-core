@@ -977,7 +977,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit-admin', 'Build and run admin unit tests', [
-    'build-admin',
     'karma:admin',
   ]);
 
@@ -1022,9 +1021,9 @@ module.exports = function(grunt) {
     'exec:check-version',
     'static-analysis',
     'install-dependencies',
+    'build',
     'unit',
     'mochaTest:api-integration',
-    'build',
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
