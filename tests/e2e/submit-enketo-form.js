@@ -90,11 +90,11 @@ describe('Submit Enketo form', () => {
   };
 
   beforeAll(async () => {
-    await utils.seedTestDataNative(userContactDoc, docs);
+    await utils.seedTestData(userContactDoc, docs);
   });
 
   afterEach(async () => {
-    await utils.afterEachNative();
+    await utils.afterEach();
   });
 
   it('submits on reports tab', async () => {
@@ -117,7 +117,7 @@ describe('Submit Enketo form', () => {
     await helper.waitUntilReadyNative(genericForm.submitButton);
     await helper.clickElementNative(genericForm.submitButton);
     await helper.waitElementToPresent(genericForm.submittedName);
-    
+
     // check the submitted name
     await helper.waitUntilReadyNative(genericForm.submittedName);
     expect(await genericForm.submittedName.getText()).toBe('Jones');

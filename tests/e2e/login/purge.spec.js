@@ -202,29 +202,29 @@ describe('Purging on login', () => {
     await commonElements.goToMessagesNative();
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-    await utils.saveDocsNative(initialReports.concat(initialDocs));
-    await utils.requestNative({
+    await utils.saveDocs(initialReports.concat(initialDocs));
+    await utils.request({
       path: `/_users/org.couchdb.user:${restrictedUserName}`,
       method: 'PUT',
       body: restrictedUser
     });
-    const seq = await sentinelUtils.getCurrentSeqNative();
-    await utils.updateSettingsNative({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
+    const seq = await sentinelUtils.getCurrentSeq();
+    await utils.updateSettings({ purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } }, true);
     await restartSentinel();
-    await sentinelUtils.waitForPurgeCompletionNative(seq);
+    await sentinelUtils.waitForPurgeCompletion(seq);
   });
 
   afterAll(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    await utils.deleteUsersNative([restrictedUserName]);
-    await utils.revertDbNative();
-    await sentinelUtils.deletePurgeDbsNative();
+    await utils.deleteUsers([restrictedUserName]);
+    await utils.revertDb();
+    await sentinelUtils.deletePurgeDbs();
   });
 
   beforeEach(utils.beforeEach);
-  afterEach(utils.afterEachNative);
+  afterEach(utils.afterEach);
 
   const getPurgeLog = () => {
     return browser.executeAsyncScript((() => {
@@ -270,7 +270,7 @@ describe('Purging on login', () => {
     // purge didn't run again on next refresh
     chai.expect(result._rev).to.equal('0-1');
     chai.expect(result.date).to.equal(purgeDate);
-    await utils.saveDocsNative(subsequentReports);
+    await utils.saveDocs(subsequentReports);
 
     await commonElements.syncNative();
     await commonElements.goToReportsNative();
@@ -283,11 +283,11 @@ describe('Purging on login', () => {
       text_expression: 'every 1 seconds',
       run_every_days: '0'
     };
-    await utils.revertSettingsNative(true);
-    const seq = await sentinelUtils.getCurrentSeqNative();
-    await utils.updateSettingsNative({ purge: purgeSettings}, true);
+    await utils.revertSettings(true);
+    const seq = await sentinelUtils.getCurrentSeq();
+    await utils.updateSettings({ purge: purgeSettings}, true);
     await restartSentinel();
-    await sentinelUtils.waitForPurgeCompletionNative(seq);
+    await sentinelUtils.waitForPurgeCompletion(seq);
     // get new settings that say to purge on every boot!
     await commonElements.syncNative();
     await utils.refreshToGetNewSettings();

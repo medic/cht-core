@@ -146,7 +146,7 @@ const clickAndGetValue = async el => {
 
 module.exports = {
   configureForm: async (userContactDoc) => {
-    await utils.seedTestDataNative(userContactDoc, docs);
+    await utils.seedTestData(userContactDoc, docs);
   },
 
   load: async () => {

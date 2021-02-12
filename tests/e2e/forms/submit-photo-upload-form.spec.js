@@ -25,11 +25,9 @@ describe('Submit Photo Upload form', () => {
     await photoUpload.configureFormNative(userContactDoc);
   });
 
-  afterEach(async () => {
-    await utils.resetBrowser();
-  });
+  afterEach(utils.resetBrowser);
 
-  afterAll(async () => { await utils.afterEachNative();});
+  afterAll(utils.afterEach);
 
   it('upload photo', async () => {
     await common.goToReportsNative();
@@ -39,7 +37,7 @@ describe('Submit Photo Upload form', () => {
       path.join(__dirname, '../../../webapp/src/img/simprints.png')
     );
     await helper.waitUntilReadyNative(photoUpload.imagePreview());
-    
+
     await genericForm.submitNative();
     await helper.waitUntilReadyNative(element(by.css('.report-image')));
     expect(await element(by.css('.report-image')).isPresent()).toBeTruthy();

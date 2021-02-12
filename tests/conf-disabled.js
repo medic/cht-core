@@ -23,12 +23,12 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      'e2e/api/**/*.js',
-      'e2e/sentinel/**/*.js',
+      'e2e/api/!**!/!*.js',
+      'e2e/sentinel/!**!/!*.js',
       'e2e/service-worker.js',
       'e2e/create-meta-db.js',
       'e2e/login/login.specs.js',
-      '**/docs-by-replication-key-view.js',
+      '**!/docs-by-replication-key-view.js',
       'e2e/submit-enketo-form.js',
       'e2e/forms/submit-z-score-form.spec.js',
       'tests/e2e/contact-summary.js',
@@ -129,7 +129,7 @@ const prepServices = async () => {
 
   await listenForApi();
   await runAndLog('Settings setup', setupSettings);
-  await runAndLog('User contact doc setup', utils.setUserContactDocNative);
+  await runAndLog('User contact doc setup', utils.setUserContactDoc);
   return apiReady;
 };
 
@@ -144,7 +144,7 @@ const apiRetry = () => {
 const listenForApi = async () => {
   console.log('Checking API');
   try {
-    const result =  await utils.requestNative({ path: '/api/info' });
+    const result =  await utils.request({ path: '/api/info' });
     return result;
   } catch(err) {
     console.log('API check failed, trying again in 1 second');
@@ -179,7 +179,7 @@ const setupSettings = () => {
   const defaultAppSettings = utils.getDefaultSettings();
   defaultAppSettings.transitions = {};
 
-  return utils.requestNative({
+  return utils.request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: defaultAppSettings
@@ -188,11 +188,11 @@ const setupSettings = () => {
 
 const setupUser = () => {
   return utils
-    .getDocNative('org.couchdb.user:' + auth.username)
+    .getDoc('org.couchdb.user:' + auth.username)
     .then(doc => {
       doc.contact_id = constants.USER_CONTACT_ID;
       doc.language = 'en';
-      return utils.saveDocNative(doc);
+      return utils.saveDoc(doc);
     })
     .then(() => utils.refreshToGetNewSettings())
     .then(() => utils.closeTour());

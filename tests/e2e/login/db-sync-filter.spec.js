@@ -189,14 +189,14 @@ describe('db-sync-filter', () => {
   };
 
   const getServerRevs = async (docIds) => {
-    const result = utils.requestOnMedicDbNative({ path: '/_all_docs', params: { keys: docIds } });
+    const result = utils.requestOnMedicDb({ path: '/_all_docs', params: { keys: docIds } });
     return result.rows;
   };
 
   beforeAll(async () => {
     await commonElements.goToMessagesNative();
-    await utils.saveDocsNative([...initialDocs, ...initialReports]);
-    await utils.requestNative({
+    await utils.saveDocs([...initialDocs, ...initialReports]);
+    await utils.request({
       path: `/_users/org.couchdb.user:${restrictedUserName}`,
       method: 'PUT',
       body: restrictedUser
@@ -210,8 +210,8 @@ describe('db-sync-filter', () => {
   afterAll(async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    await utils.deleteUsersNative([restrictedUserName]);
-    await utils.revertDbNative();
+    await utils.deleteUsers([restrictedUserName]);
+    await utils.revertDb();
   });
 
   it('should not filter allowed docs', async () => {
@@ -229,7 +229,7 @@ describe('db-sync-filter', () => {
       updatedReport2,
       updatedPatient,
       updatedNewReport,
-    ] = await utils.getDocsNative([report1, report2, patientId, newReport._id]);
+    ] = await utils.getDocs([report1, report2, patientId, newReport._id]);
     chai.expect(updatedReport1.extra).to.equal('1');
     chai.expect(updatedReport2.extra).to.equal('2');
     chai.expect(updatedPatient.extra).to.equal('3');
@@ -241,7 +241,7 @@ describe('db-sync-filter', () => {
 
     await commonElements.syncNative();
 
-    const result = await utils.getDocsNative([report1], true);
+    const result = await utils.getDocs([report1], true);
     chai.expect(result.rows[0]).excludingEvery('rev').to.deep.equal({
       id: report1,
       key: report1,
@@ -273,7 +273,7 @@ describe('db-sync-filter', () => {
 
     await commonElements.syncNative();
 
-    const serverReport = await utils.getDocNative(report3);
+    const serverReport = await utils.getDoc(report3);
     chai.expect(serverReport).excludingEvery('_rev').to.deep.equal(initialReports[2]);
     chai.expect(serverReport._rev).to.not.equal(localRev);
     chai.expect(serverReport).to.not.have.property('purged');
@@ -291,7 +291,7 @@ describe('db-sync-filter', () => {
 
     const updatedServerRevs = await getServerRevs(['_design/medic-client']);
     chai.expect(serverRevs).to.deep.equal(updatedServerRevs);
-    const result = await utils.getDocsNative(['_design/test'], true);
+    const result = await utils.getDocs(['_design/test'], true);
     chai.expect(result.rows[0]).to.deep.equal({
       key: '_design/test',
       error: 'not_found',

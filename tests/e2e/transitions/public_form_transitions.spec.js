@@ -232,20 +232,20 @@ const expectTransitions = (infodoc, ...transitions) => {
 
 const processSMS = (settings) => {
   let ids;
-  return utils.updateSettingsNative(settings)
+  return utils.updateSettings(settings)
     .then(() => Promise.all([
       apiUtils.getApiSmsChanges(messages),
-      utils.requestNative(getPostOpts('/api/sms', { messages: messages }))
+      utils.request(getPostOpts('/api/sms', { messages: messages }))
     ]))
     .then(([ changes ]) => {
       ids = changes.map(change => change.id);
     })
-    .then(() => sentinelUtils.waitForSentinelNative(ids))
+    .then(() => sentinelUtils.waitForSentinel(ids))
     .then(() => Promise.all([
-      utils.getDocsNative(ids),
-      sentinelUtils.getInfoDocsNative(ids),
-      utils.getDocNative('person1'),
-      utils.getDocNative('person2')
+      utils.getDocs(ids),
+      sentinelUtils.getInfoDocs(ids),
+      utils.getDoc('person1'),
+      utils.getDoc('person2')
     ]));
 };
 
@@ -253,10 +253,10 @@ const chw1Lineage = { _id: contacts[3]._id,  parent: contacts[3].parent };
 const chw2Lineage = { _id: contacts[4]._id,  parent: contacts[4].parent };
 
 describe('Transitions public_form', () => {
-  beforeAll(async () => await utils.saveDocsNative(contacts));
-  beforeEach(async () => await utils.saveDocsNative(patients));
-  afterAll(async () => await utils.revertDbNative());
-  afterEach(async () => await utils.revertDbNative(contacts.map(c => c._id), true));
+  beforeAll(async () => await utils.saveDocs(contacts));
+  beforeEach(async () => await utils.saveDocs(patients));
+  afterAll(async () => await utils.revertDb());
+  afterEach(async () => await utils.revertDb(contacts.map(c => c._id), true));
 
   it('when false, reports from unknwon sources should not be accepted', async () => {
     Object.keys(formsConfig).forEach(form => formsConfig[form].public_form = false);

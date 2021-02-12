@@ -25,13 +25,13 @@ describe('Create user meta db : ', () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
     return Promise.all([
-      utils.requestNative(`/_users/org.couchdb.user:${userName}`)
-        .then(doc => utils.requestNative({
+      utils.request(`/_users/org.couchdb.user:${userName}`)
+        .then(doc => utils.request({
           path: `/_users/org.couchdb.user:${userName}?rev=${doc._rev}`,
           method: 'DELETE'
         })),
-      utils.revertDbNative(),
-      utils.requestNative({
+      utils.revertDb(),
+      utils.request({
         path: `/${dbName}-user-${userName}-meta`,
         method: 'DELETE'
       })
@@ -40,7 +40,7 @@ describe('Create user meta db : ', () => {
   });
 
   beforeEach(async () => { await utils.beforeEach(); });
-  afterEach(async () => { await utils.afterEachNative(); });
+  afterEach(async () => { await utils.afterEach(); });
 
   it('should allow a new user to read/write from meta db', async () => {
     await usersPage.openAddUserModal();
@@ -55,14 +55,14 @@ describe('Create user meta db : ', () => {
     const postData = doc;
 
     await browser.wait(() => {
-      return utils.requestOnTestMetaDbNative(_.defaults({
+      return utils.requestOnTestMetaDb(_.defaults({
         method: 'POST',
         body: postData
       }, options));
     });
 
     await browser.wait(() => {
-      return utils.requestOnTestMetaDbNative(_.defaults({
+      return utils.requestOnTestMetaDb(_.defaults({
         path: '/_changes'
       }, options)).then(response => {
         const changes = response.results;
