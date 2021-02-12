@@ -17,6 +17,8 @@ const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/$
 const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
 
+const controlFlowEnabled = process.env.protractorControlFlow;
+
 let originalSettings;
 let e2eDebug;
 
@@ -81,14 +83,21 @@ const request = (options, { debug } = {}) => {
     return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
   };
 
-  const deferred = protractor.promise.defer();
-  rpn(options)
-    .then((resp) => deferred.fulfill(resp))
-    .catch(err => {
-      err.responseBody = err.response && err.response.body;
-      deferred.reject(err);
-    });
-  return deferred.promise;
+  if (controlFlowEnabled) {
+    const deferred = protractor.promise.defer();
+    rpn(options)
+      .then((resp) => deferred.fulfill(resp))
+      .catch(err => {
+        err.responseBody = err.response && err.response.body;
+        deferred.reject(err);
+      });
+    return deferred.promise;
+  }
+
+  return rpn(options).catch(err => {
+    err.responseBody = err.response && err.response.body;
+    throw err;
+  });
 };
 
 // Update both ddocs, to avoid instability in tests.
