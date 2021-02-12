@@ -4,14 +4,14 @@ const helper = require('../../helper');
 const utils = require('../../utils');
 
 describe('Add new health center tests : ', () => {
-  afterEach(async () => { await utils.afterEachNative(); });
-  beforeEach(async () => { await utils.beforeEach(); });
+  afterEach(utils.afterEach);
+  beforeEach(utils.beforeEach);
 
   it('should add new health center', async () => {
     await commonElements.goToPeople();
     await contactPage.addNewDistrict('Auckland');
     await contactPage.addHealthCenter();
-   
+
     await  helper.waitUntilReadyNative(contactPage.center());
     expect(await contactPage.center().getText()).toBe('Mavuvu Clinic');
     await  helper.waitUntilReadyNative(contactPage.name());

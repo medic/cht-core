@@ -130,7 +130,7 @@ const report = {
 
 describe('sms-gateway api', () => {
   const pollSmsApi = body => {
-    return utils.requestNative({
+    return utils.request({
       method: 'POST',
       path: '/api/sms',
       body: body
@@ -178,7 +178,7 @@ describe('sms-gateway api', () => {
     let savedDoc;
 
     beforeEach(async () => {
-      const result = await utils.saveDocNative(report);
+      const result = await utils.saveDoc(report);
       savedDoc = result.id;
       const body = {
         updates: [
@@ -194,7 +194,7 @@ describe('sms-gateway api', () => {
       await pollSmsApi(body);
     });
 
-    afterEach(async () => { await utils.deleteDocNative(savedDoc); });
+    afterEach(async () => { await utils.deleteDoc(savedDoc); });
 
     it('- shows content', async () => {
 
@@ -226,14 +226,14 @@ describe('sms-gateway api', () => {
         timestamp: '2016-08-05T02:24:48.569Z',
       });
 
-      const result = await utils.saveDocNative(reportWithTwoMessagesToSend);
+      const result = await utils.saveDoc(reportWithTwoMessagesToSend);
       savedDoc = result.id;
       response = await pollSmsApi({});
     });
 
     afterEach(async () => {
       await helper.logConsoleErrors('sms-gateway');
-      await utils.deleteDocNative(savedDoc);
+      await utils.deleteDoc(savedDoc);
     });
 
     it('- returns list and updates state', async () => {

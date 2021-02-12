@@ -4,9 +4,9 @@ const helper = require('../../helper');
 const utils = require('../../utils');
 
 describe('Add new person tests : ', () => {
-  afterEach(async () => { await utils.resetBrowserNative(); });
+  afterEach(utils.resetBrowser);
 
-  afterAll(async () => { await utils.afterEachNative(); });
+  afterAll(utils.resetBrowser);
 
   it('should add new person', async () => {
     await commonElements.goToPeople();

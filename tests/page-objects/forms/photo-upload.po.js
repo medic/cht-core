@@ -48,7 +48,7 @@ module.exports = {
   },
 
   configureFormNative: (userContactDoc) => {
-    utils.seedTestDataNative(userContactDoc, docs);
+    utils.seedTestData(userContactDoc, docs);
   },
 
   reset: () => {
