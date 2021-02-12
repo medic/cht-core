@@ -313,6 +313,14 @@ module.exports = {
     );
   },
 
+  waitElementToDisappearNative: async (elm, timeout) => {
+    timeout = timeout || 15000;
+    return browser.wait(async () => {
+      const isDisplayed = await elm.isDisplayed();
+      return !isDisplayed;
+    }, timeout, `waitElementToDisappear timed out looking for ${elm.locator()}`);
+  },
+
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
     browser.wait(() => elm.isPresent(), timeout);
