@@ -56,85 +56,39 @@ describe('Send message', () => {
 
   const CONTACTS = [ALICE, BOB_PLACE, CAROL, JAROL, DAVID, DAVID_AREA];
 
-  beforeAll(done => {
+  beforeAll(async () => {
     DAVID_AREA.contact = { _id: DAVID._id, phone: '+447765902002' };
-    protractor.promise
-      .all(CONTACTS.map(utils.saveDoc))
-      .then(done)
-      .catch(done.fail);
+    await Promise.all(CONTACTS.map(utils.saveDocNative));
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
-  });
+  afterEach(async () => await utils.resetBrowserNative);
 
-  afterAll(done => {
-    return utils.afterEach().then(done);
-  });
+  afterAll(async () => await utils.afterEachNative);
 
   const smsMsg = key => {
     return `Hello ${key} this is a test SMS`;
   };
 
   const openSendMessageModal = async () => {
-    helper.waitElementToBeClickable(
-      await messagesPo.sendMessage()
-    );
-    await helper.clickElement(messagesPo.sendMessage());
+    await helper.clickElementNative(messagesPo.sendMessage());
     await helper.waitElementToPresent(messagesPo.sendMessageModal(), 5000);
     await helper.waitElementToBeVisible(messagesPo.sendMessageModal(), 5000);
   };
 
-  const findSelect2Entry = (selector, expectedValue) => {
-    return element
-      .all(by.css('.select2-results__option' + selector))
-      .filter(item => {
-        return item
-          .getText()
-          .then(text => {
-            return text === expectedValue;
-          })
-          .catch(err => {
-            // item may have been detached from the page, so whatever it's invalid,
-            // we ignore it. Log the error just for kicks.
-            console.log('Caught and ignoring an error trying to getText', err);
-          });
-      });
-  };
+  // const findSelect2Entry = async (selector, expectedValue) => {
 
-  const searchSelect2 = async (
-    searchText,
-    totalExpectedResults,
-    entrySelector,
-    entryText
-  ) => {
-    messagesPo.messageRecipientSelect().sendKeys(
-      searchText
-    );
+  // };
 
-    await browser.wait(() => {
-      return protractor.promise
-        .all([
-          findSelect2Entry(entrySelector, entryText)
-            .count()
-            .then(utils.countOf(1)),
-          element
-            .all(by.css('.select2-results__option.loading-results'))
-            .count()
-            .then(utils.countOf(0)),
-          element
-            .all(by.css('.select2-results__option'))
-            .count()
-            .then(utils.countOf(totalExpectedResults)),
-        ])
-        .then(results => {
-          // My kingdom for results.reduce(&&);
-          return results[0] && results[1] && results[2];
-        });
-    }, 10000);
 
-    return findSelect2Entry(entrySelector, entryText).first();
+  const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
+    await messagesPo.messageRecipientSelect().sendKeys(searchText);
+    const loading = element.all(by.css('.select2-results__option.loading-results'));
+    helper.waitElementToPresentNative(loading);
+    helper.waitElementToDisappear(loading);
+    expect(await element.all(by.css('.select2-results__option')).count()).toBe(totalExpectedResults);
+    const elm = element(by.cssContainingText('.select2-results__option' + entrySelector,entryText));
+    await helper.waitUntilReadyNative(elm);
+    return elm;
   };
 
   const enterCheckAndSelect = async (
@@ -144,9 +98,8 @@ describe('Send message', () => {
     entryText,
     existingEntryCount=0
   ) => {
-    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(
-      existingEntryCount
-    );
+    const selectionCount = await element.all(by.css('li.select2-selection__choice')).count();
+    expect(selectionCount).toBe(existingEntryCount);
 
     const entry = await searchSelect2(
       searchText,
@@ -154,9 +107,9 @@ describe('Send message', () => {
       entrySelector,
       entryText
     );
-    entry.click();
+    await entry.click();
 
-    await browser.wait(() => {
+    return browser.wait(() => {
       return element
         .all(by.css('li.select2-selection__choice'))
         .count()
@@ -165,21 +118,8 @@ describe('Send message', () => {
   };
 
   const sendMessage = async () => {
-    element(by.css('#send-message a.btn.submit:not(.ng-hide)')).click();
-
-    await browser.wait(() => {
-      return element(by.css('#send-message'))
-        .isDisplayed()
-        .then(isDisplayed => {
-          return !isDisplayed;
-        })
-        .catch(() => {
-          // It's been detached, so it's gone
-          return true;
-        });
-    }, 2000);
-
-    // utils.resetBrowser();
+    await element(by.css('#send-message a.btn.submit:not(.ng-hide)')).click();
+    await helper.waitElementToDisappear(by.css('#send-message'));
   };
 
   const clickLhsEntry = async (entryId, entryName) => {
@@ -190,7 +130,7 @@ describe('Send message', () => {
     expect(await element.all(liElement.locator()).count()).toBe(1);
     await liElement.click();
 
-    await browser.wait(() => {
+    return browser.wait(() => {
       const el = element(by.css('#message-header .name'));
       if (helper.waitUntilReady(el)) {
         return helper.getTextFromElement(el).then(text => {
@@ -200,21 +140,17 @@ describe('Send message', () => {
     }, 12000);
   };
 
-  const lastMessageIs = message => {
-    const last = element
-      .all(by.css('#message-content li div.data>p>span'))
-      .last();
-    expect(helper.getTextFromElement(last)).toBe(message);
+  const lastMessageIs = async message => {
+    const last = await element.all(by.css('#message-content li div.data>p>span')).last();
+    expect(await helper.getTextFromElement(last)).toBe(message);
   };
 
   const contactNameSelector = ' .sender .name';
-  const everyoneAtText = name => {
-    return name + ' - all contacts';
-  };
+  const everyoneAtText = name => `${name} - all contacts`;
 
   describe('Send message modal', () => {
     it('can send messages to raw phone numbers', async () => {
-      await common.goToMessages();
+      await common.goToMessagesNative();
       expect(await messagesPo.messageInList(RAW_PH).isPresent()).toBeFalsy();
 
       await openSendMessageModal();
