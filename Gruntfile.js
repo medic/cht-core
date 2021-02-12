@@ -457,12 +457,12 @@ module.exports = function(grunt) {
         cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
       },
       'npm-ci-shared-libs': {
-        cmd: () => {
+        cmd: (production) => {
           return getSharedLibDirs()
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci --production)`
+                  (cd shared-libs/${lib} && npm ci ${production ? '--production' : ''})`
             )
             .join(' && ');
         }
@@ -921,6 +921,7 @@ module.exports = function(grunt) {
     'copy:api-resources',
     'uglify:api',
     'cssmin:api',
+    'exec:npm-ci-shared-libs:true',
     'exec:bundle-dependencies',
     'exec:pack-node-modules',
   ]);
@@ -975,6 +976,11 @@ module.exports = function(grunt) {
     'exec:unit-webapp'
   ]);
 
+  grunt.registerTask('unit-admin', 'Build and run admin unit tests', [
+    'build-admin',
+    'karma:admin',
+  ]);
+
   grunt.registerTask('unit-webapp-continuous', 'Run webapp unit test in a loop, without reinstalling dependencies.', [
     'exec:unit-webapp-continuous'
   ]);
@@ -988,7 +994,7 @@ module.exports = function(grunt) {
   grunt.registerTask('unit', 'Unit tests', [
     'env:unit-test',
     'unit-webapp-no-dependencies',
-    'karma:admin',
+    'unit-admin',
     'exec:shared-lib-unit',
     'mochaTest:unit',
   ]);
@@ -1003,22 +1009,22 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
     'exec:check-version',
-    'install-dependencies',
     'static-analysis',
-    'build',
-    'mochaTest:api-integration',
+    'install-dependencies',
     'unit',
+    'mochaTest:api-integration',
     'exec:test-config-default',
-    'exec:test-config-standard'
+    'exec:test-config-standard',
+    'build',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
     'exec:check-version',
     'static-analysis',
     'install-dependencies',
-    'build',
     'unit',
     'mochaTest:api-integration',
+    'build',
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
