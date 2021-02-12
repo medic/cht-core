@@ -70,9 +70,7 @@ describe('Send message', () => {
   });
 
   afterAll(done => {
-    utils.afterEach(() => {
-      done();
-    });
+    return utils.afterEach().then(done);
   });
 
   const smsMsg = key => {
