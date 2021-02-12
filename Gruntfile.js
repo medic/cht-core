@@ -895,17 +895,6 @@ module.exports = function(grunt) {
           destination: 'jsdocs/shared-libs'
         }
       },
-      webapp: {
-        src: [
-          'webapp/src/js/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/webapp',
-          configure: 'node_modules/angular-jsdoc/common/conf.json',
-          template: 'node_modules/angular-jsdoc/angular-template',
-          readme: './README.md'
-        }
-      },
     },
   });
 
