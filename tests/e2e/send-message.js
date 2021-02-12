@@ -76,11 +76,18 @@ describe('Send message', () => {
     await helper.waitElementToBeVisible(messagesPo.sendMessageModal(), 5000);
   };
 
+  // const findSelect2Entry = async (selector, expectedValue) => {
+
+  // };
+
+
   const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
     await messagesPo.messageRecipientSelect().sendKeys(searchText);
-    await browser
-      .wait(async () => await element.all(by.css('.select2-results__option')).count() === totalExpectedResults);
-    const elm = element(by.cssContainingText('.select2-results__option' + entrySelector , entryText));
+    const loading = element.all(by.css('.select2-results__option.loading-results'));
+    helper.waitElementToPresentNative(loading);
+    helper.waitElementToDisappear(loading);
+    expect(await element.all(by.css('.select2-results__option')).count()).toBe(totalExpectedResults);
+    const elm = element(by.cssContainingText('.select2-results__option' + entrySelector,entryText));
     await helper.waitUntilReadyNative(elm);
     return elm;
   };
