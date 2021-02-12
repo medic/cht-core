@@ -76,11 +76,6 @@ describe('Send message', () => {
     await helper.waitElementToBeVisible(messagesPo.sendMessageModal(), 5000);
   };
 
-  // const findSelect2Entry = async (selector, expectedValue) => {
-
-  // };
-
-
   const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
     await messagesPo.messageRecipientSelect().sendKeys(searchText);
     await browser
