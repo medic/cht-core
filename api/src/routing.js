@@ -83,6 +83,9 @@ app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
 
+// requires content-type text/plain or application/xml header
+const textParser = bodyParser.text({limit: '32mb', type: [ 'text/plain', 'application/xml' ]});
+
 app.set('strict routing', true);
 app.set('trust proxy', true);
 
@@ -373,6 +376,7 @@ app.get('/api/v1/forms/', (req, res) => {
 });
 app.get('/api/v1/forms', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
+app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/users', users.get);
 app.postJson('/api/v1/users', users.create);
