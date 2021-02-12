@@ -75,11 +75,6 @@ describe('Privacy policy', () => {
     }
   };
 
-  const closeTourModal = async () => {
-    await helper.waitElementToBeVisibleNative(element(by.css('.modal-dialog .modal-footer .btn')));
-    await element(by.css('.modal-dialog .modal-footer .btn')).click();
-  };
-
   beforeAll(async () => {
     await utils.saveDocsNative([privacyPolicies, PARENT_PLACE]);
   });
@@ -111,7 +106,7 @@ describe('Privacy policy', () => {
       await privacyPolicyPage.acceptPrivacyPolicy();
       await utils.resetBrowserNative();
       await commonElements.calmNative();
-      await closeTourModal();
+      await utils.closeTour();
       await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
@@ -149,7 +144,7 @@ describe('Privacy policy', () => {
       await privacyPolicyPage.acceptPrivacyPolicy();
       await utils.resetBrowserNative();
       await commonElements.calmNative();
-      await closeTourModal();
+      await utils.closeTour();
       await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
