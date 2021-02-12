@@ -2,6 +2,7 @@ const _ = require('lodash');
 const utils = require('../../utils');
 const constants = require('../../constants');
 const moment = require('moment');
+const chai = require('chai');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -67,95 +68,98 @@ const DOCS_TO_KEEP = [
 ];
 
 describe('routing', () => {
-  beforeAll(done => {
+  beforeAll(() => {
     return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users))
-      .then(done);
+      .saveDocNative(parentPlace)
+      .then(() => utils.createUsersNative(users));
   });
 
-  afterAll(done =>
-    utils
-      .revertDb()
-      .then(() => utils.deleteUsers(users))
-      .then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterAll(() => {
+    return utils
+      .revertDbNative()
+      .then(() => utils.deleteUsersNative(users));
+  });
+
+  afterEach(() => utils.revertDbNative(DOCS_TO_KEEP, true));
 
   describe('unauthenticated routing', () => {
     it('API restricts endpoints which need authorization', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(
+          .requestOnTestDbNative(
             Object.assign({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions)
           )
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/explain' }, unauthenticatedRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/explain' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/a/b/c' }, unauthenticatedRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/a/b/c' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '/some-new-db' }, unauthenticatedRequestOptions)) // 403
+          .requestNative(Object.assign({ path: '/some-new-db' }, unauthenticatedRequestOptions)) // 403
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_design/medic/_view/someview' }, unauthenticatedRequestOptions))
+          .requestOnMedicDbNative(
+            Object.assign({ path: '/_design/medic/_view/someview' },
+              unauthenticatedRequestOptions)
+          )
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/explain' }, unauthenticatedRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/explain' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/a/b/c' }, unauthenticatedRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/a/b/c' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/PARENT_PLACE' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/PARENT_PLACE/attachment' }, unauthenticatedRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '/api/deploy-info' }, unauthenticatedRequestOptions))
+          .requestNative(Object.assign({ path: '/api/deploy-info' }, unauthenticatedRequestOptions))
           .catch(err => err),
       ]).then(results => {
         results.forEach(result => {
-          expect(result.statusCode).toEqual(401);
-          expect(result.responseBody.error).toEqual('unauthorized');
+          chai.expect(result.statusCode).to.equal(401);
+          chai.expect(result.responseBody.error).to.equal('unauthorized');
         });
       });
     });
 
     it('API allows endpoints which do not need authentication', () => {
       return Promise.all([
-        utils.requestOnTestDb(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/login/style.css' }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)),
-        utils.requestOnMedicDb(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/setup/poll' }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/api/info' }, unauthenticatedRequestOptions)),
+        utils.requestOnTestDbNative(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
+        utils.requestNative(Object.assign({ path: '/login/style.css' }, unauthenticatedRequestOptions)),
+        utils.requestNative(Object.assign({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)),
+        utils.requestOnMedicDbNative(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
+        utils.requestNative(Object.assign({ path: '/setup/poll' }, unauthenticatedRequestOptions)),
+        utils.requestNative(Object.assign({ path: '/api/info' }, unauthenticatedRequestOptions)),
       ]).then(results => {
-        expect(results[0].length).toBeTruthy();
-        expect(results[1].length).toBeTruthy();
-        expect(_.isArray(results[2])).toEqual(true);
-        expect(results[3].length).toBeTruthy();
-        expect(results[4].version).toEqual('0.1.0');
-        expect(results[5].version).toEqual('0.1.0');
+        chai.expect(results[0].length).to.be.ok;
+        chai.expect(results[1].length).to.be.ok;
+        chai.expect(results[2]).to.be.an('array');
+        chai.expect(results[3].length).to.be.ok;
+        chai.expect(results[4].version).to.equal('0.1.0');
+        chai.expect(results[5].version).to.equal('0.1.0');
       });
     });
 
     it('should display deploy-info to authenticated users', () => {
       return Promise.all([
-        utils.request(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
-        utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
-        utils.requestOnTestDb('/_design/medic-client')
+        utils.requestNative(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
+        utils.requestNative(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
+        utils.requestOnTestDbNative('/_design/medic-client')
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
-        expect(deployInfoOnline).toEqual(ddoc.deploy_info);
-        expect(deployInfoOffline).toEqual(ddoc.deploy_info);
+        chai.expect(deployInfoOnline).to.deep.equal(ddoc.deploy_info);
+        chai.expect(deployInfoOffline).to.deep.equal(ddoc.deploy_info);
       });
     });
   });
@@ -164,32 +168,38 @@ describe('routing', () => {
     it('restricts _design/*/_list/*', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, onlineRequestOptions))
+          .requestOnTestDbNative(
+            Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, onlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions))
+          .requestOnTestDbNative(
+            Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .requestOnTestDb(
+          .requestOnTestDbNative(
             Object.assign({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions)
           )
           .catch(err => err),
         utils
-          .request(Object.assign(
+          .requestNative(Object.assign(
             { path: `//${constants.DB_NAME}//_design//medic//_list//test_list/test_view` },
             offlineRequestOptions
           ))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions))
+          .requestOnMedicDbNative(
+            Object.assign({ path: '/_design/medic/_list/test_list/test_view' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .requestOnMedicDb(
+          .requestOnMedicDbNative(
             Object.assign({ path: '///_design///medic//_list//test_list/test_view' }, offlineRequestOptions)
           )
           .catch(err => err),
         utils
-          .request(
+          .requestNative(
             Object.assign({ path: `//medic//_design//medic//_list//test_list/test_view` }, offlineRequestOptions)
           )
           .catch(err => err)
@@ -197,12 +207,12 @@ describe('routing', () => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).toEqual(404);
-            expect(result.responseBody.error).toEqual('not_found');
+            chai.expect(result.statusCode).to.equal(404);
+            chai.expect(result.responseBody.error).to.equal('not_found');
           } else {
             // offline user requests
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -211,39 +221,39 @@ describe('routing', () => {
     it('restricts _design/*/_show/*', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_design/medic/_show/test' }, onlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_design/medic/_show/test' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_design/medic/_show/test' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_design/medic/_show/test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_design///medic//_show//test' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '///_design///medic//_show//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
+          .requestNative(
             Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_show//test/` }, offlineRequestOptions)
           )
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_design/medic/_show/test' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/_design/medic/_show/test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_design///medic//_show//test' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '///_design///medic//_show//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_design//medic//_show//test/` }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: `//medic//_design//medic//_show//test/` }, offlineRequestOptions))
           .catch(err => err),
 
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).toEqual(404);
-            expect(result.responseBody.error).toEqual('not_found');
+            chai.expect(result.statusCode).to.equal(404);
+            chai.expect(result.responseBody.error).to.equal('not_found');
           } else {
             // offline user requests
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -252,27 +262,27 @@ describe('routing', () => {
     it('restricts _design/*/_view/*', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_design/medic/_view/test' }, onlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_design/medic/_view/test' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_design/medic/_view/test' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_design/medic/_view/test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
+          .requestNative(
             Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions)
           )
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_design/medic/_view/test' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/_design/medic/_view/test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '///_design///medic//_view//test' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(
+          .requestNative(
             Object.assign({ path: `//${constants.DB_NAME}//_design//medic//_view//test/` }, offlineRequestOptions)
           )
           .catch(err => err),
@@ -280,12 +290,12 @@ describe('routing', () => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).toEqual(404);
-            expect(result.responseBody.error).toEqual('not_found');
+            chai.expect(result.statusCode).to.equal(404);
+            chai.expect(result.responseBody.error).to.equal('not_found');
           } else {
             // offline user requests
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -299,35 +309,35 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_find' }, onlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '/_find' }, onlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_find' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '/_find' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_find//' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '///_find//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_find//` }, offlineRequestOptions, request))
+          .requestNative(Object.assign({ path: `//${constants.DB_NAME}//_find//` }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_find' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '/_find' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_find//' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '///_find//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_find//` }, offlineRequestOptions, request))
+          .requestNative(Object.assign({ path: `//medic//_find//` }, offlineRequestOptions, request))
           .catch(err => err),
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.docs.length).toBeTruthy();
+            chai.expect(result.docs.length).to.be.ok;
           } else {
             // offline user request
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -341,36 +351,36 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_explain' }, onlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '/_explain' }, onlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_explain' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '/_explain' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_explain//' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '///_explain//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_explain//` }, offlineRequestOptions, request))
+          .requestNative(Object.assign({ path: `//${constants.DB_NAME}//_explain//` }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_explain' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '/_explain' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_explain//' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '///_explain//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_explain//` }, offlineRequestOptions, request))
+          .requestNative(Object.assign({ path: `//medic//_explain//` }, offlineRequestOptions, request))
           .catch(err => err),
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.limit).toEqual(1);
-            expect(result.fields).toEqual('all_fields');
+            chai.expect(result.limit).to.equal(1);
+            chai.expect(result.fields).to.equal('all_fields');
           } else {
             // offline user requests
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -379,36 +389,36 @@ describe('routing', () => {
     it('restricts _index', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_index' }, onlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_index' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_index' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_index' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_index//' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '///_index//' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_index//` }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: `//${constants.DB_NAME}//_index//` }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_index' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/_index' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_index//' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '///_index//' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_index//` }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: `//medic//_index//` }, offlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.total_rows).toEqual(1);
-            expect(result.indexes.length).toEqual(1);
+            chai.expect(result.total_rows).to.equal(1);
+            chai.expect(result.indexes.length).to.equal(1);
           } else {
             // offline user request
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -422,37 +432,37 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_ensure_full_commit' }, onlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '/_ensure_full_commit' }, onlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_ensure_full_commit' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '/_ensure_full_commit' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_ensure_full_commit//' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '///_ensure_full_commit//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(
+          .requestNative(
             Object.assign({ path: `//${constants.DB_NAME}//_ensure_full_commit//` }, offlineRequestOptions, request)
           )
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_ensure_full_commit' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '/_ensure_full_commit' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_ensure_full_commit//' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '///_ensure_full_commit//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_ensure_full_commit//` }, offlineRequestOptions, request))
+          .requestNative(Object.assign({ path: `//medic//_ensure_full_commit//` }, offlineRequestOptions, request))
           .catch(err => err),
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.ok).toEqual(true);
+            chai.expect(result.ok).to.equal(true);
           } else {
             // offline user request
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -461,35 +471,35 @@ describe('routing', () => {
     it('restricts _security', () => {
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_security' }, onlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_security' }, onlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '/_security' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '/_security' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_security//' }, offlineRequestOptions))
+          .requestOnTestDbNative(Object.assign({ path: '///_security//' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_security//` }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: `//${constants.DB_NAME}//_security//` }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_security' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '/_security' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_security//' }, offlineRequestOptions))
+          .requestOnMedicDbNative(Object.assign({ path: '///_security//' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_security//` }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: `//medic//_security//` }, offlineRequestOptions))
           .catch(err => err),
       ]).then(results => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).toBeFalsy();
+            chai.expect(result.statusCode).to.not.be.ok;
           } else {
             // offline user requests
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           }
         });
       });
@@ -503,27 +513,27 @@ describe('routing', () => {
 
       return Promise.all([
         utils
-          .requestOnTestDb(Object.assign({ path: '/_purge' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '/_purge' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnTestDb(Object.assign({ path: '///_purge//' }, offlineRequestOptions, request))
+          .requestOnTestDbNative(Object.assign({ path: '///_purge//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//${constants.DB_NAME}//_purge//` }, offlineRequestOptions, request))
+          .requestNative(Object.assign({ path: `//${constants.DB_NAME}//_purge//` }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '/_purge' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '/_purge' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .requestOnMedicDb(Object.assign({ path: '///_purge//' }, offlineRequestOptions, request))
+          .requestOnMedicDbNative(Object.assign({ path: '///_purge//' }, offlineRequestOptions, request))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: `//medic//_purge//` }, offlineRequestOptions, request))
+          .requestNative(Object.assign({ path: `//medic//_purge//` }, offlineRequestOptions, request))
           .catch(err => err)
       ]).then(results => {
         results.forEach(result => {
-          expect(result.statusCode).toEqual(403);
-          expect(result.responseBody.error).toEqual('forbidden');
+          chai.expect(result.statusCode).to.equal(403);
+          chai.expect(result.responseBody.error).to.equal('forbidden');
         });
       });
     });
@@ -535,15 +545,15 @@ describe('routing', () => {
       };
 
       return Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_revs_diff' }, request, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_missing_revs' }, request, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '/_revs_diff' }, request, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '/_missing_revs' }, request, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({ path: '/_revs_diff' }, request, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({ path: '/_missing_revs' }, request, offlineRequestOptions)),
+        utils.requestOnMedicDbNative(_.defaults({ path: '/_revs_diff' }, request, offlineRequestOptions)),
+        utils.requestOnMedicDbNative(_.defaults({ path: '/_missing_revs' }, request, offlineRequestOptions)),
       ]).then(results => {
-        expect(results[0]).toEqual({});
-        expect(results[1]).toEqual({ missing_revs: {} });
-        expect(results[2]).toEqual({});
-        expect(results[3]).toEqual({ missing_revs: {} });
+        chai.expect(results[0]).to.deep.equal({});
+        chai.expect(results[1]).to.deep.equal({ missing_revs: {} });
+        chai.expect(results[2]).to.deep.equal({});
+        chai.expect(results[3]).to.deep.equal({ missing_revs: {} });
       });
     });
 
@@ -555,33 +565,34 @@ describe('routing', () => {
       };
 
       return utils
-        .requestOnTestDb(_.defaults(request, offlineRequestOptions))
+        .requestOnTestDbNative(_.defaults(request, offlineRequestOptions))
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({ ok: true, id: '_local/some_local_id' });
-          return utils.requestOnTestDb(
+          chai.expect(_.omit(result, 'rev')).to.deep.equal({ ok: true, id: '_local/some_local_id' });
+          return utils.requestOnTestDbNative(
             _.defaults({ method: 'GET', path: '/_local/some_local_id' }, offlineRequestOptions)
           );
         })
         .then(result => {
-          expect(_.omit(result, '_rev')).toEqual({ _id: '_local/some_local_id' });
-          return utils.requestOnTestDb(
+          chai.expect(_.omit(result, '_rev')).to.deep.equal({ _id: '_local/some_local_id' });
+          return utils.requestOnTestDbNative(
             _.defaults({ method: 'DELETE', path: '/_local/some_local_id' }, offlineRequestOptions)
           );
         })
         .then(result => {
-          expect(_.omit(result, 'rev')).toEqual({ ok: true, id: '_local/some_local_id' });
+          chai.expect(_.omit(result, 'rev')).to.deep.equal({ ok: true, id: '_local/some_local_id' });
         });
     });
 
     it('allows access to the app', () => {
       return Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/', json: false }, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions))
+        utils.requestOnTestDbNative(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({ path: '/', json: false }, offlineRequestOptions)),
+        utils.requestOnMedicDbNative(_.defaults({ path: '/_design/medic/_rewrite' }, offlineRequestOptions))
       ]).then(results => {
-        expect(results[0].includes('This loads as an empty page')).toBe(true); // the dummy page that clears appcache
-        expect(results[1].includes('DOCTYPE html')).toBe(true);
-        expect(results[2].includes('This loads as an empty page')).toBe(true);
+        // the dummy page that clears appcache
+        chai.expect(results[0].includes('This loads as an empty page')).to.equal(true);
+        chai.expect(results[1].includes('DOCTYPE html')).to.equal(true);
+        chai.expect(results[2].includes('This loads as an empty page')).to.equal(true);
       });
     });
 
@@ -589,40 +600,40 @@ describe('routing', () => {
       return Promise
         .all([
           utils
-            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions))
+            .requestOnTestDbNative(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions))
+            .requestOnTestDbNative(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnTestDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions))
+            .requestOnTestDbNative(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions))
+            .requestOnMedicDbNative(_.defaults({ path: '/_design/medic-admin/_rewrite' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions))
+            .requestOnMedicDbNative(_.defaults({ path: '/_design/medic-admin/_rewrite/' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .requestOnMedicDb(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions))
+            .requestOnMedicDbNative(_.defaults({ path: '/_design/medic-admin/css/main.css' }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .request(Object.assign({ path: `/admin` }, offlineRequestOptions))
+            .requestNative(Object.assign({ path: `/admin` }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .request(Object.assign({ path: `/admin/` }, offlineRequestOptions))
+            .requestNative(Object.assign({ path: `/admin/` }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .request(Object.assign({ path: `//admin//` }, offlineRequestOptions))
+            .requestNative(Object.assign({ path: `//admin//` }, offlineRequestOptions))
             .catch(err => err),
           utils
-            .request(Object.assign({ path: `/admin/css/main.css` }, offlineRequestOptions))
+            .requestNative(Object.assign({ path: `/admin/css/main.css` }, offlineRequestOptions))
             .catch(err => err)
         ])
         .then(results => {
           results.forEach(result => {
-            expect(result.statusCode).toEqual(403);
-            expect(result.responseBody.error).toEqual('forbidden');
+            chai.expect(result.statusCode).to.equal(403);
+            chai.expect(result.responseBody.error).to.equal('forbidden');
           });
         });
     });
@@ -630,27 +641,27 @@ describe('routing', () => {
     it('blocks direct access to CouchDB and to fauxton', () => {
       return Promise.all([
         utils
-          .request(Object.assign({ path: '/some-new-db', method: 'PUT' }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: '/some-new-db', method: 'PUT' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '/_utils' }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: '/_utils' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '/_utils/something' }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: '/_utils/something' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '//_utils' }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: '//_utils' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '//_utils//something/else' }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: '//_utils//something/else' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(Object.assign({ path: '/a/b/c' }, offlineRequestOptions))
+          .requestNative(Object.assign({ path: '/a/b/c' }, offlineRequestOptions))
           .catch(err => err)
       ]).then(results => {
         results.forEach(result => {
-          expect(result.statusCode).toEqual(403);
-          expect(result.responseBody.error).toEqual('forbidden');
+          chai.expect(result.statusCode).to.equal(403);
+          chai.expect(result.responseBody.error).to.equal('forbidden');
         });
       });
     });
@@ -668,7 +679,7 @@ describe('routing', () => {
       };
 
       const createSession = () => {
-        return utils.request({
+        return utils.requestNative({
           resolveWithFullResponse: true,
           json: true,
           path: '/_session',
@@ -681,7 +692,7 @@ describe('routing', () => {
       };
 
       const getSession = sessionCookie => {
-        return utils.request({
+        return utils.requestNative({
           resolveWithFullResponse: true,
           path: '/_session',
           method: 'GET',
@@ -694,61 +705,61 @@ describe('routing', () => {
 
       return createSession()
         .then(res => {
-          expect(res.statusCode).toEqual(200);
-          expect(res.headers['set-cookie'].length).toEqual(1);
+          chai.expect(res.statusCode).to.equal(200);
+          chai.expect(res.headers['set-cookie'].length).to.equal(1);
           const sessionCookie = res.headers['set-cookie'][0].split(';')[0];
-          expect(sessionCookie.split('=')[0]).toEqual('AuthSession');
+          chai.expect(sessionCookie.split('=')[0]).to.equal('AuthSession');
           return sessionCookie;
         })
         .then(sessionCookie => getSession(sessionCookie))
         .then(res => {
-          expect(res.statusCode).toEqual(200);
-          expect(res.headers['set-cookie'].length).toEqual(1);
+          chai.expect(res.statusCode).to.equal(200);
+          chai.expect(res.headers['set-cookie'].length).to.equal(1);
           const [ content, age, path, expires, samesite ] = res.headers['set-cookie'][0].split('; ');
 
           // check the cookie content is unchanged
           const [ contentKey, contentValue ] = content.split('=');
-          expect(contentKey).toEqual('userCtx');
-          expect(decodeURIComponent(contentValue)).toEqual(JSON.stringify(userCtxCookie));
+          chai.expect(contentKey).to.equal('userCtx');
+          chai.expect(decodeURIComponent(contentValue)).to.equal(JSON.stringify(userCtxCookie));
 
           // check the expiry date is around a year away
           const expiryValue = expires.split('=')[1];
           const expiryDate = moment.utc(expiryValue).add(1, 'hour'); // add a small margin of error
-          expect(expiryDate.diff(now, 'months')).toEqual(12);
+          chai.expect(expiryDate.diff(now, 'months')).to.equal(12);
 
           // check the other properties
-          expect(samesite).toEqual('SameSite=Lax');
-          expect(age).toEqual('Max-Age=31536000');
-          expect(path).toEqual('Path=/');
+          chai.expect(samesite).to.equal('SameSite=Lax');
+          chai.expect(age).to.equal('Max-Age=31536000');
+          chai.expect(path).to.equal('Path=/');
         });
     });
   });
 
   describe('legacy endpoints', () => {
-    afterEach(done => utils.revertSettings().then(done));
+    afterEach(() => utils.revertSettingsNative());
 
     it('should still route to deprecated apiV0 settings endpoints', () => {
       let settings;
       return utils
-        .updateSettings({}) // this test will update settings that we want successfully reverted afterwards
-        .then(() => utils.getDoc('settings'))
+        .updateSettingsNative({}) // this test will update settings that we want successfully reverted afterwards
+        .then(() => utils.getDocNative('settings'))
         .then(result => settings = result.settings)
         .then(() => Promise.all([
-          utils.requestOnTestDb(
+          utils.requestOnTestDbNative(
             Object.assign({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)
           ),
-          utils.requestOnTestDb(
+          utils.requestOnTestDbNative(
             Object.assign({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)
           ),
-          utils.requestOnMedicDb(
+          utils.requestOnMedicDbNative(
             Object.assign({ path: '/_design/medic/_rewrite/app_settings/medic' }, onlineRequestOptions)
           ),
-          utils.requestOnMedicDb(
+          utils.requestOnMedicDbNative(
             Object.assign({ path: '/_design/medic/_rewrite/app_settings/medic' }, offlineRequestOptions)
           ),
         ]))
         .then(results => {
-          results.forEach(result => expect(result.settings).toEqual(settings));
+          results.forEach(result => chai.expect(result.settings).to.deep.equal(settings));
 
           const updateMedicParams = {
             path: '/_design/medic/_rewrite/update_settings/medic',
@@ -756,10 +767,10 @@ describe('routing', () => {
             body: { medic_api_v0: 'my value 1' },
           };
 
-          return utils.requestOnMedicDb(_.defaults(updateMedicParams, onlineRequestOptions));
+          return utils.requestOnMedicDbNative(_.defaults(updateMedicParams, onlineRequestOptions));
         })
         .then(response => {
-          expect(response.success).toBe(true);
+          chai.expect(response.success).to.equal(true);
         })
         .then(() => {
           const params = {
@@ -767,10 +778,10 @@ describe('routing', () => {
             method: 'PUT',
             body: { test_api_v0: 'my value 2' },
           };
-          return utils.requestOnTestDb(_.defaults(params, onlineRequestOptions));
+          return utils.requestOnTestDbNative(_.defaults(params, onlineRequestOptions));
         })
         .then(response => {
-          expect(response.success).toBe(true);
+          chai.expect(response.success).to.equal(true);
         })
         .then(() => {
           const params = {
@@ -778,10 +789,10 @@ describe('routing', () => {
             method: 'PUT',
             body: { test_api_v0_offline: 'offline value 2' },
           };
-          return utils.requestOnTestDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
+          return utils.requestOnTestDbNative(_.defaults(params, offlineRequestOptions)).catch(err => err);
         })
         .then(response => {
-          expect(response.statusCode).toEqual(403);
+          chai.expect(response.statusCode).to.equal(403);
         })
         .then(() => {
           const params = {
@@ -789,17 +800,17 @@ describe('routing', () => {
             method: 'PUT',
             body: { medic_api_v0_offline: 'offline value 1' },
           };
-          return utils.requestOnMedicDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
+          return utils.requestOnMedicDbNative(_.defaults(params, offlineRequestOptions)).catch(err => err);
         })
         .then(response => {
-          expect(response.statusCode).toEqual(403);
+          chai.expect(response.statusCode).to.equal(403);
         })
         .then(() => utils.getDoc('settings'))
         .then(settings => {
-          expect(settings.settings.test_api_v0).toEqual('my value 2');
-          expect(settings.settings.medic_api_v0).toEqual('my value 1');
-          expect(settings.settings.test_api_v0_offline).not.toBeDefined();
-          expect(settings.settings.medic_api_v0_offline).not.toBeDefined();
+          chai.expect(settings.settings.test_api_v0).to.equal('my value 2');
+          chai.expect(settings.settings.medic_api_v0).to.equal('my value 1');
+          chai.expect(settings.settings.test_api_v0_offline).to.be.undefined;
+          chai.expect(settings.settings.medic_api_v0_offline).to.be.undefined;
         });
     });
   });

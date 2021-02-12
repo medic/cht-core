@@ -92,18 +92,17 @@ const hasMatchingRow = (rows, id, exact = true) => {
 describe('all_docs handler', () => {
   beforeAll(() => {
     return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users));
+      .saveDocNative(parentPlace)
+      .then(() => utils.createUsersNative(users));
   });
 
-  afterAll(done =>
-    utils
-      .revertDb()
-      .then(() => utils.deleteUsers(users))
-      .then(done)
-  );
+  afterAll(() => {
+    return utils
+      .revertDbNative()
+      .then(() => utils.deleteUsersNative(users));
+  });
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDbNative(DOCS_TO_KEEP, true));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_all_docs',
@@ -120,7 +119,7 @@ describe('all_docs handler', () => {
 
   it('does not filter online users', () => {
     return utils
-      .requestOnTestDb(onlineRequestOptions)
+      .requestOnTestDbNative(onlineRequestOptions)
       .then(result => {
         unrestrictedKeys.forEach(key => {
           chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
@@ -150,8 +149,8 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
-      .then(() => utils.requestOnTestDb(offlineRequestOptions))
+      .saveDocsNative(docs)
+      .then(() => utils.requestOnTestDbNative(offlineRequestOptions))
       .then(result => {
         unrestrictedKeys.forEach(key => {
           chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
@@ -174,7 +173,7 @@ describe('all_docs handler', () => {
           'denied_target',
         ]);
       })
-      .then(() => utils.requestOnTestDb(supervisorRequestOptions))
+      .then(() => utils.requestOnTestDbNative(supervisorRequestOptions))
       .then(result => {
         const ids = result.rows.map(row => row.id);
         chai.expect(ids).to.include.members([
@@ -199,10 +198,10 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="allowed_contact"'}, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="denied_contact"'}, offlineRequestOptions))
+        utils.requestOnTestDbNative(_.defaults({path: '/_all_docs?key="allowed_contact"'}, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({path: '/_all_docs?key="denied_contact"'}, offlineRequestOptions))
       ]))
       .then(([allowed, denied]) => {
         chai.expect(allowed.rows.length).to.equal(1);
@@ -236,10 +235,10 @@ describe('all_docs handler', () => {
     const allowed = [0, 2, 4];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults(request, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
+        utils.requestOnTestDbNative(_.defaults(request, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
       ]))
       .then((results) => {
         results.forEach(result => {
@@ -274,12 +273,12 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults(
+        utils.requestOnTestDbNative(_.defaults(
           { path: '/_all_docs?start_key="10"&end_key="8"' }, offlineRequestOptions)
         ),
-        utils.requestOnTestDb(_.defaults(
+        utils.requestOnTestDbNative(_.defaults(
           { path: '/_all_docs?startkey="10"&endkey="8"&inclusive_end=false'}, offlineRequestOptions)
         )
       ]))
@@ -306,12 +305,12 @@ describe('all_docs handler', () => {
     const allowed = ['1', '3', '4'];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults(
+        utils.requestOnTestDbNative(_.defaults(
           { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions)
         ),
-        utils.requestOnTestDb(_.defaults(
+        utils.requestOnTestDbNative(_.defaults(
           { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false` }, offlineRequestOptions)
         )
       ]))
@@ -365,13 +364,13 @@ describe('all_docs handler', () => {
     };
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(() => getSkip())
       .then(skip => Promise.all([
-        utils.requestOnTestDb(_.defaults(
+        utils.requestOnTestDbNative(_.defaults(
           { path: `/_all_docs?limit=2&skip=${skip}&include_docs=false` }, offlineRequestOptions)
         ),
-        utils.requestOnTestDb(_.defaults(
+        utils.requestOnTestDbNative(_.defaults(
           { path: `/_all_docs?limit=1&skip=${skip + 2}&include_docs=true` }, offlineRequestOptions)
         )
       ]))
@@ -401,13 +400,13 @@ describe('all_docs handler', () => {
     const keys = docs.map(doc => doc._id);
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(result => {
         result.forEach((stub, key) => {
           docs[key]._rev = stub.rev;
           docs[key]._deleted = true;
         });
-        return utils.saveDocs(docs);
+        return utils.saveDocsNative(docs);
       })
       .then(result => {
         // can't afford to wait for sentinel to process these deletes :(
@@ -421,10 +420,13 @@ describe('all_docs handler', () => {
           };
         });
 
-        return utils.saveDocs(tombstones);
+        return utils.saveDocsNative(tombstones);
       })
-      .then(() =>
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
+      .then(() => {
+        return utils.requestOnTestDbNative(
+          _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)
+        );
+      })
       .then(result => {
         chai.expect(result.rows).to.deep.equal([
           { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev, deleted: true }},
@@ -474,9 +476,9 @@ describe('all_docs handler', () => {
     const opts = _.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions);
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(result => result.forEach((r, idx) => docs[idx]._rev = r.rev))
-      .then(() => utils.requestOnMedicDb(opts))
+      .then(() => utils.requestOnMedicDbNative(opts))
       .then(result => {
         chai.expect(result.rows).to.deep.equal([
           { id: 'insensitive_report_1', key: 'insensitive_report_1', value: { rev: docs[0]._rev }},
@@ -496,8 +498,8 @@ describe('all_docs handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
-      .then(() => utils.requestOnMedicDb(offlineRequestOptions))
+      .saveDocsNative(docs)
+      .then(() => utils.requestOnMedicDbNative(offlineRequestOptions))
       .then(result => {
         unrestrictedKeys.forEach(key => {
           chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
@@ -522,35 +524,45 @@ describe('all_docs handler', () => {
     const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
 
     return utils
-      .saveDoc(doc)
+      .saveDocNative(doc)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
-        utils.request(_.defaults(
+        utils.requestOnTestDbNative(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
+        utils.requestNative(_.defaults(
           { path: `//${constants.DB_NAME}//_all_docs?key="denied_report"` }, offlineRequestOptions)
         ),
         utils
-          .requestOnTestDb(_.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnTestDbNative(
+            _.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .requestOnTestDb(_.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnTestDbNative(
+            _.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .request(_.defaults(
+          .requestNative(_.defaults(
             { path: `//${constants.DB_NAME}//_all_docs/something?key="denied_report"` }, offlineRequestOptions)
           )
           .catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//medic//_all_docs?key="denied_report"` }, offlineRequestOptions)),
+        utils.requestOnMedicDbNative(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
+        utils.requestOnMedicDbNative(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
+        utils.requestNative(_.defaults({ path: `//medic//_all_docs?key="denied_report"` }, offlineRequestOptions)),
         utils
-          .requestOnMedicDb(_.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnMedicDbNative(
+            _.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .requestOnMedicDb(_.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions))
+          .requestOnMedicDbNative(
+            _.defaults({ path: '///_all_docs//something?key="denied_report"' }, offlineRequestOptions)
+          )
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//medic//_all_docs/something?key="denied_report"` }, offlineRequestOptions))
+          .requestNative(
+            _.defaults({ path: `//medic//_all_docs/something?key="denied_report"` }, offlineRequestOptions)
+          )
           .catch(err => err)
       ]))
       .then(results => {
@@ -672,11 +684,11 @@ describe('all_docs handler', () => {
 
       const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
       return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(docs))
+        .updateSettingsNative(settings)
+        .then(() => utils.saveDocsNative(docs))
         .then(() => Promise.all([
-          utils.requestOnMedicDb(Object.assign({ qs: { keys: keys  } }, supervisorRequestOptions)),
-          utils.requestOnMedicDb(supervisorRequestOptions),
+          utils.requestOnMedicDbNative(Object.assign({ qs: { keys: keys  } }, supervisorRequestOptions)),
+          utils.requestOnMedicDbNative(supervisorRequestOptions),
         ]))
         .then(([withKeys, withoutKeys]) => {
           const expectedRowsWithKeys = [

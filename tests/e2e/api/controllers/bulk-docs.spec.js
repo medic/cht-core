@@ -70,18 +70,18 @@ const DOCS_TO_KEEP = [
 describe('bulk-docs handler', () => {
   beforeAll(() => {
     return utils
-      .saveDoc(parentPlace)
-      .then(() => sUtils.waitForSentinel())
-      .then(() => utils.createUsers(users));
+      .saveDocNative(parentPlace)
+      .then(() => sUtils.waitForSentinelNative())
+      .then(() => utils.createUsersNative(users));
   });
 
-  afterAll(done =>
-    utils
-      .revertDb()
-      .then(() => utils.deleteUsers(users))
-      .then(done));
+  afterAll(() => {
+    return utils
+      .revertDbNative()
+      .then(() => utils.deleteUsersNative(users));
+  });
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDbNative(DOCS_TO_KEEP, true));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_docs',
@@ -116,7 +116,7 @@ describe('bulk-docs handler', () => {
     onlineRequestOptions.body = { docs };
 
     return utils
-      .requestOnTestDb(onlineRequestOptions)
+      .requestOnTestDbNative(onlineRequestOptions)
       .then(results => {
         chai.expect(results.length).to.equal(3);
         results.forEach((result, idx) => {
@@ -216,7 +216,7 @@ describe('bulk-docs handler', () => {
     ];
 
     return utils
-      .saveDocs(existentDocs)
+      .saveDocsNative(existentDocs)
       .then(result => {
         let ids = result.map(r => r.id);
         let existentDocsInfodocs;
@@ -225,12 +225,12 @@ describe('bulk-docs handler', () => {
           row => (docs.find(doc => doc._id === row.id)._rev = row.rev)
         );
 
-        return sUtils.waitForSentinel(ids)
-          .then(() => sUtils.getInfoDocs(ids))
+        return sUtils.waitForSentinelNative(ids)
+          .then(() => sUtils.getInfoDocsNative(ids))
           .then(result => {
             existentDocsInfodocs = result;
             offlineRequestOptions.body = { docs };
-            return utils.requestOnTestDb(offlineRequestOptions);
+            return utils.requestOnTestDbNative(offlineRequestOptions);
           }).then(result => {
             chai.expect(result.length).to.equal(8);
             chai.expect(result[0]).to.deep.include({
@@ -277,7 +277,7 @@ describe('bulk-docs handler', () => {
             chai.expect(result[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
             chai.expect(result[7]).excluding( ['_rev', '_id']).to.deep.equal(docs[7]);
 
-            return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
+            return sUtils.waitForSentinelNative(ids).then(() => sUtils.getInfoDocsNative(ids));
           }).then(result => {
             chai.expect(result.length).to.equal(7);
             // Successful new write
@@ -349,7 +349,7 @@ describe('bulk-docs handler', () => {
     offlineRequestOptions.body = { docs };
 
     return utils
-      .requestOnTestDb(offlineRequestOptions)
+      .requestOnTestDbNative(offlineRequestOptions)
       .then(result => {
         chai.expect(result.length).to.equal(4);
         chai.expect(result[0]).to.include({ id: 'allowed_task', ok: true });
@@ -361,7 +361,7 @@ describe('bulk-docs handler', () => {
         docs[2]._rev = result[2].rev;
 
         supervisorRequestOptions.body = { docs };
-        return utils.requestOnTestDb(supervisorRequestOptions);
+        return utils.requestOnTestDbNative(supervisorRequestOptions);
       })
       .then(result => {
         chai.expect(result.length).to.equal(4);
@@ -432,7 +432,7 @@ describe('bulk-docs handler', () => {
     ];
     offlineRequestOptions.body = { docs };
 
-    return utils.requestOnTestDb(offlineRequestOptions).then(result => {
+    return utils.requestOnTestDbNative(offlineRequestOptions).then(result => {
       chai.expect(result.length).to.equal(8);
       chai.expect(result[0]).to.include({
         ok: true,
@@ -542,13 +542,13 @@ describe('bulk-docs handler', () => {
     ];
 
     return utils
-      .saveDocs(existentDocs)
+      .saveDocsNative(existentDocs)
       .then(result => {
         result.forEach(
           row => (docs.find(doc => doc._id === row.id)._rev = row.rev)
         );
         offlineRequestOptions.body = { docs };
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.length).to.equal(8);
@@ -588,25 +588,33 @@ describe('bulk-docs handler', () => {
     offlineRequestOptions.body = { docs: [doc] };
 
     return Promise.all([
-      utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
-      utils.requestOnTestDb(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)).catch(err => err),
+      utils.requestOnTestDbNative(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
+      utils.requestOnTestDbNative(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)).catch(err => err),
       utils
-        .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs` }, offlineRequestOptions))
+        .requestNative(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs` }, offlineRequestOptions))
         .catch(err => err),
-      utils.requestOnTestDb(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions)).catch(err => err),
-      utils.requestOnTestDb(_.defaults({ path: '///_bulk_docs//something' }, offlineRequestOptions)).catch(err => err),
       utils
-        .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs/something` }, offlineRequestOptions))
+        .requestOnTestDbNative(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions))
         .catch(err => err),
-      utils.requestOnMedicDb(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
-      utils.requestOnMedicDb(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)).catch(err => err),
       utils
-        .request(_.defaults({ path: `//medic//_bulk_docs` }, offlineRequestOptions))
+        .requestOnTestDbNative(_.defaults({ path: '///_bulk_docs//something' }, offlineRequestOptions))
         .catch(err => err),
-      utils.requestOnMedicDb(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions)).catch(err => err),
-      utils.requestOnMedicDb(_.defaults({ path: '///_bulk_docs//something' }, offlineRequestOptions)).catch(err => err),
       utils
-        .request(_.defaults({ path: `//medic//_bulk_docs/something` }, offlineRequestOptions))
+        .requestNative(_.defaults({ path: `//${constants.DB_NAME}//_bulk_docs/something` }, offlineRequestOptions))
+        .catch(err => err),
+      utils.requestOnMedicDbNative(_.defaults({ path: '/_bulk_docs' }, offlineRequestOptions)).catch(err => err),
+      utils.requestOnMedicDbNative(_.defaults({ path: '///_bulk_docs//' }, offlineRequestOptions)).catch(err => err),
+      utils
+        .requestNative(_.defaults({ path: `//medic//_bulk_docs` }, offlineRequestOptions))
+        .catch(err => err),
+      utils
+        .requestOnMedicDbNative(_.defaults({ path: '/_bulk_docs/something' }, offlineRequestOptions))
+        .catch(err => err),
+      utils
+        .requestOnMedicDbNative(_.defaults({ path: '///_bulk_docs//something' }, offlineRequestOptions))
+        .catch(err => err),
+      utils
+        .requestNative(_.defaults({ path: `//medic//_bulk_docs/something` }, offlineRequestOptions))
         .catch(err => err),
     ]).then(results => {
       results.forEach(result => {
@@ -658,7 +666,7 @@ describe('bulk-docs handler', () => {
       new_edits: false,
     };
     return utils
-      .requestOnTestDb(offlineRequestOptions)
+      .requestOnTestDbNative(offlineRequestOptions)
       .then(result => {
         chai.expect(result).to.deep.equal([
           { id: 'denied1', error: 'forbidden' },
@@ -796,12 +804,12 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
-      .then(() => utils.saveDocs(existentDocs))
+      .updateSettingsNative(settings)
+      .then(() => utils.saveDocsNative(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(results => {
         chai.expect(results).excludingEvery('rev').to.deep.equal([
@@ -945,12 +953,12 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
-      .then(() => utils.saveDocs(existentDocs))
+      .updateSettingsNative(settings)
+      .then(() => utils.saveDocsNative(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(results => {
         chai.expect(results).excludingEvery('rev').to.deep.equal([
@@ -1093,12 +1101,12 @@ describe('bulk-docs handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
     return utils
-      .updateSettings(settings)
-      .then(() => utils.saveDocs(existentDocs))
+      .updateSettingsNative(settings)
+      .then(() => utils.saveDocsNative(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
         offlineRequestOptions.body = { docs: [...newDocs, ...existentDocs], new_edits: true };
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(results => {
         chai.expect(results).excludingEvery('rev').to.deep.equal([

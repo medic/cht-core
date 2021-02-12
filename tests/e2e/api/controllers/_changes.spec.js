@@ -42,7 +42,7 @@ const requestChanges = (username, params = {}) => {
     qs: params,
     auth: { username, password }
   };
-  return utils.requestOnTestDb(options);
+  return utils.requestOnTestDbNative(options);
 };
 
 const password = 'passwordSUP3RS3CR37!';
@@ -226,8 +226,8 @@ const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 
 
 let currentSeq;
 const getCurrentSeq = () => {
-  return sentinelUtils.waitForSentinel()
-    .then(() => utils.requestOnTestDb('/_changes?descending=true&limit=1'))
+  return sentinelUtils.waitForSentinelNative()
+    .then(() => utils.requestOnTestDbNative('/_changes?descending=true&limit=1'))
     .then(result => {
       currentSeq = result.last_seq;
     });
@@ -242,29 +242,28 @@ describe('changes handler', () => {
     /^org.couchdb.user/,
   ];
 
-  beforeAll(done => {
+  beforeAll(() => {
     // Bootstrap users
     return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users, true))
-      .then(done);
+      .saveDocNative(parentPlace)
+      .then(() => utils.createUsersNative(users, true));
   });
 
-  afterAll(done =>
+  afterAll(() => {
     // Clean up like normal
-    utils
-      .revertDb()
+    return utils
+      .revertDbNative()
       // And also revert users we created in before
-      .then(() => utils.deleteUsers(users, true))
-      .then(done));
+      .then(() => utils.deleteUsersNative(users, true));
+  });
 
-  beforeEach(done => getCurrentSeq().then(done));
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP).then(done));
+  beforeEach(() => getCurrentSeq());
+  afterEach(() => utils.revertDbNative(DOCS_TO_KEEP));
 
   describe('requests', () => {
     it('should allow DB admins to POST to _changes', () => {
       return utils
-        .requestOnTestDb({
+        .requestOnTestDbNative({
           path: '/_changes?since=0&filter=_doc_ids&heartbeat=10000',
           method: 'POST',
           body: { doc_ids: ['org.couchdb.user:bob'] },
@@ -276,7 +275,7 @@ describe('changes handler', () => {
 
     it('should copy proxied response headers', () => {
       return utils
-        .requestOnTestDb({
+        .requestOnTestDbNative({
           path: '/_changes?limit=1',
           resolveWithFullResponse: true,
         })
@@ -331,7 +330,7 @@ describe('changes handler', () => {
         });
       };
       return utils
-        .requestOnTestDb('/')
+        .requestOnTestDbNative('/')
         .then(result => {
           const since = result.update_seq;
 
@@ -462,8 +461,8 @@ describe('changes handler', () => {
 
       return Promise
         .all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
+          utils.saveDocsNative(allowedDocs),
+          utils.saveDocsNative(deniedDocs)
         ])
         .then(() => batchedChanges('bob', 4))
         .then(changes => {
@@ -478,8 +477,8 @@ describe('changes handler', () => {
 
       return Promise
         .all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
+          utils.saveDocsNative(allowedDocs),
+          utils.saveDocsNative(deniedDocs)
         ])
         .then(() => requestChanges('bob', { limit: 4 }))
         .then(changes => {
@@ -503,8 +502,8 @@ describe('changes handler', () => {
 
       return Promise.all([
         consumeChanges('bob', [], currentSeq),
-        utils.saveDocs(allowedDocs),
-        utils.saveDocs(deniedDocs)
+        utils.saveDocsNative(allowedDocs),
+        utils.saveDocsNative(deniedDocs)
       ])
         .then(([changes]) => {
           assertChangeIds(changes, ...getIds(allowedDocs));
@@ -517,8 +516,8 @@ describe('changes handler', () => {
 
       return Promise
         .all([
-          utils.saveDocs(allowedBob),
-          utils.saveDocs(allowedSteve),
+          utils.saveDocsNative(allowedBob),
+          utils.saveDocsNative(allowedSteve),
         ])
         .then(() => Promise.all([
           requestChanges('bob'),
@@ -537,8 +536,8 @@ describe('changes handler', () => {
       return Promise.all([
         consumeChanges('bob', [], currentSeq),
         consumeChanges('steve', [], currentSeq),
-        utils.saveDocs(allowedBob),
-        utils.saveDocs(allowedSteve),
+        utils.saveDocsNative(allowedBob),
+        utils.saveDocsNative(allowedSteve),
       ])
         .then(([ bobsChanges, stevesChanges ]) => {
           assertChangeIds(bobsChanges, ...getIds(allowedBob));
@@ -571,7 +570,7 @@ describe('changes handler', () => {
       return Promise
         .all([
           consumeChanges('bob', [], currentSeq),
-          utils.saveDocs(newDocs)
+          utils.saveDocsNative(newDocs)
         ])
         .then(([changes]) => {
           if (changes.results.length >= 2) {
@@ -591,7 +590,7 @@ describe('changes handler', () => {
           requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
           requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
           // we delay the settings update request to make sure it happens AFTER the longpoll feeds have been created
-          utils.delayPromise(() => utils.updateSettings(settingsUpdates, true), 300)
+          utils.delayPromise(() => utils.updateSettingsNative(settingsUpdates, true), 300)
         ])
         .then(([ stevesChanges, bobsChanges ]) => {
           chai.expect(stevesChanges.results.length).to.equal(1);
@@ -626,13 +625,13 @@ describe('changes handler', () => {
       ];
       const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
       return utils
-        .updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true)
+        .updateSettingsNative({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true)
         .then(() => getCurrentSeq())
         .then(() => {
           return Promise
             .all([
               consumeChanges('bob', [], currentSeq),
-              utils.saveDocs(newDocs)
+              utils.saveDocsNative(newDocs)
             ])
             .then(([changes]) => {
               if (changes.results.length >= 2) {
@@ -651,13 +650,13 @@ describe('changes handler', () => {
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
       return utils
-        .getDoc('org.couchdb.user:steve')
+        .getDocNative('org.couchdb.user:steve')
         .then(stevesUser => {
           return Promise.all([
             requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
-            utils.saveDocs(allowedBob),
-            utils.saveDocs(allowedSteve),
-            utils.saveDoc(Object.assign(stevesUser, { facility_id: 'fixture:bobville' })),
+            utils.saveDocsNative(allowedBob),
+            utils.saveDocsNative(allowedSteve),
+            utils.saveDocNative(Object.assign(stevesUser, { facility_id: 'fixture:bobville' })),
           ]);
         })
         .then(([ changes ]) => {
@@ -676,12 +675,12 @@ describe('changes handler', () => {
       const updateSteve = (user, medicUser) => {
         // we move Steve's _user to bobville
         return utils
-          .request({
+          .requestNative({
             path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
             method: 'PUT',
             body: Object.assign(user, { facility_id: 'fixture:bobville' })
           })
-          .then(() => utils.saveDocs([
+          .then(() => utils.saveDocsNative([
             // we "move" his medic user to a place that doesn't exist. He should still get bobville docs
             Object.assign(medicUser, { facility_id: 'fixture:somethingville', roles: ['_admin'] }),
             ...allowedSteve,
@@ -691,8 +690,8 @@ describe('changes handler', () => {
 
       return getCurrentSeq('steve')
         .then(() => Promise.all([
-          utils.request({ path: '/_users/org.couchdb.user:steve' }),
-          utils.getDoc('org.couchdb.user:steve')
+          utils.requestNative({ path: '/_users/org.couchdb.user:steve' }),
+          utils.getDocNative('org.couchdb.user:steve')
         ]))
         .then(([ user, medicUser ]) => Promise.all([
           requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
@@ -715,9 +714,9 @@ describe('changes handler', () => {
             chai.expect(stevevilleIds).to.include.members(changeIds);
           }
         })
-        .then(() => utils.request({ path: '/_users/org.couchdb.user:steve' }))
+        .then(() => utils.requestNative({ path: '/_users/org.couchdb.user:steve' }))
         // revert steve, he didn't like it in bobville
-        .then(user => utils.request({
+        .then(user => utils.requestNative({
           path: `/_users/org.couchdb.user:steve?rev=${user._rev}`,
           method: 'PUT',
           body: Object.assign(user, { facility_id: 'fixture:steveville' })
@@ -730,8 +729,8 @@ describe('changes handler', () => {
 
       return Promise
         .all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs),
+          utils.saveDocsNative(allowedDocs),
+          utils.saveDocsNative(deniedDocs),
         ])
         .then(([ allowedDocsResult, deniedDocsResult ]) => {
           allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
@@ -740,8 +739,8 @@ describe('changes handler', () => {
         })
         .then(() => Promise.all([
           consumeChanges('bob', [], currentSeq),
-          utils.saveDocs(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
-          utils.saveDocs(allowedDocs.map(doc => Object.assign(doc, { _deleted: true })))
+          utils.saveDocsNative(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
+          utils.saveDocsNative(allowedDocs.map(doc => Object.assign(doc, { _deleted: true })))
         ]))
         .then(([ changes ]) => {
           assertChangeIds(changes, ...getIds(allowedDocs));
@@ -756,8 +755,8 @@ describe('changes handler', () => {
 
       return Promise
         .all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
+          utils.saveDocsNative(allowedDocs),
+          utils.saveDocsNative(deniedDocs)
         ])
         .then(([ allowedDocsResult, deniedDocsResult ]) => {
           allowedDocsResult.forEach((doc, idx) => allowedDocs[idx]._rev = doc.rev);
@@ -770,11 +769,11 @@ describe('changes handler', () => {
         })
         .then(() => {
           return Promise.all([
-            utils.saveDocs(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
-            utils.saveDocs(allowedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocsNative(deniedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocsNative(allowedDocs.map(doc => Object.assign(doc, { _deleted: true }))),
           ]);
         })
-        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => sentinelUtils.waitForSentinelNative())
         .then(() => requestChanges('steve'))
         .then(changes => {
           const changeIds = getIds(changes.results)
@@ -798,8 +797,8 @@ describe('changes handler', () => {
 
       return Promise
         .all([
-          utils.saveDocs(allowedBob),
-          utils.saveDocs(allowedSteve)
+          utils.saveDocsNative(allowedBob),
+          utils.saveDocsNative(allowedSteve)
         ])
         .then(([ allowedBobResult, allowedSteveResult ]) => {
           allowedBobResult.forEach((doc, idx) => allowedBob[idx]._rev = doc.rev);
@@ -813,8 +812,8 @@ describe('changes handler', () => {
           bobsSeq = bobsChanges.last_seq;
           stevesSeq = stevesChanges.last_seq;
           return Promise.all([
-            utils.saveDocs(allowedBob.map(doc => Object.assign(doc, { _deleted: true }))),
-            utils.saveDocs(allowedSteve.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocsNative(allowedBob.map(doc => Object.assign(doc, { _deleted: true }))),
+            utils.saveDocsNative(allowedSteve.map(doc => Object.assign(doc, { _deleted: true }))),
           ]);
         })
         .then(() => Promise.all([
@@ -829,7 +828,7 @@ describe('changes handler', () => {
 
     it('should forward changes requests when db name is not medic', () => {
       return utils
-        .requestOnMedicDb({ path: '/_changes', auth: { username: 'bob', password } })
+        .requestOnMedicDbNative({ path: '/_changes', auth: { username: 'bob', password } })
         .then(results => {
           return assertChangeIds(results, ...bobsIds);
         });
@@ -843,29 +842,29 @@ describe('changes handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_changes' }, options)),
-          utils.requestOnTestDb(_.defaults({ path: '//_changes//' }, options)),
-          utils.request(_.defaults({ path: `//${constants.DB_NAME}//_changes` }, options)),
+          utils.requestOnTestDbNative(_.defaults({ path: '/_changes' }, options)),
+          utils.requestOnTestDbNative(_.defaults({ path: '//_changes//' }, options)),
+          utils.requestNative(_.defaults({ path: `//${constants.DB_NAME}//_changes` }, options)),
           utils
-            .requestOnTestDb(_.defaults({ path: '/_changes/dsad' }, options))
+            .requestOnTestDbNative(_.defaults({ path: '/_changes/dsad' }, options))
             .catch(err => err),
           utils
-            .requestOnTestDb(_.defaults({ path: '//_changes//dsada' }, options))
+            .requestOnTestDbNative(_.defaults({ path: '//_changes//dsada' }, options))
             .catch(err => err),
           utils
-            .request(_.defaults({ path: `//${constants.DB_NAME}//_changes//dsadada` }, options))
+            .requestNative(_.defaults({ path: `//${constants.DB_NAME}//_changes//dsadada` }, options))
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_changes' }, options)),
-          utils.requestOnMedicDb(_.defaults({ path: '//_changes//' }, options)),
-          utils.request(_.defaults({ path: `//medic//_changes` }, options)),
+          utils.requestOnMedicDbNative(_.defaults({ path: '/_changes' }, options)),
+          utils.requestOnMedicDbNative(_.defaults({ path: '//_changes//' }, options)),
+          utils.requestNative(_.defaults({ path: `//medic//_changes` }, options)),
           utils
-            .requestOnMedicDb(_.defaults({ path: '/_changes/dsad' }, options))
-            .catch(err => err),
-          utils
-            .requestOnMedicDb(_.defaults({ path: '//_changes//dsada' }, options))
+            .requestOnMedicDbNative(_.defaults({ path: '/_changes/dsad' }, options))
             .catch(err => err),
           utils
-            .request(_.defaults({ path: `//medic//_changes//dsadada` }, options))
+            .requestOnMedicDbNative(_.defaults({ path: '//_changes//dsada' }, options))
+            .catch(err => err),
+          utils
+            .requestNative(_.defaults({ path: `//medic//_changes//dsadada` }, options))
             .catch(err => err),
         ])
         .then(results => {
@@ -889,12 +888,12 @@ describe('changes handler', () => {
     it('should return the tombstone of a deleted doc', () => {
       const contact = createSomeContacts(1, 'fixture:bobville')[0];
 
-      return utils.saveDoc(contact)
+      return utils.saveDocNative(contact)
         .then(result => {
           contact._rev = result.rev;
           contact._deleted = true;
 
-          return utils.saveDoc(contact);
+          return utils.saveDocNative(contact);
         })
         .then(result => {
           contact._rev = result.rev;
@@ -910,12 +909,12 @@ describe('changes handler', () => {
     it('should not return tombstone of a deleted doc if doc is re-added', () => {
       const contact = createSomeContacts(1, 'fixture:bobville')[0];
 
-      return utils.saveDoc(contact)
+      return utils.saveDocNative(contact)
         .then(result => {
           contact._rev = result.rev;
           contact._deleted = true;
 
-          return utils.saveDoc(contact);
+          return utils.saveDocNative(contact);
         })
         .then(result => {
           contact._rev = result.rev;
@@ -928,11 +927,11 @@ describe('changes handler', () => {
 
           delete(contact._rev);
           delete(contact._deleted);
-          return utils.saveDoc(contact);
+          return utils.saveDocNative(contact);
         })
         .then(result => {
           contact._rev = result.rev;
-          return sentinelUtils.waitForSentinel();
+          return sentinelUtils.waitForSentinelNative();
         })
         .then(() => getChangesForIds('bob', [contact._id], false, currentSeq))
         .then(changes => {
@@ -949,11 +948,11 @@ describe('changes handler', () => {
 
       // save docs in sequence
       const promiseChain = allowedDocs.reduce((promise, doc) => {
-        return utils.delayPromise(() => promise.then(() => utils.saveDoc(doc)), 50);
+        return utils.delayPromise(() => promise.then(() => utils.saveDocNative(doc)), 50);
       }, Promise.resolve());
 
       return utils
-        .saveDocs(allowedDocs2)
+        .saveDocsNative(allowedDocs2)
         .then(() => Promise.all([
           getChangesForIds('bob', ids, true, currentSeq, 4),
           promiseChain
@@ -966,9 +965,9 @@ describe('changes handler', () => {
   });
 
   it('should filter the changes to relevant ones', () =>
-    utils.saveDoc({ type:'clinic', parent:{ _id:'nowhere' } })
-      .then(() => utils.saveDoc({ type:'clinic', _id:'very-relevant', parent:{ _id:'fixture:bobville' } }))
-      .then(() => utils.saveDoc({ type:'clinic', parent:{ _id:'irrelevant-place' } }))
+    utils.saveDocNative({ type:'clinic', parent:{ _id:'nowhere' } })
+      .then(() => utils.saveDocNative({ type:'clinic', _id:'very-relevant', parent:{ _id:'fixture:bobville' } }))
+      .then(() => utils.saveDocNative({ type:'clinic', parent:{ _id:'irrelevant-place' } }))
       .then(() => requestChanges('bob'))
       .then(changes =>
         assertChangeIds(changes,
@@ -981,8 +980,8 @@ describe('changes handler', () => {
     describe('can_view_unallocated_data_records permission', () => {
 
       it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled', () =>
-        utils.updateSettings({district_admins_access_unallocated_messages: true}, true)
-          .then(() => utils.saveDoc({ _id:'unallocated_report', type:'data_record' }))
+        utils.updateSettingsNative({district_admins_access_unallocated_messages: true}, true)
+          .then(() => utils.saveDocNative({ _id:'unallocated_report', type:'data_record' }))
           .then(() => requestChanges('bob'))
           .then(changes =>
             assertChangeIds(changes,
@@ -992,7 +991,7 @@ describe('changes handler', () => {
               'unallocated_report')));
 
       it('should not be supplied if user has perm but district_admins_access_unallocated_messages is disabled', () =>
-        utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
+        utils.saveDocNative({ _id:'unallocated_report', type:'data_record' })
           .then(() => requestChanges('bob'))
           .then(changes  =>
             assertChangeIds(changes,
@@ -1001,7 +1000,7 @@ describe('changes handler', () => {
               'fixture:bobville')));
 
       it('should NOT be supplied for a user without can_view_unallocated_data_records permission', () =>
-        utils.saveDoc({ _id:'unallocated_report', type:'data_record' })
+        utils.saveDocNative({ _id:'unallocated_report', type:'data_record' })
           .then(() => requestChanges('clare')) // She does not have the correct role
           .then(changes =>
             assertChangeIds(changes,
@@ -1013,9 +1012,9 @@ describe('changes handler', () => {
   describe('replication depth', () => {
 
     it('should show contacts to a user only if they are within the configured depth', () =>
-      utils.updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]})
-        .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
-        .then(() => utils.saveDoc({
+      utils.updateSettingsNative({replication_depth: [{ role:'district_admin', depth:1 }]})
+        .then(() => utils.saveDocNative({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
+        .then(() => utils.saveDocNative({
           _id:'should-be-hidden', reported_date: 1, type:'person',
           parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
         }))
@@ -1028,14 +1027,14 @@ describe('changes handler', () => {
             'should-be-visible')));
 
     it('should correspond to the largest number for any role the user has', () =>
-      utils.updateSettings({
+      utils.updateSettingsNative({
         replication_depth: [
           { role:'district_admin', depth:1 },
           { role:'analytics', depth:2 },
         ]
       }, true)
-        .then(() => utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
-        .then(() => utils.saveDoc({
+        .then(() => utils.saveDocNative({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } }))
+        .then(() => utils.saveDocNative({
           _id:'should-be-visible-too', reported_date: 1, type:'person',
           parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
         }))
@@ -1049,8 +1048,8 @@ describe('changes handler', () => {
             'should-be-visible-too')));
 
     it('should have no effect if not configured', () =>
-      utils.saveDoc({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } })
-        .then(() => utils.saveDoc({
+      utils.saveDocNative({ _id:'should-be-visible', type:'clinic', parent: { _id:'fixture:chwville' } })
+        .then(() => utils.saveDocNative({
           _id:'should-also-be-visible', reported_date: 1, type:'person',
           parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } }
         }))
@@ -1118,9 +1117,9 @@ describe('changes handler', () => {
         ];
 
         return utils
-          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
-          .then(() => utils.saveDocs(contacts))
-          .then(() => utils.saveDocs(reports))
+          .updateSettingsNative({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
+          .then(() => utils.saveDocsNative(contacts))
+          .then(() => utils.saveDocsNative(reports))
           .then(() => requestChanges('chw-boss'))
           .then(changes => {
             assertChangeIds(changes,
@@ -1164,8 +1163,8 @@ describe('changes handler', () => {
         ];
 
         return utils
-          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
-          .then(() => utils.saveDocs(docs))
+          .updateSettingsNative({ replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] })
+          .then(() => utils.saveDocsNative(docs))
           .then(() => requestChanges('chw-boss'))
           .then(changes => {
             assertChangeIds(changes,
@@ -1227,8 +1226,8 @@ describe('changes handler', () => {
         ];
 
         return utils
-          .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] })
-          .then(() => utils.saveDocs(docs))
+          .updateSettingsNative({ replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] })
+          .then(() => utils.saveDocsNative(docs))
           .then(() => requestChanges('chw'))
           .then(changes => {
             assertChangeIds(changes,
@@ -1259,7 +1258,7 @@ describe('changes handler', () => {
           reported_date: 1,
           parent: { _id:'fixture:chw-bossville', parent: { _id: parentPlace._id }}
         };
-        return utils.saveDocs([patient, healthCenterPatient]);
+        return utils.saveDocsNative([patient, healthCenterPatient]);
       });
 
       it('should do nothing when not truthy or not present', () => {
@@ -1309,8 +1308,8 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .updateSettingsNative({replication_depth: [{ role:'district_admin', depth: 1 }]})
+          .then(() => utils.saveDocsNative([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
@@ -1399,8 +1398,8 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1 }]})
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .updateSettingsNative({replication_depth: [{ role:'district_admin', depth: 1 }]})
+          .then(() => utils.saveDocsNative([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
@@ -1494,8 +1493,8 @@ describe('changes handler', () => {
         };
 
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth: 1, report_depth: 0 }]})
-          .then(() => utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
+          .updateSettingsNative({replication_depth: [{ role:'district_admin', depth: 1, report_depth: 0 }]})
+          .then(() => utils.saveDocsNative([ clinicReport, clinicReport2, healthCenterReport, bobReport ]))
           .then(() => Promise.all([
             requestChanges('chw'), // chw > chwvillw > chw-bossville > parent_place
             requestChanges('chw-boss'), // chw-boss > chw-bossville > parent_place
@@ -1582,7 +1581,7 @@ describe('changes handler', () => {
       },
     ];
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(() => requestChanges('chw'))
       .then(changes => {
         assertChangeIds(changes,
@@ -1599,17 +1598,17 @@ describe('changes handler', () => {
   it('should update the feed when the doc is updated', () => {
     let seq_number;
 
-    return utils.saveDoc({ _id:'visible', type:'clinic', parent: { _id:'fixture:chwville' } })
+    return utils.saveDocNative({ _id:'visible', type:'clinic', parent: { _id:'fixture:chwville' } })
       .then(() => requestChanges('chw'))
       .then(changes => {
         seq_number = changes.last_seq;
 
-        return utils.getDoc('visible');
+        return utils.getDocNative('visible');
       })
       .then(doc => {
         doc.updated = true;
 
-        return utils.saveDoc(doc);
+        return utils.saveDocNative(doc);
       })
       .then(() => requestChanges('chw', { since: seq_number }))
       .then(changes => assertChangeIds(changes, 'visible'));

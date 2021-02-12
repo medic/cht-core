@@ -507,6 +507,26 @@ const createUsers = async (users, meta = false) => {
   }
 };
 
+const createUsersNative = async (users, meta = false) => {
+  const createUserOpts = {
+    path: '/api/v1/users',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  };
+
+  for (const user of users) {
+    await requestNative(Object.assign({ body: user }, createUserOpts));
+  }
+
+  if (!meta) {
+    return;
+  }
+
+  for (const user of users) {
+    await requestNative({ path: `/${constants.DB_NAME}-user-${user.username}-meta`,  method: 'PUT'});
+  }
+};
+
 const waitForDocRev = (ids) => {
   ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id );
 
@@ -768,6 +788,17 @@ module.exports = {
     });
   },
 
+  deleteDocsNative: ids => {
+    return module.exports.getDocsNative(ids).then(docs => {
+      docs.forEach(doc => doc._deleted = true);
+      return module.exports.requestOnTestDbNative({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs },
+      });
+    });
+  },
+
   /**
    * Deletes all docs in the database, except some core docs (read the code) and
    * any docs that you specify.
@@ -781,6 +812,7 @@ module.exports = {
    * @return     {Promise}  completion promise
    */
   deleteAllDocs: deleteAll,
+  deleteAllDocsNative: deleteAllNative,
 
   /*
    * Sets the document referenced by the user's org.couchdb.user document to a default value
@@ -953,6 +985,7 @@ module.exports = {
   // @param {Boolean} meta - if true, creates meta db-s as well, default false
   // @return {Promise}
   createUsers: createUsers,
+  createUsersNative: createUsersNative,
 
   setDebug: debug => e2eDebug = debug,
 

@@ -69,18 +69,17 @@ const DOCS_TO_KEEP = [
 describe('bulk-get handler', () => {
   beforeAll(() => {
     return utils
-      .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users));
+      .saveDocNative(parentPlace)
+      .then(() => utils.createUsersNative(users));
   });
 
-  afterAll(done =>
-    utils
-      .revertDb()
-      .then(() => utils.deleteUsers(users))
-      .then(done)
-  );
+  afterAll(() => {
+    return utils
+      .revertDbNative()
+      .then(() => utils.deleteUsersNative(users));
+  });
 
-  afterEach(done => utils.revertDb(DOCS_TO_KEEP, true).then(done));
+  afterEach(() => utils.revertDbNative(DOCS_TO_KEEP, true));
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_get',
@@ -102,7 +101,7 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(results => {
         onlineRequestOptions.body = {
           docs: [
@@ -113,7 +112,7 @@ describe('bulk-get handler', () => {
           ]
         };
 
-        return utils.requestOnTestDb(onlineRequestOptions);
+        return utils.requestOnTestDbNative(onlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results.length).to.equal(4);
@@ -149,7 +148,7 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(results => {
         results.forEach((row, idx) => docs[idx]._rev = row.rev);
 
@@ -164,7 +163,7 @@ describe('bulk-get handler', () => {
           ]
         };
 
-        return utils.requestOnTestDb(offlineRequestOptions);
+        return utils.requestOnTestDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results).to.deep.equal([
@@ -210,11 +209,11 @@ describe('bulk-get handler', () => {
     const requestRevs = [];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(results => {
         results.forEach(result => requestRevs.push({ id: result.id, rev: result.rev }));
         offlineRequestOptions.body = { docs: requestRevs };
-        return utils.requestOnTestDb(offlineRequestOptions);
+        return utils.requestOnTestDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results).excludingEvery('_rev').to.deep.equal([
@@ -234,7 +233,7 @@ describe('bulk-get handler', () => {
           method: 'POST',
           body: offlineRequestOptions.body
         };
-        return utils.requestOnTestDb(supervisorRequestOptions);
+        return utils.requestOnTestDbNative(supervisorRequestOptions);
       })
       .then(result => {
         chai.expect(result.results).excludingEvery('_rev').to.deep.equal([
@@ -261,7 +260,7 @@ describe('bulk-get handler', () => {
     const revs = {};
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(results => {
         results.forEach((result, idx) => {
           revs[result.id] = [ result.rev ];
@@ -274,7 +273,7 @@ describe('bulk-get handler', () => {
         docs[3].parent = { _id: 'fixture:offline' };
         docs[3].name = 'Previously denied Contact 2';
 
-        return utils.saveDocs(docs);
+        return utils.saveDocsNative(docs);
       })
       .then(results => {
         results.forEach(result => revs[result.id].push(result.rev));
@@ -293,7 +292,7 @@ describe('bulk-get handler', () => {
         };
         offlineRequestOptions.path = '/_bulk_get?latest=true';
 
-        return utils.requestOnTestDb(offlineRequestOptions);
+        return utils.requestOnTestDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results).to.deep.equal([
@@ -354,14 +353,14 @@ describe('bulk-get handler', () => {
     offlineRequestOptions.body = { docs: [{ id: 'a1' }, { id: 'a2' }] };
 
     return utils
-      .saveDocs(docs)
-      .then(result => utils.requestOnTestDb({
+      .saveDocsNative(docs)
+      .then(result => utils.requestOnTestDbNative({
         path: `/a1/att1?rev=${result[0].rev}`,
         method: 'PUT',
         headers: { 'Content-Type': 'text/plain' },
         body: 'a1 attachment content',
       }))
-      .then(() => utils.requestOnTestDb(offlineRequestOptions))
+      .then(() => utils.requestOnTestDbNative(offlineRequestOptions))
       .then(result => {
         chai.expect(result.results.length).to.equal(2);
 
@@ -374,7 +373,7 @@ describe('bulk-get handler', () => {
         chai.expect(result.results[1].docs[0].ok._revisions).to.equal(undefined);
 
         offlineRequestOptions.path = '/_bulk_get?revs=true&attachments=true';
-        return utils.requestOnTestDb(offlineRequestOptions);
+        return utils.requestOnTestDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results.length).to.equal(2);
@@ -388,7 +387,7 @@ describe('bulk-get handler', () => {
         chai.expect(result.results[1].docs[0].ok._revisions.ids.length).to.equal(4);
 
         offlineRequestOptions.path = '/_bulk_get?revs=false';
-        return utils.requestOnTestDb(offlineRequestOptions);
+        return utils.requestOnTestDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results.length).to.equal(2);
@@ -410,10 +409,13 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
-      .then(result => Promise.all(
-        docs.map((doc, key) => utils.requestOnTestDb({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}` }))
-      ))
+      .saveDocsNative(docs)
+      .then(result => {
+        const deleteEveryDoc = docs.map((doc, key) => {
+          return utils.requestOnTestDbNative({ method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}` });
+        });
+        return Promise.all(deleteEveryDoc);
+      })
       .then(results => {
         results.forEach((result, key) => docs[key]._rev = result.rev);
         offlineRequestOptions.body = {
@@ -423,7 +425,7 @@ describe('bulk-get handler', () => {
             { id: 'a3', rev: results[2].rev }
           ]
         };
-        return utils.requestOnTestDb(offlineRequestOptions);
+        return utils.requestOnTestDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results).to.deep.equal([
@@ -452,7 +454,7 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(results => {
         results.forEach((row, idx) => docs[idx]._rev = row.rev);
 
@@ -467,7 +469,7 @@ describe('bulk-get handler', () => {
           ]
         };
 
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(result => {
         chai.expect(result.results).to.deep.equal([
@@ -488,31 +490,31 @@ describe('bulk-get handler', () => {
     offlineRequestOptions.body = { docs: [{ _id: 'denied_report' }] };
 
     return utils
-      .saveDoc(doc)
+      .saveDocNative(doc)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get` }, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
+        utils.requestOnTestDbNative(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
+        utils.requestNative(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get` }, offlineRequestOptions)),
         utils
-          .requestOnTestDb(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
+          .requestOnTestDbNative(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .requestOnTestDb(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
+          .requestOnTestDbNative(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get/something` }, offlineRequestOptions))
+          .requestNative(_.defaults({ path: `//${constants.DB_NAME}//_bulk_get/something` }, offlineRequestOptions))
           .catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
-        utils.request(_.defaults({ path: `//medic//_bulk_get` }, offlineRequestOptions)),
+        utils.requestOnMedicDbNative(_.defaults({ path: '/_bulk_get' }, offlineRequestOptions)),
+        utils.requestOnMedicDbNative(_.defaults({ path: '///_bulk_get//' }, offlineRequestOptions)),
+        utils.requestNative(_.defaults({ path: `//medic//_bulk_get` }, offlineRequestOptions)),
         utils
-          .requestOnMedicDb(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .requestOnMedicDb(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
+          .requestOnMedicDbNative(_.defaults({ path: '/_bulk_get/something' }, offlineRequestOptions))
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//medic//_bulk_get/something` }, offlineRequestOptions))
+          .requestOnMedicDbNative(_.defaults({ path: '///_bulk_get//something' }, offlineRequestOptions))
+          .catch(err => err),
+        utils
+          .requestNative(_.defaults({ path: `//medic//_bulk_get/something` }, offlineRequestOptions))
           .catch(err => err)
       ]))
       .then(results => {
@@ -586,13 +588,13 @@ describe('bulk-get handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
-      .then(() => utils.saveDocs(existentDocs))
+      .updateSettingsNative(settings)
+      .then(() => utils.saveDocsNative(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
         const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
         offlineRequestOptions.body = { docs };
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(result => {
         const allowedIds = [
@@ -672,13 +674,13 @@ describe('bulk-get handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 1 }] };
     return utils
-      .updateSettings(settings)
-      .then(() => utils.saveDocs(existentDocs))
+      .updateSettingsNative(settings)
+      .then(() => utils.saveDocsNative(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
         const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
         offlineRequestOptions.body = { docs };
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(result => {
         const allowedIds = [
@@ -758,13 +760,13 @@ describe('bulk-get handler', () => {
 
     const settings = { replication_depth: [{ role: 'district_admin', depth: 2, report_depth: 1 }] };
     return utils
-      .updateSettings(settings)
-      .then(() => utils.saveDocs(existentDocs))
+      .updateSettingsNative(settings)
+      .then(() => utils.saveDocsNative(existentDocs))
       .then(result => result.forEach((item, idx) => existentDocs[idx]._rev = item.rev))
       .then(() => {
         const docs = existentDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
         offlineRequestOptions.body = { docs };
-        return utils.requestOnMedicDb(offlineRequestOptions);
+        return utils.requestOnMedicDbNative(offlineRequestOptions);
       })
       .then(result => {
         const allowedIds = [
@@ -822,12 +824,12 @@ describe('bulk-get handler', () => {
     ];
 
     return utils
-      .saveDocs(docs)
+      .saveDocsNative(docs)
       .then(result => {
         result.forEach((r, idx) => docs[idx]._rev = r.rev);
         offlineRequestOptions.body = { docs: docs.map(doc => ({ id: doc._id, rev: doc._rev })) };
       })
-      .then(() => utils.requestOnMedicDb(offlineRequestOptions))
+      .then(() => utils.requestOnMedicDbNative(offlineRequestOptions))
       .then(result => {
         chai.expect(result.results).to.deep.equal([
           {

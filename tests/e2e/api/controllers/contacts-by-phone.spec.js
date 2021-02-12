@@ -158,8 +158,8 @@ const hydrate = doc => {
 };
 
 describe('Contacts by phone API', () => {
-  beforeAll(done => utils.saveDocs(contacts).then(() => utils.createUsers(users).then(done)));
-  afterAll(done => utils.deleteUsers(users).then(() => utils.revertDb()).then(done));
+  beforeAll(() => utils.saveDocsNative(contacts).then(() => utils.createUsersNative(users)));
+  afterAll(() => utils.deleteUsersNative(users).then(() => utils.revertDbNative()));
 
   beforeEach(() => {
     offlineRequestOptions = { path: '/api/v1/contacts-by-phone', auth: { username: 'offline', password }, };
@@ -175,7 +175,7 @@ describe('Contacts by phone API', () => {
     it('using GET', () => {
       noAuthRequestOptions.qs = { phone: '+40722777777' };
       return utils
-        .request(noAuthRequestOptions)
+        .requestNative(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(401);
@@ -187,7 +187,7 @@ describe('Contacts by phone API', () => {
       noAuthRequestOptions.body = { phone: '+40722111111' };
       noAuthRequestOptions.method = 'POST';
       return utils
-        .request(noAuthRequestOptions)
+        .requestNative(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(401);
@@ -200,7 +200,7 @@ describe('Contacts by phone API', () => {
     it('using GET', () => {
       offlineRequestOptions.qs = { phone: '+40722222222' };
       return utils
-        .request(offlineRequestOptions)
+        .requestNative(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(403);
@@ -212,7 +212,7 @@ describe('Contacts by phone API', () => {
       offlineRequestOptions.body = { phone: '+40722333333' };
       offlineRequestOptions.method = 'POST';
       return utils
-        .request(offlineRequestOptions)
+        .requestNative(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(403);
@@ -224,7 +224,7 @@ describe('Contacts by phone API', () => {
   describe('GET', () => {
     it('should fail when no param', () => {
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -238,7 +238,7 @@ describe('Contacts by phone API', () => {
     it('should fail with incorrect param', () => {
       onlineRequestOptions.qs = { phone: 'random string' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -251,7 +251,7 @@ describe('Contacts by phone API', () => {
 
     it('should output correct response with one result', () => {
       onlineRequestOptions.qs = { phone: '+40722111111' };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal(
           {
             ok: true,
@@ -263,7 +263,7 @@ describe('Contacts by phone API', () => {
 
     it('should output correct response with multiple results', () => {
       onlineRequestOptions.qs = { phone: '+40722444444' };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({
           ok: true,
           docs: contacts.filter(doc => doc.phone === '+40722444444' ).map(hydrate),
@@ -274,7 +274,7 @@ describe('Contacts by phone API', () => {
     it('should support missing docs', () => {
       onlineRequestOptions.qs = { phone: '+40755363636' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should 404 when not found'))
         .catch(result => {
           chai.expect(result.error).to.deep.equal({ error: 'not_found', reason: 'no matches found' });
@@ -283,7 +283,7 @@ describe('Contacts by phone API', () => {
 
     it('should normalize phone number', () => {
       onlineRequestOptions.qs = { phone: '+40 (722) 444-444' };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({
           ok: true,
           docs: contacts.filter(doc => doc.phone === '+40722444444' ).map(hydrate),
@@ -299,7 +299,7 @@ describe('Contacts by phone API', () => {
 
     it('should fail when no param', () => {
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -313,7 +313,7 @@ describe('Contacts by phone API', () => {
     it('should fail with incorrect param', () => {
       onlineRequestOptions.body = { phone: 'random string' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail with incorrect params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -326,7 +326,7 @@ describe('Contacts by phone API', () => {
 
     it('should output correct response with one result', () => {
       onlineRequestOptions.body = { phone: '+40722555555' };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({
           ok: true,
           docs: [hydrate(contacts.find(doc => doc.phone === '+40722555555' ))]
@@ -336,7 +336,7 @@ describe('Contacts by phone API', () => {
 
     it('should output correct responce with multiple matches', () => {
       onlineRequestOptions.body = { phone: '+40722777777' };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({
           ok: true,
           docs: contacts.filter(doc => doc.phone === '+40722777777' ).map(hydrate),
@@ -348,7 +348,7 @@ describe('Contacts by phone API', () => {
       onlineRequestOptions.body = { phone: '+40722111111' };
       onlineRequestOptions.qs = { phone: '+40722222222' };
 
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({
           ok: true,
           docs: contacts.filter(doc => doc.phone === '+40722222222' ).map(hydrate),
@@ -359,7 +359,7 @@ describe('Contacts by phone API', () => {
     it('should support missing docs', () => {
       onlineRequestOptions.body = { phone: '+40755363636' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should 404 when not found'))
         .catch(result => {
           chai.expect(result.error).to.deep.equal({ error: 'not_found', reason: 'no matches found' });
@@ -368,7 +368,7 @@ describe('Contacts by phone API', () => {
 
     it('should normalize phone number', () => {
       onlineRequestOptions.body = { phone: '+40 (722) 222 222' };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({
           ok: true,
           docs: contacts.filter(doc => doc.phone === '+40722222222' ).map(hydrate),

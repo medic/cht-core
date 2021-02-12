@@ -2,7 +2,7 @@ const utils = require('../../../utils');
 
 describe('Export Data V2.0', () => {
 
-  afterAll(utils.deleteAllDocs);
+  afterAll(utils.deleteAllDocsNative);
 
   describe('GET|POST /api/v2/export/reports', () => {
     const docs = [{
