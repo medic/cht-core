@@ -1041,9 +1041,6 @@ describe('registration', () => {
 
     return utils
       .updateSettings(settings)
-      // allow Sentinel to update settings
-      // todo tail logs to check settings were updated
-      .then(() => utils.delayPromise(() => Promise.resolve(), 1000))
       .then(() => utils.saveDoc(createPlace))
       // Sentinel won't process these, so we can't wait for a metadata update, but let's give it 5 seconds just in case
       .then(() => utils.delayPromise(() => Promise.resolve(), 5000))
