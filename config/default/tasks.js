@@ -14,7 +14,8 @@ const {
   addDays,
   getRecentANCVisitWithEvent,
   isPregnancyTaskMuted,
-  getField
+  getField,
+  isFormArraySubmittedInWindowExcludingThisReport
 } = extras;
 
 const generateEventForHomeVisit = (week, start, end) => ({
@@ -92,6 +93,7 @@ module.exports = [
     actions: [{type: 'report',form: 'immunization_and_growth'}],
     appliesIf: function(contact, report) {
       // Trigger a immunization follow up form 3 days from the selected date
+      // todo - remove this debug
       console.log('g_deworming.deworm_next_date', getField(report, 'g_deworming.deworm_next_date'));
       return parseInt(getField(report, 'g_deworming.deworm_next_date'))  > 0;
     },
@@ -122,16 +124,18 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['immunization_and_growth'],
     actions: [{type: 'report',form: 'immunization_and_growth'}],
-appliesIf: function(contact, report) {
-  // Trigger a immunization follow up form 3 days from the selected date
-  if (parseInt(getField(report, 'g_next_appointment.next_appointment_date'))  > 0){
-    console.log('YES g_next_appointment.next_appointment_date', getField(report, 'g_next_appointment.next_appointment_date'));
-    return true;
-  } else {
-    console.log('NO g_next_appointment.next_appointment_date', getField(report, 'g_next_appointment.next_appointment_date'));
-    return false;
-  }
-},
+    appliesIf: function(contact, report) {
+      // Trigger a immunization follow up form 3 days from the selected date
+      // todo - remove this debug
+      if (parseInt(getField(report, 'g_next_appointment.next_appointment_date'))  > 0){
+        console.log('YES patient_id', getField(report, 'patient_id' ));
+        console.log('YES g_next_appointment.next_appointment_date', getField(report, 'g_next_appointment.next_appointment_date'));
+        return true;
+      } else {
+        console.log('NO g_next_appointment.next_appointment_date', getField(report, 'g_next_appointment.next_appointment_date'));
+        return false;
+      }
+    },
     events: [
       {
         id: 'immunization_growth_follow_up_is_set_next_appointment_date_3',
@@ -142,11 +146,12 @@ appliesIf: function(contact, report) {
       }
     ],
     resolvedIf: function(contact, report, event, dueDate) {
-      return isFormArraySubmittedInWindow(
+      return isFormArraySubmittedInWindowExcludingThisReport(
         contact.reports,
         ['immunization_and_growth'],
         Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date),
-        addDays(dueDate, event.end + 1).getTime()
+        addDays(dueDate, event.end + 1).getTime(),
+        report
       );
     }
   },
