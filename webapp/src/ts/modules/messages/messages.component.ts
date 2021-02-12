@@ -52,15 +52,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.reset();
     this.subscriptions.unsubscribe();
     this.globalActions.unsetSelected();
     this.messagesActions.setConversations([]);
-  }
-
-  private reset() {
-    this.selectedConversationId = null;
-    this.conversations = [];
   }
 
   private subscribeToStore() {
@@ -75,11 +69,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
       loadingContent,
       error,
     ]) => {
-      this.selectedConversationId = selectedConversation?.id;
       // Create new reference of conversation's items
       // because the ones from store can't be modified as they are read only.
       this.conversations = conversations.map(conversation => {
-        return { ...conversation, selected: conversation.key === this.selectedConversationId };
+        return { ...conversation, selected: conversation.key === selectedConversation?.id };
       });
       this.loadingContent = loadingContent;
       this.error = error;
