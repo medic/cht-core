@@ -163,11 +163,11 @@ describe('Contact summary info', () => {
   const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
 
   beforeEach(async () => {
-    await utils.updateSettingsNative({ contact_summary: SCRIPT });
-    await utils.saveDocsNative(DOCS);
+    await utils.updateSettings({ contact_summary: SCRIPT });
+    await utils.saveDocs(DOCS);
   });
 
-  afterEach(async () => { await utils.afterEachNative(); });
+  afterEach(async () => { await utils.afterEach(); });
 
   const selectContact = async term => {
     await helper.waitUntilReadyNative(contactsPo.searchBox);
@@ -190,11 +190,11 @@ describe('Contact summary info', () => {
       await selectContact('carol');
     }
     // assert the summary card has the right fields
-    
+
     await helper.waitUntilReadyNative(contactsPo.cardFieldLabel('test_pid'));
     expect(await contactsPo.cardFieldLabelText('test_pid')).toBe('test_pid');
     expect(await contactsPo.cardFieldText('test_pid')).toBe(CAROL.patient_id);
-    
+
     expect(await contactsPo.cardFieldLabelText('test_sex')).toBe('test_sex');
     expect(await contactsPo.cardFieldText('test_sex')).toBe(CAROL.sex);
 

@@ -18,27 +18,27 @@ const setupTokenLoginSettings = async () => {
   // https://expressjs.com/en/guide/migrating-5.html#req.host
   const settings = { token_login: {message: 'token_login_sms', enabled: true }, app_url: utils.getOrigin() };
   const waitForApiUpdate = await utils.waitForLogs('api.e2e.log', /Settings updated/);
-  return utils.updateSettingsNative(settings, 'api').then(() => waitForApiUpdate.promise);
+  return utils.updateSettings(settings, 'api').then(() => waitForApiUpdate.promise);
 };
 
 const createUser = (user) => {
-  return utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user });
+  return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
 };
 
-const getUser = id => utils.requestNative({ path: `/_users/${id}`});
+const getUser = id => utils.request({ path: `/_users/${id}`});
 
 const getTokenUrl = ({ token_login: { token } } = {}) => {
   const id = `token:login:${token}`;
-  return utils.getDocNative(id).then(doc => {
+  return utils.getDoc(id).then(doc => {
     return doc.tasks[1].messages[0].message;
   });
 };
 
 const expireToken = (user) => {
-  return utils.requestNative(`/_users/${user._id}`).then(userDoc => {
+  return utils.request(`/_users/${user._id}`).then(userDoc => {
     const rightNow = new Date().getTime();
     userDoc.token_login.expiration_date = rightNow - 1000; // token expired a second ago
-    return utils.requestNative({ path: `/_users/${user._id}`, method: 'PUT', body: userDoc });
+    return utils.request({ path: `/_users/${user._id}`, method: 'PUT', body: userDoc });
   });
 };
 
@@ -54,14 +54,14 @@ describe('token login', () => {
     await browser.manage().deleteAllCookies();
   });
   afterEach(async () => {
-    await utils.deleteUsersNative([user]);
-    await utils.revertDbNative([], []);
+    await utils.deleteUsers([user]);
+    await utils.revertDb([], []);
   });
 
   afterAll(async () => {
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
-    await utils.revertDbNative();
+    await commonElements.goToLoginPage();
+    await loginPage.login(auth.username, auth.password);
+    await utils.revertDb();
   });
 
   const waitForLoaderToDisappear = async () => {
@@ -74,11 +74,11 @@ describe('token login', () => {
 
   it('should redirect the user to the app if already logged in', async () => {
     await commonElements.goToLoginPage();
-    await loginPage.loginNative(auth.username, auth.password);
+    await loginPage.login(auth.username, auth.password);
     await browser.driver.get(getUrl('this is a random string'));
     waitForLoaderToDisappear();
     await browser.waitForAngular();
-    helper.waitUntilReadyNative(element(by.id('message-list')));
+    helper.waitUntilReady(element(by.id('message-list')));
   });
 
   it('should display an error when token login is disabled', async () => {
@@ -93,7 +93,7 @@ describe('token login', () => {
     await setupTokenLoginSettings();
     await browser.driver.get(`${utils.getOrigin()}/medic/login/token`);
     await waitForLoaderToDisappear();
-    await helper.waitUntilReadyNative(loginPage.returnToLogin());
+    await helper.waitUntilReady(loginPage.returnToLogin());
     expect(await helper.isTextDisplayed(MISSING)).toBe(true);
     expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
@@ -103,7 +103,7 @@ describe('token login', () => {
     await setupTokenLoginSettings();
     await browser.driver.get(getUrl('this is a random string'));
     await waitForLoaderToDisappear();
-    await helper.waitUntilReadyNative(loginPage.returnToLogin());
+    await helper.waitUntilReady(loginPage.returnToLogin());
     expect(await helper.isTextDisplayed(INVALID)).toBe(true);
     expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
@@ -117,7 +117,7 @@ describe('token login', () => {
     await expireToken(userDoc);
     await browser.driver.get(url);
     await waitForLoaderToDisappear();
-    await helper.waitUntilReadyNative(loginPage.returnToLogin());
+    await helper.waitUntilReady(loginPage.returnToLogin());
     expect(await helper.isTextDisplayed(EXPIRED)).toBe(true);
     expect(await helper.isTextDisplayed(TOLOGIN)).toBe(true);
     expect(await loginPage.returnToLogin().isDisplayed()).toBe(true);
@@ -130,7 +130,7 @@ describe('token login', () => {
     const url = await getTokenUrl(userDoc);
     await browser.driver.get(url);
     await browser.waitForAngular();
-    await helper.waitUntilReadyNative(commonElements.messagesList);
+    await helper.waitUntilReady(commonElements.messagesList);
     expect(await commonElements.messagesList.isDisplayed()).toBe(true);
   });
 });

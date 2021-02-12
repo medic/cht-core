@@ -314,7 +314,7 @@ describe('view docs_by_replication_key', () => {
     const getChanges = async (keys) => {
       console.log('Requesting changes, please be patient…');
 
-      return await utils.requestOnTestDbNative({
+      return await utils.requestOnTestDb({
         path: '/_design/medic/_view/docs_by_replication_key?keys=' + JSON.stringify(keys),
         method: 'GET'
       }).then(response => {
@@ -329,7 +329,7 @@ describe('view docs_by_replication_key', () => {
     };
 
     console.log(`Pushing ${alldocs.length} documents for testing…`);
-    return await utils.saveDocsNative(alldocs)
+    return await utils.saveDocs(alldocs)
       .then(() => {
         return getChanges(
           ['_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username']
@@ -347,7 +347,7 @@ describe('view docs_by_replication_key', () => {
       });
   }, 5 * 60 * 1000);
 
-  afterAll(utils.afterEachNative);
+  afterAll(utils.afterEach);
 
   it('Does not return the ddoc', () => {
     expect(docByPlaceIds).not.toContain('_design/medic');

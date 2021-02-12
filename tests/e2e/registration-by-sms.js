@@ -217,7 +217,7 @@ describe('registration transition', () => {
   };
 
   const submit = body => {
-    return utils.requestNative({
+    return utils.request({
       method: 'POST',
       path: '/api/sms',
       body: body
@@ -235,10 +235,10 @@ describe('registration transition', () => {
           id: 'a'
         }]
       };
-      await utils.updateSettingsNative(CONFIG);
-      await Promise.all(DOCS.map(async doc => await utils.saveDocNative(doc)));
+      await utils.updateSettings(CONFIG);
+      await Promise.all(DOCS.map(async doc => await utils.saveDoc(doc)));
       await submit(body);
-      await sUtils.waitForSentinelNative();
+      await sUtils.waitForSentinel();
     });
     beforeEach(function() {
       //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow and it takes long for the report details to load
@@ -246,7 +246,7 @@ describe('registration transition', () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     });
 
-    afterEach(async () => await utils.afterEachNative());
+    afterEach(async () => await utils.afterEach());
     afterAll(function() {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
