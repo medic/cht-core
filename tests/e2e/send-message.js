@@ -56,14 +56,15 @@ describe('Send message', () => {
 
   const CONTACTS = [ALICE, BOB_PLACE, CAROL, JAROL, DAVID, DAVID_AREA];
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     DAVID_AREA.contact = { _id: DAVID._id, phone: '+447765902002' };
     await Promise.all(CONTACTS.map(utils.saveDocNative));
   });
 
-  afterEach(async () => await utils.resetBrowserNative);
-
-  afterAll(async () => await utils.afterEachNative);
+  afterEach(async () => {
+    await utils.resetBrowserNative();
+    await utils.afterEachNative(); 
+  });
 
   const smsMsg = key => {
     return `Hello ${key} this is a test SMS`;
@@ -74,11 +75,6 @@ describe('Send message', () => {
     await helper.waitElementToPresent(messagesPo.sendMessageModal(), 5000);
     await helper.waitElementToBeVisible(messagesPo.sendMessageModal(), 5000);
   };
-
-  // const findSelect2Entry = async (selector, expectedValue) => {
-
-  // };
-
 
   const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
     await messagesPo.messageRecipientSelect().sendKeys(searchText);
@@ -144,7 +140,8 @@ describe('Send message', () => {
   };
 
   const contactNameSelector = ' .sender .name';
-  const everyoneAtText = name => `${name} - all contacts`;
+  const everyoneAtText = name => `${name} - all  contacts`;
+
 
   describe('Send message modal', () => {
     it('can send messages to raw phone numbers', async () => {
@@ -162,7 +159,7 @@ describe('Send message', () => {
     });
 
     it('can send messages to contacts with phone numbers', async () => {
-      await common.goToMessages();
+      await common.goToMessagesNative();
 
       expect(await messagesPo.messageInList(ALICE._id).isPresent()).toBeFalsy();
 
@@ -176,8 +173,8 @@ describe('Send message', () => {
       await lastMessageIs(smsMsg('contact'));
     });
 
-    xit('can send messages to contacts under everyone at with phone numbers', async () => {
-      await common.goToMessages();
+    it('can send messages to contacts under everyone at with phone numbers', async () => {
+      await common.goToMessagesNative();
 
       expect(await messagesPo.messageInList(CAROL.phone).isPresent()).toBeFalsy();
       expect(await messagesPo.messageInList(JAROL.phone).isPresent()).toBeFalsy();
@@ -205,98 +202,227 @@ describe('Send message', () => {
 
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
-    const openMessageContent = (id, name) => {
-      common.goToMessages();
-      helper.waitUntilReadyNative(messagesPo.messageInList(id));
-      helper.waitElementToPresent(messagesPo.messageInList(id), 2000);
-      clickLhsEntry(id, name);
+    const openMessageContent = async (id, name) => {
+      await common.goToMessagesNative();
+      await helper.waitUntilReadyNative(messagesPo.messageInList(id));
+      await helper.waitElementToPresentNative(messagesPo.messageInList(id), 2000);
+      await clickLhsEntry(id, name);
     };
-    const enterMessageText = message => {
-      element(by.css('#message-footer textarea')).click();
-      helper.waitElementToBeVisible(
+    const enterMessageText = async message => {
+      await element(by.css('#message-footer textarea')).click();
+      await helper.waitElementToBeVisible(
         element(by.css('#message-footer .message-actions .btn-primary'))
       );
-      browser.wait(
+      await browser.wait(
         element(by.css('#message-footer textarea')).sendKeys(message)
       );
     };
     describe('Can send additional messages from message pane', () => {
-      const addAnAdditionalMessage = (id, name) => {
-        openMessageContent(id, name);
-        enterMessageText('Additional Message');
+      const addAnAdditionalMessage = async (id, name) => {
+        await openMessageContent(id, name);
+        await enterMessageText('Additional Message');
 
-        element(
+        await element(
           by.css('#message-footer .message-actions .btn-primary')
         ).click();
-        browser.wait(() => {
+        await browser.wait(() => {
           return element
             .all(by.css('#message-content li'))
             .count()
             .then(utils.countOf(2));
         }, 2000);
 
-        expect(element.all(by.css('#message-content li')).count()).toBe(2);
-        lastMessageIs('Additional Message');
+        expect(await  element.all(by.css('#message-content li')).count()).toBe(2);
+        await lastMessageIs('Additional Message');
       };
 
-      xit('For raw contacts', () => {
-        addAnAdditionalMessage(RAW_PH);
+      it('For raw contacts', async () => {
+        const doc = {
+          '_id': '4081db78-9f3a-422c-9f8f-68e9ece119ea',
+          'errors': [],
+          'form': null,
+          'reported_date': 1613151287731,
+          'tasks': [
+            {
+              'messages': [
+                {
+                  'sent_by': 'admin',
+                  'to': '+447765902000',
+                  'message': 'Hello raw this is a test SMS',
+                  'uuid': 'd472062d-8fd4-4035-b5b7-8d41a6dc81ca'
+                }
+              ],
+              'state_history': [
+                {
+                  'state': 'pending',
+                  'timestamp': '2021-02-12T17:34:47.734Z'
+                }
+              ],
+              'state': 'pending'
+            }
+          ],
+          'kujua_message': true,
+          'type': 'data_record',
+          'sent_by': 'admin'
+        };
+              
+
+        await utils.saveDocNative(doc);
+        await browser.refresh();
+        await addAnAdditionalMessage(RAW_PH);
       });
-      xit('For real contacts', () => {
+      it('For real contacts', async () => {
+        const doc = {
+          '_id': '5908c32b-f94a-4afc-b0bf-c92e7b7f5ca1',
+          'form': null,
+          'reported_date': 1613159927411,
+          'tasks': [
+            {
+              'messages': [
+                {
+                  'sent_by': 'admin',
+                  'to': '+447765902001',
+                  'contact': {
+                    '_id': 'alice-contact'
+                  },
+                  'message': 'Hello contact this is a test SMS',
+                  'uuid': 'c47d9109-cdf3-4162-b61b-6a2435ae4814'
+                }
+              ],
+              'state_history': [
+                {
+                  'state': 'pending',
+                  'timestamp': '2021-02-12T19:58:47.413Z'
+                }
+              ],
+              'state': 'pending'
+            }
+          ],
+          'kujua_message': true,
+          'type': 'data_record',
+          'sent_by': 'admin'
+        };
+
+        await utils.saveDocNative(doc);
+        await browser.refresh();
         addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', () => {
-      xit('For raw contacts', () => {
-        openMessageContent(RAW_PH);
-        enterMessageText('A third message');
+      it('For raw contacts1', async () => {
+        const doc = {
+          '_id': '4081db78-9f3a-422c-9f8f-68e9ece119ea',
+          'errors': [],
+          'form': null,
+          'reported_date': 1613151287731,
+          'tasks': [
+            {
+              'messages': [
+                {
+                  'sent_by': 'admin',
+                  'to': '+447765902000',
+                  'message': 'Hello raw this is a test SMS',
+                  'uuid': 'd472062d-8fd4-4035-b5b7-8d41a6dc81ca'
+                }
+              ],
+              'state_history': [
+                {
+                  'state': 'pending',
+                  'timestamp': '2021-02-12T17:34:47.734Z'
+                }
+              ],
+              'state': 'pending'
+            }
+          ],
+          'kujua_message': true,
+          'type': 'data_record',
+          'sent_by': 'admin'
+        };
+              
 
-        element(by.css('.message-actions .btn.btn-link')).click();
-        helper.waitForAngularComplete();
-        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
+        await utils.saveDocNative(doc);
+        await browser.refresh();
+        await openMessageContent(RAW_PH);
+        await enterMessageText('A third message');
+
+        await helper.clickElementNative(element(by.css('.message-actions .btn.btn-link')));
+    
+        expect(await element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(
-          element.all(by.css('li.select2-selection__choice')).count()
+          await element.all(by.css('li.select2-selection__choice')).count()
         ).toBe(1);
         expect(
-          element(by.css('#send-message select>option')).getAttribute('value')
+          await element(by.css('#send-message select>option')).getAttribute('value')
         ).toBe(RAW_PH);
-        enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
-        sendMessage();
-        openMessageContent(RAW_PH);
-        expect(element.all(by.css('#message-content li')).count()).toBe(3);
+        await enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
+        await sendMessage();
+        await openMessageContent(RAW_PH);
+        expect(await element.all(by.css('#message-content li')).count()).toBe(3);
 
-        lastMessageIs('A third message');
-        openMessageContent(ANOTHER_RAW_PH);
-        expect(element.all(by.css('#message-content li')).count()).toBe(1);
-        lastMessageIs('A third message');
+        await lastMessageIs('A third message');
+        await openMessageContent(ANOTHER_RAW_PH);
+        expect(await element.all(by.css('#message-content li')).count()).toBe(1);
+        await lastMessageIs('A third message');
       });
-      xit('For existing contacts', () => {
-        openMessageContent(ALICE._id, ALICE.name);
-        enterMessageText('A third message');
+      it('For existing contacts', async () => {
+        const doc = {
+          '_id': '5908c32b-f94a-4afc-b0bf-c92e7b7f5ca1',
+          'form': null,
+          'reported_date': 1613159927411,
+          'tasks': [
+            {
+              'messages': [
+                {
+                  'sent_by': 'admin',
+                  'to': '+447765902001',
+                  'contact': {
+                    '_id': 'alice-contact'
+                  },
+                  'message': 'Hello contact this is a test SMS',
+                  'uuid': 'c47d9109-cdf3-4162-b61b-6a2435ae4814'
+                }
+              ],
+              'state_history': [
+                {
+                  'state': 'pending',
+                  'timestamp': '2021-02-12T19:58:47.413Z'
+                }
+              ],
+              'state': 'pending'
+            }
+          ],
+          'kujua_message': true,
+          'type': 'data_record',
+          'sent_by': 'admin'
+        };
 
-        element(by.css('.message-actions .btn.btn-link')).click();
-        helper.waitForAngularComplete();
-        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
+        await utils.saveDocNative(doc);
+        await browser.refresh();
+        await openMessageContent(ALICE._id, ALICE.name);
+        await enterMessageText('A third message');
+
+        await helper.clickElementNative(element(by.css('.message-actions .btn.btn-link')));
+        expect(await element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(
-          element.all(by.css('li.select2-selection__choice')).count()
+          await element.all(by.css('li.select2-selection__choice')).count()
         ).toBe(1);
         expect(
-          element(by.css('#send-message select>option')).getAttribute('value')
+          await element(by.css('#send-message select>option')).getAttribute('value')
         ).toBe(ALICE._id);
-        enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
-        sendMessage();
-        openMessageContent(ALICE._id, ALICE.name);
-        expect(element.all(by.css('#message-content li')).count()).toBe(3);
+        await enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
+        await sendMessage();
+        await openMessageContent(ALICE._id, ALICE.name);
+        expect(await element.all(by.css('#message-content li')).count()).toBe(3);
         expect(
-          element
+          await element
             .all(by.css('#message-content li div.data>p>span'))
             .last()
             .getText()
         ).toBe('A third message');
-        openMessageContent(DAVID._id, DAVID.name);
-        expect(element.all(by.css('#message-content li')).count()).toBe(1);
+        await openMessageContent(DAVID._id, DAVID.name);
+        expect(await element.all(by.css('#message-content li')).count()).toBe(1);
         expect(
-          element
+          await element
             .all(by.css('#message-content li div.data>p>span'))
             .last()
             .getText()
