@@ -3,13 +3,11 @@ const path = require('path');
 const constants = require('../../../constants');
 const utils = require('../../../utils');
 
-const getDoc = () => {
-  return utils.getDoc('settings');
-};
+const getDoc = () => utils.getDocNative('settings');
 
 describe('Settings API', () => {
-  beforeAll(() => utils.updateSettings({}));
-  afterAll(done => utils.revertSettings().then(done));
+  beforeAll(() => utils.updateSettingsNative({}));
+  afterAll(() => utils.revertSettingsNative());
 
   describe('old api', () => {
 
@@ -19,7 +17,7 @@ describe('Settings API', () => {
       if (replace) {
         uri += '?replace=1';
       }
-      return utils.request({
+      return utils.requestNative({
         path: uri,
         method: 'PUT',
         body: updates,
@@ -86,7 +84,7 @@ describe('Settings API', () => {
           chai.expect(response).to.deep.equal({ success: true, updated: true });
         })
         .then(() => {
-          return utils.request({
+          return utils.requestNative({
             path: path.join('/', constants.DB_NAME, '_design', constants.MAIN_DDOC_NAME,
               '_rewrite/app_settings', constants.MAIN_DDOC_NAME),
             method: 'GET'
@@ -110,7 +108,7 @@ describe('Settings API', () => {
         qs.overwrite = 1;
       }
 
-      return utils.request({
+      return utils.requestNative({
         path: '/api/v1/settings',
         method: 'PUT',
         body: updates,
@@ -202,7 +200,7 @@ describe('Settings API', () => {
           chai.expect(response).to.deep.equal({ success: true, updated: true });
         })
         .then(() => {
-          return utils.request({
+          return utils.requestNative({
             path: '/api/v1/settings',
             method: 'GET'
           });

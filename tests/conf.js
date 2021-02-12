@@ -23,13 +23,11 @@ const baseConfig = {
       '**/report-date-filter.js',
       //'**/sentinel/queue.spec.js', //failing probably because contact page is still WIP. Disabling for now
       '**/docs-by-replication-key-view.js',
-      '**/api/routing.js',
       '**/infodocs.js',
       '**/common.specs.js',
       '**/content-security-policy.js',
       '**/send-message.js',
       '**/message_duplicates.spec.js',
-      '**/api/server.js',
       'e2e/reports-subject.js'
     ],
     // performance: 'performance/**/*.js'

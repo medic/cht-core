@@ -50,7 +50,7 @@ describe('Users API', () => {
     ];
 
     beforeAll(() =>
-      utils.request({
+      utils.requestNative({
         path: '/_users',
         method: 'POST',
         headers: {
@@ -58,10 +58,8 @@ describe('Users API', () => {
         },
         body: _usersUser
       })
-        .then(() => utils.saveDocs(medicData))
-        .then(() => {
-          const deferred = protractor.promise.defer();
-
+        .then(() => utils.saveDocsNative(medicData))
+        .then(() => new Promise((resolve, reject) => {
           const options = {
             hostname: constants.API_HOST,
             port: constants.API_PORT,
@@ -76,7 +74,7 @@ describe('Users API', () => {
           // Use http service to extract cookie
           const req = http.request(options, res => {
             if (res.statusCode !== 200) {
-              return deferred.reject('Expected 200 from _session authing');
+              return reject('Expected 200 from _session authing');
             }
 
             // Example header:
@@ -84,10 +82,10 @@ describe('Users API', () => {
             try {
               cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
             } catch (err) {
-              return deferred.reject(err);
+              return reject(err);
             }
 
-            deferred.fulfill(cookie);
+            resolve(cookie);
           });
 
           req.write(JSON.stringify({
@@ -95,13 +93,11 @@ describe('Users API', () => {
             password: password
           }));
           req.end();
-
-          return deferred.promise;
-        }));
+        })));
 
     afterAll(() =>
-      utils.request(`/_users/${getUserId(username)}`)
-        .then(({_rev}) => utils.request({
+      utils.requestNative(`/_users/${getUserId(username)}`)
+        .then(({_rev}) => utils.requestNative({
           path: `/_users/${getUserId(username)}`,
           method: 'PUT',
           body: {
@@ -110,23 +106,23 @@ describe('Users API', () => {
             _deleted: true
           }
         }))
-        .then(() => utils.revertDb()));
+        .then(() => utils.revertDbNative()));
 
     it('Allows for admin users to modify someone', () =>
-      utils.request({
+      utils.requestNative({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         body: {
           place: newPlaceId
         }
       })
-        .then(() => utils.getDoc(getUserId(username)))
+        .then(() => utils.getDocNative(getUserId(username)))
         .then(doc => {
-          expect(doc.facility_id).toBe(newPlaceId);
+          chai.expect(doc.facility_id).to.equal(newPlaceId);
         }));
 
     it('401s if a user without the right permissions attempts to modify someone else', () =>
-      utils.request({
+      utils.requestNative({
         path: '/api/v1/users/admin',
         method: 'POST',
         body: {
@@ -136,11 +132,11 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get a 401 in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('You do not have permissions to modify this person');
+          chai.expect(err.responseBody.error).to.equal('You do not have permissions to modify this person');
         }));
 
     it('Errors if a user edits themselves but attempts to change their roles', () =>
-      utils.request({
+      utils.requestNative({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         body: {
@@ -150,11 +146,11 @@ describe('Users API', () => {
       })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('unauthorized');
+          chai.expect(err.responseBody.error).to.equal('unauthorized');
         }));
 
     it('Allows for users to modify themselves with a cookie', () =>
-      utils.request({
+      utils.requestNative({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
@@ -165,13 +161,13 @@ describe('Users API', () => {
         },
         auth: { username, password},
       })
-        .then(() => utils.getDoc(getUserId(username)))
+        .then(() => utils.getDocNative(getUserId(username)))
         .then(doc => {
-          expect(doc.fullname).toBe('Awesome Guy');
+          chai.expect(doc.fullname).to.equal('Awesome Guy');
         }));
 
     it('Does not allow users to update their password with only a cookie', () =>
-      utils.request({
+      utils.requestNative({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
@@ -182,13 +178,13 @@ describe('Users API', () => {
         },
         noAuth: true
       })
-        .then(() => fail('You should get an error in this situation'))
+        .then(() => chai.assert.fail('You should get an error in this situation'))
         .catch(err => {
-          expect(err.responseBody.error).toBe('You must authenticate with Basic Auth to modify your password');
+          chai.expect(err.responseBody.error).to.equal('You must authenticate with Basic Auth to modify your password');
         }));
 
     it('Does allow users to update their password with a cookie and also basic auth', () =>
-      utils.request({
+      utils.requestNative({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         headers: {
@@ -200,10 +196,10 @@ describe('Users API', () => {
         },
         auth: { username, password }
       })
-        .catch(() => fail('This should not result in an error')));
+        .catch(() => chai.assert.fail('This should not result in an error')));
 
     it('Does allow users to update their password with just basic auth', () =>
-      utils.request({
+      utils.requestNative({
         path: `/api/v1/users/${username}`,
         method: 'POST',
         body: {
@@ -212,7 +208,7 @@ describe('Users API', () => {
         },
         auth: { username, password }
       })
-        .catch(() => fail('This should not result in an error')));
+        .catch(() => chai.assert.fail('This should not result in an error')));
 
     it('should work with enabled transitions', () => {
       const parentPlace = {
@@ -222,8 +218,8 @@ describe('Users API', () => {
         reported_date: new Date().getTime()
       };
       return utils
-        .updateSettings({ transitions: { generate_patient_id_on_people: true }})
-        .then(() => utils.saveDoc(parentPlace))
+        .updateSettingsNative({ transitions: { generate_patient_id_on_people: true }})
+        .then(() => utils.saveDocNative(parentPlace))
         .then(() => {
           const opts = {
             path: '/api/v1/users',
@@ -238,7 +234,7 @@ describe('Users API', () => {
             },
           };
 
-          return utils.request(opts);
+          return utils.requestNative(opts);
         })
         .then(result => {
           chai.expect(result).to.deep.nested.include({
@@ -247,17 +243,17 @@ describe('Users API', () => {
           });
           chai.expect(result.contact.id).to.not.be.undefined;
         })
-        .then(() => sentinelUtils.waitForSentinel())
+        .then(() => sentinelUtils.waitForSentinelNative())
         .then(() => Promise.all([
-          utils.getDoc('org.couchdb.user:philip'),
-          utils.request('/_users/org.couchdb.user:philip')
+          utils.getDocNative('org.couchdb.user:philip'),
+          utils.requestNative('/_users/org.couchdb.user:philip')
         ]))
         .then(([userSettings, user]) => {
           chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
           chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
           chai.expect(userSettings.facility_id).to.equal(user.facility_id);
 
-          return utils.getDocs([userSettings.contact_id, userSettings.facility_id]);
+          return utils.getDocsNative([userSettings.contact_id, userSettings.facility_id]);
         })
         .then(([ contact, place ]) => {
           chai.expect(contact.patient_id).to.not.be.undefined;
@@ -332,17 +328,17 @@ describe('Users API', () => {
 
     beforeAll(done => {
       return utils
-        .saveDoc(parentPlace)
-        .then(() => utils.createUsers(users))
+        .saveDocNative(parentPlace)
+        .then(() => utils.createUsersNative(users))
         .then(() => {
           const docs = Array.from(Array(nbrOfflineDocs), () => ({
             _id: `random_contact_${uuid()}`,
             type: `clinic`,
             parent: { _id: 'fixture:offline' }
           }));
-          return utils.saveDocs(docs);
+          return utils.saveDocsNative(docs);
         })
-        .then(() => utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"'))
+        .then(() => utils.requestOnTestDbNative('/_design/medic/_view/docs_by_replication_key?key="_all"'))
         .then(resp => {
           docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
           expectedNbrDocs += resp.rows.length;
@@ -350,12 +346,11 @@ describe('Users API', () => {
         .then(done);
     });
 
-    afterAll(done =>
-      utils
-        .revertDb()
-        .then(() => utils.deleteUsers(users))
-        .then(done)
-    );
+    afterAll(() => {
+      return utils
+        .revertDbNative()
+        .then(() => utils.deleteUsersNative(users));
+    });
 
     beforeEach(() => {
       offlineRequestOptions = {
@@ -372,15 +367,15 @@ describe('Users API', () => {
     });
 
     it('should return correct number of allowed docs for offline users', () => {
-      return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      return utils.requestNative(offlineRequestOptions).then(resp => {
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
     it('should return correct number of allowed docs when requested by online user', () => {
       onlineRequestOptions.path += '?role=district_admin&facility_id=fixture:offline';
-      return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      return utils.requestNative(onlineRequestOptions).then(resp => {
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
@@ -390,8 +385,8 @@ describe('Users API', () => {
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
-      return utils.request(onlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      return utils.requestNative(onlineRequestOptions).then(resp => {
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
@@ -401,8 +396,8 @@ describe('Users API', () => {
         facility_id: 'fixture:online'
       };
       offlineRequestOptions.path += '?' + querystring.stringify(params);
-      return utils.request(offlineRequestOptions).then(resp => {
-        expect(resp).toEqual({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
+      return utils.requestNative(offlineRequestOptions).then(resp => {
+        chai.expect(resp).to.deep.equal({ total_docs: expectedNbrDocs, warn: false, limit: 10000 });
       });
     });
 
@@ -414,10 +409,10 @@ describe('Users API', () => {
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(resp => expect(resp).toEqual('should have thrown'))
         .catch(err => {
-          expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 
@@ -428,10 +423,10 @@ describe('Users API', () => {
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       return utils
-        .request(onlineRequestOptions)
-        .then(resp => expect(resp).toEqual('should have thrown'))
+        .requestNative(onlineRequestOptions)
+        .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          expect(err.statusCode).toEqual(400);
+          chai.expect(err.statusCode).to.equal(400);
         });
     });
 
@@ -443,9 +438,9 @@ describe('Users API', () => {
       onlineRequestOptions.path += '?' + querystring.stringify(params);
       onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(resp => {
-          expect(resp).toEqual({ total_docs: docsForAll, warn: false, limit: 10000 });
+          chai.expect(resp).to.deep.equal({ total_docs: docsForAll, warn: false, limit: 10000 });
         });
     });
   });
@@ -456,10 +451,10 @@ describe('Users API', () => {
 
     const getUser = (user) => {
       const opts = { path: `/_users/${getUserId(user.username)}` };
-      return utils.request(opts);
+      return utils.requestNative(opts);
     };
     const getUserSettings = (user) => {
-      return utils.requestOnMedicDb({ path: `/${getUserId(user.username)}` });
+      return utils.requestOnMedicDbNative({ path: `/${getUserId(user.username)}` });
     };
 
     const parentPlace = {
@@ -468,8 +463,8 @@ describe('Users API', () => {
       name: 'Big Parent Hostpital'
     };
 
-    beforeAll(() => utils.saveDoc(parentPlace));
-    afterAll(() => utils.revertDb());
+    beforeAll(() => utils.saveDocNative(parentPlace));
+    afterAll(() => utils.revertDbNative());
 
     beforeEach(() => {
       user = {
@@ -488,7 +483,7 @@ describe('Users API', () => {
         },
       };
     });
-    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], [])));
+    afterEach(() => utils.deleteUsersNative([user]).then(() => utils.revertDbNative(['PARENT_PLACE'], [])));
 
     const expectCorrectUser = (user, extra = {}) => {
       const defaultProps = {
@@ -521,7 +516,7 @@ describe('Users API', () => {
       };
 
       return utils
-        .requestOnMedicDb(opts)
+        .requestOnMedicDbNative(opts)
         .then(response => {
           chai.expect(response).to.include({
             statusCode: 302,
@@ -543,7 +538,7 @@ describe('Users API', () => {
       };
 
       return utils
-        .requestOnMedicDb(opts)
+        .requestOnMedicDbNative(opts)
         .then(response => {
           chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
         });
@@ -559,7 +554,7 @@ describe('Users API', () => {
         followRedirect: false,
         body: {},
       };
-      return utils.request(opts).then(response => {
+      return utils.requestNative(opts).then(response => {
         chai.expect(response).to.include({ statusCode: 302, body: '/' });
         chai.expect(response.headers['set-cookie']).to.be.an('array');
         chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
@@ -577,7 +572,7 @@ describe('Users API', () => {
         resolveWithFullResponse: true,
         body: {},
       };
-      return utils.request(opts).then(response => {
+      return utils.requestNative(opts).then(response => {
         chai.expect(response.headers['set-cookie']).to.be.undefined;
         chai.expect(response).to.deep.include({ statusCode: 401, body: { error: expired ? 'expired': 'invalid' } });
       });
@@ -592,7 +587,7 @@ describe('Users API', () => {
 
       const viewifyMessage = ({ uuid, message, to }) => ({ to, id: uuid, content: message });
 
-      return utils.request(opts).then(response => {
+      return utils.requestNative(opts).then(response => {
         chai.expect(response.messages).to.be.an('array');
         chai.expect(response.messages.length).to.equal(doc.tasks.length);
         chai.expect(response.messages).to.have.deep.members(doc.tasks.map(task => viewifyMessage(task.messages[0])));
@@ -604,7 +599,7 @@ describe('Users API', () => {
     describe('when token-login configuration is missing', () => {
       it('should create and update a user correctly w/o token_login', () => {
         return utils
-          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .requestNative({ path: '/api/v1/users', method: 'POST', body: user })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
               user: { id: getUserId(user.username) },
@@ -626,7 +621,7 @@ describe('Users API', () => {
             };
 
             const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
-            return utils.request(opts);
+            return utils.requestNative(opts);
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
@@ -647,7 +642,7 @@ describe('Users API', () => {
         user.token_login = true;
 
         return utils
-          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .requestNative({ path: '/api/v1/users', method: 'POST', body: user })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
               user: { id: getUserId(user.username) },
@@ -672,7 +667,7 @@ describe('Users API', () => {
             };
 
             const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
-            return utils.request(opts);
+            return utils.requestNative(opts);
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
@@ -696,9 +691,9 @@ describe('Users API', () => {
       it('should create and update a user correctly w/o token_login', () => {
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
         return utils
-          .updateSettings(settings, 'api')
+          .updateSettingsNative(settings, 'api')
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
               user: { id: getUserId(user.username) },
@@ -721,7 +716,7 @@ describe('Users API', () => {
               phone: '12345',
             };
 
-            return utils.request({ path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' });
+            return utils.requestNative({ path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' });
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
@@ -743,11 +738,11 @@ describe('Users API', () => {
       it('should throw an error when phone is missing when creating a user with token_login', () => {
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
         return utils
-          .updateSettings(settings, true)
+          .updateSettingsNative(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
           .then(() => {
             user.token_login = true;
-            return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
+            return utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user });
           })
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
@@ -761,13 +756,13 @@ describe('Users API', () => {
       it('should throw an error when phone is missing when updating a user with token_login', () => {
         const settings = { token_login: { translation_key: 'token_login_sms', enabled: true }, app_url: 'https://host/' };
         return utils
-          .updateSettings(settings, true)
+          .updateSettingsNative(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => {
             user.token_login = true;
             user.roles = ['whatever'];
-            return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
+            return utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user });
           })
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
@@ -800,9 +795,9 @@ describe('Users API', () => {
 
         let tokenUrl;
         return utils
-          .updateSettings(settings, true)
+          .updateSettingsNative(settings, true)
           .then(() => utils.addTranslations('en', { token_login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
               user: { id: getUserId(user.username) },
@@ -828,7 +823,7 @@ describe('Users API', () => {
 
             tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}`;
 
-            return utils.getDoc(getLoginTokenDocId(user.token_login.token));
+            return utils.getDocNative(getLoginTokenDocId(user.token_login.token));
           })
           .then(loginTokenDoc => {
             chai.expect(loginTokenDoc).to.include({
@@ -872,15 +867,15 @@ describe('Users API', () => {
         const settings = { token_login: { translation_key: 'sms_text', enabled: true }, app_url: utils.getOrigin() };
         let tokenUrl;
         return utils
-          .updateSettings(settings, true)
+          .updateSettingsNative(settings, true)
           .then(() => utils.addTranslations('en', { sms_text: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => {
             const updates = {
               phone: '+40755696969',
               token_login: true,
             };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            return utils.requestNative({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
           })
           .then(response => {
             chai.expect(response).to.shallowDeepEqual({
@@ -906,7 +901,7 @@ describe('Users API', () => {
 
             tokenUrl = `${utils.getOrigin()}/medic/login/token/${user.token_login.token}`;
 
-            return utils.getDoc(getLoginTokenDocId(user.token_login.token));
+            return utils.getDocNative(getLoginTokenDocId(user.token_login.token));
           })
           .then(loginTokenDoc => {
             chai.expect(loginTokenDoc).to.include({
@@ -952,14 +947,14 @@ describe('Users API', () => {
         user.phone = '+40755232323';
         let tokenLogin;
         return utils
-          .updateSettings(settings, true)
+          .updateSettingsNative(settings, true)
           .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
           .then(user => tokenLogin = user.token_login)
           .then(() => {
             const updates = { roles: ['whatever'] };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            return utils.requestNative({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
@@ -971,7 +966,7 @@ describe('Users API', () => {
             chai.expect(userSettings.token_login)
               .to.deep.equal({ active: true, expiration_date: tokenLogin.expiration_date });
 
-            return utils.getDoc(getLoginTokenDocId(user.token_login.token));
+            return utils.getDocNative(getLoginTokenDocId(user.token_login.token));
           })
           .then(loginTokenDoc => {
             return expectTokenLoginToSucceed(loginTokenDoc.tasks[1].messages[0].message);
@@ -985,14 +980,14 @@ describe('Users API', () => {
         let firstTokenLogin;
         let secondTokenLogin;
         return utils
-          .updateSettings(settings, true)
+          .updateSettingsNative(settings, true)
           .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
           .then(() => {
             const updates = { phone: '+40755989898', token_login: true };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            return utils.requestNative({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
           })
           .then(response => {
             chai.expect(response.token_login).to.have.keys('expiration_date');
@@ -1007,7 +1002,7 @@ describe('Users API', () => {
               .to.deep.equal({ active: true, expiration_date: user.token_login.expiration_date });
 
             secondTokenLogin = user.token_login;
-            return utils.getDocs([
+            return utils.getDocsNative([
               getLoginTokenDocId(firstTokenLogin.token),
               getLoginTokenDocId(secondTokenLogin.token),
             ]);
@@ -1038,21 +1033,21 @@ describe('Users API', () => {
         user.phone = '+40755969696';
         let firstTokenLogin;
         return utils
-          .updateSettings(settings, true)
+          .updateSettingsNative(settings, true)
           .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
           .then(() => {
             const updates = { token_login: false, password };
-            return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
+            return utils.requestNative({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
             return Promise.all([
               getUser(user),
               getUserSettings(user),
-              utils.getDoc(getLoginTokenDocId(firstTokenLogin.token))
+              utils.getDocNative(getLoginTokenDocId(firstTokenLogin.token))
             ]);
           })
           .then(([ user, userSettings, smsDoc]) => {
@@ -1095,14 +1090,14 @@ describe('Users API', () => {
       let tokenLoginDocId;
 
       return utils
-        .updateSettings(settings, true)
+        .updateSettingsNative(settings, true)
         .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-        .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: onlineUser }))
-        .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+        .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: onlineUser }))
+        .then(() => utils.requestNative({ path: '/api/v1/users', method: 'POST', body: user }))
         .then(() => getUser(user))
         .then(user => {
           tokenLoginDocId = `token:login:${user.token_login.token}`;
-          return utils.getDoc(tokenLoginDocId);
+          return utils.getDocNative(tokenLoginDocId);
         })
         .then(tokenLoginDoc => {
           chai.expect(tokenLoginDoc.user).to.equal('org.couchdb.user:testuser');
@@ -1113,7 +1108,7 @@ describe('Users API', () => {
             path: `/${tokenLoginDoc._id}`,
             body: tokenLoginDoc,
           };
-          return utils.requestOnTestDb(onlineRequestOpts).catch(err => err);
+          return utils.requestOnTestDbNative(onlineRequestOpts).catch(err => err);
         })
         .then(err => {
           chai.expect(err.response).to.deep.include({

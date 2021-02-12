@@ -4,9 +4,9 @@ const utils = require('../../../utils');
 
 describe('Import Records', () => {
 
-  afterAll(() => utils.deleteAllDocs().then(() => utils.revertSettings()));
+  afterAll(() => utils.deleteAllDocsNative().then(() => utils.revertSettingsNative()));
 
-  beforeAll(() => utils.updateSettings({
+  beforeAll(() => utils.updateSettingsNative({
     forms: {
       'TEST': {
         'meta':{
@@ -37,13 +37,13 @@ describe('Import Records', () => {
 
   describe('JSON', () => {
     it('parses and stores the passed JSON', () => {
-      return utils.saveDoc({
+      return utils.saveDocNative({
         name: 'Test contact',
         phone: '+447765902000',
         reported_date: 1557404580557,
         type: 'person'
       })
-        .then(() => utils.request({
+        .then(() => utils.requestNative({
           method: 'POST',
           path: '/api/v2/records',
           headers: {
@@ -85,13 +85,13 @@ describe('Import Records', () => {
         });
     });
     it('supports not passing optional fields, including the from number', () => {
-      return utils.saveDoc({
+      return utils.saveDocNative({
         name: 'Test contact',
         phone: '+447765902000',
         reported_date: 1557404580557,
         type: 'person'
       })
-        .then(() => utils.request({
+        .then(() => utils.requestNative({
           method: 'POST',
           path: '/api/v2/records',
           headers: {
@@ -125,13 +125,13 @@ describe('Import Records', () => {
         });
     });
     it('adds errors for missing fields', () => {
-      return utils.saveDoc({
+      return utils.saveDocNative({
         name: 'Test contact',
         phone: '+447765902000',
         reported_date: 1557404580557,
         type: 'person'
       })
-        .then(() => utils.request({
+        .then(() => utils.requestNative({
           method: 'POST',
           path: '/api/v2/records',
           headers: {

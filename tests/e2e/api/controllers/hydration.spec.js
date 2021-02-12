@@ -246,8 +246,8 @@ const hydrateReport = doc => {
 };
 
 describe('Hydration API', () => {
-  beforeAll(done => utils.saveDocs(docs).then(() => utils.createUsers(users).then(done)));
-  afterAll(done => utils.deleteUsers(users).then(() => utils.revertDb()).then(done));
+  beforeAll(() => utils.saveDocsNative(docs).then(() => utils.createUsersNative(users)));
+  afterAll(() => utils.deleteUsersNative(users).then(() => utils.revertDbNative()));
 
   beforeEach(() => {
     offlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'offline', password }, };
@@ -259,7 +259,7 @@ describe('Hydration API', () => {
     it('using GET', () => {
       noAuthRequestOptions.qs = { doc_ids: ['fixture:offline'] };
       return utils
-        .request(noAuthRequestOptions)
+        .requestNative(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(401);
@@ -271,7 +271,7 @@ describe('Hydration API', () => {
       noAuthRequestOptions.body = { doc_ids: ['fixture:offline'] };
       noAuthRequestOptions.method = 'POST';
       return utils
-        .request(noAuthRequestOptions)
+        .requestNative(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(401);
@@ -284,7 +284,7 @@ describe('Hydration API', () => {
     it('using GET', () => {
       offlineRequestOptions.qs = { doc_ids: ['fixture:offline'] };
       return utils
-        .request(offlineRequestOptions)
+        .requestNative(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(403);
@@ -296,7 +296,7 @@ describe('Hydration API', () => {
       offlineRequestOptions.body = { doc_ids: ['fixture:offline'] };
       offlineRequestOptions.method = 'POST';
       return utils
-        .request(offlineRequestOptions)
+        .requestNative(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(403);
@@ -308,7 +308,7 @@ describe('Hydration API', () => {
   describe('GET', () => {
     it('should fail when no param', () => {
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -322,7 +322,7 @@ describe('Hydration API', () => {
     it('should fail with incorrect param', () => {
       onlineRequestOptions.qs = { doc_ids: 'random string' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -335,7 +335,7 @@ describe('Hydration API', () => {
 
     it('should output correct result with 1 requested doc', () => {
       onlineRequestOptions.qs = { doc_ids: ['patient4'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'patient4',
@@ -347,7 +347,7 @@ describe('Hydration API', () => {
 
     it('should output correct result with multiple doc ids', () => {
       onlineRequestOptions.qs = { doc_ids: ['patient2', 'hc2', 'report1'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'patient2',
@@ -367,7 +367,7 @@ describe('Hydration API', () => {
 
     it('should support missing docs with single requested id', () => {
       onlineRequestOptions.qs = { doc_ids: ['i dont exist'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).to.deep.equal([
           {
             id: 'i dont exist',
@@ -379,7 +379,7 @@ describe('Hydration API', () => {
 
     it('should support missing docs with multiple id', () => {
       onlineRequestOptions.qs = { doc_ids: ['chw1', 'not_a_patient', 'other', 'hc1'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'chw1',
@@ -403,7 +403,7 @@ describe('Hydration API', () => {
 
     it('should correctly hydrate single linked doc', () => {
       onlineRequestOptions.qs = { doc_ids: ['clinic_with_linked_docs'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'clinic_with_linked_docs',
@@ -415,7 +415,7 @@ describe('Hydration API', () => {
 
     it('should correctly hydrate single linked doc', () => {
       onlineRequestOptions.qs = { doc_ids: ['patient_with_linked_docs'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'patient_with_linked_docs',
@@ -427,7 +427,7 @@ describe('Hydration API', () => {
 
     it('should correctly hydrate single linked docs with null values', () => {
       onlineRequestOptions.qs = { doc_ids: ['chw_with_linked_docs'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'chw_with_linked_docs',
@@ -444,7 +444,7 @@ describe('Hydration API', () => {
         'clinic_with_linked_docs',
       ]};
 
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'patient_with_empty_linked_docs',
@@ -470,7 +470,7 @@ describe('Hydration API', () => {
 
     it('should fail when no param', () => {
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -484,7 +484,7 @@ describe('Hydration API', () => {
     it('should fail with incorrect param', () => {
       onlineRequestOptions.body = { doc_ids: 'random string' };
       return utils
-        .request(onlineRequestOptions)
+        .requestNative(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
           chai.expect(err.statusCode).to.equal(400);
@@ -497,7 +497,7 @@ describe('Hydration API', () => {
 
     it('should output correct result with 1 requested doc', () => {
       onlineRequestOptions.body = { doc_ids: ['patient3'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'patient3',
@@ -509,7 +509,7 @@ describe('Hydration API', () => {
 
     it('should output correct result with multiple', () => {
       onlineRequestOptions.body = { doc_ids: ['patient1', 'clinic2', 'report1'] };
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'patient1',
@@ -531,7 +531,7 @@ describe('Hydration API', () => {
       onlineRequestOptions.body = { doc_ids: ['patient1', 'clinic2'] };
       onlineRequestOptions.qs = { doc_ids: ['patient2', 'clinic1'] };
 
-      return utils.request(onlineRequestOptions).then(result => {
+      return utils.requestNative(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal([
           {
             id: 'patient2',

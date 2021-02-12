@@ -19,7 +19,7 @@ const loginWithData = data => {
     body: data,
     followRedirect: false,
   };
-  return utils.request(opts);
+  return utils.requestNative(opts);
 };
 
 const loginWithTokenLink = (token = '') => {
@@ -32,7 +32,7 @@ const loginWithTokenLink = (token = '') => {
     followRedirect: false,
     body: {},
   };
-  return utils.request(opts);
+  return utils.requestNative(opts);
 };
 
 const expectLoginToWork = (response) => {
@@ -51,7 +51,7 @@ const expectLoginToFail = (response) => {
 const getUser = (user) => {
   const getUserId = n => `org.couchdb.user:${n}`;
   const opts = { path: `/_users/${getUserId(user.username)}` };
-  return utils.request(opts);
+  return utils.requestNative(opts);
 };
 
 const setupTokenLoginSettings = (configureAppUrl = false) => {
@@ -60,13 +60,13 @@ const setupTokenLoginSettings = (configureAppUrl = false) => {
     settings.app_url = utils.getOrigin();
   }
   return utils
-    .updateSettings(settings)
+    .updateSettingsNative(settings)
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
 
 describe('login', () => {
-  beforeAll(() => utils.saveDoc(parentPlace));
-  afterAll(() => utils.revertDb());
+  beforeAll(() => utils.saveDocNative(parentPlace));
+  afterAll(() => utils.revertDbNative());
 
   beforeEach(() => {
     user = {
@@ -85,7 +85,7 @@ describe('login', () => {
       },
     };
   });
-  afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], [])));
+  afterEach(() => utils.deleteUsersNative([user]).then(() => utils.revertDbNative(['PARENT_PLACE'], [])));
 
   describe('default login', () => {
     it('should fail with no data', () => {
@@ -105,7 +105,7 @@ describe('login', () => {
         body: user
       };
       return utils
-        .request(opts)
+        .requestNative(opts)
         .then(() => loginWithData({ user: user.username, password: 'random' }))
         .then(response => expectLoginToFail(response));
     });
@@ -117,7 +117,7 @@ describe('login', () => {
         body: user
       };
       return utils
-        .request(opts)
+        .requestNative(opts)
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectLoginToWork(response));
     });
@@ -151,12 +151,12 @@ describe('login', () => {
       };
       let firstToken;
       return setupTokenLoginSettings()
-        .then(() => utils.request(opts))
+        .then(() => utils.requestNative(opts))
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectLoginToFail(response))
         .then(() => getUser(user))
         .then(user => firstToken = user.token_login.token)
-        .then(() => utils.request(optsEdit)) // generate a new token
+        .then(() => utils.requestNative(optsEdit)) // generate a new token
         .then(() => loginWithTokenLink(firstToken))
         .then(response => expectLoginToFail(response));
     });
@@ -171,13 +171,13 @@ describe('login', () => {
       };
       let tokenLogin;
       return setupTokenLoginSettings()
-        .then(() => utils.request(opts))
+        .then(() => utils.requestNative(opts))
         .then(() => getUser(user))
         .then(user => {
           // cheat and set the expiration date in the past
           user.token_login.expiration_date = 0;
           tokenLogin = user.token_login;
-          return utils.request({ method: 'PUT', path: `/_users/${user._id}`, body: user });
+          return utils.requestNative({ method: 'PUT', path: `/_users/${user._id}`, body: user });
         })
         .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToFail(response));
@@ -193,7 +193,7 @@ describe('login', () => {
       };
       let tokenLogin;
       return setupTokenLoginSettings()
-        .then(() => utils.request(opts))
+        .then(() => utils.requestNative(opts))
         .then(() => getUser(user))
         .then(user => tokenLogin = user.token_login)
         .then(() => loginWithTokenLink(tokenLogin.token))
@@ -213,7 +213,7 @@ describe('login', () => {
       };
       let tokenLogin;
       return setupTokenLoginSettings(true)
-        .then(() => utils.request(opts))
+        .then(() => utils.requestNative(opts))
         .then(() => getUser(user))
         .then(user => tokenLogin = user.token_login)
         .then(() => loginWithTokenLink(tokenLogin.token))

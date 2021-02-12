@@ -22,7 +22,7 @@ describe('/sms', function() {
 
   describe('POST', function() {
 
-    afterAll(() => testUtils.revertDb());
+    afterAll(() => testUtils.revertDbNative());
 
     afterEach(gatewayApiUtils.cleanUp);
 

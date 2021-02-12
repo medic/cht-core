@@ -34,7 +34,7 @@ module.exports = {
 
 
 function get() {
-  return testUtils.request({
+  return testUtils.requestNative({
     path: '/api/sms',
     method: 'GET',
     headers: { 'Content-Type':'application/json' },
@@ -42,7 +42,7 @@ function get() {
 }
 
 function post(body) {
-  return testUtils.request({
+  return testUtils.requestNative({
     path: '/api/sms',
     method: 'POST',
     headers: { 'Content-Type':'application/json' },

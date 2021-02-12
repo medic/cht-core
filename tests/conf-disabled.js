@@ -22,7 +22,8 @@ const baseConfig = {
   suites: {
     // e2e:'e2e/**/*.js',
     e2e: [
-      /*'e2e/service-worker.js',
+      'e2e/api/**/*.js',
+      'e2e/service-worker.js',
       'e2e/create-meta-db.js',
       'e2e/login/login.specs.js',
       '**!/docs-by-replication-key-view.js',
@@ -37,9 +38,8 @@ const baseConfig = {
       'e2e/users/add-user.specs.js',
       'e2e/transitions/sms_workflows.spec.js',
       'e2e/login/purge.spec.js',
-      'e2e/login/db-sync-filter.spec.js',*/
+      'e2e/login/db-sync-filter.spec.js',
 
-      'e2e/api/controllers/db-doc.spec.js',
     ],
     // performance: 'performance/**/*.js'
   },
