@@ -27,7 +27,6 @@ const baseConfig = {
       '**/infodocs.js',
       '**/common.specs.js',
       '**/content-security-policy.js',
-      '**/send-message.js',
       '**/message_duplicates.spec.js',
       '**/api/server.js',
       'e2e/reports-subject.js'
