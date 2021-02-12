@@ -82,11 +82,9 @@ describe('Send message', () => {
 
   const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
     await messagesPo.messageRecipientSelect().sendKeys(searchText);
-    const loading = element.all(by.css('.select2-results__option.loading-results'));
-    helper.waitElementToPresentNative(loading);
-    helper.waitElementToDisappear(loading);
-    expect(await element.all(by.css('.select2-results__option')).count()).toBe(totalExpectedResults);
-    const elm = element(by.cssContainingText('.select2-results__option' + entrySelector,entryText));
+    await browser
+      .wait(async () => await element.all(by.css('.select2-results__option')).count() === totalExpectedResults);
+    const elm = element(by.cssContainingText('.select2-results__option' + entrySelector , entryText));
     await helper.waitUntilReadyNative(elm);
     return elm;
   };
@@ -126,13 +124,13 @@ describe('Send message', () => {
     entryName = entryName || entryId;
 
     const liElement = await messagesPo.messageInList(entryId);
-    await helper.waitUntilReady(liElement);
+    await helper.waitUntilReadyNative(liElement);
     expect(await element.all(liElement.locator()).count()).toBe(1);
     await liElement.click();
 
     return browser.wait(() => {
       const el = element(by.css('#message-header .name'));
-      if (helper.waitUntilReady(el)) {
+      if (helper.waitUntilReadyNative(el)) {
         return helper.getTextFromElement(el).then(text => {
           return text === entryName;
         });
@@ -209,7 +207,7 @@ describe('Send message', () => {
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
       common.goToMessages();
-      helper.waitUntilReady(messagesPo.messageInList(id));
+      helper.waitUntilReadyNative(messagesPo.messageInList(id));
       helper.waitElementToPresent(messagesPo.messageInList(id), 2000);
       clickLhsEntry(id, name);
     };
