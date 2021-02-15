@@ -180,6 +180,7 @@ module.exports = {
     await helper.waitElementToBeVisible(element(by.id('reports-list')));
     if (refresh) {
       await browser.refresh();
+      await helper.waitElementToBeVisible(element(by.id('reports-list')));
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.

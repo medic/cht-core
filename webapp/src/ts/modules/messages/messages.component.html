@@ -14,7 +14,7 @@
           [attr.test-id]="msg.key"
           [ngClass]="{
             'unread': !msg.read,
-            'selected': msg.key === selectedConversationId
+            'selected': msg.selected
           }"
         >
           <a [routerLink]="['/', 'messages', msg.type + ':' + msg.key]">

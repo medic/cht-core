@@ -7,6 +7,8 @@ const browserLogStream = fs.createWriteStream(
   __dirname + '/../tests/logs/browser.console.log'
 );
 
+process.env.protractorControlFlow = true;
+
 const chai = require('chai');
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
@@ -21,15 +23,12 @@ const baseConfig = {
     // e2e:'e2e/**/*.js',
     e2e: [
       '**/report-date-filter.js',
-      //'**/sentinel/queue.spec.js', //failing probably because contact page is still WIP. Disabling for now
       '**/docs-by-replication-key-view.js',
-      '**/api/routing.js',
       '**/infodocs.js',
       '**/common.specs.js',
       '**/content-security-policy.js',
       '**/send-message.js',
       '**/message_duplicates.spec.js',
-      '**/api/server.js',
       'e2e/reports-subject.js'
     ],
     // performance: 'performance/**/*.js'

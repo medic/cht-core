@@ -11,13 +11,12 @@ describe('Submit Delivery Report', () => {
   'time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
   beforeAll(async () => {
-    await docs.map(utils.saveDocNative);
+    await Promise.all(docs.map(async doc => await utils.saveDoc(doc)));
     await deliveryReport.configureForm(userContactDoc);
   });
 
-  afterEach(async () => { await utils.resetBrowser(); });
-
-  afterAll(async () => { await utils.afterEachNative(); });
+  afterEach(utils.resetBrowser);
+  afterAll(utils.afterEach);
 
   it('open delivery form', async () => {
     await common.goToReportsNative();

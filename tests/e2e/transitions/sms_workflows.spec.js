@@ -101,21 +101,21 @@ const expectTasks = (doc, expectations) => {
 
 const processReportsAndSetings = async (reports, settings) => {
   const ids = reports.map(report => report._id);
-  await utils.updateSettingsNative(settings);
-  await utils.saveDocsNative(reports);
-  await sentinelUtils.waitForSentinelNative(ids);
-  return utils.getDocsNative(ids);
+  await utils.updateSettings(settings);
+  await utils.saveDocs(reports);
+  await sentinelUtils.waitForSentinel(ids);
+  return utils.getDocs(ids);
 };
 
 describe('SMS workflows', () => {
-  beforeAll(async () => { 
+  beforeAll(async () => {
     await commonPo.goToPeople();
-    await utils.saveDocsNative(contacts);
+    await utils.saveDocs(contacts);
   });
-  
-  afterAll(async () => await utils.revertDbNative());
 
-  afterEach(async () => utils.revertDbNative(contacts.map(c => c._id)));
+  afterAll(async () => await utils.revertDb());
+
+  afterEach(async () => utils.revertDb(contacts.map(c => c._id)));
 
   describe('mapping recipients', () => {
     it('should correctly map parent for patient', async () => {
@@ -367,7 +367,7 @@ describe('SMS workflows', () => {
         { messages: [{ to: 'phone2', message: 'to hc' }] },
         // district.contact._id === chw3
         { messages: [{ to: 'phone3', message: 'to district' }] },
-      ]); 
+      ]);
     });
 
     it('should correctly map ancestor for contact', async () => {
@@ -653,7 +653,7 @@ describe('SMS workflows', () => {
         { messages: [{ to: 'phone3', message: 'to some_tag4' }] }, // sender
         { messages: [{ to: 'phone3', message: 'to sibling' }] }, // sender
         { messages: [{ to: 'phone4', message: 'to same_tag' }] },
-      ]); 
+      ]);
     });
 
     it('should correctly map linked contacts by type for patient', async () => {
