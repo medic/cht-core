@@ -8,10 +8,9 @@ describe('Family form', () => {
   const contactId = userData.contactId;
   const docs = userData.docs;
 
-  beforeAll(() => {
-    return protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(() => familyForm.configureForm(contactId));
+  beforeAll(async () => {
+    await utils.saveDocs(docs);
+    await familyForm.configureForm(contactId);
   });
 
   afterEach(async () => {

@@ -40,11 +40,11 @@ module.exports = {
 
   fillSexAndAge: async () => {
     // 0 - female; 1 - male
-    const sex = element(by.css('[name="/data/ephemeral_dob/g_sex"]'));
-    await helper.waitUntilReadyNative(sex);
+    const sex = element.all(by.css('[name="/data/ephemeral_dob/g_sex"]'));
+    const female = sex.get(0);
+    await helper.waitUntilReadyNative(female);
     const age = element(by.css('[name="/data/ephemeral_dob/age"]'));
-    await helper.waitElementToBeClickable(sex);
-    await sex.click();
+    await female.click();
     await age.clear().sendKeys(20);
   },
 

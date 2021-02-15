@@ -41,15 +41,15 @@ module.exports = {
   },
 
   invalidateReportNative: async () => {
-    const reviewButton = element(by.css('.mm-icon-inverse'));
-    await helper.waitUntilReady(reviewButton);
+    const reviewButton = element.all(by.css('.mm-icon-inverse')).get(0);
+    await helper.waitUntilReadyNative(reviewButton);
     await reviewButton.click();
     const reportInvalidBtn = element(by.css('.verify-error'));
-    await helper.waitUntilReady(reportInvalidBtn);
+    await helper.waitUntilReadyNative(reportInvalidBtn);
     await reportInvalidBtn.click();
     const reportInvalidIcon = element(by.css('.verify-error'));
-    await helper.waitUntilReady(reportInvalidIcon);
-    await helper.waitUntilReady(reportInvalidIcon);
+    await helper.waitUntilReadyNative(reportInvalidIcon);
+    await helper.waitUntilReadyNative(reportInvalidIcon);
     const reportInvalidMessage = element(by.css('.verify-error'));
     expect(reportInvalidMessage.getText()).toEqual('Has errors');
   },
@@ -153,16 +153,16 @@ module.exports = {
   },
 
   validateReportNative: async () => {
-    const reviewButton = element(by.css('.mm-icon-inverse'));
-    await helper.waitUntilReady(reviewButton);
+    const reviewButton = element.all(by.css('.mm-icon-inverse')).get(0);
+    await helper.waitUntilReadyNative(reviewButton);
     await reviewButton.click();
     const reportValidBtn = element(by.css('.verify-valid'));
     await helper.waitElementToBeClickable(reportValidBtn);
     await reportValidBtn.click();
     const reportValidIcon = element(by.css('.detail>.status>.verified'));
-    await helper.waitUntilReady(reportValidIcon);
+    await helper.waitUntilReadyNative(reportValidIcon);
     const reportValidMessage = element(by.css('.verify-valid>span:last-of-type'));
-    expect(reportValidMessage.getText()).toEqual('Correct');
+    expect(await reportValidMessage.getText()).toEqual('Correct');
   },
 
   waitForPageToBeReady: () => {
