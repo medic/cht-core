@@ -206,14 +206,7 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
-      },
-      'unit-test-off': {
-        options: {
-          replace: {
-            UNIT_TEST_ENV: '',
-          },
-        },
-      },
+      }
     },
     less: {
       admin: {
@@ -927,7 +920,6 @@ module.exports = function(grunt) {
     'copy:api-resources',
     'uglify:api',
     'cssmin:api',
-    'exec:npm-ci-shared-libs:production',
     'exec:bundle-dependencies',
     'exec:pack-node-modules',
   ]);
@@ -1003,7 +995,6 @@ module.exports = function(grunt) {
     'unit-admin',
     'exec:shared-lib-unit',
     'mochaTest:unit',
-    'env:unit-test-off',
   ]);
 
   // CI tasks
@@ -1018,11 +1009,11 @@ module.exports = function(grunt) {
     'exec:check-version',
     'static-analysis',
     'install-dependencies',
+    'build',
     'mochaTest:api-integration',
     'unit',
     'exec:test-config-default',
     'exec:test-config-standard',
-    'build',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
