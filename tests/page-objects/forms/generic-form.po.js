@@ -47,7 +47,7 @@ module.exports = {
     const reportInvalidBtn = element(by.css('.verify-error'));
     await helper.waitUntilReady(reportInvalidBtn);
     await reportInvalidBtn.click();
-    const reportInvalidIcon = element(by.css('.verify-errorfsdfsfdsfdsf'));
+    const reportInvalidIcon = element(by.css('.verify-error'));
     await helper.waitUntilReady(reportInvalidIcon);
     await helper.waitUntilReady(reportInvalidIcon);
     const reportInvalidMessage = element(by.css('.verify-error'));

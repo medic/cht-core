@@ -21,7 +21,7 @@ const docs = [
 
 module.exports = {
   configureForm: async (contactId) => {
-    await utils.seedTestDataNative(contactId, docs);
+    await utils.seedTestData(contactId, docs);
   },
 
   fillPrimaryCaregiver: async caregiverName => {

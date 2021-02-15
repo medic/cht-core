@@ -10,7 +10,7 @@ describe('Family form', () => {
 
   beforeAll(() => {
     return protractor.promise
-      .all(docs.map(utils.saveDocNative))
+      .all(docs.map(utils.saveDoc))
       .then(() => familyForm.configureForm(contactId));
   });
 
@@ -19,7 +19,7 @@ describe('Family form', () => {
   });
 
   afterAll(async () => {
-    await utils.afterEachNative();
+    await utils.afterEach();
   });
 
   it('Submit Add Family form', async () => {
