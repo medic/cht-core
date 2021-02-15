@@ -206,7 +206,14 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
-      }
+      },
+      'unit-test-off': {
+        options: {
+          add: {
+            UNIT_TEST_ENV: '',
+          },
+        },
+      },
     },
     less: {
       admin: {
@@ -996,6 +1003,7 @@ module.exports = function(grunt) {
     'unit-admin',
     'exec:shared-lib-unit',
     'mochaTest:unit',
+    'env:unit-test-off',
   ]);
 
   // CI tasks
