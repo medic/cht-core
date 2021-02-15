@@ -528,10 +528,9 @@ module.exports = function(grunt) {
       'shared-lib-unit': {
         cmd: () => {
           const sharedLibs = getSharedLibDirs();
-          return [
-            ...sharedLibs.map(lib => `(cd shared-libs/${lib} && npm ci)`),
-            ...sharedLibs.map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`),
-          ].join(' && ');
+          return sharedLibs
+            .map(lib => `echo Testing shared library: ${lib} && (cd shared-libs/${lib} && npm test)`)
+            .join(' && ');
         },
         stdio: 'inherit', // enable colors!
       },
@@ -921,7 +920,7 @@ module.exports = function(grunt) {
     'copy:api-resources',
     'uglify:api',
     'cssmin:api',
-    'exec:npm-ci-shared-libs:true',
+    'exec:npm-ci-shared-libs:production',
     'exec:bundle-dependencies',
     'exec:pack-node-modules',
   ]);
@@ -992,6 +991,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'Unit tests', [
     'env:unit-test',
+    'exec:npm-ci-shared-libs',
     'unit-webapp-no-dependencies',
     'unit-admin',
     'exec:shared-lib-unit',
