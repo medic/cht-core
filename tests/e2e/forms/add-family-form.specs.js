@@ -45,7 +45,7 @@ describe('Family form', () => {
     await genericForm.editFormNative();
     await familyForm.fillPrimaryCaregiver('modified');
     await genericForm.nextPageNative(8);
-    familyForm.finalSurvey(1, 1, 1, 1);
+    await familyForm.finalSurvey(1, 1, 1, 1);
     await genericForm.submitNative();
     await familyForm.reportCheck(
       'modified Family',
@@ -54,8 +54,8 @@ describe('Family form', () => {
       'false',
       'ucid condoms'
     );
-    await genericForm.reportApprove();
-    await genericForm.invalidateReport();
-    await genericForm.validateReport();
+    await genericForm.reportApproveNative();
+    await genericForm.invalidateReportNative();
+    await genericForm.validateReportNative();
   });
 });

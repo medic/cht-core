@@ -19,7 +19,6 @@ module.exports = {
   },
 
   editFormNative: async () => {
-    await helper.waitForAngularComplete();
     const editFormBtn = element.all(
       by.css('[href^="#/reports/edit"]>.fa-pencil')
     );
@@ -42,12 +41,16 @@ module.exports = {
   },
 
   invalidateReportNative: async () => {
-    const reportInvalidBtn = element(by.css('[ng-include*="verify-invalid"]'));
+    const reviewButton = element(by.css('.mm-icon-inverse'));
+    await helper.waitUntilReady(reviewButton);
+    await reviewButton.click();
+    const reportInvalidBtn = element(by.css('.verify-error'));
     await helper.waitUntilReady(reportInvalidBtn);
     await reportInvalidBtn.click();
-    const reportInvalidIcon = element(by.css('.detail>.status>.error'));
+    const reportInvalidIcon = element(by.css('.verify-errorfsdfsfdsfdsf'));
     await helper.waitUntilReady(reportInvalidIcon);
-    const reportInvalidMessage = element(by.css('.verify-error>span:last-of-type'));
+    await helper.waitUntilReady(reportInvalidIcon);
+    const reportInvalidMessage = element(by.css('.verify-error'));
     expect(reportInvalidMessage.getText()).toEqual('Has errors');
   },
 
@@ -84,7 +87,6 @@ module.exports = {
   },
 
   reportApproveNative: async () => {
-    await helper.waitForAngularComplete();
     const checkBtn = element(by.css('.fa-check'));
     await helper.waitUntilReady(checkBtn);
     await checkBtn.click();
@@ -134,7 +136,7 @@ module.exports = {
     const submitButton = element(by.css('.btn.submit.btn-primary'));
     await helper.waitElementToBeClickable(submitButton);
     await submitButton.click();
-    await helper.waitElementToBeVisible(element(by.css('div#reports-content')));
+    await helper.waitElementToPresentNative(element(by.css('div#reports-content')));
     const details = element(by.css('div.details'));
     await helper.waitUntilReadyNative(details);
     expect(await details.isPresent()).toBeTruthy();
@@ -151,7 +153,10 @@ module.exports = {
   },
 
   validateReportNative: async () => {
-    const reportValidBtn = element(by.css('[ng-include*="verify-valid"]'));
+    const reviewButton = element(by.css('.mm-icon-inverse'));
+    await helper.waitUntilReady(reviewButton);
+    await reviewButton.click();
+    const reportValidBtn = element(by.css('.verify-valid'));
     await helper.waitElementToBeClickable(reportValidBtn);
     await reportValidBtn.click();
     const reportValidIcon = element(by.css('.detail>.status>.verified'));
