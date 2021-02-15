@@ -55,10 +55,13 @@ module.exports = {
 
   checkConfigurationWizard: async () => {
     await openSubmenu('configuration wizard');
-    await helper.waitUntilReadyNative(skipSetup);
-    await expect(await helper.getTextFromElementNative(wizardTitle)).toEqual('Configuration wizard');
-    await expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
-    await expect(await finishBtn.getText()).toEqual('Finish');
+    await helper.waitUntilReadyNative(wizardTitle);
+    await helper.waitUntilTranslated(wizardTitle);
+    const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
+    console.log('title text', wizardTitleText);
+    expect(wizardTitleText).toEqual('Configuration wizard');
+    expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
+    expect(await finishBtn.getText()).toEqual('Finish');
     await skipSetup.click();
   },
 
@@ -235,5 +238,5 @@ module.exports = {
 };
 
 function openSubmenu(menuName) {
-  return helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
+  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
 }

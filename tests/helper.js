@@ -183,6 +183,7 @@ module.exports = {
 
   waitForTextDisplayed: text => {
     const selectedElement = module.exports.elementByText(text);
+    console.log(selectedElement);
     return module.exports.waitUntilReadyNative(selectedElement);
   },
 
@@ -346,6 +347,10 @@ module.exports = {
   },
   waitUntilReadyNative: elm => {
     return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+  },
+
+  waitUntilTranslated: elm => {
+    return browser.wait(() => elm.getText(), 1000);
   },
 
   isDisplayed: elm => {
