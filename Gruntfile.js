@@ -209,7 +209,7 @@ module.exports = function(grunt) {
       },
       'unit-test-off': {
         options: {
-          add: {
+          replace: {
             UNIT_TEST_ENV: '',
           },
         },
@@ -1018,8 +1018,8 @@ module.exports = function(grunt) {
     'exec:check-version',
     'static-analysis',
     'install-dependencies',
-    'unit',
     'mochaTest:api-integration',
+    'unit',
     'exec:test-config-default',
     'exec:test-config-standard',
     'build',
@@ -1030,8 +1030,8 @@ module.exports = function(grunt) {
     'static-analysis',
     'install-dependencies',
     'build',
-    'unit',
     'mochaTest:api-integration',
+    'unit',
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
