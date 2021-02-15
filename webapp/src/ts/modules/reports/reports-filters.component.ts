@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { GlobalActions } from '@mm-actions/global';
 import { Store } from '@ngrx/store';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
@@ -12,7 +12,7 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
   selector: 'reports-filters',
   templateUrl: './reports-filters.component.html'
 })
-export class ReportsFiltersComponent implements AfterViewInit {
+export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
   private globalActions;
 
   @Input() disabled;
@@ -56,5 +56,9 @@ export class ReportsFiltersComponent implements AfterViewInit {
     this.freetextFilter?.clear();
 
     this.applyFilters();
+  }
+
+  ngOnDestroy() {
+    this.searchFiltersService.destroy();
   }
 }

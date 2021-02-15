@@ -141,12 +141,12 @@ const clearAndFill = async (el, value) => {
 
 const clickAndGetValue = async el => {
   await el.click();
-  return await el.getAttribute('value');
+  return el.getAttribute('value');
 };
 
 module.exports = {
   configureForm: async (userContactDoc) => {
-    await utils.seedTestDataNative(userContactDoc, docs);
+    await utils.seedTestData(userContactDoc, docs);
   },
 
   load: async () => {
@@ -188,8 +188,8 @@ module.exports = {
     await module.exports.setWeight(patient.weight);
   },
 
-  getHeightForAge: async () => clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
-  getWeightForAge: async () => clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
-  getWeightForHeight: async () => clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
+  getHeightForAge: () => clickAndGetValue(element(by.css('[name="/data/hfa"]'))),
+  getWeightForAge: () => clickAndGetValue(element(by.css('[name="/data/wfa"]'))),
+  getWeightForHeight: () => clickAndGetValue(element(by.css('[name="/data/wfh"]'))),
   fieldByIndex: index => element(by.css(`#reports-content .details li:nth-child(${index}) p`)),
 };

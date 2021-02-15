@@ -90,11 +90,11 @@ describe('Submit Enketo form', () => {
   };
 
   beforeAll(async () => {
-    await utils.seedTestDataNative(userContactDoc, docs);
+    await utils.seedTestData(userContactDoc, docs);
   });
 
   afterEach(async () => {
-    await utils.afterEachNative();
+    await utils.afterEach();
   });
 
   it('submits on reports tab', async () => {
@@ -103,9 +103,9 @@ describe('Submit Enketo form', () => {
     await helper.waitElementToBeClickable(reportsPo.submitReport);
 
     // select form
-    await helper.clickElement(reportsPo.submitReport);
+    await helper.clickElementNative(reportsPo.submitReport);
     await helper.waitElementToBeClickable(reportsPo.firstForm);
-    await helper.clickElement(reportsPo.firstForm);
+    await helper.clickElementNative(reportsPo.firstForm);
 
     // enter name
 
@@ -114,10 +114,10 @@ describe('Submit Enketo form', () => {
 
     // submit form
 
-    await helper.waitUntilReady(genericForm.submitButton);
-    await genericForm.submitButton.click();
+    await helper.waitUntilReadyNative(genericForm.submitButton);
+    await helper.clickElementNative(genericForm.submitButton);
     await helper.waitElementToPresent(genericForm.submittedName);
-    
+
     // check the submitted name
     await helper.waitUntilReadyNative(genericForm.submittedName);
     expect(await genericForm.submittedName.getText()).toBe('Jones');

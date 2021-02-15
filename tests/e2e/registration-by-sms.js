@@ -3,10 +3,12 @@ const sUtils = require('./sentinel/utils');
 const commonElements = require('../page-objects/common/common.po.js');
 const helper = require('../helper');
 const moment = require('moment');
+const reportsPo = require('../page-objects/reports/reports.po');
+const dateFormatString = 'ddd, MMM Do, YYYY';
 
-const computeExpectedDate = () => {
-  const reportedDate = element(by.css('#reports-content .item-summary .relative-date-content'))
-    .getAttribute('data-record-id');
+const computeExpectedDate = async () => {
+  const reportedDateOptions = await reportsPo.relativeDate().getAttribute('data-date-options');
+  const reportedDate = JSON.parse(reportedDateOptions);
   const start = moment(reportedDate.date).startOf('day').subtract(12, 'weeks');
   const expectedDate = start.add(40, 'weeks');
 
@@ -210,7 +212,7 @@ describe('registration transition', () => {
         }
       ]
     }],
-    date_format: 'ddd, MMM Do, YYYY',
+    date_format: dateFormatString,
     locale_outgoing: 'sw'
   };
 
@@ -225,7 +227,7 @@ describe('registration transition', () => {
   describe('submits new sms messages', () => {
     let originalTimeout;
 
-    beforeEach(done => {
+    beforeEach(async () => {
       const body = {
         messages: [{
           from: PHONE,
@@ -233,12 +235,10 @@ describe('registration transition', () => {
           id: 'a'
         }]
       };
-      utils.updateSettings(CONFIG)
-        .then(() => protractor.promise.all(DOCS.map(utils.saveDoc)))
-        .then(() => submit(body))
-        .then(() => sUtils.waitForSentinel())
-        .then(done)
-        .catch(done.fail);
+      await utils.updateSettings(CONFIG);
+      await Promise.all(DOCS.map(async doc => await utils.saveDoc(doc)));
+      await submit(body);
+      await sUtils.waitForSentinel();
     });
     beforeEach(function() {
       //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow and it takes long for the report details to load
@@ -246,70 +246,58 @@ describe('registration transition', () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     });
 
-    afterEach(utils.afterEach);
+    afterEach(async () => await utils.afterEach());
     afterAll(function() {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
-    const checkItemSummary = () => {
-      const summaryElement = element(by.css('#reports-content .item-summary'));
-      expect(summaryElement.element(by.css('.sender .name')).getText()).toMatch(`Submitted by ${CAROL.name}`);
-      expect(summaryElement.element(by.css('.subject .name')).getText()).toBe('Siobhan');
-      expect(summaryElement.element(by.css('.sender .phone')).getText()).toBe(CAROL.phone);
-      expect(summaryElement.element(by.css('.position a')).getText()).toBe(BOB_PLACE.name);
-      expect(summaryElement.element(by.css('.detail')).isDisplayed()).toBeTruthy();
-      expect(summaryElement.element(by.css('.detail .status')).isDisplayed()).toBe(false);
+    const checkItemSummary = async () => {
+      expect(await reportsPo.submitterName().getText()).toMatch(`Submitted by ${CAROL.name}`);
+      expect(await reportsPo.subjectName().getText()).toBe('Siobhan');
+      expect(await reportsPo.submitterPhone().getText()).toBe(CAROL.phone);
+      expect(await reportsPo.submitterPlace().getText()).toBe(BOB_PLACE.name);
+      expect(await reportsPo.detail().isDisplayed()).toBeTruthy();
+      expect(await reportsPo.detailStatus().isPresent()).toBeFalsy();
     };
 
-    const checkAutoResponse = (expectedDate) => {
-      const taskElement = element(by.css('#reports-content .details > ul'));
-      expect(taskElement.element(by.css('.task-list > li:nth-child(1) > ul > li')).getText())
-        .toBe('Thank you '+ CAROL.name +' for registering Siobhan');
-      expect(taskElement.element(
-        by.css('.task-list > li:nth-child(1) .task-state .state.forwarded-to-gateway')).isDisplayed()
-      ).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list > li:nth-child(1) .task-state .recipient')).getText())
-        .toBe(' to +64271234567');
+    const checkAutoResponse = async (expectedDate) => {
+      expect(await reportsPo.taskTextByIndex(1)).toBe('Thank you '+ CAROL.name +' for registering Siobhan');
+      expect(await reportsPo.taskGatewayStatusByIndex(1).isDisplayed()).toBeTruthy();
+      expect(await reportsPo.taskRecipientByIndex(1).getText()).toBe(' to +64271234567');
 
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) > ul > li')).getText())
-        .toBe('LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
-      expect(taskElement.element(
-        by.css('.task-list > li:nth-child(2) .task-state .state.forwarded-to-gateway')).isDisplayed()
-      ).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list > li:nth-child(2) .task-state .recipient')).getText())
-        .toBe(' to +64271234567');
+      expect(await reportsPo.taskTextByIndex(2)).toBe(`LMP ${expectedDate.locale('sw').format(dateFormatString)}`);
+      expect(await reportsPo.taskGatewayStatusByIndex(2).isDisplayed()).toBeTruthy();
+      expect(await reportsPo.taskRecipientByIndex(2).getText()).toBe(' to +64271234567');
     };
 
-    const checkScheduledTask = (childIndex, title, message) => {
-      const taskElement = element(by.css(
-        '#reports-content .details .scheduled-tasks > ul > li:nth-child(' + childIndex + ')'
-      ));
-      expect(taskElement.element(by.css('h3')).getText()).toContain(title);
-      expect(taskElement.element(by.css('.task-list li > ul > li')).getText()).toBe(message);
-      expect(taskElement.element(by.css('.task-list li .task-state .state.scheduled')).isDisplayed()).toBeTruthy();
-      expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');
+    const checkScheduledTask = async (childIndex, title, message) => {
+      expect(await reportsPo.scheduledTaskByIndex(childIndex).element(by.css('h3')).getText()).toContain(title);
+      expect(await reportsPo.scheduledTaskMessageByIndex(childIndex).getText()).toBe(message);
+      expect(await reportsPo.scheduledTaskStateByIndex(childIndex).isDisplayed()).toBeTruthy();
+      expect(await reportsPo.scheduledTaskRecipientByIndex(childIndex).getText()).toBe(' to +64271234567');
     };
 
     it('shows content', async () => {
-      commonElements.goToReports(true);
-      helper.waitElementToBeClickable(element(by.css('#reports-list .unfiltered li:first-child')));
-      browser.wait(() => element(
-        by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', 'Siobhan')
+      await commonElements.goToReportsNative();
+      const firstReprot = reportsPo.firstReport();
+      await helper.waitElementToBeClickable(firstReprot);
+      await browser.wait(() => element(
+        by.cssContainingText(reportsPo.subject(firstReprot).locator().value, 'Siobhan')
       ).isPresent(), 10000);
-      helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
+      await helper.clickElementNative(reportsPo.formName(firstReprot));
 
       // wait for content to load
-      browser.wait(() => element(
+      await browser.wait(() => element(
         by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)
       ).isPresent(), 30000);
 
-      const expectedDate = computeExpectedDate();
+      const expectedDate = await computeExpectedDate();
 
-      checkItemSummary();
-      checkAutoResponse(expectedDate);
-      checkScheduledTask(1, 'ANC Reminders LMP:1', 'Visit 1 reminder for Siobhan');
-      checkScheduledTask(2, 'ANC Reminders LMP:2', 'Visit 2 reminder for Siobhan');
-      checkScheduledTask(3, 'ANC Reminders LMP:3', 'LMP ' + expectedDate.locale('sw').format('ddd, MMM Do, YYYY'));
+      await checkItemSummary();
+      await checkAutoResponse(expectedDate);
+      await checkScheduledTask(1, 'ANC Reminders LMP:1', 'Visit 1 reminder for Siobhan');
+      await checkScheduledTask(2, 'ANC Reminders LMP:2', 'Visit 2 reminder for Siobhan');
+      await checkScheduledTask(3, 'ANC Reminders LMP:3', `LMP ${expectedDate.locale('sw').format(dateFormatString)}`);
     });
 
   });

@@ -9,30 +9,39 @@ const dateFilter = element(by.css('#date-filter'));
 const submitReport = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
 const firstForm = element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a'));
 
+const reportsByUUID = (uuid) => {
+  return module.exports.list().all(by.css(`li[data-record-id="${uuid}"]`));
+};
+
 const reportListID = '#reports-list';
 
 module.exports = {
+  relativeDate: () => element(by.css('#reports-content .item-summary .relative-date-content')),
   firstForm,
   submitReport,
   allReports: () => element.all(by.css(`${reportListID} li`)),
   firstReport: () => element(by.css(`${reportListID} li:first-child`)),
   listLoader: () => element(by.css(`${reportListID} .loader`)),
   list: () => element(by.css(reportListID)),
-  reportByUUID: uuid => module.exports.list().all(by.css('li[data-record-id="' + uuid + '"]')),
+  reportByUUID: uuid => reportsByUUID(uuid).first(),
+  reportsByUUID: reportsByUUID,
   reportSummary: () => element(by.css('#reports-content .item-summary')),
   formNameNoSubject: () => module.exports.reportSummary().element(by.css('mm-sender + div')),
   subjectName: () => module.exports.reportSummary().element(by.css('.subject .name')),
   summaryFormName: () => module.exports.reportSummary().element(by.css('.subject + div')),
   submitterName: () => module.exports.reportSummary().element(by.css('.sender .name')),
   submitterPhone: () => module.exports.reportSummary().element(by.css('.sender .phone')),
-  subject: async reportElement =>  {
+  submitterPlace: () => module.exports.reportSummary().element(by.css('.position a')),
+  detail: () => module.exports.reportSummary().element(by.css('.detail')),
+  detailStatus: () => module.exports.reportSummary().element(by.css('.detail .status')),
+  subject: reportElement =>  {
     return reportElement.element(by.css('.content .heading h4 span'));
   },
-  formName: async reportElement =>  {
+  formName: reportElement =>  {
     return reportElement.element(by.css('.summary'));
   },
   loadReport: async uuid => {
-    const report = module.exports.reportByUUID(uuid).first();
+    const report = module.exports.reportByUUID(uuid);
     await helper.waitElementToBeClickable(report);
     await helper.clickElement(report);
     await helper.waitElementToPresent(module.exports.reportSummary(), 3000);
@@ -131,5 +140,30 @@ module.exports = {
       'There should be at least one report in the LHS'
     );
   },
+  taskByIndex: (index) => {
+    return element(by.css(reportBodyDetails)).element(by.css(`.task-list > li:nth-child(${index})`));
+  },
+  taskTextByIndex: (index) => {
+    return module.exports.taskByIndex(index).element(by.css('ul > li')).getText();
+  },
+  taskRecipientByIndex: (index) => {
+    return module.exports.taskByIndex(index).element(by.css('.task-state .recipient'));
+  },
+  taskGatewayStatusByIndex: (index) => {
+    return module.exports.taskByIndex(index).element(by.css('.task-state .state.forwarded-to-gateway'));
+  },
+  scheduledTaskByIndex: (index) => {
+    return element(by.css(`#reports-content .details .scheduled-tasks > ul > li:nth-child(${index})`));
+  },
+  scheduledTaskMessageByIndex: (index) => {
+    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li > ul > li'));
+  },
+  scheduledTaskStateByIndex: (index) => {
+    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .state.scheduled'));
+  },
+  scheduledTaskRecipientByIndex: (index) => {
+    return module.exports.scheduledTaskByIndex(index).element(by.css('.task-list li .task-state .recipient'));
+  }
+
 };
 

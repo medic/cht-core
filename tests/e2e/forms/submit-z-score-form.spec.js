@@ -22,7 +22,7 @@ const userContactDoc = {
 describe('Submit Z-Score form', () => {
   beforeAll(async () => { await ZScoreForm.configureForm(userContactDoc); });
 
-  beforeEach(async () => { await utils.resetBrowser(); });
+  beforeEach(utils.resetBrowser);
 
   it('Autofills zscore fields with correct values', async () => {
     await ZScoreForm.load();
@@ -62,7 +62,7 @@ describe('Submit Z-Score form', () => {
     expect(await ZScoreForm.getWeightForHeight()).toEqual('2.0387096774193547');
 
     await ZScoreForm.submit();
-    
+
     expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(1))).toEqual('45.1');
     expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(2))).toEqual('3');
     expect(await helper.getTextFromElement(ZScoreForm.fieldByIndex(3))).toEqual('female');

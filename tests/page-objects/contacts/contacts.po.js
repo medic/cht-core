@@ -112,7 +112,7 @@ module.exports = {
     await rows.filter(elem => elem.getText().then(text => text === name)).first().click();
   },
 
-  deleteContactByName: async contactName => {
+  deleteContactByName: contactName => {
     const peopleRow = peopleRows.filter((row) => {
       return row.getText().then((text) => {
         return text.includes(contactName);

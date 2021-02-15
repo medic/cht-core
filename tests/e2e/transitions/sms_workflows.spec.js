@@ -3,6 +3,7 @@ const sentinelUtils = require('../sentinel/utils');
 
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
+const commonPo = require('../../page-objects/common/common.po');
 chai.use(chaiExclude);
 
 const contacts = [
@@ -98,14 +99,26 @@ const expectTasks = (doc, expectations) => {
     .to.have.deep.members(expectations);
 };
 
-describe('SMS workflows', () => {
-  beforeAll(() => utils.saveDocs(contacts));
-  afterAll(() => utils.revertDb());
+const processReportsAndSetings = async (reports, settings) => {
+  const ids = reports.map(report => report._id);
+  await utils.updateSettings(settings);
+  await utils.saveDocs(reports);
+  await sentinelUtils.waitForSentinel(ids);
+  return utils.getDocs(ids);
+};
 
-  afterEach(() => utils.revertDb(contacts.map(c => c._id)));
+describe('SMS workflows', () => {
+  beforeAll(async () => {
+    await commonPo.goToPeople();
+    await utils.saveDocs(contacts);
+  });
+
+  afterAll(async () => await utils.revertDb());
+
+  afterEach(async () => utils.revertDb(contacts.map(c => c._id)));
 
   describe('mapping recipients', () => {
-    it('should correctly map parent for patient', () => {
+    it('should correctly map parent for patient', async () => {
       const settings = {
         transitions: {
           accept_patient_reports: true,
@@ -164,38 +177,30 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
+      const [ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
+      expectTasks(patientChw6, [
+        // health_center.contact._id === chw2
+        { messages: [{ to: 'phone2',  message: 'to parent' }] },
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3', message: 'to grandparent' }] },
+      ]);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ patientChw6, patientChw3, patientChw4  ]) => {
-          expectTasks(patientChw6, [
-            // health_center.contact._id === chw2
-            { messages: [{ to: 'phone2',  message: 'to parent' }] },
-            // district.contact._id === chw3
-            { messages: [{ to: 'phone3', message: 'to grandparent' }] },
-          ]);
+      expectTasks(patientChw3, [
+        // defaults to sender
+        { messages: [{ to: 'phone4',  message: 'to parent' }] },
+        // defaults to sender
+        { messages: [{ to: 'phone4', message: 'to grandparent' }] },
+      ]);
 
-          expectTasks(patientChw3, [
-            // defaults to sender
-            { messages: [{ to: 'phone4',  message: 'to parent' }] },
-            // defaults to sender
-            { messages: [{ to: 'phone4', message: 'to grandparent' }] },
-          ]);
-
-          expectTasks(patientChw4, [
-            // district.contact._id === chw3
-            { messages: [{ to: 'phone3',  message: 'to parent' }] },
-            // defaults to sender
-            { messages: [{ to: 'phone6', message: 'to grandparent' }] },
-          ]);
-        });
+      expectTasks(patientChw4, [
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3',  message: 'to parent' }] },
+        // defaults to sender
+        { messages: [{ to: 'phone6', message: 'to grandparent' }] },
+      ]);
     });
 
-    it('should use legacy mapping for parent for contact', () => {
+    it('should use legacy mapping for parent for contact', async () => {
       const settings = {
         transitions: {
           conditional_alerts: true,
@@ -242,43 +247,36 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ contactChw6, contactChw4, contactChw3  ]) => {
-          expectTasks(contactChw6, [
-            // context.parent = health_center
-            // context.parent.parent = district
-            // district.contact._id === chw3
-            { messages: [{ to: 'phone3',  message: 'to parent' }] },
-            // context.parent.parent.parent = nothing, defaults to sender
-            { messages: [{ to: 'phone6', message: 'to grandparent' }] },
-          ]);
+      const  [contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports,settings);
+      expectTasks(contactChw6, [
+        // context.parent = health_center
+        // context.parent.parent = district
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3',  message: 'to parent' }] },
+        // context.parent.parent.parent = nothing, defaults to sender
+        { messages: [{ to: 'phone6', message: 'to grandparent' }] },
+      ]);
 
-          expectTasks(contactChw4, [
-            // context.parent = health_center
-            // context.parent.parent = district
-            // district.contact._id === chw3
-            { messages: [{ to: 'phone3',  message: 'to parent' }] },
-            // context.parent.parent.parent = nothing, defaults to sender
-            { messages: [{ to: 'phone4', message: 'to grandparent' }] },
-          ]);
+      expectTasks(contactChw4, [
+        // context.parent = health_center
+        // context.parent.parent = district
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3',  message: 'to parent' }] },
+        // context.parent.parent.parent = nothing, defaults to sender
+        { messages: [{ to: 'phone4', message: 'to grandparent' }] },
+      ]);
 
-          expectTasks(contactChw3, [
-            // context.parent = undefined
-            // context.parent.parent.parent = nothing, defaults to sender
-            { messages: [{ to: 'phone3',  message: 'to parent' }] },
-            // context.parent.parent.parent = nothing, defaults to sender
-            { messages: [{ to: 'phone3', message: 'to grandparent' }] },
-          ]);
-        });
+      expectTasks(contactChw3, [
+        // context.parent = undefined
+        // context.parent.parent.parent = nothing, defaults to sender
+        { messages: [{ to: 'phone3',  message: 'to parent' }] },
+        // context.parent.parent.parent = nothing, defaults to sender
+        { messages: [{ to: 'phone3', message: 'to grandparent' }] },
+      ]);
     });
 
-    it('should correctly map ancestor for patient', () => {
+    it('should correctly map ancestor for patient', async () => {
       const settings = {
         transitions: {
           accept_patient_reports: true,
@@ -342,44 +340,37 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ patientChw6, patientChw3, patientChw4  ]) => {
-          expectTasks(patientChw6, [
-            // clinic.contact._id === chw2
-            { messages: [{ to: 'phone1',  message: 'to clinic' }] },
-            // health_center.contact._id === chw2
-            { messages: [{ to: 'phone2', message: 'to hc' }] },
-            // district.contact._id === chw3
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
+      const[ patientChw6, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
+      expectTasks(patientChw6, [
+        // clinic.contact._id === chw2
+        { messages: [{ to: 'phone1',  message: 'to clinic' }] },
+        // health_center.contact._id === chw2
+        { messages: [{ to: 'phone2', message: 'to hc' }] },
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
 
-          expectTasks(patientChw3, [
-            // no clinic, defaults to sender
-            { messages: [{ to: 'phone4',  message: 'to clinic' }] },
-            // no hc, defaults to sender
-            { messages: [{ to: 'phone4', message: 'to hc' }] },
-            // district.contact._id === chw3
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
+      expectTasks(patientChw3, [
+        // no clinic, defaults to sender
+        { messages: [{ to: 'phone4',  message: 'to clinic' }] },
+        // no hc, defaults to sender
+        { messages: [{ to: 'phone4', message: 'to hc' }] },
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
 
-          expectTasks(patientChw4, [
-            // no clinic, defaults to sender
-            { messages: [{ to: 'phone6',  message: 'to clinic' }] },
-            // health_center.contact._id === chw2
-            { messages: [{ to: 'phone2', message: 'to hc' }] },
-            // district.contact._id === chw3
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
-        });
+      expectTasks(patientChw4, [
+        // no clinic, defaults to sender
+        { messages: [{ to: 'phone6',  message: 'to clinic' }] },
+        // health_center.contact._id === chw2
+        { messages: [{ to: 'phone2', message: 'to hc' }] },
+        // district.contact._id === chw3
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
     });
 
-    it('should correctly map ancestor for contact', () => {
+    it('should correctly map ancestor for contact', async () => {
       const settings = {
         transitions: {
           conditional_alerts: true,
@@ -432,38 +423,32 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ contactChw6, contactChw4, contactChw3  ]) => {
-          expectTasks(contactChw6, [
-            // context.parent = health_center
-            { messages: [{ to: 'phone6',  message: 'to clinic' }] }, // to sender
-            { messages: [{ to: 'phone2', message: 'to hc' }] },
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
 
-          expectTasks(contactChw4, [
-            // context.parent = health_center
-            { messages: [{ to: 'phone4',  message: 'to clinic' }] }, // to sender
-            { messages: [{ to: 'phone2',  message: 'to hc' }] },
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
+      const [ contactChw6, contactChw4, contactChw3  ] = await processReportsAndSetings(reports,settings);
+      expectTasks(contactChw6, [
+        // context.parent = health_center
+        { messages: [{ to: 'phone6',  message: 'to clinic' }] }, // to sender
+        { messages: [{ to: 'phone2', message: 'to hc' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
 
-          expectTasks(contactChw3, [
-            // context.contact.parent = district
-            { messages: [{ to: 'phone3',  message: 'to clinic' }] },
-            { messages: [{ to: 'phone3',  message: 'to hc' }] },
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
-        });
+      expectTasks(contactChw4, [
+        // context.parent = health_center
+        { messages: [{ to: 'phone4',  message: 'to clinic' }] }, // to sender
+        { messages: [{ to: 'phone2',  message: 'to hc' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(contactChw3, [
+        // context.contact.parent = district
+        { messages: [{ to: 'phone3',  message: 'to clinic' }] },
+        { messages: [{ to: 'phone3',  message: 'to hc' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
     });
 
-    it('should correctly map linked contacts by tag for patient', () => {
+    it('should correctly map linked contacts by tag for patient', async () => {
       const settings = {
         transitions: {
           accept_patient_reports: true,
@@ -547,47 +532,40 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ patientChw5, patientChw3, patientChw4  ]) => {
-          expectTasks(patientChw5, [
-            { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
-            { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
-            { messages: [{ to: 'phone4', message: 'to some_tag4' }] },
-            { messages: [{ to: 'phone7', message: 'to missing1' }] }, // sender
-            { messages: [{ to: 'phone7', message: 'to missing_tag' }] }, // sender
-            { messages: [{ to: 'phone6', message: 'to sibling' }] },
-            { messages: [{ to: 'phone1', message: 'to same_tag' }] },
-          ]);
+      const [ patientChw5, patientChw3, patientChw4 ] = await processReportsAndSetings(reports,settings);
+      expectTasks(patientChw5, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone4', message: 'to some_tag4' }] },
+        { messages: [{ to: 'phone7', message: 'to missing1' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to missing_tag' }] }, // sender
+        { messages: [{ to: 'phone6', message: 'to sibling' }] },
+        { messages: [{ to: 'phone1', message: 'to same_tag' }] },
+      ]);
 
-          expectTasks(patientChw3, [
-            { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
-            { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
-            { messages: [{ to: 'phone7', message: 'to some_tag4' }] }, // sender
-            { messages: [{ to: 'phone7', message: 'to missing1' }] }, // sender
-            { messages: [{ to: 'phone7', message: 'to missing_tag' }] }, // sender
-            { messages: [{ to: 'phone7', message: 'to sibling' }] }, // sender
-            { messages: [{ to: 'phone4', message: 'to same_tag' }] },
-          ]);
+      expectTasks(patientChw3, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone7', message: 'to some_tag4' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to missing1' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to missing_tag' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to sibling' }] }, // sender
+        { messages: [{ to: 'phone4', message: 'to same_tag' }] },
+      ]);
 
-          expectTasks(patientChw4, [
-            { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
-            { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
-            { messages: [{ to: 'phone4', message: 'to some_tag4' }] }, // aceessible via submitter
-            { messages: [{ to: 'phone6', message: 'to missing1' }] }, // sender
-            { messages: [{ to: 'phone6', message: 'to missing_tag' }] }, // sender
-            { messages: [{ to: 'phone6', message: 'to sibling' }] }, // sender
-            { messages: [{ to: 'phone4', message: 'to same_tag' }] },
-          ]);
-        });
+      expectTasks(patientChw4, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone4', message: 'to some_tag4' }] }, // aceessible via submitter
+        { messages: [{ to: 'phone6', message: 'to missing1' }] }, // sender
+        { messages: [{ to: 'phone6', message: 'to missing_tag' }] }, // sender
+        { messages: [{ to: 'phone6', message: 'to sibling' }] }, // sender
+        { messages: [{ to: 'phone4', message: 'to same_tag' }] },
+      ]);
     });
 
-    it('should correctly map linked contacts by tag for contact', () => {
+    it('should correctly map linked contacts by tag for contact', async () => {
       const settings = {
         transitions: {
           conditional_alerts: true,
@@ -652,40 +630,33 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ contactChw5, contactChw2, contactChw3  ]) => {
-          expectTasks(contactChw5, [
-            { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
-            { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
-            { messages: [{ to: 'phone4', message: 'to some_tag4' }] },
-            { messages: [{ to: 'phone6', message: 'to sibling' }] },
-            { messages: [{ to: 'phone1', message: 'to same_tag' }] },
-          ]);
-          expectTasks(contactChw2, [
-            { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
-            { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
-            { messages: [{ to: 'phone2', message: 'to some_tag4' }] }, // sender
-            { messages: [{ to: 'phone2', message: 'to sibling' }] }, // sender
-            { messages: [{ to: 'phone4', message: 'to same_tag' }] },
-          ]);
+      const [ contactChw5, contactChw2, contactChw3  ] = await processReportsAndSetings(reports,settings);
+      expectTasks(contactChw5, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone4', message: 'to some_tag4' }] },
+        { messages: [{ to: 'phone6', message: 'to sibling' }] },
+        { messages: [{ to: 'phone1', message: 'to same_tag' }] },
+      ]);
+      expectTasks(contactChw2, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone2', message: 'to some_tag4' }] }, // sender
+        { messages: [{ to: 'phone2', message: 'to sibling' }] }, // sender
+        { messages: [{ to: 'phone4', message: 'to same_tag' }] },
+      ]);
 
-          expectTasks(contactChw3, [
-            { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
-            { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
-            { messages: [{ to: 'phone3', message: 'to some_tag4' }] }, // sender
-            { messages: [{ to: 'phone3', message: 'to sibling' }] }, // sender
-            { messages: [{ to: 'phone4', message: 'to same_tag' }] },
-          ]);
-        });
+      expectTasks(contactChw3, [
+        { messages: [{ to: 'phone1', message: 'to some_tag1' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag3' }] },
+        { messages: [{ to: 'phone3', message: 'to some_tag4' }] }, // sender
+        { messages: [{ to: 'phone3', message: 'to sibling' }] }, // sender
+        { messages: [{ to: 'phone4', message: 'to same_tag' }] },
+      ]);
     });
 
-    it('should correctly map linked contacts by type for patient', () => {
+    it('should correctly map linked contacts by type for patient', async () => {
       const settings = {
         transitions: {
           accept_patient_reports: true,
@@ -749,35 +720,29 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ patientChw5, patientChw3, patientChw4  ]) => {
-          expectTasks(patientChw5, [
-            { messages: [{ to: 'phone1', message: 'to clinic' }] },
-            { messages: [{ to: 'phone2', message: 'to health_center' }] },
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
+      const [ patientChw5, patientChw3, patientChw4  ] = await processReportsAndSetings(reports,settings);
 
-          expectTasks(patientChw3, [
-            { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
-            { messages: [{ to: 'phone7', message: 'to health_center' }] }, // sender
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
+      expectTasks(patientChw5, [
+        { messages: [{ to: 'phone1', message: 'to clinic' }] },
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
 
-          expectTasks(patientChw4, [
-            { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
-            { messages: [{ to: 'phone2', message: 'to health_center' }] },
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
-        });
+      expectTasks(patientChw3, [
+        { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone7', message: 'to health_center' }] }, // sender
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+
+      expectTasks(patientChw4, [
+        { messages: [{ to: 'phone7', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
     });
 
-    it('should correctly map linked contacts by type for contact', () => {
+    it('should correctly map linked contacts by type for contact', async () => {
       const settings = {
         transitions: {
           conditional_alerts: true,
@@ -830,31 +795,24 @@ describe('SMS workflows', () => {
         },
       ];
 
-      const ids = reports.map(report => report._id);
 
-      return utils
-        .updateSettings(settings)
-        .then(() => utils.saveDocs(reports))
-        .then(() => sentinelUtils.waitForSentinel(ids))
-        .then(() => utils.getDocs(ids))
-        .then(([ contactChw5, contactChw2, contactChw3  ]) => {
-          expectTasks(contactChw5, [
-            { messages: [{ to: 'phone1', message: 'to clinic' }] },
-            { messages: [{ to: 'phone2', message: 'to health_center' }] },
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
-          expectTasks(contactChw2, [
-            { messages: [{ to: 'phone2', message: 'to clinic' }] }, // sender
-            { messages: [{ to: 'phone2', message: 'to health_center' }] },
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
+      const [ contactChw5, contactChw2, contactChw3   ] = await processReportsAndSetings(reports,settings);
+      expectTasks(contactChw5, [
+        { messages: [{ to: 'phone1', message: 'to clinic' }] },
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+      expectTasks(contactChw2, [
+        { messages: [{ to: 'phone2', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone2', message: 'to health_center' }] },
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
 
-          expectTasks(contactChw3, [
-            { messages: [{ to: 'phone3', message: 'to clinic' }] }, // sender
-            { messages: [{ to: 'phone3', message: 'to health_center' }] }, // sender
-            { messages: [{ to: 'phone3', message: 'to district' }] },
-          ]);
-        });
+      expectTasks(contactChw3, [
+        { messages: [{ to: 'phone3', message: 'to clinic' }] }, // sender
+        { messages: [{ to: 'phone3', message: 'to health_center' }] }, // sender
+        { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
     });
   });
 });

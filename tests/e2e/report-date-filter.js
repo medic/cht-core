@@ -109,8 +109,8 @@ describe('Filters reports', () => {
     helper.waitElementToPresent(reportsTab.firstReport());
 
     expect(reportsTab.allReports().count()).toBe(2);
-    expect(reportsTab.reportByUUID(savedUuids[1]).count()).toBe(1);
-    expect(reportsTab.reportByUUID(savedUuids[3]).count()).toBe(1);
+    expect(reportsTab.reportsByUUID(savedUuids[1]).count()).toBe(1);
+    expect(reportsTab.reportsByUUID(savedUuids[3]).count()).toBe(1);
 
   });
 });
