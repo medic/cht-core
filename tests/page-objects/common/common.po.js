@@ -12,12 +12,12 @@ const hamburgerMenuOptions = element.all(by.css('#header-dropdown>li:not(.hidden
 const logoutButton = $('[ng-click=logout]');
 
 // Configuration wizard
-const wizardTitle = element(by.css('.modal-header>h2'));
+const wizardTitle = element(by.css('#guided-setup .modal-header > h2'));
 const defaultCountryCode = element(
   by.css('#select2-default-country-code-setup-container')
 );
-const skipSetup = element(by.css('.modal-footer>a:first-of-type'));
-const finishBtn = element(by.css('.modal-footer>a:nth-of-type(2)'));
+const skipSetup = element(by.css('#guided-setup .modal-footer>a:first-of-type'));
+const finishBtn = element(by.css('#guided-setup .modal-footer>a:nth-of-type(2)'));
 // Tour
 const tourBtns = element.all(by.css('.btn.tour-option'));
 // User settings
@@ -68,12 +68,12 @@ module.exports = {
     await helper.clickElementNative(genericCancelBtn);
   },
 
-  checkReportBug: () => {
-    openSubmenu('report bug');
-    helper.waitElementToBeVisible(bugDescriptionField);
-    helper.waitElementToBeVisible(modalFooter);
-    expect(genericSubmitButton.getText()).toEqual('Submit');
-    genericCancelBtn.click();
+  checkReportBug: async () => {
+    await openSubmenu('report bug');
+    await helper.waitElementToBeVisibleNative(bugDescriptionField);
+    await helper.waitElementToBeVisibleNative(modalFooter);
+    expect(await genericSubmitButton.getText()).toEqual('Submit');
+    await genericCancelBtn.click();
   },
 
   sync: () => {
@@ -105,9 +105,9 @@ module.exports = {
     await helper.waitUntilReadyNative(medicLogo);
   },
 
-  goToConfiguration: () => {
-    helper.waitUntilReady(medicLogo);
-    browser.get(utils.getAdminBaseUrl());
+  goToConfiguration: async () => {
+    await helper.waitUntilReadyNative(medicLogo);
+    await browser.get(utils.getAdminBaseUrl());
   },
 
   goToLoginPage: () => {
@@ -229,8 +229,8 @@ module.exports = {
     await deleteButton.click();
   },
 
-  expectDisplayDate:() => {
-    expect(displayTime.isPresent()).toBeTruthy();
+  expectDisplayDate: async () => {
+    expect(await displayTime.isPresent()).toBeTruthy();
   },
 };
 

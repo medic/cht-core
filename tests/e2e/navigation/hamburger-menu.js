@@ -25,14 +25,14 @@ describe('Hamburger Menu tests : ', () => {
     await commonElements.checkUserSettings();
   });
 
-  it('should open Report bug', () => {
-    commonElements.openMenu();
-    commonElements.checkReportBug();
+  it('should open Report bug', async () => {
+    await commonElements.openMenuNative();
+    await commonElements.checkReportBug();
   });
 
-  it('should open Configuration app', () => {
-    commonElements.goToConfiguration();
-    commonElements.expectDisplayDate();
-    browser.get(utils.getBaseUrl() + 'messages/');
+  it('should open Configuration app', async () => {
+    await commonElements.goToConfiguration();
+    await commonElements.expectDisplayDate();
+    await commonElements.goToMessagesNative();
   });
 });
