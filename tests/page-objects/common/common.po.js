@@ -48,24 +48,24 @@ module.exports = {
     await helper.waitUntilReadyNative(medicLogo);
   },
 
-  checkAbout: () => {
-    openSubmenu('about');
-    expect(genericSubmitButton.getText()).toEqual('Reload');
+  checkAbout: async () => {
+    await openSubmenu('about');
+    expect(await genericSubmitButton.getText()).toEqual('Reload');
   },
 
   checkConfigurationWizard: async () => {
     await openSubmenu('configuration wizard');
-    await helper.waitUntilReady(skipSetup);
-    await expect(helper.getTextFromElement(wizardTitle)).toEqual('Configuration wizard');
-    await expect(helper.getTextFromElement(defaultCountryCode)).toEqual('Canada (+1)');
-    await expect(finishBtn.getText()).toEqual('Finish');
+    await helper.waitUntilReadyNative(skipSetup);
+    await expect(await helper.getTextFromElementNative(wizardTitle)).toEqual('Configuration wizard');
+    await expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
+    await expect(await finishBtn.getText()).toEqual('Finish');
     await skipSetup.click();
   },
 
-  checkGuidedTour: () => {
-    openSubmenu('guided');
-    expect(tourBtns.count()).toEqual(4);
-    helper.clickElement(genericCancelBtn);
+  checkGuidedTour: async () => {
+    await openSubmenu('guided');
+    expect(await tourBtns.count()).toEqual(4);
+    await helper.clickElementNative(genericCancelBtn);
   },
 
   checkReportBug: () => {
@@ -89,7 +89,7 @@ module.exports = {
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
-  checkUserSettings: () => {
+  checkUserSettings: async () => {
     openSubmenu('user settings');
     const optionNames = helper.getTextFromElements(settings);
     expect(optionNames).toEqual(['Update password', 'Edit user profile']);
@@ -189,14 +189,14 @@ module.exports = {
     }
   },
 
-  goToTasks: () => {
-    browser.get(utils.getBaseUrl() + 'tasks/');
-    helper.waitUntilReady(medicLogo);
-    helper.waitUntilReady(element(by.id('tasks-list')));
+  goToTasks: async () => {
+    await browser.get(utils.getBaseUrl() + 'tasks/');
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('tasks-list')));
   },
 
-  isAt: list => {
-    helper.waitUntilReady(medicLogo);
+  isAt: async (list) => {
+    await helper.waitUntilReadyNative(medicLogo);
     return element(by.id(list)).isPresent();
   },
 
