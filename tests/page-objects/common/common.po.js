@@ -32,6 +32,7 @@ const messagesList = element(by.id('message-list'));
 module.exports = {
   messagesList,
   calm: async () => {
+    utils.deprecated('calm', 'calmNative');
     // const bootstrapperSelector = by.css('.bootstrap-layer');
     // Disabling the bootStrapperSelector waits for now. This has not been migrated yet
     // await helper.waitElementToPresent(element(bootstrapperSelector));
@@ -76,6 +77,7 @@ module.exports = {
   },
 
   sync: () => {
+    utils.deprecated('sync', 'syncNative');
     module.exports.openMenu();
     openSubmenu('sync now');
     helper.waitElementToPresent(element(by.css('.sync-status .success')));
@@ -109,6 +111,7 @@ module.exports = {
   },
 
   goToLoginPage: () => {
+    utils.deprecated('goToLoginPage', 'goToLoginPageNative');
     browser.manage().deleteAllCookies();
     browser.driver.get(utils.getLoginUrl());
   },
@@ -120,7 +123,7 @@ module.exports = {
   },
 
   goToMessages: () => {
-    utils.deprecated('goToMesssages','goToMessagesNative');
+    utils.deprecated('goToMesssages', 'goToMessagesNative');
     browser.get(utils.getBaseUrl() + 'messages/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('message-list')));
@@ -204,6 +207,7 @@ module.exports = {
   },
 
   openMenu: () => {
+    utils.deprecated('openMenu', 'openMenuNative');
     helper.waitUntilReady(messagesLink);
     helper.clickElement(hamburgerMenu);
     return helper.waitUntilReady(hamburgerMenuOptions.first());
