@@ -76,26 +76,26 @@ describe('Privacy policy', () => {
   };
 
   beforeAll(async () => {
-    await utils.saveDocsNative([privacyPolicies, PARENT_PLACE]);
+    await utils.saveDocs([privacyPolicies, PARENT_PLACE]);
   });
 
   afterEach(async () => {
-    await utils.revertDbNative(['privacy-policies', 'PARENT_PLACE']);
+    await utils.revertDb(['privacy-policies', 'PARENT_PLACE']);
   });
 
   afterAll(async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(auth.username, auth.password);
-    await utils.revertDbNative();
+    await utils.revertDb();
   });
 
   describe('for an online user', () => {
     afterEach(async () => {
-      await utils.deleteUsersNative([onlineUser]);
+      await utils.deleteUsers([onlineUser]);
     });
 
     it('should show the correct privacy policy on login', async () => {
-      await utils.createUsersNative([onlineUser]);
+      await utils.createUsers([onlineUser]);
 
       // After first login, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
@@ -104,7 +104,7 @@ describe('Privacy policy', () => {
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
-      await utils.resetBrowserNative();
+      await utils.resetBrowser();
       await commonElements.calmNative();
       await utils.closeTour();
       await helper.handleUpdateModalNative();
@@ -128,12 +128,12 @@ describe('Privacy policy', () => {
 
   describe('for a french offline user', () => {
     afterEach(async () => {
-      await utils.deleteUsersNative([offlineUser]);
+      await utils.deleteUsers([offlineUser]);
     });
 
     it('should show the correct privacy policy on login', async () => {
       const frenchPolicyText = 'Politique de confidentialité en Francais\nPlus de markup';
-      await utils.createUsersNative([offlineUser]);
+      await utils.createUsers([offlineUser]);
 
       // After first login in french, check that privacy policy was prompted to user
       await commonElements.goToLoginPageNative();
@@ -142,7 +142,7 @@ describe('Privacy policy', () => {
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
-      await utils.resetBrowserNative();
+      await utils.resetBrowser();
       await commonElements.calmNative();
       await utils.closeTour();
       await helper.handleUpdateModalNative();

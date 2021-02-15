@@ -21,13 +21,13 @@ const acceptPrivacyPolicy = async () => {
 };
 
 const updatePrivacyPolicy = async (docId, policyKey, policyText) => {
-  const policiesDoc = await utils.getDocNative(docId);
+  const policiesDoc = await utils.getDoc(docId);
   policiesDoc.privacy_policies.fr = policyKey;
   policiesDoc._attachments[policyKey] = {
     content_type: 'text/html',
     data: Buffer.from(policyText).toString('base64'),
   };
-  await utils.saveDocNative(policiesDoc);
+  await utils.saveDoc(policiesDoc);
 };
 
 module.exports = {
