@@ -183,7 +183,6 @@ module.exports = {
 
   waitForTextDisplayed: text => {
     const selectedElement = module.exports.elementByText(text);
-    console.log(selectedElement);
     return module.exports.waitUntilReadyNative(selectedElement);
   },
 
