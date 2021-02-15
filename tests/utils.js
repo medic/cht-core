@@ -215,7 +215,8 @@ const refreshToGetNewSettings = () => {
         protractor.ExpectedConditions.elementToBeClickable(
           element(by.id('contacts-tab'))
         ),
-        10000, 'Second refresh to get settings'
+        10000,
+        'Second refresh to get settings'
       );
     });
 };
