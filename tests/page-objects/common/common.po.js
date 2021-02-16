@@ -93,8 +93,8 @@ module.exports = {
   },
 
   checkUserSettings: async () => {
-    openSubmenu('user settings');
-    const optionNames = helper.getTextFromElements(settings);
+    await openSubmenu('user settings');
+    const optionNames = await helper.getTextFromElementNative(settings);
     expect(optionNames).toEqual(['Update password', 'Edit user profile']);
   },
 
