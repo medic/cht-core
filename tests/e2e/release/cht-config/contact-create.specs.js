@@ -7,14 +7,10 @@ const districtId = uuid.v4();
 const districtName = uuid.v4();
 const healtchCenterName = uuid.v4();
 
-describe('Creating contacts with standard config', function() {
-  beforeAll(done => {
-    return Promise.all([
-      utils.saveDocs(expectedDocs)
-    ])
-      .then(() => done()).catch(done.fail);
-  });
-  
+describe('Creating contacts with standard config', () => {
+  beforeAll(() => utils.saveDocs(expectedDocs));
+  afterAll(utils.revertDb);
+
   const expectedDocs = [
     {
       _id: districtId,
@@ -32,30 +28,30 @@ describe('Creating contacts with standard config', function() {
       reported_date: Date.now(),
     }
   ];
-  
-  it('should create a new district hospital', async function() {
+
+  it('should create a new district hospital', async () => {
     const expectDistrictName = 'Test District';
     await commonElements.goToPeople();
     await contactPage.addNewDistrict(expectDistrictName);
-    helper.waitUntilReady(contactPage.contactName);
-    expect(contactPage.contactName.getText()).toBe(expectDistrictName);
+    await helper.waitUntilReadyNative(contactPage.contactName);
+    expect(await contactPage.contactName.getText()).toBe(expectDistrictName);
   });
 
-  it('should create a new health center', async function(){
+  it('should create a new health center', async () => {
     await commonElements.goToPeople();
-    contactPage.selectLHSRowByText(districtName);
+    await contactPage.selectLHSRowByText(districtName);
     const hcName = 'Health Center 1';
-    contactPage.addHealthCenter(hcName);
-    helper.waitUntilReady(contactPage.contactName);
-    expect(contactPage.contactName.getText()).toBe(hcName);
+    await contactPage.addHealthCenter(hcName);
+    await helper.waitUntilReadyNative(contactPage.contactName);
+    expect(await contactPage.contactName.getText()).toBe(hcName);
   });
 
-  it('should create a new clinic', async function(){
+  it('should create a new clinic', async () => {
     await commonElements.goToPeople();
-    contactPage.selectLHSRowByText(healtchCenterName);
-    contactPage.addClinic();
-    helper.waitUntilReady(contactPage.contactName);
-    expect(contactPage.contactName.getText()).toBe('Clinic 1');
+    await contactPage.selectLHSRowByText(healtchCenterName);
+    await contactPage.addClinic();
+    await helper.waitUntilReadyNative(contactPage.contactName);
+    expect(await contactPage.contactName.getText()).toBe('Clinic 1');
   });
 });
 

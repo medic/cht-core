@@ -9,12 +9,9 @@ const healtchCenterName = uuid.v4();
 const personName = uuid.v4();
 const personId = uuid.v4();
 
-describe('Editing contacts with the CHT config', function() {
-  beforeAll(done => {
-    utils.saveDocs(expectedDocs)
-      .then(() => done())
-      .catch(done.fail);
-  });
+describe('Editing contacts with the CHT config', () => {
+  beforeAll(() => utils.saveDocs(expectedDocs));
+  afterAll(utils.revertDb);
 
   const expectedDocs = [
     {
@@ -53,12 +50,12 @@ describe('Editing contacts with the CHT config', function() {
     }
   ];
 
-  it('should remove the primary contact from the health center when the contact is deleted', async function() {
-    commonElements.goToPeople();
-    contactPage.selectLHSRowByText(healtchCenterName);
-    contactPage.deleteContactByName(expectedDocs[2].name);
-    commonElements.confirmDelete();
-    contactPage.selectLHSRowByText(healtchCenterName);
-    expect(contactPage.peopleRows.count()).toBe(0);
+  it('should remove the primary contact from the health center when the contact is deleted', async () => {
+    await commonElements.goToPeople();
+    await contactPage.selectLHSRowByText(healtchCenterName);
+    await contactPage.deleteContactByName(expectedDocs[2].name);
+    await commonElements.confirmDelete();
+    await contactPage.selectLHSRowByText(healtchCenterName);
+    expect(await contactPage.peopleRows.count()).toBe(0);
   });
 });
