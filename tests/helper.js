@@ -331,7 +331,7 @@ module.exports = {
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
-    browser.wait(() => elm.isPresent(), timeout);
+    return browser.wait(() => elm.isPresent(), timeout);
   },
 
   waitElementToPresentNative: async (elm, timeout) => {

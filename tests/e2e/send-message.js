@@ -58,12 +58,12 @@ describe('Send message', () => {
 
   beforeEach(async () => {
     DAVID_AREA.contact = { _id: DAVID._id, phone: '+447765902002' };
-    await Promise.all(CONTACTS.map(utils.saveDocNative));
+    await utils.saveDocs(CONTACTS);
   });
 
   afterEach(async () => {
-    await utils.resetBrowserNative();
-    await utils.afterEachNative(); 
+    await utils.resetBrowser();
+    await utils.afterEach(); 
   });
 
   const smsMsg = key => {
@@ -268,7 +268,7 @@ describe('Send message', () => {
         };
               
 
-        await utils.saveDocNative(doc);
+        await utils.saveDoc(doc);
         await browser.refresh();
         await addAnAdditionalMessage(RAW_PH);
       });
@@ -304,7 +304,7 @@ describe('Send message', () => {
           'sent_by': 'admin'
         };
 
-        await utils.saveDocNative(doc);
+        await utils.saveDoc(doc);
         await browser.refresh();
         addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
@@ -341,7 +341,7 @@ describe('Send message', () => {
         };
               
 
-        await utils.saveDocNative(doc);
+        await utils.saveDoc(doc);
         await browser.refresh();
         await openMessageContent(RAW_PH);
         await enterMessageText('A second message');
@@ -397,7 +397,7 @@ describe('Send message', () => {
           'sent_by': 'admin'
         };
 
-        await utils.saveDocNative(doc);
+        await utils.saveDoc(doc);
         await browser.refresh();
         await openMessageContent(ALICE._id, ALICE.name);
         await enterMessageText('A second message');
