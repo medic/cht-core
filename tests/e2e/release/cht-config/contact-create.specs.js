@@ -9,7 +9,7 @@ const healtchCenterName = uuid.v4();
 
 describe('Creating contacts with standard config', () => {
   beforeAll(() => utils.saveDocs(expectedDocs));
-  afterAll(utils.revertDb);
+  afterAll(() => utils.revertDb());
 
   const expectedDocs = [
     {

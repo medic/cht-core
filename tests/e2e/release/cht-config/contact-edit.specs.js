@@ -11,7 +11,7 @@ const personId = uuid.v4();
 
 describe('Editing contacts with the CHT config', () => {
   beforeAll(() => utils.saveDocs(expectedDocs));
-  afterAll(utils.revertDb);
+  afterAll(() => utils.revertDb());
 
   const expectedDocs = [
     {
