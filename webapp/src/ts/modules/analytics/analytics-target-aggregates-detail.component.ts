@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription, Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -27,7 +27,6 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     private route: ActivatedRoute,
     private targetAggregatesService: TargetAggregatesService,
     private translateService: TranslateService,
-    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.targetAggregatesActions = new TargetAggregatesActions(store);
     this.globalActions = new GlobalActions(store);
@@ -40,11 +39,11 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
 
   ngAfterViewInit(): void {
     this.viewInited.next(true);
-    this.changeDetectorRef.detectChanges();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.targetAggregatesActions.setSelectedTargetAggregate(null);
   }
 
   private subscribeToStore() {
@@ -67,7 +66,11 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.store.select(Selectors.getTargetAggregatesLoaded),
     ).subscribe(([params, inited, loaded]) => {
       if (loaded && inited && params) {
-        this.getAggregatesDetail(params.id);
+        setTimeout(() => {
+          // two birds with one stone
+          // both this component and the parent (analytics-target-aggregates) need to be updated
+          this.getAggregatesDetail(params.id);
+        });
       }
     });
     this.subscriptions.add(subscription);

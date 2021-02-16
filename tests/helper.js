@@ -8,7 +8,7 @@ function writeScreenShot(data, filename) {
   stream.end();
 }
 function handleUpdateModal() {
-  utils.deprecated('handleUpdateModal','handleUpdateModalNative');
+  utils.deprecated('handleUpdateModal', 'handleUpdateModalNative');
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
   }
@@ -64,6 +64,7 @@ module.exports = {
    * expectedText : text that element should include
    */
   findElementByTextAndClick: (elements, expectedText) => {
+    utils.deprecated('findElementByTextAndClick', 'findElementByTextAndClickNative');
     return browser
       .wait(
         EC.presenceOf(elements),
@@ -87,7 +88,26 @@ module.exports = {
       });
   },
 
+  findElementByTextAndClickNative: async (elements, expectedText) => {
+    await browser.wait(
+      EC.presenceOf(elements),
+      12000,
+      'Element taking too long to appear in the DOM. Giving up!'
+    );
+
+    await elements.each(async (element) => {
+      const text = await element.getText();
+
+      if (!text.toLowerCase().trim().includes(expectedText)) {
+        return;
+      }
+
+      await element.click();
+    });
+  },
+
   getTextFromElement: element => {
+    utils.deprecated('getTextFromElement', 'getTextFromElementNative');
     return browser
       .wait(
         EC.presenceOf(element),
@@ -113,6 +133,26 @@ module.exports = {
             });
           });
       });
+  },
+
+  getTextFromElementNative: async (element) => {
+    try {
+      await browser.wait(
+        EC.presenceOf(element),
+        12000,
+        `Element taking too long to appear in the DOM.Let us retry ${element.locator()}`
+      );
+      return element.getText();
+
+    } catch (error) {
+      await browser.sleep(1000);
+      await browser.wait(
+        EC.visibilityOf(element),
+        12000,
+        `Element taking too long to appear in the DOM. Giving up! ${element.locator()}`
+      );
+      return element.getText();
+    }
   },
 
   getTextFromElements: elements => {
@@ -241,8 +281,17 @@ module.exports = {
   },
 
   waitElementToBeVisible: (elm, timeout) => {
+    utils.deprecated('waitElementToBeVisible', 'waitElementToBeVisibleNative');
     timeout = timeout || 15000;
     return browser.wait(EC.visibilityOf(elm), timeout, `waitElementToBeVisible timed out looking for ${elm.locator()}`);
+  },
+
+  waitElementToBeVisibleNative: async (elm, timeout = 15000) => {
+    await browser.wait(
+      EC.visibilityOf(elm),
+      timeout,
+      `waitElementToBeVisible timed out looking for ${elm.locator()}`
+    );
   },
 
   waitElementToBeClickable: (elm, timeout) => {
