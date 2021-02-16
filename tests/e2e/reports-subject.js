@@ -274,15 +274,25 @@ describe('Reports Summary', () => {
       });
   };
 
-  beforeAll(async () => {
-    await utils.updateSettings(CONFIG, true);
-    await utils.saveDocs(CONTACTS);
+  beforeAll(async (done) => {
+    try {
+      await utils.updateSettings(CONFIG, true);
+      await utils.saveDocs(CONTACTS);
+      done();
+    } catch (error) {
+      done.fail(error);
+    }
   });
 
   afterAll(utils.afterEach);
 
-  afterEach(async () => {
-    await utils.deleteAllDocs(CONTACTS.map(contact => contact._id)); // deletes all except these docs
+  afterEach(async (done) => {
+    try {
+      await utils.deleteAllDocs(CONTACTS.map(contact => contact._id)); // deletes all except these docs
+      done();
+    } catch (e) {
+      done.fail(e);
+    }
   });
 
   describe('Displays correct LHS and RHS summary', () => {
