@@ -12,12 +12,12 @@ const hamburgerMenuOptions = element.all(by.css('#header-dropdown>li:not(.hidden
 const logoutButton = $('[ng-click=logout]');
 
 // Configuration wizard
-const wizardTitle = element(by.css('.modal-header>h2'));
+const wizardTitle = element(by.css('#guided-setup .modal-header > h2'));
 const defaultCountryCode = element(
   by.css('#select2-default-country-code-setup-container')
 );
-const skipSetup = element(by.css('.modal-footer>a:first-of-type'));
-const finishBtn = element(by.css('.modal-footer>a:nth-of-type(2)'));
+const skipSetup = element(by.css('#guided-setup .modal-footer>a:first-of-type'));
+const finishBtn = element(by.css('#guided-setup .modal-footer>a:nth-of-type(2)'));
 // Tour
 const tourBtns = element.all(by.css('.btn.tour-option'));
 // User settings
@@ -48,32 +48,35 @@ module.exports = {
     await helper.waitUntilReadyNative(medicLogo);
   },
 
-  checkAbout: () => {
-    openSubmenu('about');
-    expect(genericSubmitButton.getText()).toEqual('Reload');
+  checkAbout: async () => {
+    await openSubmenu('about');
+    expect(await genericSubmitButton.getText()).toEqual('Reload');
   },
 
   checkConfigurationWizard: async () => {
     await openSubmenu('configuration wizard');
-    await helper.waitUntilReady(skipSetup);
-    await expect(helper.getTextFromElement(wizardTitle)).toEqual('Configuration wizard');
-    await expect(helper.getTextFromElement(defaultCountryCode)).toEqual('Canada (+1)');
-    await expect(finishBtn.getText()).toEqual('Finish');
+    await helper.waitUntilReadyNative(wizardTitle);
+    await helper.waitUntilTranslated(wizardTitle);
+    const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
+    console.log('title text', wizardTitleText);
+    expect(wizardTitleText).toEqual('Configuration wizard');
+    expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
+    expect(await finishBtn.getText()).toEqual('Finish');
     await skipSetup.click();
   },
 
-  checkGuidedTour: () => {
-    openSubmenu('guided');
-    expect(tourBtns.count()).toEqual(4);
-    helper.clickElement(genericCancelBtn);
+  checkGuidedTour: async () => {
+    await openSubmenu('guided');
+    expect(await tourBtns.count()).toEqual(4);
+    await helper.clickElementNative(genericCancelBtn);
   },
 
-  checkReportBug: () => {
-    openSubmenu('report bug');
-    helper.waitElementToBeVisible(bugDescriptionField);
-    helper.waitElementToBeVisible(modalFooter);
-    expect(genericSubmitButton.getText()).toEqual('Submit');
-    genericCancelBtn.click();
+  checkReportBug: async () => {
+    await openSubmenu('report bug');
+    await helper.waitElementToBeVisibleNative(bugDescriptionField);
+    await helper.waitElementToBeVisibleNative(modalFooter);
+    expect(await genericSubmitButton.getText()).toEqual('Submit');
+    await genericCancelBtn.click();
   },
 
   sync: () => {
@@ -89,9 +92,9 @@ module.exports = {
     await helper.waitElementToPresentNative(element(by.css('.sync-status .success')));
   },
 
-  checkUserSettings: () => {
-    openSubmenu('user settings');
-    const optionNames = helper.getTextFromElements(settings);
+  checkUserSettings: async () => {
+    await openSubmenu('user settings');
+    const optionNames = await helper.getTextFromElementNative(settings);
     expect(optionNames).toEqual(['Update password', 'Edit user profile']);
   },
 
@@ -105,9 +108,9 @@ module.exports = {
     await helper.waitUntilReadyNative(medicLogo);
   },
 
-  goToConfiguration: () => {
-    helper.waitUntilReady(medicLogo);
-    browser.get(utils.getAdminBaseUrl());
+  goToConfiguration: async () => {
+    await helper.waitUntilReadyNative(medicLogo);
+    await browser.get(utils.getAdminBaseUrl());
   },
 
   goToLoginPage: () => {
@@ -189,14 +192,14 @@ module.exports = {
     }
   },
 
-  goToTasks: () => {
-    browser.get(utils.getBaseUrl() + 'tasks/');
-    helper.waitUntilReady(medicLogo);
-    helper.waitUntilReady(element(by.id('tasks-list')));
+  goToTasks: async () => {
+    await browser.get(utils.getBaseUrl() + 'tasks/');
+    await helper.waitUntilReadyNative(medicLogo);
+    await helper.waitUntilReadyNative(element(by.id('tasks-list')));
   },
 
-  isAt: list => {
-    helper.waitUntilReady(medicLogo);
+  isAt: async (list) => {
+    await helper.waitUntilReadyNative(medicLogo);
     return element(by.id(list)).isPresent();
   },
 
@@ -229,13 +232,13 @@ module.exports = {
     await deleteButton.click();
   },
 
-  expectDisplayDate:() => {
-    expect(displayTime.isPresent()).toBeTruthy();
+  expectDisplayDate: async () => {
+    expect(await displayTime.isPresent()).toBeTruthy();
   },
 
   openSubmenu: openSubmenu,
 };
 
 function openSubmenu(menuName) {
-  return helper.findElementByTextAndClick(hamburgerMenuOptions, menuName);
+  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
 }

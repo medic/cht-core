@@ -33,7 +33,6 @@ const baseConfig = {
       '**/content-security-policy.js',
       'e2e/navigation/*.js',
       '**/send-message.js',
-      '**/message_duplicates.spec.js',
       'e2e/reports-subject.js'
     ],
     // performance: 'performance/**/*.js'

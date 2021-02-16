@@ -29,7 +29,7 @@ const baseConfig = {
       'e2e/create-meta-db.js',
       'e2e/login/login.specs.js',
       'e2e/login/privacy-policy.spec.js',
-      '**/docs-by-replication-key-view.js',
+      'e2e/docs-by-replication-key-view.js',
       'e2e/submit-enketo-form.js',
       'e2e/forms/submit-z-score-form.spec.js',
       'tests/e2e/contact-summary.js',
@@ -44,6 +44,10 @@ const baseConfig = {
       'e2e/registration-by-sms.js',
       'e2e/login/db-sync-filter.spec.js',
       'e2e/target-aggregates.spec.js',
+      'e2e/infodocs.js',
+      'e2e/content-security-policy.js',
+      'e2e/transitions/message_duplicates.spec.js',
+      'e2e/navigation/*.js'
     ],
     // performance: 'performance/**/*.js'
   },
