@@ -197,5 +197,6 @@ const setupUser = () => {
       return utils.saveDoc(doc);
     })
     .then(() => utils.refreshToGetNewSettings())
-    .then(() => utils.closeTour());
+    .then(() => utils.closeTour())
+    .then(() => utils.refreshToGetNewSettings());
 };
