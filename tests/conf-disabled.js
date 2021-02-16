@@ -44,6 +44,7 @@ const baseConfig = {
       'e2e/registration-by-sms.js',
       'e2e/login/db-sync-filter.spec.js',
       'e2e/target-aggregates.spec.js',
+      'e2e/reports-subject.js'
     ],
     // performance: 'performance/**/*.js'
   },

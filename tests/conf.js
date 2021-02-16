@@ -29,7 +29,6 @@ const baseConfig = {
       '**/content-security-policy.js',
       '**/send-message.js',
       '**/message_duplicates.spec.js',
-      'e2e/reports-subject.js'
     ],
     // performance: 'performance/**/*.js'
   },
