@@ -2,10 +2,7 @@ const utils = require('../utils');
 const { expect } = require('chai');
 
 describe('Content Security Policy', () => {
-  beforeEach(done => {
-    utils.resetBrowser();
-    done();
-  });
+  beforeEach(() => utils.resetBrowser());
 
   // If this test fails, you've probably changed the inline telemetry script
   // If the change is intentional, take the hash recommended in this error and replace the telemetry hash in the
@@ -14,8 +11,10 @@ describe('Content Security Policy', () => {
     return browser.manage()
       .logs()
       .get('browser')
-      .then(function(logEntries) {
-        logEntries.forEach(entry => expect(entry.message).to.not.include('Refused to execute inline script'));
+      .then((logEntries) => {
+        logEntries.forEach(entry => {
+          expect(entry.message).to.not.include('Refused to execute inline script');
+        });
       });
   });
 });
