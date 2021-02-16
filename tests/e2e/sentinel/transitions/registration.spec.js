@@ -126,7 +126,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -165,7 +165,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
@@ -244,7 +244,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs([ doc1, doc2 ]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -385,7 +385,7 @@ describe('registration', () => {
     let newPatientId;
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs([ doc1, doc2, doc3, doc4 ]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id, doc4._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id, doc4._id]))
@@ -902,7 +902,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs([ doc1, doc2 ]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id]))
@@ -992,7 +992,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDocs([ doc1, doc2, doc3 ]))
       .then(() => sentinelUtils.waitForSentinel([doc1._id, doc2._id, doc3._id]))
       .then(() => sentinelUtils.getInfoDocs([doc1._id, doc2._id, doc3._id]))
@@ -1825,7 +1825,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDoc(doc1))
       .then(() => sentinelUtils.waitForSentinel(doc1._id))
       .then(() => sentinelUtils.getInfoDoc(doc1._id))
@@ -1943,7 +1943,7 @@ describe('registration', () => {
     };
 
     return utils
-      .updateSettings(settings, true)
+      .updateSettings(settings)
       .then(() => utils.saveDoc(doc))
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
