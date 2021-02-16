@@ -112,7 +112,8 @@ describe('Send message', () => {
   };
 
   const sendMessage = async () => {
-    await element(by.css('#send-message a.btn.submit:not(.ng-hide)')).click();
+    const elm =  element(by.css('#send-message a.btn.submit:not(.ng-hide)'));
+    await helper.clickElementNative(elm);
     await helper.waitElementToDisappear(by.css('#send-message'));
   };
 
