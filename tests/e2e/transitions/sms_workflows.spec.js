@@ -113,7 +113,7 @@ describe('SMS workflows', () => {
     await utils.saveDocs(contacts);
   });
 
-  afterEach(async () => await utils.revertDbNative(contacts.map(c => c._id)));
+  afterEach(async () => await utils.revertDb(contacts.map(c => c._id)));
 
   describe('mapping recipients', () => {
     it('should correctly map parent for patient', async () => {

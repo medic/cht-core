@@ -189,7 +189,7 @@ describe('db-sync-filter', () => {
   };
 
   const getServerRevs = async (docIds) => {
-    const result = await utils.requestOnMedicDbNative({ path: '/_all_docs', params: { keys: docIds } });
+    const result = await utils.requestOnMedicDb({ path: '/_all_docs', params: { keys: docIds } });
     return result.rows;
   };
 

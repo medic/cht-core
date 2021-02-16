@@ -57,13 +57,13 @@ describe('Bulk delete reports', () => {
 
   const savedUuids = [];
   beforeEach(async () => {
-    const results = await Promise.all(docs.map(utils.saveDocNative));
+    const results = await utils.saveDocs(docs);
     results.forEach(result => {
       savedUuids.push(result.id);
     });
   });
 
-  afterEach(async () => await utils.afterEachNative());
+  afterEach(() => utils.afterEach);
 
   it('reports', async () => {
     await commonElements.goToReportsNative();
@@ -75,7 +75,7 @@ describe('Bulk delete reports', () => {
     await reports.expandSelectionNative();
     await reports.collapseSelectionNative();
     // deselect
-    await reports.deselctReport().click();
+    await reports.deselectReport().click();
     await reports.selectAllNative();
     await reports.deselectAllNative();
     await reports.selectSeveralReportsNative(savedUuids);
