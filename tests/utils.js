@@ -196,12 +196,21 @@ const deleteAll = (except = []) => {
     });
 };
 
+const waitForLoaderToDisappear = () => {
+  const timeout = 15000;
+  return browser.wait(() => {
+    return element(by.css('.bootstrap-layer .loader'))
+      .isDisplayed()
+      .then(presenceOfElement => !presenceOfElement);
+  }, timeout);
+};
+
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
     .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
-    .then(() => dialog.click())
+    .then(() => Promise.all([dialog.click(), waitForLoaderToDisappear()]))
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
@@ -707,9 +716,9 @@ module.exports = {
   closeReloadModal: closeReloadModal,
 
   closeTour: async () => {
-    await element.all(by.css('.modal-dialog a.cancel')).each(async elm => {
-      await elm.click();
-    });
+    const closeButton = element(by.css('#tour-select a.btn.cancel'));
+    await browser.wait(() => closeButton.isPresent(), 5000);
+    await closeButton.click();
   },
 
   waitForDocRev: waitForDocRev,
