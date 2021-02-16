@@ -710,9 +710,9 @@ module.exports = {
   closeReloadModal: closeReloadModal,
 
   closeTour: async () => {
-    await element.all(by.css('.modal-dialog a.cancel')).each(async elm => {
-      await elm.click();
-    });
+    const closeButton = element(by.css('#tour-select a.btn.cancel'));
+    await browser.wait(() => closeButton.isPresent(), 5000);
+    await closeButton.click();
   },
 
   waitForDocRev: waitForDocRev,
