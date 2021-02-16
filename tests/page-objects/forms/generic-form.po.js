@@ -22,7 +22,7 @@ module.exports = {
     const editFormBtn = element.all(
       by.css('[href^="#/reports/edit"]>.fa-pencil')
     );
-    await helper.waitUntilReady(editFormBtn);
+    await helper.waitUntilReadyNative(editFormBtn);
     await editFormBtn.click();
   },
 
@@ -88,7 +88,7 @@ module.exports = {
 
   reportApproveNative: async () => {
     const checkBtn = element(by.css('.fa-check'));
-    await helper.waitUntilReady(checkBtn);
+    await helper.waitUntilReadyNative(checkBtn);
     await checkBtn.click();
   },
 
