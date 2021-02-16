@@ -343,10 +343,10 @@ describe('Send message', () => {
         await utils.saveDocNative(doc);
         await browser.refresh();
         await openMessageContent(RAW_PH);
-        await enterMessageText('A third message');
+        await enterMessageText('A second message');
 
         await helper.clickElementNative(element(by.css('.message-actions .btn.btn-link')));
-    
+        await helper.waitUntilReady(element(by.id('send-message')));
         expect(await element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(
           await element.all(by.css('li.select2-selection__choice')).count()
@@ -357,12 +357,12 @@ describe('Send message', () => {
         await enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
         await sendMessage();
         await openMessageContent(RAW_PH);
-        expect(await element.all(by.css('#message-content li')).count()).toBe(3);
+        expect(await element.all(by.css('#message-content li')).count()).toBe(2);
 
-        await lastMessageIs('A third message');
+        await lastMessageIs('A second message');
         await openMessageContent(ANOTHER_RAW_PH);
         expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-        await lastMessageIs('A third message');
+        await lastMessageIs('A second message');
       });
       it('For existing contacts', async () => {
         const doc = {
@@ -399,9 +399,10 @@ describe('Send message', () => {
         await utils.saveDocNative(doc);
         await browser.refresh();
         await openMessageContent(ALICE._id, ALICE.name);
-        await enterMessageText('A third message');
+        await enterMessageText('A second message');
 
         await helper.clickElementNative(element(by.css('.message-actions .btn.btn-link')));
+        await helper.waitUntilReady(element(by.id('send-message')));
         expect(await element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(
           await element.all(by.css('li.select2-selection__choice')).count()
@@ -412,13 +413,13 @@ describe('Send message', () => {
         await enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
         await sendMessage();
         await openMessageContent(ALICE._id, ALICE.name);
-        expect(await element.all(by.css('#message-content li')).count()).toBe(3);
+        expect(await element.all(by.css('#message-content li')).count()).toBe(2);
         expect(
           await element
             .all(by.css('#message-content li div.data>p>span'))
             .last()
             .getText()
-        ).toBe('A third message');
+        ).toBe('A second message');
         await openMessageContent(DAVID._id, DAVID.name);
         expect(await element.all(by.css('#message-content li')).count()).toBe(1);
         expect(
@@ -426,7 +427,7 @@ describe('Send message', () => {
             .all(by.css('#message-content li div.data>p>span'))
             .last()
             .getText()
-        ).toBe('A third message');
+        ).toBe('A second message');
       });
     });
   });
