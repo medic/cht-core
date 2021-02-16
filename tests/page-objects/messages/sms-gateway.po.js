@@ -40,7 +40,7 @@ module.exports = {
 
   messageHeading: (index) => messagePo.messageByIndex(index).element(by.css('.heading h4')),
   messageSummary: (index) => messagePo.messageByIndex(index).element(by.css('.summary p')),
-  messageDetailsHeader: () => element(by.css('#message-header .name')),
+  
   incomingData,
   messageDetailStatus: () =>  element(by.css('#message-content li.incoming:first-child .data .state.received')),
 

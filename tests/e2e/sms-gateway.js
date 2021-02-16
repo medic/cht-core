@@ -1,6 +1,7 @@
 const utils = require('../utils');
 const helper = require('../helper');
 const smsGatewayPo = require('../page-objects/messages/sms-gateway.po');
+const messagesPo = require('../page-objects/messages/messages.po');
 
 const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
 const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
@@ -165,7 +166,7 @@ describe('sms-gateway api', () => {
 
       // RHS
       await smsGatewayPo.showMessageDetails();
-      const messageHeader = await helper.getTextFromElement(smsGatewayPo.messageDetailsHeader());
+      const messageHeader = await helper.getTextFromElement(messagesPo.messageDetailsHeader());
       expect(messageHeader).toBe(phone);
       const messageText = await helper.getTextFromElement(smsGatewayPo.incomingData);
       expect(messageText).toBe(msg);
