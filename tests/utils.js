@@ -196,21 +196,12 @@ const deleteAll = (except = []) => {
     });
 };
 
-const waitForLoaderToDisappear = () => {
-  const timeout = 15000;
-  return browser.wait(() => {
-    return element(by.css('.bootstrap-layer .loader'))
-      .isDisplayed()
-      .then(presenceOfElement => !presenceOfElement);
-  }, timeout);
-};
-
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
   const dialog = element(by.css('#update-available .submit:not(.disabled)'));
   return browser
     .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
-    .then(() => Promise.all([dialog.click(), waitForLoaderToDisappear()]))
+    .then(() => dialog.click())
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
