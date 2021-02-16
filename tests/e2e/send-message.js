@@ -70,93 +70,22 @@ describe('Send message', () => {
     return `Hello ${key} this is a test SMS`;
   };
 
-  const openSendMessageModal = async () => {
-    await helper.clickElementNative(messagesPo.sendMessage());
-    await helper.waitElementToPresent(messagesPo.sendMessageModal(), 5000);
-    await helper.waitElementToBeVisible(messagesPo.sendMessageModal(), 5000);
-  };
-
-  const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
-    await messagesPo.messageRecipientSelect().sendKeys(searchText);
-    await browser
-      .wait(async () => await element.all(by.css('.select2-results__option')).count() === totalExpectedResults);
-    const elm = element(by.cssContainingText('.select2-results__option' + entrySelector , entryText));
-    await helper.waitUntilReadyNative(elm);
-    return elm;
-  };
-
-  const enterCheckAndSelect = async (
-    searchText,
-    totalExpectedResults,
-    entrySelector,
-    entryText,
-    existingEntryCount=0
-  ) => {
-    const selectionCount = await element.all(by.css('li.select2-selection__choice')).count();
-    expect(selectionCount).toBe(existingEntryCount);
-
-    const entry = await searchSelect2(
-      searchText,
-      totalExpectedResults,
-      entrySelector,
-      entryText
-    );
-    await entry.click();
-
-    return browser.wait(() => {
-      return element
-        .all(by.css('li.select2-selection__choice'))
-        .count()
-        .then(utils.countOf(existingEntryCount + 1));
-    }, 2000);
-  };
-
-  const sendMessage = async () => {
-    const elm =  element(by.css('#send-message a.btn.submit:not(.ng-hide)'));
-    await helper.clickElementNative(elm);
-    await helper.waitElementToDisappear(by.css('#send-message'));
-  };
-
-  const clickLhsEntry = async (entryId, entryName) => {
-    entryName = entryName || entryId;
-
-    const liElement = await messagesPo.messageInList(entryId);
-    await helper.waitUntilReadyNative(liElement);
-    expect(await element.all(liElement.locator()).count()).toBe(1);
-    await liElement.click();
-
-    return browser.wait(() => {
-      const el = element(by.css('#message-header .name'));
-      if (helper.waitUntilReadyNative(el)) {
-        return helper.getTextFromElement(el).then(text => {
-          return text === entryName;
-        });
-      }
-    }, 12000);
-  };
-
-  const lastMessageIs = async message => {
-    const last = await element.all(by.css('#message-content li div.data>p>span')).last();
-    expect(await helper.getTextFromElement(last)).toBe(message);
-  };
-
   const contactNameSelector = ' .sender .name';
   const everyoneAtText = name => `${name} - all  contacts`;
-
 
   describe('Send message modal', () => {
     it('can send messages to raw phone numbers', async () => {
       await common.goToMessagesNative();
       expect(await messagesPo.messageInList(RAW_PH).isPresent()).toBeFalsy();
 
-      await openSendMessageModal();
-      await enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
+      await messagesPo.openSendMessageModal();
+      await messagesPo.enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
       await messagesPo.messageText(smsMsg('raw'));
-      await sendMessage();
-      await clickLhsEntry(RAW_PH);
+      await messagesPo.sendMessage();
+      await messagesPo.clickLhsEntry(RAW_PH);
 
       expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-      await lastMessageIs(smsMsg('raw'));
+      await messagesPo.lastMessageIs(smsMsg('raw'));
     });
 
     it('can send messages to contacts with phone numbers', async () => {
@@ -164,14 +93,14 @@ describe('Send message', () => {
 
       expect(await messagesPo.messageInList(ALICE._id).isPresent()).toBeFalsy();
 
-      await openSendMessageModal();
-      await enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
+      await messagesPo.openSendMessageModal();
+      await messagesPo.enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
       await messagesPo.messageText(smsMsg('contact'));
-      await sendMessage();
-      await clickLhsEntry(ALICE._id,ALICE.name);
+      await messagesPo.sendMessage();
+      await messagesPo.clickLhsEntry(ALICE._id,ALICE.name);
 
       expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-      await lastMessageIs(smsMsg('contact'));
+      await messagesPo.lastMessageIs(smsMsg('contact'));
     });
 
     it('can send messages to contacts under everyone at with phone numbers', async () => {
@@ -181,23 +110,23 @@ describe('Send message', () => {
       expect(await messagesPo.messageInList(JAROL.phone).isPresent()).toBeFalsy();
       expect(await messagesPo.messageInList(DAVID.phone).isPresent()).toBeFalsy();
 
-      await openSendMessageModal();
-      await enterCheckAndSelect(
+      await messagesPo.openSendMessageModal();
+      await messagesPo.enterCheckAndSelect(
         BOB_PLACE.name,
         2,
         contactNameSelector,
         everyoneAtText(BOB_PLACE.name)
       );
       await messagesPo.messageText(smsMsg('everyoneAt'));
-      await sendMessage();
+      await messagesPo.sendMessage();
 
       expect(element.all(messagesPo.messageInList(CAROL._id).locator()).count()).toBe(0);
       expect(element.all(messagesPo.messageInList(JAROL._id).locator()).count()).toBe(0);
       expect(element.all(messagesPo.messageInList(DAVID._id).locator()).count()).toBe(0);
-      await clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
+      await messagesPo.clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
 
       expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-      await lastMessageIs(smsMsg('everyoneAt'));
+      await messagesPo.lastMessageIs(smsMsg('everyoneAt'));
     });
   });
 
@@ -207,7 +136,7 @@ describe('Send message', () => {
       await common.goToMessagesNative();
       await helper.waitUntilReadyNative(messagesPo.messageInList(id));
       await helper.waitElementToPresentNative(messagesPo.messageInList(id), 2000);
-      await clickLhsEntry(id, name);
+      await messagesPo.clickLhsEntry(id, name);
     };
     const enterMessageText = async message => {
       await element(by.css('#message-footer textarea')).click();
@@ -234,7 +163,7 @@ describe('Send message', () => {
         }, 2000);
 
         expect(await  element.all(by.css('#message-content li')).count()).toBe(2);
-        await lastMessageIs('Additional Message');
+        await messagesPo.lastMessageIs('Additional Message');
       };
 
       it('For raw contacts', async () => {
@@ -355,15 +284,15 @@ describe('Send message', () => {
         expect(
           await element(by.css('#send-message select>option')).getAttribute('value')
         ).toBe(RAW_PH);
-        await enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
-        await sendMessage();
+        await messagesPo.enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
+        await messagesPo.sendMessage();
         await openMessageContent(RAW_PH);
         expect(await element.all(by.css('#message-content li')).count()).toBe(2);
 
-        await lastMessageIs('A second message');
+        await messagesPo.lastMessageIs('A second message');
         await openMessageContent(ANOTHER_RAW_PH);
         expect(await element.all(by.css('#message-content li')).count()).toBe(1);
-        await lastMessageIs('A second message');
+        await messagesPo.lastMessageIs('A second message');
       });
       it('For existing contacts', async () => {
         const doc = {
@@ -411,8 +340,8 @@ describe('Send message', () => {
         expect(
           await element(by.css('#send-message select>option')).getAttribute('value')
         ).toBe(ALICE._id);
-        await enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
-        await sendMessage();
+        await messagesPo.enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
+        await messagesPo.sendMessage();
         await openMessageContent(ALICE._id, ALICE.name);
         expect(await element.all(by.css('#message-content li')).count()).toBe(2);
         expect(
