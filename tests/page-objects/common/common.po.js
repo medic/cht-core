@@ -100,9 +100,9 @@ module.exports = {
     medicLogo.click();
   },
 
-  goToAnalytics: () => {
-    analyticsTab.click();
-    helper.waitUntilReady(medicLogo);
+  goToAnalytics: async () => {
+    await analyticsTab.click();
+    await helper.waitUntilReadyNative(medicLogo);
   },
 
   goToConfiguration: () => {

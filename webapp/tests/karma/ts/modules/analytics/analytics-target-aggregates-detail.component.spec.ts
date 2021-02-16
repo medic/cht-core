@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -83,10 +83,11 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  it('should set correct scope when no item is selected', () => {
+  it('should set correct scope when no item is selected', fakeAsync(() => {
     sinon.reset();
 
     route.params.next({});
+    tick();
 
     expect(globalActions.setShowContent.callCount).to.equal(1);
     expect(globalActions.setShowContent.args[0][0]).to.equal(false);
@@ -95,14 +96,15 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     expect(targetAggregatesService.getAggregateDetails.callCount).to.equal(0);
     expect(globalActions.setTitle.callCount).to.equal(1);
     expect(globalActions.setTitle.args[0][0]).to.equal(undefined);
-  });
+  }));
 
-  it('should set error when aggregate is not found', () => {
+  it('should set error when aggregate is not found', fakeAsync(() => {
     const consoleErrorMock = sinon.stub(console, 'error');
     sinon.reset();
     targetAggregatesService.getAggregateDetails.returns(false);
 
     route.params.next({ id: 'target' });
+    tick();
 
     expect(targetAggregatesService.getAggregateDetails.callCount).to.equal(1);
     expect(targetAggregatesService.getAggregateDetails.args[0]).to.deep.equal(['target', [ 'aggregates' ]]);
@@ -113,9 +115,9 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     expect(error.translationKey).to.deep.equal('analytics.target.aggregates.error.not.found');
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error selecting target: target with id target not found');
-  });
+  }));
 
-  it('should set title', () => {
+  it('should set title', fakeAsync(() => {
     sinon.reset();
     targetAggregatesService.getAggregateDetails.returns({
       an: 'aggregate',
@@ -125,6 +127,7 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     translateService.instant = sinon.stub().returns('target aggregate');
 
     route.params.next({ id: 'target' });
+    tick();
 
     expect(targetAggregatesService.getAggregateDetails.callCount).to.equal(1);
     expect(targetAggregatesService.getAggregateDetails.args[0]).to.deep.equal(['target', [ 'aggregates' ]]);
@@ -140,5 +143,5 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     });
     expect(translateService.instant.callCount).to.equal(1);
     expect(translateService.instant.args[0]).to.deep.equal(['analytics.target.aggregates']);
-  });
+  }));
 });

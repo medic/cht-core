@@ -1,4 +1,4 @@
-import { Attribute, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
   selector: '<mm-content-row>',
@@ -7,8 +7,7 @@ import { Attribute, ChangeDetectionStrategy, Component, Input } from '@angular/c
 })
 export class ContentRowListItemComponent {
   // string: (required) the _id of the doc
-  @Attribute('data-record-id') id;
-
+  @Input() id;
   // string: (optional) the name of the route to link to
   @Input() route;
   // boolean: (optional) whether to mark this row read

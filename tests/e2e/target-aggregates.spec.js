@@ -6,7 +6,7 @@ const helper = require('../helper');
 const moment = require('moment');
 const uuid = require('uuid');
 const auth = require('../auth')();
-const _ = require('underscore');
+const _ = require('lodash');
 
 const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
 const randomNumber = (max) => Math.floor(Math.random() * max);
@@ -18,19 +18,19 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
  * @param {string} targets[].title
  * @param {string} targets[].counter
  */
-const expectTargets = (targets) => {
-  expect(element.all(by.css(`#target-aggregates-list li`)).count()).toEqual(targets.length);
-  targets.forEach(target => {
+const expectTargets = async (targets) => {
+  expect(await element.all(by.css(`#target-aggregates-list li`)).count()).toEqual(targets.length);
+  for (const target of targets) {
     const lineItem = element(by.css(`#target-aggregates-list li[data-record-id=${target.id}]`));
-    expect(lineItem.isPresent()).toBe(true);
-    expect(lineItem.element(by.css('h4')).getText()).toEqual(target.title);
-    expect(lineItem.element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
-  });
+    expect(await lineItem.isPresent()).toBe(true);
+    expect(await lineItem.element(by.css('h4')).getText()).toEqual(target.title);
+    expect(await lineItem.element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
+  }
 };
 
-const openTargetDetails = (targetID) => {
-  element(by.css(`#target-aggregates-list li[data-record-id=${targetID}] a`)).click();
-  helper.waitElementToPresent(element(by.css('.target-detail.card h2')));
+const openTargetDetails = async (targetID) => {
+  await element(by.css(`#target-aggregates-list li[data-record-id=${targetID}] a`)).click();
+  await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
 };
 
 /**
@@ -40,9 +40,9 @@ const openTargetDetails = (targetID) => {
  * @param {string} target.title
  * @param {string} target.counter
  */
-const expectTargetDetails = (target) => {
-  expect(element(by.css('.target-detail h2')).getText()).toEqual(target.title);
-  expect(element(by.css('.target-detail .cell p')).getText()).toEqual(target.counter);
+const expectTargetDetails = async (target) => {
+  expect(await element(by.css('.target-detail h2')).getText()).toEqual(target.title);
+  expect(await element(by.css('.target-detail .cell p')).getText()).toEqual(target.counter);
 };
 
 /**
@@ -56,56 +56,51 @@ const expectTargetDetails = (target) => {
  * @param {boolean} target.progressBar
  * @param {string} target.goal
  */
-const expectContacts = (contacts, target) => {
+const expectContacts = async (contacts, target) => {
   contacts = contacts.sort((a, b) => a.name > b.name ? 1 : -1);
-  expect(element.all(by.css(`.aggregate-detail li`)).count()).toEqual(contacts.length);
-  contacts.forEach((contact, idx) => {
+  expect(await element.all(by.css(`.aggregate-detail li`)).count()).toEqual(contacts.length);
+  // eslint-disable-next-line guard-for-in
+  for (const idx in contacts) {
+    const contact = contacts[idx];
     const lineItem = element.all(by.css(`.aggregate-detail li`)).get(idx);
-    expect(lineItem.getAttribute('data-record-id')).toEqual(contact._id);
-    expect(lineItem.element(by.css('h4')).getText()).toEqual(contact.name);
-    expect(lineItem.element(by.css('.detail')).getText()).toEqual(contact.counter);
+    expect(await lineItem.getAttribute('data-record-id')).toEqual(contact._id);
+    expect(await lineItem.element(by.css('h4')).getText()).toEqual(contact.name);
+    expect(await lineItem.element(by.css('.detail')).getText()).toEqual(contact.counter);
 
     if (!target.progressBar) {
-      expect(lineItem.all(by.css('.progress-bar')).count()).toEqual(0);
+      expect(await lineItem.all(by.css('.progress-bar')).count()).toEqual(0);
     } else {
       if (!contact.progress) {
-        expect(lineItem.element(by.css('.progress-bar span')).isDisplayed()).toEqual(false);
+        expect(await lineItem.element(by.css('.progress-bar span')).isDisplayed()).toEqual(false);
       } else {
-        expect(lineItem.element(by.css('.progress-bar span')).getText()).toEqual(contact.progress);
+        expect(await lineItem.element(by.css('.progress-bar span')).getText()).toEqual(contact.progress);
       }
     }
 
     if (!target.goal) {
-      expect(lineItem.all(by.css('.goal')).count()).toEqual(0);
+      expect(await lineItem.all(by.css('.goal')).count()).toEqual(0);
     } else {
-      lineItem.all(by.css('.goal')).first().getText()
-        .then(text => expect(text.indexOf(target.goal)).not.toEqual(-1))
-        .catch(err => {
-          throw err;
-        });
+      const text = await lineItem.all(by.css('.goal')).first().getText();
+      expect(text.indexOf(target.goal)).not.toEqual(-1);
     }
-  });
+  }
 };
 
-const updateSettings = (targetsConfig, user, contactSummary) => {
-  browser.wait(() => {
-    return utils.getSettings()
-      .then(settings => {
-        const tasks = settings.tasks;
-        tasks.targets.items = targetsConfig;
-        const permissions = settings.permissions;
-        permissions.can_aggregate_targets = user.roles;
-        return utils.updateSettings({ tasks, permissions, contact_summary: contactSummary });
-      })
-      .then(() => true);
-  });
+const updateSettings = async (targetsConfig, user, contactSummary) => {
+  const settings = await utils.getSettings();
+  const tasks = settings.tasks;
+  tasks.targets.items = targetsConfig;
+  const permissions = settings.permissions;
+  permissions.can_aggregate_targets = user.roles;
+  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary });
+  await helper.handleUpdateModalNative();
 };
 
-const clickOnTargetAggregateListItem = (contactId) => {
-  element(by.css(`.aggregate-detail li[data-record-id="${contactId}"] a`)).click();
-  helper.waitUntilReady(element(by.id('contacts-list')));
+const clickOnTargetAggregateListItem = async (contactId) => {
+  await element(by.css(`.aggregate-detail li[data-record-id="${contactId}"] a`)).click();
+  await helper.waitUntilReadyNative(element(by.id('contacts-list')));
   // wait until contact-summary is loaded
-  helper.waitUntilReady(element(by.css('.content-pane .meta > div > .card .action-header h3')));
+  await helper.waitUntilReadyNative(element(by.css('.content-pane .meta > div > .card .action-header h3')));
 };
 
 describe('Target aggregates', () => {
@@ -114,33 +109,34 @@ describe('Target aggregates', () => {
 
     afterEach(() => utils.revertDb());
 
-    it('should display an empty list when there are no aggregates', () => {
-      commonElements.goToAnalytics();
-      analytics.expectModulesToBeAvailable(['analytics.targets', 'analytics.target-aggregates.detail']);
+    it('should display an empty list when there are no aggregates', async () => {
+      await commonElements.calmNative();
+      await commonElements.goToAnalytics();
+      await analytics.expectModulesToBeAvailable([
+        '#/analytics/targets',
+        '#/analytics/target-aggregates'
+      ]);
 
-      analytics.goToTargetAggregates(true);
-      expect(element.all(by.css('#target-aggregates-list ul li')).count()).toEqual(0);
-      expect(element(by.css('#target-aggregates-list .loading-status')).isDisplayed()).toEqual(true);
+      await analytics.goToTargetAggregates(true);
+      expect(await element.all(by.css('#target-aggregates-list ul li')).count()).toEqual(0);
+      expect(await element(by.css('#target-aggregates-list .loading-status')).isDisplayed()).toEqual(true);
       expect(
-        element(by.css('.content-pane .item-content.empty-selection:not(.selection-error)')).isDisplayed()
+        await element(by.css('.content-pane .item-content.empty-selection:not(.selection-error)')).isDisplayed()
       ).toEqual(true);
     });
 
-    it('should display an error when there are aggregates but no home place', () => {
-      browser.wait(() => {
-        return utils.getSettings()
-          .then(settings => {
-            const tasks = settings.tasks;
-            tasks.targets.items[0].aggregate = true;
-            return utils.updateSettings({ tasks });
-          })
-          .then(() => true);
-      });
-      commonElements.goToAnalytics();
-      analytics.goToTargetAggregates(true);
-      expect(element.all(by.css('#target-aggregates-list ul li')).count()).toEqual(0);
+    it('should display an error when there are aggregates but no home place', async () => {
+      const settings = await utils.getSettings();
+      const tasks = settings.tasks;
+      tasks.targets.items[0].aggregate = true;
+      await utils.updateSettings({ tasks });
+      await helper.handleUpdateModalNative();
+
+      await commonElements.goToAnalytics();
+      await analytics.goToTargetAggregates(true);
+      expect(await element.all(by.css('#target-aggregates-list ul li')).count()).toEqual(0);
       expect(
-        element(by.css('.content-pane .item-content.empty-selection.selection-error')).isDisplayed()
+        await element(by.css('.content-pane .item-content.empty-selection.selection-error')).isDisplayed()
       ).toEqual(true);
     });
   });
@@ -197,7 +193,7 @@ describe('Target aggregates', () => {
       return [place, contact];
     };
 
-    const docs = _.flatten([
+    const docs = _.flattenDeep([
       Array.from({ length: 5 }).map((e, i) => genPlace(parentPlace, i)),
       Array.from({ length: 5 }).map(() => genPlace(otherParentPlace)),
     ]);
@@ -211,22 +207,19 @@ describe('Target aggregates', () => {
       moment().date(1).add(1, 'month').format('YYYY-MM'),
     ];
 
-    beforeAll(() => {
-      return utils
-        .saveDocs([parentPlace, otherParentPlace])
-        .then(() => utils.saveDocs(docs))
-        .then(() => utils.createUsers([ user ]))
-        .then(() => {
-          utils.resetBrowser();
-          commonElements.goToLoginPage();
-          loginPage.login(user.username, user.password);
-          commonElements.calm();
-        });
+    beforeAll(async () => {
+      await utils.saveDocs([parentPlace, otherParentPlace]);
+      await utils.saveDocs(docs);
+      await utils.createUsers([ user ]);
+      await utils.resetBrowser();
+      await commonElements.goToLoginPageNative();
+      await loginPage.loginNative(user.username, user.password);
+      await commonElements.calmNative();
     });
 
-    afterAll(() => {
-      commonElements.goToLoginPage();
-      loginPage.login(auth.username, auth.password);
+    afterAll(async () => {
+      await commonElements.goToLoginPageNative();
+      await loginPage.loginNative(auth.username, auth.password);
     });
 
     const DOCS_TO_KEEP = [
@@ -240,7 +233,7 @@ describe('Target aggregates', () => {
 
     afterEach(() => utils.revertDb(DOCS_TO_KEEP));
 
-    it('should display no data when no targets are uploaded', () => {
+    it('should display no data when no targets are uploaded', async () => {
       const targetsConfig = [
         { id: 'not_aggregate', type: 'count', title: genTitle('my task') },
         { id: 'count_no_goal', type: 'count', title: genTitle('count no goal'), aggregate: true },
@@ -251,10 +244,10 @@ describe('Target aggregates', () => {
         { id: 'also_also_not_aggregate', type: 'count', title: genTitle('my task'), aggregate: false },
       ];
 
-      updateSettings(targetsConfig, user);
+      await updateSettings(targetsConfig, user);
 
-      commonElements.goToAnalytics();
-      analytics.goToTargetAggregates(true);
+      await commonElements.goToAnalytics();
+      await analytics.goToTargetAggregates(true);
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', counter: '0', progressBar: false, goal: false },
@@ -266,16 +259,16 @@ describe('Target aggregates', () => {
         .filter(doc => doc.type === 'person' && doc.parent.parent._id === parentPlace._id)
         .map(contact => ({ _id: contact._id, name: contact.name, counter: 'No data', progress: 0 }));
 
-      expectTargets(expectedTargets);
+      await expectTargets(expectedTargets);
 
-      expectedTargets.forEach(target => {
-        openTargetDetails(target.id);
-        expectTargetDetails(target);
-        expectContacts(expectedContacts, target);
-      });
+      for (const target of expectedTargets) {
+        await openTargetDetails(target.id);
+        await expectTargetDetails(target);
+        await expectContacts(expectedContacts, target);
+      }
     });
 
-    it('should display correct data', () => {
+    it('should display correct data', async () => {
       const targetsConfig = [
         { id: 'count_no_goal', type: 'count', title: genTitle('count no goal'), aggregate: true },
         { id: 'count_with_goal', type: 'count', title: genTitle('count with goal'), goal: 20, aggregate: true },
@@ -339,13 +332,13 @@ describe('Target aggregates', () => {
             owner: contact._id,
             user: 'irrelevant',
           }));
-        }), true);
+        }));
 
-      browser.wait(() => utils.saveDocs(targetDocs).then(() => true));
-      updateSettings(targetsConfig, user);
+      await utils.saveDocs(targetDocs);
+      await updateSettings(targetsConfig, user);
 
-      commonElements.goToAnalytics();
-      analytics.goToTargetAggregates(true);
+      await commonElements.goToAnalytics();
+      await analytics.goToTargetAggregates(true);
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '27' },
@@ -357,28 +350,28 @@ describe('Target aggregates', () => {
 
       const contacts = docs.filter(doc => doc.type === 'person' && doc.parent.parent._id === parentPlace._id);
 
-      expectTargets(expectedTargets);
-      expectedTargets.forEach(target => {
-        openTargetDetails(target.id);
-        expectTargetDetails(target);
+      await expectTargets(expectedTargets);
+      for (const target of expectedTargets) {
+        await openTargetDetails(target.id);
+        await expectTargetDetails(target);
         const expectedContacts = contacts.map(contact => ({
           _id: contact._id,
           name: contact.name,
           counter: targetValuesByContact[contact.name][target.id].counter,
           progress: targetValuesByContact[contact.name][target.id].progress,
         }));
-        expectContacts(expectedContacts, target);
-      });
+        await expectContacts(expectedContacts, target);
+      }
 
       // refreshing with an open target works correctly
       const target = expectedTargets[2];
-      openTargetDetails(target.id);
-      browser.refresh();
-      helper.waitElementToPresent(element(by.css('.target-detail.card h2')));
-      expectTargetDetails(target);
+      await openTargetDetails(target.id);
+      await browser.refresh();
+      await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
+      await expectTargetDetails(target);
     });
 
-    it('should redirect to contacts detail when clicking list item and display contact summary target card', () => {
+    it('should route to contact-detail on list item click and display contact summary target card', async () => {
       const targetsConfig = [
         { id: 'a_target', type: 'count', title: genTitle('what a target!'), aggregate: true },
         { id: 'b_target', type: 'percent', title: genTitle('the most target'), aggregate: true },
@@ -442,49 +435,49 @@ describe('Target aggregates', () => {
         ...targetsForContact(prometheus),
       ];
 
-      browser.wait(() => utils.saveDocs(targetDocs).then(() => true));
-      updateSettings(targetsConfig, user, contactSummaryScript);
+      await utils.saveDocs(targetDocs);
+      await updateSettings(targetsConfig, user, contactSummaryScript);
 
-      commonElements.goToAnalytics();
-      analytics.goToTargetAggregates(true);
+      await commonElements.goToAnalytics();
+      await analytics.goToTargetAggregates(true);
 
       const expectedTargets = [
         { id: 'a_target', title: 'what a target!', progressBar: false, counter: '58' },
         { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
       ];
 
-      expectTargets(expectedTargets);
-      openTargetDetails(expectedTargets[0].id);
-      clickOnTargetAggregateListItem(clarissa._id);
+      await expectTargets(expectedTargets);
+      await openTargetDetails(expectedTargets[0].id);
+      await clickOnTargetAggregateListItem(clarissa._id);
 
-      expect(element(by.css('.content-pane .meta h2')).getText()).toEqual('Clarissa');
+      expect(await element(by.css('.content-pane .meta h2')).getText()).toEqual('Clarissa');
       // assert that the activity card exists and has the right fields.
-      expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
+      expect(await element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
         .toBe('Activity this month');
-      expect(element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
+      expect(await element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
         .toEqual(['Last updated', 'what a target!', 'the most target']);
-      expect(element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
+      expect(await element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
         .toEqual(['yesterday Clarissa', '40', '50%']);
 
-      browser.navigate().back();
-      helper.waitElementToPresent(element(by.css('.target-detail.card h2')));
-      expectTargetDetails(expectedTargets[0]);
+      await browser.navigate().back();
+      await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
+      await expectTargetDetails(expectedTargets[0]);
 
-      openTargetDetails(expectedTargets[1].id);
-      clickOnTargetAggregateListItem(prometheus._id);
+      await openTargetDetails(expectedTargets[1].id);
+      await clickOnTargetAggregateListItem(prometheus._id);
 
-      expect(element(by.css('.content-pane .meta h2')).getText()).toEqual('Prometheus');
+      expect(await element(by.css('.content-pane .meta h2')).getText()).toEqual('Prometheus');
       // assert that the activity card exists and has the right fields.
-      expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
+      expect(await element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
         .toBe('Activity this month');
-      expect(element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
+      expect(await element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
         .toEqual(['Last updated', 'what a target!', 'the most target']);
-      expect(element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
+      expect(await element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
         .toEqual(['yesterday Prometheus', '18', '15%']);
 
-      browser.navigate().back();
-      helper.waitElementToPresent(element(by.css('.target-detail.card h2')));
-      expectTargetDetails(expectedTargets[1]);
+      await browser.navigate().back();
+      await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
+      await expectTargetDetails(expectedTargets[1]);
     });
   });
 });
