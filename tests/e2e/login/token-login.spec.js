@@ -48,7 +48,7 @@ const expireToken = (user) => {
   });
 };
 
-describe('token login', () => {
+describe('Token login', () => {
   beforeEach(async () => {
     user = {
       username: 'testusername',
@@ -59,14 +59,15 @@ describe('token login', () => {
     };
     await browser.manage().deleteAllCookies();
   });
+
   afterEach(async () => {
     await utils.deleteUsers([user]);
     await utils.revertDb([], []);
   });
 
   afterAll(async () => {
-    await commonElements.goToLoginPage();
-    await loginPage.login(auth.username, auth.password);
+    await commonElements.goToLoginPageNative();
+    await loginPage.loginNative(auth.username, auth.password);
     await utils.revertDb();
   });
 
