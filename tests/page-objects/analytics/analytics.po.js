@@ -1,20 +1,20 @@
 const helper = require('../../helper');
 
 module.exports = {
-  expectModulesToBeAvailable: (modules) => {
-    helper.waitUntilReady(element(by.css('.mm-navigation-menu')));
-    modules.forEach(module => {
-      expect(browser.isElementPresent(by.css(`.mm-navigation-menu li a[ui-sref="${module}"]`))).toBeTruthy();
-    });
+  expectModulesToBeAvailable: async (modules) => {
+    await helper.waitUntilReadyNative(element(by.css('.mm-navigation-menu')));
+    for (const module of modules) {
+      expect(await browser.isElementPresent(by.css(`.mm-navigation-menu li a[href="${module}"]`))).toBeTruthy();
+    }
   },
 
-  goToTargetAggregates: (enabled) => {
-    helper.waitUntilReady(element(by.css('.mm-navigation-menu')));
-    element(by.css(`.mm-navigation-menu li a[ui-sref="analytics.target-aggregates.detail"]`)).click();
+  goToTargetAggregates: async (enabled) => {
+    await helper.waitUntilReadyNative(element(by.css('.mm-navigation-menu')));
+    await element(by.css(`.mm-navigation-menu li a[href="#/analytics/target-aggregates"]`)).click();
     if (enabled) {
-      helper.waitUntilReady(element(by.css('#target-aggregates-list')));
+      await helper.waitUntilReadyNative(element(by.css('#target-aggregates-list')));
     } else {
-      helper.waitUntilReady(element(by.css('.page .item-content.disabled')));
+      await helper.waitUntilReadyNative(element(by.css('.page .item-content.disabled')));
     }
   },
 };
