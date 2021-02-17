@@ -302,16 +302,20 @@ module.exports = {
 
   waitElementToDisappear: (locator, timeout) => {
     timeout = timeout || 15000;
-    return browser.wait(() => {
-      return element(locator)
-        .isDisplayed()
-        .then(presenceOfElement => !presenceOfElement);
-    }, timeout, 'waitElementToDisappear timed out looking for '  + locator);
+    return browser.wait(
+      () => {
+        return element(locator)
+          .isDisplayed()
+          .then(presenceOfElement => !presenceOfElement);
+      },
+      timeout,
+      'waitElementToDisappear timed out looking for '  + locator
+    );
   },
 
   waitElementToPresent: (elm, timeout) => {
     timeout = timeout || 10000;
-    browser.wait(() => elm.isPresent(), timeout);
+    return browser.wait(() => elm.isPresent(), timeout);
   },
 
   waitElementToPresentNative: async (elm, timeout) => {

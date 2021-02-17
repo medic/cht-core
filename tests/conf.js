@@ -24,7 +24,6 @@ const baseConfig = {
     e2e: [
       '**/report-date-filter.js',
       '**/send-message.js',
-      'e2e/reports-subject.js'
     ],
     // performance: 'performance/**/*.js'
   },
