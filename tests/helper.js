@@ -95,10 +95,13 @@ module.exports = {
       'Element taking too long to appear in the DOM. Giving up!'
     );
 
+    const expectedTexts = Array.isArray(expectedText) ? expectedText : [expectedText];
+
     await elements.each(async (element) => {
       const text = await element.getText();
-
-      if (!text.toLowerCase().trim().includes(expectedText)) {
+      const trimmedText = text.toLowerCase().trim();
+      const includesAny = expectedTexts.some(expectedText => trimmedText.includes(expectedText));
+      if (!includesAny) {
         return;
       }
 

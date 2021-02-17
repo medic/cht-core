@@ -104,10 +104,10 @@ describe('Privacy policy', () => {
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
+      await utils.closeTour();
+
       await utils.resetBrowser();
       await commonElements.calmNative();
-      await utils.closeTour();
-      await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
       expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual('English Privacy Policy\nMore markup');
@@ -142,10 +142,11 @@ describe('Privacy policy', () => {
 
       // After accepting, no privacy policy on next load
       await privacyPolicyPage.acceptPrivacyPolicy();
+      await utils.closeTour();
+      await commonElements.syncNative();
+
       await utils.resetBrowser();
       await commonElements.calmNative();
-      await utils.closeTour();
-      await helper.handleUpdateModalNative();
 
       // Check display when loading privacy policy page
       expect(await privacyPolicyPage.getPrivacyPolicyFromPage()).toEqual(frenchPolicyText);
