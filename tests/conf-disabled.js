@@ -44,7 +44,10 @@ const baseConfig = {
       'e2e/reports-subject.js',
       'e2e/infodocs.js',
       'e2e/content-security-policy.js',
-      'e2e/navigation/*.js'
+      'e2e/navigation/*.js',
+      'e2e/login/purge.spec.js',
+      'e2e/bulk-delete.js',
+      'e2e/login/db-sync-filter.spec.js',
     ],
     // performance: 'performance/**/*.js'
   },
