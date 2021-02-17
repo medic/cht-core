@@ -3,7 +3,7 @@ const commonElements = require('../common/common.po');
 const messagePo = require('../messages/messages.po');
 const reportsPo = require('../reports/reports.po');
 const helper = require('../../helper');
-const { element } = require('protractor');
+const { browser, element } = require('protractor');
 
 //page objects
 const getState = (first, second) => {
@@ -34,6 +34,7 @@ module.exports = {
 
     // LHS
     await helper.waitElementToPresentNative(messagePo.messageByIndex(1));
+    await browser.waitForAngular();
     await helper.waitElementToBeVisibleNative(messagePo.messageByIndex(1));
   },
 
