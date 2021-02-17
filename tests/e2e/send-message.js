@@ -3,6 +3,7 @@ const helper = require('../helper');
 const common = require('../page-objects/common/common.po');
 const messagesPo = require('../page-objects/messages/messages.po');
 const uuid = require('uuid/v4');
+const _ = require('lodash');
 
 /* eslint-disable no-console */
 describe('Send message', () => {
@@ -84,6 +85,17 @@ describe('Send message', () => {
     'sent_by': 'admin'
   };
 
+  const aliceMessageDoc = _.cloneDeep(messageDoc);
+  aliceMessageDoc.tasks[0].messages[0] = {
+    'sent_by': 'admin',
+    'to': '+447765902001',
+    'contact': {
+      '_id': 'alice-contact'
+    },
+    'message': 'Hello alice-contact this is a test SMS',
+    'uuid': uuid()
+  };
+
   const CONTACTS = [ALICE, BOB_PLACE, CAROL, JAROL, DAVID, DAVID_AREA];
 
   beforeEach(async () => {
@@ -129,7 +141,7 @@ describe('Send message', () => {
       await messagesPo.submitMessage();
       await messagesPo.clickLhsEntry(ALICE._id,ALICE.name);
 
-      expect(await  messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.allMessages().count()).toBe(1);
       expect(await messagesPo.lastMessageText()).toBe(smsMsg('contact'));
     });
 
@@ -155,7 +167,7 @@ describe('Send message', () => {
       expect(await element.all(messagesPo.messageInList(DAVID._id).locator()).count()).toBe(0);
       await messagesPo.clickLhsEntry(DAVID_AREA._id, DAVID_AREA.name);
 
-      expect(await  messagesPo.allMessages().count()).toBe(1);
+      expect(await messagesPo.allMessages().count()).toBe(1);
       expect(await messagesPo.lastMessageText()).toBe(smsMsg('everyoneAt'));
     });
   });
@@ -178,12 +190,16 @@ describe('Send message', () => {
       };
 
       it('For raw contacts', async () => {
+        console.log('raw contact doc');
+        console.log(JSON.stringify(messageDoc));
         await utils.saveDoc(messageDoc);
+        await browser.sleep(5000);
         await browser.refresh();
         await addAnAdditionalMessage(RAW_PH);
       });
+
       it('For real contacts', async () => {
-        await utils.saveDoc(messageDoc);
+        await utils.saveDoc(aliceMessageDoc);
         await browser.refresh();
         await addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
@@ -211,16 +227,6 @@ describe('Send message', () => {
         expect(await messagesPo.lastMessageText()).toBe('A second message');
       });
       it('For existing contacts', async () => {
-        const aliceMessageDoc = messageDoc;
-        aliceMessageDoc.tasks[0].messages[0] = {
-          'sent_by': 'admin',
-          'to': '+447765902001',
-          'contact': {
-            '_id': 'alice-contact'
-          },
-          'message': 'Hello contact this is a test SMS',
-          'uuid': uuid()
-        };
         await utils.saveDoc(aliceMessageDoc);
         await browser.refresh();
         await messagesPo.openMessageContent(ALICE._id, ALICE.name);
