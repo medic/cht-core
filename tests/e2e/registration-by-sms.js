@@ -236,18 +236,19 @@ describe('registration transition', () => {
         }]
       };
       await utils.updateSettings(CONFIG);
-      await Promise.all(DOCS.map(async doc => await utils.saveDoc(doc)));
+      await utils.saveDocs(DOCS);
       await submit(body);
       await sUtils.waitForSentinel();
     });
-    beforeEach(function() {
+
+    beforeEach(() => {
       //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow and it takes long for the report details to load
       originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
     });
 
-    afterEach(async () => await utils.afterEach());
-    afterAll(function() {
+    afterEach(() => utils.afterEach());
+    afterAll(() => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
@@ -279,12 +280,12 @@ describe('registration transition', () => {
 
     it('shows content', async () => {
       await commonElements.goToReportsNative();
-      const firstReprot = reportsPo.firstReport();
-      await helper.waitElementToBeClickable(firstReprot);
+      const firstReport = reportsPo.firstReport();
+      await helper.waitElementToBeClickable(firstReport);
       await browser.wait(() => element(
-        by.cssContainingText(reportsPo.subject(firstReprot).locator().value, 'Siobhan')
+        by.cssContainingText(reportsPo.subject(firstReport).locator().value, 'Siobhan')
       ).isPresent(), 10000);
-      await helper.clickElementNative(reportsPo.formName(firstReprot));
+      await helper.clickElementNative(reportsPo.formName(firstReport));
 
       // wait for content to load
       await browser.wait(() => element(
