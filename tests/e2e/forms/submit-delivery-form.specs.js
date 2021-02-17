@@ -21,6 +21,7 @@ describe('Submit Delivery Report', () => {
   it('open delivery form', async () => {
     await common.goToReportsNative();
     await genericForm.selectFormNative('D');
+    helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));
     //select name
     await deliveryReport.selectPatientName('jack');
     await genericForm.nextPageNative();
