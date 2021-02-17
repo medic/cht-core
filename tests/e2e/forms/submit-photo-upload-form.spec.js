@@ -32,6 +32,7 @@ describe('Submit Photo Upload form', () => {
   it('upload photo', async () => {
     await common.goToReportsNative();
     await genericForm.selectFormNative('photo-upload');
+
     await helper.waitElementToPresentNative(photoUpload.imagePathInput());
     await photoUpload.imagePathInput().sendKeys(
       path.join(__dirname, '../../../webapp/src/img/simprints.png')
@@ -39,6 +40,7 @@ describe('Submit Photo Upload form', () => {
     await helper.waitUntilReadyNative(photoUpload.imagePreview());
 
     await genericForm.submitNative();
+
     await helper.waitUntilReadyNative(element(by.css('.report-image')));
     expect(await element(by.css('.report-image')).isPresent()).toBeTruthy();
   });

@@ -3,7 +3,6 @@ const utils = require('../../utils');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));
-const addButton = element(by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus'));
 
 module.exports = {
   submittedName,
@@ -82,13 +81,15 @@ module.exports = {
   },
 
   selectFormNative: async (formId) => {
+    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     await helper.waitUntilReadyNative(addButton);
-    await helper.waitElementToBeClickable(addButton);
-    await addButton.click();
+    await browser.sleep(1000); // let the refresh work here
+
+    // select form
+    await helper.waitUntilReadyNative(addButton);
+    await helper.clickElement(addButton);
     const form = module.exports.formByHref(formId);
-    await helper.waitElementToPresentNative(form);
-    await form.click();
-    await helper.waitElementToPresentNative(element(by.css('#report-form')));
+    await helper.clickElement(form);
   },
 
   formByHref: (href) => {
