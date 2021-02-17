@@ -40,11 +40,11 @@ module.exports = {
   formName: reportElement =>  {
     return reportElement.element(by.css('.summary'));
   },
-  loadReport: async uuid => {
-    const report = module.exports.reportByUUID(uuid);
+  loadReport: async (uuid) => {
+    const report = await module.exports.reportByUUID(uuid);
     await helper.waitElementToBeClickable(report);
-    await helper.clickElement(report);
-    await helper.waitElementToPresent(module.exports.reportSummary(), 3000);
+    await helper.clickElementNative(report);
+    await helper.waitElementToPresentNative(module.exports.reportSummary(), 3000);
     return report;
   },
   filterByDate: (startDate, endDate) => {
