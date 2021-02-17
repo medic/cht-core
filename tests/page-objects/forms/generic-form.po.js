@@ -93,7 +93,7 @@ module.exports = {
   },
 
   selectForm: () => {
-    utils.deprecated('selectForm','selectFormNative');
+    utils.deprecated('selectForm', 'selectFormNative');
     const addButton = element(
       by.css('.general-actions>.actions>.dropdown-toggle>.fa-plus')
     );
@@ -114,8 +114,9 @@ module.exports = {
     await helper.waitElementToBeClickable(addButton);
     await addButton.click();
     const form = module.exports.formByHref(formId);
+    await helper.waitElementToPresentNative(form);
     await form.click();
-    await helper.waitElementToPresent(element(by.css('#report-form')));
+    await helper.waitElementToPresentNative(element(by.css('#report-form')));
   },
 
   formByHref: (href) => {

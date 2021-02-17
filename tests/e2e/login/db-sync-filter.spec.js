@@ -212,6 +212,7 @@ describe('db-sync-filter', () => {
     await loginPage.loginNative(auth.username, auth.password);
     await utils.deleteUsers([restrictedUserName]);
     await utils.revertDb();
+    await commonElements.calmNative();
   });
 
   it('should not filter allowed docs', async () => {

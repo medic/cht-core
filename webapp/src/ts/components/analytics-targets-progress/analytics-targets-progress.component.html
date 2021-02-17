@@ -1,7 +1,7 @@
 <div class="target-progress">
   <div class="progress" [class.placeholder]="value?.placeholder">
-    <div class="progress-bar" *ngIf="!aggregate && value?.percent > 0" [ngStyle]="{ 'width': (value?.percent || 0) + '%' }"></div>
-    <div class="progress-bar" *ngIf="aggregate && !value?.placeholder" [ngStyle]="{ 'width': (value?.percent || 0) + '%' }" [ngClass]="{ 'no-border': value?.percent === 0 }">
+    <div class="progress-bar" *ngIf="!aggregate" [class.hidden]="value?.percent <= 0" [ngStyle]="{ 'width': (value?.percent || 0) + '%' }"></div>
+    <div class="progress-bar" *ngIf="aggregate" [class.hidden]="value?.placeholder" [ngStyle]="{ 'width': (value?.percent || 0) + '%' }" [ngClass]="{ 'no-border': value?.percent === 0 }">
       <span *ngIf="target?.type === 'percent'">{{ value?.percent }}%</span>
       <span *ngIf="target?.type !== 'percent'">{{ value?.pass }}</span>
     </div>

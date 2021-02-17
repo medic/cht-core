@@ -48,8 +48,8 @@ const postMessages = (messages) => {
 const getRecipient = doc => doc.tasks[0].messages[0].to;
 
 describe('message duplicates', () => {
-  afterAll(done => utils.revertDb().then(done));
-  afterEach(done => utils.revertSettings(true).then(done));
+  afterAll(() => utils.revertDb());
+  afterEach(() => utils.revertSettings(true));
 
   it('should mark as duplicate after 5 retries by default', () => {
     const message1 = {
