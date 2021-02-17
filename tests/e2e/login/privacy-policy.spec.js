@@ -3,7 +3,6 @@ const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.po.js');
 const privacyPolicyPage = require('../../page-objects/privacy-policy/privacy-policy.po');
-const helper = require('../../helper');
 
 describe('Privacy policy', () => {
   const password = 'Sup3rSecret!';
