@@ -54,6 +54,35 @@ describe('Send message', () => {
     parent: { _id: DAVID_AREA._id },
   };
 
+  const messageDoc = {
+    '_id': '4081db78-9f3a-422c-9f8f-68e9ece119ea',
+    'errors': [],
+    'form': null,
+    'reported_date': new Date().getTime(),
+    'tasks': [
+      {
+        'messages': [
+          {
+            'sent_by': 'admin',
+            'to': '+447765902000',
+            'message': 'Hello raw this is a test SMS',
+            'uuid': 'd472062d-8fd4-4035-b5b7-8d41a6dc81ca'
+          }
+        ],
+        'state_history': [
+          {
+            'state': 'pending',
+            'timestamp': '2021-02-12T17:34:47.734Z'
+          }
+        ],
+        'state': 'pending'
+      }
+    ],
+    'kujua_message': true,
+    'type': 'data_record',
+    'sent_by': 'admin'
+  };
+
   const CONTACTS = [ALICE, BOB_PLACE, CAROL, JAROL, DAVID, DAVID_AREA];
 
   beforeEach(async () => {
@@ -148,110 +177,19 @@ describe('Send message', () => {
       };
 
       it('For raw contacts', async () => {
-        const doc = {
-          '_id': '4081db78-9f3a-422c-9f8f-68e9ece119ea',
-          'errors': [],
-          'form': null,
-          'reported_date': 1613151287731,
-          'tasks': [
-            {
-              'messages': [
-                {
-                  'sent_by': 'admin',
-                  'to': '+447765902000',
-                  'message': 'Hello raw this is a test SMS',
-                  'uuid': 'd472062d-8fd4-4035-b5b7-8d41a6dc81ca'
-                }
-              ],
-              'state_history': [
-                {
-                  'state': 'pending',
-                  'timestamp': '2021-02-12T17:34:47.734Z'
-                }
-              ],
-              'state': 'pending'
-            }
-          ],
-          'kujua_message': true,
-          'type': 'data_record',
-          'sent_by': 'admin'
-        };
-              
-
-        await utils.saveDoc(doc);
+        await utils.saveDoc(messageDoc);
         await browser.refresh();
         await addAnAdditionalMessage(RAW_PH);
       });
       it('For real contacts', async () => {
-        const doc = {
-          '_id': '5908c32b-f94a-4afc-b0bf-c92e7b7f5ca1',
-          'form': null,
-          'reported_date': 1613159927411,
-          'tasks': [
-            {
-              'messages': [
-                {
-                  'sent_by': 'admin',
-                  'to': '+447765902001',
-                  'contact': {
-                    '_id': 'alice-contact'
-                  },
-                  'message': 'Hello contact this is a test SMS',
-                  'uuid': 'c47d9109-cdf3-4162-b61b-6a2435ae4814'
-                }
-              ],
-              'state_history': [
-                {
-                  'state': 'pending',
-                  'timestamp': '2021-02-12T19:58:47.413Z'
-                }
-              ],
-              'state': 'pending'
-            }
-          ],
-          'kujua_message': true,
-          'type': 'data_record',
-          'sent_by': 'admin'
-        };
-
-        await utils.saveDoc(doc);
+        await utils.saveDoc(messageDoc);
         await browser.refresh();
         addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', () => {
-      it('For raw contacts1', async () => {
-        const doc = {
-          '_id': '4081db78-9f3a-422c-9f8f-68e9ece119ea',
-          'errors': [],
-          'form': null,
-          'reported_date': 1613151287731,
-          'tasks': [
-            {
-              'messages': [
-                {
-                  'sent_by': 'admin',
-                  'to': '+447765902000',
-                  'message': 'Hello raw this is a test SMS',
-                  'uuid': 'd472062d-8fd4-4035-b5b7-8d41a6dc81ca'
-                }
-              ],
-              'state_history': [
-                {
-                  'state': 'pending',
-                  'timestamp': '2021-02-12T17:34:47.734Z'
-                }
-              ],
-              'state': 'pending'
-            }
-          ],
-          'kujua_message': true,
-          'type': 'data_record',
-          'sent_by': 'admin'
-        };
-              
-
-        await utils.saveDoc(doc);
+      it('For raw contacts', async () => {
+        await utils.saveDoc(messageDoc);
         await browser.refresh();
         await messagesPo.openMessageContent(RAW_PH);
         await messagesPo.enterMessageText('A second message');
@@ -272,38 +210,17 @@ describe('Send message', () => {
         expect(await messagesPo.lastMessageText()).toBe('A second message');
       });
       it('For existing contacts', async () => {
-        const doc = {
-          '_id': '5908c32b-f94a-4afc-b0bf-c92e7b7f5ca1',
-          'form': null,
-          'reported_date': 1613159927411,
-          'tasks': [
-            {
-              'messages': [
-                {
-                  'sent_by': 'admin',
-                  'to': '+447765902001',
-                  'contact': {
-                    '_id': 'alice-contact'
-                  },
-                  'message': 'Hello contact this is a test SMS',
-                  'uuid': 'c47d9109-cdf3-4162-b61b-6a2435ae4814'
-                }
-              ],
-              'state_history': [
-                {
-                  'state': 'pending',
-                  'timestamp': '2021-02-12T19:58:47.413Z'
-                }
-              ],
-              'state': 'pending'
-            }
-          ],
-          'kujua_message': true,
-          'type': 'data_record',
-          'sent_by': 'admin'
+        const aliceMessageDoc = messageDoc;
+        aliceMessageDoc.tasks[0].messages[0] = {
+          'sent_by': 'admin',
+          'to': '+447765902001',
+          'contact': {
+            '_id': 'alice-contact'
+          },
+          'message': 'Hello contact this is a test SMS',
+          'uuid': 'c47d9109-cdf3-4162-b61b-6a2435ae4814'
         };
-
-        await utils.saveDoc(doc);
+        await utils.saveDoc(aliceMessageDoc);
         await browser.refresh();
         await messagesPo.openMessageContent(ALICE._id, ALICE.name);
         await messagesPo.enterMessageText('A second message');
