@@ -19,7 +19,7 @@ module.exports = {
   },
 
   editFormNative: async () => {
-    const editFormBtn = element.all(
+    const editFormBtn = element(
       by.css('[href^="#/reports/edit"]>.fa-pencil')
     );
     await helper.waitUntilReadyNative(editFormBtn);
