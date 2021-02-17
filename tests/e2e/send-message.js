@@ -185,7 +185,7 @@ describe('Send message', () => {
       it('For real contacts', async () => {
         await utils.saveDoc(messageDoc);
         await browser.refresh();
-        addAnAdditionalMessage(ALICE._id, ALICE.name);
+        await addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', () => {
