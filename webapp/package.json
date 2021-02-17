@@ -37,6 +37,7 @@
     "google-libphonenumber": "^3.2.10",
     "gsm": "^0.1.4",
     "jquery": "3.2.x",
+    "lodash": "^4.17.20",
     "lodash-es": "^4.17.15",
     "messageformat": "^2.3.0",
     "moment": "^2.26.0",
